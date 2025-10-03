@@ -1,0 +1,77 @@
+{
+  "https://download.sysinternals.com/files/SysinternalsSuite.zip": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:25.5315848+02:00",
+    "StatusCode": 200
+  },
+  "https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:24.6820617+02:00",
+    "StatusCode": 200
+  },
+  "https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:24.3957984+02:00",
+    "StatusCode": 200
+  },
+  "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:23.9172216+02:00",
+    "StatusCode": 200
+  },
+  "https://www.7-zip.org/a/7z2301-x64.exe": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:22.6939860+02:00",
+    "StatusCode": 200
+  },
+  "https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:25.4420614+02:00",
+    "StatusCode": 200
+  },
+  "https://lockhunter.com/assets/exe/lockhuntersetup_3-4-3.exe": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:23.3901062+02:00",
+    "StatusCode": 200
+  },
+  "https://updates.signal.org/desktop/signal-desktop-win-7.0.0.exe": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:25.0122047+02:00",
+    "StatusCode": 200
+  },
+  "https://www.creality.com/download": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:27.3408858+02:00",
+    "StatusCode": 200
+  },
+  "https://archive.synology.com/download/Utility/Assistant/7.0.6-50085/synology-assistant-7.0.6-50085.exe": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:26.6986609+02:00",
+    "StatusCode": 200
+  },
+  "https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:22.2530029+02:00",
+    "StatusCode": 200
+  },
+  "https://support.brother.com/g/b/downloadlist.aspx?c=us&lang=en&prod=mfcl2700dw_us_eu_as&os=10013": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:27.5612557+02:00",
+    "StatusCode": 200
+  },
+  "https://global.synologydownload.com/download/Utility/SynologyDriveClient/3.5.2-16111/Windows/Installer/x86_64/Synology%20Drive%20Client-3.5.2-16111-x64.exe": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:25.6630982+02:00",
+    "StatusCode": 200
+  },
+  "https://dl.google.com/chrome/install/ChromeStandaloneSetup64.exe": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:21.7724692+02:00",
+    "StatusCode": 200
+  },
+  "https://downloader.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP&version=Live": {
+    "Status": true,
+    "Timestamp": "2025-10-01T17:36:24.8342670+02:00",
+    "StatusCode": 200
+  }
+}

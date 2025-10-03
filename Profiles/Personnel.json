@@ -1,0 +1,45 @@
+{
+  "Name": "Personnel",
+  "Description": "Advanced personal profile - Gaming + development and power user tools (v2.2 - Database Mode)",
+  "Version": "2.2.0",
+  "Inherits": ["Gaming"],
+  "Applications": [
+    "VSCode",
+    "MobaXterm",
+    "Git",
+    "PuTTY",
+    "WinSCP",
+    "Wireshark",
+    "SysinternalsSuite",
+    "Python3",
+    "NodeJS",
+    "DotNetSDK",
+    "YubiKeyManager",
+    "SandboxiePlus",
+    "LDPlayer",
+    "pCloudDrive",
+    "GoogleDrive",
+    "IDM",
+    "ProtonVPN",
+    "ProtonDrive",
+    "ProtonMailBridge",
+    "ProtonPass",
+    "Roboform",
+    "WinRAR",
+    "Mp3tag",
+    "CUETools",
+    "MediaMonkey",
+    "TVRename"
+  ],
+  "SystemConfig": {
+    "Explorer": {
+      "DeveloperMode": true
+    },
+    "Network": {
+      "DeveloperOptimizations": true
+    },
+    "Security": {
+      "DeveloperMode": true
+    }
+  }
+}

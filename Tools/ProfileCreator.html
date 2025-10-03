@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Win11Forge - Profile Creator v2.1.3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 30px 20px;
+            border-right: 2px solid #e9ecef;
+        }
+
+        .main {
+            padding: 30px;
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .inherit-select {
+            background: white;
+            cursor: pointer;
+        }
+
+        .app-category {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .app-category h3 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .app-list,
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+        }
+
+        .app-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .app-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .app-item label {
+            margin: 0;
+            font-weight: normal;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .config-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .config-section h4 {
+            color: #764ba2;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+
+        .nav-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .nav-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .nav-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            padding: 8px 15px;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        #customAppsList .app-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 15px;
+            cursor: default;
+        }
+
+        #customAppsList .app-item:hover {
+            transform: none;
+        }
+
+        .actions {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 20px;
+            border-top: 2px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border: 2px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+            color: #155724;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                border-right: none;
+                border-bottom: 2px solid #e9ecef;
+            }
+
+            .nav-btn {
+                display: inline-block;
+                width: auto;
+                margin-right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛠️ Win11Forge Profile Creator</h1>
+            <p>Créez votre profil JSON personnalisé en quelques clics</p>
+            <div style="margin-top: 20px;">
+                <input type="file" id="loadProfileInput" accept=".json" style="display: none;" onchange="loadProfile(event)">
+                <button class="btn btn-primary" onclick="document.getElementById('loadProfileInput').click()" style="background: rgba(255,255,255,0.2); border: 2px solid white; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                    📂 Charger un profil existant
+                </button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="sidebar">
+                <button class="nav-btn active" onclick="showStep(1)">1️⃣ Informations</button>
+                <button class="nav-btn" onclick="showStep(2)">2️⃣ Héritage</button>
+                <button class="nav-btn" onclick="showStep(3)">3️⃣ Applications</button>
+                <button class="nav-btn" onclick="showStep(4)">4️⃣ Apps Personnalisées</button>
+                <button class="nav-btn" onclick="showStep(5)">5️⃣ Configuration</button>
+                <button class="nav-btn" onclick="showStep(6)">6️⃣ Aperçu</button>
+            </div>
+
+            <div class="main">
+                <!-- Step 1: Basic Info -->
+                <div id="step1" class="step active">
+                    <div class="section">
+                        <h2>📋 Informations du Profil</h2>
+
+                        <div class="form-group">
+                            <label for="profileName">Nom du Profil *</label>
+                            <input type="text" id="profileName" placeholder="Ex: MonProfil" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profileDescription">Description</label>
+                            <textarea id="profileDescription" rows="3" placeholder="Description de votre profil personnalisé"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profileVersion">Version</label>
+                            <input type="text" id="profileVersion" value="1.0.0" placeholder="1.0.0">
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>💡 Conseil :</strong> Donnez un nom descriptif à votre profil (ex: "DevWeb", "Gaming-Pro", "Bureau-Compta")
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Inheritance -->
+                <div id="step2" class="step">
+                    <div class="section">
+                        <h2>🔗 Héritage de Profil</h2>
+
+                        <div class="form-group">
+                            <label for="inheritFrom">Hériter d'un profil existant (optionnel)</label>
+                            <select id="inheritFrom" class="inherit-select">
+                                <option value="">-- Aucun (profil vide) --</option>
+                                <option value="Base">Base (31 apps - Fondation)</option>
+                                <option value="Office">Office (36 apps - Base + Productivité)</option>
+                                <option value="Gaming">Gaming (40 apps - Office + Gaming)</option>
+                                <option value="Personnel">Personnel (66 apps - Gaming + Dev)</option>
+                            </select>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>💡 Héritage :</strong> Si vous héritez d'un profil, vous obtiendrez toutes ses applications + configuration. Vous pouvez ensuite ajouter d'autres apps dans l'étape suivante.
+                        </div>
+
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="inheritAppsCount">0</div>
+                                <div class="stat-label">Apps héritées</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="totalAppsCount">0</div>
+                                <div class="stat-label">Total apps</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Applications -->
+                <div id="step3" class="step">
+                    <div class="section">
+                        <h2>📦 Sélection d'Applications</h2>
+
+                        <div class="alert alert-info">
+                            <strong>💡 Sélection :</strong> Cochez les applications que vous souhaitez ajouter à votre profil (en plus de celles héritées).
+                        </div>
+
+                        <!-- Applications dynamically loaded from database -->
+                        <div id="appsGrid" class="apps-grid"></div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Custom Apps -->
+                <div id="step4" class="step">
+                    <div class="section">
+                        <h2>➕ Applications Personnalisées</h2>
+
+                        <div class="alert alert-info">
+                            <strong>💡 Personnalisation :</strong> Ajoutez vos propres applications en fournissant les sources (Winget, Chocolatey, Store, URL directe).
+                        </div>
+
+                        <!-- Custom App Form -->
+                        <div class="config-section">
+                            <h4>📦 Ajouter une Application</h4>
+
+                            <div class="form-group">
+                                <label for="customAppName">Nom de l'Application *</label>
+                                <input type="text" id="customAppName" placeholder="Ex: MonApplication">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="customAppWinget">Winget ID</label>
+                                <input type="text" id="customAppWinget" placeholder="Ex: Publisher.AppName">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="customAppChoco">Chocolatey Package</label>
+                                <input type="text" id="customAppChoco" placeholder="Ex: packagename">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="customAppStore">Microsoft Store ID</label>
+                                <input type="text" id="customAppStore" placeholder="Ex: 9NBLGGH4NNS1">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="customAppUrl">URL de Téléchargement Direct</label>
+                                <input type="text" id="customAppUrl" placeholder="https://example.com/installer.exe">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="customAppArgs">Arguments d'Installation (optionnel)</label>
+                                <input type="text" id="customAppArgs" placeholder="/S /silent --quiet">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="customAppCategory">Catégorie</label>
+                                <select id="customAppCategory">
+                                    <option value="Custom">Personnalisé</option>
+                                    <option value="Browsers">Navigateurs</option>
+                                    <option value="Development">Développement</option>
+                                    <option value="Gaming">Gaming</option>
+                                    <option value="Media">Média</option>
+                                    <option value="Utilities">Utilitaires</option>
+                                    <option value="Security">Sécurité</option>
+                                    <option value="Office">Bureautique</option>
+                                </select>
+                            </div>
+
+                            <button class="btn btn-primary" onclick="addCustomApp()">➕ Ajouter l'Application</button>
+                        </div>
+
+                        <!-- Custom Apps List -->
+                        <div class="config-section" id="customAppsListSection" style="display:none;">
+                            <h4>📋 Applications Personnalisées Ajoutées (<span id="customAppsCount">0</span>)</h4>
+                            <div id="customAppsList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: System Config -->
+                <div id="step5" class="step">
+                    <div class="section">
+                        <h2>⚙️ Configuration Système</h2>
+
+                        <!-- Explorer -->
+                        <div class="config-section">
+                            <h4>📁 Windows Explorer</h4>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="cfg_showHidden" checked>
+                                <label for="cfg_showHidden">Afficher les fichiers cachés</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="cfg_showExtensions" checked>
+                                <label for="cfg_showExtensions">Afficher les extensions de fichiers</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="cfg_navPane" checked>
+                                <label for="cfg_navPane">Optimiser le volet de navigation</label>
+                            </div>
+                        </div>
+
+                        <!-- Taskbar -->
+                        <div class="config-section">
+                            <h4>📊 Barre des tâches</h4>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="cfg_disableWidgets" checked>
+                                <label for="cfg_disableWidgets">Désactiver les widgets</label>
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg_startAlignment">Alignement du menu Démarrer</label>
+                                <select id="cfg_startAlignment">
+                                    <option value="left">Gauche</option>
+                                    <option value="center">Centre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg_searchMode">Mode recherche</label>
+                                <select id="cfg_searchMode">
+                                    <option value="hidden">Caché</option>
+                                    <option value="icon_only" selected>Icône uniquement</option>
+                                    <option value="box">Boîte de recherche</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Network -->
+                        <div class="config-section">
+                            <h4>🌐 Réseau</h4>
+                            <div class="form-group">
+                                <label for="cfg_dns">Serveurs DNS (séparés par des virgules)</label>
+                                <input type="text" id="cfg_dns" value="9.9.9.9,1.1.1.1" placeholder="9.9.9.9,1.1.1.1">
+                            </div>
+                        </div>
+
+                        <!-- Privacy -->
+                        <div class="config-section">
+                            <h4>🔒 Confidentialité</h4>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="cfg_disableTelemetry" checked>
+                                <label for="cfg_disableTelemetry">Désactiver la télémétrie</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="cfg_minimalData" checked>
+                                <label for="cfg_minimalData">Collection de données minimale</label>
+                            </div>
+                        </div>
+
+                        <!-- Performance -->
+                        <div class="config-section">
+                            <h4>⚡ Performance</h4>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="cfg_optimizeServices" checked>
+                                <label for="cfg_optimizeServices">Optimiser les services Windows</label>
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg_powerPlan">Plan d'alimentation</label>
+                                <select id="cfg_powerPlan">
+                                    <option value="Balanced" selected>Équilibré</option>
+                                    <option value="High Performance">Hautes performances</option>
+                                    <option value="Power Saver">Économie d'énergie</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Security -->
+                        <div class="config-section">
+                            <h4>🛡️ Sécurité</h4>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="cfg_defender" checked>
+                                <label for="cfg_defender">Windows Defender activé</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="cfg_firewall" checked>
+                                <label for="cfg_firewall">Pare-feu Windows activé</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: Preview -->
+                <div id="step6" class="step">
+                    <div class="section">
+                        <h2>👁️ Aperçu du Profil JSON</h2>
+
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="previewAppsCount">0</div>
+                                <div class="stat-label">Applications</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="previewConfigCount">6</div>
+                                <div class="stat-label">Sections Config</div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-success">
+                            <strong>✅ Profil prêt !</strong> Cliquez sur "Télécharger JSON" pour sauvegarder votre profil.
+                        </div>
+
+                        <div class="preview" id="jsonPreview"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <div>
+                <button class="btn btn-secondary" onclick="previousStep()" id="btnPrev">⬅️ Précédent</button>
+                <button class="btn btn-primary" onclick="nextStep()" id="btnNext">Suivant ➡️</button>
+            </div>
+            <div>
+                <button class="btn btn-success" onclick="downloadJSON()" id="btnDownload" style="display:none;">💾 Télécharger JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="applications-data.js"></script>
+    <script>
+        let currentStep = 1;
+        const totalSteps = 6;
+        let customApps = [];
+        let appDatabase = {};
+        let databaseLoaded = false;
+
+        // Load database from applications-data.js
+        function loadDatabase() {
+            try {
+                // Check if WIN11FORGE_APPS is available
+                if (typeof WIN11FORGE_APPS !== 'undefined') {
+                    appDatabase = WIN11FORGE_APPS;
+                    databaseLoaded = true;
+                    console.log(`✅ Database loaded: ${Object.keys(appDatabase).length} applications`);
+                    populateApplications();
+                } else {
+                    throw new Error('WIN11FORGE_APPS not found');
+                }
+            } catch (error) {
+                console.error('❌ Error loading database:', error);
+                useFallbackDatabase();
+            }
+        }
+
+        // Fallback database if JSON loading fails
+        function useFallbackDatabase() {
+            appDatabase = {
+                GoogleChrome: { Name: "Google Chrome", Category: "Browser" },
+                MozillaFirefox: { Name: "Mozilla Firefox", Category: "Browser" },
+                BraveBrowser: { Name: "Brave Browser", Category: "Browser" },
+                VSCode: { Name: "Visual Studio Code", Category: "Development" },
+                Git: { Name: "Git", Category: "Development" }
+            };
+            databaseLoaded = true;
+            console.warn('⚠️ Using fallback database with limited apps');
+            populateApplications();
+        }
+
+        // Populate applications grid in Step 3
+        function populateApplications() {
+            const grid = document.getElementById('appsGrid');
+            if (!grid) {
+                console.error('❌ Grid container #appsGrid not found');
+                return;
+            }
+
+            grid.innerHTML = ''; // Clear existing
+
+            Object.entries(appDatabase).forEach(([id, app]) => {
+                const div = document.createElement('div');
+                div.className = 'app-item';
+                div.onclick = () => toggleApp(div);
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `app_${id}`;
+                checkbox.value = id;
+
+                const label = document.createElement('label');
+                label.htmlFor = `app_${id}`;
+                label.textContent = app.Name || id;
+
+                // Add category badge if available
+                if (app.Category) {
+                    const badge = document.createElement('span');
+                    badge.style.fontSize = '10px';
+                    badge.style.color = '#666';
+                    badge.style.marginLeft = '8px';
+                    badge.textContent = `[${app.Category}]`;
+                    label.appendChild(badge);
+                }
+
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                grid.appendChild(div);
+            });
+
+            console.log(`✅ Populated ${Object.keys(appDatabase).length} applications in UI`);
+        }
+
+        // Load database on page load
+        window.addEventListener('DOMContentLoaded', loadDatabase);
+
+        const inheritCounts = {
+            "": 0,
+            "Base": 31,
+            "Office": 36,
+            "Gaming": 40,
+            "Personnel": 66
+        };
+
+        function showStep(step) {
+            currentStep = step;
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById('step' + step).classList.add('active');
+            document.querySelectorAll('.nav-btn')[step - 1].classList.add('active');
+
+            // Update buttons
+            document.getElementById('btnPrev').style.display = step === 1 ? 'none' : 'inline-block';
+            document.getElementById('btnNext').style.display = step === totalSteps ? 'none' : 'inline-block';
+            document.getElementById('btnDownload').style.display = step === totalSteps ? 'inline-block' : 'none';
+
+            if (step === 6) {
+                generatePreview();
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                showStep(currentStep + 1);
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        }
+
+        function toggleApp(element) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            updateStats();
+        }
+
+        document.getElementById('inheritFrom').addEventListener('change', function() {
+            const inherit = this.value;
+            const count = inheritCounts[inherit];
+            document.getElementById('inheritAppsCount').textContent = count;
+            updateStats();
+        });
+
+        function updateStats() {
+            const inherit = document.getElementById('inheritFrom').value;
+            const inheritCount = inheritCounts[inherit];
+            const selectedApps = document.querySelectorAll('#step3 input[type="checkbox"]:checked').length;
+            const customCount = customApps.length;
+            const total = inheritCount + selectedApps + customCount;
+            document.getElementById('totalAppsCount').textContent = total;
+        }
+
+        function generatePreview() {
+            const profile = generateProfile();
+            document.getElementById('jsonPreview').textContent = JSON.stringify(profile, null, 2);
+            document.getElementById('previewAppsCount').textContent = profile.Applications.length;
+        }
+
+        function generateProfile() {
+            const profile = {
+                Name: document.getElementById('profileName').value || "CustomProfile",
+                Description: document.getElementById('profileDescription').value || "Profil personnalisé",
+                Version: "2.2.0",
+                Inherits: [],
+                Applications: [],
+                SystemConfig: {}
+            };
+
+            // Inheritance
+            const inherit = document.getElementById('inheritFrom').value;
+            if (inherit) {
+                profile.Inherits.push(inherit);
+            }
+
+            // Applications (v2.2.0 format: just AppIds)
+            const selectedApps = document.querySelectorAll('#step3 input[type="checkbox"]:checked');
+            selectedApps.forEach(checkbox => {
+                const appId = checkbox.value;
+                // In v2.2.0, we just add the AppId string
+                profile.Applications.push(appId);
+            });
+
+            // Add custom applications (full format for apps not in database)
+            customApps.forEach(customApp => {
+                const app = {
+                    Name: customApp.name,
+                    Category: customApp.category,
+                    Sources: {
+                        Winget: customApp.winget || null,
+                        Chocolatey: customApp.choco || null,
+                        Store: customApp.store || null,
+                        DirectUrl: customApp.url || null
+                    }
+                };
+
+                if (customApp.args) {
+                    app.InstallArguments = customApp.args;
+                }
+
+                profile.Applications.push(app);
+            });
+
+            // System Config
+            profile.SystemConfig.Explorer = {
+                ShowHiddenFiles: document.getElementById('cfg_showHidden').checked,
+                ShowFileExtensions: document.getElementById('cfg_showExtensions').checked,
+                NavigationPaneOptimized: document.getElementById('cfg_navPane').checked
+            };
+
+            profile.SystemConfig.Taskbar = {
+                DisableWidgets: document.getElementById('cfg_disableWidgets').checked,
+                StartAlignment: document.getElementById('cfg_startAlignment').value,
+                SearchMode: document.getElementById('cfg_searchMode').value
+            };
+
+            const dnsServers = document.getElementById('cfg_dns').value.split(',').map(s => s.trim()).filter(s => s);
+            profile.SystemConfig.Network = {
+                DnsServers: dnsServers
+            };
+
+            profile.SystemConfig.Privacy = {
+                DisableTelemetry: document.getElementById('cfg_disableTelemetry').checked,
+                MinimalDataCollection: document.getElementById('cfg_minimalData').checked
+            };
+
+            profile.SystemConfig.Performance = {
+                OptimizeServices: document.getElementById('cfg_optimizeServices').checked,
+                PowerPlan: document.getElementById('cfg_powerPlan').value
+            };
+
+            profile.SystemConfig.Security = {
+                WindowsDefender: document.getElementById('cfg_defender').checked,
+                Firewall: document.getElementById('cfg_firewall').checked
+            };
+
+            return profile;
+        }
+
+        function downloadJSON() {
+            const profile = generateProfile();
+            const json = JSON.stringify(profile, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = (profile.Name || 'CustomProfile') + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert('✅ Profil téléchargé !\n\nPlacez le fichier dans le dossier Profiles/ de Win11Forge et lancez :\n.\Deploy-Win11Environment.ps1 -ProfileName "' + profile.Name + '"');
+        }
+
+        function addCustomApp() {
+            const name = document.getElementById('customAppName').value.trim();
+            if (!name) {
+                alert('❌ Veuillez entrer un nom d\'application');
+                return;
+            }
+
+            const winget = document.getElementById('customAppWinget').value.trim();
+            const choco = document.getElementById('customAppChoco').value.trim();
+            const store = document.getElementById('customAppStore').value.trim();
+            const url = document.getElementById('customAppUrl').value.trim();
+            const args = document.getElementById('customAppArgs').value.trim();
+            const category = document.getElementById('customAppCategory').value;
+
+            if (!winget && !choco && !store && !url) {
+                alert('❌ Veuillez fournir au moins une source d\'installation (Winget, Chocolatey, Store ou URL)');
+                return;
+            }
+
+            const customApp = {
+                name: name,
+                winget: winget || null,
+                choco: choco || null,
+                store: store || null,
+                url: url || null,
+                args: args || null,
+                category: category
+            };
+
+            customApps.push(customApp);
+            updateCustomAppsList();
+
+            // Clear form
+            document.getElementById('customAppName').value = '';
+            document.getElementById('customAppWinget').value = '';
+            document.getElementById('customAppChoco').value = '';
+            document.getElementById('customAppStore').value = '';
+            document.getElementById('customAppUrl').value = '';
+            document.getElementById('customAppArgs').value = '';
+            document.getElementById('customAppCategory').value = 'Custom';
+
+            alert('✅ Application ajoutée avec succès !');
+        }
+
+        function updateCustomAppsList() {
+            const listSection = document.getElementById('customAppsListSection');
+            const list = document.getElementById('customAppsList');
+            const count = document.getElementById('customAppsCount');
+
+            if (customApps.length === 0) {
+                listSection.style.display = 'none';
+                return;
+            }
+
+            listSection.style.display = 'block';
+            count.textContent = customApps.length;
+
+            list.innerHTML = customApps.map((app, index) => {
+                const sources = [];
+                if (app.winget) sources.push(`Winget: ${app.winget}`);
+                if (app.choco) sources.push(`Choco: ${app.choco}`);
+                if (app.store) sources.push(`Store: ${app.store}`);
+                if (app.url) sources.push(`URL: ${app.url.substring(0, 50)}...`);
+
+                return `
+                    <div class="app-item">
+                        <div>
+                            <strong>${app.name}</strong> <span style="color: #667eea;">[${app.category}]</span><br>
+                            <small style="color: #6c757d;">${sources.join(' | ')}</small>
+                            ${app.args ? `<br><small style="color: #28a745;">Args: ${app.args}</small>` : ''}
+                        </div>
+                        <button class="btn btn-danger" onclick="removeCustomApp(${index})">🗑️ Supprimer</button>
+                    </div>
+                `;
+            }).join('');
+
+            updateStats();
+        }
+
+        function removeCustomApp(index) {
+            if (confirm('Supprimer cette application personnalisée ?')) {
+                customApps.splice(index, 1);
+                updateCustomAppsList();
+            }
+        }
+
+        // Load existing profile
+        function loadProfile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const profile = JSON.parse(e.target.result);
+                    console.log('📂 Profile loaded:', profile);
+
+                    // Step 1: Basic Info
+                    document.getElementById('profileName').value = profile.Name || '';
+                    document.getElementById('profileDescription').value = profile.Description || '';
+
+                    // Step 2: Inheritance
+                    if (profile.Inherits && profile.Inherits.length > 0) {
+                        document.getElementById('inheritFrom').value = profile.Inherits[0];
+                        document.getElementById('inheritAppsCount').textContent = inheritCounts[profile.Inherits[0]] || 0;
+                    }
+
+                    // Step 3: Applications
+                    // First, uncheck all apps
+                    document.querySelectorAll('#step3 input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+                    // Then check the apps from the profile
+                    if (profile.Applications && Array.isArray(profile.Applications)) {
+                        profile.Applications.forEach(app => {
+                            // v2.2.0 format: just AppId strings
+                            if (typeof app === 'string') {
+                                const checkbox = document.getElementById(`app_${app}`);
+                                if (checkbox) checkbox.checked = true;
+                            }
+                            // Old format or custom apps: objects with full definition
+                            else if (typeof app === 'object' && app.Name) {
+                                // Try to find in database apps first
+                                let found = false;
+                                Object.keys(appDatabase).forEach(appId => {
+                                    if (appDatabase[appId].Name === app.Name) {
+                                        const checkbox = document.getElementById(`app_${appId}`);
+                                        if (checkbox) {
+                                            checkbox.checked = true;
+                                            found = true;
+                                        }
+                                    }
+                                });
+
+                                // If not found in database, add to custom apps
+                                if (!found) {
+                                    customApps.push({
+                                        name: app.Name,
+                                        category: app.Category || 'Custom',
+                                        winget: app.Sources?.Winget || '',
+                                        choco: app.Sources?.Chocolatey || '',
+                                        store: app.Sources?.Store || '',
+                                        url: app.Sources?.DirectUrl || '',
+                                        args: app.InstallArguments || ''
+                                    });
+                                }
+                            }
+                        });
+                    }
+
+                    // Step 4: Custom Apps (already loaded above)
+                    updateCustomAppsList();
+
+                    // Step 5: System Config
+                    if (profile.SystemConfig) {
+                        // Explorer
+                        if (profile.SystemConfig.Explorer) {
+                            document.getElementById('cfg_showHidden').checked = profile.SystemConfig.Explorer.ShowHiddenFiles || false;
+                            document.getElementById('cfg_showExtensions').checked = profile.SystemConfig.Explorer.ShowFileExtensions || false;
+                            document.getElementById('cfg_navPane').checked = profile.SystemConfig.Explorer.NavigationPaneOptimized || false;
+                        }
+                        // Taskbar
+                        if (profile.SystemConfig.Taskbar) {
+                            document.getElementById('cfg_taskbarSearch').checked = profile.SystemConfig.Taskbar.SearchBoxMode === 'Hidden';
+                            document.getElementById('cfg_taskbarWidgets').checked = profile.SystemConfig.Taskbar.HideWidgets || false;
+                            document.getElementById('cfg_taskbarChat').checked = profile.SystemConfig.Taskbar.HideChat || false;
+                            document.getElementById('cfg_taskbarTaskView').checked = profile.SystemConfig.Taskbar.HideTaskView || false;
+                        }
+                        // Privacy
+                        if (profile.SystemConfig.Privacy) {
+                            document.getElementById('cfg_telemetry').checked = profile.SystemConfig.Privacy.DisableTelemetry || false;
+                            document.getElementById('cfg_ads').checked = profile.SystemConfig.Privacy.DisableAdvertising || false;
+                        }
+                        // Performance
+                        if (profile.SystemConfig.Performance) {
+                            document.getElementById('cfg_animations').checked = profile.SystemConfig.Performance.DisableAnimations || false;
+                            document.getElementById('cfg_autostart').checked = profile.SystemConfig.Performance.OptimizeStartup || false;
+                        }
+                    }
+
+                    // Update stats and go to step 1
+                    updateStats();
+                    showStep(1);
+
+                    alert(`✅ Profil "${profile.Name}" chargé avec succès!\n\nVous pouvez maintenant le modifier et le sauvegarder.`);
+
+                } catch (error) {
+                    console.error('❌ Error loading profile:', error);
+                    alert('❌ Erreur lors du chargement du profil:\n' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Initialize
+        updateStats();
+    </script>
+</body>
+</html>

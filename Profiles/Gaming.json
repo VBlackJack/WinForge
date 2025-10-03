@@ -1,0 +1,22 @@
+{
+  "Name": "Gaming",
+  "Description": "Gaming optimized profile - Office + gaming platforms (v2.2 - Database Mode)",
+  "Version": "2.2.0",
+  "Inherits": ["Office"],
+  "Applications": [
+    "Steam",
+    "Discord",
+    "EpicGamesLauncher",
+    "BattleNet"
+  ],
+  "SystemConfig": {
+    "Network": {
+      "GamingOptimizations": true
+    },
+    "Performance": {
+      "DisableVisualEffects": true,
+      "PowerPlan": "High Performance",
+      "GameMode": true
+    }
+  }
+}

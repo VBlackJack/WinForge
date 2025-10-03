@@ -1,0 +1,411 @@
+# Win11Forge Framework - Changelog
+
+## [2.2.0] - 2025-10-03
+
+### 🎉 Major Release - Architecture Refactoring
+
+Cette version majeure introduit une refonte complète de l'architecture avec une base de données centralisée, une interface GUI, et des outils de gestion avancés.
+
+### ✨ Nouvelles Fonctionnalités
+
+#### Interface GUI PowerShell (`Win11ForgeGUI.psm1`)
+- **Ajouté**: Interface utilisateur interactive complète
+  - Menu de navigation principal avec 8 options
+  - Déploiement de profils avec sélection mode parallèle/séquentiel
+  - Navigateur d'applications (67 apps) avec filtrage par catégorie/tag
+  - Navigateur de profils avec visualisation détaillée
+  - Créateur de profils custom interactif
+  - Statistiques de base de données en temps réel
+  - Validation de base de données intégrée
+  - **Nouveau**: Option "Add New Application" avec recherche automatique
+
+#### Base de Données Centralisée (`Apps/Database/applications.json`)
+- **Ajouté**: Base de données centralisée v2.2.0
+  - 67 applications référencées (vs 66 en v2.1.3)
+  - Sources multiples: Winget, Chocolatey, Microsoft Store, DirectUrl
+  - Métadonnées complètes: tags, vérification, homepage, priorité
+  - Détection intelligente par méthode (Registry, File, Command, StoreApp, WindowsFeature)
+  - Restrictions d'environnement par application
+  - Format optimisé pour réutilisation
+
+- **Module**: `ApplicationDatabase.psm1`
+  - Chargement et cache de la base de données
+  - Fonctions de requête par catégorie, tag, AppId
+  - Export de statistiques
+  - Validation de structure
+
+#### ProfileCreator.html - Interface Web
+- **Ajouté**: Créateur/éditeur de profils web
+  - Interface en 6 étapes guidées
+  - **67 applications** chargées dynamiquement depuis `applications-data.js`
+  - Création de profils au format v2.2.0
+  - **Nouveau**: Édition de profils existants (charger JSON)
+  - Filtrage par catégorie et recherche
+  - Configuration système (Explorer, Taskbar, Privacy, Performance)
+  - Compatible `file://` (pas de serveur web requis)
+  - Export JSON téléchargeable
+
+#### Search-ApplicationSources.ps1
+- **Ajouté**: Outil de recherche automatique d'applications
+  - Recherche simultanée dans Winget, Chocolatey, Microsoft Store
+  - Détection des URLs de téléchargement direct (patterns connus)
+  - Génération de template JSON prêt à l'emploi
+  - Modes interactif et automatisé
+  - Affichage coloré avec résumé des résultats
+
+#### Lanceurs avec Auto-Élévation
+- **Amélioré**: `Deploy-Win11Forge.bat`
+  - Auto-élévation automatique (UAC)
+  - Plus besoin de clic-droit "Exécuter en tant qu'admin"
+
+- **Ajouté**: `Start-Win11ForgeGUI-Admin.bat`
+  - Lanceur GUI avec auto-élévation
+  - Double-clic et c'est parti
+
+### 🔄 Changements Majeurs
+
+#### Format des Profils v2.2.0
+- **BREAKING**: Nouveau format ultra-compact
+  - Applications référencées par AppId uniquement
+  - Définitions chargées depuis la base de données centralisée
+  - Profils 10x plus petits et lisibles
+
+**Ancien format (v2.1.x)** :
+```json
+{
+  "Applications": [
+    {
+      "Name": "Google Chrome",
+      "Category": "Browser",
+      "Sources": {...},
+      "Detection": {...}
+    }
+  ]
+}
+```
+
+**Nouveau format (v2.2.0)** :
+```json
+{
+  "Applications": [
+    "GoogleChrome",
+    "MozillaFirefox",
+    "BraveBrowser"
+  ]
+}
+```
+
+#### Migration Automatique
+- **Ajouté**: Scripts de migration v2.0 → v2.2.0
+  - `Switch-ToProduction.ps1` : Migration des profils
+  - `Test-NewProfiles.ps1` : Validation post-migration
+  - Backup automatique dans `Archive/Profiles-v2.0-*/`
+  - Conversion automatique au nouveau format
+
+### ✨ Améliorations
+
+#### Gestion des Profils
+- **Amélioré**: `ProfileManager.psm1`
+  - Résolution d'AppIds via base de données centralisée
+  - Validation de profils avec vérification d'AppIds
+  - Héritage optimisé avec cache
+  - Messages d'erreur détaillés
+
+#### Interface Utilisateur
+- **Ajouté**: Fonction `Read-Choice` améliorée
+  - Support de l'option '0' pour retour/annulation universelle
+  - Messages d'aide contextuels
+  - Validation robuste des choix
+  - Plus de situations bloquantes
+
+#### Applications
+- **Ajouté**: Creality Slicer (impression 3D)
+  - Chocolatey: `creality-print`
+  - Détection: File
+  - Catégorie: 3DPrint
+
+### 🧹 Nettoyage et Organisation
+
+#### Cleanup-ObsoleteFiles.ps1
+- **Ajouté**: Script de nettoyage automatique
+  - Archive les fichiers de test/migration obsolètes
+  - Réorganise `Validate-Framework.ps1` vers `Tools/`
+  - Mode `-DryRun` pour prévisualisation
+  - Rapport détaillé des opérations
+
+#### Structure du Projet
+- **Réorganisé**: Dossier `Tools/`
+  - Tous les utilitaires regroupés
+  - Scripts de validation consolidés
+  - Outils web (ProfileCreator.html)
+
+- **Archivé**: Rapports de développement
+  - `Archive/Docs-Reports-20251003/`
+  - DEBUG_*, DATABASE_*, VALIDATION_*, INTEGRATION_*
+
+### 📝 Documentation
+
+#### Nouvelle Documentation
+- **Ajouté**: `PROJET_STRUCTURE.md`
+  - Structure complète du projet
+  - Guide d'utilisation rapide
+  - Explication de l'architecture
+  - Cas d'usage détaillés
+
+- **Mis à jour**: `README.md` v2.2.0
+  - Nouvelles fonctionnalités GUI
+  - Base de données centralisée
+  - ProfileCreator.html
+  - Guides de démarrage rapide
+
+- **Ajouté**: `GUI_README.md`
+  - Documentation complète de l'interface GUI
+  - Captures d'écran et workflows
+  - Guide des 8 options du menu
+
+### 🐛 Corrections de Bugs
+
+#### GUI
+- **Corrigé**: Menus sans option de retour (blocage utilisateur)
+- **Corrigé**: Erreurs PSObject.Properties sur certaines applications
+- **Corrigé**: Accès aux sources Winget/Choco/Store/DirectUrl
+- **Corrigé**: Comptage incorrect d'applications
+
+#### Profils
+- **Corrigé**: Script `Deploy-Win11Environment.ps1` fermait au lieu de retourner au GUI
+  - Remplacé tous les `exit` par `return`
+  - GUI reste ouvert après déploiement
+
+#### Modules
+- **Corrigé**: Scope des modules en mode parallèle
+  - Ajout du flag `-Global` sur tous les Import-Module
+
+### 📊 Statistiques v2.2.0
+
+**Applications** : 67 (+1 vs v2.1.3)
+**Profils** : 4 (Base, Office, Gaming, Personnel)
+**Modules** : 7 (+1 GUI)
+**Outils** : 6 (+2 vs v2.1.3)
+**Scripts** : 8 (+4 vs v2.1.3)
+
+**Composition des Profils** :
+- Base: 31 apps
+- Office: 36 apps (Base + 5)
+- Gaming: 40 apps (Office + 4)
+- Personnel: 66 apps (Gaming + 26)
+
+### 🔧 Fichiers Modifiés
+
+**Nouveaux Modules** :
+- `Modules/ApplicationDatabase.psm1`
+- `Modules/Win11ForgeGUI.psm1`
+
+**Nouveaux Scripts** :
+- `Start-Win11ForgeGUI.ps1`
+- `Start-Win11ForgeGUI-Admin.bat`
+- `Tools/Search-ApplicationSources.ps1`
+- `Cleanup-ObsoleteFiles.ps1`
+
+**Nouveaux Outils** :
+- `Tools/ProfileCreator.html`
+- `Tools/applications-data.js`
+
+**Base de Données** :
+- `Apps/Database/applications.json` (nouvelle architecture)
+
+**Profils Migrés** :
+- `Profiles/Base.json` (format v2.2.0)
+- `Profiles/Office.json` (format v2.2.0)
+- `Profiles/Gaming.json` (format v2.2.0)
+- `Profiles/Personnel.json` (format v2.2.0)
+
+**Documentation** :
+- `README.md` (v2.2.0)
+- `PROJET_STRUCTURE.md` (nouveau)
+- `GUI_README.md` (nouveau)
+
+### ⚠️ Breaking Changes
+
+1. **Format de Profils** : Les profils v2.0/v2.1 doivent être migrés vers v2.2.0
+   - Utiliser `Switch-ToProduction.ps1` pour migration automatique
+   - Ou utiliser ProfileCreator.html pour recréer
+
+2. **Base de Données** : Les applications sont maintenant centralisées
+   - Pas de définitions inline dans les profils
+   - Toutes les apps doivent être dans `Apps/Database/applications.json`
+
+### 🚀 Migration depuis v2.1.x
+
+```powershell
+# Étape 1: Backup automatique
+.\Switch-ToProduction.ps1
+
+# Étape 2: Test des nouveaux profils
+.\Test-NewProfiles.ps1
+
+# Étape 3: Validation
+.\Tools\Validate-AppDatabase.ps1
+
+# Étape 4 (optionnel): Nettoyage
+.\Cleanup-ObsoleteFiles.ps1
+```
+
+### 📚 Pour Plus d'Informations
+
+- Guide complet : [README.md](README.md)
+- Structure projet : [PROJET_STRUCTURE.md](PROJET_STRUCTURE.md)
+- Guide GUI : [GUI_README.md](GUI_README.md)
+- Base de données : [Apps/README.md](Apps/README.md)
+
+---
+
+## [2.1.3] - 2025-10-03
+
+### 🐛 Bug Fixes
+
+#### Installation Issues
+- **Fixed**: Battle.net installation - Added custom silent install arguments support (`--lang=frFR --installpath=...`)
+  - ✅ **VALIDATED**: Tested and confirmed 100% silent installation with Perplexity Pro verified switches
+- **Fixed**: WhatsApp Desktop - Corrected Winget ID to `9NKSQGP7F2NH` (Store ID)
+- **Fixed**: Proton Drive - Corrected Winget ID from `Proton.Drive` to `Proton.ProtonDrive`
+- **Fixed**: Proton Mail Bridge - Corrected Winget ID from `ProtonTechnologies.ProtonMailBridge` to `Proton.ProtonMailBridge`
+- **Fixed**: Proton Pass - Corrected Winget ID from `Proton.Pass` to `Proton.ProtonPass`
+- **Verified**: Google Drive for Desktop - Winget `Google.GoogleDrive` and Chocolatey `googledrive`
+- **Verified**: PDF-XChange Editor - Winget `TrackerSoftware.PDF-XChangeEditor` and Chocolatey `pdfxchangeeditor`
+
+#### System Configuration
+- **Fixed**: DNS configuration not parsing array types correctly
+  - Added support for `System.Collections.ArrayList`
+  - Added support for `System.Collections.Generic.List[object]`
+  - Added fallback enumeration for unknown array types
+  - Location: `Modules/SystemConfig.psm1` v2.0.4
+
+### ✨ Enhancements
+
+#### Installation Engine (v2.1.3)
+- **Added**: Custom install arguments support for DirectDownload method
+  - New parameter: `InstallArguments` in application JSON
+  - Example: Battle.net uses `--lang=frFR --installpath="C:\Program Files (x86)\Battle.net"`
+  - Location: `Modules/InstallationEngine.psm1`
+
+- **Enhanced**: Error logging with detailed failure tracking
+  - Tracks all attempted installation methods
+  - Provides specific failure reasons for each method
+  - Includes package IDs and names in verbose output
+  - Improved final error messages with full context
+
+#### Profile Updates
+- `Profiles/Gaming.json`
+  - Updated Battle.net with Store ID `XPDM5VSMTKQLBJ`
+  - Added `InstallArguments` field for silent installation
+  - Prioritizes DirectUrl over Store for better automation
+
+- `Profiles/Office.json`
+  - Updated WhatsApp Desktop with verified Store ID
+  - Added fallback to Store source
+
+- `Profiles/Personnel.json`
+  - All Proton applications IDs corrected
+  - Added notes for each verified ID
+
+### 🧪 Testing & Validation
+
+- **Added**: `Debug-FailedApps.ps1` - Automated ID validation script
+  - Tests Winget, Chocolatey, and Store IDs
+  - Color-coded output (Pass/Fail/Skip)
+  - Success rate calculation
+  - **Result**: 100% validation pass rate (10/10 tests passed)
+
+- **Added**: `DEBUG_REPORT.md` - Complete debugging documentation
+  - Issue analysis
+  - Corrections applied
+  - Validation results
+  - Testing recommendations
+
+### 📊 Performance Improvements
+
+**Expected Results** (compared to v2.1.2):
+- Installation success rate: ~83% → ~95%
+- Failed applications: 11 → 0-1 (excluding environment restrictions)
+- New successful installs: +6-7 applications
+
+### 📝 Files Modified
+
+**Profiles**:
+- `Profiles/Gaming.json` (Battle.net)
+- `Profiles/Office.json` (WhatsApp Desktop)
+- `Profiles/Personnel.json` (Proton apps + Google Drive)
+
+**Modules**:
+- `Modules/SystemConfig.psm1` v2.0.4 (DNS parsing)
+- `Modules/InstallationEngine.psm1` v2.1.3 (Error handling + custom arguments)
+
+**New Files**:
+- `Debug-FailedApps.ps1` (Validation script)
+- `DEBUG_REPORT.md` (Debug documentation)
+- `CHANGELOG.md` (This file)
+
+---
+
+## [2.1.2] - 2025-10-02
+
+### Fixed
+- Empty `Write-Log` calls causing errors
+- `InheritanceChain.Count` errors in profile loading
+- PowerToys multi-path detection
+- Quick Assist Store App detection
+
+### Added
+- Parallel installation support (up to 5 concurrent apps)
+- PowerShell 7 detection and upgrade prompt
+
+---
+
+## [2.1.1] - 2025-10-01
+
+### Fixed
+- DNS array handling in SystemConfig
+- Taskbar configuration error handling
+
+---
+
+## [2.1.0] - 2025-10-01
+
+### Added
+- Parallel installation mode with `-Parallel` parameter
+- `MaxParallelJobs` parameter (default: 5)
+- Installation mode logging (Sequential vs Parallel)
+
+### Enhanced
+- Installation Engine performance optimizations
+- Better progress tracking for parallel installations
+
+---
+
+## [2.0.2] - 2025-09-30
+
+### Fixed
+- Base profile application priorities
+- Detection methods for various applications
+
+---
+
+## [2.0.0] - 2025-09-30
+
+### Initial Release
+- Complete framework restructure
+- Modular architecture (Core + 5 modules)
+- Profile inheritance system (Base → Office → Gaming → Personnel)
+- Multi-source installation (Winget → Chocolatey → Store → DirectUrl)
+- Environment detection (Sandbox/VMware/Hyper-V/VirtualBox/Physical)
+- Comprehensive logging and reporting
+
+---
+
+**Legend**:
+- 🐛 Bug Fix
+- ✨ Enhancement
+- 🧪 Testing
+- 📊 Performance
+- 🔒 Security
+- 📝 Documentation

@@ -1,0 +1,68 @@
+{
+  "Name": "Base",
+  "Description": "Universal foundation profile with essential tools and professional diagnostic suite (v2.2 - Database Mode)",
+  "Version": "2.2.0",
+  "Inherits": [],
+  "Applications": [
+    "GoogleChrome",
+    "MozillaFirefox",
+    "BraveBrowser",
+    "VLC",
+    "MPCHC",
+    "FastStoneViewer",
+    "PaintNET",
+    "ShareX",
+    "7Zip",
+    "NotepadPlusPlus",
+    "PowerToys",
+    "Everything",
+    "WizTree",
+    "LockHunter",
+    "QuickAssist",
+    "WindowsSandbox",
+    "WindowsTerminal",
+    "WindowsTerminalPreview",
+    "HWiNFO64",
+    "CrystalDiskInfo",
+    "ProcessHacker",
+    "Autoruns",
+    "BlueScreenView",
+    "WindowsFirewallControl",
+    "KeePassXC",
+    "Malwarebytes",
+    "WiFiAnalyzer",
+    "AdvancedIPScanner",
+    "Recuva",
+    "WinAeroTweaker"
+  ],
+  "SystemConfig": {
+    "Explorer": {
+      "ShowHiddenFiles": true,
+      "ShowFileExtensions": true,
+      "NavigationPaneOptimized": true
+    },
+    "Taskbar": {
+      "DisableWidgets": true,
+      "StartAlignment": "left",
+      "SearchMode": "icon_only"
+    },
+    "Network": {
+      "DnsServers": [
+        "9.9.9.9",
+        "1.1.1.1"
+      ]
+    },
+    "Privacy": {
+      "DisableTelemetry": true,
+      "MinimalDataCollection": true
+    },
+    "Performance": {
+      "DisableVisualEffects": false,
+      "OptimizeServices": true
+    },
+    "Security": {
+      "WindowsDefender": true,
+      "Firewall": true
+    }
+  }
+}

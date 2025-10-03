@@ -1,0 +1,21 @@
+{
+  "Name": "Office",
+  "Description": "Professional productivity profile - Base + office and collaboration tools (v2.2 - Database Mode)",
+  "Version": "2.2.0",
+  "Inherits": ["Base"],
+  "Applications": [
+    "Office365",
+    "PDFXChangeEditor",
+    "SignalDesktop",
+    "WhatsAppDesktop",
+    "OBSStudio"
+  ],
+  "SystemConfig": {
+    "Network": {
+      "QoSOptimization": true
+    },
+    "Performance": {
+      "PowerPlan": "Balanced"
+    }
+  }
+}

@@ -1,0 +1,254 @@
+{
+    "_comment": "Win11Forge Profile Template v2.0",
+    "_description": "Copy this file to create custom profiles. Remove this comment section before use.",
+    "_instructions": [
+        "1. Copy this file to Profiles/YourProfileName.json",
+        "2. Modify Name, Description, Version",
+        "3. Set Inherits to base profile(s) if desired",
+        "4. Add your applications in the Applications array",
+        "5. Configure SystemConfig settings",
+        "6. Test with: Deploy-Win11Environment.ps1 -ProfileName 'YourProfileName' -TestMode"
+    ],
+    
+    "Name": "MyCustomProfile",
+    "Description": "Description of your custom profile",
+    "Version": "1.0.0",
+    
+    "Inherits": [
+        "Base"
+    ],
+    
+    "Applications": [
+        {
+            "_comment": "Application entry template",
+            "Name": "Application Name",
+            "Priority": 100,
+            "Required": false,
+            "Category": "Custom",
+            
+            "Sources": {
+                "Winget": "Publisher.AppName",
+                "Chocolatey": "appname",
+                "Store": "9NXXXXXXXXX",
+                "DirectUrl": "https://example.com/download/setup.exe"
+            },
+            
+            "Detection": {
+                "_options": "Registry | File | Command | WindowsFeature | WindowsCapability",
+                "Method": "Registry",
+                "Path": "HKLM:\\SOFTWARE\\AppName"
+            },
+            
+            "InstallMethod": null,
+            "_installMethodOptions": "null | WindowsFeature | WindowsCapability",
+            
+            "EnvironmentRestrictions": [],
+            "_environmentOptions": [
+                "WindowsSandbox",
+                "VMware",
+                "HyperV",
+                "VirtualBox"
+            ],
+            
+            "Notes": "Optional notes about this application"
+        },
+        
+        {
+            "_example": "Real-world example - Visual Studio Code",
+            "Name": "Visual Studio Code",
+            "Priority": 101,
+            "Required": true,
+            "Category": "Development",
+            
+            "Sources": {
+                "Winget": "Microsoft.VisualStudioCode",
+                "Chocolatey": "vscode",
+                "Store": null,
+                "DirectUrl": "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64"
+            },
+            
+            "Detection": {
+                "Method": "Command",
+                "Command": "code --version"
+            },
+            
+            "EnvironmentRestrictions": []
+        },
+        
+        {
+            "_example": "Windows Feature - Hyper-V",
+            "Name": "Hyper-V",
+            "Priority": 102,
+            "Required": false,
+            "Category": "Virtualization",
+            
+            "Sources": {
+                "Winget": null,
+                "Chocolatey": null,
+                "Store": null,
+                "DirectUrl": null
+            },
+            
+            "Detection": {
+                "Method": "WindowsFeature",
+                "Feature": "Microsoft-Hyper-V-All"
+            },
+            
+            "InstallMethod": "WindowsFeature",
+            
+            "EnvironmentRestrictions": [
+                "WindowsSandbox",
+                "VMware",
+                "HyperV",
+                "VirtualBox"
+            ]
+        },
+        
+        {
+            "_example": "Windows Capability - OpenSSH Client",
+            "Name": "OpenSSH Client",
+            "Priority": 103,
+            "Required": false,
+            "Category": "Networking",
+            
+            "Sources": {
+                "Winget": null,
+                "Chocolatey": null,
+                "Store": null,
+                "DirectUrl": null
+            },
+            
+            "Detection": {
+                "Method": "WindowsCapability",
+                "Capability": "OpenSSH.Client"
+            },
+            
+            "InstallMethod": "WindowsCapability",
+            
+            "EnvironmentRestrictions": []
+        },
+        
+        {
+            "_example": "Microsoft Store App - WhatsApp",
+            "Name": "WhatsApp Desktop",
+            "Priority": 104,
+            "Required": false,
+            "Category": "Communication",
+            
+            "Sources": {
+                "Winget": "9NKSQGP7F2NH",
+                "Chocolatey": null,
+                "Store": "9NKSQGP7F2NH",
+                "DirectUrl": null
+            },
+            
+            "Detection": {
+                "Method": "File",
+                "Path": "C:\\Program Files\\WindowsApps\\WhatsApp\\WhatsApp.exe"
+            },
+            
+            "EnvironmentRestrictions": []
+        }
+    ],
+    
+    "SystemConfig": {
+        "_comment": "All sections are optional",
+        
+        "Explorer": {
+            "ShowHiddenFiles": true,
+            "ShowFileExtensions": true,
+            "NavigationPaneOptimized": true,
+            "ShowFullPathInTitleBar": true,
+            "LaunchFolderWindowsInSeparateProcess": false,
+            "DeveloperMode": false
+        },
+        
+        "Taskbar": {
+            "DisableWidgets": true,
+            "StartAlignment": "left",
+            "_startAlignmentOptions": "left | center",
+            "SearchMode": "icon_only",
+            "_searchModeOptions": "hidden | icon_only | box",
+            "HideTaskView": false,
+            "HideChat": true
+        },
+        
+        "Network": {
+            "DnsServers": [
+                "9.9.9.9",
+                "1.1.1.1"
+            ],
+            "GamingOptimizations": false,
+            "QoSOptimization": false,
+            "DeveloperOptimizations": false
+        },
+        
+        "Privacy": {
+            "DisableTelemetry": true,
+            "MinimalDataCollection": true,
+            "DisableActivityHistory": true
+        },
+        
+        "Performance": {
+            "DisableVisualEffects": false,
+            "OptimizeServices": true,
+            "PowerPlan": "Balanced",
+            "_powerPlanOptions": "High Performance | Balanced | Power Saver",
+            "GameMode": false
+        },
+        
+        "Security": {
+            "WindowsDefender": true,
+            "Firewall": true,
+            "DeveloperMode": false
+        }
+    },
+    
+    "_sources_priority": [
+        "1. Winget (fastest, most reliable)",
+        "2. Chocolatey (fallback)",
+        "3. Microsoft Store (UWP apps)",
+        "4. DirectUrl (last resort)"
+    ],
+    
+    "_detection_methods": {
+        "Registry": "Check if registry key exists",
+        "File": "Check if file exists at path",
+        "Command": "Execute command and check exit code",
+        "WindowsFeature": "Check Windows Optional Feature state",
+        "WindowsCapability": "Check Windows Capability state"
+    },
+    
+    "_categories_suggestions": [
+        "Browser",
+        "Media",
+        "Utility",
+        "Support",
+        "Diagnostic",
+        "Security",
+        "Network",
+        "Recovery",
+        "Configuration",
+        "Gaming",
+        "Communication",
+        "Productivity",
+        "Development",
+        "Virtualization",
+        "CloudStorage",
+        "Compression",
+        "Multimedia",
+        "3DPrinting",
+        "Printing",
+        "Custom"
+    ],
+    
+    "_tips": [
+        "Use Priority to control installation order (lower = first)",
+        "Set Required=true for critical applications",
+        "Use EnvironmentRestrictions to skip apps in VMs/Sandbox",
+        "Test profiles with -TestMode before real deployment",
+        "Profiles can inherit from multiple parents",
+        "Child profiles override parent applications with same name",
+        "SystemConfig sections are merged from all inherited profiles"
+    ]
+}

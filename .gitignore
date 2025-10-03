@@ -1,0 +1,50 @@
+# Win11Forge - Git Ignore
+
+# Logs
+Logs/*.log
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+~$*
+
+# PowerShell temp files
+*.ps1~
+*.psm1~
+
+# Test output
+Test-*-Output.txt
+*-TestResults.xml
+
+# Archive (old versions)
+Archive/
+
+# User-specific profiles (keep templates)
+Profiles/Custom*.json
+Profiles/*-Backup*.json
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Downloaded installers (temp)
+*.exe
+*.msi
+!Deploy-Win11Forge.bat
+
+# Credentials (if any)
+*.credentials
+*.secrets
+*apikey*
