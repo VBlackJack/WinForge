@@ -35,24 +35,26 @@ echo  1. PowerShell (TrustedInstaller)
 echo  2. Command Prompt (TrustedInstaller)
 echo  3. Registry Editor (TrustedInstaller)
 echo  4. Task Manager (TrustedInstaller)
-echo  5. Windows Explorer (TrustedInstaller)
-echo  6. Custom executable path
-echo  7. Win11Forge GUI (TrustedInstaller)
+echo  5. Computer Management (TrustedInstaller)
+echo  6. Windows Explorer (TrustedInstaller)
+echo  7. Custom executable path
+echo  8. Win11Forge GUI (TrustedInstaller)
 echo.
 echo  0. Exit
 echo.
 echo ========================================================================
 echo.
 
-set /p choice="Enter your choice [0-7]: "
+set /p choice="Enter your choice [0-8]: "
 
 if "%choice%"=="1" goto POWERSHELL
 if "%choice%"=="2" goto CMD
 if "%choice%"=="3" goto REGEDIT
 if "%choice%"=="4" goto TASKMGR
-if "%choice%"=="5" goto EXPLORER
-if "%choice%"=="6" goto CUSTOM
-if "%choice%"=="7" goto WIN11FORGE
+if "%choice%"=="5" goto COMPMGMT
+if "%choice%"=="6" goto EXPLORER
+if "%choice%"=="7" goto CUSTOM
+if "%choice%"=="8" goto WIN11FORGE
 if "%choice%"=="0" goto EXIT
 
 echo Invalid choice. Please try again.
@@ -76,6 +78,11 @@ goto LAUNCH
 
 :TASKMGR
 set PROGRAM=taskmgr.exe
+set ARGS=
+goto LAUNCH
+
+:COMPMGMT
+set PROGRAM=compmgmt.msc
 set ARGS=
 goto LAUNCH
 

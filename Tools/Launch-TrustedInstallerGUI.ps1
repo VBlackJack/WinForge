@@ -47,6 +47,14 @@ function Invoke-TrustedInstallerProcess {
         Write-Host "Getting TrustedInstaller parent process..."
         $parent = Get-NtProcess -ServiceName TrustedInstaller -ErrorAction Stop
 
+        # Handle .msc files (need to be launched via mmc.exe)
+        if ($ExecutablePath -match '\.msc$') {
+            $mscFile = $ExecutablePath
+            $ExecutablePath = "mmc.exe"
+            $ExecutableArgs = "`"$mscFile`" $ExecutableArgs".Trim()
+            Write-Host "Detected .msc file, launching via mmc.exe" -ForegroundColor Yellow
+        }
+
         # Build command line
         $commandLine = if ($ExecutableArgs) {
             "$ExecutablePath $ExecutableArgs"
