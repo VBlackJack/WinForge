@@ -823,7 +823,11 @@ function Install-ApplicationsParallel {
                                     # Fallback: try by PackageName pattern (handles localized names)
                                     if (-not $installed -and $app.Detection.PackageName) {
                                         $wingetList = & winget list --accept-source-agreements 2>&1 | Out-String
-                                        $installed = $wingetList -match [regex]::Escape($app.Detection.PackageName)
+                                        # Extract unique vendor prefix (e.g., "MicrosoftCorporationII" from "MicrosoftCorporationII.QuickAssist")
+                                        if ($app.Detection.PackageName -match '^([^.]+)\.') {
+                                            $packagePrefix = $matches[1]
+                                            $installed = $wingetList -match [regex]::Escape($packagePrefix)
+                                        }
                                     }
 
                                     # Fallback: try by name (partial match with common suffixes removed)
