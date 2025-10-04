@@ -67,11 +67,13 @@ function Test-ApplicationInstalled {
         }
     }
 
-    # Special case: Quick Assist - Store App
+    # Special case: Quick Assist - Store App (use winget to avoid Appx module conflicts)
     if ($appName -eq 'Microsoft Quick Assist') {
-        $quickAssist = Get-AppxPackage -Name "MicrosoftCorporationII.QuickAssist" -ErrorAction SilentlyContinue
-        if ($quickAssist) {
-            return $true
+        if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
+            $wingetList = & winget list --accept-source-agreements 2>&1 | Out-String
+            if ($wingetList -match 'MicrosoftCorporationII') {
+                return $true
+            }
         }
     }
 
@@ -105,8 +107,39 @@ function Test-ApplicationInstalled {
             return $capability -and $capability.State -eq 'Installed'
         }
         'StoreApp' {
-            $package = Get-AppxPackage -Name "*$($Application.Detection.PackageName)*" -ErrorAction SilentlyContinue
-            return $null -ne $package
+            # Use winget list instead of Get-AppxPackage to avoid Appx module conflicts in PowerShell 7
+            if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
+                try {
+                    $wingetList = & winget list --accept-source-agreements 2>&1 | Out-String
+
+                    # Try 1: Match by PackageName vendor prefix
+                    if ($Application.Detection.PackageName -match '^([^.]+)\.') {
+                        $packagePrefix = $matches[1]
+                        if ($wingetList -match [regex]::Escape($packagePrefix)) {
+                            return $true
+                        }
+                    }
+
+                    # Try 2: Match by Store ID
+                    if ($Application.Sources.Store) {
+                        if ($wingetList -match [regex]::Escape($Application.Sources.Store) -and $wingetList -notmatch "No installed package") {
+                            return $true
+                        }
+                    }
+
+                    return $false
+                } catch {
+                    return $false
+                }
+            }
+
+            # Fallback to Get-AppxPackage if winget not available (PowerShell 5.1)
+            try {
+                $package = Get-AppxPackage -Name "*$($Application.Detection.PackageName)*" -ErrorAction SilentlyContinue
+                return $null -ne $package
+            } catch {
+                return $false
+            }
         }
         default {
             return (Test-ApplicationByName -Name $appName)
