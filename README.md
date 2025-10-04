@@ -14,7 +14,7 @@ Win11Forge est un framework PowerShell conçu pour automatiser entièrement le d
 ### ✨ Caractéristiques principales
 
 - ✅ **Interface GUI PowerShell** : Menu interactif complet pour navigation facile
-- ✅ **Base de données centralisée** : 67 applications avec sources multiples
+- ✅ **Base de données centralisée** : 66 applications avec sources multiples
 - ✅ **Détection d'environnement** : Sandbox Windows, VMware, Hyper-V, VirtualBox, PC physique
 - ✅ **Installation multi-sources** : Winget → Chocolatey → Microsoft Store → Téléchargement direct
 - ✅ **Installation parallèle** : Jusqu'à 5 applications simultanées (PowerShell 7+)
@@ -43,7 +43,7 @@ Win11Forge/
 │
 ├── Apps/
 │   └── Database/
-│       └── applications.json        # Base centralisée (67 apps)
+│       └── applications.json        # Base centralisée (66 apps)
 │
 ├── Core/
 │   └── Core.psm1                    # Fonctions communes
@@ -91,13 +91,12 @@ Start-Win11ForgeGUI-Admin.bat
 
 **Menu principal :**
 1. Deploy Profile - Déployer un profil
-2. Browse Applications Database - Parcourir les 67 apps
+2. Browse Applications Database - Parcourir les 66 apps
 3. Browse Profiles - Voir les profils disponibles
 4. Create Custom Profile - Créer un profil personnalisé
 5. Database Statistics - Statistiques de la base
 6. Validate Database - Valider la base de données
-7. Settings & Options - Configuration
-8. **Add New Application** - Ajouter une app (recherche auto)
+7. **Add New Application** - Ajouter une app (recherche auto)
 
 ### ⚡ **Méthode 2 : Déploiement Console Rapide**
 
@@ -135,7 +134,7 @@ Tools\ProfileCreator.html
 ```
 
 **Fonctionnalités :**
-- ✅ **67 applications** disponibles (base de données centralisée)
+- ✅ **66 applications** disponibles (base de données centralisée)
 - ✅ **Création de profils** en 6 étapes guidées
 - ✅ **Édition de profils** existants (charger JSON)
 - ✅ **Filtrage par catégorie** et tags
@@ -154,7 +153,7 @@ Menu principal → 4. Create Custom Profile
 ### **Via GUI (Recommandé)**
 
 ```
-Menu principal → 8. Add New Application
+Menu principal → 7. Add New Application
 ```
 
 1. Entrez le nom de l'application (ex: "Discord")
@@ -227,8 +226,8 @@ Environnement développeur avancé
 
 ```json
 {
-  "DatabaseVersion": "2.2.0",
-  "TotalApplications": 67,
+  "DatabaseVersion": "2.3.0",
+  "TotalApplications": 66,
   "Applications": {
     "GoogleChrome": {
       "Name": "Google Chrome",
@@ -427,7 +426,7 @@ Success Rate: 100%
 
 Pour ajouter une application :
 
-1. Via GUI : `Menu → 8. Add New Application`
+1. Via GUI : `Menu → 7. Add New Application`
 2. Via Script : `.\Tools\Search-ApplicationSources.ps1 -AppName "NomApp"`
 3. Testez dans Sandbox → VM → PC physique
 4. Validez : `.\Tools\Validate-AppDatabase.ps1`

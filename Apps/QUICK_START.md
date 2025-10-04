@@ -14,7 +14,7 @@ Get-DatabaseStatistics
 
 **Résultat** :
 ```
-DatabaseVersion    : 2.2.0
+DatabaseVersion    : 2.3.0
 TotalApplications  : 66
 TotalCategories    : 19
 VerifiedApps       : 65

@@ -164,7 +164,7 @@ AppIds: VSCode, Git, NodeJS, Python3, Docker
 {
   "Name": "MonProfilDev",
   "Description": "Profil pour développement web",
-  "Version": "2.2.0",
+  "Version": "2.3.0",
   "Inherits": ["Base"],
   "Applications": [
     "VSCode",
@@ -225,7 +225,7 @@ Lance le script de validation automatique :
 
 **a) View Framework Information**
 ```
-Win11Forge Version:      2.2.0
+Win11Forge Version:      2.3.0
 PowerShell Version:      7.4.0
 Repository Path:         C:\Users\...\Win11Forge
 Database Loaded:         True

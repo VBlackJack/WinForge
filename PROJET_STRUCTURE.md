@@ -46,7 +46,7 @@ Win11Forge/
 │
 ├── 📦 Apps/
 │   └── Database/
-│       └── applications.json          # Base de données centralisée (67 apps)
+│       └── applications.json          # Base de données centralisée (66 apps)
 │
 ├── 📋 Profiles/                       # Profils de déploiement v2.2.0
 │   ├── Base.json                      # 31 apps essentielles
@@ -64,7 +64,7 @@ Win11Forge/
 │   └── Win11ForgeGUI.psm1            # Interface graphique PowerShell
 │
 ├── 🛠️ Tools/                          # Outils utilitaires
-│   ├── ProfileCreator.html           # Créateur de profils web (67 apps, file://)
+│   ├── ProfileCreator.html           # Créateur de profils web (66 apps, file://)
 │   ├── applications-data.js          # Base de données pour ProfileCreator
 │   ├── Search-ApplicationSources.ps1 # Recherche app dans stores
 │   ├── Debug-FailedApps.ps1          # Debug des échecs d'installation
@@ -127,8 +127,8 @@ Start-Win11ForgeGUI-Admin.bat → Option 8
 
 **Location:** `Apps/Database/applications.json`
 
-**Format v2.2.0:**
-- **67 applications** référencées
+**Format v2.3.0:**
+- **66 applications** référencées
 - Sources multiples : Winget, Chocolatey, Microsoft Store, DirectUrl
 - Métadonnées complètes : détection, priorité, tags, vérification
 - Compatible avec ProfileCreator.html
@@ -174,11 +174,11 @@ Personnel (+ 26 apps = 66 total)
 .\Cleanup-Framework.ps1
 ```
 
-## 🆕 Nouveautés v2.2.0
+## 🆕 Nouveautés v2.3.0
 
-✅ Base de données centralisée (67 applications)
+✅ Base de données centralisée (66 applications)
 ✅ Interface GUI PowerShell interactive
-✅ ProfileCreator.html avec 67 apps dynamiques
+✅ ProfileCreator.html avec 66 apps dynamiques
 ✅ Recherche automatique dans stores (Search-ApplicationSources.ps1)
 ✅ Ajout d'applications via GUI
 ✅ Édition de profils via HTML
