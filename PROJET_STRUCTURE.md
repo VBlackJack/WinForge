@@ -66,10 +66,13 @@ Win11Forge/
 ├── 🛠️ Tools/                          # Outils utilitaires
 │   ├── ProfileCreator.html           # Créateur de profils web (66 apps, file://)
 │   ├── applications-data.js          # Base de données pour ProfileCreator
+│   ├── Launch-AsTrustedInstaller.bat # Lanceur TrustedInstaller (8 options)
+│   ├── Launch-TrustedInstallerGUI.ps1 # Script PowerShell pour TrustedInstaller
+│   ├── StartupManager.html           # Gestionnaire de démarrage automatique
+│   ├── Launch-StartupManager.ps1     # Lanceur StartupManager
 │   ├── Search-ApplicationSources.ps1 # Recherche app dans stores
-│   ├── Debug-FailedApps.ps1          # Debug des échecs d'installation
-│   ├── Test-BattleNet-Silent.ps1     # Test installation Battle.net
-│   └── Validate-AppDatabase.ps1      # Validation de la base de données
+│   ├── Validate-AppDatabase.ps1      # Validation de la base de données
+│   └── Validate-Framework.ps1        # Validation complète du framework
 │
 ├── 📚 Docs/                           # Documentation
 │   └── profile_template.json         # Template de profil v2.2.0

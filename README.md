@@ -69,12 +69,12 @@ Win11Forge/
 ├── Tools/
 │   ├── ProfileCreator.html          # ⭐ Créateur de profils web
 │   ├── StartupManager.html          # Interface gestion démarrage
-│   ├── Debug-FailedApps.ps1         # Debug apps échouées
+│   ├── Launch-AsTrustedInstaller.bat # ⭐ Lanceur TrustedInstaller
+│   ├── Launch-TrustedInstallerGUI.ps1 # Script PowerShell TrustedInstaller
 │   ├── Launch-StartupManager.ps1    # Lancer interface StartupManager
 │   ├── Search-ApplicationSources.ps1 # ⭐ Recherche dans stores
-│   ├── Test-BattleNet-Silent.ps1    # Test installation Battle.net
-│   ├── Validate-AppDatabase.ps1     # Validation base
-│   └── Validate-Framework.ps1       # Validation framework
+│   ├── Validate-AppDatabase.ps1     # Validation base de données
+│   └── Validate-Framework.ps1       # Validation framework complet
 │
 └── Logs/
     └── deployment_*.log             # Logs horodatés

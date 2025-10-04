@@ -115,24 +115,6 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 
 ---
 
-### Debug-FailedApps.ps1
-**Debug des échecs d'installation**
-
-```powershell
-.\Tools\Debug-FailedApps.ps1
-
-# Test complet avec verbosité
-.\Tools\Debug-FailedApps.ps1 -TestAll -Verbose
-```
-
-**Fonctionnalités** :
-- Teste les IDs Winget/Chocolatey/Store corrigés
-- Vérifie la disponibilité dans les dépôts
-- Affiche un rapport de validation coloré
-- Calcule le taux de succès
-
----
-
 ## 🔎 Recherche et Développement
 
 ### Search-ApplicationSources.ps1
@@ -153,24 +135,6 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 - URLs de téléchargement direct
 
 **Utilité** : Trouver les sources pour ajouter une nouvelle application à la base de données
-
----
-
-### Test-BattleNet-Silent.ps1
-**Test d'installation silencieuse de Battle.net**
-
-```powershell
-# Nécessite les droits administrateur
-.\Tools\Test-BattleNet-Silent.ps1
-```
-
-**Fonctionnalités** :
-- Télécharge l'installeur Battle.net
-- Teste 3 configurations de switches silencieux
-- Valide l'installation sans interaction utilisateur
-- Recommande les meilleurs paramètres
-
-**Résultat** : Installation 100% silencieuse confirmée
 
 ---
 
@@ -212,11 +176,6 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 - Recherche d'une nouvelle application à ajouter
 - Vérification de sources alternatives
 - Mise à jour des IDs d'applications
-
-**Debug-FailedApps.ps1** :
-- Debug après échec d'installation
-- Validation des corrections apportées
-- Test des IDs corrigés
 
 **Startup Manager** :
 - Optimisation du démarrage Windows
