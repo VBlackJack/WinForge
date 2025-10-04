@@ -104,6 +104,10 @@ function Test-ApplicationInstalled {
             $capability = Get-WindowsCapability -Online -Name "*$($Application.Detection.Capability)*" -ErrorAction SilentlyContinue
             return $capability -and $capability.State -eq 'Installed'
         }
+        'StoreApp' {
+            $package = Get-AppxPackage -Name "*$($Application.Detection.PackageName)*" -ErrorAction SilentlyContinue
+            return $null -ne $package
+        }
         default {
             return (Test-ApplicationByName -Name $appName)
         }
