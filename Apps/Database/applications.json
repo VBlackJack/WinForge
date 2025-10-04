@@ -1522,10 +1522,6 @@
         "Store": null,
         "DirectUrl": null
       },
-      "Detection": {
-        "Method": "File",
-        "Path": "C:\\Program Files\\Proton\\Drive\\Proton Drive.exe"
-      },
       "DefaultPriority": 60,
       "DefaultRequired": false,
       "EnvironmentRestrictions": [],
@@ -1551,10 +1547,6 @@
         "Store": null,
         "DirectUrl": null
       },
-      "Detection": {
-        "Method": "File",
-        "Path": "C:\\Program Files\\Proton\\Mail Bridge\\bridge.exe"
-      },
       "DefaultPriority": 61,
       "DefaultRequired": false,
       "EnvironmentRestrictions": [],
@@ -1578,10 +1570,6 @@
         "Chocolatey": null,
         "Store": null,
         "DirectUrl": null
-      },
-      "Detection": {
-        "Method": "File",
-        "Path": "C:\\Program Files\\Proton\\Pass\\Proton Pass.exe"
       },
       "DefaultPriority": 62,
       "DefaultRequired": false,
