@@ -628,9 +628,10 @@ function Install-Application {
 
         # Check if custom install arguments are provided
         $installParams = @{ Url = $sources.DirectUrl }
-        if ($Application.InstallArguments) {
-            $installParams['CustomArguments'] = $Application.InstallArguments
-            Write-Status -Message "Custom arguments detected: $($Application.InstallArguments)" -Level 'Verbose'
+        $installArgs = if ($Application.PSObject.Properties['InstallArguments']) { $Application.InstallArguments } else { $null }
+        if ($installArgs) {
+            $installParams['CustomArguments'] = $installArgs
+            Write-Status -Message "Custom arguments detected: $installArgs" -Level 'Verbose'
         }
 
         if (Install-ViaDirectDownload @installParams) {
