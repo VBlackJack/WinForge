@@ -34,6 +34,7 @@
     .\Cleanup-Framework.ps1 -Uninstall
 
 .NOTES
+    Author: Julien Bombled
     Version: 2.0.0
     Use with caution - some operations are irreversible
 #>

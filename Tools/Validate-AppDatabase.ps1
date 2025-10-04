@@ -3,6 +3,8 @@
     Validates the application database
 .DESCRIPTION
     Tests all application IDs in the centralized database and generates a validation report
+.NOTES
+    Author: Julien Bombled
 .PARAMETER ValidateWinget
     Validate Winget IDs (requires winget installed)
 .PARAMETER ValidateChocolatey

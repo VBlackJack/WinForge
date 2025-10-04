@@ -12,6 +12,7 @@
     .\Start-Win11ForgeGUI.ps1
 
 .NOTES
+    Author: Julien Bombled
     Version: 1.0.0
     Requires: Administrator privileges, PowerShell 5.1+, Win11Forge v2.2.0+
 #>

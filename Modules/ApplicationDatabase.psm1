@@ -1,5 +1,6 @@
 # ApplicationDatabase.psm1
 # Module for interacting with the centralized application database
+# Author: Julien Bombled
 # Version: 1.0.0
 # Last Updated: 2025-10-03
 

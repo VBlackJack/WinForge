@@ -13,6 +13,7 @@
     - Parallel installation (up to 5 apps simultaneously)
 
 .NOTES
+    Author: Julien Bombled
     Version: 2.1.1 FIXED
     Fixed: PowerToys multi-path detection
     Fixed: Quick Assist Store App detection

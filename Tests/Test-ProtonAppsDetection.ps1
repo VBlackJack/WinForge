@@ -1,4 +1,5 @@
 # Test Proton Apps Detection
+# Author: Julien Bombled
 Write-Host "=== Testing Proton Apps Detection ===" -ForegroundColor Cyan
 Write-Host ""
 

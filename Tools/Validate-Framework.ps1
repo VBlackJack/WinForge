@@ -17,6 +17,7 @@
     .\Validate-Framework.ps1 -Detailed
 
 .NOTES
+    Author: Julien Bombled
     Version: 2.0.2
     Run this after initial framework setup
 #>

@@ -6,6 +6,7 @@
     Tests the corrected Winget/Chocolatey/Store IDs for previously failed applications
 
 .NOTES
+    Author: Julien Bombled
     Version: 1.0.0
     Created for Win11Forge debugging
 #>

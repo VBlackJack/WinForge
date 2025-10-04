@@ -41,6 +41,7 @@
     .\Deploy-Win11Environment.ps1 -ProfileName "Base" -Parallel -MaxParallelJobs 3
 
 .NOTES
+    Author: Julien Bombled
     Version: 2.1.0 FIXED
     NEW: Parallel installation support for faster deployment
     FIXED: All bugs from deployment test (empty Write-Log, InheritanceChain.Count)

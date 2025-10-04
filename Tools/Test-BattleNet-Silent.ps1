@@ -4,6 +4,9 @@
 
 .DESCRIPTION
     Tests if Battle.net installs truly silently with the recommended switches
+
+.NOTES
+    Author: Julien Bombled
 #>
 
 #Requires -RunAsAdministrator

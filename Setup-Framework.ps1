@@ -28,6 +28,7 @@
     .\Setup-Framework.ps1 -SourcePath "E:\Downloads\Win11Forge"
 
 .NOTES
+    Author: Julien Bombled
     Version: 2.0.0
     Requires: Administrator privileges
 #>

@@ -13,6 +13,7 @@
     - Environment variable refresh
 
 .NOTES
+    Author: Julien Bombled
     Version: 2.1.2 (FIXED: Write-Status empty strings + Chocolatey args)
     All bugs from deployment test have been corrected
 #>

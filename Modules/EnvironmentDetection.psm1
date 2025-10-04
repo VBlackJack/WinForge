@@ -7,6 +7,7 @@
     and provides filtering capabilities for environment-specific installations.
 
 .NOTES
+    Author: Julien Bombled
     Version: 2.0.0
     Supports: Windows Sandbox, VMware, Hyper-V, Physical machines
 #>

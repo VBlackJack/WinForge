@@ -3,6 +3,8 @@
     Launch Startup Manager HTML Tool
 .DESCRIPTION
     Opens the Startup Manager HTML interface in default browser
+.NOTES
+    Author: Julien Bombled
 #>
 
 $htmlPath = Join-Path $PSScriptRoot "StartupManager.html"

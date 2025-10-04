@@ -3,6 +3,8 @@
     Disable unwanted startup applications
 .DESCRIPTION
     Disables Battle.net, Discord, and other specified applications from starting automatically
+.NOTES
+    Author: Julien Bombled
 #>
 
 # Import required modules

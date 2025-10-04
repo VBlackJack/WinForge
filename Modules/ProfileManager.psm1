@@ -11,6 +11,7 @@
     - Integration with centralized Application Database
 
 .NOTES
+    Author: Julien Bombled
     Version: 2.2.0
     Supports multi-level inheritance (e.g., Personnel → Gaming → Office → Base)
     NEW: Supports Application Database references (AppId strings or objects)

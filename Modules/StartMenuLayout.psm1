@@ -10,6 +10,7 @@
     - Uses official Microsoft method (LayoutModification.json)
 
 .NOTES
+    Author: Julien Bombled
     Version: 2.0.0
     Requires: PowerShell 5.1+, Windows 11, Administrator privileges
     Method: LayoutModification.json (official Microsoft method)

@@ -13,6 +13,7 @@
     .\Cleanup-ObsoleteFiles.ps1
 
 .NOTES
+    Author: Julien Bombled
     Version: 1.0.0
     Safe to run - creates Archive folder with timestamp
 #>

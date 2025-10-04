@@ -9,6 +9,7 @@
     - Works reliably on Windows 11 22H2+ (unlike deprecated LayoutModification.json)
 
 .NOTES
+    Author: Julien Bombled
     Version: 3.0.0
     Requires: PowerShell 5.1+, Windows 11, Administrator privileges
     Method: start2.bin binary file copy (most reliable method as of 2024-2025)

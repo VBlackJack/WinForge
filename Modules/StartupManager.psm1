@@ -9,6 +9,7 @@
     - Lists all startup applications
 
 .NOTES
+    Author: Julien Bombled
     Version: 1.0.0
     Requires: PowerShell 5.1+, Administrator privileges
 #>

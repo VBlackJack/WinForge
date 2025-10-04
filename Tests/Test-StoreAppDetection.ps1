@@ -1,4 +1,5 @@
 # Test Store App Detection Logic
+# Author: Julien Bombled
 $ErrorActionPreference = 'Continue'
 
 Write-Host "=== Testing Store App Detection Logic ===" -ForegroundColor Cyan

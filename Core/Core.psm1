@@ -10,6 +10,7 @@
     - Color-coded console output
 
 .NOTES
+    Author: Julien Bombled
     Version: 2.0.0
     This module must be loaded before any other framework modules
 #>

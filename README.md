@@ -33,8 +33,13 @@ Win11Forge est un framework PowerShell conçu pour automatiser entièrement le d
 ```
 Win11Forge/
 ├── Start-Win11ForgeGUI-Admin.bat    # ⭐ Lanceur GUI avec auto-élévation
+├── Start-Win11ForgeGUI.ps1          # Script GUI PowerShell
 ├── Deploy-Win11Forge.bat            # ⭐ Déploiement rapide avec auto-élévation
 ├── Deploy-Win11Environment.ps1      # Script principal de déploiement
+├── Cleanup-Framework.ps1            # Nettoyage et maintenance
+├── Cleanup-ObsoleteFiles.ps1        # Nettoyage fichiers obsolètes
+├── Disable-AutostartApps.ps1        # Désactiver apps au démarrage
+├── Setup-Framework.ps1              # Installation framework
 │
 ├── Apps/
 │   └── Database/
@@ -63,8 +68,11 @@ Win11Forge/
 │
 ├── Tools/
 │   ├── ProfileCreator.html          # ⭐ Créateur de profils web
-│   ├── applications-data.js         # Base de données pour HTML
+│   ├── StartupManager.html          # Interface gestion démarrage
+│   ├── Debug-FailedApps.ps1         # Debug apps échouées
+│   ├── Launch-StartupManager.ps1    # Lancer interface StartupManager
 │   ├── Search-ApplicationSources.ps1 # ⭐ Recherche dans stores
+│   ├── Test-BattleNet-Silent.ps1    # Test installation Battle.net
 │   ├── Validate-AppDatabase.ps1     # Validation base
 │   └── Validate-Framework.ps1       # Validation framework
 │

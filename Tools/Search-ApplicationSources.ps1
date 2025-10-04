@@ -18,6 +18,7 @@
     .\Search-ApplicationSources.ps1 -AppName "Discord" -Interactive
 
 .NOTES
+    Author: Julien Bombled
     Version: 1.0.0
     Requires: PowerShell 5.1+, Winget (optional), Chocolatey (optional)
 #>
