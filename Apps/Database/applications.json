@@ -1676,19 +1676,19 @@
       "Verified": true,
       "Homepage": "https://www.mp3tag.de/en/"
     },
-    "CUETools": {
-      "Name": "CUETools",
+    "CUESplitter": {
+      "Name": "CUE Splitter",
       "Category": "Multimedia",
-      "Description": "Tools for working with CUE sheets and audio files",
+      "Description": "Split audio files using CUE sheets",
       "Sources": {
-        "Winget": "CueTools.CUETools",
-        "Chocolatey": "cuetools",
-        "Store": null,
-        "DirectUrl": "https://cue.tools/wiki/CUETools_Download"
+        "Winget": "9NBLGGH43MH5",
+        "Chocolatey": null,
+        "Store": "9NBLGGH43MH5",
+        "DirectUrl": null
       },
       "Detection": {
-        "Method": "File",
-        "Path": "C:\\Program Files\\CUETools\\CUETools.exe"
+        "Method": "StoreApp",
+        "PackageName": "CUESplitter"
       },
       "DefaultPriority": 66,
       "DefaultRequired": false,
