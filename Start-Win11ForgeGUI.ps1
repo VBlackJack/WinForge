@@ -106,7 +106,7 @@ if (-not (Test-Path $script:GUIModule)) {
 # Load GUI module
 try {
     Import-Module $script:GUIModule -Force
-    Write-Host "  ✓ Win11ForgeGUI module loaded" -ForegroundColor Green
+    Write-Host "  [OK] Win11ForgeGUI module loaded" -ForegroundColor Green
 }
 catch {
     Write-Host ""
@@ -131,7 +131,7 @@ if (-not $initResult) {
     exit 1
 }
 
-Write-Host "  ✓ All modules initialized successfully" -ForegroundColor Green
+Write-Host "  [OK] All modules initialized successfully" -ForegroundColor Green
 
 # ============================================================================
 # VERIFICATION
@@ -156,17 +156,17 @@ if (-not $SkipModuleCheck) {
         }
     }
     else {
-        Write-Host "  ✓ Application database found (66 apps)" -ForegroundColor Green
+        Write-Host "  [OK] Application database found (66 apps)" -ForegroundColor Green
     }
 
     # Check profiles
     $profilesPath = Join-Path $script:ScriptRoot 'Profiles'
     if (Test-Path $profilesPath) {
         $profileCount = (Get-ChildItem -Path $profilesPath -Filter '*.json' | Where-Object { $_.Name -notlike '*legacy*' }).Count
-        Write-Host "  ✓ Profiles directory found ($profileCount profiles)" -ForegroundColor Green
+        Write-Host "  [OK] Profiles directory found ($profileCount profiles)" -ForegroundColor Green
     }
     else {
-        Write-Host "  ⚠ Profiles directory not found" -ForegroundColor Yellow
+        Write-Host "  [WARN] Profiles directory not found" -ForegroundColor Yellow
     }
 }
 
