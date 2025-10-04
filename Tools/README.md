@@ -1,57 +1,170 @@
-# Win11Forge - Outils de Validation
+# Win11Forge - Outils et Utilitaires
 
-Ce dossier contient les scripts utilitaires pour tester et valider le framework.
+Ce dossier contient les scripts utilitaires et outils pour configurer, valider et maintenir le framework Win11Forge.
 
-## Scripts Disponibles
+## 🚀 Outils Principaux
 
-### ProfileCreator.html ⭐ (NOUVEAU)
-**Usage** : Créateur de profils JSON personnalisés
+### 📋 ProfileCreator.html ⭐
+**Créateur de profils JSON personnalisés**
 
+```bash
+# Double-clic sur ProfileCreator.html
+# OU ouvrir dans le navigateur (file://)
 ```
-Double-clic sur ProfileCreator.html
-OU
-Ouvrir dans le navigateur (file://)
-```
 
-**Fonction** :
+**Fonctionnalités** :
 - Interface web standalone (aucun serveur requis)
 - Création guidée en 6 étapes
-- Héritage de profils existants
-- Sélection d'applications prédéfinies
-- **Ajout d'applications personnalisées avec sources** (Winget/Choco/Store/URL)
+- Héritage de profils existants (Base → Office → Gaming → Personnel)
+- Sélection parmi 66 applications prédéfinies
+- Ajout d'applications personnalisées avec sources (Winget/Choco/Store/URL)
 - Configuration système complète
 - Aperçu JSON et téléchargement
 
-**Nouveauté v2.1.3** : Support des applications personnalisées avec sources multiples !
+**Base de données** : `applications-data.js` (66 applications)
+
+---
+
+### 🔧 Launch-AsTrustedInstaller.bat ⭐
+**Lanceur d'outils système avec privilèges TrustedInstaller**
+
+```bash
+# Depuis le répertoire Tools :
+.\Launch-AsTrustedInstaller.bat
+```
+
+**Menu interactif avec 8 options** :
+1. PowerShell (TrustedInstaller)
+2. Command Prompt (TrustedInstaller)
+3. Registry Editor (TrustedInstaller)
+4. Task Manager (TrustedInstaller)
+5. Computer Management (TrustedInstaller)
+6. Windows Explorer (TrustedInstaller)
+7. Custom executable path
+8. Win11Forge GUI (TrustedInstaller)
+
+**Fonctionnalités** :
+- Exécution avec privilèges NT AUTHORITY\SYSTEM
+- GUI visible dans la session utilisateur (Session 1)
+- Support automatique des fichiers .msc (via mmc.exe)
+- Auto-installation du module NtObjectManager si nécessaire
+
+**Script PowerShell associé** : `Launch-TrustedInstallerGUI.ps1`
+
+---
+
+### 🔍 Startup Manager
+**Gestionnaire de démarrage automatique**
+
+```bash
+.\Launch-StartupManager.ps1
+```
+
+**Fonctionnalités** :
+- Interface HTML pour gérer les applications au démarrage
+- Sélection des apps à désactiver
+- Export de la configuration en JSON
+- À copier dans `Config/startup-blacklist.json`
+
+**Interface** : `StartupManager.html`
+
+---
+
+## 🛠️ Scripts de Validation
+
+### Validate-AppDatabase.ps1
+**Validation de la base de données d'applications**
+
+```powershell
+# Validation basique
+.\Tools\Validate-AppDatabase.ps1
+
+# Avec validation Winget et Chocolatey
+.\Tools\Validate-AppDatabase.ps1 -ValidateWinget -ValidateChocolatey
+
+# Génération de rapport HTML
+.\Tools\Validate-AppDatabase.ps1 -GenerateReport
+```
+
+**Fonctionnalités** :
+- Teste les 66 applications de la base de données
+- Vérifie les IDs Winget, Chocolatey, Store
+- Génère un rapport HTML de validation
+- Calcule le taux de succès
+
+**Rapport généré** : `Tools/ValidationReport.html`
+
+---
+
+### Validate-Framework.ps1
+**Validation complète du framework**
+
+```powershell
+.\Tools\Validate-Framework.ps1
+
+# Mode détaillé
+.\Tools\Validate-Framework.ps1 -Detailed
+```
+
+**Vérifications** :
+- Structure des répertoires
+- Présence des fichiers requis
+- Chargement des modules PowerShell
+- Validation des profils JSON
+- Tests de fonctionnalités de base
 
 ---
 
 ### Debug-FailedApps.ps1
-**Usage** : Validation des IDs d'applications
+**Debug des échecs d'installation**
 
 ```powershell
 .\Tools\Debug-FailedApps.ps1
+
+# Test complet avec verbosité
+.\Tools\Debug-FailedApps.ps1 -TestAll -Verbose
 ```
 
-**Fonction** :
-- Teste tous les IDs Winget/Chocolatey/Store des applications corrigées
+**Fonctionnalités** :
+- Teste les IDs Winget/Chocolatey/Store corrigés
 - Vérifie la disponibilité dans les dépôts
 - Affiche un rapport de validation coloré
 - Calcule le taux de succès
 
-**Résultat attendu** : 100% de validation
+---
+
+## 🔎 Recherche et Développement
+
+### Search-ApplicationSources.ps1
+**Recherche d'applications dans tous les gestionnaires de packages**
+
+```powershell
+# Recherche simple
+.\Tools\Search-ApplicationSources.ps1 -AppName "Discord"
+
+# Mode interactif avec détails
+.\Tools\Search-ApplicationSources.ps1 -AppName "Notepad++" -Interactive
+```
+
+**Sources recherchées** :
+- Winget (si installé)
+- Chocolatey (si installé)
+- Microsoft Store
+- URLs de téléchargement direct
+
+**Utilité** : Trouver les sources pour ajouter une nouvelle application à la base de données
 
 ---
 
 ### Test-BattleNet-Silent.ps1
-**Usage** : Test d'installation silencieuse de Battle.net
+**Test d'installation silencieuse de Battle.net**
 
 ```powershell
-# Requires Administrator
+# Nécessite les droits administrateur
 .\Tools\Test-BattleNet-Silent.ps1
 ```
 
-**Fonction** :
+**Fonctionnalités** :
 - Télécharge l'installeur Battle.net
 - Teste 3 configurations de switches silencieux
 - Valide l'installation sans interaction utilisateur
@@ -61,26 +174,66 @@ Ouvrir dans le navigateur (file://)
 
 ---
 
-## Quand Utiliser Ces Scripts ?
+## 📊 Fichiers de Support
+
+| Fichier | Description |
+|---------|-------------|
+| `applications-data.js` | Base de données JS pour ProfileCreator (66 apps) |
+| `ProfileCreator_Features.md` | Documentation des fonctionnalités du ProfileCreator |
+| `StartupManager.html` | Interface de gestion du démarrage automatique |
+| `Launch-TrustedInstallerGUI.ps1` | Script PowerShell pour TrustedInstaller launcher |
+
+---
+
+## 🎯 Quand Utiliser Ces Outils ?
+
+**ProfileCreator.html** :
+- Créer un profil de déploiement personnalisé
+- Ajouter des applications custom au framework
+- Modifier un profil existant
+
+**Launch-AsTrustedInstaller.bat** :
+- Maintenance système profonde
+- Modification de registres protégés
+- Accès à des fichiers système restreints
+- Debug avec privilèges maximaux
+
+**Validate-AppDatabase.ps1** :
+- Avant un déploiement complet
+- Après modification de la base de données
+- Vérification périodique de la disponibilité des packages
+
+**Validate-Framework.ps1** :
+- Après installation initiale du framework
+- Avant un déploiement important
+- Diagnostic de problèmes de structure
+
+**Search-ApplicationSources.ps1** :
+- Recherche d'une nouvelle application à ajouter
+- Vérification de sources alternatives
+- Mise à jour des IDs d'applications
 
 **Debug-FailedApps.ps1** :
-- Avant un déploiement complet
-- Après modification des profils JSON
-- Pour vérifier la disponibilité des packages
+- Debug après échec d'installation
+- Validation des corrections apportées
+- Test des IDs corrigés
 
-**Test-BattleNet-Silent.ps1** :
-- Pour valider Battle.net sur une nouvelle machine
-- Après mise à jour de Battle.net
-- Pour tester différents switchs d'installation
-
----
-
-## Résultats de Validation (v2.1.3)
-
-✅ **Debug-FailedApps.ps1** : 10/10 tests passés (100%)
-✅ **Test-BattleNet-Silent.ps1** : Installation silencieuse confirmée
+**Startup Manager** :
+- Optimisation du démarrage Windows
+- Désactivation d'applications au boot
+- Création de blacklist personnalisée
 
 ---
 
-**Version** : 2.1.3
-**Dernière validation** : 2025-10-03
+## ✅ Résultats de Validation (v2.3.0)
+
+- **66 applications** dans la base de données
+- **100% de taux de validation** sur les sources principales
+- **TrustedInstaller launcher** : Testé et fonctionnel
+- **ProfileCreator** : Support complet des 66 apps + custom
+
+---
+
+**Version** : 2.3.0
+**Dernière mise à jour** : 2025-10-04
+**Auteur** : Julien Bombled
