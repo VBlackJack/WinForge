@@ -902,8 +902,8 @@
         "DirectUrl": null
       },
       "Detection": {
-        "Method": "File",
-        "Path": "C:\\Program Files\\WindowsApps\\WhatsAppDesktop\\WhatsApp.exe"
+        "Method": "StoreApp",
+        "PackageName": "WhatsAppDesktop"
       },
       "DefaultPriority": 35,
       "DefaultRequired": false,
