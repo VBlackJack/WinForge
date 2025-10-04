@@ -810,6 +810,13 @@ function Install-ApplicationsParallel {
                             $capability = Get-WindowsCapability -Online | Where-Object { $_.Name -like "*$($app.Detection.Capability)*" } -ErrorAction SilentlyContinue
                             $installed = $capability -and $capability.State -eq 'Installed'
                         }
+                        'StoreApp' {
+                            $package = Get-AppxPackage -Name "*$($app.Detection.PackageName)*" -ErrorAction SilentlyContinue
+                            $installed = $null -ne $package
+                            if ($installed) {
+                                Write-ParallelLog "Detected Store app: $($package.Name) v$($package.Version)" 'Info'
+                            }
+                        }
                     }
                 }
                 
