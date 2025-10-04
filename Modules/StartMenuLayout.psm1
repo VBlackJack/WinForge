@@ -434,15 +434,24 @@ function Invoke-StartMenuOrganization {
 
     $shortcuts = Get-DesktopShortcuts
 
-    if ($shortcuts.Count -eq 0) {
+    # Handle $null, single object, or array
+    if (-not $shortcuts) {
         Write-Status -Message "No desktop shortcuts found" -Level 'Warning'
         return
     }
 
-    Write-Status -Message "Found $($shortcuts.Count) desktop shortcuts" -Level 'Info'
+    # Ensure it's an array
+    $shortcutArray = @($shortcuts)
+
+    if ($shortcutArray.Count -eq 0) {
+        Write-Status -Message "No desktop shortcuts found" -Level 'Warning'
+        return
+    }
+
+    Write-Status -Message "Found $($shortcutArray.Count) desktop shortcuts" -Level 'Info'
 
     $stats = @{
-        Total = $shortcuts.Count
+        Total = $shortcutArray.Count
         Copied = 0
         Skipped = 0
         Failed = 0
@@ -450,7 +459,7 @@ function Invoke-StartMenuOrganization {
 
     $categorizedShortcuts = @{}
 
-    foreach ($shortcut in $shortcuts) {
+    foreach ($shortcut in $shortcutArray) {
         $shortcutName = $shortcut.Name
 
         # Check exclusion patterns
