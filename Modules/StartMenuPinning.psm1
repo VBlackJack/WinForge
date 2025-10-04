@@ -385,14 +385,14 @@ function Invoke-StartMenuPinning {
     # Summary
     if ($deployed) {
         Write-Status -Message "=== Start Menu Pinning Summary ===" -Level 'Success'
-        Write-Status -Message "✓ Layout captured from current user" -Level 'Success'
-        Write-Status -Message "✓ Layout deployed to Default profile" -Level 'Success'
-        Write-Status -Message "" -Level 'Info'
+        Write-Status -Message "[OK] Layout captured from current user" -Level 'Success'
+        Write-Status -Message "[OK] Layout deployed to Default profile" -Level 'Success'
+        Write-Host ""
         Write-Status -Message "New user accounts will now inherit this Start Menu layout" -Level 'Info'
         Write-Status -Message "Existing users are not affected" -Level 'Info'
 
         if ($backupPath) {
-            Write-Status -Message "" -Level 'Info'
+            Write-Host ""
             Write-Status -Message "Backup saved at: $backupPath" -Level 'Info'
         }
 

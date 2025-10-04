@@ -61,7 +61,7 @@ Write-Host "Test 1: Detecting Start Menu binary type..." -ForegroundColor Yellow
 $binaryType = Get-StartMenuBinaryType
 
 if ($binaryType) {
-    Write-Host "✓ Detected: $binaryType" -ForegroundColor Green
+    Write-Host "[OK] Detected: $binaryType" -ForegroundColor Green
 
     $currentBinary = Get-CurrentUserStartMenuBinary
     if (Test-Path $currentBinary) {
@@ -70,7 +70,7 @@ if ($binaryType) {
         Write-Host "  Size: $size bytes" -ForegroundColor Gray
     }
 } else {
-    Write-Host "✗ No Start Menu binary found (start2.bin or start.bin)" -ForegroundColor Red
+    Write-Host "[FAIL] No Start Menu binary found (start2.bin or start.bin)" -ForegroundColor Red
     Write-Host "  This may indicate an incompatible Windows version" -ForegroundColor Yellow
 }
 
@@ -127,8 +127,8 @@ try {
         Write-Host ""
         Write-Host "=== Deployment Successful ===" -ForegroundColor Green
         Write-Host ""
-        Write-Host "✓ Start Menu layout captured and deployed" -ForegroundColor Green
-        Write-Host "✓ New users will inherit current pinned items" -ForegroundColor Green
+        Write-Host "[OK] Start Menu layout captured and deployed" -ForegroundColor Green
+        Write-Host "[OK] New users will inherit current pinned items" -ForegroundColor Green
         Write-Host ""
         Write-Host "To verify:" -ForegroundColor Cyan
         Write-Host "  1. Create a new local user account" -ForegroundColor Gray
