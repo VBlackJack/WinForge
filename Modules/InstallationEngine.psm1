@@ -811,10 +811,21 @@ function Install-ApplicationsParallel {
                             $installed = $capability -and $capability.State -eq 'Installed'
                         }
                         'StoreApp' {
-                            $package = Get-AppxPackage -Name "*$($app.Detection.PackageName)*" -ErrorAction SilentlyContinue
-                            $installed = $null -ne $package
-                            if ($installed) {
-                                Write-ParallelLog "Detected Store app: $($package.Name) v$($package.Version)" 'Info'
+                            # Use winget list for Store app detection (more reliable in parallel mode)
+                            if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
+                                try {
+                                    # Use --name instead of --id for Store apps
+                                    $wingetList = & winget list --name $app.Name --accept-source-agreements 2>&1 | Out-String
+                                    $installed = $wingetList -match [regex]::Escape($app.Name)
+                                    if ($installed) {
+                                        Write-ParallelLog "Detected Store app via winget: $($app.Name)" 'Info'
+                                    }
+                                } catch {
+                                    Write-ParallelLog "Could not check Store app with winget: $($_.Exception.Message)" 'Verbose'
+                                    $installed = $false
+                                }
+                            } else {
+                                $installed = $false
                             }
                         }
                     }
