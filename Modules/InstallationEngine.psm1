@@ -684,17 +684,39 @@ function Install-ApplicationsParallel {
     Write-Host "Skipped due to environment: $($skippedApps.Count)" -ForegroundColor Yellow
     Write-Host ""
     
+    # Create parallel logs directory
+    $parallelLogsDir = Join-Path $repoRoot 'Logs\Parallel'
+    if (-not (Test-Path $parallelLogsDir)) {
+        New-Item -Path $parallelLogsDir -ItemType Directory -Force | Out-Null
+    }
+    $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+
     $installResults = $appsToInstall | ForEach-Object -ThrottleLimit $MaxParallel -Parallel {
         $app = $_
         $force = $using:forceInstall
         $modRoot = $using:moduleRoot
         $repRoot = $using:repoRoot
-        
+        $parallelLogDir = $using:parallelLogsDir
+        $ts = $using:timestamp
+
+        # Create app-specific log file
+        $appLogFile = Join-Path $parallelLogDir "parallel_${ts}_$($app.Name -replace '[^\w\-]', '_').log"
+
+        # Helper function to log to file
+        function Write-ParallelLog {
+            param([string]$Message, [string]$Level = 'Info')
+            $logTimestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+            $logMessage = "[$logTimestamp] [$Level] $Message"
+            $logMessage | Out-File -FilePath $appLogFile -Append -Encoding UTF8
+        }
+
+        Write-ParallelLog "Starting installation of $($app.Name)" 'Info'
+
         $coreModulePath = Join-Path $repRoot 'Core\Core.psm1'
         if (Test-Path $coreModulePath) {
             Import-Module $coreModulePath -Force -WarningAction SilentlyContinue
         }
-        
+
         $result = @{
             ApplicationName = $app.Name
             Success = $false
@@ -795,34 +817,42 @@ function Install-ApplicationsParallel {
                 }
                 
                 if ($installed) {
+                    Write-ParallelLog "Already installed - skipping" 'Success'
                     $result.AlreadyInstalled = $true
                     $result.Success = $true
                     $result.Message = 'Already installed'
                     return $result
                 }
             }
-            
+
+            Write-ParallelLog "Not installed - proceeding with installation" 'Info'
+
             # === INSTALLATION ===
             $appInstallMethod = if ($app.PSObject.Properties['InstallMethod']) { $app.InstallMethod } else { $null }
             if ($appInstallMethod) {
+                Write-ParallelLog "Using custom install method: $appInstallMethod" 'Info'
                 switch ($appInstallMethod) {
                     'WindowsFeature' {
+                        Write-ParallelLog "Installing as Windows Feature: $($app.Detection.Feature)" 'Info'
                         $feature = Get-WindowsOptionalFeature -Online -FeatureName $app.Detection.Feature -ErrorAction Stop
                         if ($feature.State -ne 'Enabled') {
                             Enable-WindowsOptionalFeature -Online -FeatureName $app.Detection.Feature -NoRestart -ErrorAction Stop | Out-Null
                         }
+                        Write-ParallelLog "Windows Feature installed successfully" 'Success'
                         $result.Success = $true
                         $result.Method = 'WindowsFeature'
                         $result.Message = 'Installed via WindowsFeature'
                         return $result
                     }
                     'WindowsCapability' {
+                        Write-ParallelLog "Installing as Windows Capability: $($app.Detection.Capability)" 'Info'
                         $capabilities = Get-WindowsCapability -Online | Where-Object { $_.Name -like "*$($app.Detection.Capability)*" }
                         if ($capabilities) {
                             $capability = if ($capabilities -is [array]) { $capabilities[0] } else { $capabilities }
                             if ($capability.State -ne 'Installed') {
                                 Add-WindowsCapability -Online -Name $capability.Name -ErrorAction Stop | Out-Null
                             }
+                            Write-ParallelLog "Windows Capability installed successfully" 'Success'
                             $result.Success = $true
                             $result.Method = 'WindowsCapability'
                             $result.Message = 'Installed via WindowsCapability'
@@ -831,11 +861,12 @@ function Install-ApplicationsParallel {
                     }
                 }
             }
-            
+
             $sources = $app.Sources
-            
+
             # 1. Winget
             if ($sources.Winget -and (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)) {
+                Write-ParallelLog "Attempting installation via Winget: $($sources.Winget)" 'Info'
                 $arguments = @(
                     'install',
                     '--id', $sources.Winget,
@@ -843,38 +874,46 @@ function Install-ApplicationsParallel {
                     '--accept-source-agreements',
                     '--silent'
                 )
-                
+
                 $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -Wait -NoNewWindow -PassThru
-                
+
                 if ($process.ExitCode -eq 0) {
+                    Write-ParallelLog "Installed successfully via Winget" 'Success'
                     $result.Success = $true
                     $result.Method = 'Winget'
                     $result.Message = 'Installed via Winget'
                     return $result
+                } else {
+                    Write-ParallelLog "Winget installation failed (exit code: $($process.ExitCode))" 'Warning'
                 }
             }
-            
+
             # 2. Chocolatey
             if ($sources.Chocolatey -and (Get-Command -Name 'choco' -ErrorAction SilentlyContinue)) {
+                Write-ParallelLog "Attempting installation via Chocolatey: $($sources.Chocolatey)" 'Info'
                 $arguments = @(
                     'install', $sources.Chocolatey,
                     '-y',
                     '--no-progress',
                     '--ignore-checksums'
                 )
-                
+
                 $process = Start-Process -FilePath 'choco' -ArgumentList $arguments -Wait -NoNewWindow -PassThru
-                
+
                 if ($process.ExitCode -eq 0) {
+                    Write-ParallelLog "Installed successfully via Chocolatey" 'Success'
                     $result.Success = $true
                     $result.Method = 'Chocolatey'
                     $result.Message = 'Installed via Chocolatey'
                     return $result
+                } else {
+                    Write-ParallelLog "Chocolatey installation failed (exit code: $($process.ExitCode))" 'Warning'
                 }
             }
-            
+
             # 3. Microsoft Store
             if ($sources.Store -and (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)) {
+                Write-ParallelLog "Attempting installation via Microsoft Store: $($sources.Store)" 'Info'
                 $arguments = @(
                     'install',
                     '--id', $sources.Store,
@@ -883,23 +922,38 @@ function Install-ApplicationsParallel {
                     '--accept-source-agreements',
                     '--silent'
                 )
-                
+
                 $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -Wait -NoNewWindow -PassThru
-                
+
                 if ($process.ExitCode -eq 0) {
+                    Write-ParallelLog "Installed successfully via Microsoft Store" 'Success'
                     $result.Success = $true
                     $result.Method = 'Store'
                     $result.Message = 'Installed via Microsoft Store'
                     return $result
+                } else {
+                    Write-ParallelLog "Microsoft Store installation failed (exit code: $($process.ExitCode))" 'Warning'
                 }
             }
-            
+
+            Write-ParallelLog "All installation methods failed" 'Error'
             $result.Message = 'All installation methods failed'
-            
+
         } catch {
-            $result.Message = "Error: $($_.Exception.Message)"
+            $errorMsg = $_.Exception.Message
+            Write-ParallelLog "EXCEPTION: $errorMsg" 'Error'
+            Write-ParallelLog "Stack trace: $($_.ScriptStackTrace)" 'Error'
+            $result.Message = "Error: $errorMsg"
         }
-        
+
+        # Final result logging
+        if ($result.Success -or $result.AlreadyInstalled) {
+            $status = if ($result.AlreadyInstalled) { "Already Installed" } else { "Success" }
+            Write-ParallelLog "RESULT: $status - $($result.Message)" 'Success'
+        } else {
+            Write-ParallelLog "RESULT: Failed - $($result.Message)" 'Error'
+        }
+
         return $result
     }
     
@@ -912,6 +966,9 @@ function Install-ApplicationsParallel {
     Write-Host "=== Parallel Installation Summary ===" -ForegroundColor Green
     Write-Host "Total time: $($totalTime.ToString('mm\:ss'))" -ForegroundColor Cyan
     Write-Host "Applications processed: $($Applications.Count)" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "Detailed logs saved to: $parallelLogsDir" -ForegroundColor Yellow
+    Write-Host "Individual app logs: parallel_${timestamp}_<AppName>.log" -ForegroundColor Gray
     Write-Host ""
     
     Write-Host "Installation Results:" -ForegroundColor Cyan
