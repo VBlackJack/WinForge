@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Win11Forge GUI Module v1.0.0
 
@@ -300,7 +300,7 @@ function Show-Footer {
     )
 
     Write-Host ""
-    Write-Host ("─" * 70) -ForegroundColor DarkGray
+    Write-Host ("-" * 70) -ForegroundColor DarkGray
 }
 
 function Read-Choice {
@@ -1478,3 +1478,4 @@ Export-ModuleMember -Function @(
     'Show-Footer',
     'Read-Choice'
 )
+

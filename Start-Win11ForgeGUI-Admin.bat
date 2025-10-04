@@ -55,46 +55,28 @@ if %errorLevel% equ 0 (
     goto :POWERSHELL_READY
 )
 
-REM PowerShell 7 not found - offer installation or fallback
+REM PowerShell 7 not found - use PowerShell 5.1
 echo [WARNING] PowerShell 7+ not found
-echo [INFO] PowerShell 7 is recommended for optimal performance
+echo [INFO] Using PowerShell 5.1 (Sequential mode only)
 echo.
-echo Options:
-echo   1. Install PowerShell 7 now (Recommended)
-echo   2. Continue with PowerShell 5.1 (Limited features)
-echo   3. Exit
-echo.
-set /p "PS_CHOICE=Select option (1-3, default: 1): "
+set "PS_EXECUTABLE=PowerShell.exe"
+set "PS_VERSION=5.1"
+goto :POWERSHELL_READY
 
-if "%PS_CHOICE%"=="" set "PS_CHOICE=1"
-
-if "%PS_CHOICE%"=="3" (
-    echo [INFO] Exiting...
-    exit /b 0
-)
-
-if "%PS_CHOICE%"=="2" (
-    echo [WARNING] Continuing with PowerShell 5.1
-    echo [WARNING] Some features may not be available
-    set "PS_EXECUTABLE=PowerShell.exe"
-    set "PS_VERSION=5.1"
-    goto :POWERSHELL_READY
-)
-
-if "%PS_CHOICE%"=="1" (
-    echo [INFO] Installing PowerShell 7...
-    echo.
-
-    REM Try Winget first
-    echo [INFO] Attempting installation via Winget...
-    winget install --id Microsoft.PowerShell --silent --accept-package-agreements --accept-source-agreements >nul 2>&1
-    if %errorLevel% equ 0 (
-        echo [SUCCESS] PowerShell 7 installed via Winget
-        goto :REFRESH_ENV
-    )
-
-    REM Fallback to direct download
-    echo [WARNING] Winget installation failed, trying direct download...
+REM === LEGACY INSTALLATION CODE (DISABLED) ===
+REM PowerShell 7 installation can take several minutes
+REM Uncomment below to enable automatic installation
+REM
+REM     REM Try Winget first
+REM     echo [INFO] Attempting installation via Winget...
+REM     winget install --id Microsoft.PowerShell --silent --accept-package-agreements --accept-source-agreements
+REM     if %errorLevel% equ 0 (
+REM         echo [SUCCESS] PowerShell 7 installed via Winget
+REM         goto :REFRESH_ENV
+REM     )
+REM
+REM     REM Fallback to direct download
+REM     echo [WARNING] Winget installation failed, trying direct download...
     set "PS7_URL=https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/PowerShell-7.4.6-win-x64.msi"
     set "PS7_INSTALLER=%TEMP%\PowerShell-7.4.6-win-x64.msi"
 
@@ -146,7 +128,6 @@ if "%PS_CHOICE%"=="1" (
         set "PS_EXECUTABLE=PowerShell.exe"
         set "PS_VERSION=5.1"
     )
-)
 
 :POWERSHELL_READY
 echo [INFO] Using: %PS_EXECUTABLE% (version %PS_VERSION%)
