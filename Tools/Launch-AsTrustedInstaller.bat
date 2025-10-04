@@ -93,7 +93,7 @@ goto LAUNCH
 
 :WIN11FORGE
 set PROGRAM=powershell.exe
-set ARGS=-NoProfile -ExecutionPolicy Bypass -File "%~dp0Start-Win11ForgeGUI.ps1"
+set ARGS=-NoProfile -ExecutionPolicy Bypass -File "%~dp0..\Start-Win11ForgeGUI.ps1"
 goto LAUNCH
 
 :CUSTOM
@@ -127,7 +127,7 @@ if %errorlevel% neq 0 (
 )
 
 :: Use dedicated PowerShell script
-set "PS_SCRIPT=%~dp0Tools\Launch-TrustedInstallerGUI.ps1"
+set "PS_SCRIPT=%~dp0Launch-TrustedInstallerGUI.ps1"
 
 if not exist "%PS_SCRIPT%" (
     echo [ERROR] PowerShell script not found: %PS_SCRIPT%
