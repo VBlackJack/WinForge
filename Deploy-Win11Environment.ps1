@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Main Deployment Script v2.1 (FIXED - Parallel Support)
+    Win11Forge - Main Deployment Script v2.3.0
 
 .DESCRIPTION
     Orchestrates complete Windows 11 environment deployment with:
@@ -42,9 +42,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.1.0 FIXED
-    NEW: Parallel installation support for faster deployment
-    FIXED: All bugs from deployment test (empty Write-Log, InheritanceChain.Count)
+    Version: 2.3.0
     Requires: Administrator privileges, PowerShell 5.1+
 #>
 

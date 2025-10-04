@@ -9,7 +9,7 @@
 .NOTES
     Author: Julien Bombled
     Version: 1.0.0
-    Requires: PowerShell 5.1+, Win11Forge v2.2.0+
+    Requires: PowerShell 5.1+, Win11Forge v2.3.0+
 #>
 
 Set-StrictMode -Version Latest
@@ -280,7 +280,7 @@ function Show-Header {
         Display GUI header
     #>
     param(
-        [string]$Title = "Win11Forge v2.2.0"
+        [string]$Title = "Win11Forge v2.3.0"
     )
 
     Clear-Host
@@ -376,7 +376,7 @@ function Show-MainMenu {
     #>
 
     while ($true) {
-        Show-Header -Title "Win11Forge v2.2.0 - Main Menu"
+        Show-Header -Title "Win11Forge v2.3.0 - Main Menu"
 
         Write-Host "  1. Deploy Profile" -ForegroundColor White
         Write-Host "  2. Browse Applications Database ($($script:AppDatabase.Count) apps)" -ForegroundColor White
@@ -384,13 +384,12 @@ function Show-MainMenu {
         Write-Host "  4. Create Custom Profile" -ForegroundColor White
         Write-Host "  5. Database Statistics" -ForegroundColor White
         Write-Host "  6. Validate Database" -ForegroundColor White
-        Write-Host "  7. Settings & Options" -ForegroundColor White
-        Write-Host "  8. Add New Application" -ForegroundColor Cyan
+        Write-Host "  7. Add New Application" -ForegroundColor Cyan
         Write-Host "  0. Exit" -ForegroundColor White
 
         Show-Footer
 
-        $choice = Read-Choice -Prompt "Select option [0-8]" -ValidChoices @('0','1','2','3','4','5','6','7','8')
+        $choice = Read-Choice -Prompt "Select option [0-7]" -ValidChoices @('0','1','2','3','4','5','6','7')
 
         switch ($choice) {
             '1' { Show-DeployProfileMenu }
@@ -399,8 +398,7 @@ function Show-MainMenu {
             '4' { Show-ProfileCreator }
             '5' { Show-DatabaseStatistics }
             '6' { Start-DatabaseValidation }
-            '7' { Show-SettingsMenu }
-            '8' { Show-AddApplicationMenu }
+            '7' { Show-AddApplicationMenu }
             '0' {
                 Write-Host "`nGoodbye!" -ForegroundColor Green
                 return
@@ -951,7 +949,7 @@ function Show-ProfileCreator {
     $newProfile = [PSCustomObject]@{
         Name = $profileName
         Description = $profileDesc
-        Version = "2.2.0"
+        Version = "2.3.0"
         Inherits = $inherits
         Applications = $selectedApps
         SystemConfig = @{
@@ -1246,7 +1244,7 @@ function Show-LogsDirectory {
 function Check-Updates {
     Show-Header -Title "Check for Updates"
 
-    Write-Host "Current Version: 2.2.0" -ForegroundColor Yellow
+    Write-Host "Current Version: 2.3.0" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "No update mechanism configured (requires Git repository)." -ForegroundColor Gray
 
@@ -1257,7 +1255,7 @@ function Check-Updates {
 function Show-About {
     Show-Header -Title "About Win11Forge"
 
-    Write-Host "Win11Forge v2.2.0" -ForegroundColor Cyan
+    Write-Host "Win11Forge v2.3.0" -ForegroundColor Cyan
     Write-Host "Windows 11 Deployment Framework with Centralized Database" -ForegroundColor White
     Write-Host ""
     Write-Host "Features:" -ForegroundColor Yellow
