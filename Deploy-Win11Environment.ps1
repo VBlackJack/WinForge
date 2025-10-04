@@ -505,10 +505,12 @@ if (-not $TestMode) {
             Write-Log -Message "Capturing current Start Menu pinned items..." -Level 'Info'
             # Uses start2.bin/start.bin binary file method (works on Windows 11 22H2+)
             # This is the most reliable method as LayoutModification.json is deprecated
-            $pinningResult = Invoke-StartMenuPinning -BackupName "Deployment_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+            # ApplyToCurrentUser: Also applies the layout to the deployment user account
+            $pinningResult = Invoke-StartMenuPinning -BackupName "Deployment_$(Get-Date -Format 'yyyyMMdd_HHmmss')" -ApplyToCurrentUser
 
             if ($pinningResult) {
                 Write-Log -Message "Start Menu pinning deployed to Default profile" -Level 'Success'
+                Write-Log -Message "Layout also applied to current user account" -Level 'Success'
                 Write-Log -Message "New user accounts will inherit current pinned items" -Level 'Info'
             } else {
                 Write-Log -Message "Start Menu pinning deployment failed or was skipped" -Level 'Warning'

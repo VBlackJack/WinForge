@@ -333,14 +333,19 @@ function Get-BackedUpLayouts {
     1. Captures current user's Start Menu layout
     2. Backs it up
     3. Deploys to Default profile for new users
+    4. Optionally applies to current user
 .PARAMETER BackupName
     Optional name for the backup
 .PARAMETER SkipBackup
     Skip backup step and deploy directly
+.PARAMETER ApplyToCurrentUser
+    Also apply the layout to the current user (requires restart of Start Menu)
 .EXAMPLE
     Invoke-StartMenuPinning
 .EXAMPLE
     Invoke-StartMenuPinning -BackupName "GamingProfile"
+.EXAMPLE
+    Invoke-StartMenuPinning -ApplyToCurrentUser
 #>
 function Invoke-StartMenuPinning {
     [CmdletBinding()]
@@ -349,7 +354,10 @@ function Invoke-StartMenuPinning {
         [string]$BackupName,
 
         [Parameter()]
-        [switch]$SkipBackup
+        [switch]$SkipBackup,
+
+        [Parameter()]
+        [switch]$ApplyToCurrentUser
     )
 
     Write-Status -Message "=== Start Menu Pinning (start2.bin method) ===" -Level 'Info'
@@ -382,14 +390,59 @@ function Invoke-StartMenuPinning {
 
     Write-Host ""
 
+    # Step 3: Apply to current user (optional)
+    if ($ApplyToCurrentUser -and $deployed) {
+        Write-Status -Message "Step 3: Applying layout to current user..." -Level 'Info'
+
+        $sourcePath = if ($backupPath) { $backupPath } else { Get-DefaultProfileStartMenuBinary }
+        $targetPath = Get-CurrentUserStartMenuBinary
+
+        try {
+            # Backup current user's layout first
+            $currentBackup = Join-Path $script:BackupDirectory "CurrentUser_BeforeApply_$(Get-Date -Format 'yyyyMMdd_HHmmss').bin"
+            if (Test-Path $targetPath) {
+                Copy-Item -Path $targetPath -Destination $currentBackup -Force -ErrorAction Stop
+                Write-Status -Message "Current layout backed up to: $currentBackup" -Level 'Info'
+            }
+
+            # Apply new layout
+            Copy-Item -Path $sourcePath -Destination $targetPath -Force -ErrorAction Stop
+            Write-Status -Message "Layout applied to current user" -Level 'Success'
+
+            # Restart Start Menu
+            Write-Status -Message "Restarting Start Menu..." -Level 'Info'
+            try {
+                Stop-Process -Name StartMenuExperienceHost -Force -ErrorAction SilentlyContinue
+                Start-Sleep -Milliseconds 500
+                Write-Status -Message "Start Menu restarted - please check your pinned items" -Level 'Success'
+            }
+            catch {
+                Write-Status -Message "Could not restart Start Menu automatically - please log off and log back in" -Level 'Warning'
+            }
+        }
+        catch {
+            Write-Status -Message "ERROR: Failed to apply layout to current user: $($_.Exception.Message)" -Level 'Error'
+        }
+
+        Write-Host ""
+    }
+
     # Summary
     if ($deployed) {
         Write-Status -Message "=== Start Menu Pinning Summary ===" -Level 'Success'
         Write-Status -Message "[OK] Layout captured from current user" -Level 'Success'
         Write-Status -Message "[OK] Layout deployed to Default profile" -Level 'Success'
+
+        if ($ApplyToCurrentUser) {
+            Write-Status -Message "[OK] Layout applied to current user" -Level 'Success'
+        }
+
         Write-Host ""
         Write-Status -Message "New user accounts will now inherit this Start Menu layout" -Level 'Info'
-        Write-Status -Message "Existing users are not affected" -Level 'Info'
+
+        if (-not $ApplyToCurrentUser) {
+            Write-Status -Message "Current user layout unchanged (use -ApplyToCurrentUser to apply)" -Level 'Info'
+        }
 
         if ($backupPath) {
             Write-Host ""
