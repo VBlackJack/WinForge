@@ -1,8 +1,8 @@
-# Win11Forge Framework v2.2.0
+# Win11Forge Framework v2.3.0
 
 **Framework modulaire d'automatisation du déploiement post-installation Windows 11 24H2**
 
-[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.3.0-blue.svg)](CHANGELOG.md)
 [![PowerShell](https://img.shields.io/badge/PowerShell-7.5+-blue.svg)](https://github.com/PowerShell/PowerShell)
 [![Windows](https://img.shields.io/badge/Windows-11%2024H2-0078D4.svg)](https://www.microsoft.com/windows)
 [![Status](https://img.shields.io/badge/status-Production%20Ready-success.svg)](CHANGELOG.md)
@@ -18,7 +18,10 @@ Win11Forge est un framework PowerShell conçu pour automatiser entièrement le d
 - ✅ **Détection d'environnement** : Sandbox Windows, VMware, Hyper-V, VirtualBox, PC physique
 - ✅ **Installation multi-sources** : Winget → Chocolatey → Microsoft Store → Téléchargement direct
 - ✅ **Installation parallèle** : Jusqu'à 5 applications simultanées (PowerShell 7+)
+- ✅ **Détection StoreApp améliorée** : Support complet Microsoft Store avec détection multilingue
 - ✅ **Profils hiérarchiques** : Base → Office → Gaming → Personnel (héritage automatique)
+- ✅ **Start Menu Pinning** : Épinglage fiable via start2.bin (Windows 11 22H2+)
+- ✅ **Logs parallèles** : Logs individuels par application en mode parallèle
 - ✅ **ProfileCreator HTML** : Créez et éditez des profils via interface web (file://)
 - ✅ **Ajout d'applications** : Recherche automatique dans tous les stores
 - ✅ **Prérequis automatiques** : PowerShell 7, .NET, VC++ Redistributables, Java
@@ -45,8 +48,11 @@ Win11Forge/
 │   ├── Prerequisites.psm1           # Prérequis système
 │   ├── EnvironmentDetection.psm1    # Détection environnement
 │   ├── ProfileManager.psm1          # Gestion profils + héritage
-│   ├── InstallationEngine.psm1      # Moteur d'installation
+│   ├── InstallationEngine.psm1      # Moteur d'installation (StoreApp support)
 │   ├── SystemConfig.psm1            # Configuration système
+│   ├── StartMenuLayout.psm1         # Organisation Start Menu par catégorie
+│   ├── StartMenuPinning.psm1        # Épinglage Start Menu (start2.bin)
+│   ├── StartupManager.psm1          # Gestion applications au démarrage
 │   └── Win11ForgeGUI.psm1           # Interface graphique PowerShell
 │
 ├── Profiles/
@@ -361,37 +367,38 @@ Success Rate: 100%
 .\Tools\Validate-AppDatabase.ps1
 ```
 
-## 🆕 Nouveautés v2.2.0
+## 🆕 Nouveautés v2.3.0
 
-✨ **Interface GUI PowerShell**
-- Menu interactif complet
-- Navigation intuitive
-- Ajout d'applications intégré
+✨ **Détection Store Apps Améliorée**
+- Support complet méthode `StoreApp` avec PackageName
+- Détection multilingue (Quick Assist FR/EN, etc.)
+- Compatible PowerShell 7 mode parallèle et séquentiel
+- Évite les conflits module Appx via winget list
 
-✨ **Base de Données Centralisée**
-- 67 applications référencées
-- Sources multiples (Winget, Choco, Store, Direct)
-- Métadonnées complètes (tags, vérification, homepage)
+✨ **Logs Parallèles Individuels**
+- Logs séparés par application en mode parallèle (`Logs/Parallel/`)
+- Tracking temps réel de chaque installation
+- Stack traces détaillées avec numéros de ligne
+- Facilite le debugging des crashs et erreurs
 
-✨ **ProfileCreator.html**
-- Interface web pour créer/éditer des profils
-- 67 applications dynamiques
-- Compatible file:// (pas de serveur requis)
-- Édition de profils existants
+✨ **Start Menu Pinning (start2.bin)**
+- Méthode fiable pour Windows 11 22H2+
+- Épinglage items au Start Menu
+- Support Default profile + utilisateur courant
+- Remplace LayoutModification.json (déprécié)
 
-✨ **Search-ApplicationSources.ps1**
-- Recherche automatique dans tous les stores
-- Génère un template JSON prêt à l'emploi
-- Détection des URLs de téléchargement direct
+✨ **Corrections Majeures**
+- WhatsApp Desktop: Détection StoreApp avec fallback nom de base
+- Quick Assist: Détection par préfixe PackageName vendor
+- Epic Games Launcher: Chemin File corrigé (Win32 vs Win64)
+- Proton Apps: Détection par nom winget (chemins incorrects supprimés)
+- CUE Splitter: Corrigé de CUETools vers app Store correcte
+- InstallArguments: Accès sécurisé PSObject.Properties (StrictMode)
 
-✨ **Auto-Élévation Admin**
-- Tous les lanceurs s'auto-élèvent
-- Plus besoin de clic-droit "Exécuter en tant qu'admin"
-
-✨ **Format de Profils Optimisé**
-- AppIds au lieu d'objets complets
-- Profils ultra-compacts
-- Héritage amélioré
+✨ **Stabilité PowerShell 7**
+- Résolution conflits assembly Appx en mode séquentiel
+- Détection StoreApp via winget au lieu de Get-AppxPackage
+- Support complet PS7 parallèle sans crashes
 
 ## 📖 Documentation
 
@@ -431,11 +438,12 @@ Win11Forge Framework - Outil de productivité personnel
 
 ## 📊 Statut du Projet
 
-**Version** : 2.2.0 ✅
-**Dernière mise à jour** : 2025-10-03
-**Compatibilité** : Windows 11 24H2
+**Version** : 2.3.0 ✅
+**Dernière mise à jour** : 2025-10-04
+**Compatibilité** : Windows 11 24H2 (22H2+)
 **Statut** : Production Ready
 **Applications** : 67 dans la base de données
 **Profils** : 4 (Base, Office, Gaming, Personnel)
+**PowerShell** : 5.1+ (7.5+ recommandé pour mode parallèle)
 
 📖 **[CHANGELOG complet](CHANGELOG.md)** | 📁 **[Structure du projet](PROJET_STRUCTURE.md)** | 🎮 **[Guide GUI](GUI_README.md)**

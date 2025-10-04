@@ -1,5 +1,254 @@
 # Win11Forge Framework - Changelog
 
+## [2.3.0] - 2025-10-04
+
+### 🎉 Stability & Detection Improvements Release
+
+Cette version corrige des problèmes majeurs de détection d'applications Store, améliore la stabilité PowerShell 7, et introduit le logging parallèle avec l'épinglage Start Menu fiable.
+
+### ✨ Nouvelles Fonctionnalités
+
+#### Start Menu Pinning (start2.bin)
+- **Ajouté**: `Modules/StartMenuPinning.psm1`
+  - Méthode fiable pour Windows 11 22H2+
+  - Épinglage d'items au Start Menu via start2.bin
+  - Support Default profile + utilisateur courant
+  - Remplace LayoutModification.json (déprécié)
+  - Intégration avec StartMenuLayout.psm1
+
+#### Start Menu Layout Organisation
+- **Ajouté**: `Modules/StartMenuLayout.psm1`
+  - Organisation automatique par catégorie
+  - Création de dossiers dans le Start Menu
+  - Mapping applications → catégories
+  - Compatible avec StartMenuPinning
+
+#### Startup Manager
+- **Ajouté**: `Modules/StartupManager.psm1`
+  - Gestion applications au démarrage
+  - Activation/désactivation au démarrage
+  - Compatible mode parallèle et séquentiel
+
+#### Logs Parallèles Individuels
+- **Ajouté**: Logs séparés par application en mode parallèle
+  - Nouveau dossier `Logs/Parallel/`
+  - Logs individuels par application (ex: `Logs/Parallel/GoogleChrome_20251004_203045.log`)
+  - Tracking temps réel de chaque installation
+  - Stack traces détaillées avec numéros de ligne
+  - Facilite le debugging des crashs et erreurs
+  - Chaque runspace écrit dans son propre fichier
+
+### 🔧 Corrections Majeures
+
+#### Détection Store Apps Améliorée
+- **Corrigé**: `Modules/InstallationEngine.psm1` - Support complet méthode `StoreApp`
+  - **PackageName Detection**: Support complet pour applications Store
+  - **Détection multilingue**: Quick Assist FR/EN, autres apps localisées
+  - **Vendor Prefix Extraction**: Regex `^([^.]+)\.` pour extraire préfixe du PackageName
+  - **Fallback nom de base**: Si PackageName complet non trouvé, essaie nom de base
+  - **Méthode winget list**: Évite conflits module Appx en PowerShell 7
+  - **Compatible PS7 parallèle**: Fonctionne en mode parallèle et séquentiel
+
+#### WhatsApp Desktop
+- **Corrigé**: `Apps/Database/applications.json`
+  - Méthode: `StoreApp` avec `PackageName: "5319275A.WhatsAppDesktop_cv1g1gvanyjgm"`
+  - Détection par nom de base (nom complet tronqué par winget)
+  - Fallback intelligent vers nom sans suffixe
+  - Sources: Store prioritaire, sinon Winget/Chocolatey
+
+#### Quick Assist
+- **Corrigé**: `Apps/Database/applications.json`
+  - Méthode: `StoreApp` avec `PackageName: "MicrosoftCorporationII.QuickAssist_8wekyb3d8bbwe"`
+  - Détection par préfixe vendor (`MicrosoftCorporationII.QuickAssist`)
+  - Support multilingue (FR: Assistance Rapide, EN: Quick Assist)
+  - Résolution regex avancée pour noms tronqués
+
+#### Epic Games Launcher
+- **Corrigé**: `Apps/Database/applications.json`
+  - Chemin File corrigé: `C:\Program Files (x86)\Epic Games\Launcher\Portal\Binaries\Win32\EpicGamesLauncher.exe`
+  - Ancien chemin incorrect: `.../Win64/...` (n'existe pas)
+  - Validation: Chemin vérifié sur installation réelle
+
+#### Proton Apps (Drive, Mail Bridge, Pass)
+- **Corrigé**: `Apps/Database/applications.json`
+  - **Detection supprimée** pour les 3 apps Proton
+  - Utilisation fallback `Test-ApplicationByName` via winget list
+  - Chemins File incorrects supprimés (n'existaient pas)
+  - Détection fiable par nom winget:
+    - `Proton.ProtonDrive`
+    - `Proton.ProtonMailBridge`
+    - `Proton.ProtonPass`
+
+#### CUE Splitter
+- **Corrigé**: `Apps/Database/applications.json`
+  - **App corrigée**: De CUETools vers CUE Splitter (app Store correcte)
+  - AppId: `CUESplitter`
+  - Source Store uniquement: `9N68TC2SX976`
+  - Détection: `StoreApp` avec `PackageName: "63366AlexanderNing.CUESplitter_8q8b8geaq5n4w"`
+
+#### InstallArguments Access
+- **Corrigé**: `Modules/InstallationEngine.psm1`
+  - Accès sécurisé aux propriétés PSObject en StrictMode
+  - Utilisation de `$app.PSObject.Properties['InstallArguments']` au lieu de `$app.InstallArguments`
+  - Évite erreurs "property does not exist" en mode strict
+  - Compatible avec toutes les versions PowerShell
+
+### 🛠️ Améliorations
+
+#### Stabilité PowerShell 7
+- **Corrigé**: Conflits assembly Appx en mode séquentiel
+  - Détection StoreApp via `winget list` au lieu de `Get-AppxPackage`
+  - Évite conflit "Could not load file or assembly 'System.Runtime.WindowsRuntime'"
+  - Support complet PS7 parallèle sans crashes
+  - Utilisation systématique de winget pour cohérence
+
+#### Test-ApplicationByName Fallback
+- **Amélioré**: Fallback automatique pour apps sans Detection
+  - Détection par `winget list --name "AppName"`
+  - Alternative fiable quand chemins File incorrects
+  - Exemple: Proton apps utilisent ce fallback avec succès
+  - Mode par défaut pour nouvelles apps
+
+#### Logging en Mode Parallèle
+- **Amélioré**: Architecture de logging parallèle
+  - Chaque runspace a son propre fichier log
+  - Horodatage précis pour chaque opération
+  - Stack traces complètes avec numéros de ligne
+  - Résumé consolidé dans log principal
+  - Facilite identification problèmes spécifiques par app
+
+### 🧪 Tests et Validation
+
+#### Test-ProtonAppsDetection.ps1
+- **Ajouté**: `Tests/Test-ProtonAppsDetection.ps1`
+  - Script de validation des 3 apps Proton
+  - Vérifie chemins File (n'existent pas)
+  - Vérifie détection winget (fonctionne)
+  - Recherche emplacements réels si paths incorrects
+
+#### Validation Déploiement Séquentiel
+- **Testé**: Mode séquentiel PowerShell 7
+  - Profil Personnel (66 apps)
+  - Résultat: 64 apps traitées, 16 installées, 41 déjà présentes, 4 skipped, 3 échecs (Proton - maintenant corrigé)
+  - Quick Assist: ✅ Détecté correctement
+  - WhatsApp Desktop: ✅ Détecté correctement
+  - Epic Games Launcher: ✅ Détecté correctement
+
+#### Validation Déploiement Parallèle
+- **Testé**: Mode parallèle PowerShell 7
+  - 5 jobs concurrents
+  - Logs individuels fonctionnels
+  - Stabilité confirmée sans crashes Appx
+  - Performance optimale maintenue
+
+### 📊 Statistiques v2.3.0
+
+**Applications** : 67 (stable vs v2.2.0)
+**Profils** : 4 (Base, Office, Gaming, Personnel)
+**Modules** : 10 (+3 vs v2.2.0: StartMenuLayout, StartMenuPinning, StartupManager)
+**Tests** : +1 (Test-ProtonAppsDetection.ps1)
+
+**Apps Corrigées** : 7
+- WhatsApp Desktop (StoreApp)
+- Quick Assist (StoreApp multilingue)
+- Epic Games Launcher (File path)
+- Proton Drive (Detection removed)
+- Proton Mail Bridge (Detection removed)
+- Proton Pass (Detection removed)
+- CUE Splitter (App corrigée)
+
+**Taux de Succès d'Installation** :
+- v2.2.0: ~95% (3 échecs Proton)
+- v2.3.0: ~99% (0-1 échec attendu)
+
+### 🔧 Fichiers Modifiés
+
+**Modules Ajoutés** :
+- `Modules/StartMenuLayout.psm1`
+- `Modules/StartMenuPinning.psm1`
+- `Modules/StartupManager.psm1`
+
+**Modules Modifiés** :
+- `Modules/InstallationEngine.psm1` (StoreApp detection, PSObject safe access, parallel logging)
+
+**Base de Données** :
+- `Apps/Database/applications.json` (7 apps corrigées)
+
+**Tests** :
+- `Tests/Test-ProtonAppsDetection.ps1` (nouveau)
+
+**Documentation** :
+- `README.md` (v2.3.0)
+- `CHANGELOG.md` (ce fichier)
+
+### 🐛 Bugs Résolus
+
+1. **WhatsApp Desktop pas détecté**
+   - Cause: Détection par Registry incorrecte
+   - Fix: StoreApp avec PackageName + fallback nom de base
+   - Status: ✅ Résolu
+
+2. **Quick Assist pas détecté (FR/EN)**
+   - Cause: Nom multilingue, PackageName tronqué par winget
+   - Fix: Vendor prefix extraction regex
+   - Status: ✅ Résolu
+
+3. **Epic Games Launcher File path incorrect**
+   - Cause: Chemin Win64 au lieu de Win32
+   - Fix: Correction vers `.../Win32/EpicGamesLauncher.exe`
+   - Status: ✅ Résolu
+
+4. **Proton Apps File paths invalides**
+   - Cause: Chemins `C:\Program Files\Proton\...` n'existent pas
+   - Fix: Suppression Detection, utilisation fallback winget
+   - Status: ✅ Résolu
+
+5. **CUE Splitter app incorrecte**
+   - Cause: Référence à CUETools au lieu de CUE Splitter
+   - Fix: App Store correcte avec PackageName
+   - Status: ✅ Résolu
+
+6. **PowerShell 7 crash avec Get-AppxPackage**
+   - Cause: Conflit assembly Appx en mode séquentiel
+   - Fix: Utilisation winget list pour détection StoreApp
+   - Status: ✅ Résolu
+
+7. **InstallArguments erreur StrictMode**
+   - Cause: Accès direct propriété non existante
+   - Fix: PSObject.Properties safe access
+   - Status: ✅ Résolu
+
+### ⚠️ Breaking Changes
+
+Aucun breaking change. Version 100% rétrocompatible avec v2.2.0.
+
+### 🚀 Migration depuis v2.2.0
+
+Aucune migration requise. Mise à jour transparente :
+
+```powershell
+# 1. Pull derniers changements
+git pull
+
+# 2. Valider base de données
+.\Tools\Validate-AppDatabase.ps1
+
+# 3. Tester avec un profil
+.\Deploy-Win11Environment.ps1 -ProfileName "Base" -TestMode
+
+# 4. Déployer
+.\Deploy-Win11Environment.ps1 -ProfileName "Personnel" -Parallel
+```
+
+### 📚 Pour Plus d'Informations
+
+- Guide complet : [README.md](README.md)
+- Structure projet : [PROJET_STRUCTURE.md](PROJET_STRUCTURE.md)
+- Guide GUI : [GUI_README.md](GUI_README.md)
+- Base de données : [Apps/README.md](Apps/README.md)
+
+---
+
 ## [2.2.0] - 2025-10-03
 
 ### 🎉 Major Release - Architecture Refactoring
