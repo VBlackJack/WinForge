@@ -508,10 +508,13 @@ function Install-Application {
 
     Write-Status -Message "Installing: $($Application.Name)" -Level 'Info'
 
-    if ($Application.InstallMethod) {
+    # Check for custom InstallMethod (WindowsFeature, WindowsCapability, etc.)
+    $installMethod = if ($Application.PSObject.Properties['InstallMethod']) { $Application.InstallMethod } else { $null }
+
+    if ($installMethod) {
         $installed = $false
 
-        switch ($Application.InstallMethod) {
+        switch ($installMethod) {
             'WindowsFeature' {
                 $installed = Install-WindowsFeature -FeatureName $Application.Detection.Feature
                 $result.Method = 'WindowsFeature'
@@ -663,7 +666,7 @@ function Install-ApplicationsParallel {
     foreach ($app in $sortedApps) {
         if ($app.EnvironmentRestrictions -and $app.EnvironmentRestrictions.Count -gt 0) {
             if ($app.EnvironmentRestrictions -contains $currentEnvironment) {
-                Write-Host "⊘ Skipped: $($app.Name) - Not compatible with $currentEnvironment" -ForegroundColor Yellow
+                Write-Host "[SKIP] $($app.Name) - Not compatible with $currentEnvironment" -ForegroundColor Yellow
                 $skippedApps += [PSCustomObject]@{
                     ApplicationName = $app.Name
                     Success = $false
@@ -800,8 +803,9 @@ function Install-ApplicationsParallel {
             }
             
             # === INSTALLATION ===
-            if ($app.InstallMethod) {
-                switch ($app.InstallMethod) {
+            $appInstallMethod = if ($app.PSObject.Properties['InstallMethod']) { $app.InstallMethod } else { $null }
+            if ($appInstallMethod) {
+                switch ($appInstallMethod) {
                     'WindowsFeature' {
                         $feature = Get-WindowsOptionalFeature -Online -FeatureName $app.Detection.Feature -ErrorAction Stop
                         if ($feature.State -ne 'Enabled') {

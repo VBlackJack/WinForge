@@ -319,7 +319,7 @@ try {
         
         if ($chainCount -gt 1) {
             $chainDisplay = if ($deploymentProfile.InheritanceChain -is [array]) {
-                $deploymentProfile.InheritanceChain -join ' → '
+                $deploymentProfile.InheritanceChain -join ' -> '
             } else {
                 $deploymentProfile.InheritanceChain.ToString()
             }
@@ -390,7 +390,7 @@ if (-not $TestMode) {
             if ($app.EnvironmentRestrictions -and $app.EnvironmentRestrictions.Count -gt 0) {
                 $currentEnv = Get-SystemEnvironmentType
                 if ($app.EnvironmentRestrictions -contains $currentEnv) {
-                    Write-Log -Message "  ⊘ Skipped: Not compatible with $currentEnv environment" -Level 'Warning'
+                    Write-Log -Message "  [SKIP] Skipped: Not compatible with $currentEnv environment" -Level 'Warning'
                     $script:DeploymentStats.Skipped++
                     Write-Host ""
                     continue
@@ -401,19 +401,19 @@ if (-not $TestMode) {
             $installResult = Install-Application -Application $app -Force:$Force
             
             if ($installResult.AlreadyInstalled) {
-                Write-Log -Message "  ✓ Already installed" -Level 'Success'
+                Write-Log -Message "  [OK] Already installed" -Level 'Success'
                 $script:DeploymentStats.AlreadyInstalled++
             }
             elseif ($installResult.Success) {
-                Write-Log -Message "  ✓ Installed via $($installResult.Method)" -Level 'Success'
+                Write-Log -Message "  [OK] Installed via $($installResult.Method)" -Level 'Success'
                 $script:DeploymentStats.InstalledSuccessfully++
             }
             else {
-                Write-Log -Message "  ✗ Installation failed: $($installResult.Message)" -Level 'Error'
+                Write-Log -Message "  [FAIL] Installation failed: $($installResult.Message)" -Level 'Error'
                 $script:DeploymentStats.Failed++
-                
+
                 if ($appRequired) {
-                    Write-Log -Message "  ⚠ This is a required application!" -Level 'Warning'
+                    Write-Log -Message "  [WARN] This is a required application!" -Level 'Warning'
                 }
             }
             
@@ -470,14 +470,13 @@ if (-not $TestMode) {
     Write-Log -Message "=== Start Menu Organization ===" -Level 'Info'
 
     try {
-        # Import StartMenuLayout module (uses LayoutModification.json - official method)
+        # Import StartMenuLayout module (organizes shortcuts by category)
         $startMenuModule = Join-Path $script:ScriptRoot 'Modules\StartMenuLayout.psm1'
         if (Test-Path $startMenuModule) {
             Import-Module $startMenuModule -Force -WarningAction SilentlyContinue
 
-            Write-Log -Message "Organizing desktop shortcuts in Start Menu by category (LayoutModification.json)..." -Level 'Info'
-            # Uses official Microsoft LayoutModification.json method
-            # Creates folders by category in Start Menu
+            Write-Log -Message "Organizing desktop shortcuts in Start Menu by category..." -Level 'Info'
+            # Creates category folders in Start Menu Programs
             Invoke-StartMenuOrganization
 
             Write-Log -Message "Start Menu organization completed" -Level 'Success'
@@ -487,6 +486,39 @@ if (-not $TestMode) {
     }
     catch {
         Write-Log -Message "Error during Start Menu organization: $($_.Exception.Message)" -Level 'Warning'
+    }
+
+    Write-Host ""
+}
+
+# === START MENU PINNING ===
+
+if (-not $TestMode) {
+    Write-Log -Message "=== Start Menu Pinning (start2.bin method) ===" -Level 'Info'
+
+    try {
+        # Import StartMenuPinning module (uses start2.bin - reliable Windows 11 method)
+        $pinningModule = Join-Path $script:ScriptRoot 'Modules\StartMenuPinning.psm1'
+        if (Test-Path $pinningModule) {
+            Import-Module $pinningModule -Force -WarningAction SilentlyContinue
+
+            Write-Log -Message "Capturing current Start Menu pinned items..." -Level 'Info'
+            # Uses start2.bin/start.bin binary file method (works on Windows 11 22H2+)
+            # This is the most reliable method as LayoutModification.json is deprecated
+            $pinningResult = Invoke-StartMenuPinning -BackupName "Deployment_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+
+            if ($pinningResult) {
+                Write-Log -Message "Start Menu pinning deployed to Default profile" -Level 'Success'
+                Write-Log -Message "New user accounts will inherit current pinned items" -Level 'Info'
+            } else {
+                Write-Log -Message "Start Menu pinning deployment failed or was skipped" -Level 'Warning'
+            }
+        } else {
+            Write-Log -Message "StartMenuPinning module not found, skipping pinning" -Level 'Warning'
+        }
+    }
+    catch {
+        Write-Log -Message "Error during Start Menu pinning: $($_.Exception.Message)" -Level 'Warning'
     }
 
     Write-Host ""
