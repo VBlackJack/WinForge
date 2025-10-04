@@ -24,7 +24,7 @@
 Set-StrictMode -Version Latest
 
 # === MODULE INITIALIZATION ===
-$script:ModuleRoot = Split-Path -Parent $PSCommandPath
+$script:ModuleRoot = $PSScriptRoot
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 
