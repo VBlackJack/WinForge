@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "Description": "Global optimizations applied to all profiles - Safe for all users",
+  "Version": "1.0.0",
+  "LastUpdated": "2025-10-04",
+
+  "SystemConfig": {
+    "Explorer": {
+      "ShowHiddenFiles": true,
+      "ShowFileExtensions": true,
+      "NavigationPaneOptimized": true,
+      "ShowLibraries": true,
+      "ExpandToOpenFolder": true,
+      "ShowSyncProviderNotifications": true
+    },
+
+    "Taskbar": {
+      "DisableWidgets": true,
+      "StartAlignment": "left",
+      "SearchMode": "icon_only"
+    },
+
+    "Privacy": {
+      "DisableTelemetry": true,
+      "MinimalDataCollection": true,
+      "DisableActivityHistory": true,
+      "DisableCortana": true,
+      "DisableConsumerFeatures": true,
+      "DisableWindowsTips": true
+    },
+
+    "Performance": {
+      "OptimizeServices": true,
+      "PowerPlan": "Balanced",
+      "GameMode": false
+    },
+
+    "Security": {
+      "WindowsDefender": true,
+      "Firewall": true
+    },
+
+    "Network": {
+      "DnsServers": ["9.9.9.9", "1.1.1.1"]
+    }
+  },
+
+  "Notes": [
+    "These optimizations are safe for all users",
+    "Services are set to Manual (not disabled) when possible",
+    "Windows Search stays available but won't auto-start",
+    "Cortana is disabled as it's obsolete with modern AI",
+    "Bloatware suggestions and tips are disabled",
+    "Privacy-focused: telemetry and tracking disabled",
+    "Security: Defender and Firewall remain active"
+  ]
+}

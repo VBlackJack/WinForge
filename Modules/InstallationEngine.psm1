@@ -913,13 +913,13 @@ function Install-ApplicationsParallel {
     Write-Host "Installation Results:" -ForegroundColor Cyan
     foreach ($result in $allResults) {
         if ($result.Success -or $result.AlreadyInstalled) {
-            $status = if ($result.AlreadyInstalled) { 'Already Installed' } else { 'Success' }
-            Write-Host "  ✓ $($result.ApplicationName) - $status" -ForegroundColor Green
+            $status = if ($result.AlreadyInstalled) { "Already Installed" } else { "Success" }
+            Write-Host "  OK $($result.ApplicationName) - $status" -ForegroundColor Green
             if ($result.Method) {
                 Write-Host "    Method: $($result.Method)" -ForegroundColor Gray
             }
         } else {
-            Write-Host "  ✗ $($result.ApplicationName) - Failed" -ForegroundColor Red
+            Write-Host "  FAILED $($result.ApplicationName) - Failed" -ForegroundColor Red
             Write-Host "    Reason: $($result.Message)" -ForegroundColor Gray
         }
     }

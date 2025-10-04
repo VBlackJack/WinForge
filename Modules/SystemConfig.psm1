@@ -112,9 +112,29 @@ function Set-ExplorerConfiguration {
         Set-RegistryValue -Path $explorerPath -Name 'HideFileExt' -Value 0 -Type DWord | Out-Null
     }
 
-    # Navigation pane optimization
+    # Navigation pane optimization - Show all folders
     if ($Config.ContainsKey('NavigationPaneOptimized') -and $Config.NavigationPaneOptimized) {
         Set-RegistryValue -Path $explorerPath -Name 'NavPaneShowAllFolders' -Value 1 -Type DWord | Out-Null
+    }
+
+    # Show Libraries in navigation pane
+    if ($Config.ContainsKey('ShowLibraries') -and $Config.ShowLibraries) {
+        # Windows 11 uses a different location for libraries visibility
+        Set-RegistryValue -Path 'HKCU:\Software\Classes\CLSID\{031E4825-7B94-4dc3-B131-E946B44C8DD5}' -Name 'System.IsPinnedToNameSpaceTree' -Value 1 -Type DWord | Out-Null
+    }
+
+    # Expand to open folder (navigation pane follows current folder)
+    if ($Config.ContainsKey('ExpandToOpenFolder') -and $Config.ExpandToOpenFolder) {
+        Set-RegistryValue -Path $explorerPath -Name 'NavPaneExpandToCurrentFolder' -Value 1 -Type DWord | Out-Null
+    }
+
+    # Show sync provider notifications (availability status)
+    if ($Config.ContainsKey('ShowSyncProviderNotifications') -and $Config.ShowSyncProviderNotifications) {
+        # Enable "Always show availability status" in Windows 11
+        # This shows OneDrive and other cloud storage sync status
+        Set-RegistryValue -Path $explorerPath -Name 'ShowSyncProviderNotifications' -Value 1 -Type DWord | Out-Null
+        # Also enable the Status column visibility
+        Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer' -Name 'ShowStatusColumn' -Value 1 -Type DWord | Out-Null
     }
 
     # Show full path in title bar
@@ -370,6 +390,29 @@ function Set-PrivacyConfiguration {
         Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\System' -Name 'PublishUserActivities' -Value 0 -Type DWord | Out-Null
     }
 
+    # Disable Cortana (obsolete with modern AI)
+    if ($Config.ContainsKey('DisableCortana') -and $Config.DisableCortana) {
+        Write-Status -Message "Disabling Cortana..." -Level 'Info'
+        Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search' -Name 'AllowCortana' -Value 0 -Type DWord | Out-Null
+        Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search' -Name 'CortanaConsent' -Value 0 -Type DWord | Out-Null
+    }
+
+    # Disable consumer features (bloatware suggestions)
+    if ($Config.ContainsKey('DisableConsumerFeatures') -and $Config.DisableConsumerFeatures) {
+        Write-Status -Message "Disabling consumer features and bloatware..." -Level 'Info'
+        Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent' -Name 'DisableWindowsConsumerFeatures' -Value 1 -Type DWord | Out-Null
+        Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'SilentInstalledAppsEnabled' -Value 0 -Type DWord | Out-Null
+        Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'SystemPaneSuggestionsEnabled' -Value 0 -Type DWord | Out-Null
+        Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'PreInstalledAppsEnabled' -Value 0 -Type DWord | Out-Null
+    }
+
+    # Disable Windows tips and tricks
+    if ($Config.ContainsKey('DisableWindowsTips') -and $Config.DisableWindowsTips) {
+        Write-Status -Message "Disabling Windows tips and tricks..." -Level 'Info'
+        Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'SubscribedContent-338389Enabled' -Value 0 -Type DWord | Out-Null
+        Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'SoftLandingEnabled' -Value 0 -Type DWord | Out-Null
+    }
+
     Write-Status -Message "Privacy settings configured" -Level 'Success'
 }
 
@@ -399,14 +442,31 @@ function Set-PerformanceConfiguration {
         Set-RegistryValue -Path $visualFXPath -Name 'VisualFXSetting' -Value 2 -Type DWord | Out-Null
     }
 
-    # Optimize services
+    # Optimize services (Safe global optimization)
     if ($Config.ContainsKey('OptimizeServices') -and $Config.OptimizeServices) {
-        Write-Status -Message "Optimizing Windows services..." -Level 'Info'
-        
+        Write-Status -Message "Optimizing Windows services (safe mode)..." -Level 'Info'
+
+        # Safe services to disable (won't break functionality for most users)
         $servicesToDisable = @(
-            'WSearch',
-            'SysMain',
-            'WbioSrvc'
+            'MapsBroker',              # Downloaded Maps Manager (rarely used)
+            'lfsvc',                   # Geolocation Service (optional)
+            'RetailDemo',              # Retail Demo Service (not needed)
+            'PhoneSvc',                # Phone Service (unless using Phone Link heavily)
+            'Fax',                     # Fax service (obsolete)
+            'XblAuthManager',          # Xbox Live Auth (unless gaming)
+            'XblGameSave',             # Xbox Live Game Save (unless gaming)
+            'XboxNetApiSvc',           # Xbox Networking (unless gaming)
+            'XboxGipSvc',              # Xbox Accessory Management (unless Xbox controller)
+            'WalletService',           # Microsoft Wallet (rarely used)
+            'WMPNetworkSvc'            # Windows Media Player Network Sharing (rarely used)
+        )
+
+        # Services to set to Manual (from Automatic) - saves resources but still available
+        $servicesToManual = @(
+            'WSearch',                 # Windows Search - Keep available but manual
+            'SysMain',                 # Superfetch - Keep available but manual
+            'TrkWks',                  # Distributed Link Tracking Client
+            'WbioSrvc'                 # Windows Biometric Service (manual is fine)
         )
 
         foreach ($service in $servicesToDisable) {
@@ -419,6 +479,19 @@ function Set-PerformanceConfiguration {
             }
             catch {
                 Write-Status -Message "Could not disable: $service" -Level 'Verbose'
+            }
+        }
+
+        foreach ($service in $servicesToManual) {
+            try {
+                $svc = Get-Service -Name $service -ErrorAction SilentlyContinue
+                if ($svc -and $svc.StartType -eq 'Automatic') {
+                    Set-Service -Name $service -StartupType Manual -ErrorAction Stop
+                    Write-Status -Message "Set to Manual: $service" -Level 'Verbose'
+                }
+            }
+            catch {
+                Write-Status -Message "Could not modify: $service" -Level 'Verbose'
             }
         }
     }

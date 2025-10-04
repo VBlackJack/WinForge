@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "Description": "Configuration for applications to disable from Windows startup",
+  "Version": "1.0.0",
+  "LastUpdated": "2025-10-04",
+  "DisabledApplications": [
+    {
+      "Name": "Epic Games Launcher",
+      "Reason": "Désactivé via Startup Manager",
+      "Enabled": true
+    },
+    {
+      "Name": "Battle.net",
+      "Reason": "Désactivé via Startup Manager",
+      "Enabled": true
+    },
+    {
+      "Name": "Discord",
+      "Reason": "Désactivé via Startup Manager",
+      "Enabled": true
+    },
+    {
+      "Name": "Steam",
+      "Reason": "Désactivé via Startup Manager",
+      "Enabled": true
+    }
+  ],
+  "Notes": [
+    "Names support wildcards (e.g., *Battle*, Discord*)",
+    "Set 'Enabled: true' to disable an application from startup",
+    "Set 'Enabled: false' to keep an application in startup",
+    "Add new entries to the DisabledApplications array as needed"
+  ]
+}

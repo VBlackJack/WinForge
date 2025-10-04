@@ -464,6 +464,61 @@ if (-not $SkipSystemConfig -and -not $TestMode) {
     Write-Host ""
 }
 
+# === START MENU ORGANIZATION ===
+
+if (-not $TestMode) {
+    Write-Log -Message "=== Start Menu Organization ===" -Level 'Info'
+
+    try {
+        # Import StartMenuLayout module (uses LayoutModification.json - official method)
+        $startMenuModule = Join-Path $script:ScriptRoot 'Modules\StartMenuLayout.psm1'
+        if (Test-Path $startMenuModule) {
+            Import-Module $startMenuModule -Force -WarningAction SilentlyContinue
+
+            Write-Log -Message "Organizing desktop shortcuts in Start Menu by category (LayoutModification.json)..." -Level 'Info'
+            # Uses official Microsoft LayoutModification.json method
+            # Creates folders by category in Start Menu
+            Invoke-StartMenuOrganization
+
+            Write-Log -Message "Start Menu organization completed" -Level 'Success'
+        } else {
+            Write-Log -Message "StartMenuLayout module not found, skipping organization" -Level 'Warning'
+        }
+    }
+    catch {
+        Write-Log -Message "Error during Start Menu organization: $($_.Exception.Message)" -Level 'Warning'
+    }
+
+    Write-Host ""
+}
+
+# === STARTUP APPLICATIONS MANAGEMENT ===
+
+if (-not $TestMode) {
+    Write-Log -Message "=== Startup Applications Management ===" -Level 'Info'
+
+    try {
+        # Import StartupManager module
+        $startupModule = Join-Path $script:ScriptRoot 'Modules\StartupManager.psm1'
+        if (Test-Path $startupModule) {
+            Import-Module $startupModule -Force -WarningAction SilentlyContinue
+
+            Write-Log -Message "Applying startup blacklist configuration..." -Level 'Info'
+            # Reads Config\startup-blacklist.json and disables configured applications
+            Invoke-StartupBlacklist
+
+            Write-Log -Message "Startup management completed" -Level 'Success'
+        } else {
+            Write-Log -Message "StartupManager module not found, skipping startup management" -Level 'Warning'
+        }
+    }
+    catch {
+        Write-Log -Message "Error during startup management: $($_.Exception.Message)" -Level 'Warning'
+    }
+
+    Write-Host ""
+}
+
 # === DEPLOYMENT SUMMARY ===
 
 $script:EndTime = Get-Date
