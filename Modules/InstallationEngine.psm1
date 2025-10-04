@@ -814,11 +814,21 @@ function Install-ApplicationsParallel {
                             # Use winget list for Store app detection (more reliable in parallel mode)
                             if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
                                 try {
-                                    # Use --name instead of --id for Store apps
-                                    $wingetList = & winget list --name $app.Name --accept-source-agreements 2>&1 | Out-String
-                                    $installed = $wingetList -match [regex]::Escape($app.Name)
+                                    # Try detection by Store ID first (most reliable)
+                                    if ($app.Sources.Store) {
+                                        $wingetList = & winget list --id $app.Sources.Store --accept-source-agreements 2>&1 | Out-String
+                                        $installed = $wingetList -match [regex]::Escape($app.Sources.Store) -and $wingetList -notmatch "No installed package"
+                                    }
+
+                                    # Fallback: try by name (partial match)
+                                    if (-not $installed) {
+                                        $baseAppName = $app.Name -replace ' Desktop$', '' -replace ' App$', ''
+                                        $wingetList = & winget list --accept-source-agreements 2>&1 | Out-String
+                                        $installed = $wingetList -match [regex]::Escape($baseAppName)
+                                    }
+
                                     if ($installed) {
-                                        Write-ParallelLog "Detected Store app via winget: $($app.Name)" 'Info'
+                                        Write-ParallelLog "Detected Store app via winget" 'Info'
                                     }
                                 } catch {
                                     Write-ParallelLog "Could not check Store app with winget: $($_.Exception.Message)" 'Verbose'
