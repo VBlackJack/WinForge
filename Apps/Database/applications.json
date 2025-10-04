@@ -387,7 +387,7 @@
         "PackageName": "MicrosoftCorporationII.QuickAssist"
       },
       "DefaultPriority": 15,
-      "DefaultRequired": true,
+      "DefaultRequired": false,
       "EnvironmentRestrictions": [],
       "Tags": [
         "support",

@@ -820,9 +820,15 @@ function Install-ApplicationsParallel {
                                         $installed = $wingetList -match [regex]::Escape($app.Sources.Store) -and $wingetList -notmatch "No installed package"
                                     }
 
-                                    # Fallback: try by name (partial match)
+                                    # Fallback: try by PackageName pattern (handles localized names)
+                                    if (-not $installed -and $app.Detection.PackageName) {
+                                        $wingetList = & winget list --accept-source-agreements 2>&1 | Out-String
+                                        $installed = $wingetList -match [regex]::Escape($app.Detection.PackageName)
+                                    }
+
+                                    # Fallback: try by name (partial match with common suffixes removed)
                                     if (-not $installed) {
-                                        $baseAppName = $app.Name -replace ' Desktop$', '' -replace ' App$', ''
+                                        $baseAppName = $app.Name -replace '^Microsoft ', '' -replace ' Desktop$', '' -replace ' App$', ''
                                         $wingetList = & winget list --accept-source-agreements 2>&1 | Out-String
                                         $installed = $wingetList -match [regex]::Escape($baseAppName)
                                     }
