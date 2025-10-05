@@ -615,6 +615,23 @@ function Test-ProfileValid {
                 continue
             }
 
+            # v2.3 Database Mode: Applications with AppId override (object format)
+            if ($app.PSObject.Properties['AppId']) {
+                if ([string]::IsNullOrWhiteSpace($app.AppId)) {
+                    $result.Valid = $false
+                    $result.Errors += "Empty AppId found in override object"
+                    continue
+                }
+
+                # Check for duplicate AppIds
+                if (-not $appNames.Add($app.AppId)) {
+                    $result.Warnings += "Duplicate AppId: $($app.AppId)"
+                }
+
+                # Skip legacy validation checks for Database Mode
+                continue
+            }
+
             # Legacy format: Applications are objects with Name, Sources, Priority
             if ([string]::IsNullOrWhiteSpace($app.Name)) {
                 $result.Valid = $false

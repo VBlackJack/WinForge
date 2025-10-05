@@ -493,6 +493,16 @@ function Show-DeployProfileMenu {
 
         # Execute deployment script using & with splatting
         & $deployScript @deployParams
+        $deployExitCode = $LASTEXITCODE
+
+        Write-Host ""
+
+        # Show deployment result summary
+        if ($deployExitCode -eq 0) {
+            Write-Host "Deployment completed - Check log for details" -ForegroundColor Green
+        } else {
+            Write-Host "Deployment completed with failures - Exit code: $deployExitCode" -ForegroundColor Red
+        }
 
         Write-Host ""
         Read-Host "Press Enter to continue"
