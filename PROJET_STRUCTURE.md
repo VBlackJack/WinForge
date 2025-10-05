@@ -46,7 +46,7 @@ Win11Forge/
 │
 ├── 📦 Apps/
 │   └── Database/
-│       └── applications.json          # Base de données centralisée (64 apps)
+│       └── applications.json          # Base de données centralisée (66 apps)
 │
 ├── 📋 Profiles/                       # Profils de déploiement v2.3.0
 │   ├── Base.json                      # 30 apps essentielles
@@ -64,7 +64,7 @@ Win11Forge/
 │   └── Win11ForgeGUI.psm1            # Interface graphique PowerShell
 │
 ├── 🛠️ Tools/                          # Outils utilitaires
-│   ├── ProfileCreator.html           # Créateur de profils web (64 apps, file://)
+│   ├── ProfileCreator.html           # Créateur de profils web (66 apps, file://)
 │   ├── applications-data.js          # Base de données pour ProfileCreator
 │   ├── Launch-AsTrustedInstaller.bat # Lanceur TrustedInstaller (8 options)
 │   ├── Launch-TrustedInstallerGUI.ps1 # Script PowerShell pour TrustedInstaller

@@ -226,7 +226,7 @@ Environnement développeur avancé
 ```json
 {
   "DatabaseVersion": "2.3.0",
-  "TotalApplications": 64,
+  "TotalApplications": 66,
   "Applications": {
     "GoogleChrome": {
       "Name": "Google Chrome",
@@ -448,7 +448,7 @@ Win11Forge Framework - Outil de productivité personnel
 **Dernière mise à jour** : 2025-10-04
 **Compatibilité** : Windows 11 24H2 (22H2+)
 **Statut** : Production Ready
-**Applications** : 64 dans la base de données
+**Applications** : 66 dans la base de données (64 en profils actifs)
 **Profils** : 4 (Base, Office, Gaming, Personnel)
 **PowerShell** : 5.1+ (7.5+ recommandé pour mode parallèle)
 
