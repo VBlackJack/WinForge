@@ -250,7 +250,7 @@ if ($skippedFiles -gt 0) {
     Write-Host ""
     Write-SetupStatus "Some files were not found in source" -Level Warning
     Write-SetupStatus "You may need to copy them manually" -Level Warning
-    Write-SetupStatus "Required files are listed in STRUCTURE.md" -Level Info
+    Write-SetupStatus "Required files are listed in PROJET_STRUCTURE.md" -Level Info
 }
 
 # === PERMISSIONS CHECK ===
