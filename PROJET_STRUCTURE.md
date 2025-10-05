@@ -1,4 +1,4 @@
-# 📁 Win11Forge v2.2.0 - Structure du Projet
+# 📁 Win11Forge v2.3.0 - Structure du Projet
 
 ## 🎯 Scripts Principaux (Racine)
 
@@ -46,13 +46,13 @@ Win11Forge/
 │
 ├── 📦 Apps/
 │   └── Database/
-│       └── applications.json          # Base de données centralisée (66 apps)
+│       └── applications.json          # Base de données centralisée (64 apps)
 │
-├── 📋 Profiles/                       # Profils de déploiement v2.2.0
-│   ├── Base.json                      # 31 apps essentielles
+├── 📋 Profiles/                       # Profils de déploiement v2.3.0
+│   ├── Base.json                      # 30 apps essentielles
 │   ├── Office.json                    # Base + 5 apps bureautique
 │   ├── Gaming.json                    # Office + 4 apps gaming
-│   └── Personnel.json                 # Gaming + développement (total 66 apps)
+│   └── Personnel.json                 # Gaming + développement (total 64 apps)
 │
 ├── 🧩 Modules/                        # Modules PowerShell
 │   ├── ApplicationDatabase.psm1       # Gestion de la base de données
@@ -64,7 +64,7 @@ Win11Forge/
 │   └── Win11ForgeGUI.psm1            # Interface graphique PowerShell
 │
 ├── 🛠️ Tools/                          # Outils utilitaires
-│   ├── ProfileCreator.html           # Créateur de profils web (66 apps, file://)
+│   ├── ProfileCreator.html           # Créateur de profils web (64 apps, file://)
 │   ├── applications-data.js          # Base de données pour ProfileCreator
 │   ├── Launch-AsTrustedInstaller.bat # Lanceur TrustedInstaller (8 options)
 │   ├── Launch-TrustedInstallerGUI.ps1 # Script PowerShell pour TrustedInstaller
@@ -75,7 +75,7 @@ Win11Forge/
 │   └── Validate-Framework.ps1        # Validation complète du framework
 │
 ├── 📚 Docs/                           # Documentation
-│   └── profile_template.json         # Template de profil v2.2.0
+│   └── profile_template.json         # Template de profil v2.3.0
 │
 ├── 🗂️ Archive/                        # Fichiers archivés
 │   ├── Profiles-v2.0-*/              # Anciens profils v2.0 (avant migration)
@@ -104,10 +104,10 @@ Deploy-Win11Forge.bat
 # Ou en ligne de commande :
 .\Deploy-Win11Forge.bat
 # Puis choisir :
-# 1 = Base (31 apps)
-# 2 = Office (36 apps)
-# 3 = Gaming (40 apps)
-# 4 = Personnel (66 apps)
+# 1 = Base (30 apps)
+# 2 = Office (35 apps)
+# 3 = Gaming (39 apps)
+# 4 = Personnel (64 apps)
 ```
 
 ### **Créer un Profil Custom**
@@ -131,7 +131,7 @@ Start-Win11ForgeGUI-Admin.bat → Option 8
 **Location:** `Apps/Database/applications.json`
 
 **Format v2.3.0:**
-- **66 applications** référencées
+- **64 applications** référencées
 - Sources multiples : Winget, Chocolatey, Microsoft Store, DirectUrl
 - Métadonnées complètes : détection, priorité, tags, vérification
 - Compatible avec ProfileCreator.html
@@ -141,16 +141,16 @@ Start-Win11ForgeGUI-Admin.bat → Option 8
 Les profils utilisent l'héritage pour éviter la duplication :
 
 ```
-Base (31 apps)
+Base (30 apps)
   ↓ hérite
-Office (+ 5 apps = 36 total)
+Office (+ 5 apps = 35 total)
   ↓ hérite
-Gaming (+ 4 apps = 40 total)
+Gaming (+ 4 apps = 39 total)
   ↓ hérite
-Personnel (+ 26 apps = 66 total)
+Personnel (+ 25 apps = 64 total)
 ```
 
-**Format des profils v2.2.0:**
+**Format des profils v2.3.0:**
 ```json
 {
   "Name": "Gaming",
@@ -179,9 +179,9 @@ Personnel (+ 26 apps = 66 total)
 
 ## 🆕 Nouveautés v2.3.0
 
-✅ Base de données centralisée (66 applications)
+✅ Base de données centralisée (64 applications)
 ✅ Interface GUI PowerShell interactive
-✅ ProfileCreator.html avec 66 apps dynamiques
+✅ ProfileCreator.html avec 64 apps dynamiques
 ✅ Recherche automatique dans stores (Search-ApplicationSources.ps1)
 ✅ Ajout d'applications via GUI
 ✅ Édition de profils via HTML
@@ -194,7 +194,7 @@ Personnel (+ 26 apps = 66 total)
 - **PowerShell 7+** : Recommandé pour le mode parallèle (installation auto)
 - **Admin requis** : Tous les lanceurs s'auto-élèvent
 - **Logs** : Consultables dans `Logs/deployment_*.log`
-- **Profils** : Stockés dans `Profiles/` au format JSON v2.2.0
+- **Profils** : Stockés dans `Profiles/` au format JSON v2.3.0
 - **Compatible file://** : ProfileCreator.html fonctionne sans serveur web
 
 ## 🔗 Liens Utiles

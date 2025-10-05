@@ -14,7 +14,7 @@ Win11Forge est un framework PowerShell conçu pour automatiser entièrement le d
 ### ✨ Caractéristiques principales
 
 - ✅ **Interface GUI PowerShell** : Menu interactif complet pour navigation facile
-- ✅ **Base de données centralisée** : 66 applications avec sources multiples
+- ✅ **Base de données centralisée** : 64 applications avec sources multiples
 - ✅ **Détection d'environnement** : Sandbox Windows, VMware, Hyper-V, VirtualBox, PC physique
 - ✅ **Installation multi-sources** : Winget → Chocolatey → Microsoft Store → Téléchargement direct
 - ✅ **Installation parallèle** : Jusqu'à 5 applications simultanées (PowerShell 7+)
@@ -61,10 +61,10 @@ Win11Forge/
 │   └── Win11ForgeGUI.psm1           # Interface graphique PowerShell
 │
 ├── Profiles/
-│   ├── Base.json                    # 31 apps essentielles
-│   ├── Office.json                  # Base + 5 apps (36 total)
-│   ├── Gaming.json                  # Office + 4 apps (40 total)
-│   └── Personnel.json               # Gaming + 26 apps (66 total)
+│   ├── Base.json                    # 30 apps essentielles
+│   ├── Office.json                  # Base + 5 apps (35 total)
+│   ├── Gaming.json                  # Office + 4 apps (39 total)
+│   └── Personnel.json               # Gaming + 25 apps (64 total)
 │
 ├── Tools/
 │   ├── ProfileCreator.html          # ⭐ Créateur de profils web
@@ -91,7 +91,7 @@ Start-Win11ForgeGUI-Admin.bat
 
 **Menu principal :**
 1. Deploy Profile - Déployer un profil
-2. Browse Applications Database - Parcourir les 66 apps
+2. Browse Applications Database - Parcourir les 64 apps
 3. Browse Profiles - Voir les profils disponibles
 4. Create Custom Profile - Créer un profil personnalisé
 5. Database Statistics - Statistiques de la base
@@ -105,10 +105,10 @@ Start-Win11ForgeGUI-Admin.bat
 Deploy-Win11Forge.bat
 
 # Choisir le profil :
-# 1 = Base (31 apps)
-# 2 = Office (36 apps)
-# 3 = Gaming (40 apps)
-# 4 = Personnel (66 apps)
+# 1 = Base (30 apps)
+# 2 = Office (35 apps)
+# 3 = Gaming (39 apps)
+# 4 = Personnel (64 apps)
 ```
 
 ### 💻 **Méthode 3 : PowerShell Direct**
@@ -134,13 +134,13 @@ Tools\ProfileCreator.html
 ```
 
 **Fonctionnalités :**
-- ✅ **66 applications** disponibles (base de données centralisée)
+- ✅ **64 applications** disponibles (base de données centralisée)
 - ✅ **Création de profils** en 6 étapes guidées
 - ✅ **Édition de profils** existants (charger JSON)
 - ✅ **Filtrage par catégorie** et tags
 - ✅ **Configuration système** (Explorer, Taskbar, Privacy)
 - ✅ **Compatible file://** (pas de serveur web requis)
-- ✅ **Export JSON** au format v2.2.0
+- ✅ **Export JSON** au format v2.3.0
 
 ### **Via GUI PowerShell**
 
@@ -174,7 +174,7 @@ Menu principal → 7. Add New Application
 
 ## 📦 Profils de Déploiement
 
-### **Base (31 applications)**
+### **Base (30 applications)**
 Fondation universelle avec outils essentiels
 
 - **Navigateurs** : Chrome, Firefox, Brave
@@ -187,7 +187,7 @@ Fondation universelle avec outils essentiels
 - **Recovery** : Recuva
 - **Config** : WinAero Tweaker
 
-### **Office (Base + 5 = 36 apps)**
+### **Office (Base + 5 = 35 apps)**
 Productivité professionnelle
 
 - Hérite de **Base**
@@ -197,7 +197,7 @@ Productivité professionnelle
 - WhatsApp Desktop
 - OBS Studio
 
-### **Gaming (Office + 4 = 40 apps)**
+### **Gaming (Office + 4 = 39 apps)**
 Plateforme gaming complète
 
 - Hérite d'**Office** (donc aussi Base)
@@ -206,7 +206,7 @@ Plateforme gaming complète
 - Epic Games Launcher
 - Battle.net
 
-### **Personnel (Gaming + 26 = 66 apps)**
+### **Personnel (Gaming + 25 = 64 apps)**
 Environnement développeur avancé
 
 - Hérite de **Gaming** (donc aussi Office et Base)
@@ -217,17 +217,16 @@ Environnement développeur avancé
 - **Cloud Storage** : pCloud Drive, Google Drive for Desktop
 - **Virtualisation** : Sandboxie Plus, LDPlayer
 - **Utilitaires** : Internet Download Manager, WinRAR
-- **Multimédia** : Mp3tag, CUETools, MediaMonkey, TV Rename
-- **3D Printing** : Creality Slicer
+- **Multimédia** : Mp3tag, MediaMonkey, TV Rename
 
-## 🎯 Base de Données Centralisée v2.2.0
+## 🎯 Base de Données Centralisée v2.3.0
 
 ### **Structure**
 
 ```json
 {
   "DatabaseVersion": "2.3.0",
-  "TotalApplications": 66,
+  "TotalApplications": 64,
   "Applications": {
     "GoogleChrome": {
       "Name": "Google Chrome",
@@ -253,7 +252,7 @@ Environnement développeur avancé
 }
 ```
 
-### **Format des Profils v2.2.0**
+### **Format des Profils v2.3.0**
 
 Les profils référencent simplement les AppIds :
 
@@ -261,7 +260,7 @@ Les profils référencent simplement les AppIds :
 {
   "Name": "Gaming",
   "Description": "Profil gaming complet",
-  "Version": "2.2.0",
+  "Version": "2.3.0",
   "Inherits": ["Office"],
   "Applications": [
     "Steam",
@@ -449,7 +448,7 @@ Win11Forge Framework - Outil de productivité personnel
 **Dernière mise à jour** : 2025-10-04
 **Compatibilité** : Windows 11 24H2 (22H2+)
 **Statut** : Production Ready
-**Applications** : 67 dans la base de données
+**Applications** : 64 dans la base de données
 **Profils** : 4 (Base, Office, Gaming, Personnel)
 **PowerShell** : 5.1+ (7.5+ recommandé pour mode parallèle)
 

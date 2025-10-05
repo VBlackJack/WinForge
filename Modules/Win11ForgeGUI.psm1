@@ -1197,7 +1197,7 @@ function Show-FrameworkInfo {
     Show-Header -Title "Framework Information"
 
     Write-Host "Win11Forge Version:      " -NoNewline -ForegroundColor Yellow
-    Write-Host "2.2.0" -ForegroundColor White
+    Write-Host "2.3.0" -ForegroundColor White
 
     Write-Host "PowerShell Version:      " -NoNewline -ForegroundColor Yellow
     Write-Host "$($PSVersionTable.PSVersion)" -ForegroundColor White

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Clean up obsolete files from Win11Forge v2.2.0
+    Clean up obsolete files from Win11Forge v2.3.0
 
 .DESCRIPTION
     Archives obsolete files created during migration and development to keep the project clean

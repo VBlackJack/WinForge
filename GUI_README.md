@@ -2,7 +2,7 @@
 
 ## 🎨 Interface Graphique PowerShell
 
-Win11Forge v2.2.0 inclut maintenant une **interface graphique complète** pour faciliter le déploiement et la gestion des applications !
+Win11Forge v2.3.0 inclut maintenant une **interface graphique complète** pour faciliter le déploiement et la gestion des applications !
 
 ---
 
@@ -49,7 +49,7 @@ Déployez un profil complet en quelques clics :
 
 ### 2. **Browse Applications** - Navigateur d'Applications
 
-Explorez les **66 applications** de la base de données :
+Explorez les **64 applications** de la base de données :
 
 #### Options de Navigation :
 
@@ -59,14 +59,15 @@ Explorez les **66 applications** de la base de données :
 - Navigation avec N (Next) / P (Previous)
 
 **b) Browse by Category**
-- 19 catégories disponibles :
+- 20 catégories disponibles :
   - Browser (3 apps)
   - Media (4 apps)
-  - Development (12 apps)
-  - Gaming (5 apps)
-  - Communication (6 apps)
-  - Productivity (8 apps)
-  - Utilities (10 apps)
+  - Development (7 apps)
+  - Gaming (4 apps)
+  - Communication (4 apps)
+  - Productivity (2 apps)
+  - Utility (8 apps)
+  - Security (9 apps)
   - ...et plus
 
 **c) Browse by Tag**
@@ -120,7 +121,7 @@ Office (35 apps) = Base + 5
   ↓
 Gaming (39 apps) = Office + 4
   ↓
-Personnel (65 apps) = Gaming + 26
+Personnel (64 apps) = Gaming + 25
 ```
 
 ---
@@ -147,7 +148,7 @@ Inherit from: Base (30 apps)
 Méthodes disponibles :
 
 **a) Browse and Select** (Recommandé)
-- Add by Category (ex: Development → 12 apps)
+- Add by Category (ex: Development → 7 apps)
 - Add by Tag (ex: dev → 15 apps)
 - Add by Search (ex: "node" → NodeJS)
 - Add by AppId (ex: VSCode)
@@ -186,22 +187,22 @@ Le profil est sauvegardé dans `Profiles/MonProfilDev.json` et immédiatement di
 Vue d'ensemble complète de la base de données :
 
 ```
-Total Applications:      66
-Verified Applications:   65 (98%)
-Categories:              19
+Total Applications:      64
+Verified Applications:   63 (98%)
+Categories:              20
 
 Sources:
-  Winget:                63
-  Chocolatey:            58
+  Winget:                61
+  Chocolatey:            56
   Store:                 5
   DirectUrl:             3
 
 Top 5 Categories:
-  Development            12
-  Utilities              10
-  Productivity           8
-  Communication          6
-  Gaming                 5
+  Security               9
+  Utility                8
+  Development            7
+  Diagnostic             5
+  Network                5
 ```
 
 ---
@@ -265,7 +266,7 @@ Database Loaded:         True
 3. Name: "DevFullStack"
 4. Inherits: Base
 5. Browse and Select:
-   - Add by Category → Development (12 apps)
+   - Add by Category → Development (7 apps)
    - Add by AppId → Docker, Postman
 6. Save
 7. Deploy Profile → DevFullStack
@@ -434,7 +435,7 @@ Win11Forge/
 Win11Forge/Apps/Database/applications.json
 ```
 
-Si absent, restaurer depuis backup ou réinstaller Win11Forge v2.2.0.
+Si absent, restaurer depuis backup ou réinstaller Win11Forge v2.3.0.
 
 ### Problème : Parallel mode non disponible
 
@@ -498,7 +499,7 @@ Pour créer un profil dev minimal :
 3. Inherits: Base
 4. Add by Tag → "dev"
 5. Save
-→ Résultat : Profil avec Base + 15 dev tools
+→ Résultat : Profil avec Base + dev tools
 ```
 
 ---
@@ -524,11 +525,11 @@ Résultat: 42 apps gaming + périphériques
 Name:        DevPolyglot
 Inherits:    Base
 Applications:
-  - Category: Development (12 apps)
+  - Category: Development (7 apps)
   - Manual: Rust, Go, Ruby, PHP
   - Search: "compiler"
 
-Résultat: Base + 16 dev tools
+Résultat: Base + dev tools
 ```
 
 ### Exemple 3 : Profil Bureautique Minimal
@@ -674,7 +675,7 @@ Win11Forge/
 - **Database** : `Apps/README.md` (documentation complète de la base)
 - **Quick Start** : `Apps/QUICK_START.md` (démarrage rapide 5 min)
 - **Integration** : `DATABASE_INTEGRATION.md` (intégration technique)
-- **What's New** : `WHATS_NEW_v2.2.md` (nouveautés v2.2.0)
+- **What's New** : `WHATS_NEW_v2.3.md` (nouveautés v2.3.0)
 
 ---
 
@@ -716,5 +717,5 @@ L'interface graphique Win11Forge v1.0.0 transforme le framework en un outil **ac
 
 **Version** : 1.0.0
 **Date** : 2025-10-03
-**Compatibilité** : Win11Forge v2.2.0+
+**Compatibilité** : Win11Forge v2.3.0+
 **Statut** : ✅ Production Ready

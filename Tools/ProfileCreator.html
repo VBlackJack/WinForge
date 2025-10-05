@@ -824,7 +824,7 @@
             const profile = {
                 Name: document.getElementById('profileName').value || "CustomProfile",
                 Description: document.getElementById('profileDescription').value || "Profil personnalisé",
-                Version: "2.2.0",
+                Version: "2.3.0",
                 Inherits: [],
                 Applications: [],
                 SystemConfig: {}
@@ -836,11 +836,11 @@
                 profile.Inherits.push(inherit);
             }
 
-            // Applications (v2.2.0 format: just AppIds)
+            // Applications (v2.3.0 format: just AppIds)
             const selectedApps = document.querySelectorAll('#step3 input[type="checkbox"]:checked');
             selectedApps.forEach(checkbox => {
                 const appId = checkbox.value;
-                // In v2.2.0, we just add the AppId string
+                // In v2.3.0, we just add the AppId string
                 profile.Applications.push(appId);
             });
 
@@ -1031,7 +1031,7 @@
                     // Then check the apps from the profile
                     if (profile.Applications && Array.isArray(profile.Applications)) {
                         profile.Applications.forEach(app => {
-                            // v2.2.0 format: just AppId strings
+                            // v2.3.0 format: just AppId strings
                             if (typeof app === 'string') {
                                 const checkbox = document.getElementById(`app_${app}`);
                                 if (checkbox) checkbox.checked = true;

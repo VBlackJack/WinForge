@@ -14,7 +14,7 @@
 .NOTES
     Author: Julien Bombled
     Version: 1.0.0
-    Requires: Administrator privileges, PowerShell 5.1+, Win11Forge v2.2.0+
+    Requires: Administrator privileges, PowerShell 5.1+, Win11Forge v2.3.0+
 #>
 
 [CmdletBinding()]
@@ -60,7 +60,7 @@ if (-not (Test-IsAdministrator)) {
 
 Write-Host ""
 Write-Host "═══════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  Win11Forge v2.2.0 - Graphical User Interface" -ForegroundColor Cyan
+Write-Host "  Win11Forge v2.3.0 - Graphical User Interface" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 

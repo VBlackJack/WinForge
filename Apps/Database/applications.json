@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "DatabaseVersion": "2.3.0",
-  "LastUpdated": "2025-10-04",
-  "TotalApplications": 66,
+  "LastUpdated": "2025-10-05",
+  "TotalApplications": 64,
   "Applications": {
     "GoogleChrome": {
       "Name": "Google Chrome",
@@ -1867,6 +1867,11 @@
       "Description": "Multimedia management tools",
       "DisplayName": "🎵 Multimédia",
       "Count": 4
+    },
+    "3DPrint": {
+      "Description": "3D printing and slicing tools",
+      "DisplayName": "🖨️ Impression 3D",
+      "Count": 1
     }
   },
   "Tags": {
