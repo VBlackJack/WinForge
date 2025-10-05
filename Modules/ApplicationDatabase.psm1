@@ -206,7 +206,8 @@ function ConvertTo-ProfileApplication {
     )
 
     # Use defaults from database if not specified
-    if ($null -eq $Priority -or $Priority -eq 0) {
+    # Allow explicit Priority = 0 (highest priority), only use default if truly not specified
+    if ($null -eq $Priority) {
         $Priority = $App.DefaultPriority
     }
 

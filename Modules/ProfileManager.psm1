@@ -295,7 +295,8 @@ function Resolve-ApplicationReference {
             }
 
             # Convert from database
-            $priority = if ($AppReference.Priority) { $AppReference.Priority } else { $null }
+            # Use $null -ne to handle explicit Priority = 0 (highest priority)
+            $priority = if ($null -ne $AppReference.Priority) { $AppReference.Priority } else { $null }
             $required = if ($null -ne $AppReference.Required) { $AppReference.Required } else { $null }
 
             $app = ConvertTo-ProfileApplication -App $dbApp -Priority $priority -Required $required

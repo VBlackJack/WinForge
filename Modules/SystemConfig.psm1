@@ -73,7 +73,9 @@ function Set-RegistryValue {
             New-Item -Path $Path -Force | Out-Null
         }
 
-        Set-ItemProperty -Path $Path -Name $Name -Value $Value -Type $Type -Force
+        # Use New-ItemProperty with -Force to create or overwrite the value
+        # Set-ItemProperty doesn't support -Type/-PropertyType parameter
+        New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $Type -Force | Out-Null
         Write-Status -Message "Set: $Path\$Name = $Value" -Level 'Verbose'
         return $true
     }
