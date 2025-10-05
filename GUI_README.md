@@ -195,10 +195,10 @@ Verified Applications:   65 (98%)
 Categories:              20
 
 Sources:
-  Winget:                63
-  Chocolatey:            58
-  Store:                 7
-  DirectUrl:             3
+  Winget:                61
+  Chocolatey:            53
+  Store:                 14
+  DirectUrl:             7
 
 Top 5 Categories:
   Security               9
