@@ -361,7 +361,8 @@ function Install-ViaDirectDownload {
 
         $installerPath = Join-Path -Path $tempDir -ChildPath $filename
 
-        Invoke-WebRequest -Uri $Url -OutFile $installerPath -UseBasicParsing -ErrorAction Stop
+        # PS7+ doesn't have -UseBasicParsing parameter (removed)
+        Invoke-WebRequest -Uri $Url -OutFile $installerPath -ErrorAction Stop
 
         if (-not (Test-Path -Path $installerPath)) {
             Write-Status -Message "Download failed: File not found" -Level 'Error'
