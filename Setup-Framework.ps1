@@ -144,7 +144,6 @@ $fileStructure = @{
     'Root' = @(
         'Deploy-Win11Forge.bat',
         'Deploy-Win11Environment.ps1',
-        'Validate-Framework.ps1',
         'README.md',
         'QUICKSTART.md',
         'CHANGELOG.md',
@@ -287,9 +286,9 @@ if (-not $SkipValidation) {
     Write-Host ""
     Write-SetupStatus "Running framework validation..." -Level Info
     Write-Host ""
-    
-    $validationScript = Join-Path $InstallPath 'Validate-Framework.ps1'
-    
+
+    $validationScript = Join-Path $InstallPath 'Tools\Validate-Framework.ps1'
+
     if (Test-Path -Path $validationScript) {
         try {
             & $validationScript
