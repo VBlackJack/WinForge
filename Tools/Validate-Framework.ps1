@@ -32,7 +32,8 @@ $ErrorActionPreference = 'Stop'
 
 # === INITIALIZATION ===
 
-$script:ScriptRoot = $PSScriptRoot
+# Navigate to framework root (parent directory of Tools)
+$script:ScriptRoot = Split-Path -Parent $PSScriptRoot
 $script:ValidationResults = @{
     Passed = 0
     Failed = 0

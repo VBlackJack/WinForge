@@ -1,0 +1,138 @@
+﻿{
+    "Performance":  {
+                        "AuditOverhead":  {
+                                              "TotalSampleTime_MS":  141093.28209999998,
+                                              "MaxSampleTime_MS":  4738.1261,
+                                              "SampleCount":  33,
+                                              "AvgSampleTime_MS":  4275.55
+                                          },
+                        "Samples":  [
+
+                                    ],
+                        "Alerts":  [
+
+                                   ]
+                    },
+    "SystemInfo":  {
+                       "BuildNumber":  "26100",
+                       "TotalRAM_GB":  8,
+                       "CPUCores":  [
+                                        1,
+                                        1
+                                    ],
+                       "ComputerName":  "DESKTOP-9AHV641",
+                       "OSVersion":  "10.0.26100",
+                       "OS":  "Microsoft Windows 11 Entreprise",
+                       "CPULogicalProcessors":  [
+                                                    1,
+                                                    1
+                                                ],
+                       "PowerShellVersion":  "5.1.26100.6584",
+                       "CPU":  [
+                                   "AMD Ryzen 7 5800X 8-Core Processor             ",
+                                   "AMD Ryzen 7 5800X 8-Core Processor             "
+                               ]
+                   },
+    "Applications":  {
+                         "Installed":  [
+
+                                       ],
+                         "Uninstalled":  [
+
+                                         ]
+                     },
+    "FileSystem":  {
+                       "Changes":  [
+
+                                   ]
+                   },
+    "StartTime":  "\/Date(1759664200474)\/",
+    "Registry":  {
+                     "Changes":  [
+
+                                 ]
+                 },
+    "Events":  {
+                   "Errors":  [
+
+                              ],
+                   "Warnings":  [
+
+                                ],
+                   "Installations":  [
+
+                                     ]
+               },
+    "Anomalies":  [
+
+                  ],
+    "Duration":  3,
+    "EndTime":  {
+                    "value":  "\/Date(1759664383719)\/",
+                    "DisplayHint":  2,
+                    "DateTime":  "dimanche 5 octobre 2025 13:39:43"
+                },
+    "Processes":  {
+                      "Current":  [
+
+                                  ],
+                      "Created":  [
+                                      {
+                                          "Id":  14100,
+                                          "Name":  "svchost",
+                                          "StartTime":  "\/Date(1759664311978)\/",
+                                          "Path":  "C:\\WINDOWS\\System32\\svchost.exe",
+                                          "WorkingSet_MB":  8.29
+                                      },
+                                      {
+                                          "Id":  2456,
+                                          "Name":  "WmiPrvSE",
+                                          "StartTime":  "\/Date(1759664311801)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\wbem\\wmiprvse.exe",
+                                          "WorkingSet_MB":  12.77
+                                      }
+                                  ],
+                      "Terminated":  [
+                                         {
+                                             "Id":  11524,
+                                             "Name":  "MoUsoCoreWorker",
+                                             "StartTime":  "\/Date(1759664198507)\/",
+                                             "Path":  "C:\\WINDOWS\\uus\\AMD64\\MoUsoCoreWorker.exe",
+                                             "WorkingSet_MB":  24.2
+                                         },
+                                         {
+                                             "Id":  13200,
+                                             "Name":  "svchost",
+                                             "StartTime":  "\/Date(1759664198650)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  22.06
+                                         }
+                                     ]
+                  },
+    "Network":  {
+                    "Traffic":  [
+
+                                ],
+                    "Connections":  [
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759664312068)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:38:32"
+                                                          },
+                                            "Data":  [
+                                                         {
+                                                             "ProcessId":  "3016",
+                                                             "ProcessName":  "svchost",
+                                                             "ConnectionCount":  2
+                                                         },
+                                                         {
+                                                             "ProcessId":  "8084",
+                                                             "ProcessName":  "claude",
+                                                             "ConnectionCount":  3
+                                                         }
+                                                     ]
+                                        }
+                                    ]
+                }
+}

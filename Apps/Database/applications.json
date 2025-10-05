@@ -771,6 +771,10 @@
         "Method": "File",
         "Path": "C:\\Program Files\\Recuva\\Recuva64.exe"
       },
+      "InstallationOptions": {
+        "ValidExitCodes": [0, -1073741819, -1073740791],
+        "IgnoreExitCodeIfFileExists": true
+      },
       "DefaultPriority": 30,
       "DefaultRequired": false,
       "EnvironmentRestrictions": [
@@ -780,7 +784,8 @@
         "recovery",
         "utility"
       ],
-      "LastVerified": "2025-10-03",
+      "KnownIssues": "Installer crashes with exit code -1073740791 (0xC0000409) but files install correctly. Framework now ignores error if files are present.",
+      "LastVerified": "2025-10-04",
       "Verified": true,
       "Homepage": "https://www.ccleaner.com/recuva"
     },

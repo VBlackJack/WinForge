@@ -1,0 +1,1085 @@
+﻿{
+    "Performance":  {
+                        "Samples":  [
+                                        {
+                                            "ProcessCount":  181,
+                                            "RAM_Percent":  57.67,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663560496)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:26:00"
+                                                          },
+                                            "RAM_Used_GB":  4.61,
+                                            "Disk_Read_BPS":  2033786,
+                                            "RAM_Free_GB":  3.39,
+                                            "CPU_Percent":  [
+                                                                11,
+                                                                7
+                                                            ],
+                                            "Disk_Write_BPS":  29705610
+                                        },
+                                        {
+                                            "ProcessCount":  181,
+                                            "RAM_Percent":  58.27,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663565348)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:26:05"
+                                                          },
+                                            "RAM_Used_GB":  4.66,
+                                            "Disk_Read_BPS":  498505,
+                                            "RAM_Free_GB":  3.34,
+                                            "CPU_Percent":  [
+                                                                52,
+                                                                37
+                                                            ],
+                                            "Disk_Write_BPS":  0
+                                        },
+                                        {
+                                            "ProcessCount":  182,
+                                            "RAM_Percent":  58.29,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663569948)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:26:09"
+                                                          },
+                                            "RAM_Used_GB":  4.66,
+                                            "Disk_Read_BPS":  0,
+                                            "RAM_Free_GB":  3.34,
+                                            "CPU_Percent":  [
+                                                                30,
+                                                                51
+                                                            ],
+                                            "Disk_Write_BPS":  2536192
+                                        },
+                                        {
+                                            "ProcessCount":  180,
+                                            "RAM_Percent":  58.17,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663574550)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:26:14"
+                                                          },
+                                            "RAM_Used_GB":  4.65,
+                                            "Disk_Read_BPS":  0,
+                                            "RAM_Free_GB":  3.35,
+                                            "CPU_Percent":  [
+                                                                50,
+                                                                29
+                                                            ],
+                                            "Disk_Write_BPS":  0
+                                        },
+                                        {
+                                            "ProcessCount":  181,
+                                            "RAM_Percent":  58.19,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663579263)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:26:19"
+                                                          },
+                                            "RAM_Used_GB":  4.65,
+                                            "Disk_Read_BPS":  0,
+                                            "RAM_Free_GB":  3.34,
+                                            "CPU_Percent":  [
+                                                                11,
+                                                                7
+                                                            ],
+                                            "Disk_Write_BPS":  0
+                                        },
+                                        {
+                                            "ProcessCount":  181,
+                                            "RAM_Percent":  58.19,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663583839)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:26:23"
+                                                          },
+                                            "RAM_Used_GB":  4.65,
+                                            "Disk_Read_BPS":  0,
+                                            "RAM_Free_GB":  3.34,
+                                            "CPU_Percent":  [
+                                                                65,
+                                                                43
+                                                            ],
+                                            "Disk_Write_BPS":  0
+                                        },
+                                        {
+                                            "ProcessCount":  182,
+                                            "RAM_Percent":  58.49,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663588432)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:26:28"
+                                                          },
+                                            "RAM_Used_GB":  4.68,
+                                            "Disk_Read_BPS":  0,
+                                            "RAM_Free_GB":  3.32,
+                                            "CPU_Percent":  [
+                                                                45,
+                                                                80
+                                                            ],
+                                            "Disk_Write_BPS":  0
+                                        },
+                                        {
+                                            "ProcessCount":  181,
+                                            "RAM_Percent":  58.39,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663593079)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:26:33"
+                                                          },
+                                            "RAM_Used_GB":  4.67,
+                                            "Disk_Read_BPS":  10874047,
+                                            "RAM_Free_GB":  3.33,
+                                            "CPU_Percent":  [
+                                                                42,
+                                                                65
+                                                            ],
+                                            "Disk_Write_BPS":  923210
+                                        },
+                                        {
+                                            "ProcessCount":  185,
+                                            "RAM_Percent":  58.36,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663598000)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:26:38"
+                                                          },
+                                            "RAM_Used_GB":  4.67,
+                                            "Disk_Read_BPS":  0,
+                                            "RAM_Free_GB":  3.33,
+                                            "CPU_Percent":  [
+                                                                60,
+                                                                63
+                                                            ],
+                                            "Disk_Write_BPS":  0
+                                        },
+                                        {
+                                            "ProcessCount":  188,
+                                            "RAM_Percent":  58.5,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663603231)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:26:43"
+                                                          },
+                                            "RAM_Used_GB":  4.68,
+                                            "Disk_Read_BPS":  31879,
+                                            "RAM_Free_GB":  3.32,
+                                            "CPU_Percent":  [
+                                                                100,
+                                                                100
+                                                            ],
+                                            "Disk_Write_BPS":  14552971
+                                        },
+                                        {
+                                            "ProcessCount":  186,
+                                            "RAM_Percent":  58.49,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663615304)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:26:55"
+                                                          },
+                                            "RAM_Used_GB":  4.68,
+                                            "Disk_Read_BPS":  4035,
+                                            "RAM_Free_GB":  3.32,
+                                            "CPU_Percent":  [
+                                                                100,
+                                                                93
+                                                            ],
+                                            "Disk_Write_BPS":  0
+                                        },
+                                        {
+                                            "ProcessCount":  187,
+                                            "RAM_Percent":  58.77,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663621174)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:27:01"
+                                                          },
+                                            "RAM_Used_GB":  4.7,
+                                            "Disk_Read_BPS":  0,
+                                            "RAM_Free_GB":  3.3,
+                                            "CPU_Percent":  [
+                                                                100,
+                                                                100
+                                                            ],
+                                            "Disk_Write_BPS":  0
+                                        },
+                                        {
+                                            "ProcessCount":  189,
+                                            "RAM_Percent":  58.64,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663627684)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:27:07"
+                                                          },
+                                            "RAM_Used_GB":  4.69,
+                                            "Disk_Read_BPS":  0,
+                                            "RAM_Free_GB":  3.31,
+                                            "CPU_Percent":  [
+                                                                85,
+                                                                88
+                                                            ],
+                                            "Disk_Write_BPS":  15475
+                                        },
+                                        {
+                                            "ProcessCount":  182,
+                                            "RAM_Percent":  57.49,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663635959)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:27:15"
+                                                          },
+                                            "RAM_Used_GB":  4.6,
+                                            "Disk_Read_BPS":  0,
+                                            "RAM_Free_GB":  3.4,
+                                            "CPU_Percent":  [
+                                                                93,
+                                                                71
+                                                            ],
+                                            "Disk_Write_BPS":  7786248
+                                        },
+                                        {
+                                            "ProcessCount":  183,
+                                            "RAM_Percent":  56.43,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663641843)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:27:21"
+                                                          },
+                                            "RAM_Used_GB":  4.51,
+                                            "Disk_Read_BPS":  1052386,
+                                            "RAM_Free_GB":  3.48,
+                                            "CPU_Percent":  [
+                                                                100,
+                                                                100
+                                                            ],
+                                            "Disk_Write_BPS":  15619
+                                        },
+                                        {
+                                            "ProcessCount":  181,
+                                            "RAM_Percent":  57.22,
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759663647854)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "dimanche 5 octobre 2025 13:27:27"
+                                                          },
+                                            "RAM_Used_GB":  4.58,
+                                            "Disk_Read_BPS":  0,
+                                            "RAM_Free_GB":  3.42,
+                                            "CPU_Percent":  [
+                                                                75,
+                                                                74
+                                                            ],
+                                            "Disk_Write_BPS":  0
+                                        }
+                                    ],
+                        "Alerts":  [
+                                       {
+                                           "Message":  "CPU usage at 100 100%",
+                                           "Timestamp":  {
+                                                             "value":  "\/Date(1759663603231)\/",
+                                                             "DisplayHint":  2,
+                                                             "DateTime":  "dimanche 5 octobre 2025 13:26:43"
+                                                         },
+                                           "Type":  "HighCPU",
+                                           "Severity":  "Warning"
+                                       },
+                                       {
+                                           "Message":  "CPU usage at 100 93%",
+                                           "Timestamp":  {
+                                                             "value":  "\/Date(1759663615304)\/",
+                                                             "DisplayHint":  2,
+                                                             "DateTime":  "dimanche 5 octobre 2025 13:26:55"
+                                                         },
+                                           "Type":  "HighCPU",
+                                           "Severity":  "Warning"
+                                       },
+                                       {
+                                           "Message":  "CPU usage at 100 100%",
+                                           "Timestamp":  {
+                                                             "value":  "\/Date(1759663621174)\/",
+                                                             "DisplayHint":  2,
+                                                             "DateTime":  "dimanche 5 octobre 2025 13:27:01"
+                                                         },
+                                           "Type":  "HighCPU",
+                                           "Severity":  "Warning"
+                                       },
+                                       {
+                                           "Message":  "CPU usage at 93 71%",
+                                           "Timestamp":  {
+                                                             "value":  "\/Date(1759663635959)\/",
+                                                             "DisplayHint":  2,
+                                                             "DateTime":  "dimanche 5 octobre 2025 13:27:15"
+                                                         },
+                                           "Type":  "HighCPU",
+                                           "Severity":  "Warning"
+                                       },
+                                       {
+                                           "Message":  "CPU usage at 100 100%",
+                                           "Timestamp":  {
+                                                             "value":  "\/Date(1759663641843)\/",
+                                                             "DisplayHint":  2,
+                                                             "DateTime":  "dimanche 5 octobre 2025 13:27:21"
+                                                         },
+                                           "Type":  "HighCPU",
+                                           "Severity":  "Warning"
+                                       }
+                                   ]
+                    },
+    "SystemInfo":  {
+                       "BuildNumber":  "26100",
+                       "TotalRAM_GB":  8,
+                       "CPUCores":  [
+                                        1,
+                                        1
+                                    ],
+                       "ComputerName":  "DESKTOP-9AHV641",
+                       "OSVersion":  "10.0.26100",
+                       "OS":  "Microsoft Windows 11 Entreprise",
+                       "CPULogicalProcessors":  [
+                                                    1,
+                                                    1
+                                                ],
+                       "PowerShellVersion":  "5.1.26100.6584",
+                       "CPU":  [
+                                   "AMD Ryzen 7 5800X 8-Core Processor             ",
+                                   "AMD Ryzen 7 5800X 8-Core Processor             "
+                               ]
+                   },
+    "Applications":  {
+                         "Installed":  [
+
+                                       ],
+                         "Uninstalled":  [
+
+                                         ]
+                     },
+    "FileSystem":  {
+                       "Changes":  [
+
+                                   ]
+                   },
+    "StartTime":  "\/Date(1759663552990)\/",
+    "Registry":  {
+                     "Changes":  [
+
+                                 ]
+                 },
+    "Events":  {
+                   "Errors":  [
+
+                              ],
+                   "Warnings":  [
+
+                                ],
+                   "Installations":  [
+
+                                     ]
+               },
+    "Anomalies":  [
+                      {
+                          "Message":  "CPU usage at 100 100%",
+                          "Timestamp":  {
+                                            "value":  "\/Date(1759663603231)\/",
+                                            "DisplayHint":  2,
+                                            "DateTime":  "dimanche 5 octobre 2025 13:26:43"
+                                        },
+                          "Type":  "HighCPU",
+                          "Severity":  "Warning"
+                      },
+                      {
+                          "Message":  "CPU usage at 100 93%",
+                          "Timestamp":  {
+                                            "value":  "\/Date(1759663615304)\/",
+                                            "DisplayHint":  2,
+                                            "DateTime":  "dimanche 5 octobre 2025 13:26:55"
+                                        },
+                          "Type":  "HighCPU",
+                          "Severity":  "Warning"
+                      },
+                      {
+                          "Message":  "CPU usage at 100 100%",
+                          "Timestamp":  {
+                                            "value":  "\/Date(1759663621174)\/",
+                                            "DisplayHint":  2,
+                                            "DateTime":  "dimanche 5 octobre 2025 13:27:01"
+                                        },
+                          "Type":  "HighCPU",
+                          "Severity":  "Warning"
+                      },
+                      {
+                          "Message":  "CPU usage at 93 71%",
+                          "Timestamp":  {
+                                            "value":  "\/Date(1759663635959)\/",
+                                            "DisplayHint":  2,
+                                            "DateTime":  "dimanche 5 octobre 2025 13:27:15"
+                                        },
+                          "Type":  "HighCPU",
+                          "Severity":  "Warning"
+                      },
+                      {
+                          "Message":  "CPU usage at 100 100%",
+                          "Timestamp":  {
+                                            "value":  "\/Date(1759663641843)\/",
+                                            "DisplayHint":  2,
+                                            "DateTime":  "dimanche 5 octobre 2025 13:27:21"
+                                        },
+                          "Type":  "HighCPU",
+                          "Severity":  "Warning"
+                      }
+                  ],
+    "Duration":  60,
+    "EndTime":  {
+                    "value":  "\/Date(1759663652320)\/",
+                    "DisplayHint":  2,
+                    "DateTime":  "dimanche 5 octobre 2025 13:27:32"
+                },
+    "Processes":  {
+                      "Current":  [
+
+                                  ],
+                      "Created":  [
+                                      {
+                                          "Id":  10516,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663554975)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  38.16
+                                      },
+                                      {
+                                          "Id":  13420,
+                                          "Name":  "WmiApSrv",
+                                          "StartTime":  "\/Date(1759663558748)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\wbem\\WmiApSrv.exe",
+                                          "WorkingSet_MB":  11.42
+                                      },
+                                      {
+                                          "Id":  10600,
+                                          "Name":  "WmiPrvSE",
+                                          "StartTime":  "\/Date(1759663559506)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\wbem\\wmiprvse.exe",
+                                          "WorkingSet_MB":  17.6
+                                      },
+                                      {
+                                          "Id":  12128,
+                                          "Name":  "WmiPrvSE",
+                                          "StartTime":  "\/Date(1759663557832)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\wbem\\wmiprvse.exe",
+                                          "WorkingSet_MB":  48.23
+                                      },
+                                      {
+                                          "Id":  5260,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759663569406)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                          "WorkingSet_MB":  46.97
+                                      },
+                                      {
+                                          "Id":  9700,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759663569368)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                          "WorkingSet_MB":  14.45
+                                      },
+                                      {
+                                          "Id":  11900,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759663587328)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                          "WorkingSet_MB":  63.26
+                                      },
+                                      {
+                                          "Id":  12408,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759663587286)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                          "WorkingSet_MB":  14.43
+                                      },
+                                      {
+                                          "Id":  7548,
+                                          "Name":  "dllhost",
+                                          "StartTime":  "\/Date(1759663594764)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                          "WorkingSet_MB":  9.45
+                                      },
+                                      {
+                                          "Id":  5944,
+                                          "Name":  "WindowsTerminal",
+                                          "StartTime":  "\/Date(1759663594646)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminal_1.22.12111.0_x64__8wekyb3d8bbwe\\WindowsTerminal.exe",
+                                          "WorkingSet_MB":  48.65
+                                      },
+                                      {
+                                          "Id":  6468,
+                                          "Name":  "WindowsTerminal",
+                                          "StartTime":  "\/Date(1759663594844)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminal_1.22.12111.0_x64__8wekyb3d8bbwe\\WindowsTerminal.exe",
+                                          "WorkingSet_MB":  48.59
+                                      },
+                                      {
+                                          "Id":  724,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663593990)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  33.44
+                                      },
+                                      {
+                                          "Id":  13828,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663594086)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  34.45
+                                      },
+                                      {
+                                          "Id":  3460,
+                                          "Name":  "MoUsoCoreWorker",
+                                          "StartTime":  "\/Date(1759663598490)\/",
+                                          "Path":  "C:\\WINDOWS\\uus\\AMD64\\MoUsoCoreWorker.exe",
+                                          "WorkingSet_MB":  23.71
+                                      },
+                                      {
+                                          "Id":  13660,
+                                          "Name":  "RuntimeBroker",
+                                          "StartTime":  "\/Date(1759663599891)\/",
+                                          "Path":  "C:\\Windows\\System32\\RuntimeBroker.exe",
+                                          "WorkingSet_MB":  10.07
+                                      },
+                                      {
+                                          "Id":  12656,
+                                          "Name":  "svchost",
+                                          "StartTime":  "\/Date(1759663599028)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  22.72
+                                      },
+                                      {
+                                          "Id":  500,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663599561)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  35.73
+                                      },
+                                      {
+                                          "Id":  10448,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663599826)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  33.91
+                                      },
+                                      {
+                                          "Id":  13364,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663599737)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  31.77
+                                      },
+                                      {
+                                          "Id":  4212,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663614284)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  25.33
+                                      },
+                                      {
+                                          "Id":  5536,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663610980)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  37.71
+                                      },
+                                      {
+                                          "Id":  13680,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663610986)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  38.09
+                                      },
+                                      {
+                                          "Id":  6468,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759663618742)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                          "WorkingSet_MB":  14.43
+                                      },
+                                      {
+                                          "Id":  12132,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759663618795)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                          "WorkingSet_MB":  67.02
+                                      },
+                                      {
+                                          "Id":  2636,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663619440)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  28.26
+                                      },
+                                      {
+                                          "Id":  9924,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663619189)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  31.05
+                                      },
+                                      {
+                                          "Id":  3672,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759663626378)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                          "WorkingSet_MB":  14.42
+                                      },
+                                      {
+                                          "Id":  9468,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759663626431)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                          "WorkingSet_MB":  58.74
+                                      },
+                                      {
+                                          "Id":  12268,
+                                          "Name":  "dllhost",
+                                          "StartTime":  "\/Date(1759663623491)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                          "WorkingSet_MB":  9.45
+                                      },
+                                      {
+                                          "Id":  1156,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663626154)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  33.84
+                                      },
+                                      {
+                                          "Id":  9764,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663626497)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  27.89
+                                      },
+                                      {
+                                          "Id":  13716,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759663627297)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  22.56
+                                      },
+                                      {
+                                          "Id":  4136,
+                                          "Name":  "dllhost",
+                                          "StartTime":  "\/Date(1759663637442)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                          "WorkingSet_MB":  27.38
+                                      },
+                                      {
+                                          "Id":  14000,
+                                          "Name":  "dllhost",
+                                          "StartTime":  "\/Date(1759663637651)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                          "WorkingSet_MB":  9.59
+                                      },
+                                      {
+                                          "Id":  8012,
+                                          "Name":  "explorer",
+                                          "StartTime":  "\/Date(1759663636325)\/",
+                                          "Path":  "C:\\WINDOWS\\Explorer.EXE",
+                                          "WorkingSet_MB":  123.52
+                                      },
+                                      {
+                                          "Id":  6496,
+                                          "Name":  "msedgewebview2",
+                                          "StartTime":  "\/Date(1759663641400)\/",
+                                          "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                          "WorkingSet_MB":  3.03
+                                      },
+                                      {
+                                          "Id":  6980,
+                                          "Name":  "msedgewebview2",
+                                          "StartTime":  "\/Date(1759663641396)\/",
+                                          "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                          "WorkingSet_MB":  18.62
+                                      },
+                                      {
+                                          "Id":  8052,
+                                          "Name":  "msedgewebview2",
+                                          "StartTime":  "\/Date(1759663640546)\/",
+                                          "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                          "WorkingSet_MB":  9.08
+                                      },
+                                      {
+                                          "Id":  12824,
+                                          "Name":  "msedgewebview2",
+                                          "StartTime":  "\/Date(1759663641323)\/",
+                                          "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                          "WorkingSet_MB":  43.91
+                                      },
+                                      {
+                                          "Id":  13740,
+                                          "Name":  "msedgewebview2",
+                                          "StartTime":  "\/Date(1759663640463)\/",
+                                          "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                          "WorkingSet_MB":  92.31
+                                      },
+                                      {
+                                          "Id":  14324,
+                                          "Name":  "msedgewebview2",
+                                          "StartTime":  "\/Date(1759663641326)\/",
+                                          "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                          "WorkingSet_MB":  30.24
+                                      },
+                                      {
+                                          "Id":  14248,
+                                          "Name":  "SearchHost",
+                                          "StartTime":  "\/Date(1759663639726)\/",
+                                          "Path":  "C:\\WINDOWS\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+                                          "WorkingSet_MB":  118.79
+                                      },
+                                      {
+                                          "Id":  5400,
+                                          "Name":  "ShellExperienceHost",
+                                          "StartTime":  "\/Date(1759663638177)\/",
+                                          "Path":  "C:\\WINDOWS\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+                                          "WorkingSet_MB":  65.46
+                                      },
+                                      {
+                                          "Id":  1344,
+                                          "Name":  "userinit",
+                                          "StartTime":  "\/Date(1759663636145)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\userinit.exe",
+                                          "WorkingSet_MB":  6.64
+                                      },
+                                      {
+                                          "Id":  11232,
+                                          "Name":  "WidgetBoard",
+                                          "StartTime":  "\/Date(1759663638934)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\MicrosoftWindows.Client.WebExperience_525.24401.50.0_x64__cw5n1h2txyewy\\WidgetBoard.exe",
+                                          "WorkingSet_MB":  19.69
+                                      }
+                                  ],
+                      "Terminated":  [
+                                         {
+                                             "Id":  5260,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759663569406)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                             "WorkingSet_MB":  46.97
+                                         },
+                                         {
+                                             "Id":  9700,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759663569368)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                             "WorkingSet_MB":  14.45
+                                         },
+                                         {
+                                             "Id":  11900,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759663587328)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                             "WorkingSet_MB":  63.26
+                                         },
+                                         {
+                                             "Id":  12408,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759663587286)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                             "WorkingSet_MB":  14.43
+                                         },
+                                         {
+                                             "Id":  7548,
+                                             "Name":  "dllhost",
+                                             "StartTime":  "\/Date(1759663594764)\/",
+                                             "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                             "WorkingSet_MB":  9.45
+                                         },
+                                         {
+                                             "Id":  5944,
+                                             "Name":  "WindowsTerminal",
+                                             "StartTime":  "\/Date(1759663594646)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminal_1.22.12111.0_x64__8wekyb3d8bbwe\\WindowsTerminal.exe",
+                                             "WorkingSet_MB":  48.65
+                                         },
+                                         {
+                                             "Id":  6468,
+                                             "Name":  "WindowsTerminal",
+                                             "StartTime":  "\/Date(1759663594844)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminal_1.22.12111.0_x64__8wekyb3d8bbwe\\WindowsTerminal.exe",
+                                             "WorkingSet_MB":  48.59
+                                         },
+                                         {
+                                             "Id":  724,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663593990)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  33.44
+                                         },
+                                         {
+                                             "Id":  13828,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663594086)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  34.45
+                                         },
+                                         {
+                                             "Id":  500,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663599561)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  35.73
+                                         },
+                                         {
+                                             "Id":  10448,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663599826)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  33.91
+                                         },
+                                         {
+                                             "Id":  12520,
+                                             "Name":  "winget",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  33.45
+                                         },
+                                         {
+                                             "Id":  13364,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663599737)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  31.77
+                                         },
+                                         {
+                                             "Id":  13880,
+                                             "Name":  "winget",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  33.33
+                                         },
+                                         {
+                                             "Id":  4212,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663614284)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  25.33
+                                         },
+                                         {
+                                             "Id":  5536,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663610980)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  37.71
+                                         },
+                                         {
+                                             "Id":  13680,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663610986)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  38.09
+                                         },
+                                         {
+                                             "Id":  6468,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759663618742)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                             "WorkingSet_MB":  14.43
+                                         },
+                                         {
+                                             "Id":  12132,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759663618795)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                             "WorkingSet_MB":  67.02
+                                         },
+                                         {
+                                             "Id":  13308,
+                                             "Name":  "svchost",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  23.21
+                                         },
+                                         {
+                                             "Id":  2636,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663619440)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  28.26
+                                         },
+                                         {
+                                             "Id":  9924,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663619189)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  31.05
+                                         },
+                                         {
+                                             "Id":  3672,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759663626378)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                             "WorkingSet_MB":  14.42
+                                         },
+                                         {
+                                             "Id":  9468,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759663626431)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                             "WorkingSet_MB":  58.74
+                                         },
+                                         {
+                                             "Id":  12268,
+                                             "Name":  "dllhost",
+                                             "StartTime":  "\/Date(1759663623491)\/",
+                                             "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                             "WorkingSet_MB":  9.45
+                                         },
+                                         {
+                                             "Id":  1156,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663626154)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  33.84
+                                         },
+                                         {
+                                             "Id":  7740,
+                                             "Name":  "winget",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  24.6
+                                         },
+                                         {
+                                             "Id":  9764,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663626497)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  27.89
+                                         },
+                                         {
+                                             "Id":  13716,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759663627297)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  22.56
+                                         },
+                                         {
+                                             "Id":  3960,
+                                             "Name":  "explorer",
+                                             "StartTime":  "\/Date(1759438182891)\/",
+                                             "Path":  "C:\\WINDOWS\\explorer.exe",
+                                             "WorkingSet_MB":  182.33
+                                         },
+                                         {
+                                             "Id":  11280,
+                                             "Name":  "explorer",
+                                             "StartTime":  "\/Date(1759438174700)\/",
+                                             "Path":  "C:\\WINDOWS\\Explorer.EXE",
+                                             "WorkingSet_MB":  172.85
+                                         },
+                                         {
+                                             "Id":  8868,
+                                             "Name":  "msedgewebview2",
+                                             "StartTime":  "\/Date(1759438180861)\/",
+                                             "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                             "WorkingSet_MB":  45.47
+                                         },
+                                         {
+                                             "Id":  9708,
+                                             "Name":  "msedgewebview2",
+                                             "StartTime":  "\/Date(1759438180507)\/",
+                                             "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                             "WorkingSet_MB":  9.19
+                                         },
+                                         {
+                                             "Id":  9740,
+                                             "Name":  "msedgewebview2",
+                                             "StartTime":  "\/Date(1759438180378)\/",
+                                             "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                             "WorkingSet_MB":  106.83
+                                         },
+                                         {
+                                             "Id":  11372,
+                                             "Name":  "msedgewebview2",
+                                             "StartTime":  "\/Date(1759438180861)\/",
+                                             "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                             "WorkingSet_MB":  34.85
+                                         },
+                                         {
+                                             "Id":  12376,
+                                             "Name":  "msedgewebview2",
+                                             "StartTime":  "\/Date(1759438180910)\/",
+                                             "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                             "WorkingSet_MB":  84.19
+                                         },
+                                         {
+                                             "Id":  12388,
+                                             "Name":  "msedgewebview2",
+                                             "StartTime":  "\/Date(1759438180907)\/",
+                                             "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                             "WorkingSet_MB":  19.49
+                                         },
+                                         {
+                                             "Id":  13660,
+                                             "Name":  "RuntimeBroker",
+                                             "StartTime":  "\/Date(1759663599891)\/",
+                                             "Path":  "C:\\Windows\\System32\\RuntimeBroker.exe",
+                                             "WorkingSet_MB":  10.09
+                                         },
+                                         {
+                                             "Id":  5236,
+                                             "Name":  "SearchHost",
+                                             "StartTime":  "\/Date(1759438179595)\/",
+                                             "Path":  "C:\\WINDOWS\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+                                             "WorkingSet_MB":  116.55
+                                         },
+                                         {
+                                             "Id":  10596,
+                                             "Name":  "ShellExperienceHost",
+                                             "StartTime":  "\/Date(1759438177683)\/",
+                                             "Path":  "C:\\WINDOWS\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+                                             "WorkingSet_MB":  64.36
+                                         },
+                                         {
+                                             "Id":  6564,
+                                             "Name":  "StartMenuExperienceHost",
+                                             "StartTime":  "\/Date(1759438187730)\/",
+                                             "Path":  "C:\\WINDOWS\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe",
+                                             "WorkingSet_MB":  89.51
+                                         },
+                                         {
+                                             "Id":  5688,
+                                             "Name":  "WidgetBoard",
+                                             "StartTime":  "\/Date(1759438177307)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\MicrosoftWindows.Client.WebExperience_525.24401.50.0_x64__cw5n1h2txyewy\\WidgetBoard.exe",
+                                             "WorkingSet_MB":  21.22
+                                         },
+                                         {
+                                             "Id":  4136,
+                                             "Name":  "dllhost",
+                                             "StartTime":  "\/Date(1759663637442)\/",
+                                             "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                             "WorkingSet_MB":  27.38
+                                         },
+                                         {
+                                             "Id":  14000,
+                                             "Name":  "dllhost",
+                                             "StartTime":  "\/Date(1759663637651)\/",
+                                             "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                             "WorkingSet_MB":  9.59
+                                         },
+                                         {
+                                             "Id":  13720,
+                                             "Name":  "StartMenuExperienceHost",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  91.72
+                                         }
+                                     ]
+                  },
+    "Network":  {
+                    "Connections":  [
+
+                                    ],
+                    "Traffic":  [
+
+                                ]
+                }
+}

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Search for application sources across all package managers
 

@@ -61,32 +61,28 @@ function Get-SystemEnvironmentType {
 
     # Check Windows Sandbox first (most specific)
     if (Test-WindowsSandbox) {
-        Write-Status -Message "Environment detected: Windows Sandbox" -Level 'Info'
         return [EnvironmentType]::WindowsSandbox
     }
 
     # Check for virtualization
     $computerSystem = Get-CimInstance -ClassName Win32_ComputerSystem -ErrorAction SilentlyContinue
-    
+
     if ($computerSystem) {
         $manufacturer = $computerSystem.Manufacturer
         $model = $computerSystem.Model
 
         # VMware detection
         if ($manufacturer -match 'VMware' -or $model -match 'VMware') {
-            Write-Status -Message "Environment detected: VMware Virtual Machine" -Level 'Info'
             return [EnvironmentType]::VMware
         }
 
         # Hyper-V detection
         if ($manufacturer -match 'Microsoft Corporation' -and $model -match 'Virtual Machine') {
-            Write-Status -Message "Environment detected: Hyper-V Virtual Machine" -Level 'Info'
             return [EnvironmentType]::HyperV
         }
 
         # VirtualBox detection
         if ($manufacturer -match 'innotek' -or $model -match 'VirtualBox') {
-            Write-Status -Message "Environment detected: VirtualBox Virtual Machine" -Level 'Info'
             return [EnvironmentType]::VirtualBox
         }
     }
@@ -98,17 +94,14 @@ function Get-SystemEnvironmentType {
         $serialNumber = $bios.SerialNumber
 
         if ($biosVersion -match 'VBOX' -or $serialNumber -match 'VirtualBox') {
-            Write-Status -Message "Environment detected: VirtualBox Virtual Machine (BIOS)" -Level 'Info'
             return [EnvironmentType]::VirtualBox
         }
 
         if ($biosVersion -match 'VMware' -or $serialNumber -match 'VMware') {
-            Write-Status -Message "Environment detected: VMware Virtual Machine (BIOS)" -Level 'Info'
             return [EnvironmentType]::VMware
         }
 
         if ($biosVersion -match 'Hyper-V' -or $biosVersion -match 'VRTUAL') {
-            Write-Status -Message "Environment detected: Hyper-V Virtual Machine (BIOS)" -Level 'Info'
             return [EnvironmentType]::HyperV
         }
     }
@@ -117,7 +110,6 @@ function Get-SystemEnvironmentType {
     try {
         $processor = Get-CimInstance -ClassName Win32_Processor -ErrorAction SilentlyContinue | Select-Object -First 1
         if ($processor -and $processor.Name -match 'Virtual') {
-            Write-Status -Message "Environment detected: Virtual Machine (Processor)" -Level 'Info'
             return [EnvironmentType]::Unknown
         }
     } catch {
@@ -125,7 +117,6 @@ function Get-SystemEnvironmentType {
     }
 
     # Default to physical machine
-    Write-Status -Message "Environment detected: Physical Machine" -Level 'Info'
     return [EnvironmentType]::Physical
 }
 

@@ -138,6 +138,79 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 
 ---
 
+## 🔍 Surveillance et Audit
+
+### System-Audit.ps1 ⭐ NEW v2.0.0 - UNIVERSAL
+**Outil d'audit système universel - Fonctionne avec N'IMPORTE QUEL script ou processus**
+
+```powershell
+# ═══ Win11Forge Deployment ═══
+.\Tools\System-Audit.ps1 -MonitorLogPath ".\Logs" -LogCompletionMarkers "Deployment completed|Summary" -GenerateReport
+
+# ═══ Surveiller un processus spécifique (par nom) ═══
+.\Tools\System-Audit.ps1 -MonitorProcessName "powershell" -AuditName "PowerShellAudit" -GenerateReport
+
+# ═══ Surveiller un processus spécifique (par PID) ═══
+$proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThru
+.\Tools\System-Audit.ps1 -MonitorProcessId $proc.Id -AuditName "MonScript" -GenerateReport
+
+# ═══ Surveiller un fichier log spécifique ═══
+.\Tools\System-Audit.ps1 -MonitorLogFile "C:\Logs\app.log" -LogCompletionMarkers "DONE|COMPLETED" -GenerateReport
+
+# ═══ Audit temporisé (sans auto-stop) ═══
+.\Tools\System-Audit.ps1 -Duration 30 -AuditName "PerformanceTest" -GenerateReport
+
+# ═══ Audit complet avec toutes les options ═══
+.\Tools\System-Audit.ps1 -MonitorProcessName "installer" `
+    -MonitorRegistry -MonitorFileSystem `
+    -SampleInterval 5 -GenerateReport `
+    -AuditName "CompleteInstallAudit"
+```
+
+**🆕 Nouvelles fonctionnalités v2.0.0 - UNIVERSEL** :
+- ✅ **100% Générique** : Fonctionne avec n'importe quel script, processus ou log
+- ✅ **Monitor par Process** : Surveille un processus (nom ou PID) et s'arrête à sa terminaison
+- ✅ **Monitor par Log** : Surveille un fichier log et détecte sa complétion
+- ✅ **Monitor par Directory** : Détecte nouveau log dans un dossier et surveille sa complétion
+- ✅ **Marqueurs personnalisables** : Regex pour détecter la fin (default: "completed|finished|Summary")
+- ✅ **Inactivité configurable** : Temps sans écriture = complet (default: 2 min)
+- ✅ **Nommage personnalisé** : `-AuditName` pour identifier vos audits
+- ✅ **Event Viewer amélioré** : Critical/Error/Warning + Winget/DesktopAppInstaller
+- ✅ **Rapports nommés** : `AuditName_YYYYMMDD_HHMMSS.json/html`
+
+**Métriques surveillées** :
+- **Performance** : CPU, RAM, Disk I/O en temps réel
+- **Processus** : Création/terminaison, PID, chemins d'exécution
+- **Applications** : Installations/désinstallations détectées automatiquement
+- **Registre** : Surveillance des clés critiques (optionnel)
+- **Fichiers** : Activité système de fichiers (optionnel)
+- **Réseau** : Connexions actives, statistiques par processus
+- **Event Viewer** : Critical/Error/Warning (Application + System)
+- **Installations** : MSI Installer + Winget/DesktopAppInstaller
+- **Anomalies** : Détection automatique (CPU >90%, RAM >90%, Disk I/O >100MB/s)
+
+**Rapports générés** :
+- `AuditReports/audit_YYYYMMDD_HHMMSS.json` - Données complètes
+- `AuditReports/audit_YYYYMMDD_HHMMSS.html` - Rapport visuel (avec -GenerateReport)
+
+**Affichage temps réel** :
+```
+[20:15:32] Starting system audit...
+[Performance] CPU: 45% | RAM: 62% (8.3GB) | Processes: 187
+[20:15:34] New process: winget.exe (PID: 12345)
+[20:15:45] Application installed: Recuva 1.53.2083
+[20:15:50] ALERT: High CPU usage at 92%
+```
+
+**Utilité** :
+- Surveiller les déploiements Win11Forge en parallèle
+- Diagnostiquer les problèmes d'installation
+- Analyser l'impact performance des applications
+- Détecter les anomalies système
+- Audit de conformité et sécurité
+
+---
+
 ## 📊 Fichiers de Support
 
 | Fichier | Description |
@@ -181,6 +254,14 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 - Optimisation du démarrage Windows
 - Désactivation d'applications au boot
 - Création de blacklist personnalisée
+
+**System-Audit.ps1** (v2.0.0 - UNIVERSEL) :
+- Surveiller N'IMPORTE QUEL script, processus ou déploiement
+- Analyser l'impact performance de toute opération
+- Diagnostiquer des problèmes d'installation ou d'exécution
+- Audit de sécurité et conformité
+- Monitoring automatique avec arrêt intelligent
+- Rapports détaillés (JSON + HTML)
 
 ---
 

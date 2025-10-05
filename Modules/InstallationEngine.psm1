@@ -243,7 +243,7 @@ function Install-ViaWinget {
             return $true
         }
 
-        Write-Status -Message "Winget installation failed (exit code: $($process.ExitCode))" -Level 'Verbose'
+        Write-Status -Message "Winget installation failed (exit code: $($process.ExitCode))" -Level 'Warning'
         return $false
 
     } catch {
@@ -593,6 +593,16 @@ function Install-Application {
             $result.Message = 'Installed via Winget'
             return $result
         } else {
+            # Check if files exist despite failure (e.g., Recuva installer crash)
+            if ($Application.InstallationOptions -and $Application.InstallationOptions.IgnoreExitCodeIfFileExists) {
+                if (Test-ApplicationInstalled -Application $Application) {
+                    Write-Status -Message "Installation succeeded despite exit code (files verified)" -Level 'Success'
+                    $result.Success = $true
+                    $result.Method = 'Winget'
+                    $result.Message = 'Installed via Winget (verified by file detection)'
+                    return $result
+                }
+            }
             $failureReasons += "Winget failed (ID: $($sources.Winget))"
         }
     }
@@ -606,6 +616,16 @@ function Install-Application {
             $result.Message = 'Installed via Chocolatey'
             return $result
         } else {
+            # Check if files exist despite failure (e.g., Recuva installer crash)
+            if ($Application.InstallationOptions -and $Application.InstallationOptions.IgnoreExitCodeIfFileExists) {
+                if (Test-ApplicationInstalled -Application $Application) {
+                    Write-Status -Message "Installation succeeded despite exit code (files verified)" -Level 'Success'
+                    $result.Success = $true
+                    $result.Method = 'Chocolatey'
+                    $result.Message = 'Installed via Chocolatey (verified by file detection)'
+                    return $result
+                }
+            }
             $failureReasons += "Chocolatey failed (Package: $($sources.Chocolatey))"
         }
     }
