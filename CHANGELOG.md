@@ -143,7 +143,7 @@ Cette version corrige des problèmes majeurs de détection d'applications Store,
 
 ### 📊 Statistiques v2.3.0
 
-**Applications** : 67 (stable vs v2.2.0)
+**Applications** : 66 (stable vs v2.2.0)
 **Profils** : 4 (Base, Office, Gaming, Personnel)
 **Modules** : 10 (+3 vs v2.2.0: StartMenuLayout, StartMenuPinning, StartupManager)
 **Tests** : +1 (Test-ProtonAppsDetection.ps1)
@@ -431,7 +431,7 @@ Cette version majeure introduit une refonte complète de l'architecture avec une
 
 ### 📊 Statistiques v2.2.0
 
-**Applications** : 67 (+1 vs v2.1.3)
+**Applications** : 66 (vs v2.1.3)
 **Profils** : 4 (Base, Office, Gaming, Personnel)
 **Modules** : 7 (+1 GUI)
 **Outils** : 6 (+2 vs v2.1.3)
