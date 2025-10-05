@@ -643,7 +643,8 @@ function Install-Application {
             return $result
         } else {
             # Check if files exist despite failure (e.g., Recuva installer crash)
-            if ($Application.InstallationOptions -and $Application.InstallationOptions.IgnoreExitCodeIfFileExists) {
+            if ($Application.PSObject.Properties['InstallationOptions'] -and
+                $Application.InstallationOptions.IgnoreExitCodeIfFileExists) {
                 if (Test-ApplicationInstalled -Application $Application) {
                     Write-Status -Message "Installation succeeded despite exit code (files verified)" -Level 'Success'
                     $result.Success = $true
@@ -666,7 +667,8 @@ function Install-Application {
             return $result
         } else {
             # Check if files exist despite failure (e.g., Recuva installer crash)
-            if ($Application.InstallationOptions -and $Application.InstallationOptions.IgnoreExitCodeIfFileExists) {
+            if ($Application.PSObject.Properties['InstallationOptions'] -and
+                $Application.InstallationOptions.IgnoreExitCodeIfFileExists) {
                 if (Test-ApplicationInstalled -Application $Application) {
                     Write-Status -Message "Installation succeeded despite exit code (files verified)" -Level 'Success'
                     $result.Success = $true
