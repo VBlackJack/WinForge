@@ -199,14 +199,17 @@ function ConvertTo-ProfileApplication {
         [PSCustomObject]$App,
 
         [Parameter(Mandatory = $false)]
-        [int]$Priority,
+        [AllowNull()]
+        [object]$Priority = $null,
 
         [Parameter(Mandatory = $false)]
-        [bool]$Required
+        [AllowNull()]
+        [object]$Required = $null
     )
 
     # Use defaults from database if not specified
     # Allow explicit Priority = 0 (highest priority), only use default if truly not specified
+    # Use [object] type with $null default to avoid PowerShell auto-coercion (int→0, bool→$false)
     if ($null -eq $Priority) {
         $Priority = $App.DefaultPriority
     }
