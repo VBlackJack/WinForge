@@ -131,7 +131,7 @@ Start-Win11ForgeGUI-Admin.bat → Option 8
 **Location:** `Apps/Database/applications.json`
 
 **Format v2.3.0:**
-- **64 applications** référencées
+- **66 applications** référencées en base de données (64 dans les profils actifs)
 - Sources multiples : Winget, Chocolatey, Microsoft Store, DirectUrl
 - Métadonnées complètes : détection, priorité, tags, vérification
 - Compatible avec ProfileCreator.html
@@ -179,9 +179,9 @@ Personnel (+ 25 apps = 64 total)
 
 ## 🆕 Nouveautés v2.3.0
 
-✅ Base de données centralisée (64 applications)
+✅ Base de données centralisée (66 applications)
 ✅ Interface GUI PowerShell interactive
-✅ ProfileCreator.html avec 64 apps dynamiques
+✅ ProfileCreator.html avec 66 apps dynamiques
 ✅ Recherche automatique dans stores (Search-ApplicationSources.ps1)
 ✅ Ajout d'applications via GUI
 ✅ Édition de profils via HTML

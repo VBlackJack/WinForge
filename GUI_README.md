@@ -49,7 +49,7 @@ Déployez un profil complet en quelques clics :
 
 ### 2. **Browse Applications** - Navigateur d'Applications
 
-Explorez les **64 applications** de la base de données :
+Explorez les **66 applications** de la base de données :
 
 #### Options de Navigation :
 
@@ -62,9 +62,9 @@ Explorez les **64 applications** de la base de données :
 - 20 catégories disponibles :
   - Browser (3 apps)
   - Media (4 apps)
-  - Development (7 apps)
-  - Gaming (4 apps)
-  - Communication (4 apps)
+  - Development (6 apps)
+  - Gaming (3 apps)
+  - Communication (3 apps)
   - Productivity (2 apps)
   - Utility (8 apps)
   - Security (9 apps)
@@ -187,20 +187,20 @@ Le profil est sauvegardé dans `Profiles/MonProfilDev.json` et immédiatement di
 Vue d'ensemble complète de la base de données :
 
 ```
-Total Applications:      64
-Verified Applications:   63 (98%)
+Total Applications:      66
+Verified Applications:   65 (98%)
 Categories:              20
 
 Sources:
-  Winget:                61
-  Chocolatey:            56
-  Store:                 5
+  Winget:                63
+  Chocolatey:            58
+  Store:                 7
   DirectUrl:             3
 
 Top 5 Categories:
   Security               9
   Utility                8
-  Development            7
+  Development            6
   Diagnostic             5
   Network                5
 ```
@@ -266,7 +266,7 @@ Database Loaded:         True
 3. Name: "DevFullStack"
 4. Inherits: Base
 5. Browse and Select:
-   - Add by Category → Development (7 apps)
+   - Add by Category → Development (6 apps)
    - Add by AppId → Docker, Postman
 6. Save
 7. Deploy Profile → DevFullStack

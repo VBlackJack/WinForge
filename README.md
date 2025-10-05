@@ -14,7 +14,7 @@ Win11Forge est un framework PowerShell conçu pour automatiser entièrement le d
 ### ✨ Caractéristiques principales
 
 - ✅ **Interface GUI PowerShell** : Menu interactif complet pour navigation facile
-- ✅ **Base de données centralisée** : 64 applications avec sources multiples
+- ✅ **Base de données centralisée** : 66 applications en base de données (64 dans les profils actifs)
 - ✅ **Détection d'environnement** : Sandbox Windows, VMware, Hyper-V, VirtualBox, PC physique
 - ✅ **Installation multi-sources** : Winget → Chocolatey → Microsoft Store → Téléchargement direct
 - ✅ **Installation parallèle** : Jusqu'à 5 applications simultanées (PowerShell 7+)
@@ -91,7 +91,7 @@ Start-Win11ForgeGUI-Admin.bat
 
 **Menu principal :**
 1. Deploy Profile - Déployer un profil
-2. Browse Applications Database - Parcourir les 64 apps
+2. Browse Applications Database - Parcourir les 66 apps
 3. Browse Profiles - Voir les profils disponibles
 4. Create Custom Profile - Créer un profil personnalisé
 5. Database Statistics - Statistiques de la base
@@ -134,7 +134,7 @@ Tools\ProfileCreator.html
 ```
 
 **Fonctionnalités :**
-- ✅ **64 applications** disponibles (base de données centralisée)
+- ✅ **66 applications** disponibles (base de données centralisée)
 - ✅ **Création de profils** en 6 étapes guidées
 - ✅ **Édition de profils** existants (charger JSON)
 - ✅ **Filtrage par catégorie** et tags
