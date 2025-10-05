@@ -361,8 +361,12 @@ function Install-ViaDirectDownload {
 
         $installerPath = Join-Path -Path $tempDir -ChildPath $filename
 
-        # PS7+ doesn't have -UseBasicParsing parameter (removed)
-        Invoke-WebRequest -Uri $Url -OutFile $installerPath -ErrorAction Stop
+        # PS5.1 requires -UseBasicParsing, PS7+ removed it
+        if ($PSVersionTable.PSVersion.Major -lt 6) {
+            Invoke-WebRequest -Uri $Url -OutFile $installerPath -UseBasicParsing -ErrorAction Stop
+        } else {
+            Invoke-WebRequest -Uri $Url -OutFile $installerPath -ErrorAction Stop
+        }
 
         if (-not (Test-Path -Path $installerPath)) {
             Write-Status -Message "Download failed: File not found" -Level 'Error'
@@ -1102,7 +1106,7 @@ function Install-ApplicationsParallel {
 
                     Write-ParallelLog "Downloading to: $tempFile" 'Verbose'
 
-                    # PS7+ doesn't have -UseBasicParsing parameter
+                    # Parallel mode requires PS7+ which doesn't have -UseBasicParsing parameter
                     Invoke-WebRequest -Uri $sources.DirectUrl -OutFile $tempFile -ErrorAction Stop
                     Write-ParallelLog "Download completed" 'Info'
 
