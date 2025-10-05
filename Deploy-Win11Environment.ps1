@@ -217,27 +217,49 @@ Write-Log -Message "=== Environment Detection ===" -Level 'Info'
 
 try {
     $environmentReport = Get-EnvironmentReport
-    
-    Write-Log -Message "Environment Type: $($environmentReport.EnvironmentType)" -Level 'Info'
-    Write-Log -Message "Computer Name: $($environmentReport.ComputerName)" -Level 'Info'
-    Write-Log -Message "OS: $($environmentReport.OSVersion) (Build $($environmentReport.OSBuild))" -Level 'Info'
-    Write-Log -Message "Manufacturer: $($environmentReport.Manufacturer)" -Level 'Info'
-    Write-Log -Message "Model: $($environmentReport.Model)" -Level 'Info'
-    Write-Log -Message "Total Memory: $($environmentReport.TotalMemoryGB) GB" -Level 'Info'
-    Write-Log -Message "Is Virtual: $($environmentReport.IsVirtual)" -Level 'Info'
-    
-    $capabilities = $environmentReport.Capabilities
-    
-    Write-Host ""
-    Write-Log -Message "Environment Capabilities:" -Level 'Info'
-    Write-Log -Message "  - Can Install Drivers: $($capabilities.CanInstallDrivers)" -Level 'Info'
-    Write-Log -Message "  - Can Install Virtualization: $($capabilities.CanInstallVirtualization)" -Level 'Info'
-    Write-Log -Message "  - Is Persistent: $($capabilities.IsPersistent)" -Level 'Info'
-    Write-Log -Message "  - Recommended Source: $($capabilities.RecommendedPackageSource)" -Level 'Info'
-    
+
+    if ($environmentReport) {
+        Write-Log -Message "Environment Type: $($environmentReport.EnvironmentType)" -Level 'Info'
+        Write-Log -Message "Computer Name: $($environmentReport.ComputerName)" -Level 'Info'
+        Write-Log -Message "OS: $($environmentReport.OSVersion) (Build $($environmentReport.OSBuild))" -Level 'Info'
+        Write-Log -Message "Manufacturer: $($environmentReport.Manufacturer)" -Level 'Info'
+        Write-Log -Message "Model: $($environmentReport.Model)" -Level 'Info'
+        Write-Log -Message "Total Memory: $($environmentReport.TotalMemoryGB) GB" -Level 'Info'
+        Write-Log -Message "Is Virtual: $($environmentReport.IsVirtual)" -Level 'Info'
+
+        $capabilities = $environmentReport.Capabilities
+
+        Write-Host ""
+        Write-Log -Message "Environment Capabilities:" -Level 'Info'
+        Write-Log -Message "  - Can Install Drivers: $($capabilities.CanInstallDrivers)" -Level 'Info'
+        Write-Log -Message "  - Can Install Virtualization: $($capabilities.CanInstallVirtualization)" -Level 'Info'
+        Write-Log -Message "  - Is Persistent: $($capabilities.IsPersistent)" -Level 'Info'
+        Write-Log -Message "  - Recommended Source: $($capabilities.RecommendedPackageSource)" -Level 'Info'
+    } else {
+        throw "Get-EnvironmentReport returned null"
+    }
+
 } catch {
     Write-Log -Message "Environment detection failed: $($_.Exception.Message)" -Level 'Warning'
     Write-Log -Message "Continuing with default settings..." -Level 'Warning'
+
+    # Create fallback environment report to prevent null reference errors
+    $environmentReport = [PSCustomObject]@{
+        EnvironmentType = 'Unknown'
+        ComputerName = $env:COMPUTERNAME
+        OSVersion = 'Unknown'
+        OSBuild = 'Unknown'
+        Manufacturer = 'Unknown'
+        Model = 'Unknown'
+        TotalMemoryGB = 0
+        IsVirtual = $false
+        Capabilities = @{
+            CanInstallDrivers = $true
+            CanInstallVirtualization = $true
+            IsPersistent = $true
+            RecommendedPackageSource = 'Winget'
+        }
+    }
 }
 
 Write-Host ""
@@ -358,10 +380,13 @@ if (-not $TestMode) {
         
         # Installation parallèle
         $installResults = Install-ApplicationsParallel -Applications $applications -Force:$Force -MaxParallel $MaxParallelJobs
-        
+
         # Traiter les résultats
         foreach ($result in $installResults) {
-            if ($result.AlreadyInstalled) {
+            if ($result.Skipped) {
+                # App skipped due to environment restrictions
+                $script:DeploymentStats.Skipped++
+            } elseif ($result.AlreadyInstalled) {
                 $script:DeploymentStats.AlreadyInstalled++
             } elseif ($result.Success) {
                 $script:DeploymentStats.InstalledSuccessfully++

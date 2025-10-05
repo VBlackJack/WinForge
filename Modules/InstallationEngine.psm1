@@ -729,6 +729,7 @@ function Install-ApplicationsParallel {
                 $skippedApps += [PSCustomObject]@{
                     ApplicationName = $app.Name
                     Success = $false
+                    Skipped = $true
                     AlreadyInstalled = $false
                     Method = $null
                     Message = "Not compatible with $currentEnvironment environment"
