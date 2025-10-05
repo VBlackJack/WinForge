@@ -74,9 +74,6 @@ Win11Forge/
 │   ├── Validate-AppDatabase.ps1      # Validation de la base de données
 │   └── Validate-Framework.ps1        # Validation complète du framework
 │
-├── 📚 Docs/                           # Documentation
-│   └── profile_template.json         # Template de profil v2.3.0
-│
 ├── 🗂️ Archive/                        # Fichiers archivés
 │   ├── Profiles-v2.0-*/              # Anciens profils v2.0 (avant migration)
 │   └── Test-*.ps1                    # Scripts de test archivés
@@ -200,5 +197,5 @@ Personnel (+ 25 apps = 64 total)
 ## 🔗 Liens Utiles
 
 - GUI README : `GUI_README.md`
-- Template de profil : `Docs/profile_template.json`
 - Validation base de données : `.\Tools\Validate-AppDatabase.ps1`
+- Profils examples : `Profiles/` (Base, Office, Gaming, Personnel)

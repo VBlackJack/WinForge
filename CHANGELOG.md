@@ -51,17 +51,17 @@ Cette version corrige des problèmes majeurs de détection d'applications Store,
 
 #### WhatsApp Desktop
 - **Corrigé**: `Apps/Database/applications.json`
-  - Méthode: `StoreApp` avec `PackageName: "5319275A.WhatsAppDesktop_cv1g1gvanyjgm"`
-  - Détection par nom de base (nom complet tronqué par winget)
-  - Fallback intelligent vers nom sans suffixe
+  - Méthode: `StoreApp` avec `PackageName: "WhatsAppDesktop"`
+  - Détection par nom de base (suffixe vendor tronqué pour compatibilité)
+  - Fallback intelligent vers nom sans suffixe dans code de détection
   - Sources: Store prioritaire, sinon Winget/Chocolatey
 
 #### Quick Assist
 - **Corrigé**: `Apps/Database/applications.json`
-  - Méthode: `StoreApp` avec `PackageName: "MicrosoftCorporationII.QuickAssist_8wekyb3d8bbwe"`
-  - Détection par préfixe vendor (`MicrosoftCorporationII.QuickAssist`)
+  - Méthode: `StoreApp` avec `PackageName: "MicrosoftCorporationII.QuickAssist"`
+  - Détection par préfixe vendor (suffixe hash tronqué pour compatibilité)
   - Support multilingue (FR: Assistance Rapide, EN: Quick Assist)
-  - Résolution regex avancée pour noms tronqués
+  - Résolution regex avancée pour noms tronqués dans code de détection
 
 #### Epic Games Launcher
 - **Corrigé**: `Apps/Database/applications.json`
@@ -84,7 +84,7 @@ Cette version corrige des problèmes majeurs de détection d'applications Store,
   - **App corrigée**: De CUETools vers CUE Splitter (app Store correcte)
   - AppId: `CUESplitter`
   - Source Store uniquement: `9N68TC2SX976`
-  - Détection: `StoreApp` avec `PackageName: "63366AlexanderNing.CUESplitter_8q8b8geaq5n4w"`
+  - Détection: `StoreApp` avec `PackageName: "CUESplitter"` (nom de base)
 
 #### InstallArguments Access
 - **Corrigé**: `Modules/InstallationEngine.psm1`
@@ -261,7 +261,7 @@ Cette version majeure introduit une refonte complète de l'architecture avec une
 - **Ajouté**: Interface utilisateur interactive complète
   - Menu de navigation principal avec 8 options
   - Déploiement de profils avec sélection mode parallèle/séquentiel
-  - Navigateur d'applications (67 apps) avec filtrage par catégorie/tag
+  - Navigateur d'applications (66 apps) avec filtrage par catégorie/tag
   - Navigateur de profils avec visualisation détaillée
   - Créateur de profils custom interactif
   - Statistiques de base de données en temps réel
@@ -270,7 +270,7 @@ Cette version majeure introduit une refonte complète de l'architecture avec une
 
 #### Base de Données Centralisée (`Apps/Database/applications.json`)
 - **Ajouté**: Base de données centralisée v2.2.0
-  - 67 applications référencées (vs 66 en v2.1.3)
+  - 66 applications référencées
   - Sources multiples: Winget, Chocolatey, Microsoft Store, DirectUrl
   - Métadonnées complètes: tags, vérification, homepage, priorité
   - Détection intelligente par méthode (Registry, File, Command, StoreApp, WindowsFeature)
@@ -286,7 +286,7 @@ Cette version majeure introduit une refonte complète de l'architecture avec une
 #### ProfileCreator.html - Interface Web
 - **Ajouté**: Créateur/éditeur de profils web
   - Interface en 6 étapes guidées
-  - **67 applications** chargées dynamiquement depuis `applications-data.js`
+  - **66 applications** chargées dynamiquement depuis `applications-data.js`
   - Création de profils au format v2.2.0
   - **Nouveau**: Édition de profils existants (charger JSON)
   - Filtrage par catégorie et recherche
