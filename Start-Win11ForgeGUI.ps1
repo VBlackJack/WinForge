@@ -104,6 +104,9 @@ if (-not (Test-Path $script:GUIModule)) {
     exit 1
 }
 
+# Force unload any cached Win11Forge modules to ensure latest code is used
+Get-Module -Name Core,EnvironmentDetection,Prerequisites,ProfileManager,ApplicationDatabase,InstallationEngine,SystemConfig,Win11ForgeGUI | Remove-Module -Force -ErrorAction SilentlyContinue
+
 # Load GUI module
 try {
     Import-Module $script:GUIModule -Force
