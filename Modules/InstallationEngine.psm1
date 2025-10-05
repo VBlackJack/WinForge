@@ -1039,32 +1039,79 @@ function Install-ApplicationsParallel {
                 Write-ParallelLog "Attempting direct download installation: $($sources.DirectUrl)" 'Info'
 
                 try {
-                    $tempFile = Join-Path $env:TEMP "$($app.Name -replace '[^\w\-]', '_')_$(Get-Random).exe"
-                    Write-ParallelLog "Downloading to: $tempFile" 'Verbose'
-
-                    Invoke-WebRequest -Uri $sources.DirectUrl -OutFile $tempFile -UseBasicParsing -ErrorAction Stop
-                    Write-ParallelLog "Download completed" 'Info'
-
-                    # Check for custom install arguments
-                    $installArgs = if ($app.PSObject.Properties['InstallArguments']) {
-                        $app.InstallArguments
-                    } else {
-                        '/S'  # Default silent argument
+                    # Detect file type from URL
+                    $filename = [System.IO.Path]::GetFileName($sources.DirectUrl)
+                    if ([string]::IsNullOrWhiteSpace($filename) -or $filename -notmatch '\.[a-z]{3,4}$') {
+                        $filename = "installer_$(Get-Random).exe"
                     }
 
-                    Write-ParallelLog "Executing installer with arguments: $installArgs" 'Info'
-                    $process = Start-Process -FilePath $tempFile -ArgumentList $installArgs -Wait -NoNewWindow -PassThru
+                    $tempDir = Join-Path $env:TEMP "Win11Forge_$(Get-Random)"
+                    New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
+                    $tempFile = Join-Path $tempDir $filename
 
-                    Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue
+                    Write-ParallelLog "Downloading to: $tempFile" 'Verbose'
 
-                    if ($process.ExitCode -eq 0) {
+                    # PS7+ doesn't have -UseBasicParsing parameter
+                    Invoke-WebRequest -Uri $sources.DirectUrl -OutFile $tempFile -ErrorAction Stop
+                    Write-ParallelLog "Download completed" 'Info'
+
+                    # Auto-detect installer type
+                    $installerType = switch -Regex ($filename) {
+                        '\.msi$' { 'msi' }
+                        '\.zip$' { 'zip' }
+                        default  { 'exe' }
+                    }
+
+                    Write-ParallelLog "Detected installer type: $installerType" 'Info'
+
+                    $processExitCode = -1
+
+                    switch ($installerType) {
+                        'msi' {
+                            $msiArgs = @('/i', "`"$tempFile`"", '/qn', '/norestart')
+                            if ($app.PSObject.Properties['InstallArguments']) {
+                                $msiArgs += $app.InstallArguments -split ' '
+                            }
+                            Write-ParallelLog "MSI arguments: $($msiArgs -join ' ')" 'Verbose'
+                            $process = Start-Process -FilePath 'msiexec.exe' -ArgumentList $msiArgs -Wait -NoNewWindow -PassThru
+                            $processExitCode = $process.ExitCode
+                        }
+                        'zip' {
+                            Write-ParallelLog "Extracting ZIP archive" 'Info'
+                            $extractPath = Join-Path $tempDir "extracted"
+                            Expand-Archive -Path $tempFile -DestinationPath $extractPath -Force
+
+                            $exeFiles = Get-ChildItem -Path $extractPath -Filter *.exe -Recurse
+                            if ($exeFiles) {
+                                $setupExe = $exeFiles | Where-Object { $_.Name -match 'setup|install' } | Select-Object -First 1
+                                if (-not $setupExe) { $setupExe = $exeFiles[0] }
+
+                                $zipArgs = if ($app.PSObject.Properties['InstallArguments']) { $app.InstallArguments } else { '/S' }
+                                Write-ParallelLog "Executing: $($setupExe.FullName) $zipArgs" 'Info'
+                                $process = Start-Process -FilePath $setupExe.FullName -ArgumentList $zipArgs -Wait -NoNewWindow -PassThru
+                                $processExitCode = $process.ExitCode
+                            } else {
+                                Write-ParallelLog "No executable found in ZIP" 'Error'
+                            }
+                        }
+                        'exe' {
+                            $exeArgs = if ($app.PSObject.Properties['InstallArguments']) { $app.InstallArguments } else { '/S' }
+                            Write-ParallelLog "EXE arguments: $exeArgs" 'Verbose'
+                            $process = Start-Process -FilePath $tempFile -ArgumentList $exeArgs -Wait -NoNewWindow -PassThru
+                            $processExitCode = $process.ExitCode
+                        }
+                    }
+
+                    Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+
+                    if ($processExitCode -eq 0) {
                         Write-ParallelLog "Installed successfully via direct download" 'Success'
                         $result.Success = $true
                         $result.Method = 'DirectDownload'
                         $result.Message = 'Installed via direct download'
                         return $result
                     } else {
-                        Write-ParallelLog "Direct download installation failed (exit code: $($process.ExitCode))" 'Warning'
+                        Write-ParallelLog "Direct download installation failed (exit code: $processExitCode)" 'Warning'
                     }
                 } catch {
                     Write-ParallelLog "Direct download error: $($_.Exception.Message)" 'Error'
