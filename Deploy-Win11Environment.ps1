@@ -383,7 +383,8 @@ if (-not $TestMode) {
 
         # Traiter les résultats
         foreach ($result in $installResults) {
-            if ($result.Skipped) {
+            # Check if Skipped property exists and is true
+            if ($result.PSObject.Properties['Skipped'] -and $result.Skipped) {
                 # App skipped due to environment restrictions
                 $script:DeploymentStats.Skipped++
             } elseif ($result.AlreadyInstalled) {
