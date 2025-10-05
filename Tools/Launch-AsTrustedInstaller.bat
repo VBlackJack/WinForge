@@ -93,7 +93,7 @@ goto LAUNCH
 
 :WIN11FORGE
 set PROGRAM=powershell.exe
-set ARGS=-NoProfile -ExecutionPolicy Bypass -File "%~dp0..\Start-Win11ForgeGUI.ps1"
+set ARGS=-NoProfile -ExecutionPolicy Bypass -File %~dp0..\Start-Win11ForgeGUI.ps1
 goto LAUNCH
 
 :CUSTOM
@@ -114,9 +114,6 @@ echo  Launching: %PROGRAM%
 echo  Method: TrustedInstaller via PowerShell
 echo ========================================================================
 echo.
-
-:: Generate unique task name
-set "TASK_NAME=Win11Forge_TI_%RANDOM%"
 
 :: Ensure TrustedInstaller service is running
 echo Starting TrustedInstaller service...
