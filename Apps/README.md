@@ -165,12 +165,12 @@ Chaque application est définie avec :
 | Recovery | 💾 | 1 | Récupération de données |
 | Configuration | ⚙️ | 1 | Configuration système |
 | Productivity | 📊 | 2 | Productivité et bureautique |
-| Communication | 💬 | 4 | Messagerie et communication |
+| Communication | 💬 | 3 | Messagerie et communication |
 | Recording | 🎥 | 1 | Enregistrement et streaming |
-| Gaming | 🎮 | 4 | Plateformes de jeux |
-| Development | 💻 | 7 | Développement logiciel |
+| Gaming | 🎮 | 3 | Plateformes de jeux |
+| Development | 💻 | 6 | Développement logiciel |
 | System | ⚡ | 1 | Utilitaires système |
-| Virtualization | 📦 | 3 | Virtualisation et sandboxing |
+| Virtualization | 📦 | 2 | Virtualisation et sandboxing |
 | CloudStorage | ☁️ | 2 | Stockage cloud |
 | Compression | 📦 | 1 | Compression de fichiers |
 | Multimedia | 🎵 | 4 | Gestion multimédia |

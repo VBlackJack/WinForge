@@ -472,8 +472,8 @@
         "DirectUrl": null
       },
       "Detection": {
-        "Method": "Command",
-        "Command": "wt.exe --version"
+        "Method": "StoreApp",
+        "PackageName": "WindowsTerminalPreview"
       },
       "DefaultPriority": 18,
       "DefaultRequired": false,
