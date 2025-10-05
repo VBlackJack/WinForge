@@ -113,17 +113,16 @@ function Test-ApplicationInstalled {
                 try {
                     $wingetList = & winget list --accept-source-agreements 2>&1 | Out-String
 
-                    # Try 1: Match by PackageName vendor prefix
-                    if ($Application.Detection.PackageName -match '^([^.]+)\.') {
-                        $packagePrefix = $matches[1]
-                        if ($wingetList -match [regex]::Escape($packagePrefix)) {
+                    # Try 1: Match by Store ID (most specific)
+                    if ($Application.Sources.Store) {
+                        if ($wingetList -match [regex]::Escape($Application.Sources.Store) -and $wingetList -notmatch "No installed package") {
                             return $true
                         }
                     }
 
-                    # Try 2: Match by Store ID
-                    if ($Application.Sources.Store) {
-                        if ($wingetList -match [regex]::Escape($Application.Sources.Store) -and $wingetList -notmatch "No installed package") {
+                    # Try 2: Match by full PackageName (specific, avoids false positives from vendor prefix)
+                    if ($Application.Detection.PackageName) {
+                        if ($wingetList -match [regex]::Escape($Application.Detection.PackageName)) {
                             return $true
                         }
                     }
