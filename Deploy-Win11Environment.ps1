@@ -616,6 +616,18 @@ if ($script:DeploymentStats.Failed -gt 0) {
     $exitCode = 0
 }
 
-# Set process exit code (for batch/CI/CD callers) and return for pipeline
+# Set exit code for callers
 $global:LASTEXITCODE = $exitCode
-exit $exitCode
+
+# Detect if script was invoked with & operator (GUI/scripted call) or direct execution
+# When called via &, we should return to allow caller to continue
+# When called directly (powershell -File), we should exit to set process exit code
+$invokedViaCallOperator = $MyInvocation.InvocationName -ne $MyInvocation.MyCommand.Path
+
+if ($invokedViaCallOperator) {
+    # Called via & operator from GUI or another script - return to caller
+    return $exitCode
+} else {
+    # Direct execution (batch file, command line) - exit to set process exit code
+    exit $exitCode
+}
