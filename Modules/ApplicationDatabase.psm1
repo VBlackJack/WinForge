@@ -265,6 +265,10 @@ function ConvertTo-ProfileApplication {
         $profileApp | Add-Member -NotePropertyName "InstallArguments" -NotePropertyValue $App.InstallArguments
     }
 
+    if ($App.InstallationOptions) {
+        $profileApp | Add-Member -NotePropertyName "InstallationOptions" -NotePropertyValue $App.InstallationOptions
+    }
+
     if ($App.Notes) {
         $profileApp | Add-Member -NotePropertyName "Notes" -NotePropertyValue $App.Notes
     }
