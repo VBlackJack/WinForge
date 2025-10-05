@@ -473,7 +473,7 @@
       },
       "Detection": {
         "Method": "StoreApp",
-        "PackageName": "WindowsTerminalPreview"
+        "PackageName": "Microsoft.WindowsTerminalPreview"
       },
       "DefaultPriority": 18,
       "DefaultRequired": false,
