@@ -121,6 +121,7 @@ $directories = @(
     (Join-Path $InstallPath 'Core'),
     (Join-Path $InstallPath 'Modules'),
     (Join-Path $InstallPath 'Profiles'),
+    (Join-Path $InstallPath 'Tools'),
     (Join-Path $InstallPath 'Logs')
 )
 
@@ -145,9 +146,8 @@ $fileStructure = @{
         'Deploy-Win11Forge.bat',
         'Deploy-Win11Environment.ps1',
         'README.md',
-        'QUICKSTART.md',
         'CHANGELOG.md',
-        'STRUCTURE.md'
+        'PROJET_STRUCTURE.md'
     )
     'Core' = @(
         'Core.psm1'
@@ -325,9 +325,9 @@ Write-Host "  2. Run: .\Deploy-Win11Environment.ps1 -ProfileName 'Base' -TestMod
 Write-Host "  3. For full deployment: .\Deploy-Win11Forge.bat"
 Write-Host ""
 Write-Host "Documentation:" -ForegroundColor Cyan
-Write-Host "  • README.md      - Complete documentation"
-Write-Host "  • QUICKSTART.md  - Quick start guide"
-Write-Host "  • STRUCTURE.md   - Framework architecture"
+Write-Host "  • README.md            - Complete documentation"
+Write-Host "  • PROJET_STRUCTURE.md  - Framework architecture"
+Write-Host "  • CHANGELOG.md         - Version history"
 Write-Host ""
 
 # Open documentation
