@@ -342,7 +342,10 @@ function Install-ViaDirectDownload {
         [string]$InstallerType = 'auto',
 
         [Parameter()]
-        [string]$CustomArguments = $null
+        [string]$CustomArguments = $null,
+
+        [Parameter()]
+        [string]$DetectionPath = $null
     )
 
     try {
@@ -427,9 +430,17 @@ function Install-ViaDirectDownload {
                     # ZIP contains portable tools - deploy to destination
                     Write-Status -Message "No installer found - deploying portable tools" -Level 'Info'
 
-                    # Try to get destination from caller context (application object)
-                    # This would need to be passed in, for now use default location
-                    $destinationPath = Join-Path ${env:ProgramFiles} ([System.IO.Path]::GetFileNameWithoutExtension($installerPath))
+                    # Determine destination from DetectionPath parameter or fallback
+                    $destinationPath = $null
+                    if ($DetectionPath) {
+                        $destinationPath = Split-Path $DetectionPath -Parent
+                        Write-Status -Message "Using detection path: $DetectionPath" -Level 'Verbose'
+                    }
+
+                    if (-not $destinationPath) {
+                        # Fallback to Program Files\ArchiveName
+                        $destinationPath = Join-Path ${env:ProgramFiles} ([System.IO.Path]::GetFileNameWithoutExtension($installerPath))
+                    }
 
                     Write-Status -Message "Deploying to: $destinationPath" -Level 'Info'
 
@@ -687,6 +698,11 @@ function Install-Application {
         if ($installArgs) {
             $installParams['CustomArguments'] = $installArgs
             Write-Status -Message "Custom arguments detected: $installArgs" -Level 'Verbose'
+        }
+
+        # Pass detection path for ZIP deployment
+        if ($Application.Detection -and $Application.Detection.Path) {
+            $installParams['DetectionPath'] = $Application.Detection.Path
         }
 
         if (Install-ViaDirectDownload @installParams) {
