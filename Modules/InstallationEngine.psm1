@@ -516,7 +516,7 @@ function Install-Application {
     # Check environment restrictions
     if ($Application.EnvironmentRestrictions -and $Application.EnvironmentRestrictions.Count -gt 0) {
         if (-not (Get-Command -Name 'Get-SystemEnvironmentType' -ErrorAction SilentlyContinue)) {
-            $envModule = Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'Modules\EnvironmentDetection.psm1'
+            $envModule = Join-Path (Split-Path $PSScriptRoot -Parent) 'EnvironmentDetection.psm1'
             if (Test-Path $envModule) {
                 Import-Module $envModule -Force -WarningAction SilentlyContinue
             }

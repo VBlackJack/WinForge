@@ -54,12 +54,12 @@ function Update-EnvironmentPath {
 
         # Get Machine PATH
         $machinePath = [System.Environment]::GetEnvironmentVariable('PATH', 'Machine')
-        
+
         # Get User PATH
         $userPath = [System.Environment]::GetEnvironmentVariable('PATH', 'User')
-        
-        # Combine and set Process PATH
-        $combinedPath = @($machinePath, $userPath) | Where-Object { $_ } | Join-String -Separator ';'
+
+        # Combine and set Process PATH (PS 5.1 compatible)
+        $combinedPath = (@($machinePath, $userPath) | Where-Object { $_ }) -join ';'
         [System.Environment]::SetEnvironmentVariable('PATH', $combinedPath, 'Process')
         
         # Update $env:PATH
