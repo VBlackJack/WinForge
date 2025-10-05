@@ -226,12 +226,22 @@ function ConvertTo-ProfileApplication {
     if ($null -eq $Required) {
         $Required = $App.DefaultRequired
     } else {
-        # Validate Required is boolean
+        # Validate Required is boolean or convertible to boolean
         if ($Required -isnot [bool]) {
-            try {
-                $Required = [bool]::Parse($Required)
-            } catch {
-                throw "Required must be a valid boolean (true/false), got: $Required ($($Required.GetType().Name))"
+            # Support numeric boolean: 0 = false, non-zero = true (common in JSON)
+            if ($Required -is [int] -or $Required -is [long] -or $Required -is [byte]) {
+                $Required = [bool]$Required
+            } else {
+                # Try string parsing: "true", "false", "0", "1"
+                try {
+                    if ($Required -match '^\s*(0|1)\s*$') {
+                        $Required = [bool][int]$Required
+                    } else {
+                        $Required = [bool]::Parse($Required)
+                    }
+                } catch {
+                    throw "Required must be a valid boolean (true/false/0/1), got: $Required ($($Required.GetType().Name))"
+                }
             }
         }
     }
