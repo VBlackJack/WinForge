@@ -165,6 +165,15 @@ $fileStructure = @{
         'Gaming.json',
         'Personnel.json'
     )
+    'Tools' = @(
+        'Validate-Framework.ps1',
+        'Search-ApplicationSources.ps1',
+        'System-Audit.ps1',
+        'Launch-SystemAudit.bat',
+        'Launch-AsTrustedInstaller.bat',
+        'README.md',
+        'System-Audit-README.md'
+    )
 }
 
 # === FILE COPYING ===
