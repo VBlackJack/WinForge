@@ -405,8 +405,42 @@ function Install-ViaDirectDownload {
                 }
             }
             'zip' {
-                Write-Status -Message "ZIP extraction not yet implemented" -Level 'Warning'
-                $installed = $false
+                Write-Status -Message "Extracting ZIP archive" -Level 'Info'
+                $extractPath = Join-Path $tempDir "extracted"
+                Expand-Archive -Path $installerPath -DestinationPath $extractPath -Force
+
+                # Check if ZIP contains an installer (setup.exe/install.exe)
+                $setupExe = Get-ChildItem -Path $extractPath -Filter *.exe -Recurse |
+                    Where-Object { $_.Name -match 'setup|install' } |
+                    Select-Object -First 1
+
+                if ($setupExe) {
+                    # ZIP contains installer - execute it
+                    Write-Status -Message "Executing installer from archive: $($setupExe.Name)" -Level 'Info'
+                    if ($CustomArguments) {
+                        $process = Start-Process -FilePath $setupExe.FullName -ArgumentList $CustomArguments -Wait -NoNewWindow -PassThru
+                    } else {
+                        $process = Start-Process -FilePath $setupExe.FullName -ArgumentList '/S' -Wait -NoNewWindow -PassThru
+                    }
+                    $installed = ($process.ExitCode -eq 0)
+                } else {
+                    # ZIP contains portable tools - deploy to destination
+                    Write-Status -Message "No installer found - deploying portable tools" -Level 'Info'
+
+                    # Try to get destination from caller context (application object)
+                    # This would need to be passed in, for now use default location
+                    $destinationPath = Join-Path ${env:ProgramFiles} ([System.IO.Path]::GetFileNameWithoutExtension($installerPath))
+
+                    Write-Status -Message "Deploying to: $destinationPath" -Level 'Info'
+
+                    if (-not (Test-Path $destinationPath)) {
+                        New-Item -Path $destinationPath -ItemType Directory -Force | Out-Null
+                    }
+
+                    Copy-Item -Path "$extractPath\*" -Destination $destinationPath -Recurse -Force
+                    Write-Status -Message "Deployment completed successfully" -Level 'Success'
+                    $installed = $true
+                }
             }
         }
 
@@ -1081,17 +1115,43 @@ function Install-ApplicationsParallel {
                             $extractPath = Join-Path $tempDir "extracted"
                             Expand-Archive -Path $tempFile -DestinationPath $extractPath -Force
 
-                            $exeFiles = Get-ChildItem -Path $extractPath -Filter *.exe -Recurse
-                            if ($exeFiles) {
-                                $setupExe = $exeFiles | Where-Object { $_.Name -match 'setup|install' } | Select-Object -First 1
-                                if (-not $setupExe) { $setupExe = $exeFiles[0] }
+                            # Check if ZIP contains an installer (setup.exe/install.exe)
+                            $setupExe = Get-ChildItem -Path $extractPath -Filter *.exe -Recurse |
+                                Where-Object { $_.Name -match 'setup|install' } |
+                                Select-Object -First 1
 
+                            if ($setupExe) {
+                                # ZIP contains installer - execute it
                                 $zipArgs = if ($app.PSObject.Properties['InstallArguments']) { $app.InstallArguments } else { '/S' }
-                                Write-ParallelLog "Executing: $($setupExe.FullName) $zipArgs" 'Info'
+                                Write-ParallelLog "Executing installer: $($setupExe.FullName) $zipArgs" 'Info'
                                 $process = Start-Process -FilePath $setupExe.FullName -ArgumentList $zipArgs -Wait -NoNewWindow -PassThru
                                 $processExitCode = $process.ExitCode
                             } else {
-                                Write-ParallelLog "No executable found in ZIP" 'Error'
+                                # ZIP contains portable tools - deploy to destination
+                                Write-ParallelLog "No installer found - deploying portable tools" 'Info'
+
+                                # Determine destination from Detection.Path
+                                $destinationPath = $null
+                                if ($app.Detection -and $app.Detection.Path) {
+                                    $destinationPath = Split-Path $app.Detection.Path -Parent
+                                }
+
+                                if (-not $destinationPath) {
+                                    # Default to Program Files\AppName
+                                    $destinationPath = Join-Path ${env:ProgramFiles} $app.Name
+                                }
+
+                                Write-ParallelLog "Deploying to: $destinationPath" 'Info'
+
+                                # Create destination directory
+                                if (-not (Test-Path $destinationPath)) {
+                                    New-Item -Path $destinationPath -ItemType Directory -Force | Out-Null
+                                }
+
+                                # Copy all files from extracted archive to destination
+                                Copy-Item -Path "$extractPath\*" -Destination $destinationPath -Recurse -Force
+                                Write-ParallelLog "Deployment completed successfully" 'Success'
+                                $processExitCode = 0
                             }
                         }
                         'exe' {
