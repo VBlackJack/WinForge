@@ -71,7 +71,7 @@ Explorez les **66 applications** de la base de données :
   - ...et plus
 
 **c) Browse by Tag**
-- 7 tags : `browser`, `popular`, `essential`, `dev`, `gaming`, `media`, `security`
+- 7 tags : `essential`, `popular`, `open-source`, `microsoft`, `privacy`, `encrypted`, `subscription`
 - Filtrage rapide par catégorie d'usage
 
 **d) Search Applications**
@@ -148,8 +148,8 @@ Inherit from: Base (30 apps)
 Méthodes disponibles :
 
 **a) Browse and Select** (Recommandé)
-- Add by Category (ex: Development → 7 apps)
-- Add by Tag (ex: dev → 15 apps)
+- Add by Category (ex: Development → 6 apps)
+- Add by Tag (ex: essential → 15 apps)
 - Add by Search (ex: "node" → NodeJS)
 - Add by AppId (ex: VSCode)
 - View Selected (liste actuelle)
@@ -299,7 +299,7 @@ Main Menu
 │
 ├── Browse Applications (66 apps)
 │   ├── View All (paginated)
-│   ├── Browse by Category (19 categories)
+│   ├── Browse by Category (20 categories)
 │   ├── Browse by Tag (7 tags)
 │   ├── Search Applications
 │   └── View Application Details
@@ -497,9 +497,9 @@ Pour créer un profil dev minimal :
 1. Create Custom Profile
 2. Name: "DevMinimal"
 3. Inherits: Base
-4. Add by Tag → "dev"
+4. Add by Category → "Development"
 5. Save
-→ Résultat : Profil avec Base + dev tools
+→ Résultat : Profil avec Base + 6 dev tools
 ```
 
 ---
@@ -525,7 +525,7 @@ Résultat: 42 apps gaming + périphériques
 Name:        DevPolyglot
 Inherits:    Base
 Applications:
-  - Category: Development (7 apps)
+  - Category: Development (6 apps)
   - Manual: Rust, Go, Ruby, PHP
   - Search: "compiler"
 
