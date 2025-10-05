@@ -603,7 +603,15 @@ if (-not $TestMode) {
 
 Write-Host ""
 Write-Log -Message "Log file: $LogFile" -Level 'Info'
-Write-Log -Message "Deployment completed successfully!" -Level 'Success'
 
-# Return to caller instead of exiting (for GUI compatibility)
-return 0
+# Determine overall deployment status
+if ($script:DeploymentStats.Failed -gt 0) {
+    Write-Log -Message "Deployment completed with failures!" -Level 'Error'
+    return 1
+} elseif ($script:DeploymentStats.Skipped -gt 0) {
+    Write-Log -Message "Deployment completed with some apps skipped!" -Level 'Warning'
+    return 0
+} else {
+    Write-Log -Message "Deployment completed successfully!" -Level 'Success'
+    return 0
+}

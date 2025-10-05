@@ -598,6 +598,24 @@ function Test-ProfileValid {
         # Validate applications
         $appNames = [System.Collections.Generic.HashSet[string]]::new()
         foreach ($app in $profile.Applications) {
+            # v2.3 Database Mode: Applications are simple strings (AppId)
+            if ($app -is [string]) {
+                if ([string]::IsNullOrWhiteSpace($app)) {
+                    $result.Valid = $false
+                    $result.Errors += "Empty AppId found in Applications array"
+                    continue
+                }
+
+                # Check for duplicate AppIds
+                if (-not $appNames.Add($app)) {
+                    $result.Warnings += "Duplicate AppId: $app"
+                }
+
+                # Skip legacy validation checks for Database Mode
+                continue
+            }
+
+            # Legacy format: Applications are objects with Name, Sources, Priority
             if ([string]::IsNullOrWhiteSpace($app.Name)) {
                 $result.Valid = $false
                 $result.Errors += "Application with missing name found"
