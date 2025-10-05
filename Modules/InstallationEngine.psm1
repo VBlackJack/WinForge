@@ -1034,6 +1034,43 @@ function Install-ApplicationsParallel {
                 }
             }
 
+            # 4. Direct Download
+            if ($sources.DirectUrl) {
+                Write-ParallelLog "Attempting direct download installation: $($sources.DirectUrl)" 'Info'
+
+                try {
+                    $tempFile = Join-Path $env:TEMP "$($app.Name -replace '[^\w\-]', '_')_$(Get-Random).exe"
+                    Write-ParallelLog "Downloading to: $tempFile" 'Verbose'
+
+                    Invoke-WebRequest -Uri $sources.DirectUrl -OutFile $tempFile -UseBasicParsing -ErrorAction Stop
+                    Write-ParallelLog "Download completed" 'Info'
+
+                    # Check for custom install arguments
+                    $installArgs = if ($app.PSObject.Properties['InstallArguments']) {
+                        $app.InstallArguments
+                    } else {
+                        '/S'  # Default silent argument
+                    }
+
+                    Write-ParallelLog "Executing installer with arguments: $installArgs" 'Info'
+                    $process = Start-Process -FilePath $tempFile -ArgumentList $installArgs -Wait -NoNewWindow -PassThru
+
+                    Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue
+
+                    if ($process.ExitCode -eq 0) {
+                        Write-ParallelLog "Installed successfully via direct download" 'Success'
+                        $result.Success = $true
+                        $result.Method = 'DirectDownload'
+                        $result.Message = 'Installed via direct download'
+                        return $result
+                    } else {
+                        Write-ParallelLog "Direct download installation failed (exit code: $($process.ExitCode))" 'Warning'
+                    }
+                } catch {
+                    Write-ParallelLog "Direct download error: $($_.Exception.Message)" 'Error'
+                }
+            }
+
             Write-ParallelLog "All installation methods failed" 'Error'
             $result.Message = 'All installation methods failed'
 

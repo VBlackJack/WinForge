@@ -336,8 +336,9 @@ function Test-ApplicationSources {
         # Test Winget
         if ($app.Sources.Winget) {
             try {
-                $wingetTest = winget search --id $app.Sources.Winget --exact 2>&1
-                $result.WingetValid = ($LASTEXITCODE -eq 0)
+                $wingetTest = winget search --id $app.Sources.Winget --exact 2>&1 | Out-String
+                # Winget returns 0 even when ID not found, must check output content
+                $result.WingetValid = ($LASTEXITCODE -eq 0 -and $wingetTest -match [regex]::Escape($app.Sources.Winget))
                 if (-not $result.WingetValid) {
                     $result.Errors += "Winget ID not found: $($app.Sources.Winget)"
                 }
