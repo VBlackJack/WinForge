@@ -212,10 +212,28 @@ function ConvertTo-ProfileApplication {
     # Use [object] type with $null default to avoid PowerShell auto-coercion (int→0, bool→$false)
     if ($null -eq $Priority) {
         $Priority = $App.DefaultPriority
+    } else {
+        # Validate Priority is numeric
+        if ($Priority -isnot [int] -and $Priority -isnot [long]) {
+            try {
+                $Priority = [int]$Priority
+            } catch {
+                throw "Priority must be a valid integer, got: $Priority ($($Priority.GetType().Name))"
+            }
+        }
     }
 
     if ($null -eq $Required) {
         $Required = $App.DefaultRequired
+    } else {
+        # Validate Required is boolean
+        if ($Required -isnot [bool]) {
+            try {
+                $Required = [bool]::Parse($Required)
+            } catch {
+                throw "Required must be a valid boolean (true/false), got: $Required ($($Required.GetType().Name))"
+            }
+        }
     }
 
     $profileApp = [PSCustomObject]@{
