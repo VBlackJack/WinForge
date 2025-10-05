@@ -1071,7 +1071,10 @@ function Install-ApplicationsParallel {
     
     Write-Host "Installation Results:" -ForegroundColor Cyan
     foreach ($result in $allResults) {
-        if ($result.Success -or $result.AlreadyInstalled) {
+        if ($result.Skipped) {
+            Write-Host "  SKIP $($result.ApplicationName) - Skipped" -ForegroundColor Yellow
+            Write-Host "    Reason: $($result.Message)" -ForegroundColor Gray
+        } elseif ($result.Success -or $result.AlreadyInstalled) {
             $status = if ($result.AlreadyInstalled) { "Already Installed" } else { "Success" }
             Write-Host "  OK $($result.ApplicationName) - $status" -ForegroundColor Green
             if ($result.Method) {
