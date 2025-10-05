@@ -1231,7 +1231,8 @@ function Install-ApplicationsParallel {
     
     Write-Host "Installation Results:" -ForegroundColor Cyan
     foreach ($result in $allResults) {
-        if ($result.Skipped) {
+        # Check if Skipped property exists and is true
+        if ($result.PSObject.Properties['Skipped'] -and $result.Skipped) {
             Write-Host "  SKIP $($result.ApplicationName) - Skipped" -ForegroundColor Yellow
             Write-Host "    Reason: $($result.Message)" -ForegroundColor Gray
         } elseif ($result.Success -or $result.AlreadyInstalled) {
