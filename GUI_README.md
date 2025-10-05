@@ -71,7 +71,10 @@ Explorez les **66 applications** de la base de données :
   - ...et plus
 
 **c) Browse by Tag**
-- 7 tags : `essential`, `popular`, `open-source`, `microsoft`, `privacy`, `encrypted`, `subscription`
+- 92 tags disponibles, les plus populaires :
+  - `essential` (11 apps), `security` (11), `utility` (11), `microsoft` (10)
+  - `diagnostic` (9), `development` (7), `open-source` (7), `network` (6)
+  - `gaming` (5), `media` (5), `productivity` (4), `encrypted` (4)
 - Filtrage rapide par catégorie d'usage
 
 **d) Search Applications**
@@ -149,7 +152,7 @@ Méthodes disponibles :
 
 **a) Browse and Select** (Recommandé)
 - Add by Category (ex: Development → 6 apps)
-- Add by Tag (ex: essential → 15 apps)
+- Add by Tag (ex: essential → 11 apps)
 - Add by Search (ex: "node" → NodeJS)
 - Add by AppId (ex: VSCode)
 - View Selected (liste actuelle)
@@ -279,7 +282,7 @@ Database Loaded:         True
 1. Lancer GUI
 2. Browse Applications → Browse by Tag
 3. Sélectionner "essential"
-→ Résultat : 15 applications essentielles affichées
+→ Résultat : 11 applications essentielles affichées
 4. View Application Details → "7Zip"
 → Résultat : Détails complets de 7-Zip
 ```
@@ -300,7 +303,7 @@ Main Menu
 ├── Browse Applications (66 apps)
 │   ├── View All (paginated)
 │   ├── Browse by Category (20 categories)
-│   ├── Browse by Tag (7 tags)
+│   ├── Browse by Tag (92 tags)
 │   ├── Search Applications
 │   └── View Application Details
 │
