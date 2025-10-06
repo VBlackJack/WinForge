@@ -212,7 +212,7 @@ Cette version corrige des problèmes majeurs de détection d'applications Store,
 - **Corrigé**: `Apps/Database/applications.json`
   - **App corrigée**: De CUETools vers CUE Splitter (app Store correcte)
   - AppId: `CUESplitter`
-  - Source Store uniquement: `9N68TC2SX976`
+  - Source Store uniquement: `9NBLGGH43MH5`
   - Détection: `StoreApp` avec `PackageName: "CUESplitter"` (nom de base)
 
 #### InstallArguments Access
