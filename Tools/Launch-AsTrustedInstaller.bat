@@ -68,27 +68,27 @@ goto LAUNCH
 
 :CMD
 set PROGRAM=cmd.exe
-set ARGS=/k echo Command Prompt running as TrustedInstaller
+set "ARGS=/k echo Command Prompt running as TrustedInstaller"
 goto LAUNCH
 
 :REGEDIT
 set PROGRAM=regedit.exe
-set ARGS=
+set "ARGS="
 goto LAUNCH
 
 :TASKMGR
 set PROGRAM=taskmgr.exe
-set ARGS=
+set "ARGS="
 goto LAUNCH
 
 :COMPMGMT
 set PROGRAM=compmgmt.msc
-set ARGS=
+set "ARGS="
 goto LAUNCH
 
 :EXPLORER
 set PROGRAM=explorer.exe
-set ARGS=
+set "ARGS="
 goto LAUNCH
 
 :WIN11FORGE
@@ -105,7 +105,7 @@ if not exist "%PROGRAM%" (
     pause
     goto MENU
 )
-set ARGS=
+set "ARGS="
 goto LAUNCH
 
 :LAUNCH
