@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import json
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Set
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DB_PATH = REPO_ROOT / "Apps" / "Database" / "applications.json"
+JS_DATASET_PATH = REPO_ROOT / "Tools" / "applications-data.js"
 PROFILES_DIR = REPO_ROOT / "Profiles"
 
 
@@ -33,7 +34,7 @@ def analyze_database() -> Dict[str, List[str]]:
             f"TotalApplications metadata ({total_declared}) does not match actual count ({total_actual})."
         )
 
-    priorities = {}
+    priorities: Dict[int, str] = {}
     duplicate_priorities: Dict[int, List[str]] = {}
     for app_id, app in applications.items():
         priority = app.get("DefaultPriority")
@@ -125,6 +126,44 @@ def analyze_database() -> Dict[str, List[str]]:
                     )
                 )
 
+    source_collisions: Dict[str, Dict[str, Dict[str, Iterable[str]]]] = defaultdict(dict)
+    for app_id, app in applications.items():
+        sources = app.get("Sources") or {}
+        for source_name, source_value in sources.items():
+            if not isinstance(source_value, str):
+                continue
+            normalized = source_value.strip()
+            if not normalized:
+                continue
+            per_source = source_collisions[source_name]
+            collision_entry = per_source.setdefault(
+                normalized.lower(), {"value": normalized, "apps": []}
+            )
+            collision_entry["apps"].append(app_id)
+
+    for source_name, collisions in source_collisions.items():
+        for entry in collisions.values():
+            if len(entry["apps"]) > 1:
+                report["errors"].append(
+                    "{source} identifier '{value}' is shared by applications: {apps}".format(
+                        source=source_name,
+                        value=entry["value"],
+                        apps=", ".join(sorted(entry["apps"]))
+                    )
+                )
+
+    apps_without_sources = [
+        app_id
+        for app_id, app in applications.items()
+        if not any((app.get("Sources") or {}).values())
+    ]
+    if apps_without_sources:
+        report["notes"].append(
+            "Applications without any distribution source metadata: {apps}".format(
+                apps=", ".join(sorted(apps_without_sources))
+            )
+        )
+
     report["notes"].append(
         f"Database analysis completed for {total_actual} applications across {len(priorities)} priority entries."
     )
@@ -162,7 +201,16 @@ def analyze_profiles(applications: Dict[str, dict]) -> Dict[str, List[str]]:
         profile_data = load_json(profile_path)
         profile_id = profile_path.stem
         declared_apps = profile_data.get("Applications", [])
-        resolved_apps = resolve_profile_applications(profile_id)
+        try:
+            resolved_apps = resolve_profile_applications(profile_id)
+        except (FileNotFoundError, ValueError) as exc:
+            report["errors"].append(
+                "Profile '{profile}' could not be resolved: {error}".format(
+                    profile=profile_id,
+                    error=exc,
+                )
+            )
+            continue
         missing_apps = [app for app in resolved_apps if app not in applications]
         if missing_apps:
             report["errors"].append(
@@ -210,6 +258,88 @@ def analyze_profiles(applications: Dict[str, dict]) -> Dict[str, List[str]]:
     return report
 
 
+def analyze_js_dataset(applications: Dict[str, dict]) -> Dict[str, List[str]]:
+    report: Dict[str, List[str]] = {
+        "errors": [],
+        "warnings": [],
+        "notes": [],
+    }
+
+    try:
+        content = JS_DATASET_PATH.read_text(encoding="utf-8")
+    except OSError as exc:
+        report["errors"].append(f"Unable to read JavaScript dataset: {exc}")
+        return report
+
+    prefix = "const WIN11FORGE_APPS = "
+    if not content.startswith(prefix):
+        report["errors"].append(
+            "Unexpected format for applications-data.js (missing expected prefix)."
+        )
+        return report
+
+    payload = content[len(prefix) :].rstrip()
+    payload = payload.rstrip(";\n\r ")
+
+    try:
+        js_data = json.loads(payload)
+    except json.JSONDecodeError as exc:
+        report["errors"].append(
+            "Unable to parse applications-data.js as JSON: {error}".format(error=exc)
+        )
+        return report
+
+    js_app_ids = set(js_data)
+    database_app_ids = set(applications)
+
+    missing_from_js = sorted(database_app_ids - js_app_ids)
+    extra_in_js = sorted(js_app_ids - database_app_ids)
+
+    if missing_from_js:
+        report["errors"].append(
+            "Applications missing from applications-data.js: {apps}".format(
+                apps=", ".join(missing_from_js)
+            )
+        )
+    if extra_in_js:
+        report["errors"].append(
+            "applications-data.js contains entries absent from database: {apps}".format(
+                apps=", ".join(extra_in_js)
+            )
+        )
+
+    shared_ids = database_app_ids & js_app_ids
+    mismatched_priorities: List[str] = []
+    mismatched_required: List[str] = []
+    for app_id in sorted(shared_ids):
+        db_app = applications[app_id]
+        js_app = js_data[app_id]
+        if db_app.get("DefaultPriority") != js_app.get("DefaultPriority"):
+            mismatched_priorities.append(app_id)
+        if db_app.get("DefaultRequired") != js_app.get("DefaultRequired"):
+            mismatched_required.append(app_id)
+
+    if mismatched_priorities:
+        report["warnings"].append(
+            "DefaultPriority differs between JSON database and applications-data.js for: {apps}".format(
+                apps=", ".join(mismatched_priorities)
+            )
+        )
+    if mismatched_required:
+        report["warnings"].append(
+            "DefaultRequired differs between JSON database and applications-data.js for: {apps}".format(
+                apps=", ".join(mismatched_required)
+            )
+        )
+
+    if not (missing_from_js or extra_in_js or mismatched_priorities or mismatched_required):
+        report["notes"].append(
+            "applications-data.js is synchronized with Apps/Database/applications.json."
+        )
+
+    return report
+
+
 def merge_reports(*reports: Dict[str, List[str]]) -> Dict[str, List[str]]:
     merged = {"errors": [], "warnings": [], "notes": []}
     for report in reports:
@@ -224,8 +354,9 @@ def main() -> None:
 
     db_report = analyze_database()
     profile_report = analyze_profiles(applications)
+    js_report = analyze_js_dataset(applications)
 
-    report = merge_reports(db_report, profile_report)
+    report = merge_reports(db_report, profile_report, js_report)
 
     print("=== Win11Forge Consistency Report ===")
     for key in ("errors", "warnings", "notes"):

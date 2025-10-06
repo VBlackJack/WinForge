@@ -6,21 +6,30 @@
 - Vérification automatique exécutée via `python Tools/analyze_inconsistencies.py`.
 
 ## Résultats clés
-1. **Priorités d'installation discontinues**  
-   Les priorités par défaut ne sont pas continues : aucun paquet n'occupe les valeurs 25, puis 56 à 57, ni 69 à 98 alors que la dernière application utilise l'indice 99. Cela peut générer des trous dans les tableaux de bord ou dans les flux d'installation qui s'attendent à une numérotation dense.  
+1. **Identifiant Microsoft Store en double**
+   Les applications _PowerToys_ et _ShareX_ déclarent toutes deux l'identifiant Microsoft Store `9NBLGGH4Z1SP`. L'installation de l'une des deux via le Store déclenchera potentiellement l'autre paquet.
+   _Action recommandée :_ vérifier l'identifiant attendu pour chacune des applications et corriger la valeur erronée dans `Apps/Database/applications.json` et `Tools/applications-data.js`.
+
+2. **Paramètre `DefaultRequired` incohérent pour QuickAssist**
+   La base JSON marque `QuickAssist` comme optionnelle (`DefaultRequired: false`) tandis que `applications-data.js` la force en installation (`DefaultRequired: true`). Les deux frontends ne déploieront donc pas la même configuration par défaut.
+   _Action recommandée :_ harmoniser la valeur `DefaultRequired` pour `QuickAssist` dans les deux sources de données.
+
+3. **Priorités d'installation discontinues**
+   Les priorités par défaut ne sont pas continues : aucun paquet n'occupe les valeurs 25, puis 56 à 57, ni 69 à 98 alors que la dernière application utilise l'indice 99. Cela peut générer des trous dans les tableaux de bord ou dans les flux d'installation qui s'attendent à une numérotation dense.
    _Action recommandée :_ réattribuer les priorités pour combler les gaps ou documenter que ces valeurs sont volontairement réservées.
 
-2. **Aucune anomalie bloquante détectée sur les profils**  
-   Les profils Base, Office, Gaming et Personnel résolvent respectivement 30, 35, 39 et 64 applications uniques après prise en compte des héritages. Ces valeurs correspondent à la documentation du projet.  
+4. **Profils cohérents avec la base**
+   Les profils Base, Office, Gaming et Personnel résolvent respectivement 30, 35, 39 et 64 applications uniques après prise en compte des héritages. Ces valeurs correspondent à la documentation du projet.
    _Action recommandée :_ aucune action nécessaire, les profils sont cohérents avec la base.
 
-3. **Statistiques de catégories synchronisées**  
-   Le décompte des catégories renseigné dans la base (`Categories`) correspond exactement aux affectations réelles des applications (somme totale 66). Il n'y a pas de catégorie orpheline ni de catégorie déclarée sans application.  
+5. **Statistiques de catégories synchronisées**
+   Le décompte des catégories renseigné dans la base (`Categories`) correspond exactement aux affectations réelles des applications (somme totale 66). Il n'y a pas de catégorie orpheline ni de catégorie déclarée sans application.
    _Action recommandée :_ maintenir la mise à jour conjointe des applications et des métadonnées lors des prochaines évolutions.
 
 ## Points de contrôle supplémentaires
-- Les jeux de données JavaScript (`Tools/applications-data.js`) et JSON (`Apps/Database/applications.json`) contiennent exactement le même ensemble de 66 applications.
+- Les jeux de données JavaScript (`Tools/applications-data.js`) et JSON (`Apps/Database/applications.json`) contiennent exactement le même ensemble de 66 applications, mais `QuickAssist` doit être alignée sur le même `DefaultRequired`.
 - Les tags déclarés dans la base disposent tous d'une définition dans la section `Tags`.
+- `WindowsSandbox` n'a pas de source de déploiement déclarée (information signalée à titre indicatif).
 - Aucune date `LastVerified` ne dépasse la date d'exécution de l'analyse.
 
 ## Suivi
