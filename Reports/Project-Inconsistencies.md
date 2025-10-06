@@ -6,13 +6,18 @@
 - Vérification automatique exécutée via `python Tools/analyze_inconsistencies.py`.
 
 ## Résultats clés
-1. **Identifiant Microsoft Store en double**
-   Les applications _PowerToys_ et _ShareX_ déclarent toutes deux l'identifiant Microsoft Store `9NBLGGH4Z1SP`. L'installation de l'une des deux via le Store déclenchera potentiellement l'autre paquet.
-   _Action recommandée :_ vérifier l'identifiant attendu pour chacune des applications et corriger la valeur erronée dans `Apps/Database/applications.json` et `Tools/applications-data.js`.
+1. **✅ RÉSOLU - Identifiant Microsoft Store en double**
+   Les applications _PowerToys_ et _ShareX_ déclaraient toutes deux l'identifiant Microsoft Store `9NBLGGH4Z1SP`.
+   _Correction appliquée (commit 993a718):_
+   - PowerToys: `9NBLGGH4Z1SP` → `XP89DCGQ3K6VLD` (ID vérifié sur Microsoft Store 2025)
+   - ShareX conserve `9NBLGGH4Z1SP` (ID correct vérifié)
+   - Fichiers corrigés: `Apps/Database/applications.json:278` et `Tools/applications-data.js:1`
 
-2. **Paramètre `DefaultRequired` incohérent pour QuickAssist**
-   La base JSON marque `QuickAssist` comme optionnelle (`DefaultRequired: false`) tandis que `applications-data.js` la force en installation (`DefaultRequired: true`). Les deux frontends ne déploieront donc pas la même configuration par défaut.
-   _Action recommandée :_ harmoniser la valeur `DefaultRequired` pour `QuickAssist` dans les deux sources de données.
+2. **✅ RÉSOLU - Paramètre `DefaultRequired` incohérent pour QuickAssist**
+   La base JSON marquait `QuickAssist` comme optionnelle (`DefaultRequired: false`) tandis que `applications-data.js` la forçait en installation (`DefaultRequired: true`).
+   _Correction appliquée (commit 993a718):_
+   - `applications-data.js`: `DefaultRequired: true` → `false` (aligné avec applications.json:390)
+   - Les deux sources de données sont maintenant synchronisées
 
 3. **Priorités d'installation discontinues**
    Les priorités par défaut ne sont pas continues : aucun paquet n'occupe les valeurs 25, puis 56 à 57, ni 69 à 98 alors que la dernière application utilise l'indice 99. Cela peut générer des trous dans les tableaux de bord ou dans les flux d'installation qui s'attendent à une numérotation dense.
