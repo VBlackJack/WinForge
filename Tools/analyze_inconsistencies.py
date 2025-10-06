@@ -13,8 +13,16 @@ PROFILES_DIR = REPO_ROOT / "Profiles"
 
 
 def load_json(path: Path) -> dict:
-    with path.open(encoding="utf-8") as fh:
-        return json.load(fh)
+    """Load and parse JSON file with robust error handling."""
+    try:
+        with path.open(encoding="utf-8") as fh:
+            return json.load(fh)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"JSON file not found: {path}")
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid JSON in {path}: {exc}")
+    except OSError as exc:
+        raise OSError(f"Failed to read {path}: {exc}")
 
 
 def analyze_database() -> Dict[str, List[str]]:
@@ -66,7 +74,17 @@ def analyze_database() -> Dict[str, List[str]]:
                 "Missing DefaultPriority values: {values}".format(values=", ".join(map(str, missing)))
             )
 
+    # Validate LastVerified dates (ISO8601 YYYY-MM-DD format)
     verification_dates = Counter(app.get("LastVerified") for app in applications.values())
+    for date_str in verification_dates:
+        if date_str:
+            try:
+                datetime.fromisoformat(date_str)
+            except ValueError:
+                report["errors"].append(
+                    f"Invalid ISO8601 date format for LastVerified: '{date_str}'"
+                )
+
     future_dates = [date for date in verification_dates if date and date > data.get("LastUpdated", "")]
     if future_dates:
         report["warnings"].append(
@@ -75,9 +93,12 @@ def analyze_database() -> Dict[str, List[str]]:
             )
         )
 
+    # Validate LastUpdated date (ISO8601 YYYY-MM-DD format)
     last_updated = data.get("LastUpdated")
-    try:
-        if last_updated:
+    if not last_updated:
+        report["warnings"].append("Database LastUpdated metadata is missing.")
+    else:
+        try:
             last_updated_dt = datetime.fromisoformat(last_updated)
             if last_updated_dt.date() > datetime.now(timezone.utc).date():
                 report["warnings"].append(
@@ -85,10 +106,10 @@ def analyze_database() -> Dict[str, List[str]]:
                         value=last_updated
                     )
                 )
-    except ValueError:
-        report["warnings"].append(
-            "Database LastUpdated metadata ('{value}') is not a valid ISO date.".format(value=last_updated)
-        )
+        except ValueError:
+            report["errors"].append(
+                "Database LastUpdated metadata ('{value}') is not a valid ISO8601 date.".format(value=last_updated)
+            )
 
     # Validate category statistics when present in metadata.
     categories_meta = data.get("Categories", {})
@@ -163,6 +184,31 @@ def analyze_database() -> Dict[str, List[str]]:
                 apps=", ".join(sorted(apps_without_sources))
             )
         )
+
+    # Validate tags against Tags dictionary
+    tags_dict = data.get("Tags", {})
+    if tags_dict:
+        all_app_tags = set()
+        for app in applications.values():
+            app_tags = app.get("Tags", [])
+            if isinstance(app_tags, list):
+                all_app_tags.update(app_tags)
+
+        undefined_tags = sorted(all_app_tags - set(tags_dict.keys()))
+        if undefined_tags:
+            report["warnings"].append(
+                "Tags used in applications but missing from Tags dictionary: {tags}".format(
+                    tags=", ".join(undefined_tags)
+                )
+            )
+
+        unused_tags = sorted(set(tags_dict.keys()) - all_app_tags)
+        if unused_tags:
+            report["notes"].append(
+                "Tags defined in dictionary but not used by any application: {tags}".format(
+                    tags=", ".join(unused_tags)
+                )
+            )
 
     report["notes"].append(
         f"Database analysis completed for {total_actual} applications across {len(priorities)} priority entries."
@@ -349,10 +395,35 @@ def merge_reports(*reports: Dict[str, List[str]]) -> Dict[str, List[str]]:
 
 
 def main() -> None:
-    database = load_json(DB_PATH)
-    applications = database.get("Applications", {})
+    # Load database with early exit on critical errors
+    try:
+        database = load_json(DB_PATH)
+    except (FileNotFoundError, ValueError, OSError) as exc:
+        print("=== Win11Forge Consistency Report ===")
+        print(f"\nCRITICAL ERROR: Cannot load database: {exc}")
+        print("\nDatabase is corrupted or missing. Analysis aborted.")
+        exit(1)
+
+    applications = database.get("Applications")
+    if not isinstance(applications, dict):
+        print("=== Win11Forge Consistency Report ===")
+        print("\nCRITICAL ERROR: 'Applications' key missing or invalid in database.")
+        print("Expected a dictionary, got:", type(applications).__name__)
+        print("\nDatabase structure is invalid. Analysis aborted.")
+        exit(1)
 
     db_report = analyze_database()
+
+    # Early exit if database has critical errors
+    if db_report["errors"]:
+        print("=== Win11Forge Consistency Report ===")
+        print(f"\nCRITICAL DATABASE ERRORS ({len(db_report['errors'])}):")
+        for error in db_report["errors"]:
+            print(f" - {error}")
+        print("\nDatabase has critical errors. Skipping profile and JS analysis.")
+        print("\nPlease fix database errors before continuing.")
+        exit(1)
+
     profile_report = analyze_profiles(applications)
     js_report = analyze_js_dataset(applications)
 
@@ -367,6 +438,10 @@ def main() -> None:
                 print(f" - {item}")
         else:
             print(" - None")
+
+    # Exit with non-zero code if errors exist
+    if report["errors"]:
+        exit(1)
 
 
 if __name__ == "__main__":

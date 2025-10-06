@@ -5,6 +5,13 @@
 - Chargement de la base `applications.json` ainsi que des profils (`Profiles/*.json`) pour reconstruire les héritages et contrôler la cohérence des statistiques déclarées.
 - Vérification automatique exécutée via `python Tools/analyze_inconsistencies.py`.
 
+**Validations améliorées v2.0** :
+- Gestion d'erreurs JSON robuste avec arrêt anticipé si la base est corrompue
+- Parsing ISO8601 strict pour `LastUpdated` et `LastVerified` (format YYYY-MM-DD)
+- Validation des tags : vérification que tous les tags utilisés sont définis dans le dictionnaire `Tags`
+- Validation des catégories : cohérence entre métadonnées et affectations réelles
+- Exit code non-zero si des erreurs critiques sont détectées (intégration CI/CD)
+
 ## Résultats clés
 1. **✅ RÉSOLU - Identifiant Microsoft Store en double**
    Les applications _PowerToys_ et _ShareX_ déclaraient toutes deux l'identifiant Microsoft Store `9NBLGGH4Z1SP`.
@@ -32,10 +39,11 @@
    _Action recommandée :_ maintenir la mise à jour conjointe des applications et des métadonnées lors des prochaines évolutions.
 
 ## Points de contrôle supplémentaires
-- Les jeux de données JavaScript (`Tools/applications-data.js`) et JSON (`Apps/Database/applications.json`) contiennent exactement le même ensemble de 66 applications, mais `QuickAssist` doit être alignée sur le même `DefaultRequired`.
-- Les tags déclarés dans la base disposent tous d'une définition dans la section `Tags`.
-- `WindowsSandbox` n'a pas de source de déploiement déclarée (information signalée à titre indicatif).
-- Aucune date `LastVerified` ne dépasse la date d'exécution de l'analyse.
+- ✅ Les jeux de données JavaScript (`Tools/applications-data.js`) et JSON (`Apps/Database/applications.json`) sont parfaitement synchronisés (66 applications)
+- ✅ Tous les tags utilisés dans les applications sont définis dans le dictionnaire `Tags` (92 définitions)
+- ✅ Toutes les dates `LastVerified` respectent le format ISO8601 (YYYY-MM-DD)
+- ✅ La date `LastUpdated` de la base de données est valide et cohérente
+- ℹ️ `WindowsSandbox` n'a pas de source de déploiement (normal, c'est une Windows Feature)
 
 ## Suivi
 Ce rapport peut être ré-exécuté à tout moment avec :
