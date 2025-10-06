@@ -959,7 +959,7 @@ function Show-ProfileCreator {
     $newProfile = [PSCustomObject]@{
         Name = $profileName
         Description = $profileDesc
-        Version = "2.3.0"
+        Version = "2.4.0"
         Inherits = $inherits
         Applications = $selectedApps
         SystemConfig = @{
@@ -1207,7 +1207,7 @@ function Show-FrameworkInfo {
     Show-Header -Title "Framework Information"
 
     Write-Host "Win11Forge Version:      " -NoNewline -ForegroundColor Yellow
-    Write-Host "2.3.0" -ForegroundColor White
+    Write-Host "2.4.0" -ForegroundColor White
 
     Write-Host "PowerShell Version:      " -NoNewline -ForegroundColor Yellow
     Write-Host "$($PSVersionTable.PSVersion)" -ForegroundColor White
