@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Engine Module v2.3.0 (Security & Performance Enhanced)
+    Win11Forge - Installation Engine Module v2.4.0 (Security & Performance Enhanced)
 
 .DESCRIPTION
     Core installation engine with multi-source support and parallel execution:
@@ -14,9 +14,9 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.3.0
+    Version: 2.4.0
 
-    Changelog v2.3.0:
+    Changelog v2.4.0 (Security & Performance Update):
     - SECURITY: Replaced Invoke-Expression with secure Start-Process (eliminates command injection vulnerability)
     - SECURITY: Added URL validation for DirectUrl downloads with domain whitelisting
     - PERFORMANCE: Implemented streaming downloads (memory-efficient, no longer loads files in RAM)
@@ -174,7 +174,7 @@ function Invoke-FileDownloadWithProgress {
 
     try {
         $webClient = New-Object System.Net.WebClient
-        $webClient.Headers.Add("User-Agent", "Win11Forge/2.3.0")
+        $webClient.Headers.Add("User-Agent", "Win11Forge/2.4.0")
 
         # Set timeout
         $webClient.Timeout = $TimeoutSeconds * 1000
