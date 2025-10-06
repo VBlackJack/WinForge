@@ -8,7 +8,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 1.0.0
+    Version: 2.4.0
     Requires: PowerShell 5.1+, Win11Forge v2.4.0+
 #>
 

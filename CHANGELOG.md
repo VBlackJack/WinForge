@@ -567,10 +567,10 @@ Cette version majeure introduit une refonte complète de l'architecture avec une
 **Scripts** : 8 (+4 vs v2.1.3)
 
 **Composition des Profils** :
-- Base: 31 apps
-- Office: 36 apps (Base + 5)
-- Gaming: 40 apps (Office + 4)
-- Personnel: 66 apps (Gaming + 26)
+- Base: 30 apps
+- Office: 35 apps (Base + 5)
+- Gaming: 39 apps (Office + 4)
+- Personnel: 64 apps (Gaming + 25)
 
 ### 🔧 Fichiers Modifiés
 
