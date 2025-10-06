@@ -62,37 +62,37 @@ timeout /t 2 >nul
 goto MENU
 
 :POWERSHELL
-set PROGRAM=powershell.exe
+set "PROGRAM=powershell.exe"
 set "ARGS=-NoExit -Command Write-Host 'PowerShell running as TrustedInstaller' -ForegroundColor Cyan"
 goto LAUNCH
 
 :CMD
-set PROGRAM=cmd.exe
+set "PROGRAM=cmd.exe"
 set "ARGS=/k echo Command Prompt running as TrustedInstaller"
 goto LAUNCH
 
 :REGEDIT
-set PROGRAM=regedit.exe
+set "PROGRAM=regedit.exe"
 set "ARGS="
 goto LAUNCH
 
 :TASKMGR
-set PROGRAM=taskmgr.exe
+set "PROGRAM=taskmgr.exe"
 set "ARGS="
 goto LAUNCH
 
 :COMPMGMT
-set PROGRAM=compmgmt.msc
+set "PROGRAM=compmgmt.msc"
 set "ARGS="
 goto LAUNCH
 
 :EXPLORER
-set PROGRAM=explorer.exe
+set "PROGRAM=explorer.exe"
 set "ARGS="
 goto LAUNCH
 
 :WIN11FORGE
-set PROGRAM=powershell.exe
+set "PROGRAM=powershell.exe"
 set "GUI_SCRIPT=%~dp0..\Start-Win11ForgeGUI.ps1"
 set "ARGS=-NoProfile -ExecutionPolicy Bypass -File "%GUI_SCRIPT%""
 goto LAUNCH
