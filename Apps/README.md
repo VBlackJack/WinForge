@@ -151,10 +151,11 @@ Chaque application est définie avec :
 
 ---
 
-## 📊 Catégories (19 catégories)
+## 📊 Catégories (20 catégories)
 
 | Catégorie | Icône | Apps | Description |
 |-----------|-------|------|-------------|
+| 3DPrint | 🖨️ | 1 | Impression 3D et slicing |
 | Browser | 🌐 | 3 | Navigateurs web |
 | Media | 🎬 | 4 | Lecteurs et visionneuses |
 | Utility | 🛠️ | 8 | Utilitaires généraux |
@@ -317,7 +318,7 @@ Database Statistics:
   Version          : 2.3.0
   Last Updated     : 2025-10-05
   Total Apps       : 66
-  Categories       : 19
+  Categories       : 20
   Tags             : 7
   Verified Apps    : 65
   Apps with Winget : 58
