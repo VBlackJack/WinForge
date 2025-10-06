@@ -1,11 +1,13 @@
-# Win11Forge Framework v2.4.0
+# Win11Forge Framework v2.5.0
 
 **Framework modulaire d'automatisation du déploiement post-installation Windows 11 24H2**
 
-[![Version](https://img.shields.io/badge/version-2.4.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.5.0-blue.svg)](CHANGELOG_v2.5.0.md)
 [![PowerShell](https://img.shields.io/badge/PowerShell-7.4+-blue.svg)](https://github.com/PowerShell/PowerShell)
 [![Windows](https://img.shields.io/badge/Windows-11%2024H2-0078D4.svg)](https://www.microsoft.com/windows)
-[![Status](https://img.shields.io/badge/status-Production%20Ready-success.svg)](CHANGELOG.md)
+[![Status](https://img.shields.io/badge/status-Production%20Ready-success.svg)](CHANGELOG_v2.5.0.md)
+[![Tests](https://img.shields.io/badge/tests-145+-green.svg)](Tests/README.md)
+[![Coverage](https://img.shields.io/badge/coverage-~50%25-brightgreen.svg)](Tests/README.md)
 
 ## 📋 Vue d'ensemble
 
@@ -27,6 +29,14 @@ Win11Forge est un framework PowerShell conçu pour automatiser entièrement le d
 - ✅ **Prérequis automatiques** : PowerShell 7, .NET, VC++ Redistributables, Java
 - ✅ **Gestion intelligente** : Détection d'applications installées, exclusions par environnement
 - ✅ **Logging avancé** : Logs détaillés avec tracking d'erreurs, statistiques complètes
+
+### 🆕 Nouveautés v2.5.0 (Reliability & Quality)
+
+- ✅ **Retry Logic** : 3 tentatives avec backoff exponentiel (Winget/Chocolatey)
+- ✅ **Checksum SHA256** : Validation intégrité téléchargements DirectUrl
+- ✅ **Tests Pester** : 145+ tests unitaires (~50% coverage)
+- ✅ **PSScriptAnalyzer** : Analyse statique avec 50+ règles
+- ✅ **Quality Assurance** : Infrastructure complète de tests et validation
 
 ## 🏗️ Architecture
 

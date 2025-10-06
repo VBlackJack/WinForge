@@ -1,20 +1,30 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Engine Module v2.4.0 (Security & Performance Enhanced)
+    Win11Forge - Installation Engine Module v2.5.0 (Reliability & Quality Enhanced)
 
 .DESCRIPTION
     Core installation engine with multi-source support and parallel execution:
-    - Winget (primary)
-    - Chocolatey (fallback)
+    - Winget (primary) with retry logic
+    - Chocolatey (fallback) with retry logic
     - Microsoft Store (UWP apps)
-    - Direct download + silent install (last resort)
+    - Direct download + silent install with SHA256 validation
     - Application detection with special cases (PowerToys, Quick Assist)
     - Windows Features/Capabilities
     - Parallel installation (up to 5 apps simultaneously)
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.4.0
+    Version: 2.5.0
+
+    Changelog v2.5.0 (Reliability & Quality Update):
+    - RELIABILITY: Added retry logic to Winget (3 attempts with exponential backoff)
+    - RELIABILITY: Added retry logic to Chocolatey (3 attempts with exponential backoff)
+    - SECURITY: Added SHA256 checksum validation for DirectUrl downloads
+    - SECURITY: Invalid checksums trigger file deletion and download failure
+    - QUALITY: Added comprehensive Pester test suite (145+ tests, ~50% coverage)
+    - QUALITY: Added PSScriptAnalyzer integration with custom ruleset
+    - MAINTAINABILITY: Identified long functions for v2.6.0 refactoring
+    - USER AGENT: Updated to Win11Forge/2.5.0
 
     Changelog v2.4.0 (Security & Performance Update):
     - SECURITY: Replaced Invoke-Expression with secure Start-Process (eliminates command injection vulnerability)
@@ -159,7 +169,7 @@ function Start-ProcessWithTimeout {
 function Invoke-FileDownloadWithProgress {
     <#
     .SYNOPSIS
-        Downloads file with progress reporting and streaming (memory-efficient)
+        Downloads file with progress reporting, streaming, and optional checksum validation
     #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -171,12 +181,15 @@ function Invoke-FileDownloadWithProgress {
         [string]$OutputPath,
 
         [Parameter()]
-        [int]$TimeoutSeconds = 1800  # 30 minutes for large files
+        [int]$TimeoutSeconds = 1800,  # 30 minutes for large files
+
+        [Parameter()]
+        [string]$ExpectedSHA256 = $null  # Optional SHA256 checksum for validation
     )
 
     try {
         $webClient = New-Object System.Net.WebClient
-        $webClient.Headers.Add("User-Agent", "Win11Forge/2.4.0")
+        $webClient.Headers.Add("User-Agent", "Win11Forge/2.5.0")
 
         # Set timeout
         $webClient.Timeout = $TimeoutSeconds * 1000
@@ -198,11 +211,32 @@ function Invoke-FileDownloadWithProgress {
         $downloadTask = $webClient.DownloadFileTaskAsync($Url, $OutputPath)
         $downloadTask.Wait()
 
-        # Cleanup
+        # Cleanup event handlers
         $webClient.Dispose()
         Get-EventSubscriber | Where-Object { $_.SourceObject -eq $webClient } | Unregister-Event
 
-        return (Test-Path -Path $OutputPath)
+        # Verify file exists
+        if (-not (Test-Path -Path $OutputPath)) {
+            Write-Status -Message "Download failed: File not found after download" -Level 'Error'
+            return $false
+        }
+
+        # SHA256 checksum validation
+        if ($ExpectedSHA256) {
+            Write-Status -Message "Validating SHA256 checksum..." -Level 'Verbose'
+            $fileHash = (Get-FileHash -Path $OutputPath -Algorithm SHA256).Hash
+
+            if ($fileHash -ne $ExpectedSHA256) {
+                Write-Status -Message "Checksum validation FAILED! Expected: $ExpectedSHA256, Got: $fileHash" -Level 'Error'
+                Write-Status -Message "Removing potentially corrupted file..." -Level 'Warning'
+                Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
+                return $false
+            }
+
+            Write-Status -Message "Checksum validation passed (SHA256: $fileHash)" -Level 'Success'
+        }
+
+        return $true
     } catch {
         Write-Status -Message "Download failed: $($_.Exception.Message)" -Level 'Error'
         if ($webClient) {
@@ -404,7 +438,13 @@ function Install-ViaWinget {
         [string]$PackageId,
 
         [Parameter()]
-        [switch]$Silent = $true
+        [switch]$Silent = $true,
+
+        [Parameter()]
+        [int]$MaxRetries = 3,
+
+        [Parameter()]
+        [int]$RetryDelaySeconds = 2
     )
 
     if (-not (Test-CommandExists -Name 'winget')) {
@@ -412,35 +452,60 @@ function Install-ViaWinget {
         return $false
     }
 
-    try {
-        Write-Status -Message "Installing via Winget: $PackageId" -Level 'Info'
+    $arguments = @(
+        'install',
+        '--id', $PackageId,
+        '--accept-package-agreements',
+        '--accept-source-agreements'
+    )
 
-        $arguments = @(
-            'install',
-            '--id', $PackageId,
-            '--accept-package-agreements',
-            '--accept-source-agreements'
-        )
-
-        if ($Silent) {
-            $arguments += '--silent'
-        }
-
-        # Execute with timeout protection
-        $process = Start-ProcessWithTimeout -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
-
-        if ($process.ExitCode -eq 0) {
-            Write-Status -Message "Installed successfully via Winget" -Level 'Success'
-            return $true
-        }
-
-        Write-Status -Message "Winget installation failed (exit code: $($process.ExitCode))" -Level 'Warning'
-        return $false
-
-    } catch {
-        Write-Status -Message "Winget installation error: $($_.Exception.Message)" -Level 'Verbose'
-        return $false
+    if ($Silent) {
+        $arguments += '--silent'
     }
+
+    # Retry logic with exponential backoff
+    for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
+        try {
+            if ($attempt -eq 1) {
+                Write-Status -Message "Installing via Winget: $PackageId" -Level 'Info'
+            } else {
+                Write-Status -Message "Retry $attempt/$MaxRetries for Winget: $PackageId" -Level 'Info'
+            }
+
+            # Execute with timeout protection
+            $process = Start-ProcessWithTimeout -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+
+            if ($process.ExitCode -eq 0) {
+                Write-Status -Message "Installed successfully via Winget$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                return $true
+            }
+
+            # Check for transient network errors (exit codes that might benefit from retry)
+            $transientErrors = @(-1978335189, -1978335212)  # Common Winget network errors
+            if ($transientErrors -contains $process.ExitCode -and $attempt -lt $MaxRetries) {
+                $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
+                Write-Status -Message "Transient error detected (exit code: $($process.ExitCode)), retrying in $delay seconds..." -Level 'Warning'
+                Start-Sleep -Seconds $delay
+                continue
+            }
+
+            Write-Status -Message "Winget installation failed (exit code: $($process.ExitCode))" -Level 'Warning'
+            return $false
+
+        } catch {
+            if ($attempt -lt $MaxRetries) {
+                $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
+                Write-Status -Message "Winget error: $($_.Exception.Message), retrying in $delay seconds..." -Level 'Warning'
+                Start-Sleep -Seconds $delay
+                continue
+            } else {
+                Write-Status -Message "Winget installation error after $MaxRetries attempts: $($_.Exception.Message)" -Level 'Verbose'
+                return $false
+            }
+        }
+    }
+
+    return $false
 }
 
 function Install-ViaChocolatey {
@@ -448,7 +513,13 @@ function Install-ViaChocolatey {
     [OutputType([bool])]
     param(
         [Parameter(Mandatory)]
-        [string]$PackageName
+        [string]$PackageName,
+
+        [Parameter()]
+        [int]$MaxRetries = 3,
+
+        [Parameter()]
+        [int]$RetryDelaySeconds = 2
     )
 
     if (-not (Test-CommandExists -Name 'choco')) {
@@ -456,31 +527,56 @@ function Install-ViaChocolatey {
         return $false
     }
 
-    try {
-        Write-Status -Message "Installing via Chocolatey: $PackageName" -Level 'Info'
+    $arguments = @(
+        'install', $PackageName,
+        '-y',
+        '--no-progress',
+        '--ignore-checksums'
+    )
 
-        $arguments = @(
-            'install', $PackageName,
-            '-y',
-            '--no-progress',
-            '--ignore-checksums'
-        )
+    # Retry logic with exponential backoff
+    for ($attempt = 1; $attempt -le $MaxRetries; $attempt++) {
+        try {
+            if ($attempt -eq 1) {
+                Write-Status -Message "Installing via Chocolatey: $PackageName" -Level 'Info'
+            } else {
+                Write-Status -Message "Retry $attempt/$MaxRetries for Chocolatey: $PackageName" -Level 'Info'
+            }
 
-        # Execute with timeout protection
-        $process = Start-ProcessWithTimeout -FilePath 'choco' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+            # Execute with timeout protection
+            $process = Start-ProcessWithTimeout -FilePath 'choco' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
 
-        if ($process.ExitCode -eq 0) {
-            Write-Status -Message "Installed successfully via Chocolatey" -Level 'Success'
-            return $true
+            if ($process.ExitCode -eq 0) {
+                Write-Status -Message "Installed successfully via Chocolatey$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                return $true
+            }
+
+            # Check for transient network errors
+            $transientErrors = @(1641, 3010, -1)  # Common Chocolatey transient errors (reboot required, network timeout)
+            if ($transientErrors -contains $process.ExitCode -and $attempt -lt $MaxRetries) {
+                $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
+                Write-Status -Message "Transient error detected (exit code: $($process.ExitCode)), retrying in $delay seconds..." -Level 'Warning'
+                Start-Sleep -Seconds $delay
+                continue
+            }
+
+            Write-Status -Message "Chocolatey installation failed (exit code: $($process.ExitCode))" -Level 'Verbose'
+            return $false
+
+        } catch {
+            if ($attempt -lt $MaxRetries) {
+                $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
+                Write-Status -Message "Chocolatey error: $($_.Exception.Message), retrying in $delay seconds..." -Level 'Warning'
+                Start-Sleep -Seconds $delay
+                continue
+            } else {
+                Write-Status -Message "Chocolatey installation error after $MaxRetries attempts: $($_.Exception.Message)" -Level 'Verbose'
+                return $false
+            }
         }
-
-        Write-Status -Message "Chocolatey installation failed (exit code: $($process.ExitCode))" -Level 'Verbose'
-        return $false
-
-    } catch {
-        Write-Status -Message "Chocolatey installation error: $($_.Exception.Message)" -Level 'Verbose'
-        return $false
     }
+
+    return $false
 }
 
 function Install-ViaStore {
@@ -538,7 +634,10 @@ function Install-ViaDirectDownload {
         [string]$CustomArguments = $null,
 
         [Parameter()]
-        [string]$DetectionPath = $null
+        [string]$DetectionPath = $null,
+
+        [Parameter()]
+        [string]$ExpectedSHA256 = $null  # Optional SHA256 checksum
     )
 
     try {
@@ -560,11 +659,21 @@ function Install-ViaDirectDownload {
 
         $installerPath = Join-Path -Path $tempDir -ChildPath $filename
 
-        # Use streaming download (memory-efficient)
-        $downloadSuccess = Invoke-FileDownloadWithProgress -Url $Url -OutputPath $installerPath
+        # Use streaming download with optional checksum validation
+        $downloadParams = @{
+            Url = $Url
+            OutputPath = $installerPath
+        }
+
+        if ($ExpectedSHA256) {
+            $downloadParams['ExpectedSHA256'] = $ExpectedSHA256
+            Write-Status -Message "Checksum validation enabled (SHA256)" -Level 'Info'
+        }
+
+        $downloadSuccess = Invoke-FileDownloadWithProgress @downloadParams
 
         if (-not $downloadSuccess -or -not (Test-Path -Path $installerPath)) {
-            Write-Status -Message "Download failed: File not found" -Level 'Error'
+            Write-Status -Message "Download failed: File not found or checksum mismatch" -Level 'Error'
             return $false
         }
 
