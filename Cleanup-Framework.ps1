@@ -35,7 +35,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.0.0
+    Version: 2.3.0
     Use with caution - some operations are irreversible
 #>
 
@@ -103,7 +103,7 @@ $script:Stats = @{
 
 Write-Host ""
 Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║      Win11Forge Framework Cleanup & Maintenance v2.0       ║" -ForegroundColor Cyan
+Write-Host "║      Win11Forge Framework Cleanup & Maintenance v2.3.0     ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 
