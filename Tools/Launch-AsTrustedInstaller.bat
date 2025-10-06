@@ -9,7 +9,7 @@
 ::   Useful for deep system maintenance tasks
 :: ============================================================================
 
-setlocal
+setlocal EnableExtensions DisableDelayedExpansion
 title Win11Forge - TrustedInstaller Launcher
 
 :: Check for admin privileges
@@ -99,27 +99,47 @@ goto LAUNCH
 
 :CUSTOM
 echo.
-set /p PROGRAM="Enter full path to executable: "
+set "PROGRAM_INPUT="
+set /p "PROGRAM_INPUT=Enter executable path or command name: "
 
 :: Validate non-empty input
-if "%PROGRAM%"=="" (
-    echo [ERROR] No executable path provided
+if not defined PROGRAM_INPUT (
+    echo [ERROR] No executable specified.
     pause
     goto MENU
 )
 
-:: Strip surrounding quotes if present
-set "PROGRAM=%PROGRAM:"=%"
+:: Strip surrounding quotes safely using FOR loop expansion
+set "PROGRAM="
+for /f "tokens=* delims=" %%I in ("%PROGRAM_INPUT%") do set "PROGRAM=%%~I"
 
-:: Check file exists
-if not exist "%PROGRAM%" (
-    echo [ERROR] File not found: %PROGRAM%
+:: Double-check after quote stripping
+if not defined PROGRAM (
+    echo [ERROR] No executable specified.
     pause
     goto MENU
 )
+
+:: Resolve program path using WHERE command (supports PATH-resident commands)
+set "RESOLVED_PROGRAM="
+for /f "delims=" %%I in ('where "%PROGRAM%" 2^>nul') do (
+    if not defined RESOLVED_PROGRAM set "RESOLVED_PROGRAM=%%~I"
+)
+
+:: Validate resolved path exists
+if not defined RESOLVED_PROGRAM (
+    echo [ERROR] File not found or not in PATH: %PROGRAM%
+    pause
+    goto MENU
+)
+
+:: Use resolved full path
+set "PROGRAM=%RESOLVED_PROGRAM%"
 
 :: Prompt for optional arguments
-set /p ARGS="Enter command-line arguments (optional, press Enter to skip): "
+set "ARGS="
+set /p "ARGS=Enter command-line arguments (leave blank for none): "
+if not defined ARGS set "ARGS="
 goto LAUNCH
 
 :LAUNCH
