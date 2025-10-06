@@ -583,26 +583,36 @@ function Install-ViaDirectDownload {
         switch ($InstallerType) {
             'msi' {
                 $arguments = @('/i', "`"$installerPath`"", '/qn', '/norestart')
-                $process = Start-Process -FilePath 'msiexec.exe' -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+                $process = Start-ProcessWithTimeout -FilePath 'msiexec.exe' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
                 $installed = ($process.ExitCode -eq 0)
             }
             'exe' {
                 # Use custom arguments if provided (e.g., Battle.net --lang=frFR --installpath=...)
                 if ($CustomArguments) {
                     Write-Status -Message "Using custom install arguments: $CustomArguments" -Level 'Verbose'
-                    $process = Start-Process -FilePath $installerPath -ArgumentList $CustomArguments -Wait -NoNewWindow -PassThru -ErrorAction SilentlyContinue
-                    if ($process.ExitCode -eq 0) {
-                        $installed = $true
+                    try {
+                        $process = Start-ProcessWithTimeout -FilePath $installerPath -ArgumentList $CustomArguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+                        if ($process.ExitCode -eq 0) {
+                            $installed = $true
+                        }
+                    } catch {
+                        Write-Status -Message "EXE installation with custom args failed: $($_.Exception.Message)" -Level 'Verbose'
+                        $installed = $false
                     }
                 } else {
                     # Try common silent switches
                     $silentSwitches = @('/S', '/SILENT', '/VERYSILENT', '/quiet', '/qn')
 
                     foreach ($switch in $silentSwitches) {
-                        $process = Start-Process -FilePath $installerPath -ArgumentList $switch -Wait -NoNewWindow -PassThru -ErrorAction SilentlyContinue
-                        if ($process.ExitCode -eq 0) {
-                            $installed = $true
-                            break
+                        try {
+                            $process = Start-ProcessWithTimeout -FilePath $installerPath -ArgumentList $switch -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+                            if ($process.ExitCode -eq 0) {
+                                $installed = $true
+                                break
+                            }
+                        } catch {
+                            # Try next switch
+                            continue
                         }
                     }
                 }
@@ -620,12 +630,17 @@ function Install-ViaDirectDownload {
                 if ($setupExe) {
                     # ZIP contains installer - execute it
                     Write-Status -Message "Executing installer from archive: $($setupExe.Name)" -Level 'Info'
-                    if ($CustomArguments) {
-                        $process = Start-Process -FilePath $setupExe.FullName -ArgumentList $CustomArguments -Wait -NoNewWindow -PassThru
-                    } else {
-                        $process = Start-Process -FilePath $setupExe.FullName -ArgumentList '/S' -Wait -NoNewWindow -PassThru
+                    try {
+                        if ($CustomArguments) {
+                            $process = Start-ProcessWithTimeout -FilePath $setupExe.FullName -ArgumentList $CustomArguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+                        } else {
+                            $process = Start-ProcessWithTimeout -FilePath $setupExe.FullName -ArgumentList '/S' -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+                        }
+                        $installed = ($process.ExitCode -eq 0)
+                    } catch {
+                        Write-Status -Message "ZIP installer execution failed: $($_.Exception.Message)" -Level 'Verbose'
+                        $installed = $false
                     }
-                    $installed = ($process.ExitCode -eq 0)
                 } else {
                     # ZIP contains portable tools - deploy to destination
                     Write-Status -Message "No installer found - deploying portable tools" -Level 'Info'
@@ -947,10 +962,22 @@ function Install-ApplicationsParallel {
         [int]$MaxParallel = 5
     )
 
-    if ($PSVersionTable.PSVersion.Major -lt 7) {
-        Write-Host "WARNING: Parallel installation requires PowerShell 7+" -ForegroundColor Yellow
+    # Validate PowerShell 7+ with ForEach-Object -Parallel support
+    $hasParallelSupport = $false
+    if ($PSVersionTable.PSVersion.Major -ge 7) {
+        try {
+            $foreachCommand = Get-Command ForEach-Object -ErrorAction Stop
+            $hasParallelSupport = $foreachCommand.Parameters.ContainsKey('Parallel')
+        } catch {
+            $hasParallelSupport = $false
+        }
+    }
+
+    if (-not $hasParallelSupport) {
+        Write-Host "WARNING: Parallel installation requires PowerShell 7+ with ForEach-Object -Parallel support" -ForegroundColor Yellow
+        Write-Host "Current version: $($PSVersionTable.PSVersion)" -ForegroundColor Yellow
         Write-Host "Falling back to sequential installation..." -ForegroundColor Yellow
-        
+
         $results = @()
         foreach ($app in $Applications) {
             $results += Install-Application -Application $app -Force:$Force
@@ -966,11 +993,14 @@ function Install-ApplicationsParallel {
 
     $startTime = Get-Date
     $sortedApps = $Applications | Sort-Object -Property Priority
-    
+
     $moduleRoot = $script:ModuleRoot
     $repoRoot = $script:RepositoryRoot
     $forceInstall = $Force.IsPresent
-    
+
+    # Export helper function for parallel scope
+    $validateUrlFunction = ${function:Test-ValidDownloadUrl}.ToString()
+
     $currentEnvironment = Get-SystemEnvironmentType
     
     $appsToInstall = @()
@@ -1039,6 +1069,10 @@ function Install-ApplicationsParallel {
         $repRoot = $using:repoRoot
         $parallelLogDir = $using:parallelLogsDir
         $ts = $using:timestamp
+        $validateUrl = $using:validateUrlFunction
+
+        # Recreate Test-ValidDownloadUrl helper in parallel scope
+        ${function:Test-ValidDownloadUrl} = [ScriptBlock]::Create($validateUrl)
 
         # Create app-specific log file
         $appLogFile = Join-Path $parallelLogDir "parallel_${ts}_$($app.Name -replace '[^\w\-]', '_').log"
