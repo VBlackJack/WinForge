@@ -5,7 +5,7 @@
 La **base de données centralisée d'applications** est le cœur du système Win11Forge. Elle contient toutes les informations sur les applications disponibles, leurs sources d'installation, et leurs métadonnées.
 
 **Version** : 2.3.0
-**Dernière mise à jour** : 2025-10-04
+**Dernière mise à jour** : 2025-10-05
 **Total d'applications** : 66
 
 ---
@@ -79,7 +79,7 @@ Apps/
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "DatabaseVersion": "2.3.0",
-  "LastUpdated": "2025-10-04",
+  "LastUpdated": "2025-10-05",
   "TotalApplications": 66,
   "Applications": { ... },
   "Categories": { ... },
@@ -315,7 +315,7 @@ Loading database...
 
 Database Statistics:
   Version          : 2.3.0
-  Last Updated     : 2025-10-04
+  Last Updated     : 2025-10-05
   Total Apps       : 66
   Categories       : 19
   Tags             : 7
@@ -490,5 +490,5 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Win11Forge-A
 ---
 
 **Version** : 2.3.0
-**Date** : 2025-10-04
+**Date** : 2025-10-05
 **Statut** : ✅ Production Ready
