@@ -94,7 +94,7 @@ goto LAUNCH
 :WIN11FORGE
 set PROGRAM=powershell.exe
 set "GUI_SCRIPT=%~dp0..\Start-Win11ForgeGUI.ps1"
-set ARGS=-NoProfile -ExecutionPolicy Bypass -File "%GUI_SCRIPT%"
+set "ARGS=-NoProfile -ExecutionPolicy Bypass -File "%GUI_SCRIPT%""
 goto LAUNCH
 
 :CUSTOM
