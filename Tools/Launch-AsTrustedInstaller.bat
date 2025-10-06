@@ -9,7 +9,7 @@
 ::   Useful for deep system maintenance tasks
 :: ============================================================================
 
-setlocal enabledelayedexpansion
+setlocal
 title Win11Forge - TrustedInstaller Launcher
 
 :: Check for admin privileges
@@ -100,12 +100,26 @@ goto LAUNCH
 :CUSTOM
 echo.
 set /p PROGRAM="Enter full path to executable: "
+
+:: Validate non-empty input
+if "%PROGRAM%"=="" (
+    echo [ERROR] No executable path provided
+    pause
+    goto MENU
+)
+
+:: Strip surrounding quotes if present
+set "PROGRAM=%PROGRAM:"=%"
+
+:: Check file exists
 if not exist "%PROGRAM%" (
     echo [ERROR] File not found: %PROGRAM%
     pause
     goto MENU
 )
-set "ARGS="
+
+:: Prompt for optional arguments
+set /p ARGS="Enter command-line arguments (optional, press Enter to skip): "
 goto LAUNCH
 
 :LAUNCH
