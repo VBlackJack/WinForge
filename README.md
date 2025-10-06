@@ -3,7 +3,7 @@
 **Framework modulaire d'automatisation du déploiement post-installation Windows 11 24H2**
 
 [![Version](https://img.shields.io/badge/version-2.3.0-blue.svg)](CHANGELOG.md)
-[![PowerShell](https://img.shields.io/badge/PowerShell-7.5+-blue.svg)](https://github.com/PowerShell/PowerShell)
+[![PowerShell](https://img.shields.io/badge/PowerShell-7.4+-blue.svg)](https://github.com/PowerShell/PowerShell)
 [![Windows](https://img.shields.io/badge/Windows-11%2024H2-0078D4.svg)](https://www.microsoft.com/windows)
 [![Status](https://img.shields.io/badge/status-Production%20Ready-success.svg)](CHANGELOG.md)
 
@@ -76,8 +76,16 @@ Win11Forge/
 │   ├── Validate-AppDatabase.ps1     # Validation base de données
 │   └── Validate-Framework.ps1       # Validation framework complet
 │
-└── Logs/
-    └── deployment_*.log             # Logs horodatés
+├── Backups/                         # Sauvegardes système
+│   └── StartMenuLayouts/            # Layouts Start Menu
+│
+├── Archive/                         # Fichiers archivés (générés)
+│   └── Profiles-v2.0-*/             # Anciens profils
+│
+└── Logs/                            # Logs de déploiement (générés)
+    ├── deployment_*.log             # Logs principaux
+    └── Parallel/                    # Logs mode parallèle
+        └── AppName_*.log            # Logs par app
 ```
 
 ## 🚀 Démarrage Rapide

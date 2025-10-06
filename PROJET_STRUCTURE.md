@@ -74,12 +74,17 @@ Win11Forge/
 │   ├── Validate-AppDatabase.ps1      # Validation de la base de données
 │   └── Validate-Framework.ps1        # Validation complète du framework
 │
-├── 🗂️ Archive/                        # Fichiers archivés
+├── 🗂️ Archive/                        # Fichiers archivés (générés à l'exécution)
 │   ├── Profiles-v2.0-*/              # Anciens profils v2.0 (avant migration)
 │   └── Test-*.ps1                    # Scripts de test archivés
 │
-├── 📊 Logs/                           # Logs de déploiement
-│   └── deployment_*.log              # Logs horodatés
+├── 💾 Backups/                        # Sauvegardes système
+│   └── StartMenuLayouts/             # Layouts Start Menu Windows 11
+│
+├── 📊 Logs/                           # Logs de déploiement (générés à l'exécution)
+│   ├── deployment_*.log              # Logs horodatés principaux
+│   └── Parallel/                     # Logs individuels mode parallèle
+│       └── AppName_*.log             # Logs par application
 │
 └── ⚙️ Core/
     └── Core.psm1                     # Fonctions core du framework
