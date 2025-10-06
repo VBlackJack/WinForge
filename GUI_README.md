@@ -678,7 +678,7 @@ Win11Forge/
 - **Database** : `Apps/README.md` (documentation complète de la base)
 - **Quick Start** : `Apps/QUICK_START.md` (démarrage rapide 5 min)
 - **Integration** : `DATABASE_INTEGRATION.md` (intégration technique)
-- **What's New** : `WHATS_NEW_v2.3.md` (nouveautés v2.4.0)
+- **What's New** : `RELEASE_NOTES_v2.4.0.md` (nouveautés v2.4.0)
 
 ---
 

@@ -321,5 +321,5 @@ $proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThr
 ---
 
 **Version** : 2.3.0
-**Dernière mise à jour** : 2025-10-05
+**Dernière mise à jour** : 2025-10-06
 **Auteur** : Julien Bombled

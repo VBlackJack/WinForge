@@ -233,7 +233,7 @@ Environnement développeur avancé
 
 ```json
 {
-  "DatabaseVersion": "2.3.0",
+  "DatabaseVersion": "2.4.0",
   "TotalApplications": 66,
   "Applications": {
     "GoogleChrome": {
@@ -268,7 +268,7 @@ Les profils référencent simplement les AppIds :
 {
   "Name": "Gaming",
   "Description": "Profil gaming complet",
-  "Version": "2.3.0",
+  "Version": "2.4.0",
   "Inherits": ["Office"],
   "Applications": [
     "Steam",
@@ -452,8 +452,8 @@ Win11Forge Framework - Outil de productivité personnel
 
 ## 📊 Statut du Projet
 
-**Version** : 2.3.0 ✅
-**Dernière mise à jour** : 2025-10-04
+**Version** : 2.4.0 ✅
+**Dernière mise à jour** : 2025-10-06
 **Compatibilité** : Windows 11 24H2 (22H2+)
 **Statut** : Production Ready
 **Applications** : 66 dans la base de données (64 en profils actifs)

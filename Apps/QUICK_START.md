@@ -275,7 +275,7 @@ try {
 ## 📚 Plus d'Informations
 
 - **Documentation complète** : [Apps/README.md](README.md)
-- **Rapport d'implémentation** : [DATABASE_IMPLEMENTATION.md](../DATABASE_IMPLEMENTATION.md)
+- **Rapport d'implémentation** : [RELEASE_NOTES_v2.4.0.md](../RELEASE_NOTES_v2.4.0.md)
 - **Script de validation** : `.\Tools\Validate-AppDatabase.ps1`
 
 ---
