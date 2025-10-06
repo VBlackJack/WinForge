@@ -134,7 +134,11 @@ if not exist "%PS_SCRIPT%" (
 )
 
 echo Launching as TrustedInstaller...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" -Program "%PROGRAM%" -Arguments "%ARGS%"
+if "%ARGS%"=="" (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" -Program "%PROGRAM%"
+) else (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_SCRIPT%" -Program "%PROGRAM%" -Arguments "%ARGS%"
+)
 
 echo.
 echo ========================================================================
