@@ -1,4 +1,4 @@
-# 📁 Win11Forge v2.3.0 - Structure du Projet
+# 📁 Win11Forge v2.4.0 - Structure du Projet
 
 ## 🎯 Scripts Principaux (Racine)
 
@@ -48,7 +48,7 @@ Win11Forge/
 │   └── Database/
 │       └── applications.json          # Base de données centralisée (66 apps)
 │
-├── 📋 Profiles/                       # Profils de déploiement v2.3.0
+├── 📋 Profiles/                       # Profils de déploiement v2.4.0
 │   ├── Base.json                      # 30 apps essentielles
 │   ├── Office.json                    # Base + 5 apps bureautique
 │   ├── Gaming.json                    # Office + 4 apps gaming
@@ -132,7 +132,7 @@ Start-Win11ForgeGUI-Admin.bat → Option 7
 
 **Location:** `Apps/Database/applications.json`
 
-**Format v2.3.0:**
+**Format v2.4.0:**
 - **66 applications** référencées en base de données (64 dans les profils actifs)
 - Sources multiples : Winget, Chocolatey, Microsoft Store, DirectUrl
 - Métadonnées complètes : détection, priorité, tags, vérification
@@ -152,7 +152,7 @@ Gaming (+ 4 apps = 39 total)
 Personnel (+ 25 apps = 64 total)
 ```
 
-**Format des profils v2.3.0:**
+**Format des profils v2.4.0:**
 ```json
 {
   "Name": "Gaming",
@@ -179,7 +179,7 @@ Personnel (+ 25 apps = 64 total)
 .\Cleanup-Framework.ps1
 ```
 
-## 🆕 Nouveautés v2.3.0
+## 🆕 Nouveautés v2.4.0
 
 ✅ Base de données centralisée (66 applications)
 ✅ Interface GUI PowerShell interactive
@@ -196,7 +196,7 @@ Personnel (+ 25 apps = 64 total)
 - **PowerShell 7+** : Recommandé pour le mode parallèle (installation auto)
 - **Admin requis** : Tous les lanceurs s'auto-élèvent
 - **Logs** : Consultables dans `Logs/deployment_*.log`
-- **Profils** : Stockés dans `Profiles/` au format JSON v2.3.0
+- **Profils** : Stockés dans `Profiles/` au format JSON v2.4.0
 - **Compatible file://** : ProfileCreator.html fonctionne sans serveur web
 
 ## 🔗 Liens Utiles

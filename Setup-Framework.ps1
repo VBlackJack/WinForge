@@ -85,7 +85,7 @@ function Test-AdminPrivileges {
 
 Write-Host ""
 Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║        Win11Forge Framework Setup v2.3.0                    ║" -ForegroundColor Cyan
+Write-Host "║        Win11Forge Framework Setup v2.4.0                    ║" -ForegroundColor Cyan
 Write-Host "║        Automated Installation & Configuration               ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""

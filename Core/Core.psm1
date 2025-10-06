@@ -56,7 +56,7 @@ function Initialize-Logging {
     # Initialize log file with header
     $header = @"
 ================================================================================
-Win11Forge Framework v2.3.0 - Deployment Log
+Win11Forge Framework v2.4.0 - Deployment Log
 Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
 Computer: $env:COMPUTERNAME
 User: $env:USERNAME

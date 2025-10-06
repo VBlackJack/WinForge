@@ -1,0 +1,1908 @@
+﻿{
+    "Performance":  {
+                        "AuditOverhead":  {
+                                              "TotalSampleTime_MS":  181074.4057,
+                                              "MaxSampleTime_MS":  10541.612500000001,
+                                              "SampleCount":  59,
+                                              "AvgSampleTime_MS":  3069.06
+                                          },
+                        "Samples":  [
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747587196)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:46:27"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                60,
+                                                                77
+                                                            ],
+                                            "RAM_Percent":  64.24,
+                                            "RAM_Used_GB":  5.14,
+                                            "RAM_Free_GB":  2.86,
+                                            "Disk_Read_BPS":  1216112,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  184
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747591898)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:46:31"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                36,
+                                                                62
+                                                            ],
+                                            "RAM_Percent":  64.21,
+                                            "RAM_Used_GB":  5.14,
+                                            "RAM_Free_GB":  2.86,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  189
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747596510)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:46:36"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                50,
+                                                                25
+                                                            ],
+                                            "RAM_Percent":  64.08,
+                                            "RAM_Used_GB":  5.13,
+                                            "RAM_Free_GB":  2.87,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  832491,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747601078)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:46:41"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                45,
+                                                                31
+                                                            ],
+                                            "RAM_Percent":  64.35,
+                                            "RAM_Used_GB":  5.15,
+                                            "RAM_Free_GB":  2.85,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  189
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747605652)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:46:45"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                3,
+                                                                38
+                                                            ],
+                                            "RAM_Percent":  64.26,
+                                            "RAM_Used_GB":  5.14,
+                                            "RAM_Free_GB":  2.86,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  189
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747610235)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:46:50"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                47,
+                                                                45
+                                                            ],
+                                            "RAM_Percent":  64.03,
+                                            "RAM_Used_GB":  5.12,
+                                            "RAM_Free_GB":  2.88,
+                                            "Disk_Read_BPS":  1663573,
+                                            "Disk_Write_BPS":  1180857,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747614796)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:46:54"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                46,
+                                                                31
+                                                            ],
+                                            "RAM_Percent":  64.13,
+                                            "RAM_Used_GB":  5.13,
+                                            "RAM_Free_GB":  2.87,
+                                            "Disk_Read_BPS":  346728,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  189
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747619433)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:46:59"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                45,
+                                                                53
+                                                            ],
+                                            "RAM_Percent":  64.27,
+                                            "RAM_Used_GB":  5.14,
+                                            "RAM_Free_GB":  2.86,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  188
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747624052)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:04"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                54,
+                                                                82
+                                                            ],
+                                            "RAM_Percent":  64.47,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.84,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747628612)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:08"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                49,
+                                                                63
+                                                            ],
+                                            "RAM_Percent":  64.46,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.84,
+                                            "Disk_Read_BPS":  142784,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747633632)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:13"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                71,
+                                                                79
+                                                            ],
+                                            "RAM_Percent":  64.37,
+                                            "RAM_Used_GB":  5.15,
+                                            "RAM_Free_GB":  2.85,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747638227)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:18"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                40,
+                                                                59
+                                                            ],
+                                            "RAM_Percent":  64.32,
+                                            "RAM_Used_GB":  5.15,
+                                            "RAM_Free_GB":  2.85,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  76909,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747642833)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:22"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                48,
+                                                                82
+                                                            ],
+                                            "RAM_Percent":  64.35,
+                                            "RAM_Used_GB":  5.15,
+                                            "RAM_Free_GB":  2.85,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  6482844,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747647401)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:27"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                48,
+                                                                63
+                                                            ],
+                                            "RAM_Percent":  64.34,
+                                            "RAM_Used_GB":  5.15,
+                                            "RAM_Free_GB":  2.85,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747651943)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:31"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                46,
+                                                                57
+                                                            ],
+                                            "RAM_Percent":  64.32,
+                                            "RAM_Used_GB":  5.15,
+                                            "RAM_Free_GB":  2.85,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747656751)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:36"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                61,
+                                                                70
+                                                            ],
+                                            "RAM_Percent":  64.33,
+                                            "RAM_Used_GB":  5.15,
+                                            "RAM_Free_GB":  2.85,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747661777)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:41"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                53,
+                                                                60
+                                                            ],
+                                            "RAM_Percent":  64.37,
+                                            "RAM_Used_GB":  5.15,
+                                            "RAM_Free_GB":  2.85,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747666333)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:46"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                46,
+                                                                83
+                                                            ],
+                                            "RAM_Percent":  64.48,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.84,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747670888)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:50"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                56,
+                                                                77
+                                                            ],
+                                            "RAM_Percent":  64.36,
+                                            "RAM_Used_GB":  5.15,
+                                            "RAM_Free_GB":  2.85,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747675475)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:55"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                56,
+                                                                68
+                                                            ],
+                                            "RAM_Percent":  64.29,
+                                            "RAM_Used_GB":  5.14,
+                                            "RAM_Free_GB":  2.86,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  217566,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747683522)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:03"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                66,
+                                                                73
+                                                            ],
+                                            "RAM_Percent":  65.02,
+                                            "RAM_Used_GB":  5.2,
+                                            "RAM_Free_GB":  2.8,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  191
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747688143)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:08"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                54,
+                                                                74
+                                                            ],
+                                            "RAM_Percent":  64.96,
+                                            "RAM_Used_GB":  5.2,
+                                            "RAM_Free_GB":  2.8,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  191
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747692742)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:12"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                48,
+                                                                66
+                                                            ],
+                                            "RAM_Percent":  65,
+                                            "RAM_Used_GB":  5.2,
+                                            "RAM_Free_GB":  2.8,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  191
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747697376)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:17"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                50,
+                                                                67
+                                                            ],
+                                            "RAM_Percent":  64.99,
+                                            "RAM_Used_GB":  5.2,
+                                            "RAM_Free_GB":  2.8,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  191
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747701959)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:21"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                62,
+                                                                65
+                                                            ],
+                                            "RAM_Percent":  64.96,
+                                            "RAM_Used_GB":  5.2,
+                                            "RAM_Free_GB":  2.8,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  191
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747706478)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:26"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                56,
+                                                                65
+                                                            ],
+                                            "RAM_Percent":  64.98,
+                                            "RAM_Used_GB":  5.2,
+                                            "RAM_Free_GB":  2.8,
+                                            "Disk_Read_BPS":  170163,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  191
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747711017)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:31"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                63,
+                                                                60
+                                                            ],
+                                            "RAM_Percent":  64.95,
+                                            "RAM_Used_GB":  5.2,
+                                            "RAM_Free_GB":  2.8,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  195702,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747715566)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:35"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                39,
+                                                                76
+                                                            ],
+                                            "RAM_Percent":  64.96,
+                                            "RAM_Used_GB":  5.2,
+                                            "RAM_Free_GB":  2.8,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747720103)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:40"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                41,
+                                                                83
+                                                            ],
+                                            "RAM_Percent":  64.96,
+                                            "RAM_Used_GB":  5.2,
+                                            "RAM_Free_GB":  2.8,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747724683)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:44"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                46,
+                                                                55
+                                                            ],
+                                            "RAM_Percent":  64.95,
+                                            "RAM_Used_GB":  5.2,
+                                            "RAM_Free_GB":  2.8,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  265138,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747729688)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:49"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                53,
+                                                                73
+                                                            ],
+                                            "RAM_Percent":  64.88,
+                                            "RAM_Used_GB":  5.19,
+                                            "RAM_Free_GB":  2.81,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747734254)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:54"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                26,
+                                                                59
+                                                            ],
+                                            "RAM_Percent":  64.68,
+                                            "RAM_Used_GB":  5.17,
+                                            "RAM_Free_GB":  2.83,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747739198)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:48:59"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                56,
+                                                                63
+                                                            ],
+                                            "RAM_Percent":  64.47,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.84,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747743921)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:03"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                46,
+                                                                76
+                                                            ],
+                                            "RAM_Percent":  64.46,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.84,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  189
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747748506)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:08"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                69,
+                                                                63
+                                                            ],
+                                            "RAM_Percent":  64.51,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.84,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  189
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747753084)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:13"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                71,
+                                                                70
+                                                            ],
+                                            "RAM_Percent":  64.49,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.84,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  189
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747757667)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:17"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                57,
+                                                                69
+                                                            ],
+                                            "RAM_Percent":  64.54,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.84,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  646149,
+                                            "ProcessCount":  189
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747762248)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:22"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                48,
+                                                                70
+                                                            ],
+                                            "RAM_Percent":  64.56,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.83,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  189
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747766784)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:26"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                53,
+                                                                66
+                                                            ],
+                                            "RAM_Percent":  64.51,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.84,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  189
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747771332)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:31"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                57,
+                                                                68
+                                                            ],
+                                            "RAM_Percent":  64.51,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.84,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  189
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747776480)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:36"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                54,
+                                                                70
+                                                            ],
+                                            "RAM_Percent":  64.56,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.84,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747781024)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:41"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                57,
+                                                                66
+                                                            ],
+                                            "RAM_Percent":  64.53,
+                                            "RAM_Used_GB":  5.16,
+                                            "RAM_Free_GB":  2.84,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747785911)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:45"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                67,
+                                                                77
+                                                            ],
+                                            "RAM_Percent":  64.72,
+                                            "RAM_Used_GB":  5.18,
+                                            "RAM_Free_GB":  2.82,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  193
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747790523)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:50"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                57,
+                                                                77
+                                                            ],
+                                            "RAM_Percent":  64.92,
+                                            "RAM_Used_GB":  5.19,
+                                            "RAM_Free_GB":  2.81,
+                                            "Disk_Read_BPS":  775447,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  193
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747795100)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:55"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                54,
+                                                                82
+                                                            ],
+                                            "RAM_Percent":  64.87,
+                                            "RAM_Used_GB":  5.19,
+                                            "RAM_Free_GB":  2.81,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  193
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747799732)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:59"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                59,
+                                                                66
+                                                            ],
+                                            "RAM_Percent":  64.88,
+                                            "RAM_Used_GB":  5.19,
+                                            "RAM_Free_GB":  2.81,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  193
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747804287)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:50:04"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                56,
+                                                                71
+                                                            ],
+                                            "RAM_Percent":  64.92,
+                                            "RAM_Used_GB":  5.19,
+                                            "RAM_Free_GB":  2.81,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  193
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747808840)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:50:08"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                68,
+                                                                57
+                                                            ],
+                                            "RAM_Percent":  64.89,
+                                            "RAM_Used_GB":  5.19,
+                                            "RAM_Free_GB":  2.81,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  193
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747813395)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:50:13"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                57,
+                                                                69
+                                                            ],
+                                            "RAM_Percent":  64.86,
+                                            "RAM_Used_GB":  5.19,
+                                            "RAM_Free_GB":  2.81,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  192
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747817962)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:50:17"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                60,
+                                                                76
+                                                            ],
+                                            "RAM_Percent":  64.85,
+                                            "RAM_Used_GB":  5.19,
+                                            "RAM_Free_GB":  2.81,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  191
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747822935)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:50:22"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                66,
+                                                                69
+                                                            ],
+                                            "RAM_Percent":  64.86,
+                                            "RAM_Used_GB":  5.19,
+                                            "RAM_Free_GB":  2.81,
+                                            "Disk_Read_BPS":  95705,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  191
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747827949)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:50:27"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                77,
+                                                                100
+                                                            ],
+                                            "RAM_Percent":  64.82,
+                                            "RAM_Used_GB":  5.18,
+                                            "RAM_Free_GB":  2.81,
+                                            "Disk_Read_BPS":  1110328,
+                                            "Disk_Write_BPS":  531026,
+                                            "ProcessCount":  190
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747837173)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:50:37"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                94,
+                                                                63
+                                                            ],
+                                            "RAM_Percent":  65.37,
+                                            "RAM_Used_GB":  5.23,
+                                            "RAM_Free_GB":  2.77,
+                                            "Disk_Read_BPS":  35363,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  194
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747845846)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:50:45"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                72,
+                                                                97
+                                                            ],
+                                            "RAM_Percent":  65.31,
+                                            "RAM_Used_GB":  5.22,
+                                            "RAM_Free_GB":  2.77,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  192
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747851924)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:50:51"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                70,
+                                                                14
+                                                            ],
+                                            "RAM_Percent":  65.18,
+                                            "RAM_Used_GB":  5.21,
+                                            "RAM_Free_GB":  2.79,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  192
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747863799)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:51:03"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                93,
+                                                                100
+                                                            ],
+                                            "RAM_Percent":  65.6,
+                                            "RAM_Used_GB":  5.25,
+                                            "RAM_Free_GB":  2.75,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  191
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747869204)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:51:09"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                9,
+                                                                76
+                                                            ],
+                                            "RAM_Percent":  65.34,
+                                            "RAM_Used_GB":  5.23,
+                                            "RAM_Free_GB":  2.77,
+                                            "Disk_Read_BPS":  0,
+                                            "Disk_Write_BPS":  0,
+                                            "ProcessCount":  189
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747874605)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:51:14"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                79,
+                                                                100
+                                                            ],
+                                            "RAM_Percent":  62.15,
+                                            "RAM_Used_GB":  4.97,
+                                            "RAM_Free_GB":  3.03,
+                                            "Disk_Read_BPS":  245222,
+                                            "Disk_Write_BPS":  45979,
+                                            "ProcessCount":  188
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747881196)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:51:21"
+                                                          },
+                                            "CPU_Percent":  [
+                                                                100,
+                                                                100
+                                                            ],
+                                            "RAM_Percent":  65.17,
+                                            "RAM_Used_GB":  5.21,
+                                            "RAM_Free_GB":  2.79,
+                                            "Disk_Read_BPS":  512505,
+                                            "Disk_Write_BPS":  1025011,
+                                            "ProcessCount":  183
+                                        }
+                                    ],
+                        "Alerts":  [
+                                       {
+                                           "Message":  "CPU usage at 77 100%",
+                                           "Timestamp":  {
+                                                             "value":  "\/Date(1759747827949)\/",
+                                                             "DisplayHint":  2,
+                                                             "DateTime":  "lundi 6 octobre 2025 12:50:27"
+                                                         },
+                                           "Type":  "HighCPU",
+                                           "Severity":  "Warning"
+                                       },
+                                       {
+                                           "Message":  "CPU usage at 94 63%",
+                                           "Timestamp":  {
+                                                             "value":  "\/Date(1759747837173)\/",
+                                                             "DisplayHint":  2,
+                                                             "DateTime":  "lundi 6 octobre 2025 12:50:37"
+                                                         },
+                                           "Type":  "HighCPU",
+                                           "Severity":  "Warning"
+                                       },
+                                       {
+                                           "Message":  "CPU usage at 72 97%",
+                                           "Timestamp":  {
+                                                             "value":  "\/Date(1759747845846)\/",
+                                                             "DisplayHint":  2,
+                                                             "DateTime":  "lundi 6 octobre 2025 12:50:45"
+                                                         },
+                                           "Type":  "HighCPU",
+                                           "Severity":  "Warning"
+                                       },
+                                       {
+                                           "Message":  "CPU usage at 93 100%",
+                                           "Timestamp":  {
+                                                             "value":  "\/Date(1759747863799)\/",
+                                                             "DisplayHint":  2,
+                                                             "DateTime":  "lundi 6 octobre 2025 12:51:03"
+                                                         },
+                                           "Type":  "HighCPU",
+                                           "Severity":  "Warning"
+                                       },
+                                       {
+                                           "Message":  "CPU usage at 79 100%",
+                                           "Timestamp":  {
+                                                             "value":  "\/Date(1759747874605)\/",
+                                                             "DisplayHint":  2,
+                                                             "DateTime":  "lundi 6 octobre 2025 12:51:14"
+                                                         },
+                                           "Type":  "HighCPU",
+                                           "Severity":  "Warning"
+                                       },
+                                       {
+                                           "Message":  "CPU usage at 100 100%",
+                                           "Timestamp":  {
+                                                             "value":  "\/Date(1759747881196)\/",
+                                                             "DisplayHint":  2,
+                                                             "DateTime":  "lundi 6 octobre 2025 12:51:21"
+                                                         },
+                                           "Type":  "HighCPU",
+                                           "Severity":  "Warning"
+                                       }
+                                   ]
+                    },
+    "SystemInfo":  {
+                       "BuildNumber":  "26100",
+                       "TotalRAM_GB":  8,
+                       "CPUCores":  [
+                                        1,
+                                        1
+                                    ],
+                       "ComputerName":  "DESKTOP-9AHV641",
+                       "OSVersion":  "10.0.26100",
+                       "OS":  "Microsoft Windows 11 Entreprise",
+                       "CPULogicalProcessors":  [
+                                                    1,
+                                                    1
+                                                ],
+                       "PowerShellVersion":  "5.1.26100.6584",
+                       "CPU":  [
+                                   "AMD Ryzen 7 5800X 8-Core Processor             ",
+                                   "AMD Ryzen 7 5800X 8-Core Processor             "
+                               ]
+                   },
+    "Applications":  {
+                         "Installed":  [
+
+                                       ],
+                         "Uninstalled":  [
+
+                                         ]
+                     },
+    "FileSystem":  {
+                       "Changes":  [
+
+                                   ]
+                   },
+    "StartTime":  "\/Date(1759747576384)\/",
+    "Registry":  {
+                     "Changes":  [
+
+                                 ]
+                 },
+    "Events":  {
+                   "Errors":  [
+
+                              ],
+                   "Warnings":  [
+
+                                ],
+                   "Installations":  [
+
+                                     ]
+               },
+    "Anomalies":  [
+                      {
+                          "Message":  "CPU usage at 77 100%",
+                          "Timestamp":  {
+                                            "value":  "\/Date(1759747827949)\/",
+                                            "DisplayHint":  2,
+                                            "DateTime":  "lundi 6 octobre 2025 12:50:27"
+                                        },
+                          "Type":  "HighCPU",
+                          "Severity":  "Warning"
+                      },
+                      {
+                          "Message":  "CPU usage at 94 63%",
+                          "Timestamp":  {
+                                            "value":  "\/Date(1759747837173)\/",
+                                            "DisplayHint":  2,
+                                            "DateTime":  "lundi 6 octobre 2025 12:50:37"
+                                        },
+                          "Type":  "HighCPU",
+                          "Severity":  "Warning"
+                      },
+                      {
+                          "Message":  "CPU usage at 72 97%",
+                          "Timestamp":  {
+                                            "value":  "\/Date(1759747845846)\/",
+                                            "DisplayHint":  2,
+                                            "DateTime":  "lundi 6 octobre 2025 12:50:45"
+                                        },
+                          "Type":  "HighCPU",
+                          "Severity":  "Warning"
+                      },
+                      {
+                          "Message":  "CPU usage at 93 100%",
+                          "Timestamp":  {
+                                            "value":  "\/Date(1759747863799)\/",
+                                            "DisplayHint":  2,
+                                            "DateTime":  "lundi 6 octobre 2025 12:51:03"
+                                        },
+                          "Type":  "HighCPU",
+                          "Severity":  "Warning"
+                      },
+                      {
+                          "Message":  "CPU usage at 79 100%",
+                          "Timestamp":  {
+                                            "value":  "\/Date(1759747874605)\/",
+                                            "DisplayHint":  2,
+                                            "DateTime":  "lundi 6 octobre 2025 12:51:14"
+                                        },
+                          "Type":  "HighCPU",
+                          "Severity":  "Warning"
+                      },
+                      {
+                          "Message":  "CPU usage at 100 100%",
+                          "Timestamp":  {
+                                            "value":  "\/Date(1759747881196)\/",
+                                            "DisplayHint":  2,
+                                            "DateTime":  "lundi 6 octobre 2025 12:51:21"
+                                        },
+                          "Type":  "HighCPU",
+                          "Severity":  "Warning"
+                      }
+                  ],
+    "Duration":  60,
+    "EndTime":  {
+                    "value":  "\/Date(1759747885275)\/",
+                    "DisplayHint":  2,
+                    "DateTime":  "lundi 6 octobre 2025 12:51:25"
+                },
+    "Processes":  {
+                      "Current":  [
+
+                                  ],
+                      "Created":  [
+                                      {
+                                          "Id":  16372,
+                                          "Name":  "svchost",
+                                          "StartTime":  "\/Date(1759747578297)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  9.98
+                                      },
+                                      {
+                                          "Id":  18452,
+                                          "Name":  "svchost",
+                                          "StartTime":  "\/Date(1759747580816)\/",
+                                          "Path":  "C:\\WINDOWS\\System32\\svchost.exe",
+                                          "WorkingSet_MB":  25.67
+                                      },
+                                      {
+                                          "Id":  18392,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747587967)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  25.96
+                                      },
+                                      {
+                                          "Id":  3772,
+                                          "Name":  "WmiApSrv",
+                                          "StartTime":  "\/Date(1759747585347)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\wbem\\WmiApSrv.exe",
+                                          "WorkingSet_MB":  11.36
+                                      },
+                                      {
+                                          "Id":  3440,
+                                          "Name":  "WmiPrvSE",
+                                          "StartTime":  "\/Date(1759747580008)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\wbem\\wmiprvse.exe",
+                                          "WorkingSet_MB":  48
+                                      },
+                                      {
+                                          "Id":  18440,
+                                          "Name":  "WmiPrvSE",
+                                          "StartTime":  "\/Date(1759747586382)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\wbem\\wmiprvse.exe",
+                                          "WorkingSet_MB":  17.6
+                                      },
+                                      {
+                                          "Id":  15856,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759747593189)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                          "WorkingSet_MB":  55.94
+                                      },
+                                      {
+                                          "Id":  18312,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759747593119)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                          "WorkingSet_MB":  14.43
+                                      },
+                                      {
+                                          "Id":  15612,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759747607522)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                          "WorkingSet_MB":  14.43
+                                      },
+                                      {
+                                          "Id":  19248,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759747607568)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                          "WorkingSet_MB":  25.11
+                                      },
+                                      {
+                                          "Id":  8468,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759747618893)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                          "WorkingSet_MB":  14.43
+                                      },
+                                      {
+                                          "Id":  17708,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759747618934)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                          "WorkingSet_MB":  65.76
+                                      },
+                                      {
+                                          "Id":  15576,
+                                          "Name":  "MoUsoCoreWorker",
+                                          "StartTime":  "\/Date(1759747781581)\/",
+                                          "Path":  "C:\\WINDOWS\\uus\\AMD64\\MoUsoCoreWorker.exe",
+                                          "WorkingSet_MB":  42.55
+                                      },
+                                      {
+                                          "Id":  14924,
+                                          "Name":  "RuntimeBroker",
+                                          "StartTime":  "\/Date(1759747782319)\/",
+                                          "Path":  "C:\\Windows\\System32\\RuntimeBroker.exe",
+                                          "WorkingSet_MB":  10.09
+                                      },
+                                      {
+                                          "Id":  7416,
+                                          "Name":  "svchost",
+                                          "StartTime":  "\/Date(1759747781884)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  22.83
+                                      },
+                                      {
+                                          "Id":  17748,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759747824388)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                          "WorkingSet_MB":  54.33
+                                      },
+                                      {
+                                          "Id":  19008,
+                                          "Name":  "choco",
+                                          "StartTime":  "\/Date(1759747824339)\/",
+                                          "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                          "WorkingSet_MB":  14.43
+                                      },
+                                      {
+                                          "Id":  4092,
+                                          "Name":  "audiodg",
+                                          "StartTime":  "\/Date(1759747827924)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\AUDIODG.EXE",
+                                          "WorkingSet_MB":  15.51
+                                      },
+                                      {
+                                          "Id":  18820,
+                                          "Name":  "dllhost",
+                                          "StartTime":  "\/Date(1759747827304)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                          "WorkingSet_MB":  9.41
+                                      },
+                                      {
+                                          "Id":  14196,
+                                          "Name":  "WindowsTerminal",
+                                          "StartTime":  "\/Date(1759747827143)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.WindowsTerminal_1.22.12111.0_x64__8wekyb3d8bbwe\\WindowsTerminal.exe",
+                                          "WorkingSet_MB":  48.63
+                                      },
+                                      {
+                                          "Id":  1096,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747826331)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  27.57
+                                      },
+                                      {
+                                          "Id":  2244,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747827181)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  27.54
+                                      },
+                                      {
+                                          "Id":  15572,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747826430)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  27.53
+                                      },
+                                      {
+                                          "Id":  1416,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747835296)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  37.88
+                                      },
+                                      {
+                                          "Id":  10120,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747833917)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  35.3
+                                      },
+                                      {
+                                          "Id":  18392,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747835167)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  37.48
+                                      },
+                                      {
+                                          "Id":  15572,
+                                          "Name":  "dllhost",
+                                          "StartTime":  "\/Date(1759747845096)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                          "WorkingSet_MB":  9.41
+                                      },
+                                      {
+                                          "Id":  15492,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747844553)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  34.39
+                                      },
+                                      {
+                                          "Id":  18804,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747845041)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  33.55
+                                      },
+                                      {
+                                          "Id":  13020,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747850274)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  33.7
+                                      },
+                                      {
+                                          "Id":  16352,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747849109)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  30.14
+                                      },
+                                      {
+                                          "Id":  18608,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747849262)\/",
+                                          "Path":  null,
+                                          "WorkingSet_MB":  35.05
+                                      },
+                                      {
+                                          "Id":  11500,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747865723)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  25.38
+                                      },
+                                      {
+                                          "Id":  14784,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747865567)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  25.33
+                                      },
+                                      {
+                                          "Id":  16528,
+                                          "Name":  "winget",
+                                          "StartTime":  "\/Date(1759747865503)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                          "WorkingSet_MB":  25.32
+                                      },
+                                      {
+                                          "Id":  8916,
+                                          "Name":  "dllhost",
+                                          "StartTime":  "\/Date(1759747873374)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                          "WorkingSet_MB":  27.32
+                                      },
+                                      {
+                                          "Id":  17512,
+                                          "Name":  "dllhost",
+                                          "StartTime":  "\/Date(1759747873208)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                          "WorkingSet_MB":  9.45
+                                      },
+                                      {
+                                          "Id":  16956,
+                                          "Name":  "explorer",
+                                          "StartTime":  "\/Date(1759747872206)\/",
+                                          "Path":  "C:\\WINDOWS\\Explorer.EXE",
+                                          "WorkingSet_MB":  180.93
+                                      },
+                                      {
+                                          "Id":  15336,
+                                          "Name":  "msedgewebview2",
+                                          "StartTime":  "\/Date(1759747877214)\/",
+                                          "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                          "WorkingSet_MB":  9.96
+                                      },
+                                      {
+                                          "Id":  17888,
+                                          "Name":  "msedgewebview2",
+                                          "StartTime":  "\/Date(1759747877377)\/",
+                                          "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                          "WorkingSet_MB":  2.53
+                                      },
+                                      {
+                                          "Id":  16700,
+                                          "Name":  "SearchHost",
+                                          "StartTime":  "\/Date(1759747876396)\/",
+                                          "Path":  "C:\\WINDOWS\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+                                          "WorkingSet_MB":  113.86
+                                      },
+                                      {
+                                          "Id":  13432,
+                                          "Name":  "ShellExperienceHost",
+                                          "StartTime":  "\/Date(1759747873650)\/",
+                                          "Path":  "C:\\WINDOWS\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+                                          "WorkingSet_MB":  65.48
+                                      },
+                                      {
+                                          "Id":  11296,
+                                          "Name":  "userinit",
+                                          "StartTime":  "\/Date(1759747872037)\/",
+                                          "Path":  "C:\\WINDOWS\\system32\\userinit.exe",
+                                          "WorkingSet_MB":  6.63
+                                      },
+                                      {
+                                          "Id":  19444,
+                                          "Name":  "WidgetBoard",
+                                          "StartTime":  "\/Date(1759747874063)\/",
+                                          "Path":  "C:\\Program Files\\WindowsApps\\MicrosoftWindows.Client.WebExperience_525.24401.50.0_x64__cw5n1h2txyewy\\WidgetBoard.exe",
+                                          "WorkingSet_MB":  19.97
+                                      }
+                                  ],
+                      "Terminated":  [
+                                         {
+                                             "Id":  15856,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759747593189)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                             "WorkingSet_MB":  55.94
+                                         },
+                                         {
+                                             "Id":  18312,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759747593119)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                             "WorkingSet_MB":  14.43
+                                         },
+                                         {
+                                             "Id":  15612,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759747607522)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                             "WorkingSet_MB":  14.43
+                                         },
+                                         {
+                                             "Id":  19248,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759747607568)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                             "WorkingSet_MB":  25.11
+                                         },
+                                         {
+                                             "Id":  8468,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759747618893)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                             "WorkingSet_MB":  14.43
+                                         },
+                                         {
+                                             "Id":  17708,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759747618934)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                             "WorkingSet_MB":  79.54
+                                         },
+                                         {
+                                             "Id":  14924,
+                                             "Name":  "RuntimeBroker",
+                                             "StartTime":  "\/Date(1759747782319)\/",
+                                             "Path":  "C:\\Windows\\System32\\RuntimeBroker.exe",
+                                             "WorkingSet_MB":  10.11
+                                         },
+                                         {
+                                             "Id":  17748,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759747824388)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\choco.exe",
+                                             "WorkingSet_MB":  54.33
+                                         },
+                                         {
+                                             "Id":  19008,
+                                             "Name":  "choco",
+                                             "StartTime":  "\/Date(1759747824339)\/",
+                                             "Path":  "C:\\ProgramData\\chocolatey\\bin\\choco.exe",
+                                             "WorkingSet_MB":  14.43
+                                         },
+                                         {
+                                             "Id":  16456,
+                                             "Name":  "svchost",
+                                             "StartTime":  "\/Date(1759747771876)\/",
+                                             "Path":  "C:\\WINDOWS\\System32\\svchost.exe",
+                                             "WorkingSet_MB":  8.26
+                                         },
+                                         {
+                                             "Id":  18452,
+                                             "Name":  "svchost",
+                                             "StartTime":  "\/Date(1759747580816)\/",
+                                             "Path":  "C:\\WINDOWS\\System32\\svchost.exe",
+                                             "WorkingSet_MB":  25.46
+                                         },
+                                         {
+                                             "Id":  18820,
+                                             "Name":  "dllhost",
+                                             "StartTime":  "\/Date(1759747827304)\/",
+                                             "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                             "WorkingSet_MB":  9.41
+                                         },
+                                         {
+                                             "Id":  1096,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747826331)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  27.57
+                                         },
+                                         {
+                                             "Id":  2244,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747827181)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  27.54
+                                         },
+                                         {
+                                             "Id":  14992,
+                                             "Name":  "winget",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  30.18
+                                         },
+                                         {
+                                             "Id":  15572,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747826430)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  27.53
+                                         },
+                                         {
+                                             "Id":  16976,
+                                             "Name":  "winget",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  33.46
+                                         },
+                                         {
+                                             "Id":  15576,
+                                             "Name":  "MoUsoCoreWorker",
+                                             "StartTime":  "\/Date(1759747781581)\/",
+                                             "Path":  "C:\\WINDOWS\\uus\\AMD64\\MoUsoCoreWorker.exe",
+                                             "WorkingSet_MB":  23.8
+                                         },
+                                         {
+                                             "Id":  7416,
+                                             "Name":  "svchost",
+                                             "StartTime":  "\/Date(1759747781884)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  21.99
+                                         },
+                                         {
+                                             "Id":  1416,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747835296)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  37.88
+                                         },
+                                         {
+                                             "Id":  10120,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747833917)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  35.3
+                                         },
+                                         {
+                                             "Id":  11120,
+                                             "Name":  "winget",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  38.4
+                                         },
+                                         {
+                                             "Id":  18392,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747835167)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  37.48
+                                         },
+                                         {
+                                             "Id":  15572,
+                                             "Name":  "dllhost",
+                                             "StartTime":  "\/Date(1759747845096)\/",
+                                             "Path":  "C:\\WINDOWS\\system32\\DllHost.exe",
+                                             "WorkingSet_MB":  9.41
+                                         },
+                                         {
+                                             "Id":  10724,
+                                             "Name":  "winget",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  35.2
+                                         },
+                                         {
+                                             "Id":  13988,
+                                             "Name":  "winget",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  35.1
+                                         },
+                                         {
+                                             "Id":  15492,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747844553)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  34.39
+                                         },
+                                         {
+                                             "Id":  17000,
+                                             "Name":  "winget",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  34.44
+                                         },
+                                         {
+                                             "Id":  18804,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747845041)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  33.55
+                                         },
+                                         {
+                                             "Id":  13020,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747850274)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  33.7
+                                         },
+                                         {
+                                             "Id":  16352,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747849109)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  30.14
+                                         },
+                                         {
+                                             "Id":  17264,
+                                             "Name":  "winget",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  34.41
+                                         },
+                                         {
+                                             "Id":  18608,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747849262)\/",
+                                             "Path":  null,
+                                             "WorkingSet_MB":  35.05
+                                         },
+                                         {
+                                             "Id":  18972,
+                                             "Name":  "winget",
+                                             "StartTime":  null,
+                                             "Path":  null,
+                                             "WorkingSet_MB":  33.29
+                                         },
+                                         {
+                                             "Id":  16716,
+                                             "Name":  "explorer",
+                                             "StartTime":  "\/Date(1759745639397)\/",
+                                             "Path":  "C:\\WINDOWS\\explorer.exe",
+                                             "WorkingSet_MB":  192.66
+                                         },
+                                         {
+                                             "Id":  17296,
+                                             "Name":  "explorer",
+                                             "StartTime":  "\/Date(1759739966078)\/",
+                                             "Path":  "C:\\WINDOWS\\Explorer.EXE",
+                                             "WorkingSet_MB":  213.92
+                                         },
+                                         {
+                                             "Id":  7272,
+                                             "Name":  "msedgewebview2",
+                                             "StartTime":  "\/Date(1759739971827)\/",
+                                             "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                             "WorkingSet_MB":  54.1
+                                         },
+                                         {
+                                             "Id":  10568,
+                                             "Name":  "msedgewebview2",
+                                             "StartTime":  "\/Date(1759739971372)\/",
+                                             "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                             "WorkingSet_MB":  91.56
+                                         },
+                                         {
+                                             "Id":  12764,
+                                             "Name":  "msedgewebview2",
+                                             "StartTime":  "\/Date(1759739971827)\/",
+                                             "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                             "WorkingSet_MB":  17.3
+                                         },
+                                         {
+                                             "Id":  14508,
+                                             "Name":  "msedgewebview2",
+                                             "StartTime":  "\/Date(1759739971726)\/",
+                                             "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                             "WorkingSet_MB":  32
+                                         },
+                                         {
+                                             "Id":  17724,
+                                             "Name":  "msedgewebview2",
+                                             "StartTime":  "\/Date(1759739971442)\/",
+                                             "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                             "WorkingSet_MB":  8.37
+                                         },
+                                         {
+                                             "Id":  18372,
+                                             "Name":  "msedgewebview2",
+                                             "StartTime":  "\/Date(1759739971714)\/",
+                                             "Path":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\140.0.3485.94\\msedgewebview2.exe",
+                                             "WorkingSet_MB":  40.57
+                                         },
+                                         {
+                                             "Id":  11316,
+                                             "Name":  "SearchHost",
+                                             "StartTime":  "\/Date(1759739970637)\/",
+                                             "Path":  "C:\\WINDOWS\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\SearchHost.exe",
+                                             "WorkingSet_MB":  93.43
+                                         },
+                                         {
+                                             "Id":  17044,
+                                             "Name":  "ShellExperienceHost",
+                                             "StartTime":  "\/Date(1759739968455)\/",
+                                             "Path":  "C:\\WINDOWS\\SystemApps\\ShellExperienceHost_cw5n1h2txyewy\\ShellExperienceHost.exe",
+                                             "WorkingSet_MB":  57.54
+                                         },
+                                         {
+                                             "Id":  19236,
+                                             "Name":  "StartMenuExperienceHost",
+                                             "StartTime":  "\/Date(1759739974333)\/",
+                                             "Path":  "C:\\WINDOWS\\SystemApps\\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\\StartMenuExperienceHost.exe",
+                                             "WorkingSet_MB":  76.5
+                                         },
+                                         {
+                                             "Id":  16560,
+                                             "Name":  "WidgetBoard",
+                                             "StartTime":  "\/Date(1759739968390)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\MicrosoftWindows.Client.WebExperience_525.24401.50.0_x64__cw5n1h2txyewy\\WidgetBoard.exe",
+                                             "WorkingSet_MB":  20.29
+                                         },
+                                         {
+                                             "Id":  11500,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747865723)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  35.14
+                                         },
+                                         {
+                                             "Id":  14784,
+                                             "Name":  "winget",
+                                             "StartTime":  "\/Date(1759747865567)\/",
+                                             "Path":  "C:\\Program Files\\WindowsApps\\Microsoft.DesktopAppInstaller_1.26.509.0_x64__8wekyb3d8bbwe\\winget.exe",
+                                             "WorkingSet_MB":  35.17
+                                         }
+                                     ]
+                  },
+    "Network":  {
+                    "Traffic":  [
+
+                                ],
+                    "Connections":  [
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747678963)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:47:58"
+                                                          },
+                                            "Data":  [
+                                                         {
+                                                             "ProcessId":  "2796",
+                                                             "ProcessName":  "svchost",
+                                                             "ConnectionCount":  1
+                                                         },
+                                                         {
+                                                             "ProcessId":  "13880",
+                                                             "ProcessName":  "pwsh",
+                                                             "ConnectionCount":  1
+                                                         },
+                                                         {
+                                                             "ProcessId":  "3016",
+                                                             "ProcessName":  "svchost",
+                                                             "ConnectionCount":  1
+                                                         },
+                                                         {
+                                                             "ProcessId":  "8084",
+                                                             "ProcessName":  "claude",
+                                                             "ConnectionCount":  2
+                                                         },
+                                                         {
+                                                             "ProcessId":  "4060",
+                                                             "ProcessName":  "brave",
+                                                             "ConnectionCount":  1
+                                                         }
+                                                     ]
+                                        },
+                                        {
+                                            "Timestamp":  {
+                                                              "value":  "\/Date(1759747771947)\/",
+                                                              "DisplayHint":  2,
+                                                              "DateTime":  "lundi 6 octobre 2025 12:49:31"
+                                                          },
+                                            "Data":  [
+                                                         {
+                                                             "ProcessId":  "3016",
+                                                             "ProcessName":  "svchost",
+                                                             "ConnectionCount":  1
+                                                         },
+                                                         {
+                                                             "ProcessId":  "4060",
+                                                             "ProcessName":  "brave",
+                                                             "ConnectionCount":  1
+                                                         }
+                                                     ]
+                                        }
+                                    ]
+                }
+}

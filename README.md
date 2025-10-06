@@ -148,7 +148,7 @@ Tools\ProfileCreator.html
 - ✅ **Filtrage par catégorie** et tags
 - ✅ **Configuration système** (Explorer, Taskbar, Privacy)
 - ✅ **Compatible file://** (pas de serveur web requis)
-- ✅ **Export JSON** au format v2.3.0
+- ✅ **Export JSON** au format v2.4.0
 
 ### **Via GUI PowerShell**
 
@@ -227,7 +227,7 @@ Environnement développeur avancé
 - **Utilitaires** : Internet Download Manager, WinRAR
 - **Multimédia** : Mp3tag, MediaMonkey, TV Rename
 
-## 🎯 Base de Données Centralisée v2.3.0
+## 🎯 Base de Données Centralisée v2.4.0
 
 ### **Structure**
 
@@ -260,7 +260,7 @@ Environnement développeur avancé
 }
 ```
 
-### **Format des Profils v2.3.0**
+### **Format des Profils v2.4.0**
 
 Les profils référencent simplement les AppIds :
 
@@ -381,7 +381,7 @@ Success Rate: 100%
 .\Tools\Validate-AppDatabase.ps1
 ```
 
-## 🆕 Nouveautés v2.3.0
+## 🆕 Nouveautés v2.4.0
 
 ✨ **Détection Store Apps Améliorée**
 - Support complet méthode `StoreApp` avec PackageName

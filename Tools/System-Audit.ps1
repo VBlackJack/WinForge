@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Universal System Audit Tool v2.3.0
+    Universal System Audit Tool v2.4.0
 
 .DESCRIPTION
     Generic system monitoring tool for tracking any script, deployment, or process:
@@ -15,7 +15,7 @@
     - Auto-stop when target process/script completes
     - Performance overhead measurement and reporting
 
-    v2.3.0 Performance Optimizations:
+    v2.4.0 Performance Optimizations:
     - Changed: Default sample interval 2s → 5s (reduces overhead 60% → 38%)
     - Optimized: Application scan frequency (every 30s instead of 20s)
     - Optimized: Event Viewer scan frequency (every 60s instead of 30s)
@@ -826,7 +826,7 @@ $(foreach ($anomaly in $script:AuditData.Anomalies) {
 # === MAIN MONITORING LOOP ===
 
 Write-Host "`n" + ("=" * 80) -ForegroundColor Cyan
-Write-Host "  Universal System Audit Tool v2.3.0 (Performance Optimized)" -ForegroundColor Cyan
+Write-Host "  Universal System Audit Tool v2.4.0 (Performance Optimized)" -ForegroundColor Cyan
 Write-Host ("=" * 80) -ForegroundColor Cyan
 Write-Host ""
 

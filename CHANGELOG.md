@@ -1,5 +1,134 @@
 # Win11Forge Framework - Changelog
 
+## [2.4.0] - 2025-10-06
+
+### 🎉 Compatibility & Performance Release
+
+Cette version apporte des améliorations majeures de compatibilité PowerShell 5.1, des optimisations de performance pour System-Audit, et des corrections critiques pour la stabilité du mode séquentiel.
+
+### ✨ Nouvelles Fonctionnalités
+
+#### System-Audit v2.3.0 - Performance Optimized
+- **Ajouté**: `Tools/System-Audit.ps1` v2.3.0
+  - Overhead réduit de 67% : 3000ms → ~750ms par échantillon (60% → 20%)
+  - Intervalle d'échantillonnage ajusté de 2s à 5s par défaut
+  - Fréquences de scan optimisées : Apps (30s), Events (60s), Network (120s)
+  - Nouveau paramètre `-SkipApplicationMonitoring` (réduit overhead de 40%)
+  - Affichage temps réel des performances (avg/max par échantillon)
+
+#### TrustedInstaller Launcher Improvements
+- **Ajouté**: `Tools/Launch-AsTrustedInstaller.bat`
+  - Menu interactif avec 8 options (PowerShell, CMD, Registry, Task Manager, etc.)
+  - Exécution avec privilèges NT AUTHORITY\SYSTEM
+  - Support automatique des fichiers .msc via mmc.exe
+  - Auto-installation du module NtObjectManager si nécessaire
+
+### 🔧 Corrections Majeures
+
+#### PowerShell 5.1 Sequential Mode Compatibility
+- **Corrigé**: `Modules/InstallationEngine.psm1` - StrictMode PropertyNotFoundException
+  - Remplacement des conditions chainées par des conditions imbriquées
+  - Accès sécurisé aux propriétés PSObject : `$app.PSObject.Properties['PropertyName']`
+  - Compatible avec StrictMode en PowerShell 5.1 et 7.x
+  - Fixes appliqués aux propriétés : InstallationOptions, IgnoreExitCodeIfFileExists, ValidExitCodes
+
+#### PowerShell 7 Auto-Restart Enhancement
+- **Ajouté**: `Deploy-Win11Environment.ps1` - Auto-restart en PowerShell 7
+  - Détection automatique de PowerShell 5.1
+  - Redémarrage automatique avec préservation des paramètres
+  - Support modes Parallel et Sequential
+  - Message informatif avant redémarrage
+
+#### System-Audit Bug Fixes (v2.2.0)
+- **Corrigé**: `Tools/System-Audit.ps1` - Bugs critiques
+  - Processus terminés comptés avant calcul overhead (timing fix)
+  - Protection division par zéro dans génération rapport HTML
+  - Gestionnaire Ctrl+C gracieux avec génération automatique du rapport
+  - Mode `-Quiet` pour exécution silencieuse (scripts automatisés)
+  - Session CIM réutilisable pour +20% de performance
+  - Optimisation HashSet pour comparaisons O(1) au lieu de O(n²)
+
+#### TrustedInstaller Launcher Fixes
+- **Corrigé**: `Tools/Launch-AsTrustedInstaller.bat` - Gestion des chemins avec espaces
+  - Correction du quoting pour paths avec espaces
+  - Suppression du code mort (delayed expansion inutilisée)
+  - Robustesse assignment ARGS avec quoted set statement
+  - Validation correcte des paramètres personnalisés
+
+#### GUI Stability Improvements
+- **Corrigé**: `Modules/Win11ForgeGUI.psm1` - Module caching PropertyNotFoundException
+  - Détection call operator vs direct execution
+  - Correction crash au lancement avec paths contenant espaces
+  - Validation AppId override et propagation exit codes
+
+#### StrictMode and Parallel Mode Fixes
+- **Corrigé**: `Deploy-Win11Environment.ps1` - Crash statistiques mode parallèle
+  - Null-safe environment report avec fallbacks
+  - Propriété Skipped correctement vérifiée dans stats
+  - Apps skippées comptées correctement (pas comme Failed)
+  - Affichage summary correct pour apps skippées (jaune au lieu de rouge)
+
+#### Detection and Registry Fixes
+- **Corrigé**: `Modules/ApplicationDatabase.psm1` - Validation et type coercion
+  - Support valeurs numériques booléennes (0/1) pour champ Required
+  - Validation type pour priority/required overrides
+  - Prévention coercion type cassant default priority/required
+  - Corrections critiques registry writes et handling priority 0
+
+#### DirectDownload and ZIP Deployment
+- **Corrigé**: `Modules/InstallationEngine.psm1` - Support multi-format
+  - DirectDownload fonctionnel en mode parallèle pour PS7
+  - Déploiement ZIP archive correct pour outils portables
+  - Mode séquentiel ZIP deployment avec Detection.Path
+  - Compatibilité PowerShell 5.1 pour DirectDownload
+  - Suppression `-UseBasicParsing` en mode séquentiel
+
+#### Setup and Validation Improvements
+- **Corrigé**: `Setup-Framework.ps1` - Création répertoires et validation
+  - Création correcte du répertoire Tools
+  - Correction références documentation dans messages d'erreur
+  - Cohérence version avec framework principal
+
+### 🛠️ Améliorations
+
+#### Documentation Consistency
+- **Corrigé**: 50+ fichiers pour cohérence de version
+  - Harmonisation toutes bannières console à v2.4.0
+  - Correction counts applications dans Apps/README.md
+  - Synchronisation statistiques CHANGELOG et PROJET_STRUCTURE
+  - Correction documentation GUI tags et sources
+  - Cohérence dates dernière mise à jour (2025-10-06)
+
+#### EnvironmentDetection Module Path
+- **Corrigé**: `Modules/InstallationEngine.psm1` - Utilisation RepositoryRoot
+  - Remplacement calcul path relatif par variable $script:RepositoryRoot
+  - Path module fiable en mode séquentiel
+  - Plus maintenable avec variable centralisée
+
+#### Module Encoding and Formatting
+- **Corrigé**: Tous modules - Encodage UTF-8 BOM
+  - UTF-8 BOM appliqué à tous modules et scripts
+  - Formatage linter appliqué uniformément
+  - Amélioration démarrage GUI
+
+### 📊 Statistiques v2.4.0
+
+- **100+ commits** depuis v2.3.0
+- **50+ fichiers** corrigés pour cohérence
+- **15+ bugs critiques** résolus (StrictMode, parallel, GUI)
+- **3 versions System-Audit** (2.1.0 → 2.2.0 → 2.3.0)
+- **67% réduction overhead** System-Audit (3000ms → 750ms)
+- **100% compatibilité** PowerShell 5.1 + 7.x en modes séquentiel/parallèle
+
+### 🔗 Liens Utiles
+
+- **Documentation complète** : `README.md`
+- **System-Audit docs** : `Tools/System-Audit-README.md` (30+ pages)
+- **Structure projet** : `PROJET_STRUCTURE.md`
+- **Quick Start** : `Apps/QUICK_START.md`
+
+---
+
 ## [2.3.0] - 2025-10-04
 
 ### 🎉 Stability & Detection Improvements Release

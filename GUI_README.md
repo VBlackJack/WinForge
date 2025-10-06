@@ -2,7 +2,7 @@
 
 ## 🎨 Interface Graphique PowerShell
 
-Win11Forge v2.3.0 inclut maintenant une **interface graphique complète** pour faciliter le déploiement et la gestion des applications !
+Win11Forge v2.4.0 inclut maintenant une **interface graphique complète** pour faciliter le déploiement et la gestion des applications !
 
 ---
 
@@ -438,7 +438,7 @@ Win11Forge/
 Win11Forge/Apps/Database/applications.json
 ```
 
-Si absent, restaurer depuis backup ou réinstaller Win11Forge v2.3.0.
+Si absent, restaurer depuis backup ou réinstaller Win11Forge v2.4.0.
 
 ### Problème : Parallel mode non disponible
 
@@ -678,7 +678,7 @@ Win11Forge/
 - **Database** : `Apps/README.md` (documentation complète de la base)
 - **Quick Start** : `Apps/QUICK_START.md` (démarrage rapide 5 min)
 - **Integration** : `DATABASE_INTEGRATION.md` (intégration technique)
-- **What's New** : `WHATS_NEW_v2.3.md` (nouveautés v2.3.0)
+- **What's New** : `WHATS_NEW_v2.3.md` (nouveautés v2.4.0)
 
 ---
 
@@ -720,5 +720,5 @@ L'interface graphique Win11Forge v1.0.0 transforme le framework en un outil **ac
 
 **Version** : 1.0.0
 **Date** : 2025-10-03
-**Compatibilité** : Win11Forge v2.3.0+
+**Compatibilité** : Win11Forge v2.4.0+
 **Statut** : ✅ Production Ready

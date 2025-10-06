@@ -103,7 +103,7 @@ $script:Stats = @{
 
 Write-Host ""
 Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║      Win11Forge Framework Cleanup & Maintenance v2.3.0     ║" -ForegroundColor Cyan
+Write-Host "║      Win11Forge Framework Cleanup & Maintenance v2.4.0     ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 

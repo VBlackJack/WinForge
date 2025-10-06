@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================================
-REM Win11Forge Framework Launcher v2.3.0
+REM Win11Forge Framework Launcher v2.4.0
 REM Auto-installs PowerShell 7 if missing, then launches deployment
 REM ============================================================================
 
@@ -22,7 +22,7 @@ if %errorLevel% equ 0 (
 
 echo.
 echo ============================================================================
-echo                         Win11Forge Framework v2.3.0
+echo                         Win11Forge Framework v2.4.0
 echo             Automated Windows 11 Environment Deployment
 echo ============================================================================
 echo.

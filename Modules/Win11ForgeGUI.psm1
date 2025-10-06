@@ -9,7 +9,7 @@
 .NOTES
     Author: Julien Bombled
     Version: 1.0.0
-    Requires: PowerShell 5.1+, Win11Forge v2.3.0+
+    Requires: PowerShell 5.1+, Win11Forge v2.4.0+
 #>
 
 Set-StrictMode -Version Latest
@@ -280,7 +280,7 @@ function Show-Header {
         Display GUI header
     #>
     param(
-        [string]$Title = "Win11Forge v2.3.0"
+        [string]$Title = "Win11Forge v2.4.0"
     )
 
     Clear-Host
@@ -376,7 +376,7 @@ function Show-MainMenu {
     #>
 
     while ($true) {
-        Show-Header -Title "Win11Forge v2.3.0 - Main Menu"
+        Show-Header -Title "Win11Forge v2.4.0 - Main Menu"
 
         Write-Host "  1. Deploy Profile" -ForegroundColor White
         Write-Host "  2. Browse Applications Database ($($script:AppDatabase.Count) apps)" -ForegroundColor White
@@ -1265,7 +1265,7 @@ function Check-Updates {
 function Show-About {
     Show-Header -Title "About Win11Forge"
 
-    Write-Host "Win11Forge v2.3.0" -ForegroundColor Cyan
+    Write-Host "Win11Forge v2.4.0" -ForegroundColor Cyan
     Write-Host "Windows 11 Deployment Framework with Centralized Database" -ForegroundColor White
     Write-Host ""
     Write-Host "Features:" -ForegroundColor Yellow
