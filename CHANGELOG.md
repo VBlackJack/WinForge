@@ -8,8 +8,8 @@ Cette version apporte des améliorations majeures de compatibilité PowerShell 5
 
 ### ✨ Nouvelles Fonctionnalités
 
-#### System-Audit v2.3.0 - Performance Optimized
-- **Ajouté**: `Tools/System-Audit.ps1` v2.3.0
+#### System-Audit v2.4.0 - Performance Optimized
+- **Ajouté**: `Tools/System-Audit.ps1` v2.4.0
   - Overhead réduit de 67% : 3000ms → ~750ms par échantillon (60% → 20%)
   - Intervalle d'échantillonnage ajusté de 2s à 5s par défaut
   - Fréquences de scan optimisées : Apps (30s), Events (60s), Network (120s)
@@ -116,7 +116,7 @@ Cette version apporte des améliorations majeures de compatibilité PowerShell 5
 - **100+ commits** depuis v2.3.0
 - **50+ fichiers** corrigés pour cohérence
 - **15+ bugs critiques** résolus (StrictMode, parallel, GUI)
-- **3 versions System-Audit** (2.1.0 → 2.2.0 → 2.3.0)
+- **4 versions System-Audit** (2.1.0 → 2.2.0 → 2.3.0 → 2.4.0)
 - **67% réduction overhead** System-Audit (3000ms → 750ms)
 - **100% compatibilité** PowerShell 5.1 + 7.x en modes séquentiel/parallèle
 
@@ -694,7 +694,7 @@ Cette version majeure introduit une refonte complète de l'architecture avec une
   - Success rate calculation
   - **Result**: 100% validation pass rate (10/10 tests passed)
 
-- **Added**: `DEBUG_REPORT.md` - Complete debugging documentation
+- **Added**: Complete debugging documentation in CHANGELOG
   - Issue analysis
   - Corrections applied
   - Validation results
@@ -720,7 +720,6 @@ Cette version majeure introduit une refonte complète de l'architecture avec une
 
 **New Files**:
 - `Debug-FailedApps.ps1` (Validation script)
-- `DEBUG_REPORT.md` (Debug documentation)
 - `CHANGELOG.md` (This file)
 
 ---

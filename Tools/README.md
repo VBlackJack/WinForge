@@ -301,7 +301,7 @@ $proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThr
 - Mode débutant sans ligne de commande
 - Tous les modes pré-configurés (Win11Forge, Process, Log, etc.)
 
-**System-Audit.ps1** (v2.1.0 - UNIVERSEL) :
+**System-Audit.ps1** (v2.4.0 - UNIVERSEL) :
 - Surveiller N'IMPORTE QUEL script, processus ou déploiement
 - Analyser l'impact performance de toute opération
 - Diagnostiquer des problèmes d'installation ou d'exécution
@@ -320,6 +320,6 @@ $proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThr
 
 ---
 
-**Version** : 2.3.0
+**Version** : 2.4.0
 **Dernière mise à jour** : 2025-10-06
 **Auteur** : Julien Bombled

@@ -5,7 +5,7 @@ REM  Automatic privilege elevation for System-Audit.ps1
 REM
 REM  Author: Julien Bombled
 REM  Version: 1.0.0
-REM  Date: 2025-10-02
+REM  Date: 2025-10-06
 REM ============================================================================
 
 title System-Audit Tool Launcher

@@ -779,7 +779,7 @@ Start-Process powershell -ArgumentList `
 **Auteur** : Julien Bombled
 **Projet** : Win11Forge
 **Version** : 2.4.0
-**Date** : 2025-10-02
+**Date** : 2025-10-06
 
 ---
 

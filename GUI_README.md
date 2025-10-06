@@ -168,7 +168,7 @@ AppIds: VSCode, Git, NodeJS, Python3, Docker
 {
   "Name": "MonProfilDev",
   "Description": "Profil pour développement web",
-  "Version": "2.3.0",
+  "Version": "2.4.0",
   "Inherits": ["Base"],
   "Applications": [
     "VSCode",
@@ -677,7 +677,6 @@ Win11Forge/
 
 - **Database** : `Apps/README.md` (documentation complète de la base)
 - **Quick Start** : `Apps/QUICK_START.md` (démarrage rapide 5 min)
-- **Integration** : `DATABASE_INTEGRATION.md` (intégration technique)
 - **What's New** : `RELEASE_NOTES_v2.4.0.md` (nouveautés v2.4.0)
 
 ---
@@ -719,6 +718,6 @@ L'interface graphique Win11Forge v1.0.0 transforme le framework en un outil **ac
 ---
 
 **Version** : 1.0.0
-**Date** : 2025-10-03
+**Date** : 2025-10-06
 **Compatibilité** : Win11Forge v2.4.0+
 **Statut** : ✅ Production Ready

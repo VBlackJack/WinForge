@@ -197,5 +197,5 @@ Gaming + Discord, Steam, Battle.net
 ---
 
 **Version** : 2.1.3
-**Date** : 2025-10-03
+**Date** : 2025-10-06
 **Auteur** : Win11Forge Team

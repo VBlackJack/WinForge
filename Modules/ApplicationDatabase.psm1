@@ -2,7 +2,7 @@
 # Module for interacting with the centralized application database
 # Author: Julien Bombled
 # Version: 1.0.0
-# Last Updated: 2025-10-03
+# Last Updated: 2025-10-06
 
 $Script:DatabasePath = Join-Path $PSScriptRoot "..\Apps\Database\applications.json"
 $Script:DatabaseCache = $null
