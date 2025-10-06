@@ -320,7 +320,7 @@ Database Statistics:
   Total Apps       : 66
   Categories       : 20
   Tags             : 7
-  Verified Apps    : 65
+  Verified Apps    : 66
   Apps with Winget : 58
   Apps with Choco  : 48
   Apps with Store  : 12
@@ -466,7 +466,7 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Win11Forge-A
   - Chocolatey : 48 apps (73%)
   - Store : 12 apps (18%)
   - DirectUrl : 8 apps (12%)
-- **Vérifiées** : 65 apps (98.5%)
+- **Vérifiées** : 66 apps (100%)
 
 ---
 

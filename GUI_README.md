@@ -191,7 +191,7 @@ Vue d'ensemble complète de la base de données :
 
 ```
 Total Applications:      66
-Verified Applications:   65 (98%)
+Verified Applications:   66 (100%)
 Categories:              20
 
 Sources:
