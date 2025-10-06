@@ -76,10 +76,10 @@ Win11Forge/
 │   ├── Validate-AppDatabase.ps1     # Validation base de données
 │   └── Validate-Framework.ps1       # Validation framework complet
 │
-├── Backups/                         # Sauvegardes système
-│   └── StartMenuLayouts/            # Layouts Start Menu
+├── Backups/                         # Sauvegardes système (générées)
+│   └── StartMenuLayouts/            # Layouts Start Menu (créé à l'exécution)
 │
-├── Archive/                         # Fichiers archivés (générés)
+├── Archive/                         # Fichiers archivés
 │   └── Tests-v2.4.0/                # Scripts de test archivés
 │
 └── Logs/                            # Logs de déploiement (générés)
@@ -87,6 +87,8 @@ Win11Forge/
     └── Parallel/                    # Logs mode parallèle
         └── AppName_*.log            # Logs par app
 ```
+
+> **📝 Note** : Les répertoires `Logs/`, `Backups/StartMenuLayouts/` et leurs fichiers sont générés dynamiquement lors de l'exécution. Dans le dépôt Git, seuls les fichiers `.gitkeep` sont versionnés pour préserver la structure.
 
 ## 🚀 Démarrage Rapide
 

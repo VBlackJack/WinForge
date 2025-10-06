@@ -5,6 +5,9 @@
 .DESCRIPTION
     Archives obsolete files created during migration and development to keep the project clean
 
+    NOTE: As of v2.4.0 post-cleanup (Oct 6, 2025), all obsolete files have been removed.
+    This script is maintained for future maintenance needs but currently has no targets.
+
 .PARAMETER DryRun
     Show what would be done without actually moving files
 
@@ -14,8 +17,9 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 1.0.0
-    Safe to run - creates Archive folder with timestamp
+    Version: 2.0.0
+    Status: No active targets (all cleaned up in v2.4.0)
+    Safe to run - creates Archive folder with timestamp if needed
 #>
 
 [CmdletBinding()]
@@ -37,16 +41,24 @@ $ArchiveRoot = Join-Path $ScriptRoot "Archive"
 $ArchiveFolder = Join-Path $ArchiveRoot "Cleanup-$Timestamp"
 
 # Files to archive (relative to project root)
+# NOTE: All files below were cleaned up in v2.4.0 (Oct 6, 2025)
+# This list is maintained for reference and future cleanup needs
 $FilesToArchive = @(
-    'Test-NewProfiles.ps1',
-    'Switch-ToProduction.ps1',
-    'Profiles/Test.json',
-    'Profiles/Example-DatabaseStyle.json'
+    # Migration files (cleaned Oct 6, 2025)
+    # 'Test-NewProfiles.ps1',              # Removed
+    # 'Switch-ToProduction.ps1',           # Removed
+    # 'Profiles/Test.json',                # Removed
+    # 'Profiles/Example-DatabaseStyle.json' # Removed
+
+    # Add new obsolete files here as needed
 )
 
 # Files to move to specific locations
+# NOTE: Validate-Framework.ps1 was moved to Tools/ in v2.4.0
 $FilesToMove = @{
-    'Validate-Framework.ps1' = 'Tools/Validate-Framework.ps1'
+    # 'Validate-Framework.ps1' = 'Tools/Validate-Framework.ps1'  # Already moved
+
+    # Add new relocations here as needed
 }
 
 # ============================================================================

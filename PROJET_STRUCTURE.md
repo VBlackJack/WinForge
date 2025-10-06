@@ -89,6 +89,8 @@ Win11Forge/
     └── Core.psm1                     # Fonctions core du framework
 ```
 
+> **📝 Note importante** : Les répertoires `Logs/`, `Backups/StartMenuLayouts/` et leurs fichiers sont **générés dynamiquement** lors de l'exécution des scripts. Dans le dépôt Git, seuls les fichiers `.gitkeep` sont versionnés pour préserver la structure des répertoires.
+
 ## 🎮 Utilisation Rapide
 
 ### **Déploiement avec GUI (Recommandé)**
