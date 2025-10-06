@@ -66,7 +66,7 @@ Apps/
 ├── Database/
 │   └── applications.json        # Base de données principale (66 apps)
 ├── README.md                    # Cette documentation
-└── SCHEMA.md                    # Schéma JSON détaillé
+└── QUICK_START.md               # Guide de démarrage rapide
 ```
 
 ---

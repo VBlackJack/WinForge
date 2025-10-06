@@ -80,7 +80,7 @@ Win11Forge/
 │   └── StartMenuLayouts/            # Layouts Start Menu
 │
 ├── Archive/                         # Fichiers archivés (générés)
-│   └── Profiles-v2.0-*/             # Anciens profils
+│   └── Tests-v2.4.0/                # Scripts de test archivés
 │
 └── Logs/                            # Logs de déploiement (générés)
     ├── deployment_*.log             # Logs principaux

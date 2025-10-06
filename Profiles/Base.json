@@ -1,6 +1,6 @@
 {
   "Name": "Base",
-  "Description": "Universal foundation profile with essential tools and professional diagnostic suite (v2.3 - Database Mode)",
+  "Description": "Universal foundation profile with essential tools and professional diagnostic suite (v2.4.0 - Database Mode)",
   "Version": "2.4.0",
   "Inherits": [],
   "Applications": [

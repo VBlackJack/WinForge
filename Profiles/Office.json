@@ -1,6 +1,6 @@
 {
   "Name": "Office",
-  "Description": "Professional productivity profile - Base + office and collaboration tools (v2.3 - Database Mode)",
+  "Description": "Professional productivity profile - Base + office and collaboration tools (v2.4.0 - Database Mode)",
   "Version": "2.4.0",
   "Inherits": ["Base"],
   "Applications": [

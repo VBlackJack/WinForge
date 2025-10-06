@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Win11Forge GUI Module v1.0.0
+    Win11Forge GUI Module v2.4.0
 
 .DESCRIPTION
     PowerShell graphical interface for Win11Forge deployment framework

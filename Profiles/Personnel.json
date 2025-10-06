@@ -1,6 +1,6 @@
 {
   "Name": "Personnel",
-  "Description": "Advanced personal profile - Gaming + development and power user tools (v2.3 - Database Mode)",
+  "Description": "Advanced personal profile - Gaming + development and power user tools (v2.4.0 - Database Mode)",
   "Version": "2.4.0",
   "Inherits": ["Gaming"],
   "Applications": [

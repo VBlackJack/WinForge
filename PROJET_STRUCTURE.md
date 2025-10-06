@@ -75,8 +75,7 @@ Win11Forge/
 │   └── Validate-Framework.ps1        # Validation complète du framework
 │
 ├── 🗂️ Archive/                        # Fichiers archivés (générés à l'exécution)
-│   ├── Profiles-v2.0-*/              # Anciens profils v2.0 (avant migration)
-│   └── Test-*.ps1                    # Scripts de test archivés
+│   └── Tests-v2.4.0/                 # Scripts de test archivés
 │
 ├── 💾 Backups/                        # Sauvegardes système
 │   └── StartMenuLayouts/             # Layouts Start Menu Windows 11
