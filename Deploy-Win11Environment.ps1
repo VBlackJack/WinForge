@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-    Win11Forge - Main Deployment Script v2.3.0
+    Win11Forge - Main Deployment Script v2.4.0
 
 .DESCRIPTION
     Orchestrates complete Windows 11 environment deployment with:
     - Environment detection (Sandbox/VM/Physical)
-    - Prerequisites installation
+    - Prerequisites installation (auto-restart in PowerShell 7 if needed)
     - Profile-based application deployment (Sequential OR Parallel)
     - System configuration
     - Comprehensive logging and reporting
@@ -42,7 +42,9 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.3.0
+    Version: 2.4.0
+    Fixed: Auto-restart in PowerShell 7 after prerequisites installation
+    Fixed: PowerShell 5.1 StrictMode compatibility
     Requires: Administrator privileges, PowerShell 5.1+
 #>
 
@@ -282,16 +284,29 @@ if (-not $SkipPrerequisites) {
             # Check if PowerShell 7 was just installed
             if ($prereqResults.PowerShell7.Installed -and $PSVersionTable.PSVersion.Major -lt 7) {
                 Write-Host ""
-                Write-Log -Message "IMPORTANT: PowerShell 7 has been installed" -Level 'Warning'
-                Write-Log -Message "For optimal performance, please restart this script in PowerShell 7:" -Level 'Warning'
-                Write-Log -Message "  pwsh.exe -File `"$PSCommandPath`" -ProfileName `"$ProfileName`" $(if ($Parallel) { '-Parallel' })" -Level 'Warning'
+                Write-Log -Message "IMPORTANT: PowerShell 7 has been installed" -Level 'Success'
+                Write-Log -Message "Auto-restarting script in PowerShell 7 for optimal performance..." -Level 'Info'
                 Write-Host ""
-                
-                $response = Read-Host "Continue with current PowerShell version? (Y/N)"
-                if ($response -ne 'Y') {
-                    Write-Log -Message "Deployment cancelled by user" -Level 'Info'
-                    return 0
-                }
+
+                # Build restart command
+                $pwshPath = 'pwsh.exe'
+                $restartArgs = @(
+                    '-ExecutionPolicy', 'Bypass',
+                    '-File', $PSCommandPath,
+                    '-ProfileName', $ProfileName
+                )
+                if ($Parallel) { $restartArgs += '-Parallel' }
+                if ($Force) { $restartArgs += '-Force' }
+                if ($TestMode) { $restartArgs += '-TestMode' }
+                if ($SkipPrerequisites) { $restartArgs += '-SkipPrerequisites' }
+
+                Write-Log -Message "Restarting with: pwsh.exe $($restartArgs -join ' ')" -Level 'Verbose'
+
+                # Restart in PowerShell 7
+                Start-Process -FilePath $pwshPath -ArgumentList $restartArgs -NoNewWindow -Wait
+
+                Write-Log -Message "PowerShell 7 deployment completed" -Level 'Success'
+                return 0
             }
             
         } catch {

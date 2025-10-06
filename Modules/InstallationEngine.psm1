@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Engine Module v2.1.1 (PowerToys & Quick Assist Fixed)
+    Win11Forge - Installation Engine Module v2.2.0 (PowerShell 5.1 StrictMode Compatible)
 
 .DESCRIPTION
     Core installation engine with multi-source support and parallel execution:
@@ -14,9 +14,9 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.1.1
-    Fixed: PowerToys multi-path detection
-    Fixed: Quick Assist Store App detection
+    Version: 2.2.0
+    Fixed: PowerShell 5.1 StrictMode compatibility (InstallationOptions null-safe checks)
+    Fixed: Nested conditions instead of chained -and operators
     Automatic fallback on installation failure
 #>
 
@@ -643,14 +643,15 @@ function Install-Application {
             return $result
         } else {
             # Check if files exist despite failure (e.g., Recuva installer crash)
-            if ($Application.PSObject.Properties['InstallationOptions'] -and
-                $Application.InstallationOptions.IgnoreExitCodeIfFileExists) {
-                if (Test-ApplicationInstalled -Application $Application) {
-                    Write-Status -Message "Installation succeeded despite exit code (files verified)" -Level 'Success'
-                    $result.Success = $true
-                    $result.Method = 'Winget'
-                    $result.Message = 'Installed via Winget (verified by file detection)'
-                    return $result
+            if ($Application.PSObject.Properties['InstallationOptions']) {
+                if ($Application.InstallationOptions.IgnoreExitCodeIfFileExists) {
+                    if (Test-ApplicationInstalled -Application $Application) {
+                        Write-Status -Message "Installation succeeded despite exit code (files verified)" -Level 'Success'
+                        $result.Success = $true
+                        $result.Method = 'Winget'
+                        $result.Message = 'Installed via Winget (verified by file detection)'
+                        return $result
+                    }
                 }
             }
             $failureReasons += "Winget failed (ID: $($sources.Winget))"
@@ -667,14 +668,15 @@ function Install-Application {
             return $result
         } else {
             # Check if files exist despite failure (e.g., Recuva installer crash)
-            if ($Application.PSObject.Properties['InstallationOptions'] -and
-                $Application.InstallationOptions.IgnoreExitCodeIfFileExists) {
-                if (Test-ApplicationInstalled -Application $Application) {
-                    Write-Status -Message "Installation succeeded despite exit code (files verified)" -Level 'Success'
-                    $result.Success = $true
-                    $result.Method = 'Chocolatey'
-                    $result.Message = 'Installed via Chocolatey (verified by file detection)'
-                    return $result
+            if ($Application.PSObject.Properties['InstallationOptions']) {
+                if ($Application.InstallationOptions.IgnoreExitCodeIfFileExists) {
+                    if (Test-ApplicationInstalled -Application $Application) {
+                        Write-Status -Message "Installation succeeded despite exit code (files verified)" -Level 'Success'
+                        $result.Success = $true
+                        $result.Method = 'Chocolatey'
+                        $result.Message = 'Installed via Chocolatey (verified by file detection)'
+                        return $result
+                    }
                 }
             }
             $failureReasons += "Chocolatey failed (Package: $($sources.Chocolatey))"
