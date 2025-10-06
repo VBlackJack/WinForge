@@ -19,12 +19,14 @@
     Changelog v2.4.0 (Security & Performance Update):
     - SECURITY: Replaced Invoke-Expression with secure Start-Process (eliminates command injection vulnerability)
     - SECURITY: Added URL validation for DirectUrl downloads with domain whitelisting
-    - PERFORMANCE: Implemented streaming downloads (memory-efficient, no longer loads files in RAM)
-    - PERFORMANCE: Added download progress reporting for large files
-    - STABILITY: Added timeout protection to all installation methods (default: 10 minutes)
+    - PERFORMANCE: Implemented streaming downloads in sequential mode (memory-efficient, no longer loads files in RAM)
+    - PERFORMANCE: Harmonized streaming downloads in parallel mode (prevents RAM saturation on large files)
+    - STABILITY: Added timeout protection to all sequential installation methods (default: 10 minutes)
+    - STABILITY: Added timeout protection to all parallel installation methods (Winget/Chocolatey/Store)
     - STABILITY: Fixed race condition in parallel logs directory creation with retry logic
     - MAINTENANCE: Added automatic log retention policy (7 days, configurable)
     - CODE QUALITY: Added helper functions (Test-ValidDownloadUrl, Start-ProcessWithTimeout, Invoke-FileDownloadWithProgress)
+    - CONSISTENCY: Sequential and parallel modes now have identical security and performance protections
 
     Previous fixes (v2.2.0):
     - PowerShell 5.1 StrictMode compatibility (InstallationOptions null-safe checks)
@@ -1263,9 +1265,14 @@ function Install-ApplicationsParallel {
                     '--silent'
                 )
 
-                $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+                $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru
+                $timeoutMs = 600000  # 10 minutes
 
-                if ($process.ExitCode -eq 0) {
+                if (-not $process.WaitForExit($timeoutMs)) {
+                    Write-ParallelLog "Process timed out after 600 seconds - terminating" 'Warning'
+                    $process.Kill()
+                    Write-ParallelLog "Winget installation failed (timeout)" 'Warning'
+                } elseif ($process.ExitCode -eq 0) {
                     Write-ParallelLog "Installed successfully via Winget" 'Success'
                     $result.Success = $true
                     $result.Method = 'Winget'
@@ -1286,9 +1293,14 @@ function Install-ApplicationsParallel {
                     '--ignore-checksums'
                 )
 
-                $process = Start-Process -FilePath 'choco' -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+                $process = Start-Process -FilePath 'choco' -ArgumentList $arguments -NoNewWindow -PassThru
+                $timeoutMs = 600000  # 10 minutes
 
-                if ($process.ExitCode -eq 0) {
+                if (-not $process.WaitForExit($timeoutMs)) {
+                    Write-ParallelLog "Process timed out after 600 seconds - terminating" 'Warning'
+                    $process.Kill()
+                    Write-ParallelLog "Chocolatey installation failed (timeout)" 'Warning'
+                } elseif ($process.ExitCode -eq 0) {
                     Write-ParallelLog "Installed successfully via Chocolatey" 'Success'
                     $result.Success = $true
                     $result.Method = 'Chocolatey'
@@ -1311,9 +1323,14 @@ function Install-ApplicationsParallel {
                     '--silent'
                 )
 
-                $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -Wait -NoNewWindow -PassThru
+                $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru
+                $timeoutMs = 600000  # 10 minutes
 
-                if ($process.ExitCode -eq 0) {
+                if (-not $process.WaitForExit($timeoutMs)) {
+                    Write-ParallelLog "Process timed out after 600 seconds - terminating" 'Warning'
+                    $process.Kill()
+                    Write-ParallelLog "Microsoft Store installation failed (timeout)" 'Warning'
+                } elseif ($process.ExitCode -eq 0) {
                     Write-ParallelLog "Installed successfully via Microsoft Store" 'Success'
                     $result.Success = $true
                     $result.Method = 'Store'
@@ -1326,6 +1343,13 @@ function Install-ApplicationsParallel {
 
             # 4. Direct Download
             if ($sources.DirectUrl) {
+                # Validate URL first
+                if (-not (Test-ValidDownloadUrl -Url $sources.DirectUrl)) {
+                    Write-ParallelLog "Invalid or insecure URL: $($sources.DirectUrl)" 'Error'
+                    $result.Message = 'Invalid DirectUrl'
+                    return $result
+                }
+
                 Write-ParallelLog "Attempting direct download installation: $($sources.DirectUrl)" 'Info'
 
                 try {
@@ -1341,8 +1365,18 @@ function Install-ApplicationsParallel {
 
                     Write-ParallelLog "Downloading to: $tempFile" 'Verbose'
 
-                    # Parallel mode requires PS7+ which doesn't have -UseBasicParsing parameter
-                    Invoke-WebRequest -Uri $sources.DirectUrl -OutFile $tempFile -ErrorAction Stop
+                    # Use streaming download for memory efficiency (inline version for parallel scope)
+                    $webClient = New-Object System.Net.WebClient
+                    try {
+                        $webClient.Headers.Add("User-Agent", "Win11Forge/2.4.0")
+                        $downloadTask = $webClient.DownloadFileTaskAsync($sources.DirectUrl, $tempFile)
+                        $downloadTask.Wait()
+                        if (-not (Test-Path -Path $tempFile)) {
+                            throw "Download failed - file not created"
+                        }
+                    } finally {
+                        $webClient.Dispose()
+                    }
                     Write-ParallelLog "Download completed" 'Info'
 
                     # Auto-detect installer type
