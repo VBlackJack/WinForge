@@ -229,7 +229,7 @@ Lance le script de validation automatique :
 
 **a) View Framework Information**
 ```
-Win11Forge Version:      2.3.0
+Win11Forge Version:      2.4.0
 PowerShell Version:      7.4.0
 Repository Path:         C:\Users\...\Win11Forge
 Database Loaded:         True

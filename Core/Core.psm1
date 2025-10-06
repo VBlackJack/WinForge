@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Core Module v2.3.0
+    Win11Forge - Core Module v2.4.0
 
 .DESCRIPTION
     Provides core functionality for the Win11Forge framework:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.3.0
+    Version: 2.4.0
     This module must be loaded before any other framework modules
 #>
 
