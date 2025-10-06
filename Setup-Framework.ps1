@@ -29,7 +29,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.0.0
+    Version: 2.3.0
     Requires: Administrator privileges
 #>
 
@@ -85,7 +85,7 @@ function Test-AdminPrivileges {
 
 Write-Host ""
 Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║        Win11Forge Framework Setup v2.0                      ║" -ForegroundColor Cyan
+Write-Host "║        Win11Forge Framework Setup v2.3.0                    ║" -ForegroundColor Cyan
 Write-Host "║        Automated Installation & Configuration               ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""

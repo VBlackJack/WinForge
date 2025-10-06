@@ -122,7 +122,7 @@ Tools\ProfileCreator.html
 ### **Ajouter une Application**
 ```powershell
 # Via GUI :
-Start-Win11ForgeGUI-Admin.bat → Option 8
+Start-Win11ForgeGUI-Admin.bat → Option 7
 
 # Via script :
 .\Tools\Search-ApplicationSources.ps1 -AppName "Discord"
