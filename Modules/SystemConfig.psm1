@@ -13,9 +13,9 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.0.1 FIXED
-    FIXED: DNS array handling bug
-    FIXED: Taskbar error handling
+    Version: 2.0.1
+    Fixed: DNS array handling bug
+    Fixed: Taskbar error handling
     Requires administrator privileges
 #>
 

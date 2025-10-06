@@ -14,7 +14,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.1.1 FIXED
+    Version: 2.1.1
     Fixed: PowerToys multi-path detection
     Fixed: Quick Assist Store App detection
     Automatic fallback on installation failure

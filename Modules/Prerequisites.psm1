@@ -14,7 +14,9 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.1.2 (FIXED: Write-Status empty strings + Chocolatey args)
+    Version: 2.1.2
+    Fixed: Write-Status empty strings handling
+    Fixed: Chocolatey installation arguments
     All bugs from deployment test have been corrected
 #>
 

@@ -140,7 +140,33 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 
 ## 🔍 Surveillance et Audit
 
-### System-Audit.ps1 ⭐ NEW v2.0.0 - UNIVERSAL
+### Launch-SystemAudit.bat ⭐
+**Lanceur interactif pour System-Audit.ps1 avec auto-élévation admin**
+
+```bash
+# Depuis le répertoire Tools :
+.\Launch-SystemAudit.bat
+```
+
+**Menu interactif avec 8 modes** :
+1. Win11Forge Deployment (auto-stop à la fin)
+2. Monitor Process by Name
+3. Monitor Process by PID
+4. Monitor Log File
+5. Monitor Log Directory
+6. Timed Audit (30 minutes)
+7. Custom Parameters (avancé)
+8. Launch with PowerShell ISE
+
+**Fonctionnalités** :
+- Auto-élévation admin si nécessaire
+- Interface guidée pour tous les modes
+- Génération automatique de rapports
+- Retour au menu après chaque audit
+
+---
+
+### System-Audit.ps1 ⭐ v2.1.0 - UNIVERSAL
 **Outil d'audit système universel - Fonctionne avec N'IMPORTE QUEL script ou processus**
 
 ```powershell
@@ -167,7 +193,7 @@ $proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThr
     -AuditName "CompleteInstallAudit"
 ```
 
-**🆕 Nouvelles fonctionnalités v2.0.0 - UNIVERSEL** :
+**🆕 Fonctionnalités v2.1.0** :
 - ✅ **100% Générique** : Fonctionne avec n'importe quel script, processus ou log
 - ✅ **Monitor par Process** : Surveille un processus (nom ou PID) et s'arrête à sa terminaison
 - ✅ **Monitor par Log** : Surveille un fichier log et détecte sa complétion
@@ -219,6 +245,8 @@ $proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThr
 | `ProfileCreator_Features.md` | Documentation des fonctionnalités du ProfileCreator |
 | `StartupManager.html` | Interface de gestion du démarrage automatique |
 | `Launch-TrustedInstallerGUI.ps1` | Script PowerShell pour TrustedInstaller launcher |
+| `Launch-SystemAudit.bat` | Lanceur interactif pour System-Audit avec menu guidé |
+| `System-Audit-README.md` | Documentation complète de System-Audit (30+ pages) |
 
 ---
 
@@ -255,7 +283,12 @@ $proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThr
 - Désactivation d'applications au boot
 - Création de blacklist personnalisée
 
-**System-Audit.ps1** (v2.0.0 - UNIVERSEL) :
+**Launch-SystemAudit.bat** :
+- Lancement rapide de System-Audit avec menu guidé
+- Mode débutant sans ligne de commande
+- Tous les modes pré-configurés (Win11Forge, Process, Log, etc.)
+
+**System-Audit.ps1** (v2.1.0 - UNIVERSEL) :
 - Surveiller N'IMPORTE QUEL script, processus ou déploiement
 - Analyser l'impact performance de toute opération
 - Diagnostiquer des problèmes d'installation ou d'exécution
