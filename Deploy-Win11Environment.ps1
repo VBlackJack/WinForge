@@ -134,7 +134,7 @@ if (-not (Test-IsAdministrator)) {
 
 # === MODULE LOADING ===
 
-Write-Log -Message "=== Win11Forge Framework v2.3.0 ===" -Level 'Info'
+Write-Log -Message "=== Win11Forge Framework v2.4.0 ===" -Level 'Info'
 Write-Log -Message "PowerShell Version: $($PSVersionTable.PSVersion)" -Level 'Info'
 Write-Log -Message "Starting deployment process..." -Level 'Info'
 

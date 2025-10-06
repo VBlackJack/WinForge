@@ -1,8 +1,8 @@
-# Win11Forge Framework v2.3.0
+# Win11Forge Framework v2.4.0
 
 **Framework modulaire d'automatisation du déploiement post-installation Windows 11 24H2**
 
-[![Version](https://img.shields.io/badge/version-2.3.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.4.0-blue.svg)](CHANGELOG.md)
 [![PowerShell](https://img.shields.io/badge/PowerShell-7.4+-blue.svg)](https://github.com/PowerShell/PowerShell)
 [![Windows](https://img.shields.io/badge/Windows-11%2024H2-0078D4.svg)](https://www.microsoft.com/windows)
 [![Status](https://img.shields.io/badge/status-Production%20Ready-success.svg)](CHANGELOG.md)

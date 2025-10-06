@@ -1254,7 +1254,7 @@ function Show-LogsDirectory {
 function Check-Updates {
     Show-Header -Title "Check for Updates"
 
-    Write-Host "Current Version: 2.3.0" -ForegroundColor Yellow
+    Write-Host "Current Version: 2.4.0" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "No update mechanism configured (requires Git repository)." -ForegroundColor Gray
 

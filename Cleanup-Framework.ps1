@@ -35,7 +35,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.3.0
+    Version: 2.4.0
     Use with caution - some operations are irreversible
 #>
 
