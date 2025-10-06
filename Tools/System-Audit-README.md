@@ -1,4 +1,4 @@
-# System-Audit.ps1 v2.1.0 - Universal System Monitoring Tool
+# System-Audit.ps1 v2.2.0 - Universal System Monitoring Tool
 
 **Outil d'audit système universel pour surveiller n'importe quel script, processus ou déploiement**
 
