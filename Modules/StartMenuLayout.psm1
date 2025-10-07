@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Start Menu Layout Manager Module v2.0.0
+    Win11Forge - Start Menu Layout Manager Version: 2.5.0
 
 .DESCRIPTION
     Module for managing Windows 11 Start Menu layout using LayoutModification.json:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.0.0
+    Version: 2.5.0
     Requires: PowerShell 5.1+, Windows 11, Administrator privileges
     Method: LayoutModification.json (official Microsoft method)
 #>

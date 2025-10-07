@@ -772,7 +772,11 @@
         "Path": "C:\\Program Files\\Recuva\\Recuva64.exe"
       },
       "InstallationOptions": {
-        "ValidExitCodes": [0, -1073741819, -1073740791],
+        "ValidExitCodes": [
+          0,
+          -1073741819,
+          -1073740791
+        ],
         "IgnoreExitCodeIfFileExists": true
       },
       "DefaultPriority": 30,
@@ -1540,7 +1544,12 @@
       "LastVerified": "2025-10-03",
       "Verified": true,
       "Notes": "Winget ID verified: Proton.ProtonDrive",
-      "Homepage": "https://proton.me/drive"
+      "Homepage": "https://proton.me/drive",
+      "Detection": {
+        "Value": "DisplayName",
+        "Method": "Registry",
+        "Path": "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Proton Drive"
+      }
     },
     "ProtonMailBridge": {
       "Name": "Proton Mail Bridge",
@@ -1564,7 +1573,12 @@
       "LastVerified": "2025-10-03",
       "Verified": true,
       "Notes": "Winget ID verified: Proton.ProtonMailBridge",
-      "Homepage": "https://proton.me/mail/bridge"
+      "Homepage": "https://proton.me/mail/bridge",
+      "Detection": {
+        "Value": "DisplayName",
+        "Method": "Registry",
+        "Path": "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Proton Mail Bridge"
+      }
     },
     "ProtonPass": {
       "Name": "Proton Pass",
@@ -1588,7 +1602,12 @@
       "LastVerified": "2025-10-03",
       "Verified": true,
       "Notes": "Winget ID verified: Proton.ProtonPass",
-      "Homepage": "https://proton.me/pass"
+      "Homepage": "https://proton.me/pass",
+      "Detection": {
+        "Value": "DisplayName",
+        "Method": "Registry",
+        "Path": "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Proton Pass"
+      }
     },
     "Roboform": {
       "Name": "Roboform",
