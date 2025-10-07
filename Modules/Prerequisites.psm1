@@ -190,9 +190,22 @@ function Install-Chocolatey {
         
         Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-        
-        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-        
+
+        # Download Chocolatey install script to temp file (safer than Invoke-Expression)
+        $tempScript = Join-Path $env:TEMP "chocolatey-install-$(Get-Date -Format 'yyyyMMddHHmmss').ps1"
+        try {
+            $webClient = New-Object System.Net.WebClient
+            $webClient.DownloadFile('https://community.chocolatey.org/install.ps1', $tempScript)
+
+            # Execute from file instead of Invoke-Expression (more secure)
+            & $tempScript
+
+            # Clean up temp file
+            Remove-Item -Path $tempScript -Force -ErrorAction SilentlyContinue
+        } finally {
+            if ($webClient) { $webClient.Dispose() }
+        }
+
         # Refresh environment after installation
         Invoke-EnvironmentRefresh
         

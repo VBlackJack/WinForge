@@ -386,7 +386,9 @@ function Get-ApplicationChanges {
                          @{Name='DisplayVersion';Expression={$_.Version}},
                          @{Name='Publisher';Expression={$_.Publisher}}
         $apps += $packages
-    } catch {}
+    } catch {
+        # Silently ignore - Store apps query may fail on some systems
+    }
 
     # Compare
     $currentApps = $apps | Sort-Object DisplayName -Unique
@@ -456,7 +458,9 @@ function Get-RegistryChanges {
                     }
                 }
             }
-        } catch {}
+    } catch {
+        # Silently ignore expected errors in monitoring
+    }
     }
 
     return $changes
@@ -486,8 +490,9 @@ function Get-EventLogEntries {
         $result.Errors += $appEvents | Where-Object { $_.Level -eq 2 }
         $result.Warnings += $appEvents | Where-Object { $_.Level -eq 3 }
         $result.Critical += $appEvents | Where-Object { $_.Level -eq 1 }
-    } catch {}
-
+    } catch {
+        # Silently ignore expected errors in monitoring
+    }
     # System errors/warnings
     try {
         $sysEvents = Get-WinEvent -FilterHashtable @{
@@ -500,8 +505,9 @@ function Get-EventLogEntries {
         $result.Errors += $sysEvents | Where-Object { $_.Level -eq 2 }
         $result.Warnings += $sysEvents | Where-Object { $_.Level -eq 3 }
         $result.Critical += $sysEvents | Where-Object { $_.Level -eq 1 }
-    } catch {}
-
+    } catch {
+        # Silently ignore expected errors in monitoring
+    }
     # Installation events (MSI installer + Windows Installer)
     try {
         $installEvents = Get-WinEvent -FilterHashtable @{
@@ -511,8 +517,9 @@ function Get-EventLogEntries {
         } -MaxEvents 100 -ErrorAction SilentlyContinue
 
         $result.Installations = $installEvents | Select-Object TimeCreated, Message, Id, LevelDisplayName
-    } catch {}
-
+    } catch {
+        # Silently ignore expected errors in monitoring
+    }
     # Winget/AppInstaller events
     try {
         $wingetEvents = Get-WinEvent -FilterHashtable @{
@@ -522,8 +529,9 @@ function Get-EventLogEntries {
         } -MaxEvents 50 -ErrorAction SilentlyContinue
 
         $result.Installations += $wingetEvents | Select-Object TimeCreated, Message, Id, LevelDisplayName
-    } catch {}
-
+    } catch {
+        # Silently ignore expected errors in monitoring
+    }
     return $result
 }
 
@@ -632,7 +640,9 @@ function Test-MonitoringComplete {
                 Write-AuditLog $script:MonitorConfig.StopReason -Level 'Info'
                 return $true
             }
-        } catch {}
+    } catch {
+        # Silently ignore expected errors in monitoring
+    }
     }
 
     # 3. Check log directory for new logs
@@ -667,7 +677,9 @@ function Test-MonitoringComplete {
                     Write-AuditLog $script:MonitorConfig.StopReason -Level 'Info'
                     return $true
                 }
-            } catch {}
+    } catch {
+        # Silently ignore expected errors in monitoring
+    }
         }
     }
 
