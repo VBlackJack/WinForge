@@ -1,53 +1,40 @@
-# Rapport d'analyse des incohérences - Win11Forge v2.4.0
+# Rapport d'analyse des incohérences - Win11Forge v2.5.0
 
 ## Méthodologie
-- Développement d'un outil Python (`Tools/analyze_inconsistencies.py`) pour vérifier la base applicative, les profils et les métadonnées associées.
-- Chargement de la base `applications.json` ainsi que des profils (`Profiles/*.json`) pour reconstruire les héritages et contrôler la cohérence des statistiques déclarées.
-- Vérification automatique exécutée via `python Tools/analyze_inconsistencies.py`.
+- Exécution de l'outil Python `Tools/analyze_inconsistencies.py` (version interne 2.0) pour analyser la base applicative, les profils et les jeux de données dérivés.
+- Chargement de `Apps/Database/applications.json`, des profils (`Profiles/*.json`) ainsi que du miroir JavaScript `Tools/applications-data.js`.
+- Les règles de validation portent sur :
+  - l'intégrité des métadonnées (`TotalApplications`, `LastUpdated`)
+  - la densité et l'unicité des priorités d'installation (`DefaultPriority`)
+  - la cohérence des profils (héritages, doublons, références manquantes)
+  - la synchronisation des tags et catégories
+  - la parité JSON ⇔ JavaScript pour les champs `DefaultPriority` / `DefaultRequired`
+- L'outil retourne un code de sortie non nul si des erreurs critiques sont détectées, afin de faciliter l'intégration dans un pipeline CI/CD.
 
-**Validations améliorées v2.0** :
-- Gestion d'erreurs JSON robuste avec arrêt anticipé si la base est corrompue
-- Parsing ISO8601 strict pour `LastUpdated` et `LastVerified` (format YYYY-MM-DD)
-- Validation des tags : vérification que tous les tags utilisés sont définis dans le dictionnaire `Tags`
-- Validation des catégories : cohérence entre métadonnées et affectations réelles
-- Exit code non-zero si des erreurs critiques sont détectées (intégration CI/CD)
+## Résultats de l'analyse (exécution du 2025-10-06)
 
-## Résultats clés
-1. **✅ RÉSOLU - Identifiant Microsoft Store en double**
-   Les applications _PowerToys_ et _ShareX_ déclaraient toutes deux l'identifiant Microsoft Store `9NBLGGH4Z1SP`.
-   _Correction appliquée (commit 993a718):_
-   - PowerToys: `9NBLGGH4Z1SP` → `XP89DCGQ3K6VLD` (ID vérifié sur Microsoft Store 2025)
-   - ShareX conserve `9NBLGGH4Z1SP` (ID correct vérifié)
-   - Fichiers corrigés: `Apps/Database/applications.json:278` et `Tools/applications-data.js:1`
+### 🔴 Erreurs
+- Aucune erreur détectée (`exit code 0`).
 
-2. **✅ RÉSOLU - Paramètre `DefaultRequired` incohérent pour QuickAssist**
-   La base JSON marquait `QuickAssist` comme optionnelle (`DefaultRequired: false`) tandis que `applications-data.js` la forçait en installation (`DefaultRequired: true`).
-   _Correction appliquée (commit 993a718):_
-   - `applications-data.js`: `DefaultRequired: true` → `false` (aligné avec applications.json:390)
-   - Les deux sources de données sont maintenant synchronisées
+### 🟠 Avertissements
+1. **Plages de priorités inoccupées**  
+   Les valeurs suivantes ne sont utilisées par aucune application : `25, 56, 57, 69-98`.  
+   _Impact_: risque de confusion dans les tableaux de bord ou d'éventuelles règles d'installation supposant une séquence dense.  
+   _Recommandation_: soit réattribuer les priorités pour combler les gaps, soit documenter clairement que ces indices sont réservés.
 
-3. **Priorités d'installation discontinues**
-   Les priorités par défaut ne sont pas continues : aucun paquet n'occupe les valeurs 25, puis 56 à 57, ni 69 à 98 alors que la dernière application utilise l'indice 99. Cela peut générer des trous dans les tableaux de bord ou dans les flux d'installation qui s'attendent à une numérotation dense.
-   _Action recommandée :_ réattribuer les priorités pour combler les gaps ou documenter que ces valeurs sont volontairement réservées.
+### 🔵 Notes
+- `WindowsSandbox` reste l'unique application sans source de distribution (comportement attendu : fonctionnalité Windows intégrée).
+- 66 applications inventoriées avec 66 entrées de priorité valides.
+- Profils résolus sans incohérences :
+  - `Base` → 30 applications (30 uniques)
+  - `Office` → 35 applications (35 uniques)
+  - `Gaming` → 39 applications (39 uniques)
+  - `Personnel` → 64 applications (64 uniques)
+- `Tools/applications-data.js` est parfaitement synchronisé avec `Apps/Database/applications.json` (priorités et indicateurs `DefaultRequired`).
 
-4. **Profils cohérents avec la base**
-   Les profils Base, Office, Gaming et Personnel résolvent respectivement 30, 35, 39 et 64 applications uniques après prise en compte des héritages. Ces valeurs correspondent à la documentation du projet.
-   _Action recommandée :_ aucune action nécessaire, les profils sont cohérents avec la base.
+## Recommandations de suivi
+- Mettre en place une convention officielle autour de l'espace des `DefaultPriority` (plages réservées, signification des gaps).
+- Rejouer le script `python Tools/analyze_inconsistencies.py` après chaque modification de la base applicative ou des profils pour garantir la détection précoce des divergences.
 
-5. **Statistiques de catégories synchronisées**
-   Le décompte des catégories renseigné dans la base (`Categories`) correspond exactement aux affectations réelles des applications (somme totale 66). Il n'y a pas de catégorie orpheline ni de catégorie déclarée sans application.
-   _Action recommandée :_ maintenir la mise à jour conjointe des applications et des métadonnées lors des prochaines évolutions.
-
-## Points de contrôle supplémentaires
-- ✅ Les jeux de données JavaScript (`Tools/applications-data.js`) et JSON (`Apps/Database/applications.json`) sont parfaitement synchronisés (66 applications)
-- ✅ Tous les tags utilisés dans les applications sont définis dans le dictionnaire `Tags` (92 définitions)
-- ✅ Toutes les dates `LastVerified` respectent le format ISO8601 (YYYY-MM-DD)
-- ✅ La date `LastUpdated` de la base de données est valide et cohérente
-- ℹ️ `WindowsSandbox` n'a pas de source de déploiement (normal, c'est une Windows Feature)
-
-## Suivi
-Ce rapport peut être ré-exécuté à tout moment avec :
-```bash
-python Tools/analyze_inconsistencies.py
-```
-Le script retournera la liste actualisée des avertissements et des statistiques associées.
+---
+Rapport généré automatiquement dans le cadre de l'audit Win11Forge v2.5.0.
