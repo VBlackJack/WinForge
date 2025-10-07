@@ -35,6 +35,15 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Continue'
 
+# Import Core module for shared utilities
+$scriptRoot = Split-Path -Parent $PSCommandPath
+$repositoryRoot = Split-Path -Parent $scriptRoot
+$coreModulePath = Join-Path $repositoryRoot 'Core\Core.psm1'
+
+if (Test-Path $coreModulePath) {
+    Import-Module $coreModulePath -Force
+}
+
 # ============================================================================
 # HELPER FUNCTIONS
 # ============================================================================
@@ -53,11 +62,7 @@ function Write-ColorOutput {
     }
 }
 
-function Test-CommandExists {
-    param([string]$Command)
-
-    $null -ne (Get-Command $Command -ErrorAction SilentlyContinue)
-}
+# Test-CommandExists is now imported from Core.psm1
 
 # ============================================================================
 # WINGET SEARCH

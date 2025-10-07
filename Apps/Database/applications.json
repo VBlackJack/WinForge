@@ -3,6 +3,22 @@
   "DatabaseVersion": "2.5.0",
   "LastUpdated": "2025-10-06",
   "TotalApplications": 66,
+  "PriorityRanges": {
+    "Description": "Priority ranges for application installation order",
+    "Ranges": {
+      "1-10": "Essential (browsers, security, core productivity)",
+      "11-20": "Very High (communication, development tools)",
+      "21-40": "High (productivity, utilities)",
+      "41-60": "Medium (specialized tools, media)",
+      "61-80": "Low (optional utilities)",
+      "81-100": "Optional (niche applications)"
+    },
+    "ReservedGaps": {
+      "25": "Reserved for future essential category",
+      "56-57": "Reserved for future media category",
+      "69-98": "Reserved for future optional categories"
+    }
+  },
   "Applications": {
     "GoogleChrome": {
       "Name": "Google Chrome",
