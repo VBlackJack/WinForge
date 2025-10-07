@@ -456,7 +456,8 @@ function Install-JavaRuntime {
             return $true
         }
     } catch {
-        # Silently ignore errors - Java not found, continue with installation
+        # Silently ignore Java detection errors - continue with installation
+        Write-Verbose "Java detection failed, continuing with installation: $($_.Exception.Message)"
     }
 
     Write-Status -Message 'Installing Java runtime (Temurin JRE 21)...' -Level 'Info'

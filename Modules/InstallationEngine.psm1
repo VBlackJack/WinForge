@@ -1259,7 +1259,8 @@ function Install-ApplicationsParallel {
                             return $result
                         }
                     } catch {
-                        # Silently ignore errors - continue to normal installation
+                        # Silently ignore Store detection errors - continue to normal installation
+                        Write-Verbose "Store detection failed, continuing with normal installation: $($_.Exception.Message)"
                     }
                 }
 

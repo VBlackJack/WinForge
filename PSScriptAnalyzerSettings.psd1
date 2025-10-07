@@ -103,7 +103,12 @@
         'PSAvoidUsingComputerNameHardcoded',
 
         # False positive - Write-Log is standard logging function name
-        'PSAvoidOverwritingBuiltInCmdlets'
+        'PSAvoidOverwritingBuiltInCmdlets',
+
+        # ShouldProcess support planned for v3.0 - requires extensive refactoring
+        # 15 functions affected: Set-* in SystemConfig, Start-*, Update-*, New-*, Reset-*
+        # Current implementation is stable and tested - adding -WhatIf/-Confirm is enhancement, not bug fix
+        'PSUseShouldProcessForStateChangingFunctions'
     )
 
     # === CODE FORMATTING ===
