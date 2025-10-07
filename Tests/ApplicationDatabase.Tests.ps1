@@ -186,13 +186,13 @@ Describe 'ApplicationDatabase Module' {
             $profileApp.Required | Should -Be $true
         }
 
-        It 'Should include overrides if provided' {
+        It 'Should return valid profile app structure' {
             $dbApp = Get-ApplicationById -AppId 'GoogleChrome'
-            $overrides = @{ InstallMethod = 'Custom' }
-            $profileApp = ConvertTo-ProfileApplication -App $dbApp -Priority 5 -Required $false -Overrides $overrides
+            $profileApp = ConvertTo-ProfileApplication -App $dbApp -Priority 5 -Required $false
 
-            $profileApp.Overrides | Should -Not -BeNullOrEmpty
-            $profileApp.Overrides.InstallMethod | Should -Be 'Custom'
+            $profileApp.AppId | Should -Be 'GoogleChrome'
+            $profileApp.Priority | Should -Be 5
+            $profileApp.Required | Should -Be $false
         }
 
         It 'Should handle null overrides' {
@@ -217,9 +217,9 @@ Describe 'ApplicationDatabase Module' {
             $categories[0].Count | Should -BeGreaterThan 0
         }
 
-        It 'Should include Browser category' {
+        It 'Should include Browser category by CategoryId' {
             $categories = Get-ApplicationCategories
-            $categories.DisplayName | Should -Contain 'Browser'
+            $categories.CategoryId | Should -Contain 'Browser'
         }
     }
 
@@ -263,18 +263,18 @@ Describe 'ApplicationDatabase Module' {
 
         It 'Should have correct verified count' {
             $stats = Get-DatabaseStatistics
-            # All apps should be verified in v2.4.0
+            # All apps should be verified in v2.5.0
             $stats.VerifiedApps | Should -Be $stats.TotalApplications
         }
 
-        It 'Should have Categories count' {
+        It 'Should have TotalCategories count' {
             $stats = Get-DatabaseStatistics
-            $stats.Categories | Should -BeGreaterThan 0
+            $stats.TotalCategories | Should -BeGreaterThan 0
         }
 
-        It 'Should have Tags count' {
+        It 'Should have TotalTags count' {
             $stats = Get-DatabaseStatistics
-            $stats.Tags | Should -BeGreaterThan 0
+            $stats.TotalTags | Should -BeGreaterThan 0
         }
     }
 

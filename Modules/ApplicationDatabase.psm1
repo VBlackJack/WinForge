@@ -247,6 +247,7 @@ function ConvertTo-ProfileApplication {
     }
 
     $profileApp = [PSCustomObject]@{
+        AppId                    = $App.AppId
         Name                     = $App.Name
         Priority                 = $Priority
         Required                 = $Required
