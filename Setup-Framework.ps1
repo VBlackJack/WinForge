@@ -201,26 +201,26 @@ Write-SetupStatus "Source path: $SourcePath" -Level Info
 
 foreach ($category in $fileStructure.Keys) {
     $destPath = if ($category -eq 'Root') { $InstallPath } else { Join-Path $InstallPath $category }
-    
+
     foreach ($file in $fileStructure[$category]) {
         $totalFiles++
-        
+
         # Try to find source file
         $sourceFile = $null
         $possiblePaths = @(
             (Join-Path $SourcePath $file),
             (Join-Path $SourcePath "$category\$file")
         )
-        
+
         foreach ($path in $possiblePaths) {
             if (Test-Path -Path $path) {
                 $sourceFile = $path
                 break
             }
         }
-        
+
         $destFile = Join-Path $destPath $file
-        
+
         if ($sourceFile) {
             try {
                 Copy-Item -Path $sourceFile -Destination $destFile -Force
@@ -282,7 +282,7 @@ if ($createShortcut -match '^[Yy]') {
         $shortcut.WorkingDirectory = $InstallPath
         $shortcut.Description = 'Win11Forge Framework Launcher'
         $shortcut.Save()
-        
+
         Write-SetupStatus "Desktop shortcut created" -Level Success
     } catch {
         Write-SetupStatus "Failed to create shortcut: $($_.Exception.Message)" -Level Warning

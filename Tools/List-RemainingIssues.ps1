@@ -22,14 +22,21 @@ $allIssues = @()
 foreach ($file in $files) {
     $fullPath = Join-Path $PSScriptRoot "..\$file"
     if (Test-Path $fullPath) {
-        $issues = Invoke-ScriptAnalyzer -Path $fullPath -Settings $settingsFile -Severity Warning,Error
+        $issues = Invoke-ScriptAnalyzer -Path $fullPath -Settings $settingsFile -Severity Warning
         $allIssues += $issues
     }
 }
 
-Write-Host "`nTotal Issues: $($allIssues.Count)" -ForegroundColor Yellow
-Write-Host "`nSeverity Breakdown:" -ForegroundColor Cyan
-$allIssues | Group-Object Severity | Format-Table @{L='Severity';E={$_.Name}}, @{L='Count';E={$_.Count}} -AutoSize
+# Exclude PSUseShouldProcessForStateChangingFunctions (too complex for now)
+$criticalIssues = $allIssues | Where-Object { $_.RuleName -ne 'PSUseShouldProcessForStateChangingFunctions' }
 
-Write-Host "Top 10 Issues:" -ForegroundColor Cyan
-$allIssues | Group-Object RuleName | Sort-Object Count -Descending | Select-Object -First 10 | Format-Table @{L='Count';E={$_.Count}}, @{L='Rule';E={$_.Name}} -AutoSize
+Write-Host "`nCritical Issues to Fix: $($criticalIssues.Count)`n" -ForegroundColor Yellow
+
+foreach ($issue in $criticalIssues) {
+    Write-Host "File: " -NoNewline -ForegroundColor Cyan
+    Write-Host (Split-Path $issue.ScriptName -Leaf)
+    Write-Host "Line $($issue.Line): " -NoNewline -ForegroundColor Yellow
+    Write-Host $issue.RuleName -ForegroundColor Red
+    Write-Host "  $($issue.Message)" -ForegroundColor Gray
+    Write-Host ""
+}

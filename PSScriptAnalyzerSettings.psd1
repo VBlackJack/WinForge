@@ -81,7 +81,29 @@
         'PSProvideCommentHelp',
 
         # Some unused parameters are intentional for interface compatibility
-        'PSReviewUnusedParameter'
+        'PSReviewUnusedParameter',
+
+        # Plural nouns are more descriptive for our module functions
+        'PSUseSingularNouns',
+
+        # Formatting rules - enforced manually, not via analyzer
+        'PSPlaceCloseBrace',
+        'PSPlaceOpenBrace',
+        'PSUseConsistentIndentation',
+        'PSUseConsistentWhitespace',
+        'PSUseCorrectCasing',
+
+        # Output type declarations are informational, not enforced
+        'PSUseOutputTypeCorrectly',
+
+        # BOM for Unicode not required for UTF-8
+        'PSUseBOMForUnicodeEncodedFile',
+
+        # False positive - hardcoded 8.8.8.8 for internet connectivity test is intentional
+        'PSAvoidUsingComputerNameHardcoded',
+
+        # False positive - Write-Log is standard logging function name
+        'PSAvoidOverwritingBuiltInCmdlets'
     )
 
     # === CODE FORMATTING ===

@@ -81,7 +81,7 @@ function Write-CleanupStatus {
 
 function Format-FileSize {
     param([long]$Bytes)
-    
+
     if ($Bytes -ge 1GB) {
         return "{0:N2} GB" -f ($Bytes / 1GB)
     } elseif ($Bytes -ge 1MB) {
@@ -114,19 +114,19 @@ Write-Host ""
 
 if ($CleanLogs) {
     Write-CleanupStatus "Cleaning log files older than $DaysToKeep days..." -Level Info
-    
+
     $logsPath = Join-Path $script:FrameworkRoot 'Logs'
-    
+
     if (Test-Path -Path $logsPath) {
         $cutoffDate = (Get-Date).AddDays(-$DaysToKeep)
         $oldLogs = Get-ChildItem -Path $logsPath -Filter '*.log' |
                    Where-Object { $_.LastWriteTime -lt $cutoffDate }
-        
+
         if ($oldLogs.Count -gt 0) {
             $totalSize = ($oldLogs | Measure-Object -Property Length -Sum).Sum
-            
+
             Write-CleanupStatus "Found $($oldLogs.Count) old log files ($(Format-FileSize $totalSize))" -Level Info
-            
+
             $confirm = Read-Host "Delete these files? (Y/N)"
             if ($confirm -match '^[Yy]') {
                 foreach ($log in $oldLogs) {
@@ -148,7 +148,7 @@ if ($CleanLogs) {
     } else {
         Write-CleanupStatus "Logs directory not found" -Level Warning
     }
-    
+
     Write-Host ""
 }
 
@@ -156,22 +156,22 @@ if ($CleanLogs) {
 
 if ($CleanTemp) {
     Write-CleanupStatus "Cleaning temporary files..." -Level Info
-    
+
     $tempPaths = @(
         $env:TEMP,
         "$env:LOCALAPPDATA\Temp",
         "C:\Windows\Temp"
     )
-    
+
     foreach ($tempPath in $tempPaths) {
         if (-not (Test-Path -Path $tempPath)) { continue }
-        
+
         # Clean Win11Forge temp files
         $frameworkTemp = Get-ChildItem -Path $tempPath -Filter 'Win11Forge_*' -ErrorAction SilentlyContinue
-        
+
         if ($frameworkTemp.Count -gt 0) {
             Write-CleanupStatus "Found $($frameworkTemp.Count) Win11Forge temp items in $tempPath" -Level Info
-            
+
             foreach ($item in $frameworkTemp) {
                 try {
                     if ($item.PSIsContainer) {
@@ -187,14 +187,14 @@ if ($CleanTemp) {
             }
         }
     }
-    
+
     # Clean Chocolatey cache
     if (Test-Path 'C:\ProgramData\chocolatey\cache') {
         $chocoCache = Get-ChildItem -Path 'C:\ProgramData\chocolatey\cache' -ErrorAction SilentlyContinue
         if ($chocoCache.Count -gt 0) {
             $cacheSize = ($chocoCache | Measure-Object -Property Length -Sum).Sum
             Write-CleanupStatus "Chocolatey cache: $($chocoCache.Count) files ($(Format-FileSize $cacheSize))" -Level Info
-            
+
             $confirm = Read-Host "Clear Chocolatey cache? (Y/N)"
             if ($confirm -match '^[Yy]') {
                 try {
@@ -207,7 +207,7 @@ if ($CleanTemp) {
             }
         }
     }
-    
+
     Write-Host ""
 }
 
@@ -221,16 +221,16 @@ if ($ResetConfig) {
     Write-Host "  • Reset to default Base profile"
     Write-Host "  • Keep all installed applications"
     Write-Host ""
-    
+
     $confirm = Read-Host "Continue with configuration reset? (Y/N)"
-    
+
     if ($confirm -match '^[Yy]') {
         $profilesPath = Join-Path $script:FrameworkRoot 'Profiles'
-        
+
         if (Test-Path -Path $profilesPath) {
             # Create backup
             $backupPath = Join-Path $profilesPath "Backup_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
-            
+
             try {
                 New-Item -ItemType Directory -Path $backupPath -Force | Out-Null
                 Copy-Item -Path "$profilesPath\*.json" -Destination $backupPath -Force
@@ -240,12 +240,12 @@ if ($ResetConfig) {
                 return
             }
         }
-        
+
         Write-CleanupStatus "Configuration reset complete" -Level Success
     } else {
         Write-CleanupStatus "Configuration reset cancelled" -Level Info
     }
-    
+
     Write-Host ""
 }
 
@@ -267,61 +267,61 @@ if ($Uninstall) {
     Write-Host "  • Revert system configuration changes"
     Write-Host "  • Remove Chocolatey or Winget"
     Write-Host ""
-    
+
     $confirm1 = Read-Host "Are you sure you want to uninstall? (yes/no)"
-    
+
     if ($confirm1 -eq 'yes') {
         $confirm2 = Read-Host "Type 'DELETE' to confirm uninstallation"
-        
+
         if ($confirm2 -eq 'DELETE') {
             Write-CleanupStatus "Starting uninstallation..." -Level Warning
-            
+
             # Remove desktop shortcut
             $desktopShortcut = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Win11Forge.lnk'
             if (Test-Path -Path $desktopShortcut) {
                 Remove-Item -Path $desktopShortcut -Force
                 Write-CleanupStatus "Removed desktop shortcut" -Level Success
             }
-            
+
             # Calculate total size
-            $totalSize = (Get-ChildItem -Path $script:FrameworkRoot -Recurse -File | 
+            $totalSize = (Get-ChildItem -Path $script:FrameworkRoot -Recurse -File |
                          Measure-Object -Property Length -Sum).Sum
-            
+
             Write-CleanupStatus "Framework size: $(Format-FileSize $totalSize)" -Level Info
             Write-Host ""
-            
+
             # Final confirmation
             Write-Host "Last chance to cancel! Press Ctrl+C to abort." -ForegroundColor Red
             Start-Sleep -Seconds 5
-            
+
             Write-CleanupStatus "Removing framework directory..." -Level Warning
-            
+
             try {
                 # Move to parent directory
                 $parentPath = Split-Path $script:FrameworkRoot -Parent
                 Set-Location -Path $parentPath
-                
+
                 # Remove framework
                 Remove-Item -Path $script:FrameworkRoot -Recurse -Force
-                
+
                 Write-Host ""
                 Write-CleanupStatus "Framework successfully uninstalled!" -Level Success
                 Write-CleanupStatus "Freed $(Format-FileSize $totalSize) of disk space" -Level Success
                 Write-Host ""
                 Write-Host "Thank you for using Win11Forge!" -ForegroundColor Cyan
-                
+
             } catch {
                 Write-CleanupStatus "Failed to uninstall: $($_.Exception.Message)" -Level Error
                 Write-CleanupStatus "You may need to manually delete: $script:FrameworkRoot" -Level Warning
             }
-            
+
         } else {
             Write-CleanupStatus "Uninstallation cancelled (confirmation mismatch)" -Level Info
         }
     } else {
         Write-CleanupStatus "Uninstallation cancelled" -Level Info
     }
-    
+
     return
 }
 

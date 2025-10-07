@@ -141,13 +141,13 @@ function Test-ProfileFiles {
     foreach ($profile in $profiles) {
         $path = Join-Path -Path $script:ScriptRoot -ChildPath "Profiles\$profile"
         $exists = Test-Path -Path $path -PathType Leaf
-        
+
         if ($exists) {
             try {
                 $content = Get-Content -Path $path -Raw | ConvertFrom-Json
                 $valid = $content.Name -and $content.Applications
                 Write-ValidationResult -Test "Profile: $profile" -Passed $valid -Message "Valid JSON"
-                
+
                 if ($valid -and $Detailed) {
                     Write-Host "      Name: $($content.Name), Version: $($content.Version)" -ForegroundColor Gray
                     Write-Host "      Applications: $($content.Applications.Count)" -ForegroundColor Gray
@@ -179,12 +179,12 @@ function Test-ModuleLoading {
     foreach ($module in $modules) {
         $path = Join-Path -Path $script:ScriptRoot -ChildPath $module
         $moduleName = Split-Path -Path $module -Leaf
-        
+
         if (Test-Path -Path $path) {
             try {
                 Import-Module -Name $path -Force -ErrorAction Stop
                 Write-ValidationResult -Test "Load: $moduleName" -Passed $true
-                
+
                 if ($Detailed) {
                     $loadedModule = Get-Module -Name $moduleName.Replace('.psm1', '')
                     if ($loadedModule) {
@@ -228,7 +228,7 @@ function Test-EnvironmentDetection {
 
         $envReport = Get-EnvironmentReport
         Write-ValidationResult -Test "Generate environment report" -Passed ($null -ne $envReport)
-        
+
         if ($Detailed -and $envReport) {
             Write-Host "      Computer: $($envReport.ComputerName)" -ForegroundColor Gray
             Write-Host "      OS: $($envReport.OSVersion)" -ForegroundColor Gray
@@ -244,11 +244,11 @@ function Test-ProfileLoading {
 
     try {
         $profilesDir = Join-Path -Path $script:ScriptRoot -ChildPath 'Profiles'
-        
+
         if (Test-Path "$profilesDir\Base.json") {
             $profile = Get-DeploymentProfile -ProfileName "Base" -ProfilesDirectory $profilesDir
             Write-ValidationResult -Test "Load Base profile" -Passed ($null -ne $profile)
-            
+
             if ($profile -and $Detailed) {
                 Write-Host "      Applications: $($profile.Applications.Count)" -ForegroundColor Gray
                 Write-Host "      Config sections: $($profile.SystemConfig.Keys.Count)" -ForegroundColor Gray
@@ -263,7 +263,7 @@ function Test-ProfileLoading {
             if ($gamingProfile) {
                 $hasInheritance = $gamingProfile.InheritanceChain.Count -gt 1
                 Write-ValidationResult -Test "Profile inheritance" -Passed $hasInheritance
-                
+
                 if ($hasInheritance -and $Detailed) {
                     Write-Host "      Chain: $($gamingProfile.InheritanceChain -join ' -> ')" -ForegroundColor Gray
                 }
@@ -283,7 +283,7 @@ function Test-PrerequisitesValidation {
         if (Test-Path -Path $prereqModule) {
             Import-Module -Name $prereqModule -Force -ErrorAction SilentlyContinue
         }
-        
+
         # Call the module function
         if (-not (Get-Command -Name 'Test-Prerequisites' -ErrorAction SilentlyContinue)) {
             Write-ValidationResult -Test "Prerequisites module" -Passed $false -Message "Test-Prerequisites function not found"
@@ -291,34 +291,34 @@ function Test-PrerequisitesValidation {
         }
 
         $prereqs = Test-Prerequisites
-        
+
         # Validate that we got a dictionary back (hashtable or OrderedDictionary)
-        $isValidDictionary = ($prereqs -is [hashtable]) -or 
+        $isValidDictionary = ($prereqs -is [hashtable]) -or
                             ($prereqs -is [System.Collections.Specialized.OrderedDictionary]) -or
                             ($null -ne $prereqs -and $prereqs.GetType().Name -eq 'OrderedDictionary')
-        
+
         if (-not $isValidDictionary) {
             $actualType = if ($null -eq $prereqs) { 'null' } else { $prereqs.GetType().FullName }
             Write-ValidationResult -Test "Prerequisites check" -Passed $false -Message "Invalid prerequisites data type: $actualType"
             return
         }
-        
+
         if ($prereqs.Count -eq 0) {
             Write-ValidationResult -Test "Prerequisites check" -Passed $false -Message "No prerequisites data returned"
             return
         }
-        
+
         foreach ($key in $prereqs.Keys) {
             # Ensure we have valid data
             if ($null -eq $prereqs[$key]) {
                 Write-ValidationResult -Test "$key installed" -Passed $false -Message "No data available"
                 continue
             }
-            
+
             # Check if it's a dictionary-like object with properties
             $itemHasInstalled = $false
             $installedValue = $null
-            
+
             # Try to get Installed property (works for hashtables and PSCustomObjects)
             try {
                 if ($prereqs[$key] -is [hashtable] -or $prereqs[$key] -is [System.Collections.Specialized.OrderedDictionary]) {
@@ -334,12 +334,12 @@ function Test-PrerequisitesValidation {
                 Write-ValidationResult -Test "$key installed" -Passed $false -Message "Unable to read Installed property"
                 continue
             }
-            
+
             if (-not $itemHasInstalled) {
                 Write-ValidationResult -Test "$key installed" -Passed $false -Message "Installed status not found"
                 continue
             }
-            
+
             # Get installed status and convert to boolean
             $installed = $false
             if ($installedValue -is [bool]) {
@@ -347,9 +347,9 @@ function Test-PrerequisitesValidation {
             } elseif ($installedValue -eq $true -or $installedValue -eq 'True' -or $installedValue -eq 1) {
                 $installed = $true
             }
-            
+
             Write-ValidationResult -Test "$key installed" -Passed $installed
-            
+
             # Show version if available and in detailed mode
             if ($Detailed) {
                 $versionValue = $null
@@ -364,7 +364,7 @@ function Test-PrerequisitesValidation {
                 } catch {
                     # Ignore version read errors
                 }
-                
+
                 if ($versionValue) {
                     Write-Host "      Version: $versionValue" -ForegroundColor Gray
                 }
@@ -390,7 +390,7 @@ function Test-PrerequisitesValidation {
             } catch {
                 # Ignore
             }
-            
+
             if ($ps7Installed -and $PSVersionTable.PSVersion.Major -lt 7) {
                 Write-ValidationWarning "PowerShell 7 installed but current session is PowerShell $($PSVersionTable.PSVersion)"
             }

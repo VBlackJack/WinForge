@@ -28,10 +28,10 @@ function Initialize-Logging {
     <#
     .SYNOPSIS
         Initializes logging system with file output.
-    
+
     .PARAMETER LogPath
         Path to the log file
-    
+
     .PARAMETER EnableVerbose
         Enable verbose logging
     #>
@@ -65,9 +65,9 @@ OS: $([System.Environment]::OSVersion.VersionString)
 ================================================================================
 
 "@
-    
+
     $header | Out-File -FilePath $script:LogFile -Encoding UTF8
-    
+
     Write-Verbose "Logging initialized: $LogPath"
 }
 
@@ -75,13 +75,13 @@ function Write-Status {
     <#
     .SYNOPSIS
         Writes a status message with color coding and logging.
-    
+
     .PARAMETER Message
         The message to display
-    
+
     .PARAMETER Level
         Message level: Info, Success, Warning, Error
-    
+
     .PARAMETER NoNewline
         Don't add newline after message
     #>
@@ -134,13 +134,13 @@ function Write-StatusProgress {
     <#
     .SYNOPSIS
         Writes a progress indicator with percentage.
-    
+
     .PARAMETER Activity
         Activity description
-    
+
     .PARAMETER Status
         Current status
-    
+
     .PARAMETER PercentComplete
         Percentage complete (0-100)
     #>
@@ -164,7 +164,7 @@ function Write-Section {
     <#
     .SYNOPSIS
         Writes a section header for better log organization.
-    
+
     .PARAMETER Title
         Section title
     #>
@@ -188,16 +188,16 @@ function Invoke-SafeCommand {
     <#
     .SYNOPSIS
         Executes a script block with error handling and logging.
-    
+
     .PARAMETER ScriptBlock
         Script block to execute
-    
+
     .PARAMETER ErrorMessage
         Custom error message prefix
-    
+
     .PARAMETER ContinueOnError
         Continue execution even if error occurs
-    
+
     .OUTPUTS
         Returns $true if successful, $false if error
     #>
@@ -220,7 +220,7 @@ function Invoke-SafeCommand {
     catch {
         $errorDetail = $_.Exception.Message
         Write-Status -Message "$ErrorMessage : $errorDetail" -Level 'Error'
-        
+
         if ($script:VerboseLogging) {
             Write-Status -Message "Stack trace: $($_.ScriptStackTrace)" -Level 'Verbose'
         }
@@ -228,7 +228,7 @@ function Invoke-SafeCommand {
         if (-not $ContinueOnError) {
             throw
         }
-        
+
         return $false
     }
 }
@@ -239,7 +239,7 @@ function Test-Administrator {
     <#
     .SYNOPSIS
         Checks if current session has administrator privileges.
-    
+
     .OUTPUTS
         [bool] True if running as administrator
     #>
@@ -256,7 +256,7 @@ function Test-InternetConnection {
     <#
     .SYNOPSIS
         Tests internet connectivity.
-    
+
     .OUTPUTS
         [bool] True if internet is accessible
     #>
@@ -298,13 +298,13 @@ function Assert-InternetConnection {
     param()
 
     Write-Status -Message 'Checking internet connectivity...' -Level 'Info'
-    
+
     if (-not (Test-InternetConnection)) {
         Write-Status -Message 'ERROR: No internet connection detected' -Level 'Error'
         Write-Status -Message 'Please ensure you have an active internet connection' -Level 'Error'
         throw 'Internet connection required'
     }
-    
+
     Write-Status -Message 'Internet connection verified' -Level 'Success'
 }
 
@@ -314,13 +314,13 @@ function Get-StringHash {
     <#
     .SYNOPSIS
         Generates a hash from a string.
-    
+
     .PARAMETER String
         String to hash
-    
+
     .PARAMETER Algorithm
         Hash algorithm (MD5, SHA1, SHA256)
-    
+
     .OUTPUTS
         [string] Hexadecimal hash
     #>
@@ -342,7 +342,7 @@ function Get-StringHash {
     $stringAsStream.Position = 0
 
     $hash = Get-FileHash -InputStream $stringAsStream -Algorithm $Algorithm
-    
+
     $writer.Dispose()
     $stringAsStream.Dispose()
 
@@ -353,10 +353,10 @@ function ConvertTo-SafeFileName {
     <#
     .SYNOPSIS
         Converts a string to a safe filename.
-    
+
     .PARAMETER String
         String to convert
-    
+
     .OUTPUTS
         [string] Safe filename
     #>
@@ -369,11 +369,11 @@ function ConvertTo-SafeFileName {
 
     $invalidChars = [IO.Path]::GetInvalidFileNameChars()
     $safeName = $String
-    
+
     foreach ($char in $invalidChars) {
         $safeName = $safeName.Replace($char, '_')
     }
-    
+
     return $safeName
 }
 
@@ -381,10 +381,10 @@ function Test-CommandExists {
     <#
     .SYNOPSIS
         Tests if a command exists in the current session.
-    
+
     .PARAMETER Name
         Command name to test
-    
+
     .OUTPUTS
         [bool] True if command exists
     #>
@@ -402,13 +402,13 @@ function Get-DownloadedFileName {
     <#
     .SYNOPSIS
         Extracts filename from URL or Content-Disposition header.
-    
+
     .PARAMETER Url
         URL to parse
-    
+
     .PARAMETER ContentDisposition
         Content-Disposition header value
-    
+
     .OUTPUTS
         [string] Extracted filename
     #>
@@ -431,11 +431,11 @@ function Get-DownloadedFileName {
     try {
         $uri = [System.Uri]$Url
         $filename = [System.IO.Path]::GetFileName($uri.LocalPath)
-        
+
         if ([string]::IsNullOrWhiteSpace($filename)) {
             $filename = 'download.exe'
         }
-        
+
         return $filename
     }
     catch {
@@ -447,10 +447,10 @@ function Format-FileSize {
     <#
     .SYNOPSIS
         Formats a file size in bytes to human-readable format.
-    
+
     .PARAMETER Bytes
         File size in bytes
-    
+
     .OUTPUTS
         [string] Formatted file size
     #>
@@ -482,10 +482,10 @@ function Get-ElapsedTime {
     <#
     .SYNOPSIS
         Calculates elapsed time from a start time.
-    
+
     .PARAMETER StartTime
         Start time
-    
+
     .OUTPUTS
         [string] Formatted elapsed time
     #>
@@ -506,13 +506,13 @@ function Confirm-Action {
     <#
     .SYNOPSIS
         Prompts user for confirmation.
-    
+
     .PARAMETER Message
         Confirmation message
-    
+
     .PARAMETER DefaultYes
         Default to Yes if user just presses Enter
-    
+
     .OUTPUTS
         [bool] True if user confirms
     #>
@@ -528,13 +528,13 @@ function Confirm-Action {
 
     $prompt = if ($DefaultYes) { '[Y/n]' } else { '[y/N]' }
     Write-Host "$Message $prompt " -NoNewline -ForegroundColor Yellow
-    
+
     $response = Read-Host
-    
+
     if ([string]::IsNullOrWhiteSpace($response)) {
         return $DefaultYes.IsPresent
     }
-    
+
     return $response -match '^[Yy]'
 }
 
@@ -544,10 +544,10 @@ function Clear-TemporaryFiles {
     <#
     .SYNOPSIS
         Cleans up temporary files in specified directory.
-    
+
     .PARAMETER Path
         Directory path to clean
-    
+
     .PARAMETER OlderThanDays
         Only remove files older than specified days
     #>
@@ -598,16 +598,16 @@ Export-ModuleMember -Function @(
     'Write-Status',
     'Write-StatusProgress',
     'Write-Section',
-    
+
     # Error handling
     'Invoke-SafeCommand',
-    
+
     # Validation
     'Test-Administrator',
     'Test-InternetConnection',
     'Assert-Administrator',
     'Assert-InternetConnection',
-    
+
     # Utilities
     'Get-StringHash',
     'ConvertTo-SafeFileName',
@@ -615,10 +615,10 @@ Export-ModuleMember -Function @(
     'Get-DownloadedFileName',
     'Format-FileSize',
     'Get-ElapsedTime',
-    
+
     # Confirmation
     'Confirm-Action',
-    
+
     # Cleanup
     'Clear-TemporaryFiles'
 )

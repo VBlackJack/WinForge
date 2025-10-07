@@ -41,7 +41,7 @@ function Get-SystemEnvironmentType {
     <#
     .SYNOPSIS
         Detects the current system environment type.
-    
+
     .DESCRIPTION
         Uses multiple detection methods to identify if running on:
         - Windows Sandbox
@@ -49,7 +49,7 @@ function Get-SystemEnvironmentType {
         - Hyper-V virtual machine
         - VirtualBox
         - Physical hardware
-    
+
     .OUTPUTS
         [EnvironmentType] The detected environment type
     #>
@@ -124,13 +124,13 @@ function Test-WindowsSandbox {
     <#
     .SYNOPSIS
         Checks if running inside Windows Sandbox.
-    
+
     .DESCRIPTION
         Uses multiple methods to detect Windows Sandbox environment:
         - Computer name pattern
         - Specific registry keys
         - Container detection
-    
+
     .OUTPUTS
         [bool] True if running in Windows Sandbox
     #>
@@ -174,7 +174,7 @@ function Test-IsVirtualMachine {
     <#
     .SYNOPSIS
         Quick check if running on any virtual machine.
-    
+
     .OUTPUTS
         [bool] True if running on a VM (any type)
     #>
@@ -190,11 +190,11 @@ function Get-EnvironmentCapabilities {
     <#
     .SYNOPSIS
         Returns environment-specific capabilities and limitations.
-    
+
     .DESCRIPTION
         Provides information about what can and cannot be installed
         in the current environment.
-    
+
     .OUTPUTS
         [hashtable] Environment capabilities
     #>
@@ -226,18 +226,18 @@ function Get-EnvironmentCapabilities {
             $capabilities.IsPersistent = $false
             $capabilities.RecommendedPackageSource = 'Portable'
         }
-        
+
         'VMware' {
             $capabilities.CanInstallHyperV = $false
             $capabilities.CanInstallVirtualization = $false
             $capabilities.CanInstallHardwareSpecific = $false
         }
-        
+
         'HyperV' {
             $capabilities.CanInstallVirtualization = $false
             $capabilities.CanInstallHardwareSpecific = $false
         }
-        
+
         'VirtualBox' {
             $capabilities.CanInstallHyperV = $false
             $capabilities.CanInstallVirtualization = $false
@@ -252,13 +252,13 @@ function Test-ApplicationCompatibleWithEnvironment {
     <#
     .SYNOPSIS
         Checks if an application can be installed in current environment.
-    
+
     .PARAMETER ApplicationName
         Name of the application to check
-    
+
     .PARAMETER Category
         Category of the application
-    
+
     .OUTPUTS
         [hashtable] Compatibility result with reason
     #>
@@ -313,7 +313,7 @@ function Get-EnvironmentReport {
     <#
     .SYNOPSIS
         Generates a detailed environment report.
-    
+
     .OUTPUTS
         [hashtable] Complete environment information
     #>

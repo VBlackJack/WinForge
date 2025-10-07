@@ -41,7 +41,7 @@ function Update-EnvironmentPath {
     <#
     .SYNOPSIS
         Refreshes environment variables from registry without restarting session.
-    
+
     .DESCRIPTION
         Reloads PATH and other environment variables from:
         - Machine-level (HKLM)
@@ -63,7 +63,7 @@ function Update-EnvironmentPath {
         # Combine and set Process PATH (PS 5.1 compatible)
         $combinedPath = (@($machinePath, $userPath) | Where-Object { $_ }) -join ';'
         [System.Environment]::SetEnvironmentVariable('PATH', $combinedPath, 'Process')
-        
+
         # Update $env:PATH
         $env:PATH = $combinedPath
 
@@ -81,9 +81,9 @@ function Update-EnvironmentPath {
         foreach ($varName in $envVars) {
             $machineValue = [System.Environment]::GetEnvironmentVariable($varName, 'Machine')
             $userValue = [System.Environment]::GetEnvironmentVariable($varName, 'User')
-            
+
             $value = if ($userValue) { $userValue } elseif ($machineValue) { $machineValue }
-            
+
             if ($value) {
                 [System.Environment]::SetEnvironmentVariable($varName, $value, 'Process')
                 Set-Item -Path "env:$varName" -Value $value -Force -ErrorAction SilentlyContinue
@@ -109,12 +109,12 @@ function Invoke-EnvironmentRefresh {
     Update-EnvironmentPath | Out-Null
 
     # Refresh PowerShell's command cache
-    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + 
+    $env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' +
                 [System.Environment]::GetEnvironmentVariable('Path', 'User')
-    
+
     # Force Get-Command cache refresh
     Get-Command -All | Out-Null
-    
+
     Write-Status -Message "Environment refreshed" -Level 'Success'
 }
 
@@ -143,7 +143,7 @@ function Invoke-ExternalProcess {
     param(
         [Parameter(Mandatory)]
         [string]$FilePath,
-        
+
         [string[]]$ArgumentList,
 
         [switch]$RefreshEnvironment
@@ -151,7 +151,7 @@ function Invoke-ExternalProcess {
 
     try {
         $process = Start-Process -FilePath $FilePath -ArgumentList $ArgumentList -Wait -NoNewWindow -PassThru
-        
+
         if ($RefreshEnvironment) {
             Invoke-EnvironmentRefresh
         }
@@ -159,7 +159,7 @@ function Invoke-ExternalProcess {
         if ($process.ExitCode -eq 0) {
             return $true
         }
-        
+
         Write-Verbose "Process $FilePath exited with code $($process.ExitCode)"
         return $false
     } catch {
@@ -179,7 +179,7 @@ function Install-Chocolatey {
     param([switch]$Force)
 
     $chocolateyAvailable = Test-CommandAvailable -Name 'choco'
-    
+
     if ($chocolateyAvailable -and -not $Force) {
         Write-Status -Message 'Chocolatey is already installed' -Level 'Info'
         return $true
@@ -187,7 +187,7 @@ function Install-Chocolatey {
 
     try {
         Write-Status -Message 'Installing Chocolatey package manager...' -Level 'Info'
-        
+
         Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
@@ -208,7 +208,7 @@ function Install-Chocolatey {
 
         # Refresh environment after installation
         Invoke-EnvironmentRefresh
-        
+
     } catch {
         Write-Status -Message "Chocolatey installation failed: $($_.Exception.Message)" -Level 'Error'
         throw "Chocolatey installation failed: $($_.Exception.Message)"
@@ -234,7 +234,7 @@ function Install-PowerShell7 {
     param([switch]$Force)
 
     $currentVersion = $PSVersionTable.PSVersion
-    
+
     if ($currentVersion.Major -ge 7 -and -not $Force) {
         Write-Status -Message "PowerShell $currentVersion is already installed" -Level 'Info'
         return $true
@@ -247,7 +247,7 @@ function Install-PowerShell7 {
         try {
             $arguments = @('install', '--id', 'Microsoft.PowerShell', '--silent', '--accept-package-agreements', '--accept-source-agreements')
             if ($Force) { $arguments += '--force' }
-            
+
             if (Invoke-ExternalProcess -FilePath 'winget' -ArgumentList $arguments -RefreshEnvironment) {
                 Write-Status -Message 'PowerShell 7 installation completed successfully' -Level 'Success'
                 Write-Status -Message 'IMPORTANT: Please restart this script in PowerShell 7 for full functionality' -Level 'Warning'
@@ -263,7 +263,7 @@ function Install-PowerShell7 {
         try {
             $arguments = @('install', 'powershell-core', '-y', '--no-progress')
             if ($Force) { $arguments += '--force' }
-            
+
             if (Invoke-ExternalProcess -FilePath 'choco' -ArgumentList $arguments -RefreshEnvironment) {
                 Write-Status -Message 'PowerShell 7 installation completed successfully' -Level 'Success'
                 Write-Status -Message 'IMPORTANT: Please restart this script in PowerShell 7 for full functionality' -Level 'Warning'
@@ -277,12 +277,12 @@ function Install-PowerShell7 {
     # Direct download as last resort
     try {
         Write-Status -Message 'Attempting direct download...' -Level 'Info'
-        
+
         $downloadUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/PowerShell-7.4.6-win-x64.msi'
         $tempPath = Join-Path -Path $env:TEMP -ChildPath 'PowerShell-7.4.6-win-x64.msi'
-        
+
         Invoke-WebRequest -Uri $downloadUrl -OutFile $tempPath -UseBasicParsing
-        
+
         $arguments = @('/i', "`"$tempPath`"", '/qn', '/norestart', 'ADD_PATH=1', 'ENABLE_MU=1')
         if (Invoke-ExternalProcess -FilePath 'msiexec.exe' -ArgumentList $arguments -RefreshEnvironment) {
             Remove-Item -Path $tempPath -Force -ErrorAction SilentlyContinue
@@ -290,7 +290,7 @@ function Install-PowerShell7 {
             Write-Status -Message 'IMPORTANT: Please restart this script in PowerShell 7 for full functionality' -Level 'Warning'
             return $true
         }
-        
+
         Remove-Item -Path $tempPath -Force -ErrorAction SilentlyContinue
     } catch {
         Write-Verbose "Direct download failed: $($_.Exception.Message)"
@@ -311,31 +311,31 @@ function Install-DotNetRuntime {
     param([switch]$Force)
 
     $runtimes = @(
-        @{ 
+        @{
             Name = '.NET Framework 4.8.1'
             WingetId = 'Microsoft.DotNet.Framework.DeveloperPack_4'
             ChocolateyId = 'dotnetfx'
             Type = 'Framework'
         },
-        @{ 
+        @{
             Name = '.NET 6 Runtime'
             WingetId = 'Microsoft.DotNet.Runtime.6'
             ChocolateyId = 'dotnet-6.0-runtime'
             Type = 'Core'
         },
-        @{ 
+        @{
             Name = '.NET 6 Desktop Runtime'
             WingetId = 'Microsoft.DotNet.DesktopRuntime.6'
             ChocolateyId = 'dotnet-6.0-desktopruntime'
             Type = 'Core'
         },
-        @{ 
+        @{
             Name = '.NET 8 Runtime'
             WingetId = 'Microsoft.DotNet.Runtime.8'
             ChocolateyId = 'dotnet-8.0-runtime'
             Type = 'Core'
         },
-        @{ 
+        @{
             Name = '.NET 8 Desktop Runtime'
             WingetId = 'Microsoft.DotNet.DesktopRuntime.8'
             ChocolateyId = 'dotnet-8.0-desktopruntime'
@@ -353,7 +353,7 @@ function Install-DotNetRuntime {
         if (Test-CommandAvailable -Name 'winget') {
             $arguments = @('install', '--id', $runtime.WingetId, '--silent', '--accept-package-agreements', '--accept-source-agreements')
             if ($Force) { $arguments += '--force' }
-            
+
             $installed = Invoke-ExternalProcess -FilePath 'winget' -ArgumentList $arguments -RefreshEnvironment
         }
 
@@ -361,7 +361,7 @@ function Install-DotNetRuntime {
         if ((-not $installed) -and (Test-CommandAvailable -Name 'choco')) {
             $arguments = @('install', $runtime.ChocolateyId, '-y', '--no-progress')
             if ($Force) { $arguments += '--force' }
-            
+
             $installed = Invoke-ExternalProcess -FilePath 'choco' -ArgumentList $arguments -RefreshEnvironment
         }
 
@@ -375,7 +375,7 @@ function Install-DotNetRuntime {
 
     # Final environment refresh after all runtimes
     Invoke-EnvironmentRefresh
-    
+
     return $allSucceeded
 }
 
@@ -390,12 +390,12 @@ function Install-VCRedist {
     param([switch]$Force)
 
     $vcRedists = @(
-        @{ 
+        @{
             Name = 'Visual C++ 2015-2022 x64'
             ChocolateyId = 'vcredist2015'
             WingetId = 'Microsoft.VCRedist.2015+.x64'
         },
-        @{ 
+        @{
             Name = 'Visual C++ 2015-2022 x86'
             ChocolateyId = 'vcredist2015'
             WingetId = 'Microsoft.VCRedist.2015+.x86'
@@ -413,7 +413,7 @@ function Install-VCRedist {
             # FIXED: Removed malformed --params argument
             $arguments = @('install', $vcRedist.ChocolateyId, '-y', '--no-progress')
             if ($Force) { $arguments += '--force' }
-            
+
             $installed = Invoke-ExternalProcess -FilePath 'choco' -ArgumentList $arguments
         }
 
@@ -421,7 +421,7 @@ function Install-VCRedist {
         if ((-not $installed) -and (Test-CommandAvailable -Name 'winget')) {
             $arguments = @('install', '--id', $vcRedist.WingetId, '--silent', '--accept-package-agreements', '--accept-source-agreements')
             if ($Force) { $arguments += '--force' }
-            
+
             $installed = Invoke-ExternalProcess -FilePath 'winget' -ArgumentList $arguments
         }
 
@@ -456,7 +456,7 @@ function Install-JavaRuntime {
             return $true
         }
     } catch {
-        # Java not found, continue with installation
+        # Silently ignore errors - Java not found, continue with installation
     }
 
     Write-Status -Message 'Installing Java runtime (Temurin JRE 21)...' -Level 'Info'
@@ -466,7 +466,7 @@ function Install-JavaRuntime {
     if (Test-CommandAvailable -Name 'winget') {
         $arguments = @('install', '--id', 'EclipseAdoptium.Temurin.21.JRE', '--silent', '--accept-package-agreements', '--accept-source-agreements')
         if ($Force) { $arguments += '--force' }
-        
+
         $installed = Invoke-ExternalProcess -FilePath 'winget' -ArgumentList $arguments -RefreshEnvironment
     }
 
@@ -474,7 +474,7 @@ function Install-JavaRuntime {
     if ((-not $installed) -and (Test-CommandAvailable -Name 'choco')) {
         $arguments = @('install', 'temurin21jre', '-y', '--no-progress')
         if ($Force) { $arguments += '--force' }
-        
+
         $installed = Invoke-ExternalProcess -FilePath 'choco' -ArgumentList $arguments -RefreshEnvironment
     }
 
@@ -502,7 +502,7 @@ function Test-Prerequisites {
     <#
     .SYNOPSIS
         Tests if prerequisites are installed and returns detailed status.
-    
+
     .OUTPUTS
         [System.Collections.Specialized.OrderedDictionary] Dictionary of prerequisites status
     #>
@@ -516,10 +516,10 @@ function Test-Prerequisites {
     $results = [ordered]@{
         Chocolatey = @{
             Installed = Test-CommandAvailable -Name 'choco'
-            Version = if (Test-CommandAvailable -Name 'choco') { 
-                (& choco --version 2>&1 | Select-Object -First 1) 
-            } else { 
-                'Not installed' 
+            Version = if (Test-CommandAvailable -Name 'choco') {
+                (& choco --version 2>&1 | Select-Object -First 1)
+            } else {
+                'Not installed'
             }
         }
         PowerShell7 = @{
@@ -528,10 +528,10 @@ function Test-Prerequisites {
         }
         Winget = @{
             Installed = Test-CommandAvailable -Name 'winget'
-            Version = if (Test-CommandAvailable -Name 'winget') { 
+            Version = if (Test-CommandAvailable -Name 'winget') {
                 try { (& winget --version 2>&1) } catch { 'Unknown' }
-            } else { 
-                'Not installed' 
+            } else {
+                'Not installed'
             }
         }
         DotNet = @{
@@ -588,7 +588,7 @@ function Test-Prerequisites {
         'HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64',
         'HKLM:\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64'
     )
-    
+
     foreach ($key in $vcRedistKeys) {
         if (Test-Path $key) {
             $vcInfo = Get-ItemProperty -Path $key -ErrorAction SilentlyContinue
@@ -622,7 +622,7 @@ function Start-PrerequisitesInstallation {
 
         # Install PowerShell 7
         Install-PowerShell7 -Force:$Force | Out-Null
-        
+
         # Install runtimes
         Write-Status -Message 'Installing runtime environments...' -Level 'Info'
         Install-DotNetRuntime -Force:$Force | Out-Null
@@ -639,7 +639,7 @@ function Start-PrerequisitesInstallation {
         # FIXED: Use Write-Host for empty lines instead of Write-Status
         Write-Host ""
         Write-Status -Message '=== Prerequisite Installation Summary ===' -Level 'Info'
-        
+
         foreach ($key in $results.Keys) {
             $status = if ($results[$key].Installed) { '[OK]' } else { '[MISSING]' }
             $statusLevel = if ($results[$key].Installed) { 'Success' } else { 'Warning' }

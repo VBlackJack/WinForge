@@ -1197,7 +1197,7 @@ function Show-SettingsMenu {
     switch ($choice) {
         '1' { Show-FrameworkInfo }
         '2' { Show-LogsDirectory }
-        '3' { Check-Updates }
+        '3' { Test-Updates }
         '4' { Show-About }
         '0' { return }
     }
@@ -1251,7 +1251,7 @@ function Show-LogsDirectory {
     Read-Host "Press Enter to continue"
 }
 
-function Check-Updates {
+function Test-Updates {
     Show-Header -Title "Check for Updates"
 
     Write-Host "Current Version: 2.5.0" -ForegroundColor Yellow

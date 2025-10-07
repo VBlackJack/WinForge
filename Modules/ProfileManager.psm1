@@ -65,13 +65,13 @@ function Get-ProfilePath {
     <#
     .SYNOPSIS
         Resolves profile path from name or file path.
-    
+
     .PARAMETER ProfileName
         Profile name or full path to JSON file
-    
+
     .PARAMETER ProfilesDirectory
         Directory containing profile JSON files
-    
+
     .OUTPUTS
         [string] Resolved profile path
     #>
@@ -114,10 +114,10 @@ function Import-ProfileJson {
     <#
     .SYNOPSIS
         Loads a profile from JSON file.
-    
+
     .PARAMETER Path
         Path to the profile JSON file
-    
+
     .OUTPUTS
         [DeploymentProfile] Loaded profile object
     #>
@@ -134,7 +134,7 @@ function Import-ProfileJson {
 
     try {
         Write-Status -Message "Loading profile: $Path" -Level 'Verbose'
-        
+
         $jsonContent = Get-Content -Path $Path -Raw -ErrorAction Stop
         $jsonObject = $jsonContent | ConvertFrom-Json -ErrorAction Stop
 
@@ -167,7 +167,7 @@ function Import-ProfileJson {
         }
 
         Write-Status -Message "Profile loaded: $($profile.Name) v$($profile.Version)" -Level 'Success'
-        
+
         return $profile
 
     } catch {
@@ -182,16 +182,16 @@ function Resolve-ProfileInheritance {
     <#
     .SYNOPSIS
         Resolves profile inheritance recursively.
-    
+
     .PARAMETER Profile
         Base profile to resolve
-    
+
     .PARAMETER ProfilesDirectory
         Directory containing profile JSON files
-    
+
     .PARAMETER Visited
         Internal: tracks visited profiles to prevent circular references
-    
+
     .OUTPUTS
         [DeploymentProfile[]] Array of profiles in inheritance order (base first)
     #>
@@ -231,7 +231,7 @@ function Resolve-ProfileInheritance {
 
                 # Recursively resolve parent's inheritance
                 $parentChain = Resolve-ProfileInheritance -Profile $parentProfile -ProfilesDirectory $ProfilesDirectory -Visited $Visited
-                
+
                 $result += $parentChain
 
             } catch {
@@ -380,11 +380,11 @@ function ConvertTo-Hashtable {
     <#
     .SYNOPSIS
         Recursively converts PSCustomObject to Hashtable.
-    
+
     .DESCRIPTION
         Converts nested PSCustomObject structures (from JSON) into proper Hashtables
         that can be used with functions expecting [hashtable] parameters.
-    
+
     .OUTPUTS
         [hashtable] Converted hashtable
     #>
@@ -394,12 +394,12 @@ function ConvertTo-Hashtable {
         [Parameter(Mandatory, ValueFromPipeline)]
         $InputObject
     )
-    
+
     process {
         if ($null -eq $InputObject) {
             return $null
         }
-        
+
         # Already a hashtable - recursively convert nested values
         if ($InputObject -is [hashtable]) {
             $output = @{}
@@ -408,7 +408,7 @@ function ConvertTo-Hashtable {
             }
             return $output
         }
-        
+
         # PSCustomObject - convert to hashtable
         if ($InputObject -is [PSCustomObject]) {
             $output = @{}
@@ -417,12 +417,12 @@ function ConvertTo-Hashtable {
             }
             return $output
         }
-        
+
         # Array - recursively convert each element
         if ($InputObject -is [array]) {
             return @($InputObject | ForEach-Object { ConvertTo-Hashtable -InputObject $_ })
         }
-        
+
         # Primitive type - return as-is
         return $InputObject
     }
@@ -432,10 +432,10 @@ function Merge-ProfileSystemConfig {
     <#
     .SYNOPSIS
         Merges system configuration from multiple profiles.
-    
+
     .PARAMETER Profiles
         Array of profiles in inheritance order
-    
+
     .OUTPUTS
         [hashtable] Merged system configuration
     #>
@@ -484,13 +484,13 @@ function Get-DeploymentProfile {
     <#
     .SYNOPSIS
         Loads a deployment profile with full inheritance resolution.
-    
+
     .PARAMETER ProfileName
         Profile name or path to JSON file
-    
+
     .PARAMETER ProfilesDirectory
         Directory containing profile JSON files
-    
+
     .OUTPUTS
         [hashtable] Complete deployment profile with merged applications and config
     #>
@@ -509,7 +509,7 @@ function Get-DeploymentProfile {
     try {
         # Get profile path
         $profilePath = Get-ProfilePath -ProfileName $ProfileName -ProfilesDirectory $ProfilesDirectory
-        
+
         # Load base profile
         $baseProfile = Import-ProfileJson -Path $profilePath
 
@@ -556,10 +556,10 @@ function Test-ProfileValid {
     <#
     .SYNOPSIS
         Validates a profile JSON structure.
-    
+
     .PARAMETER ProfilePath
         Path to profile JSON file
-    
+
     .OUTPUTS
         [hashtable] Validation result with errors
     #>
@@ -677,10 +677,10 @@ function Get-ApplicationsByCategory {
     <#
     .SYNOPSIS
         Groups applications by category.
-    
+
     .PARAMETER Applications
         Array of applications
-    
+
     .OUTPUTS
         [hashtable] Applications grouped by category
     #>
@@ -695,7 +695,7 @@ function Get-ApplicationsByCategory {
 
     foreach ($app in $Applications) {
         $category = if ($app.Category) { $app.Category } else { 'Uncategorized' }
-        
+
         if (-not $grouped.ContainsKey($category)) {
             $grouped[$category] = @()
         }
@@ -710,10 +710,10 @@ function Get-RequiredApplications {
     <#
     .SYNOPSIS
         Filters only required applications.
-    
+
     .PARAMETER Applications
         Array of applications
-    
+
     .OUTPUTS
         [PSCustomObject[]] Required applications only
     #>

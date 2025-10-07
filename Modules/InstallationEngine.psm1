@@ -265,13 +265,13 @@ function Test-ApplicationInstalled {
             "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe",
             "${env:ProgramFiles(x86)}\PowerToys\PowerToys.exe"
         )
-        
+
         foreach ($path in $powerToysPaths) {
             if (Test-Path $path -ErrorAction SilentlyContinue) {
                 return $true
             }
         }
-        
+
         if (Get-Process -Name "PowerToys" -ErrorAction SilentlyContinue) {
             return $true
         }
@@ -438,7 +438,7 @@ function Install-ViaWinget {
         [string]$PackageId,
 
         [Parameter()]
-        [switch]$Silent = $true,
+        [switch]$Silent,
 
         [Parameter()]
         [int]$MaxRetries = 3,
@@ -452,6 +452,9 @@ function Install-ViaWinget {
         return $false
     }
 
+    # Silent installation by default (unless explicitly set to $false)
+    $isSilent = -not $PSBoundParameters.ContainsKey('Silent') -or $Silent.IsPresent
+
     $arguments = @(
         'install',
         '--id', $PackageId,
@@ -459,7 +462,7 @@ function Install-ViaWinget {
         '--accept-source-agreements'
     )
 
-    if ($Silent) {
+    if ($isSilent) {
         $arguments += '--silent'
     }
 
@@ -1111,10 +1114,10 @@ function Install-ApplicationsParallel {
     $validateUrlFunction = ${function:Test-ValidDownloadUrl}.ToString()
 
     $currentEnvironment = Get-SystemEnvironmentType
-    
+
     $appsToInstall = @()
     $skippedApps = @()
-    
+
     foreach ($app in $sortedApps) {
         if ($app.EnvironmentRestrictions -and $app.EnvironmentRestrictions.Count -gt 0) {
             if ($app.EnvironmentRestrictions -contains $currentEnvironment) {
@@ -1132,11 +1135,11 @@ function Install-ApplicationsParallel {
         }
         $appsToInstall += $app
     }
-    
+
     Write-Host "Applications to install: $($appsToInstall.Count)" -ForegroundColor Cyan
     Write-Host "Skipped due to environment: $($skippedApps.Count)" -ForegroundColor Yellow
     Write-Host ""
-    
+
     # Create parallel logs directory with thread-safe creation and retention policy
     $parallelLogsDir = Join-Path $repoRoot 'Logs\Parallel'
     $maxRetries = 3
@@ -1174,7 +1177,6 @@ function Install-ApplicationsParallel {
     $installResults = $appsToInstall | ForEach-Object -ThrottleLimit $MaxParallel -Parallel {
         $app = $_
         $force = $using:forceInstall
-        $modRoot = $using:moduleRoot
         $repRoot = $using:repoRoot
         $parallelLogDir = $using:parallelLogsDir
         $ts = $using:timestamp
@@ -1208,11 +1210,11 @@ function Install-ApplicationsParallel {
             Method = $null
             Message = ''
         }
-        
+
         try {
             if (-not $force) {
                 $installed = $false
-                
+
                 # === SPECIAL CASE: PowerToys - Multi-path detection ===
                 if ($app.Name -eq 'Microsoft PowerToys') {
                     $powerToysPaths = @(
@@ -1220,7 +1222,7 @@ function Install-ApplicationsParallel {
                         "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe",
                         "${env:ProgramFiles(x86)}\PowerToys\PowerToys.exe"
                     )
-                    
+
                     foreach ($path in $powerToysPaths) {
                         if (Test-Path $path -ErrorAction SilentlyContinue) {
                             try {
@@ -1237,7 +1239,7 @@ function Install-ApplicationsParallel {
                             }
                         }
                     }
-                    
+
                     if (Get-Process -Name "PowerToys" -ErrorAction SilentlyContinue) {
                         $result.AlreadyInstalled = $true
                         $result.Success = $true
@@ -1245,7 +1247,7 @@ function Install-ApplicationsParallel {
                         return $result
                     }
                 }
-                
+
                 # === SPECIAL CASE: Quick Assist - Store App detection ===
                 if ($app.Name -eq 'Microsoft Quick Assist') {
                     try {
@@ -1257,10 +1259,10 @@ function Install-ApplicationsParallel {
                             return $result
                         }
                     } catch {
-                        # Continue to normal installation
+                        # Silently ignore errors - continue to normal installation
                     }
                 }
-                
+
                 # === GENERIC DETECTION ===
                 if ($app.Detection) {
                     switch ($app.Detection.Method) {
@@ -1341,14 +1343,14 @@ function Install-ApplicationsParallel {
                         }
                     }
                 }
-                
+
                 if (-not $installed -and (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)) {
                     $wingetList = & winget list --name $app.Name --accept-source-agreements 2>&1 | Out-String
                     if ($wingetList -match [regex]::Escape($app.Name)) {
                         $installed = $true
                     }
                 }
-                
+
                 if ($installed) {
                     Write-ParallelLog "Already installed - skipping" 'Success'
                     $result.AlreadyInstalled = $true
@@ -1631,12 +1633,12 @@ function Install-ApplicationsParallel {
 
         return $result
     }
-    
+
     $allResults = @($installResults) + @($skippedApps)
-    
+
     $endTime = Get-Date
     $totalTime = $endTime - $startTime
-    
+
     Write-Host ""
     Write-Host "=== Parallel Installation Summary ===" -ForegroundColor Green
     Write-Host "Total time: $($totalTime.ToString('mm\:ss'))" -ForegroundColor Cyan
@@ -1645,7 +1647,7 @@ function Install-ApplicationsParallel {
     Write-Host "Detailed logs saved to: $parallelLogsDir" -ForegroundColor Yellow
     Write-Host "Individual app logs: parallel_${timestamp}_<AppName>.log" -ForegroundColor Gray
     Write-Host ""
-    
+
     Write-Host "Installation Results:" -ForegroundColor Cyan
     foreach ($result in $allResults) {
         # Check if Skipped property exists and is true
@@ -1663,9 +1665,9 @@ function Install-ApplicationsParallel {
             Write-Host "    Reason: $($result.Message)" -ForegroundColor Gray
         }
     }
-    
+
     Write-Host ""
-    
+
     return $allResults
 }
 

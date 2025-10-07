@@ -38,16 +38,16 @@ function Set-RegistryValue {
     <#
     .SYNOPSIS
         Sets a registry value with error handling.
-    
+
     .PARAMETER Path
         Registry path
-    
+
     .PARAMETER Name
         Value name
-    
+
     .PARAMETER Value
         Value data
-    
+
     .PARAMETER Type
         Value type
     #>
@@ -91,7 +91,7 @@ function Set-ExplorerConfiguration {
     <#
     .SYNOPSIS
         Configures Windows Explorer settings.
-    
+
     .PARAMETER Config
         Explorer configuration hashtable
     #>
@@ -170,7 +170,7 @@ function Set-TaskbarConfiguration {
     <#
     .SYNOPSIS
         Configures Windows 11 Taskbar settings.
-    
+
     .PARAMETER Config
         Taskbar configuration hashtable
     #>
@@ -232,7 +232,7 @@ function Set-NetworkConfiguration {
     <#
     .SYNOPSIS
         Configures network settings including DNS.
-    
+
     .PARAMETER Config
         Network configuration hashtable
     #>
@@ -281,13 +281,13 @@ function Set-NetworkConfiguration {
                     Write-Status -Message "Unable to parse DNS servers: $($_.Exception.Message)" -Level 'Verbose'
                 }
             }
-            
+
             # Validate and apply
             if ($dnsArray.Count -gt 0) {
                 Write-Status -Message "Setting DNS servers: $($dnsArray -join ', ')" -Level 'Info'
 
-                $adapters = Get-NetAdapter | Where-Object { 
-                    $_.Status -eq 'Up' -and $_.InterfaceType -ne 'Loopback' 
+                $adapters = Get-NetAdapter | Where-Object {
+                    $_.Status -eq 'Up' -and $_.InterfaceType -ne 'Loopback'
                 }
 
                 $successCount = 0
@@ -316,7 +316,7 @@ function Set-NetworkConfiguration {
     # Network optimizations for gaming
     if ($Config.ContainsKey('GamingOptimizations') -and $Config.GamingOptimizations) {
         Write-Status -Message "Applying gaming network optimizations..." -Level 'Info'
-        
+
         Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters' -Name 'TcpAckFrequency' -Value 1 -Type DWord | Out-Null
         Set-RegistryValue -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters' -Name 'TCPNoDelay' -Value 1 -Type DWord | Out-Null
     }
@@ -343,7 +343,7 @@ function Set-PrivacyConfiguration {
     <#
     .SYNOPSIS
         Configures Windows privacy settings.
-    
+
     .PARAMETER Config
         Privacy configuration hashtable
     #>
@@ -358,10 +358,10 @@ function Set-PrivacyConfiguration {
     # Disable telemetry
     if ($Config.ContainsKey('DisableTelemetry') -and $Config.DisableTelemetry) {
         Write-Status -Message "Disabling telemetry..." -Level 'Info'
-        
+
         Set-RegistryValue -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection' -Name 'AllowTelemetry' -Value 0 -Type DWord | Out-Null
         Set-RegistryValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection' -Name 'AllowTelemetry' -Value 0 -Type DWord | Out-Null
-        
+
         # Disable Connected User Experiences and Telemetry service
         try {
             Set-Service -Name 'DiagTrack' -StartupType Disabled -ErrorAction SilentlyContinue
@@ -375,13 +375,13 @@ function Set-PrivacyConfiguration {
     # Minimal data collection
     if ($Config.ContainsKey('MinimalDataCollection') -and $Config.MinimalDataCollection) {
         Write-Status -Message "Configuring minimal data collection..." -Level 'Info'
-        
+
         # Disable advertising ID
         Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo' -Name 'Enabled' -Value 0 -Type DWord | Out-Null
-        
+
         # Disable app launch tracking
         Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'Start_TrackProgs' -Value 0 -Type DWord | Out-Null
-        
+
         # Disable suggested content
         Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'SubscribedContent-338393Enabled' -Value 0 -Type DWord | Out-Null
         Set-RegistryValue -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager' -Name 'SubscribedContent-353694Enabled' -Value 0 -Type DWord | Out-Null
@@ -425,7 +425,7 @@ function Set-PerformanceConfiguration {
     <#
     .SYNOPSIS
         Configures Windows performance settings.
-    
+
     .PARAMETER Config
         Performance configuration hashtable
     #>
@@ -440,7 +440,7 @@ function Set-PerformanceConfiguration {
     # Disable visual effects
     if ($Config.ContainsKey('DisableVisualEffects') -and $Config.DisableVisualEffects) {
         Write-Status -Message "Disabling visual effects for best performance..." -Level 'Info'
-        
+
         $visualFXPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects'
         Set-RegistryValue -Path $visualFXPath -Name 'VisualFXSetting' -Value 2 -Type DWord | Out-Null
     }
@@ -502,7 +502,7 @@ function Set-PerformanceConfiguration {
     # Power plan
     if ($Config.ContainsKey('PowerPlan') -and $Config.PowerPlan) {
         Write-Status -Message "Setting power plan: $($Config.PowerPlan)" -Level 'Info'
-        
+
         try {
             $powerPlan = switch ($Config.PowerPlan) {
                 'High Performance' { '8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c' }
@@ -534,7 +534,7 @@ function Set-SecurityConfiguration {
     <#
     .SYNOPSIS
         Configures Windows security settings.
-    
+
     .PARAMETER Config
         Security configuration hashtable
     #>
@@ -558,7 +558,7 @@ function Set-SecurityConfiguration {
     # Firewall
     if ($Config.ContainsKey('Firewall') -and $Config.Firewall) {
         Write-Status -Message "Ensuring Windows Firewall is enabled..." -Level 'Info'
-        
+
         try {
             Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
             Write-Status -Message "Firewall enabled for all profiles" -Level 'Success'
@@ -583,7 +583,7 @@ function Set-SystemConfiguration {
     <#
     .SYNOPSIS
         Applies complete system configuration from profile.
-    
+
     .PARAMETER Config
         System configuration hashtable from profile JSON
     #>

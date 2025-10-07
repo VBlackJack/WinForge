@@ -107,9 +107,9 @@ function Write-Log {
 
     $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     $logMessage = "[$timestamp] [$Level] $Message"
-    
+
     $logMessage | Out-File -FilePath $LogFile -Append -Encoding UTF8
-    
+
     switch ($Level) {
         'Info'    { Write-Host $Message -ForegroundColor Cyan }
         'Success' { Write-Host $Message -ForegroundColor Green }
@@ -270,17 +270,17 @@ Write-Host ""
 
 if (-not $SkipPrerequisites) {
     Write-Log -Message "=== Prerequisites Installation ===" -Level 'Info'
-    
+
     if ($TestMode) {
         Write-Log -Message "TEST MODE: Skipping actual prerequisite installation" -Level 'Warning'
         $prereqResults = Test-Prerequisites
     } else {
         try {
             $prereqResults = Start-PrerequisitesInstallation -Force:$Force
-            
+
             Write-Host ""
             Write-Log -Message "Prerequisites installation completed" -Level 'Success'
-            
+
             # Check if PowerShell 7 was just installed
             if ($prereqResults.PowerShell7.Installed -and $PSVersionTable.PSVersion.Major -lt 7) {
                 Write-Host ""
@@ -308,7 +308,7 @@ if (-not $SkipPrerequisites) {
                 Write-Log -Message "PowerShell 7 deployment completed" -Level 'Success'
                 return 0
             }
-            
+
         } catch {
             Write-Log -Message "Prerequisites installation failed: $($_.Exception.Message)" -Level 'Error'
             Write-Log -Message "Some applications may fail to install without prerequisites" -Level 'Warning'
@@ -330,14 +330,14 @@ Write-Log -Message "Loading profile: $ProfileName" -Level 'Info'
 try {
     $profilesDirectory = Join-Path -Path $script:ScriptRoot -ChildPath 'Profiles'
     $deploymentProfile = Get-DeploymentProfile -ProfileName $ProfileName -ProfilesDirectory $profilesDirectory
-    
+
     Write-Log -Message "Profile: $($deploymentProfile.Name) v$($deploymentProfile.Version)" -Level 'Success'
     Write-Log -Message "Description: $($deploymentProfile.Description)" -Level 'Info'
-    
+
     # FIXED: Robust handling of InheritanceChain
     if ($deploymentProfile.InheritanceChain) {
         $chainCount = 0
-        
+
         # Check if it's an array
         if ($deploymentProfile.InheritanceChain -is [array]) {
             $chainCount = $deploymentProfile.InheritanceChain.Count
@@ -352,7 +352,7 @@ try {
                 $chainCount = 1
             }
         }
-        
+
         if ($chainCount -gt 1) {
             $chainDisplay = if ($deploymentProfile.InheritanceChain -is [array]) {
                 $deploymentProfile.InheritanceChain -join ' -> '
@@ -362,13 +362,13 @@ try {
             Write-Log -Message "Inheritance chain: $chainDisplay" -Level 'Info'
         }
     }
-    
+
     $applications = $deploymentProfile.Applications
     $systemConfig = $deploymentProfile.SystemConfig
-    
+
     $script:DeploymentStats.TotalApplications = $applications.Count
     Write-Log -Message "Total applications to process: $($applications.Count)" -Level 'Info'
-    
+
 } catch {
     Write-Log -Message "Failed to load profile: $($_.Exception.Message)" -Level 'Error'
     return 1
@@ -392,7 +392,7 @@ if (-not $TestMode) {
         Write-Log -Message "Using PARALLEL installation mode (Max $MaxParallelJobs concurrent jobs)" -Level 'Info'
         Write-Log -Message "This will significantly reduce deployment time" -Level 'Success'
         Write-Host ""
-        
+
         # Installation parallèle
         $installResults = Install-ApplicationsParallel -Applications $applications -Force:$Force -MaxParallel $MaxParallelJobs
 
@@ -410,12 +410,12 @@ if (-not $TestMode) {
                 $script:DeploymentStats.Failed++
             }
         }
-        
+
     } else {
         Write-Log -Message "Using SEQUENTIAL installation mode (one app at a time)" -Level 'Info'
         Write-Log -Message "TIP: Use -Parallel parameter for faster deployment" -Level 'Warning'
         Write-Host ""
-        
+
         # Installation séquentielle (mode original)
         $sortedApplications = $applications | Sort-Object -Property Priority
 
@@ -423,9 +423,9 @@ if (-not $TestMode) {
             $appName = $app.Name
             $appCategory = $app.Category
             $appRequired = $app.Required
-            
+
             Write-Log -Message "[$($app.Priority)] Processing: $appName ($appCategory)" -Level 'Info'
-            
+
             # Check environment compatibility
             if ($app.EnvironmentRestrictions -and $app.EnvironmentRestrictions.Count -gt 0) {
                 $currentEnv = Get-SystemEnvironmentType
@@ -436,10 +436,10 @@ if (-not $TestMode) {
                     continue
                 }
             }
-            
+
             # Attempt installation
             $installResult = Install-Application -Application $app -Force:$Force
-            
+
             if ($installResult.AlreadyInstalled) {
                 Write-Log -Message "  [OK] Already installed" -Level 'Success'
                 $script:DeploymentStats.AlreadyInstalled++
@@ -456,7 +456,7 @@ if (-not $TestMode) {
                     Write-Log -Message "  [WARN] This is a required application!" -Level 'Warning'
                 }
             }
-            
+
             Write-Host ""
         }
     }
@@ -468,7 +468,7 @@ if (-not $TestMode) {
         if ($app.Sources.Winget) { $sources += "Winget:$($app.Sources.Winget)" }
         if ($app.Sources.Chocolatey) { $sources += "Choco:$($app.Sources.Chocolatey)" }
         if ($app.Sources.Store) { $sources += "Store:$($app.Sources.Store)" }
-        
+
         Write-Log -Message "[$($app.Priority)] $($app.Name) - Would install from: $($sources -join ' | ')" -Level 'Info'
     }
 }
@@ -477,7 +477,7 @@ if (-not $TestMode) {
 
 if (-not $SkipSystemConfig -and -not $TestMode) {
     Write-Log -Message "=== System Configuration ===" -Level 'Info'
-    
+
     if ($systemConfig -and $systemConfig.Count -gt 0) {
         try {
             # CRITICAL FIX: Convert all PSCustomObject configs to Hashtables
@@ -492,7 +492,7 @@ if (-not $SkipSystemConfig -and -not $TestMode) {
                     $convertedConfig[$key] = $systemConfig[$key]
                 }
             }
-            
+
             Set-SystemConfiguration -Config $convertedConfig
         } catch {
             Write-Log -Message "System configuration failed: $($_.Exception.Message)" -Level 'Error'
@@ -500,7 +500,7 @@ if (-not $SkipSystemConfig -and -not $TestMode) {
     } else {
         Write-Log -Message "No system configuration found in profile" -Level 'Info'
     }
-    
+
     Write-Host ""
 }
 
