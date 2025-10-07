@@ -14,10 +14,10 @@ Get-DatabaseStatistics
 
 **Résultat** :
 ```
-DatabaseVersion    : 2.4.0
+DatabaseVersion    : 2.5.0
 TotalApplications  : 66
 TotalCategories    : 19
-VerifiedApps       : 65
+VerifiedApps       : 66
 ```
 
 ---
@@ -275,7 +275,7 @@ try {
 ## 📚 Plus d'Informations
 
 - **Documentation complète** : [Apps/README.md](README.md)
-- **Rapport d'implémentation** : [RELEASE_NOTES_v2.4.0.md](../RELEASE_NOTES_v2.4.0.md)
+- **Rapport d'implémentation** : [CHANGELOG_v2.5.0.md](../CHANGELOG_v2.5.0.md)
 - **Script de validation** : `.\Tools\Validate-AppDatabase.ps1`
 
 ---

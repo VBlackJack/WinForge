@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "DatabaseVersion": "2.4.0",
+  "DatabaseVersion": "2.5.0",
   "LastUpdated": "2025-10-06",
   "TotalApplications": 66,
   "Applications": {

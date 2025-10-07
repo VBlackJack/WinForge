@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Win11Forge GUI Module v2.4.0
+    Win11Forge GUI Module v2.5.0
 
 .DESCRIPTION
     PowerShell graphical interface for Win11Forge deployment framework
@@ -8,8 +8,8 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.4.0
-    Requires: PowerShell 5.1+, Win11Forge v2.4.0+
+    Version: 2.5.0
+    Requires: PowerShell 5.1+, Win11Forge v2.5.0+
 #>
 
 Set-StrictMode -Version Latest
@@ -1254,7 +1254,7 @@ function Show-LogsDirectory {
 function Check-Updates {
     Show-Header -Title "Check for Updates"
 
-    Write-Host "Current Version: 2.4.0" -ForegroundColor Yellow
+    Write-Host "Current Version: 2.5.0" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "No update mechanism configured (requires Git repository)." -ForegroundColor Gray
 
@@ -1265,7 +1265,7 @@ function Check-Updates {
 function Show-About {
     Show-Header -Title "About Win11Forge"
 
-    Write-Host "Win11Forge v2.4.0" -ForegroundColor Cyan
+    Write-Host "Win11Forge v2.5.0" -ForegroundColor Cyan
     Write-Host "Windows 11 Deployment Framework with Centralized Database" -ForegroundColor White
     Write-Host ""
     Write-Host "Features:" -ForegroundColor Yellow

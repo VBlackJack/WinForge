@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Main Deployment Script v2.4.0
+    Win11Forge - Main Deployment Script v2.5.0
 
 .DESCRIPTION
     Orchestrates complete Windows 11 environment deployment with:
@@ -42,7 +42,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.4.0
+    Version: 2.5.0
     Fixed: Auto-restart in PowerShell 7 after prerequisites installation
     Fixed: PowerShell 5.1 StrictMode compatibility
     Requires: Administrator privileges, PowerShell 5.1+
