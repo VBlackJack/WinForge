@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge GUI Launcher v2.4.0
+    Win11Forge GUI Launcher v2.5.0
 
 .DESCRIPTION
     Launches the Win11Forge graphical user interface for interactive deployment management
@@ -13,8 +13,8 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.4.0
-    Requires: Administrator privileges, PowerShell 5.1+, Win11Forge v2.4.0+
+    Version: 2.5.0
+    Requires: Administrator privileges, PowerShell 5.1+, Win11Forge v2.5.0+
 #>
 
 [CmdletBinding()]
@@ -60,7 +60,7 @@ if (-not (Test-IsAdministrator)) {
 
 Write-Host ""
 Write-Host "═══════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  Win11Forge v2.4.0 - Graphical User Interface" -ForegroundColor Cyan
+Write-Host "  Win11Forge v2.5.0 - Graphical User Interface" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 

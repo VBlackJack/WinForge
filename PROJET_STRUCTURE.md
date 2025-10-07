@@ -1,4 +1,4 @@
-# 📁 Win11Forge v2.4.0 - Structure du Projet
+# 📁 Win11Forge v2.5.0 - Structure du Projet
 
 ## 🎯 Scripts Principaux (Racine)
 
@@ -48,7 +48,7 @@ Win11Forge/
 │   └── Database/
 │       └── applications.json          # Base de données centralisée (66 apps)
 │
-├── 📋 Profiles/                       # Profils de déploiement v2.4.0
+├── 📋 Profiles/                       # Profils de déploiement v2.5.0
 │   ├── Base.json                      # 30 apps essentielles
 │   ├── Office.json                    # Base + 5 apps bureautique
 │   ├── Gaming.json                    # Office + 4 apps gaming
@@ -75,7 +75,7 @@ Win11Forge/
 │   └── Validate-Framework.ps1        # Validation complète du framework
 │
 ├── 🗂️ Archive/                        # Fichiers archivés (générés à l'exécution)
-│   └── Tests-v2.4.0/                 # Scripts de test archivés
+│   └── Tests-v2.5.0/                 # Scripts de test archivés
 │
 ├── 💾 Backups/                        # Sauvegardes système
 │   └── StartMenuLayouts/             # Layouts Start Menu Windows 11
@@ -133,7 +133,7 @@ Start-Win11ForgeGUI-Admin.bat → Option 7
 
 **Location:** `Apps/Database/applications.json`
 
-**Format v2.4.0:**
+**Format v2.5.0:**
 - **66 applications** référencées en base de données (64 dans les profils actifs)
 - Sources multiples : Winget, Chocolatey, Microsoft Store, DirectUrl
 - Métadonnées complètes : détection, priorité, tags, vérification
@@ -153,7 +153,7 @@ Gaming (+ 4 apps = 39 total)
 Personnel (+ 25 apps = 64 total)
 ```
 
-**Format des profils v2.4.0:**
+**Format des profils v2.5.0:**
 ```json
 {
   "Name": "Gaming",
@@ -180,8 +180,13 @@ Personnel (+ 25 apps = 64 total)
 .\Cleanup-Framework.ps1
 ```
 
-## 🆕 Nouveautés v2.4.0
+## 🆕 Nouveautés v2.5.0
 
+✅ Tests Pester (145+ tests, ~50% coverage)
+✅ PSScriptAnalyzer (validation statique 50+ règles)
+✅ Retry logic avec exponential backoff
+✅ Checksum SHA256 pour téléchargements
+✅ Documentation qualité (QUALITY_ASSURANCE.md)
 ✅ Base de données centralisée (66 applications)
 ✅ Interface GUI PowerShell interactive
 ✅ ProfileCreator.html avec 66 apps dynamiques
@@ -197,7 +202,7 @@ Personnel (+ 25 apps = 64 total)
 - **PowerShell 7+** : Recommandé pour le mode parallèle (installation auto)
 - **Admin requis** : Tous les lanceurs s'auto-élèvent
 - **Logs** : Consultables dans `Logs/deployment_*.log`
-- **Profils** : Stockés dans `Profiles/` au format JSON v2.4.0
+- **Profils** : Stockés dans `Profiles/` au format JSON v2.5.0
 - **Compatible file://** : ProfileCreator.html fonctionne sans serveur web
 
 ## 🔗 Liens Utiles

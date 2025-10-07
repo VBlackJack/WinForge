@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-    Clean up obsolete files from Win11Forge v2.4.0
+    Clean up obsolete files from Win11Forge v2.5.0
 
 .DESCRIPTION
     Archives obsolete files created during migration and development to keep the project clean
 
-    NOTE: As of v2.4.0 post-cleanup (Oct 6, 2025), all obsolete files have been removed.
+    NOTE: As of v2.5.0 post-cleanup (Oct 6, 2025), all obsolete files have been removed.
     This script is maintained for future maintenance needs but currently has no targets.
 
 .PARAMETER DryRun
@@ -18,7 +18,7 @@
 .NOTES
     Author: Julien Bombled
     Version: 2.0.0
-    Status: No active targets (all cleaned up in v2.4.0)
+    Status: No active targets (all cleaned up in v2.5.0)
     Safe to run - creates Archive folder with timestamp if needed
 #>
 
@@ -41,7 +41,7 @@ $ArchiveRoot = Join-Path $ScriptRoot "Archive"
 $ArchiveFolder = Join-Path $ArchiveRoot "Cleanup-$Timestamp"
 
 # Files to archive (relative to project root)
-# NOTE: All files below were cleaned up in v2.4.0 (Oct 6, 2025)
+# NOTE: All files below were cleaned up in v2.5.0 (Oct 6, 2025)
 # This list is maintained for reference and future cleanup needs
 $FilesToArchive = @(
     # Migration files (cleaned Oct 6, 2025)
@@ -54,7 +54,7 @@ $FilesToArchive = @(
 )
 
 # Files to move to specific locations
-# NOTE: Validate-Framework.ps1 was moved to Tools/ in v2.4.0
+# NOTE: Validate-Framework.ps1 was moved to Tools/ in v2.5.0
 $FilesToMove = @{
     # 'Validate-Framework.ps1' = 'Tools/Validate-Framework.ps1'  # Already moved
 

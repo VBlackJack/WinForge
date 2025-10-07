@@ -280,7 +280,7 @@ function Show-Header {
         Display GUI header
     #>
     param(
-        [string]$Title = "Win11Forge v2.4.0"
+        [string]$Title = "Win11Forge v2.5.0"
     )
 
     Clear-Host
@@ -376,7 +376,7 @@ function Show-MainMenu {
     #>
 
     while ($true) {
-        Show-Header -Title "Win11Forge v2.4.0 - Main Menu"
+        Show-Header -Title "Win11Forge v2.5.0 - Main Menu"
 
         Write-Host "  1. Deploy Profile" -ForegroundColor White
         Write-Host "  2. Browse Applications Database ($($script:AppDatabase.Count) apps)" -ForegroundColor White
@@ -959,7 +959,7 @@ function Show-ProfileCreator {
     $newProfile = [PSCustomObject]@{
         Name = $profileName
         Description = $profileDesc
-        Version = "2.4.0"
+        Version = "2.5.0"
         Inherits = $inherits
         Applications = $selectedApps
         SystemConfig = @{
