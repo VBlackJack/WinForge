@@ -120,7 +120,15 @@ foreach ($file in $filesToAnalyze) {
     Write-Host "Analyzing: $fileName" -ForegroundColor Yellow
 
     try {
-        $issues = Invoke-ScriptAnalyzer -Path $file -Severity $Severity
+        $settingsPath = Join-Path $RootPath 'PSScriptAnalyzerSettings.psd1'
+        $invokeParams = @{
+            Path = $file
+            Severity = $Severity
+        }
+        if (Test-Path $settingsPath) {
+            $invokeParams['Settings'] = $settingsPath
+        }
+        $issues = Invoke-ScriptAnalyzer @invokeParams
 
         if ($issues) {
             $allIssues += $issues
@@ -129,6 +137,11 @@ foreach ($file in $filesToAnalyze) {
             $errors = @($issues | Where-Object { $_.Severity -eq 'Error' })
             $warnings = @($issues | Where-Object { $_.Severity -eq 'Warning' })
             $information = @($issues | Where-Object { $_.Severity -eq 'Information' })
+
+            # Ensure arrays are properly initialized
+            if ($null -eq $errors) { $errors = @() }
+            if ($null -eq $warnings) { $warnings = @() }
+            if ($null -eq $information) { $information = @() }
 
             Write-Host "  Errors      : $($errors.Count)" -ForegroundColor $(if ($errors.Count -gt 0) { 'Red' } else { 'Green' })
             Write-Host "  Warnings    : $($warnings.Count)" -ForegroundColor $(if ($warnings.Count -gt 0) { 'Yellow' } else { 'Green' })
@@ -157,6 +170,15 @@ foreach ($file in $filesToAnalyze) {
     } catch {
         Write-Host "  ❌ Analysis failed: $($_.Exception.Message)" -ForegroundColor Red
         Write-Host ""
+
+        # Add to file results as failure
+        $fileResults += [PSCustomObject]@{
+            File = $fileName
+            Errors = 0
+            Warnings = 0
+            Information = 0
+            Total = 0
+        }
     }
 }
 
@@ -166,9 +188,9 @@ Write-Host "  Analysis Summary" -ForegroundColor Cyan
 Write-Host "══════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 
-$totalErrors = ($allIssues | Where-Object { $_.Severity -eq 'Error' }).Count
-$totalWarnings = ($allIssues | Where-Object { $_.Severity -eq 'Warning' }).Count
-$totalInformation = ($allIssues | Where-Object { $_.Severity -eq 'Information' }).Count
+$totalErrors = @($allIssues | Where-Object { $_.Severity -eq 'Error' }).Count
+$totalWarnings = @($allIssues | Where-Object { $_.Severity -eq 'Warning' }).Count
+$totalInformation = @($allIssues | Where-Object { $_.Severity -eq 'Information' }).Count
 
 Write-Host "Files Analyzed   : $($filesToAnalyze.Count)" -ForegroundColor White
 Write-Host "Total Issues     : $($allIssues.Count)" -ForegroundColor White

@@ -134,7 +134,16 @@ if (-not (Test-IsAdministrator)) {
 
 # === MODULE LOADING ===
 
-Write-Log -Message "=== Win11Forge Framework v2.5.0 ===" -Level 'Info'
+# Load framework version dynamically
+$frameworkVersion = try {
+    $versionPath = Join-Path $PSScriptRoot 'Config\version.json'
+    if (Test-Path $versionPath) {
+        $versionData = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
+        $versionData.Version
+    } else { '2.5.0' }
+} catch { '2.5.0' }
+
+Write-Log -Message "=== Win11Forge Framework v$frameworkVersion ===" -Level 'Info'
 Write-Log -Message "PowerShell Version: $($PSVersionTable.PSVersion)" -Level 'Info'
 Write-Log -Message "Starting deployment process..." -Level 'Info'
 

@@ -1,5 +1,7 @@
 # Win11Forge Framework - Changelog
 
+Note: la source de vérité de la version du framework est `Config/version.json`. Les lanceurs et la GUI lisent dynamiquement cette valeur.
+
 ## [2.4.0] - 2025-10-06
 
 ### 🎉 Compatibility & Performance Release

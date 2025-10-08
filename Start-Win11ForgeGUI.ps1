@@ -60,7 +60,25 @@ if (-not (Test-IsAdministrator)) {
 
 Write-Host ""
 Write-Host "═══════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  Win11Forge v2.5.0 - Graphical User Interface" -ForegroundColor Cyan
+try {
+    $versionFile = Join-Path $script:ScriptRoot 'Config\version.json'
+    if (Test-Path $versionFile) {
+        $FrameworkVersion = (Get-Content -Path $versionFile -Raw -Encoding UTF8 | ConvertFrom-Json).Version
+    } else {
+        # Fallback: try to read version.json directly if path is incorrect
+        $FrameworkVersion = try {
+            $versionData = Get-Content -Path (Join-Path $script:ScriptRoot 'Config\version.json') -Raw | ConvertFrom-Json
+            $versionData.Version
+        } catch { 'Unknown' }
+    }
+} catch {
+    # Final fallback: try to read version.json one more time
+    $FrameworkVersion = try {
+        $versionData = Get-Content -Path (Join-Path $script:ScriptRoot 'Config\version.json') -Raw | ConvertFrom-Json
+        $versionData.Version
+    } catch { 'Unknown' }
+}
+Write-Host ("  Win11Forge v{0} - Graphical User Interface" -f $FrameworkVersion) -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 

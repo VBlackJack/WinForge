@@ -3,6 +3,8 @@
 **Release Date**: 2025-10-06
 **Focus**: Reliability, Quality Assurance & Code Analysis
 
+Note: La version affichée dans les outils est lue depuis `Config/version.json` (source unique de vérité).
+
 ---
 
 ## 🎯 Overview

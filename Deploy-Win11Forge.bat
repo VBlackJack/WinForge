@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================================
-REM Win11Forge Framework Launcher v2.4.0
+REM Win11Forge Framework Launcher v2.5.0
 REM Auto-installs PowerShell 7 if missing, then launches deployment
 REM ============================================================================
 
@@ -20,16 +20,23 @@ if %errorLevel% equ 0 (
 
 :ADMIN_OK
 
-echo.
-echo ============================================================================
-echo                         Win11Forge Framework v2.4.0
-echo             Automated Windows 11 Environment Deployment
-echo ============================================================================
-echo.
+ 
+REM (Banner moved below after version is resolved)
 
 REM Get script directory
 set "SCRIPT_DIR=%~dp0"
 set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
+
+REM Resolve framework version dynamically (fallback to 2.5.0)
+set "FRAMEWORK_VERSION=2.5.0"
+for /f "usebackq delims=" %%v in (`powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%\Tools\Get-Win11ForgeVersion.ps1"`) do set "FRAMEWORK_VERSION=%%v"
+
+echo.
+echo ============================================================================
+echo                         Win11Forge Framework v%FRAMEWORK_VERSION%
+echo             Automated Windows 11 Environment Deployment
+echo ============================================================================
+echo.
 
 REM Define paths
 set "MAIN_SCRIPT=%SCRIPT_DIR%\Deploy-Win11Environment.ps1"

@@ -208,5 +208,13 @@ Personnel (+ 25 apps = 64 total)
 ## 🔗 Liens Utiles
 
 - GUI README : `GUI_README.md`
+
+## Encodage
+
+Les fichiers de documentation sont encodés en UTF-8. Si des caractères s’affichent mal dans la console Windows, utilisez l’un des correctifs suivants avant de lire/afficher:
+
+- PowerShell: `chcp 65001`; `$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new()`
+- CMD: `chcp 65001`
+- Utiliser Windows Terminal ou un éditeur qui force l’UTF-8.
 - Validation base de données : `.\Tools\Validate-AppDatabase.ps1`
 - Profils examples : `Profiles/` (Base, Office, Gaming, Personnel)

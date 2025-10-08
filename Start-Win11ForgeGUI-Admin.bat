@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================================
-REM Win11Forge GUI Launcher v2.3 (Administrator) - FIXED
+REM Win11Forge GUI Launcher v2.5.0 (Administrator)
 REM Auto-installs PowerShell 7 if missing, with fallback to PowerShell 5.1
 REM ============================================================================
 
@@ -20,16 +20,22 @@ if %errorLevel% equ 0 (
 
 :ADMIN_OK
 
-echo.
-echo ============================================================================
-echo                         Win11Forge GUI Launcher v2.3
-echo ============================================================================
-echo.
+REM (Banner moved below after version is resolved)
 
 REM Get script directory
 set "SCRIPT_DIR=%~dp0"
 set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
 set "GUI_SCRIPT=%SCRIPT_DIR%\Start-Win11ForgeGUI.ps1"
+
+REM Resolve framework version dynamically (fallback to 2.5.0)
+set "FRAMEWORK_VERSION=2.5.0"
+for /f "usebackq delims=" %%v in (`powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%\Tools\Get-Win11ForgeVersion.ps1"`) do set "FRAMEWORK_VERSION=%%v"
+
+echo.
+echo ============================================================================
+echo                         Win11Forge GUI Launcher v%FRAMEWORK_VERSION%
+echo ============================================================================
+echo.
 
 REM Check if GUI script exists
 if not exist "%GUI_SCRIPT%" (
@@ -63,71 +69,7 @@ set "PS_EXECUTABLE=PowerShell.exe"
 set "PS_VERSION=5.1"
 goto :POWERSHELL_READY
 
-REM === LEGACY INSTALLATION CODE (DISABLED) ===
-REM PowerShell 7 installation can take several minutes
-REM Uncomment below to enable automatic installation
-REM
-REM     REM Try Winget first
-REM     echo [INFO] Attempting installation via Winget...
-REM     winget install --id Microsoft.PowerShell --silent --accept-package-agreements --accept-source-agreements
-REM     if %errorLevel% equ 0 (
-REM         echo [SUCCESS] PowerShell 7 installed via Winget
-REM         goto :REFRESH_ENV
-REM     )
-REM
-REM     REM Fallback to direct download
-REM     echo [WARNING] Winget installation failed, trying direct download...
-    set "PS7_URL=https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/PowerShell-7.4.6-win-x64.msi"
-    set "PS7_INSTALLER=%TEMP%\PowerShell-7.4.6-win-x64.msi"
-
-    echo [INFO] Downloading PowerShell 7.4.6...
-    PowerShell.exe -NoProfile -Command ^
-        "try { Invoke-WebRequest -Uri '%PS7_URL%' -OutFile '%PS7_INSTALLER%' -UseBasicParsing -ErrorAction Stop; exit 0 } catch { exit 1 }"
-
-    if %errorLevel% neq 0 (
-        echo [ERROR] Download failed
-        echo [INFO] Falling back to PowerShell 5.1
-        set "PS_EXECUTABLE=PowerShell.exe"
-        set "PS_VERSION=5.1"
-        goto :POWERSHELL_READY
-    )
-
-    echo [INFO] Installing PowerShell 7...
-    msiexec.exe /i "%PS7_INSTALLER%" /qn /norestart ADD_PATH=1 ENABLE_MU=1
-    if %errorLevel% neq 0 (
-        echo [ERROR] Installation failed
-        del "%PS7_INSTALLER%" 2>nul
-        echo [INFO] Falling back to PowerShell 5.1
-        set "PS_EXECUTABLE=PowerShell.exe"
-        set "PS_VERSION=5.1"
-        goto :POWERSHELL_READY
-    )
-
-    del "%PS7_INSTALLER%" 2>nul
-    echo [SUCCESS] PowerShell 7 installed successfully
-
-    :REFRESH_ENV
-    echo [INFO] Refreshing environment variables...
-
-    REM Refresh PATH
-    for /f "tokens=2*" %%a in ('reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path 2^>nul') do set "SYSTEM_PATH=%%b"
-    for /f "tokens=2*" %%a in ('reg query "HKCU\Environment" /v Path 2^>nul') do set "USER_PATH=%%b"
-    set "PATH=%SYSTEM_PATH%;%USER_PATH%"
-
-    REM Verify
-    pwsh.exe -NoProfile -Command "exit 0" >nul 2>&1
-    if %errorLevel% equ 0 (
-        set "PS_EXECUTABLE=pwsh.exe"
-        set "PS_VERSION=7+"
-        set "PS7_AVAILABLE=YES"
-        echo [SUCCESS] PowerShell 7+ is now available
-    ) else (
-        echo [WARNING] PowerShell 7 installed but not in PATH yet
-        echo [INFO] You may need to restart your terminal
-        echo [INFO] Falling back to PowerShell 5.1 for now
-        set "PS_EXECUTABLE=PowerShell.exe"
-        set "PS_VERSION=5.1"
-    )
+REM (Legacy PS7 auto-install block removed for clarity)
 
 :POWERSHELL_READY
 echo [INFO] Using: %PS_EXECUTABLE% (version %PS_VERSION%)

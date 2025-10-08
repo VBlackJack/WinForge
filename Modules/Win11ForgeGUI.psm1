@@ -23,6 +23,15 @@ $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:DatabaseLoaded = $false
 $script:AppDatabase = $null
 
+# Load framework version dynamically
+$script:FrameworkVersion = try {
+    $versionPath = Join-Path $script:RepositoryRoot 'Config\version.json'
+    if (Test-Path $versionPath) {
+        $versionData = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
+        $versionData.Version
+    } else { '2.5.0' }
+} catch { '2.5.0' }
+
 # ============================================================================
 # INITIALIZATION
 # ============================================================================
@@ -280,7 +289,7 @@ function Show-Header {
         Display GUI header
     #>
     param(
-        [string]$Title = "Win11Forge v2.5.0"
+        [string]$Title = "Win11Forge v$script:FrameworkVersion"
     )
 
     Clear-Host
@@ -296,9 +305,7 @@ function Show-Footer {
     .SYNOPSIS
         Display GUI footer
     #>
-    param(
-        [string]$Message = "Enter your choice"
-    )
+    param()
 
     Write-Host ""
     Write-Host ("-" * 70) -ForegroundColor DarkGray
@@ -376,7 +383,7 @@ function Show-MainMenu {
     #>
 
     while ($true) {
-        Show-Header -Title "Win11Forge v2.5.0 - Main Menu"
+        Show-Header -Title "Win11Forge v$script:FrameworkVersion - Main Menu"
 
         Write-Host "  1. Deploy Profile" -ForegroundColor White
         Write-Host "  2. Browse Applications Database ($($script:AppDatabase.Count) apps)" -ForegroundColor White
@@ -959,7 +966,7 @@ function Show-ProfileCreator {
     $newProfile = [PSCustomObject]@{
         Name = $profileName
         Description = $profileDesc
-        Version = "2.5.0"
+        Version = $script:FrameworkVersion
         Inherits = $inherits
         Applications = $selectedApps
         SystemConfig = @{
@@ -1254,7 +1261,7 @@ function Show-LogsDirectory {
 function Test-Updates {
     Show-Header -Title "Check for Updates"
 
-    Write-Host "Current Version: 2.5.0" -ForegroundColor Yellow
+    Write-Host "Current Version: $script:FrameworkVersion" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "No update mechanism configured (requires Git repository)." -ForegroundColor Gray
 
@@ -1265,7 +1272,7 @@ function Test-Updates {
 function Show-About {
     Show-Header -Title "About Win11Forge"
 
-    Write-Host "Win11Forge v2.5.0" -ForegroundColor Cyan
+    Write-Host "Win11Forge v$script:FrameworkVersion" -ForegroundColor Cyan
     Write-Host "Windows 11 Deployment Framework with Centralized Database" -ForegroundColor White
     Write-Host ""
     Write-Host "Features:" -ForegroundColor Yellow

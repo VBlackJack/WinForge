@@ -196,7 +196,7 @@ function Invoke-FileDownloadWithProgress {
 
         # Progress reporting (optional, can be enhanced)
         $progressHandler = {
-            param($sender, $e)
+            param($eventSender, $e)
             if ($e.TotalBytesToReceive -gt 0) {
                 $percent = [int](($e.BytesReceived / $e.TotalBytesToReceive) * 100)
                 if ($percent % 10 -eq 0) {  # Report every 10%

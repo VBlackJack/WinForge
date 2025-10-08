@@ -35,7 +35,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.4.0
+    Version: Dynamic (loaded from Config/version.json)
     Use with caution - some operations are irreversible
 #>
 
@@ -101,9 +101,13 @@ $script:Stats = @{
     SpaceFreed = 0
 }
 
+# Load version dynamically
+$versionInfo = & "$PSScriptRoot\Tools\Get-Win11ForgeVersion.ps1"
+$version = $versionInfo.Version
+
 Write-Host ""
 Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║      Win11Forge Framework Cleanup & Maintenance v2.5.0     ║" -ForegroundColor Cyan
+Write-Host "║      Win11Forge Framework Cleanup & Maintenance v$version     ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 

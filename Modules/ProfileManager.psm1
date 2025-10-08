@@ -138,37 +138,52 @@ function Import-ProfileJson {
         $jsonContent = Get-Content -Path $Path -Raw -ErrorAction Stop
         $jsonObject = $jsonContent | ConvertFrom-Json -ErrorAction Stop
 
-        $profile = [DeploymentProfile]::new()
-        $profile.Name = $jsonObject.Name
-        $profile.Description = $jsonObject.Description
-        $profile.Version = $jsonObject.Version
-        $profile.ProfilePath = $Path
+        $deploymentProfile = [DeploymentProfile]::new()
+        $deploymentProfile.Name = $jsonObject.Name
+        $deploymentProfile.Description = $jsonObject.Description
+
+        # Use profile version if specified, otherwise use framework version
+        if ($jsonObject.Version) {
+            $deploymentProfile.Version = $jsonObject.Version
+        } else {
+            # Load framework version dynamically
+            $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+            $versionPath = Join-Path $repoRoot 'Config\version.json'
+            if (Test-Path $versionPath) {
+                $versionData = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
+                $deploymentProfile.Version = $versionData.Version
+            } else {
+                $deploymentProfile.Version = 'Unknown'
+            }
+        }
+
+        $deploymentProfile.ProfilePath = $Path
 
         # Handle inheritance
         if ($jsonObject.Inherits) {
             if ($jsonObject.Inherits -is [array]) {
-                $profile.Inherits = $jsonObject.Inherits
+                $deploymentProfile.Inherits = $jsonObject.Inherits
             } else {
-                $profile.Inherits = @($jsonObject.Inherits)
+                $deploymentProfile.Inherits = @($jsonObject.Inherits)
             }
         }
 
         # Load applications
         if ($jsonObject.Applications) {
-            $profile.Applications = $jsonObject.Applications
+            $deploymentProfile.Applications = $jsonObject.Applications
         }
 
         # Load system configuration
         if ($jsonObject.SystemConfig) {
-            $profile.SystemConfig = @{}
+            $deploymentProfile.SystemConfig = @{}
             $jsonObject.SystemConfig.PSObject.Properties | ForEach-Object {
-                $profile.SystemConfig[$_.Name] = $_.Value
+                $deploymentProfile.SystemConfig[$_.Name] = $_.Value
             }
         }
 
-        Write-Status -Message "Profile loaded: $($profile.Name) v$($profile.Version)" -Level 'Success'
+        Write-Status -Message "Profile loaded: $($deploymentProfile.Name) v$($deploymentProfile.Version)" -Level 'Success'
 
-        return $profile
+        return $deploymentProfile
 
     } catch {
         Write-Status -Message "Failed to load profile: $($_.Exception.Message)" -Level 'Error'
@@ -583,21 +598,21 @@ function Test-ProfileValid {
     }
 
     try {
-        $profile = Import-ProfileJson -Path $ProfilePath
+        $deploymentProfile = Import-ProfileJson -Path $ProfilePath
 
         # Check required fields
-        if ([string]::IsNullOrWhiteSpace($profile.Name)) {
+        if ([string]::IsNullOrWhiteSpace($deploymentProfile.Name)) {
             $result.Valid = $false
             $result.Errors += "Profile name is missing"
         }
 
-        if ([string]::IsNullOrWhiteSpace($profile.Version)) {
+        if ([string]::IsNullOrWhiteSpace($deploymentProfile.Version)) {
             $result.Warnings += "Profile version is missing"
         }
 
         # Validate applications
         $appNames = [System.Collections.Generic.HashSet[string]]::new()
-        foreach ($app in $profile.Applications) {
+        foreach ($app in $deploymentProfile.Applications) {
             # v2.3 Database Mode: Applications are simple strings (AppId)
             if ($app -is [string]) {
                 if ([string]::IsNullOrWhiteSpace($app)) {
@@ -742,3 +757,4 @@ Export-ModuleMember -Function @(
     'Get-RequiredApplications',
     'ConvertTo-Hashtable'
 )
+

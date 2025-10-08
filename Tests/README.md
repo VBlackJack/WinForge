@@ -1,5 +1,9 @@
 # Win11Forge Tests - v2.5.0
 
+## Encodage
+
+Les fichiers sont en UTF-8. Si vous voyez des anomalies d’affichage (accents/émoticônes) dans la console Windows, exécutez `chcp 65001` et/ou utilisez Windows Terminal. En PowerShell, vous pouvez aussi définir `$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new()`.
+
 ## 📋 Vue d'ensemble
 
 Suite de tests Pester pour Win11Forge Framework v2.5.0, visant une couverture minimale de 50%.

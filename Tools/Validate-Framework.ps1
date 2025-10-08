@@ -18,7 +18,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.0.2
+    Version: 2.1.0
     Run this after initial framework setup
 #>
 
@@ -90,7 +90,9 @@ function Test-DirectoryStructure {
         'Core',
         'Modules',
         'Profiles',
-        'Logs'
+        'Logs',
+        'Config',
+        'Tools'
     )
 
     foreach ($dir in $requiredDirs) {
@@ -125,6 +127,27 @@ function Test-RequiredFiles {
             $lines = (Get-Content -Path $path).Count
             Write-Host "      Size: $size bytes, Lines: $lines" -ForegroundColor Gray
         }
+    }
+}
+
+function Test-VersionConsistency {
+    Write-ValidationSection "Version Consistency"
+
+    $scriptPath = Join-Path -Path $script:ScriptRoot -ChildPath 'Tools\\Verify-VersionConsistency.ps1'
+    if (-not (Test-Path $scriptPath)) {
+        Write-ValidationResult -Test 'Verify-VersionConsistency.ps1 present' -Passed $false -Message 'Missing tools script'
+        return
+    }
+
+    try {
+        $p = Start-Process pwsh -ArgumentList @('-NoProfile','-File', $scriptPath) -PassThru -WindowStyle Hidden -Wait
+        if ($p.ExitCode -eq 0) {
+            Write-ValidationResult -Test 'All version strings match Config/version.json' -Passed $true
+        } else {
+            Write-ValidationResult -Test 'Version strings mismatch' -Passed $false -Message 'Run Tools/Verify-VersionConsistency.ps1 for details'
+        }
+    } catch {
+        Write-ValidationResult -Test 'Version check execution' -Passed $false -Message $_.Exception.Message
     }
 }
 

@@ -4,6 +4,8 @@
 **Type:** Compatibility & Performance Release
 **Commit:** 19f9e46
 
+Note: À partir de v2.5.0, la version affichée par les lanceurs/GUI est lue depuis `Config/version.json`.
+
 ---
 
 ## 📋 Table des Matières

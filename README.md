@@ -9,6 +9,14 @@
 [![Tests](https://img.shields.io/badge/tests-145+-green.svg)](Tests/README.md)
 [![Coverage](https://img.shields.io/badge/coverage-~50%25-brightgreen.svg)](Tests/README.md)
 
+## Encodage et affichage
+
+Les fichiers de documentation sont encodés en UTF-8. Si des caractères accentués/émoticônes s’affichent mal dans la console Windows, utilisez l’un des correctifs suivants avant de lire/afficher:
+
+- PowerShell: `chcp 65001`; `$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new()`
+- CMD: `chcp 65001`
+- Utiliser Windows Terminal ou un éditeur qui force l’UTF-8.
+
 ## 📋 Vue d'ensemble
 
 Win11Forge est un framework PowerShell conçu pour automatiser entièrement le déploiement d'environnements Windows 11 après une installation fraîche. Il gère intelligemment l'installation de prérequis, d'applications et la configuration système selon des profils JSON personnalisables.

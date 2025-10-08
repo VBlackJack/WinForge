@@ -338,10 +338,7 @@ function Get-ApplicationTags {
 #>
 function Test-ApplicationSources {
     [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $false)]
-        [switch]$UpdateDatabase
-    )
+    param()
 
     $database = Get-ApplicationDatabase
     if ($null -eq $database) {
@@ -484,3 +481,4 @@ Export-ModuleMember -Function @(
     'Reset-DatabaseCache',
     'Get-DatabaseStatistics'
 )
+

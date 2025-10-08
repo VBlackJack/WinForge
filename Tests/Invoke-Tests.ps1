@@ -36,32 +36,37 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Remove any pre-loaded Pester modules to avoid version conflicts
+Get-Module Pester | Remove-Module -Force -ErrorAction SilentlyContinue
+
+# Ensure user modules path is in PSModulePath
+$userModulesPath = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'PowerShell\Modules'
+if ($userModulesPath -and (Test-Path $userModulesPath) -and $env:PSModulePath -notlike "*$userModulesPath*") {
+    $env:PSModulePath = "$userModulesPath;$env:PSModulePath"
+}
+
 # === PREREQUISITES CHECK ===
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host "  Win11Forge v2.5.0 - Test Runner" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 
-# Check Pester installation
-$pesterVersion = Get-Module -Name Pester -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1
+# Check Pester installation and import v5+
+$pesterModules = @(Get-Module -Name Pester -ListAvailable -ErrorAction SilentlyContinue | Sort-Object Version -Descending)
+$pesterV5 = $pesterModules | Where-Object { $_.Version.Major -ge 5 } | Select-Object -First 1
 
-if (-not $pesterVersion) {
-    Write-Host "❌ Pester module not found!" -ForegroundColor Red
+if (-not $pesterV5) {
+    Write-Host "❌ Pester v5+ not found!" -ForegroundColor Red
     Write-Host ""
     Write-Host "Install Pester v5+ with:" -ForegroundColor Yellow
     Write-Host "  Install-Module -Name Pester -Force -SkipPublisherCheck" -ForegroundColor Yellow
     exit 1
 }
 
-if ($pesterVersion.Version.Major -lt 5) {
-    Write-Host "❌ Pester v5+ required (found v$($pesterVersion.Version))" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Update Pester with:" -ForegroundColor Yellow
-    Write-Host "  Install-Module -Name Pester -Force -SkipPublisherCheck" -ForegroundColor Yellow
-    exit 1
-}
+# Import Pester v5+ explicitly
+Import-Module Pester -RequiredVersion $pesterV5.Version -Force -ErrorAction Stop
 
-Write-Host "✅ Pester v$($pesterVersion.Version) found" -ForegroundColor Green
+Write-Host "✅ Pester v$($pesterV5.Version) loaded" -ForegroundColor Green
 Write-Host ""
 
 # === CONFIGURATION ===

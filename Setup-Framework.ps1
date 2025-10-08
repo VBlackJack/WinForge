@@ -83,9 +83,13 @@ function Test-AdminPrivileges {
 
 # === SETUP BANNER ===
 
+# Load version dynamically
+$versionInfo = & "$PSScriptRoot\Tools\Get-Win11ForgeVersion.ps1"
+$version = $versionInfo.Version
+
 Write-Host ""
 Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║        Win11Forge Framework Setup v2.4.0                    ║" -ForegroundColor Cyan
+Write-Host "║        Win11Forge Framework Setup v$version                    ║" -ForegroundColor Cyan
 Write-Host "║        Automated Installation & Configuration               ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
