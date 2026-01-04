@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - System Configuration Version: 2.6.0 (FIXED)
+    Win11Forge - System Configuration Version: 3.0.0 (FIXED)
 
 .DESCRIPTION
     Applies system configuration from profile JSON:
@@ -13,7 +13,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.6.0
+    Version: 3.0.0
     Fixed: DNS array handling bug
     Fixed: Taskbar error handling
     Requires administrator privileges

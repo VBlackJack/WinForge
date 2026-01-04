@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Core Module v2.6.0
+    Win11Forge - Core Module v3.0.0
 
 .DESCRIPTION
     Provides core functionality for the Win11Forge framework:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.6.0
+    Version: 3.0.0
     This module must be loaded before any other framework modules
 #>
 
@@ -56,7 +56,7 @@ function Initialize-Logging {
     # Initialize log file with header
     $header = @"
 ================================================================================
-Win11Forge Framework v2.6.0 - Deployment Log
+Win11Forge Framework v3.0.0 - Deployment Log
 Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
 Computer: $env:COMPUTERNAME
 User: $env:USERNAME

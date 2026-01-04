@@ -1,7 +1,7 @@
 # ApplicationDatabase.psm1
 # Module for interacting with the centralized application database
 # Author: Julien Bombled
-# Version: 2.6.0
+# Version: 3.0.0
 # Last Updated: 2025-10-06
 
 $Script:DatabasePath = Join-Path $PSScriptRoot "..\Apps\Database\applications.json"

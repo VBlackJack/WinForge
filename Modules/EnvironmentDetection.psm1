@@ -8,7 +8,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.6.0
+    Version: 3.0.0
     Supports: Windows Sandbox, VMware, Hyper-V, Physical machines
 #>
 

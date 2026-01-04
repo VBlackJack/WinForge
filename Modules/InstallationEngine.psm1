@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Engine Module v2.6.0 (Parallel Reliability Enhanced)
+    Win11Forge - Installation Engine Module v3.0.0 (Parallel Reliability Enhanced)
 
 .DESCRIPTION
     Core installation engine with multi-source support and parallel execution:
@@ -14,9 +14,9 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.6.0
+    Version: 3.0.0
 
-    Changelog v2.6.0 (Parallel Reliability Update):
+    Changelog v3.0.0 (Parallel Reliability Update):
     - RELIABILITY: Added retry logic to parallel Winget (3 attempts with exponential backoff)
     - RELIABILITY: Added retry logic to parallel Chocolatey (3 attempts with exponential backoff)
     - SECURITY: Added SHA256 checksum validation for parallel DirectUrl downloads
@@ -25,14 +25,14 @@
     - REFACTORING: Reduced Install-Application from 189 to ~70 lines
     - QUALITY: 458 Pester tests passing (100% pass rate)
 
-    Changelog v2.6.0 (Reliability & Quality Update):
+    Changelog v3.0.0 (Reliability & Quality Update):
     - RELIABILITY: Added retry logic to Winget (3 attempts with exponential backoff)
     - RELIABILITY: Added retry logic to Chocolatey (3 attempts with exponential backoff)
     - SECURITY: Added SHA256 checksum validation for DirectUrl downloads
     - SECURITY: Invalid checksums trigger file deletion and download failure
     - QUALITY: Added comprehensive Pester test suite (145+ tests, ~50% coverage)
     - QUALITY: Added PSScriptAnalyzer integration with custom ruleset
-    - MAINTAINABILITY: Identified long functions for v2.6.0 refactoring
+    - MAINTAINABILITY: Identified long functions for v3.0.0 refactoring
     - USER AGENT: Updated to Win11Forge/2.6.0
 
     Changelog v2.4.0 (Security & Performance Update):
@@ -1699,7 +1699,7 @@ function Install-Application {
 
 # === PARALLEL INSTALLATION (PowerShell 7+) ===
 # Note: This function contains inline logic that duplicates sequential helpers.
-# Planned for v2.6.0: Further refactoring to use shared helpers via function export.
+# Planned for v3.0.0: Further refactoring to use shared helpers via function export.
 # Current implementation works correctly but has higher maintenance overhead.
 
 function Install-ApplicationsParallel {
