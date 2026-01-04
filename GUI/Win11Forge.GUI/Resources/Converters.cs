@@ -215,3 +215,40 @@ public class ZeroToVisibilityConverter : IValueConverter
         throw new NotSupportedException();
     }
 }
+
+/// <summary>
+/// Converts boolean (IsInstalled) to Material Design icon kind.
+/// True = CheckCircle, False = AlertCircle.
+/// </summary>
+public class BoolToInstalledIconConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value is true ? PackIconKind.CheckCircle : PackIconKind.AlertCircle;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean (IsInstalled) to color brush.
+/// True = Green, False = Orange.
+/// </summary>
+public class BoolToInstalledColorConverter : IValueConverter
+{
+    private static readonly SolidColorBrush InstalledBrush = new(Color.FromRgb(76, 175, 80)); // Green
+    private static readonly SolidColorBrush NotInstalledBrush = new(Color.FromRgb(255, 152, 0)); // Orange
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value is true ? InstalledBrush : NotInstalledBrush;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}

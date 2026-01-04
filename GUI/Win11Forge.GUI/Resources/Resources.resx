@@ -512,4 +512,53 @@
     <value>Error</value>
     <comment>Generic error fallback text</comment>
   </data>
+  <!-- Prerequisites -->
+  <data name="Prerequisites_Title" xml:space="preserve">
+    <value>Prerequisites</value>
+    <comment>Prerequisites section title</comment>
+  </data>
+  <data name="Prerequisites_AllInstalled" xml:space="preserve">
+    <value>All prerequisites are installed</value>
+    <comment>All prerequisites installed message</comment>
+  </data>
+  <data name="Prerequisites_MissingCount" xml:space="preserve">
+    <value>{0} prerequisite(s) missing</value>
+    <comment>Missing prerequisites count</comment>
+  </data>
+  <data name="Prerequisites_Install" xml:space="preserve">
+    <value>Install Prerequisites</value>
+    <comment>Install prerequisites button</comment>
+  </data>
+  <data name="Prerequisites_Check" xml:space="preserve">
+    <value>Check Status</value>
+    <comment>Check prerequisites status button</comment>
+  </data>
+  <data name="Prerequisites_Starting" xml:space="preserve">
+    <value>Starting prerequisites installation...</value>
+    <comment>Prerequisites installation starting</comment>
+  </data>
+  <data name="Prerequisites_LoadingModules" xml:space="preserve">
+    <value>Loading modules...</value>
+    <comment>Loading PowerShell modules</comment>
+  </data>
+  <data name="Prerequisites_Installing" xml:space="preserve">
+    <value>Installing prerequisites...</value>
+    <comment>Installing prerequisites in progress</comment>
+  </data>
+  <data name="Prerequisites_Complete" xml:space="preserve">
+    <value>Prerequisites installation complete</value>
+    <comment>Prerequisites installation completed</comment>
+  </data>
+  <data name="Prerequisites_PowerShell7" xml:space="preserve">
+    <value>PowerShell 7</value>
+    <comment>PowerShell 7 label</comment>
+  </data>
+  <data name="Prerequisites_Winget" xml:space="preserve">
+    <value>Winget</value>
+    <comment>Winget label</comment>
+  </data>
+  <data name="Prerequisites_Chocolatey" xml:space="preserve">
+    <value>Chocolatey</value>
+    <comment>Chocolatey label</comment>
+  </data>
 </root>

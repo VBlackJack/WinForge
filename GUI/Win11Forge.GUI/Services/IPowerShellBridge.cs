@@ -104,4 +104,17 @@ public interface IPowerShellBridge
     /// </summary>
     /// <returns>System information model</returns>
     Task<SystemInfoModel> GetSystemInfoAsync();
+
+    /// <summary>
+    /// Checks the status of system prerequisites.
+    /// </summary>
+    /// <returns>Prerequisites status model</returns>
+    Task<PrerequisitesStatus> CheckPrerequisitesAsync();
+
+    /// <summary>
+    /// Installs missing system prerequisites.
+    /// </summary>
+    /// <param name="progressCallback">Optional callback for progress updates</param>
+    /// <returns>True if installation succeeded</returns>
+    Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null);
 }

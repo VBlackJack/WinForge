@@ -336,4 +336,16 @@ internal class MockPowerShellBridge : IPowerShellBridge
             WindowsBuild = "22000",
             IsAdministrator = true
         });
+
+    public Task<PrerequisitesStatus> CheckPrerequisitesAsync() =>
+        Task.FromResult(new PrerequisitesStatus
+        {
+            PowerShell7Installed = true,
+            PowerShellVersion = "7.4.0",
+            ChocolateyInstalled = true,
+            WingetInstalled = true
+        });
+
+    public Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null) =>
+        Task.FromResult(true);
 }

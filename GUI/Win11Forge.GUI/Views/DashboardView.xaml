@@ -18,6 +18,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -335,8 +336,142 @@
                 </materialDesign:Card>
             </Grid>
 
-            <!-- Repository Path -->
+            <!-- Prerequisites Card -->
             <materialDesign:Card Grid.Row="3"
+                                  Padding="16"
+                                  Margin="0,0,0,16"
+                                  materialDesign:ElevationAssist.Elevation="Dp2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                        <materialDesign:PackIcon Kind="CheckboxMarkedCircleOutline"
+                                                  Width="24" Height="24"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,8,0"/>
+                        <TextBlock Text="{loc:Loc Prerequisites_Title}"
+                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                   VerticalAlignment="Center"/>
+                        <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                     Value="0" IsIndeterminate="True"
+                                     Width="16" Height="16"
+                                     Margin="12,0,0,0"
+                                     Visibility="{Binding IsCheckingPrerequisites, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+
+                    <!-- Prerequisites Status -->
+                    <StackPanel Grid.Row="1"
+                                Visibility="{Binding PrerequisitesStatus, Converter={StaticResource NullableToVisibilityConverter}}">
+                        <UniformGrid Columns="3" Margin="0,0,0,16">
+                            <!-- PowerShell 7 -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                                <materialDesign:PackIcon Kind="{Binding PrerequisitesStatus.PowerShell7Installed, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                          Width="20" Height="20"
+                                                          VerticalAlignment="Center"
+                                                          Foreground="{Binding PrerequisitesStatus.PowerShell7Installed, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                          Margin="0,0,8,0"/>
+                                <StackPanel>
+                                    <TextBlock Text="{loc:Loc Prerequisites_PowerShell7}"
+                                               Style="{StaticResource MaterialDesignBody2TextBlock}"/>
+                                    <TextBlock Text="{Binding PrerequisitesStatus.PowerShellVersion}"
+                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                               Opacity="0.7"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Winget -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                                <materialDesign:PackIcon Kind="{Binding PrerequisitesStatus.WingetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                          Width="20" Height="20"
+                                                          VerticalAlignment="Center"
+                                                          Foreground="{Binding PrerequisitesStatus.WingetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                          Margin="0,0,8,0"/>
+                                <TextBlock Text="{loc:Loc Prerequisites_Winget}"
+                                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Chocolatey -->
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="{Binding PrerequisitesStatus.ChocolateyInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                          Width="20" Height="20"
+                                                          VerticalAlignment="Center"
+                                                          Foreground="{Binding PrerequisitesStatus.ChocolateyInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                          Margin="0,0,8,0"/>
+                                <TextBlock Text="{loc:Loc Prerequisites_Chocolatey}"
+                                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </UniformGrid>
+                    </StackPanel>
+
+                    <!-- Actions Row -->
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Progress Message -->
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding PrerequisitesProgressMessage}"
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   VerticalAlignment="Center"
+                                   Visibility="{Binding IsInstallingPrerequisites, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                        <!-- Status Message (when not installing) -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                    Visibility="{Binding IsInstallingPrerequisites, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                            <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                       Visibility="{Binding PrerequisitesStatus.AllPrerequisitesMet, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Run Text="✓"/>
+                                <Run Text="{loc:Loc Prerequisites_AllInstalled}"/>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Buttons -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <!-- Check Button -->
+                            <Button Command="{Binding CheckPrerequisitesCommand}"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    Margin="0,0,8,0"
+                                    IsEnabled="{Binding IsInstallingPrerequisites, Converter={StaticResource InverseBoolConverter}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Refresh" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <TextBlock Text="{loc:Loc Prerequisites_Check}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Install Button (only visible when prerequisites are missing) -->
+                            <Button Command="{Binding InstallPrerequisitesCommand}"
+                                    Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
+                                    Visibility="{Binding PrerequisitesStatus.AllPrerequisitesMet, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                                    IsEnabled="{Binding IsInstallingPrerequisites, Converter={StaticResource InverseBoolConverter}}">
+                                <StackPanel Orientation="Horizontal">
+                                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                                 Value="0" IsIndeterminate="True"
+                                                 Width="16" Height="16"
+                                                 Margin="0,0,8,0"
+                                                 Visibility="{Binding IsInstallingPrerequisites, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    <materialDesign:PackIcon Kind="Download" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"
+                                                              Visibility="{Binding IsInstallingPrerequisites, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                    <TextBlock Text="{loc:Loc Prerequisites_Install}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- Repository Path -->
+            <materialDesign:Card Grid.Row="4"
                                   Padding="12"
                                   materialDesign:ElevationAssist.Elevation="Dp1">
                 <StackPanel Orientation="Horizontal">

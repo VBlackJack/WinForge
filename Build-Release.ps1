@@ -171,12 +171,14 @@ if (-not (Test-Path $DistRoot)) {
 
 New-Item -ItemType Directory -Path $ReleasePath -Force | Out-Null
 
-# Copy the compiled executable
+# Copy the entire publish output (WPF apps require all DLLs, not just .exe)
 $exePath = Join-Path $PublishPath "Win11Forge.GUI.exe"
 if (Test-Path $exePath) {
-    Copy-Item $exePath -Destination $ReleasePath
-    $exeSize = [math]::Round((Get-Item $exePath).Length / 1MB, 2)
-    Write-Host "  Copied: Win11Forge.GUI.exe ($exeSize MB)" -ForegroundColor Gray
+    # Copy all files from publish folder
+    Copy-Item "$PublishPath\*" -Destination $ReleasePath -Recurse
+    $fileCount = (Get-ChildItem $PublishPath -File).Count
+    $totalSize = [math]::Round((Get-ChildItem $PublishPath -Recurse -File | Measure-Object -Property Length -Sum).Sum / 1MB, 2)
+    Write-Host "  Copied: GUI files ($fileCount files, $totalSize MB)" -ForegroundColor Gray
 } else {
     Write-Host "ERROR: Win11Forge.GUI.exe not found at $exePath" -ForegroundColor Red
     exit 1

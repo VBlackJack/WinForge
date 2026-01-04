@@ -208,6 +208,8 @@ public partial class DeploymentViewModel : ViewModelBase
             CurrentProfile = await _powerShellBridge.LoadProfileAsync(SelectedProfile);
             UpdateProfileSummary();
             OnPropertyChanged(nameof(SelectedApplicationsCount));
+            OnPropertyChanged(nameof(CanDeploy));
+            DeployCommand.NotifyCanExecuteChanged();
         }
         catch (Exception ex)
         {

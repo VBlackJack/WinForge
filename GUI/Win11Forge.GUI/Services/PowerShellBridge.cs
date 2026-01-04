@@ -1174,6 +1174,186 @@ public class PowerShellBridge : IPowerShellBridge
         });
     }
 
+    /// <inheritdoc/>
+    public async Task<PrerequisitesStatus> CheckPrerequisitesAsync()
+    {
+        return await Task.Run(() =>
+        {
+            var status = new PrerequisitesStatus();
+
+            try
+            {
+                using var ps = CreatePowerShellInstance();
+
+                // Check PowerShell 7
+                ps.AddScript(@"
+                    try {
+                        $ver = pwsh --version 2>$null
+                        if ($ver) { $ver.Trim() } else { '' }
+                    } catch { '' }
+                ");
+                var ps7Result = ps.Invoke();
+                ps.Commands.Clear();
+
+                if (ps7Result.Count > 0)
+                {
+                    var version = ps7Result[0]?.ToString()?.Trim() ?? string.Empty;
+                    status.PowerShell7Installed = !string.IsNullOrEmpty(version);
+                    status.PowerShellVersion = version;
+                }
+
+                // Check Winget
+                ps.AddScript(@"
+                    try {
+                        $null = winget --version 2>$null
+                        $LASTEXITCODE -eq 0
+                    } catch { $false }
+                ");
+                var wingetResult = ps.Invoke();
+                ps.Commands.Clear();
+
+                if (wingetResult.Count > 0)
+                {
+                    status.WingetInstalled = wingetResult[0]?.ToString()?.Trim().ToLower() == "true";
+                }
+
+                // Check Chocolatey
+                ps.AddScript(@"
+                    try {
+                        $null = choco --version 2>$null
+                        $LASTEXITCODE -eq 0
+                    } catch { $false }
+                ");
+                var chocoResult = ps.Invoke();
+                ps.Commands.Clear();
+
+                if (chocoResult.Count > 0)
+                {
+                    status.ChocolateyInstalled = chocoResult[0]?.ToString()?.Trim().ToLower() == "true";
+                }
+            }
+            catch
+            {
+                // Return default status on error
+            }
+
+            return status;
+        });
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null)
+    {
+        var repoRoot = GetSafeRepositoryRoot();
+        var prerequisitesModule = Path.Combine(repoRoot, "Modules", "Prerequisites.psm1");
+        var corePath = Path.Combine(repoRoot, "Core", "Core.psm1");
+
+        return await Task.Run(() =>
+        {
+            try
+            {
+                progressCallback?.Invoke(Resources.Resources.Prerequisites_Starting);
+
+                // Create a temporary script to run with elevation
+                var tempScript = Path.Combine(Path.GetTempPath(), $"Win11Forge_Prerequisites_{Guid.NewGuid():N}.ps1");
+                var scriptContent = $@"
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+$ErrorActionPreference = 'Stop'
+
+try {{
+    Import-Module '{corePath.Replace("'", "''")}' -Force -ErrorAction SilentlyContinue
+    Import-Module '{prerequisitesModule.Replace("'", "''")}' -Force
+
+    Start-PrerequisitesInstallation
+
+    Write-Host ''
+    Write-Host 'Prerequisites installation complete. Press any key to close...' -ForegroundColor Green
+    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+}} catch {{
+    Write-Host ""Error: $($_.Exception.Message)"" -ForegroundColor Red
+    Write-Host ''
+    Write-Host 'Press any key to close...' -ForegroundColor Yellow
+    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+    exit 1
+}}
+";
+                File.WriteAllText(tempScript, scriptContent);
+
+                progressCallback?.Invoke(Resources.Resources.Prerequisites_Installing);
+
+                // Find PowerShell executable (prefer pwsh.exe, fall back to powershell.exe)
+                var pwshPath = FindPowerShellExecutable();
+
+                // Launch elevated PowerShell process
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = pwshPath,
+                    Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{tempScript}\"",
+                    UseShellExecute = true,
+                    Verb = "runas", // Request UAC elevation
+                    WorkingDirectory = repoRoot
+                };
+
+                using var process = System.Diagnostics.Process.Start(psi);
+                if (process == null)
+                {
+                    progressCallback?.Invoke("Failed to start elevated process");
+                    return false;
+                }
+
+                process.WaitForExit();
+
+                // Clean up temp script
+                try { File.Delete(tempScript); } catch { /* Ignore cleanup errors */ }
+
+                if (process.ExitCode == 0)
+                {
+                    progressCallback?.Invoke(Resources.Resources.Prerequisites_Complete);
+                    return true;
+                }
+                else
+                {
+                    progressCallback?.Invoke($"Installation failed (exit code: {process.ExitCode})");
+                    return false;
+                }
+            }
+            catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
+            {
+                // User cancelled UAC prompt
+                progressCallback?.Invoke("Installation cancelled by user");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                progressCallback?.Invoke($"Exception: {ex.Message}");
+                return false;
+            }
+        });
+    }
+
+    /// <summary>
+    /// Finds the PowerShell executable path (pwsh.exe or powershell.exe).
+    /// </summary>
+    private static string FindPowerShellExecutable()
+    {
+        // Check for pwsh.exe in common locations
+        var pwshPaths = new[]
+        {
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "PowerShell", "7", "pwsh.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "PowerShell", "7", "pwsh.exe"),
+            @"C:\Program Files\PowerShell\7\pwsh.exe"
+        };
+
+        foreach (var path in pwshPaths)
+        {
+            if (File.Exists(path))
+                return path;
+        }
+
+        // Fall back to Windows PowerShell
+        return "powershell.exe";
+    }
+
     /// <summary>
     /// Resolves the repository root path from the executable location.
     /// Walks up directories looking for repository markers (Config/version.json, Modules/).

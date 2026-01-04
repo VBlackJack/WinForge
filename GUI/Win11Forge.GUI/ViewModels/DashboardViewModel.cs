@@ -80,6 +80,30 @@ public partial class DashboardViewModel : ViewModelBase
     private bool _isLoadingSystemInfo;
 
     /// <summary>
+    /// Prerequisites status.
+    /// </summary>
+    [ObservableProperty]
+    private PrerequisitesStatus? _prerequisitesStatus;
+
+    /// <summary>
+    /// Whether prerequisites are being checked.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isCheckingPrerequisites;
+
+    /// <summary>
+    /// Whether prerequisites are being installed.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isInstallingPrerequisites;
+
+    /// <summary>
+    /// Prerequisites installation progress message.
+    /// </summary>
+    [ObservableProperty]
+    private string? _prerequisitesProgressMessage;
+
+    /// <summary>
     /// Initializes a new instance of DashboardViewModel.
     /// </summary>
     public DashboardViewModel(IPowerShellBridge powerShellBridge, IDeploymentHistoryService historyService)
@@ -118,8 +142,9 @@ public partial class DashboardViewModel : ViewModelBase
             // Load recent deployments
             await LoadRecentDeploymentsAsync();
 
-            // Load system info in background
+            // Load system info and prerequisites in background
             _ = LoadSystemInfoAsync();
+            _ = CheckPrerequisitesAsync();
         }
         catch (Exception ex)
         {
@@ -171,5 +196,59 @@ public partial class DashboardViewModel : ViewModelBase
     private async Task RefreshAsync()
     {
         await InitializeAsync();
+    }
+
+    /// <summary>
+    /// Checks the status of prerequisites.
+    /// </summary>
+    [RelayCommand]
+    private async Task CheckPrerequisitesAsync()
+    {
+        IsCheckingPrerequisites = true;
+        try
+        {
+            PrerequisitesStatus = await _powerShellBridge.CheckPrerequisitesAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsCheckingPrerequisites = false;
+        }
+    }
+
+    /// <summary>
+    /// Installs missing prerequisites.
+    /// </summary>
+    [RelayCommand]
+    private async Task InstallPrerequisitesAsync()
+    {
+        IsInstallingPrerequisites = true;
+        PrerequisitesProgressMessage = Resources.Resources.Prerequisites_Starting;
+
+        try
+        {
+            var success = await _powerShellBridge.InstallPrerequisitesAsync(msg =>
+            {
+                PrerequisitesProgressMessage = msg;
+            });
+
+            if (success)
+            {
+                // Refresh status after installation
+                await CheckPrerequisitesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsInstallingPrerequisites = false;
+            PrerequisitesProgressMessage = null;
+        }
     }
 }

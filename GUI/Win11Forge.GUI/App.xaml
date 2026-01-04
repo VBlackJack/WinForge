@@ -22,6 +22,8 @@
             <converters:StatusToIconConverter x:Key="StatusToIconConverter"/>
             <converters:StatusToColorConverter x:Key="StatusToColorConverter"/>
             <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
+            <converters:BoolToInstalledIconConverter x:Key="BoolToInstalledIconConverter"/>
+            <converters:BoolToInstalledColorConverter x:Key="BoolToInstalledColorConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

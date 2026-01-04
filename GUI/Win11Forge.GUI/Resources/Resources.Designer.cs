@@ -186,4 +186,18 @@ public class Resources
 
     // Error Messages
     public static string Common_ErrorFallback => ResourceManager.GetString("Common_ErrorFallback", resourceCulture);
+
+    // Prerequisites
+    public static string Prerequisites_Title => ResourceManager.GetString("Prerequisites_Title", resourceCulture);
+    public static string Prerequisites_AllInstalled => ResourceManager.GetString("Prerequisites_AllInstalled", resourceCulture);
+    public static string Prerequisites_MissingCount => ResourceManager.GetString("Prerequisites_MissingCount", resourceCulture);
+    public static string Prerequisites_Install => ResourceManager.GetString("Prerequisites_Install", resourceCulture);
+    public static string Prerequisites_Check => ResourceManager.GetString("Prerequisites_Check", resourceCulture);
+    public static string Prerequisites_Starting => ResourceManager.GetString("Prerequisites_Starting", resourceCulture);
+    public static string Prerequisites_LoadingModules => ResourceManager.GetString("Prerequisites_LoadingModules", resourceCulture);
+    public static string Prerequisites_Installing => ResourceManager.GetString("Prerequisites_Installing", resourceCulture);
+    public static string Prerequisites_Complete => ResourceManager.GetString("Prerequisites_Complete", resourceCulture);
+    public static string Prerequisites_PowerShell7 => ResourceManager.GetString("Prerequisites_PowerShell7", resourceCulture);
+    public static string Prerequisites_Winget => ResourceManager.GetString("Prerequisites_Winget", resourceCulture);
+    public static string Prerequisites_Chocolatey => ResourceManager.GetString("Prerequisites_Chocolatey", resourceCulture);
 }

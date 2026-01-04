@@ -402,4 +402,41 @@
   <data name="Common_ErrorFallback" xml:space="preserve">
     <value>Erreur</value>
   </data>
+  <!-- Prerequisites -->
+  <data name="Prerequisites_Title" xml:space="preserve">
+    <value>Prérequis</value>
+  </data>
+  <data name="Prerequisites_AllInstalled" xml:space="preserve">
+    <value>Tous les prérequis sont installés</value>
+  </data>
+  <data name="Prerequisites_MissingCount" xml:space="preserve">
+    <value>{0} prérequis manquant(s)</value>
+  </data>
+  <data name="Prerequisites_Install" xml:space="preserve">
+    <value>Installer les prérequis</value>
+  </data>
+  <data name="Prerequisites_Check" xml:space="preserve">
+    <value>Vérifier l'état</value>
+  </data>
+  <data name="Prerequisites_Starting" xml:space="preserve">
+    <value>Démarrage de l'installation des prérequis...</value>
+  </data>
+  <data name="Prerequisites_LoadingModules" xml:space="preserve">
+    <value>Chargement des modules...</value>
+  </data>
+  <data name="Prerequisites_Installing" xml:space="preserve">
+    <value>Installation des prérequis...</value>
+  </data>
+  <data name="Prerequisites_Complete" xml:space="preserve">
+    <value>Installation des prérequis terminée</value>
+  </data>
+  <data name="Prerequisites_PowerShell7" xml:space="preserve">
+    <value>PowerShell 7</value>
+  </data>
+  <data name="Prerequisites_Winget" xml:space="preserve">
+    <value>Winget</value>
+  </data>
+  <data name="Prerequisites_Chocolatey" xml:space="preserve">
+    <value>Chocolatey</value>
+  </data>
 </root>

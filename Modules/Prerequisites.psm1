@@ -174,6 +174,9 @@ function Install-Chocolatey {
     <#
     .SYNOPSIS
         Installs Chocolatey package manager.
+    .DESCRIPTION
+        Uses manual installation method to avoid dependency on Microsoft.PowerShell.Archive
+        module which may not be available on fresh Windows 11 installations.
     #>
     [CmdletBinding()]
     param([switch]$Force)
@@ -191,19 +194,73 @@ function Install-Chocolatey {
         Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
-        # Download Chocolatey install script to temp file (safer than Invoke-Expression)
-        $tempScript = Join-Path $env:TEMP "chocolatey-install-$(Get-Date -Format 'yyyyMMddHHmmss').ps1"
+        # Load .NET compression assembly for ZIP extraction
+        Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction Stop
+
+        # Define installation paths
+        $chocoInstallPath = $env:ChocolateyInstall
+        if (-not $chocoInstallPath) {
+            $chocoInstallPath = "$env:ProgramData\chocolatey"
+        }
+        $chocoTempPath = Join-Path $env:TEMP "chocolatey-install-$(Get-Date -Format 'yyyyMMddHHmmss')"
+
+        # Create temp directory
+        New-Item -ItemType Directory -Path $chocoTempPath -Force | Out-Null
+
         try {
+            # Download latest Chocolatey nupkg
+            Write-Status -Message 'Downloading Chocolatey package...' -Level 'Info'
+            $chocoNupkg = Join-Path $chocoTempPath 'chocolatey.nupkg'
             $webClient = New-Object System.Net.WebClient
-            $webClient.DownloadFile('https://community.chocolatey.org/install.ps1', $tempScript)
+            $webClient.DownloadFile('https://community.chocolatey.org/api/v2/package/chocolatey', $chocoNupkg)
+            $webClient.Dispose()
 
-            # Execute from file instead of Invoke-Expression (more secure)
-            & $tempScript
+            # Extract nupkg (it's just a ZIP file)
+            Write-Status -Message 'Extracting Chocolatey package...' -Level 'Info'
+            $chocoExtractPath = Join-Path $chocoTempPath 'chocolatey'
+            [System.IO.Compression.ZipFile]::ExtractToDirectory($chocoNupkg, $chocoExtractPath)
 
-            # Clean up temp file
-            Remove-Item -Path $tempScript -Force -ErrorAction SilentlyContinue
+            # Find and run chocolateyInstall.ps1
+            $installScript = Join-Path $chocoExtractPath 'tools\chocolateyInstall.ps1'
+            if (-not (Test-Path $installScript)) {
+                throw "chocolateyInstall.ps1 not found in package"
+            }
+
+            # Set environment variable for Chocolatey install path
+            $env:ChocolateyInstall = $chocoInstallPath
+
+            # Create Chocolatey directory structure
+            Write-Status -Message 'Setting up Chocolatey directories...' -Level 'Info'
+            $chocoLibPath = Join-Path $chocoInstallPath 'lib'
+            $chocoBinPath = Join-Path $chocoInstallPath 'bin'
+            New-Item -ItemType Directory -Path $chocoLibPath -Force | Out-Null
+            New-Item -ItemType Directory -Path $chocoBinPath -Force | Out-Null
+
+            # Copy chocolatey package to lib folder
+            $chocoLibChoco = Join-Path $chocoLibPath 'chocolatey'
+            if (Test-Path $chocoLibChoco) {
+                Remove-Item $chocoLibChoco -Recurse -Force
+            }
+            Copy-Item $chocoExtractPath -Destination $chocoLibChoco -Recurse
+
+            # Run the chocolatey install script
+            Write-Status -Message 'Running Chocolatey setup...' -Level 'Info'
+            & $installScript
+
+            # Add Chocolatey to PATH if not already there
+            $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
+            if ($machinePath -notlike "*$chocoBinPath*") {
+                [Environment]::SetEnvironmentVariable('Path', "$machinePath;$chocoBinPath", 'Machine')
+            }
+
+            # Update current session PATH
+            $env:Path = "$env:Path;$chocoBinPath"
+
         } finally {
-            if ($webClient) { $webClient.Dispose() }
+            # Clean up temp directory
+            if (Test-Path $chocoTempPath) {
+                Remove-Item $chocoTempPath -Recurse -Force -ErrorAction SilentlyContinue
+            }
         }
 
         # Refresh environment after installation
