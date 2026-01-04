@@ -943,17 +943,44 @@ public class PowerShellBridge : IPowerShellBridge
     /// </summary>
     private static string ResolveRepositoryRoot()
     {
-        var exeDirectory = AppContext.BaseDirectory;
-        var currentDir = new DirectoryInfo(exeDirectory);
+        // Try multiple strategies for single-file apps
+        var candidatePaths = new List<string>
+        {
+            AppContext.BaseDirectory,
+            Environment.CurrentDirectory,
+            Path.GetDirectoryName(Environment.ProcessPath) ?? string.Empty
+        };
+
+        foreach (var basePath in candidatePaths.Where(p => !string.IsNullOrEmpty(p)))
+        {
+            var result = TryFindRepositoryRoot(basePath);
+            if (result != null)
+            {
+                return result;
+            }
+        }
+
+        throw new DirectoryNotFoundException(
+            $"Could not locate Win11Forge repository root. Searched from: {string.Join(", ", candidatePaths)}");
+    }
+
+    /// <summary>
+    /// Attempts to find repository root by walking up from a base path.
+    /// </summary>
+    private static string? TryFindRepositoryRoot(string basePath)
+    {
+        var currentDir = new DirectoryInfo(basePath);
 
         while (currentDir != null)
         {
+            // Check for Config/version.json
             var versionFile = Path.Combine(currentDir.FullName, "Config", "version.json");
             if (File.Exists(versionFile))
             {
                 return currentDir.FullName;
             }
 
+            // Check for Modules/InstallationEngine.psm1
             var modulesDir = Path.Combine(currentDir.FullName, "Modules");
             if (Directory.Exists(modulesDir))
             {
@@ -967,14 +994,6 @@ public class PowerShellBridge : IPowerShellBridge
             currentDir = currentDir.Parent;
         }
 
-        var fallbackPath = Path.GetFullPath(Path.Combine(exeDirectory, "..", "..", "..", "..", ".."));
-
-        if (Directory.Exists(fallbackPath))
-        {
-            return fallbackPath;
-        }
-
-        throw new DirectoryNotFoundException(
-            $"Could not locate Win11Forge repository root from {exeDirectory}");
+        return null;
     }
 }

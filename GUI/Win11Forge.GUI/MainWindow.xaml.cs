@@ -73,6 +73,9 @@ public partial class MainWindow : Window
 
     private void NavigationListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        // Guard: Views not yet initialized during XAML loading
+        if (DashboardViewControl == null) return;
+
         var selectedIndex = NavigationListBox.SelectedIndex;
 
         // Hide all views

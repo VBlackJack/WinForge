@@ -321,7 +321,7 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Visibility="{Binding RecentDeployments.Count, Converter={StaticResource ZeroToVisibilityConverter}}">
-                            <materialDesign:PackIcon Kind="HistoryOff"
+                            <materialDesign:PackIcon Kind="History"
                                                       Width="48" Height="48"
                                                       Opacity="0.3"
                                                       HorizontalAlignment="Center"/>

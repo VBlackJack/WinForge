@@ -107,7 +107,7 @@ if (Test-Path $exePath) {
 # Step 4: Copy PowerShell infrastructure
 Write-Host "[4/5] Copying PowerShell infrastructure..." -ForegroundColor Yellow
 
-$foldersToCopy = @("Modules", "Core", "Apps", "Profiles")
+$foldersToCopy = @("Modules", "Core", "Apps", "Profiles", "Config")
 foreach ($folder in $foldersToCopy) {
     $sourcePath = Join-Path $ScriptRoot $folder
     $destPath = Join-Path $ReleasePath $folder
