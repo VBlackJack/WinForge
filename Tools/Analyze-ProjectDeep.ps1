@@ -49,14 +49,14 @@ Write-Host "[4/8] Validation des profils..." -ForegroundColor Yellow
 $profiles = Get-ChildItem -Path 'Apps/Profiles' -Filter '*.json' -ErrorAction SilentlyContinue
 if ($profiles) {
     $invalidProfiles = @()
-    foreach ($profile in $profiles) {
+    foreach ($profileFile in $profiles) {
         try {
-            $json = Get-Content $profile.FullName -Raw | ConvertFrom-Json
+            $json = Get-Content $profileFile.FullName -Raw | ConvertFrom-Json
             if (-not $json.ProfileName -or -not $json.Applications) {
-                $invalidProfiles += $profile.Name
+                $invalidProfiles += $profileFile.Name
             }
         } catch {
-            $invalidProfiles += $profile.Name
+            $invalidProfiles += $profileFile.Name
         }
     }
     if ($invalidProfiles.Count -eq 0) {
@@ -73,15 +73,18 @@ if ($profiles) {
 Write-Host ""
 Write-Host "[5/8] Vérification des imports..." -ForegroundColor Yellow
 $modules = Get-ChildItem -Path 'Modules' -Filter '*.psm1'
-$missingImports = @()
+$importIssuesFound = $false
 foreach ($module in $modules) {
     $content = Get-Content $module.FullName -Raw
     # Check if module imports Core but Core doesn't exist at expected path
     if ($content -match "Import-Module.*Core\.psm1" -and $content -notmatch 'Test-Path.*Core\.psm1') {
-        # Module imports Core - verify it checks path first
+        # Module imports Core - verify it checks path first (currently all modules properly check)
+        $importIssuesFound = $true
     }
 }
-Write-Host "  ✓ Imports corrects" -ForegroundColor Green
+if (-not $importIssuesFound) {
+    Write-Host "  ✓ Imports corrects" -ForegroundColor Green
+}
 
 # 6. Détection de code dupliqué (fonctions avec même nom)
 Write-Host ""

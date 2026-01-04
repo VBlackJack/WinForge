@@ -8,7 +8,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.5.0
+    Version: 2.6.0
     Supports: Windows Sandbox, VMware, Hyper-V, Physical machines
 #>
 
@@ -23,6 +23,48 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
     }
+}
+
+# === CIM CACHE ===
+# Caches expensive CIM queries to avoid repeated WMI calls
+$script:CimCache = @{}
+
+function Get-CachedCimInstance {
+    <#
+    .SYNOPSIS
+        Gets a CIM instance from cache or queries it if not cached.
+    .PARAMETER ClassName
+        The WMI class name to query.
+    .PARAMETER Force
+        Bypass cache and force a fresh query.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ClassName,
+        [switch]$Force
+    )
+
+    if (-not $Force -and $script:CimCache.ContainsKey($ClassName)) {
+        Write-Verbose "CIM cache hit: $ClassName"
+        return $script:CimCache[$ClassName]
+    }
+
+    Write-Verbose "CIM cache miss: $ClassName - querying WMI"
+    $instance = Get-CimInstance -ClassName $ClassName -ErrorAction SilentlyContinue
+    $script:CimCache[$ClassName] = $instance
+    return $instance
+}
+
+function Clear-CimCache {
+    <#
+    .SYNOPSIS
+        Clears the CIM instance cache.
+    #>
+    [CmdletBinding()]
+    param()
+    $script:CimCache.Clear()
+    Write-Verbose "CIM cache cleared"
 }
 
 # === ENVIRONMENT TYPES ===
@@ -64,8 +106,8 @@ function Get-SystemEnvironmentType {
         return [EnvironmentType]::WindowsSandbox
     }
 
-    # Check for virtualization
-    $computerSystem = Get-CimInstance -ClassName Win32_ComputerSystem -ErrorAction SilentlyContinue
+    # Check for virtualization (using cached query)
+    $computerSystem = Get-CachedCimInstance -ClassName 'Win32_ComputerSystem'
 
     if ($computerSystem) {
         $manufacturer = $computerSystem.Manufacturer
@@ -87,8 +129,8 @@ function Get-SystemEnvironmentType {
         }
     }
 
-    # Additional virtualization checks via BIOS
-    $bios = Get-CimInstance -ClassName Win32_BIOS -ErrorAction SilentlyContinue
+    # Additional virtualization checks via BIOS (using cached query)
+    $bios = Get-CachedCimInstance -ClassName 'Win32_BIOS'
     if ($bios) {
         $biosVersion = $bios.Version
         $serialNumber = $bios.SerialNumber
@@ -106,9 +148,9 @@ function Get-SystemEnvironmentType {
         }
     }
 
-    # Check for virtualization via processor features
+    # Check for virtualization via processor features (using cached query)
     try {
-        $processor = Get-CimInstance -ClassName Win32_Processor -ErrorAction SilentlyContinue | Select-Object -First 1
+        $processor = Get-CachedCimInstance -ClassName 'Win32_Processor' | Select-Object -First 1
         if ($processor -and $processor.Name -match 'Virtual') {
             return [EnvironmentType]::Unknown
         }
@@ -324,9 +366,10 @@ function Get-EnvironmentReport {
     $envType = Get-SystemEnvironmentType
     $capabilities = Get-EnvironmentCapabilities
 
-    $computerSystem = Get-CimInstance -ClassName Win32_ComputerSystem -ErrorAction SilentlyContinue
-    $operatingSystem = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction SilentlyContinue
-    $bios = Get-CimInstance -ClassName Win32_BIOS -ErrorAction SilentlyContinue
+    # Use cached CIM queries for performance
+    $computerSystem = Get-CachedCimInstance -ClassName 'Win32_ComputerSystem'
+    $operatingSystem = Get-CachedCimInstance -ClassName 'Win32_OperatingSystem'
+    $bios = Get-CachedCimInstance -ClassName 'Win32_BIOS'
 
     $report = @{
         EnvironmentType = $envType

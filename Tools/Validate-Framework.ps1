@@ -161,15 +161,15 @@ function Test-ProfileFiles {
         'Personnel.json'
     )
 
-    foreach ($profile in $profiles) {
-        $path = Join-Path -Path $script:ScriptRoot -ChildPath "Profiles\$profile"
+    foreach ($profileName in $profiles) {
+        $path = Join-Path -Path $script:ScriptRoot -ChildPath "Profiles\$profileName"
         $exists = Test-Path -Path $path -PathType Leaf
 
         if ($exists) {
             try {
                 $content = Get-Content -Path $path -Raw | ConvertFrom-Json
                 $valid = $content.Name -and $content.Applications
-                Write-ValidationResult -Test "Profile: $profile" -Passed $valid -Message "Valid JSON"
+                Write-ValidationResult -Test "Profile: $profileName" -Passed $valid -Message "Valid JSON"
 
                 if ($valid -and $Detailed) {
                     Write-Host "      Name: $($content.Name), Version: $($content.Version)" -ForegroundColor Gray
@@ -179,10 +179,10 @@ function Test-ProfileFiles {
                     }
                 }
             } catch {
-                Write-ValidationResult -Test "Profile: $profile" -Passed $false -Message "Invalid JSON: $($_.Exception.Message)"
+                Write-ValidationResult -Test "Profile: $profileName" -Passed $false -Message "Invalid JSON: $($_.Exception.Message)"
             }
         } else {
-            Write-ValidationResult -Test "Profile: $profile" -Passed $false -Message "File not found"
+            Write-ValidationResult -Test "Profile: $profileName" -Passed $false -Message "File not found"
         }
     }
 }
@@ -269,12 +269,12 @@ function Test-ProfileLoading {
         $profilesDir = Join-Path -Path $script:ScriptRoot -ChildPath 'Profiles'
 
         if (Test-Path "$profilesDir\Base.json") {
-            $profile = Get-DeploymentProfile -ProfileName "Base" -ProfilesDirectory $profilesDir
-            Write-ValidationResult -Test "Load Base profile" -Passed ($null -ne $profile)
+            $deploymentProfile = Get-DeploymentProfile -ProfileName "Base" -ProfilesDirectory $profilesDir
+            Write-ValidationResult -Test "Load Base profile" -Passed ($null -ne $deploymentProfile)
 
-            if ($profile -and $Detailed) {
-                Write-Host "      Applications: $($profile.Applications.Count)" -ForegroundColor Gray
-                Write-Host "      Config sections: $($profile.SystemConfig.Keys.Count)" -ForegroundColor Gray
+            if ($deploymentProfile -and $Detailed) {
+                Write-Host "      Applications: $($deploymentProfile.Applications.Count)" -ForegroundColor Gray
+                Write-Host "      Config sections: $($deploymentProfile.SystemConfig.Keys.Count)" -ForegroundColor Gray
             }
         } else {
             Write-ValidationResult -Test "Load Base profile" -Passed $false -Message "Base.json not found"
@@ -384,8 +384,10 @@ function Test-PrerequisitesValidation {
                     } elseif ($prereqs[$key].PSObject.Properties.Name -contains 'Version') {
                         $versionValue = $prereqs[$key].Version
                     }
-                } catch {
-                    # Ignore version read errors
+                }
+                catch {
+                    # Version read errors are expected for some prereq types
+                    $null = $_
                 }
 
                 if ($versionValue) {
@@ -410,8 +412,10 @@ function Test-PrerequisitesValidation {
                 } elseif ($prereqs.PowerShell7.PSObject.Properties.Name -contains 'Installed') {
                     $ps7Installed = $prereqs.PowerShell7.Installed -eq $true
                 }
-            } catch {
-                # Ignore
+            }
+            catch {
+                # PowerShell 7 check may fail on some configurations
+                $null = $_
             }
 
             if ($ps7Installed -and $PSVersionTable.PSVersion.Major -lt 7) {
@@ -513,8 +517,8 @@ Write-Host "$passRate%" -ForegroundColor $(if ($passRate -ge 90) { 'Green' } els
 if ($script:ValidationResults.Failed -gt 0) {
     Write-Host ""
     Write-Host "Errors Found:" -ForegroundColor Red
-    foreach ($error in $script:ValidationResults.Errors) {
-        Write-Host "  - $error" -ForegroundColor Yellow
+    foreach ($errMsg in $script:ValidationResults.Errors) {
+        Write-Host "  - $errMsg" -ForegroundColor Yellow
     }
 }
 

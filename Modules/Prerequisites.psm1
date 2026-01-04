@@ -14,7 +14,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.5.0
+    Version: 2.6.0
     Fixed: Write-Status empty strings handling
     Fixed: Chocolatey installation arguments
     All bugs from deployment test have been corrected

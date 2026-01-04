@@ -171,8 +171,8 @@ if ($ValidateWinget -or $ValidateChocolatey) {
 
         if ($errors.Count -gt 0) {
             Write-Host "`n❌ Errors found:" -ForegroundColor Red
-            foreach ($error in $errors) {
-                Write-Host "  - $($error.App) ($($error.AppId)): $($error.Errors)" -ForegroundColor Red
+            foreach ($errorItem in $errors) {
+                Write-Host "  - $($errorItem.App) ($($errorItem.AppId)): $($errorItem.Errors)" -ForegroundColor Red
             }
         }
     }

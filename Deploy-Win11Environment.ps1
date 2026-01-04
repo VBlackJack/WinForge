@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Main Deployment Script v2.5.0
+    Win11Forge - Main Deployment Script v2.6.0
 
 .DESCRIPTION
     Orchestrates complete Windows 11 environment deployment with:
@@ -42,7 +42,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.5.0
+    Version: 2.6.0
     Fixed: Auto-restart in PowerShell 7 after prerequisites installation
     Fixed: PowerShell 5.1 StrictMode compatibility
     Requires: Administrator privileges, PowerShell 5.1+
@@ -140,8 +140,8 @@ $frameworkVersion = try {
     if (Test-Path $versionPath) {
         $versionData = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
         $versionData.Version
-    } else { '2.5.0' }
-} catch { '2.5.0' }
+    } else { '2.6.0' }
+} catch { '2.6.0' }
 
 Write-Log -Message "=== Win11Forge Framework v$frameworkVersion ===" -Level 'Info'
 Write-Log -Message "PowerShell Version: $($PSVersionTable.PSVersion)" -Level 'Info'

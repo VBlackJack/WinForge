@@ -123,7 +123,7 @@ param(
     [switch]$MonitorFileSystem,
     [int]$SampleInterval = 5,
     [switch]$GenerateReport,
-    [switch]$RealTimeDisplay = $true,
+    [switch]$RealTimeDisplay,
     [switch]$Quiet,
     [switch]$SkipApplicationMonitoring,
 
@@ -143,8 +143,10 @@ param(
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
 
-# Override display settings if Quiet mode
-if ($Quiet) {
+# Default RealTimeDisplay to true unless Quiet mode
+if (-not $PSBoundParameters.ContainsKey('RealTimeDisplay')) {
+    $RealTimeDisplay = -not $Quiet
+} elseif ($Quiet) {
     $RealTimeDisplay = $false
 }
 
@@ -160,7 +162,8 @@ Register-EngineEvent PowerShell.Exiting -Action {
 $script:CimSession = $null
 try {
     $script:CimSession = New-CimSession -ErrorAction Stop
-} catch {
+}
+catch {
     Write-Warning "Could not create CIM session, performance may be degraded"
 }
 
@@ -386,8 +389,10 @@ function Get-ApplicationChanges {
                          @{Name='DisplayVersion';Expression={$_.Version}},
                          @{Name='Publisher';Expression={$_.Publisher}}
         $apps += $packages
-    } catch {
-        # Silently ignore - Store apps query may fail on some systems
+    }
+    catch {
+        # Store apps query may fail on some systems - expected behavior
+        $null = $_
     }
 
     # Compare
@@ -458,9 +463,11 @@ function Get-RegistryChanges {
                     }
                 }
             }
-    } catch {
-        # Silently ignore expected errors in monitoring
-    }
+        }
+        catch {
+            # Registry access may fail for some keys - expected behavior
+            $null = $_
+        }
     }
 
     return $changes
@@ -490,8 +497,10 @@ function Get-EventLogEntries {
         $result.Errors += $appEvents | Where-Object { $_.Level -eq 2 }
         $result.Warnings += $appEvents | Where-Object { $_.Level -eq 3 }
         $result.Critical += $appEvents | Where-Object { $_.Level -eq 1 }
-    } catch {
-        # Silently ignore expected errors in monitoring
+    }
+    catch {
+        # Event log access may fail or return no events - expected behavior
+        $null = $_
     }
     # System errors/warnings
     try {
@@ -505,8 +514,10 @@ function Get-EventLogEntries {
         $result.Errors += $sysEvents | Where-Object { $_.Level -eq 2 }
         $result.Warnings += $sysEvents | Where-Object { $_.Level -eq 3 }
         $result.Critical += $sysEvents | Where-Object { $_.Level -eq 1 }
-    } catch {
-        # Silently ignore expected errors in monitoring
+    }
+    catch {
+        # System event log access may fail or return no events - expected behavior
+        $null = $_
     }
     # Installation events (MSI installer + Windows Installer)
     try {
@@ -517,8 +528,10 @@ function Get-EventLogEntries {
         } -MaxEvents 100 -ErrorAction SilentlyContinue
 
         $result.Installations = $installEvents | Select-Object TimeCreated, Message, Id, LevelDisplayName
-    } catch {
-        # Silently ignore expected errors in monitoring
+    }
+    catch {
+        # MSI installer events may not exist - expected behavior
+        $null = $_
     }
     # Winget/AppInstaller events
     try {
@@ -529,8 +542,10 @@ function Get-EventLogEntries {
         } -MaxEvents 50 -ErrorAction SilentlyContinue
 
         $result.Installations += $wingetEvents | Select-Object TimeCreated, Message, Id, LevelDisplayName
-    } catch {
-        # Silently ignore expected errors in monitoring
+    }
+    catch {
+        # Winget events may not exist on all systems - expected behavior
+        $null = $_
     }
     return $result
 }
@@ -640,9 +655,11 @@ function Test-MonitoringComplete {
                 Write-AuditLog $script:MonitorConfig.StopReason -Level 'Info'
                 return $true
             }
-    } catch {
-        # Silently ignore expected errors in monitoring
-    }
+        }
+        catch {
+            # Log file access may fail during write - expected behavior
+            $null = $_
+        }
     }
 
     # 3. Check log directory for new logs
@@ -677,9 +694,11 @@ function Test-MonitoringComplete {
                     Write-AuditLog $script:MonitorConfig.StopReason -Level 'Info'
                     return $true
                 }
-    } catch {
-        # Silently ignore expected errors in monitoring
-    }
+            }
+            catch {
+                # Log directory access may fail during write - expected behavior
+                $null = $_
+            }
         }
     }
 
@@ -716,13 +735,13 @@ function Export-AuditReport {
 
     # Generate HTML report
     if ($GenerateReport) {
-        $html = Generate-HtmlReport
+        $html = New-HtmlReport
         $html | Out-File -FilePath $script:HtmlReportPath -Encoding UTF8
         Write-AuditLog "HTML report saved: $script:HtmlReportPath" -Level 'Success'
     }
 }
 
-function Generate-HtmlReport {
+function New-HtmlReport {
     $summary = @{
         Duration = ($script:AuditData.EndTime - $script:AuditData.StartTime).TotalMinutes
         Samples = $script:AuditData.Performance.Samples.Count

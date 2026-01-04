@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge GUI Launcher v2.5.0
+    Win11Forge GUI Launcher v2.6.0
 
 .DESCRIPTION
     Launches the Win11Forge graphical user interface for interactive deployment management
@@ -13,8 +13,8 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.5.0
-    Requires: Administrator privileges, PowerShell 5.1+, Win11Forge v2.5.0+
+    Version: 2.6.0
+    Requires: Administrator privileges, PowerShell 5.1+, Win11Forge v2.6.0+
 #>
 
 [CmdletBinding()]

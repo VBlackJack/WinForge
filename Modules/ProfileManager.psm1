@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Profile Manager Version: 2.5.0
+    Win11Forge - Profile Manager Version: 2.6.0
 
 .DESCRIPTION
     Manages deployment profiles with JSON inheritance:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.5.0
+    Version: 2.6.0
     Supports multi-level inheritance (e.g., Personnel → Gaming → Office → Base)
     NEW: Supports Application Database references (AppId strings or objects)
 #>
@@ -214,7 +214,7 @@ function Resolve-ProfileInheritance {
     [OutputType([DeploymentProfile[]])]
     param(
         [Parameter(Mandatory)]
-        [DeploymentProfile]$Profile,
+        [DeploymentProfile]$InputProfile,
 
         [Parameter()]
         [string]$ProfilesDirectory,
@@ -228,24 +228,24 @@ function Resolve-ProfileInheritance {
     }
 
     # Check for circular reference
-    if ($Visited.Contains($Profile.Name)) {
-        Write-Status -Message "Circular inheritance detected: $($Profile.Name)" -Level 'Warning'
+    if ($Visited.Contains($InputProfile.Name)) {
+        Write-Status -Message "Circular inheritance detected: $($InputProfile.Name)" -Level 'Warning'
         return @()
     }
 
-    [void]$Visited.Add($Profile.Name)
+    [void]$Visited.Add($InputProfile.Name)
 
     $result = @()
 
     # Recursively load parent profiles
-    if ($Profile.Inherits -and $Profile.Inherits.Count -gt 0) {
-        foreach ($parentName in $Profile.Inherits) {
+    if ($InputProfile.Inherits -and $InputProfile.Inherits.Count -gt 0) {
+        foreach ($parentName in $InputProfile.Inherits) {
             try {
                 $parentPath = Get-ProfilePath -ProfileName $parentName -ProfilesDirectory $ProfilesDirectory
                 $parentProfile = Import-ProfileJson -Path $parentPath
 
                 # Recursively resolve parent's inheritance
-                $parentChain = Resolve-ProfileInheritance -Profile $parentProfile -ProfilesDirectory $ProfilesDirectory -Visited $Visited
+                $parentChain = Resolve-ProfileInheritance -InputProfile $parentProfile -ProfilesDirectory $ProfilesDirectory -Visited $Visited
 
                 $result += $parentChain
 
@@ -256,9 +256,10 @@ function Resolve-ProfileInheritance {
     }
 
     # Add current profile
-    $result += $Profile
+    $result += $InputProfile
 
-    return $result
+    # Always return as array (prevents PowerShell from unwrapping single item)
+    return , $result
 }
 
 function Resolve-ApplicationReference {
@@ -363,10 +364,10 @@ function Merge-ProfileApplications {
 
     $mergedApps = [System.Collections.Generic.Dictionary[string, PSCustomObject]]::new()
 
-    foreach ($profile in $Profiles) {
-        Write-Status -Message "Merging applications from: $($profile.Name)" -Level 'Verbose'
+    foreach ($profileItem in $Profiles) {
+        Write-Status -Message "Merging applications from: $($profileItem.Name)" -Level 'Verbose'
 
-        foreach ($appRef in $profile.Applications) {
+        foreach ($appRef in $profileItem.Applications) {
             # Resolve application reference (supports legacy and new formats)
             $app = Resolve-ApplicationReference -AppReference $appRef
 
@@ -378,7 +379,7 @@ function Merge-ProfileApplications {
 
             # If app already exists, the later profile (child) overrides
             if ($mergedApps.ContainsKey($appName)) {
-                Write-Status -Message "  Override: $appName (from $($profile.Name))" -Level 'Verbose'
+                Write-Status -Message "  Override: $appName (from $($profileItem.Name))" -Level 'Verbose'
             } else {
                 Write-Status -Message "  Add: $appName" -Level 'Verbose'
             }
@@ -463,15 +464,15 @@ function Merge-ProfileSystemConfig {
 
     $mergedConfig = @{}
 
-    foreach ($profile in $Profiles) {
-        if (-not $profile.SystemConfig -or $profile.SystemConfig.Count -eq 0) {
+    foreach ($profileItem in $Profiles) {
+        if (-not $profileItem.SystemConfig -or $profileItem.SystemConfig.Count -eq 0) {
             continue
         }
 
-        Write-Status -Message "Merging system config from: $($profile.Name)" -Level 'Verbose'
+        Write-Status -Message "Merging system config from: $($profileItem.Name)" -Level 'Verbose'
 
-        foreach ($key in $profile.SystemConfig.Keys) {
-            $value = $profile.SystemConfig[$key]
+        foreach ($key in $profileItem.SystemConfig.Keys) {
+            $value = $profileItem.SystemConfig[$key]
 
             # Deep merge for nested hashtables
             if ($mergedConfig.ContainsKey($key)) {
@@ -530,7 +531,7 @@ function Get-DeploymentProfile {
 
         # Resolve inheritance
         Write-Status -Message "Resolving inheritance chain..." -Level 'Info'
-        $profileChain = Resolve-ProfileInheritance -Profile $baseProfile -ProfilesDirectory $ProfilesDirectory
+        $profileChain = Resolve-ProfileInheritance -InputProfile $baseProfile -ProfilesDirectory $ProfilesDirectory
 
         Write-Status -Message "Inheritance chain: $($profileChain.Name -join ' -> ')" -Level 'Info'
 

@@ -1,0 +1,105 @@
+name: Win11Forge CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: PSScriptAnalyzer
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $results = @()
+          $paths = @('Core', 'Modules', 'Tests', 'Tools')
+
+          foreach ($path in $paths) {
+            if (Test-Path $path) {
+              $issues = Invoke-ScriptAnalyzer -Path $path -Recurse -Severity Error,Warning `
+                -ExcludeRule PSAvoidUsingWriteHost,PSUseSingularNouns,PSUseBOMForUnicodeEncodedFile,PSUseShouldProcessForStateChangingFunctions,PSUseProcessBlockForPipelineCommand,PSAvoidAssignmentToAutomaticVariable,PSAvoidUsingInvokeExpression
+              $results += $issues
+            }
+          }
+
+          if ($results.Count -gt 0) {
+            Write-Host "PSScriptAnalyzer found $($results.Count) issue(s):" -ForegroundColor Red
+            $results | Format-Table -AutoSize -Wrap
+            exit 1
+          }
+
+          Write-Host "PSScriptAnalyzer: No issues found" -ForegroundColor Green
+
+  test:
+    name: Pester Tests
+    runs-on: windows-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0.0
+
+      - name: Run Pester Tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = 'Tests'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Normal'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = 'TestResults.xml'
+          $config.TestResult.OutputFormat = 'NUnitXML'
+
+          Invoke-Pester -Configuration $config
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults.xml
+
+  validate:
+    name: Framework Validation
+    runs-on: windows-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate Version Consistency
+        shell: pwsh
+        run: |
+          if (Test-Path 'Tools/Verify-VersionConsistency.ps1') {
+            & 'Tools/Verify-VersionConsistency.ps1'
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "Version consistency check failed" -ForegroundColor Red
+              exit 1
+            }
+          }
+
+      - name: Validate App Database
+        shell: pwsh
+        run: |
+          if (Test-Path 'Tools/Validate-AppDatabase.ps1') {
+            & 'Tools/Validate-AppDatabase.ps1'
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "App database validation failed" -ForegroundColor Red
+              exit 1
+            }
+          }

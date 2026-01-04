@@ -256,12 +256,6 @@ function Search-DirectDownload {
 
     Write-ColorOutput "`n🌐 Searching for Direct Download URLs..." -Color Cyan
 
-    # Common direct download patterns
-    $searchUrls = @(
-        "https://www.google.com/search?q=$Query+direct+download+exe+site:github.com"
-        "https://www.google.com/search?q=$Query+official+download"
-    )
-
     $suggestions = @()
 
     # Check common patterns

@@ -1,8 +1,5 @@
 Import-Module PSScriptAnalyzer -Force
 
-# Use framework PSScriptAnalyzer settings
-$settingsFile = Join-Path $PSScriptRoot '..\PSScriptAnalyzerSettings.psd1'
-
 $files = @(
     'Deploy-Win11Environment.ps1',
     'Modules/InstallationEngine.psm1',

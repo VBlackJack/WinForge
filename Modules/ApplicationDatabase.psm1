@@ -1,11 +1,117 @@
 # ApplicationDatabase.psm1
 # Module for interacting with the centralized application database
 # Author: Julien Bombled
-# Version: 2.5.0
+# Version: 2.6.0
 # Last Updated: 2025-10-06
 
 $Script:DatabasePath = Join-Path $PSScriptRoot "..\Apps\Database\applications.json"
 $Script:DatabaseCache = $null
+$Script:DatabaseLastModified = $null
+$Script:FileWatcher = $null
+$Script:FileWatcherEnabled = $false
+
+# === FILE WATCHER FUNCTIONS ===
+
+function Enable-DatabaseFileWatcher {
+    <#
+    .SYNOPSIS
+        Enables automatic database reload when the file changes.
+    .DESCRIPTION
+        Sets up a FileSystemWatcher to monitor the applications.json file
+        and automatically invalidate the cache when changes are detected.
+    #>
+    [CmdletBinding()]
+    param()
+
+    if ($Script:FileWatcherEnabled) {
+        Write-Verbose "Database file watcher already enabled"
+        return
+    }
+
+    try {
+        $databaseDir = Split-Path $Script:DatabasePath -Parent
+        $databaseFile = Split-Path $Script:DatabasePath -Leaf
+
+        $Script:FileWatcher = New-Object System.IO.FileSystemWatcher
+        $Script:FileWatcher.Path = $databaseDir
+        $Script:FileWatcher.Filter = $databaseFile
+        $Script:FileWatcher.NotifyFilter = [System.IO.NotifyFilters]::LastWrite -bor [System.IO.NotifyFilters]::Size
+        $Script:FileWatcher.EnableRaisingEvents = $true
+
+        # Register event handler for file changes
+        Register-ObjectEvent -InputObject $Script:FileWatcher -EventName Changed -Action {
+            $Script:DatabaseCache = $null
+            Write-Verbose "Database file changed - cache invalidated"
+        } -SourceIdentifier 'Win11Forge.DatabaseWatcher' | Out-Null
+
+        $Script:FileWatcherEnabled = $true
+        Write-Verbose "Database file watcher enabled for: $Script:DatabasePath"
+    } catch {
+        Write-Warning "Could not enable database file watcher: $($_.Exception.Message)"
+    }
+}
+
+function Disable-DatabaseFileWatcher {
+    <#
+    .SYNOPSIS
+        Disables the database file watcher.
+    #>
+    [CmdletBinding()]
+    param()
+
+    if (-not $Script:FileWatcherEnabled) {
+        return
+    }
+
+    try {
+        Unregister-Event -SourceIdentifier 'Win11Forge.DatabaseWatcher' -ErrorAction SilentlyContinue
+        if ($Script:FileWatcher) {
+            $Script:FileWatcher.EnableRaisingEvents = $false
+            $Script:FileWatcher.Dispose()
+            $Script:FileWatcher = $null
+        }
+        $Script:FileWatcherEnabled = $false
+        Write-Verbose "Database file watcher disabled"
+    } catch {
+        Write-Warning "Could not disable database file watcher: $($_.Exception.Message)"
+    }
+}
+
+function Test-DatabaseFileChanged {
+    <#
+    .SYNOPSIS
+        Checks if the database file has been modified since last load.
+    .OUTPUTS
+        Boolean indicating if file has changed.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    if (-not (Test-Path $Script:DatabasePath)) {
+        return $false
+    }
+
+    $currentModified = (Get-Item $Script:DatabasePath).LastWriteTime
+    if ($null -eq $Script:DatabaseLastModified) {
+        return $false
+    }
+
+    return ($currentModified -gt $Script:DatabaseLastModified)
+}
+
+function Clear-DatabaseCache {
+    <#
+    .SYNOPSIS
+        Clears the database cache, forcing a reload on next access.
+    #>
+    [CmdletBinding()]
+    param()
+
+    $Script:DatabaseCache = $null
+    $Script:DatabaseLastModified = $null
+    Write-Verbose "Database cache cleared"
+}
 
 <#
 .SYNOPSIS
@@ -17,9 +123,17 @@ $Script:DatabaseCache = $null
 #>
 function Get-ApplicationDatabase {
     [CmdletBinding()]
-    param()
+    param(
+        [Parameter()]
+        [switch]$ForceReload
+    )
 
     try {
+        # Check if reload is needed (manual or file watcher triggered)
+        if ($ForceReload) {
+            $Script:DatabaseCache = $null
+        }
+
         # Return cached version if available
         if ($null -ne $Script:DatabaseCache) {
             return $Script:DatabaseCache
@@ -31,8 +145,9 @@ function Get-ApplicationDatabase {
 
         $jsonContent = Get-Content -Path $Script:DatabasePath -Raw -Encoding UTF8
         $Script:DatabaseCache = $jsonContent | ConvertFrom-Json
+        $Script:DatabaseLastModified = (Get-Item $Script:DatabasePath).LastWriteTime
 
-        Write-Verbose "Loaded application database (Version: $($Script:DatabaseCache.DatabaseVersion), Apps: $($Script:DatabaseCache.TotalApplications))"
+        Write-Verbose "Database loaded: $($Script:DatabaseCache.Applications.Count) applications"
 
         return $Script:DatabaseCache
     }

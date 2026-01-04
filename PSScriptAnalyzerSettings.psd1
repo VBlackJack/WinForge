@@ -1,5 +1,5 @@
 @{
-    # PSScriptAnalyzer configuration for Win11Forge v2.5.0
+    # PSScriptAnalyzer configuration for Win11Forge v2.6.0
     # https://github.com/PowerShell/PSScriptAnalyzer
 
     # === SEVERITY ===
@@ -108,7 +108,11 @@
         # ShouldProcess support planned for v3.0 - requires extensive refactoring
         # 15 functions affected: Set-* in SystemConfig, Start-*, Update-*, New-*, Reset-*
         # Current implementation is stable and tested - adding -WhatIf/-Confirm is enhancement, not bug fix
-        'PSUseShouldProcessForStateChangingFunctions'
+        'PSUseShouldProcessForStateChangingFunctions',
+
+        # Invoke-Expression is used safely in parallel block to define function from trusted source
+        # This is necessary for exporting functions to ForEach-Object -Parallel scope
+        'PSAvoidUsingInvokeExpression'
     )
 
     # === CODE FORMATTING ===

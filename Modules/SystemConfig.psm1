@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - System Configuration Version: 2.5.0 (FIXED)
+    Win11Forge - System Configuration Version: 2.6.0 (FIXED)
 
 .DESCRIPTION
     Applies system configuration from profile JSON:
@@ -13,7 +13,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.5.0
+    Version: 2.6.0
     Fixed: DNS array handling bug
     Fixed: Taskbar error handling
     Requires administrator privileges
@@ -244,7 +244,7 @@ function Set-NetworkConfiguration {
 
     Write-Status -Message "Configuring Network settings..." -Level 'Info'
 
-    # Configure DNS servers - ULTRA ROBUST FIX v2.5.0
+    # Configure DNS servers - ULTRA ROBUST FIX v2.6.0
     if ($Config.ContainsKey('DnsServers') -and $Config.DnsServers) {
         try {
             # Build DNS array - handle all input types

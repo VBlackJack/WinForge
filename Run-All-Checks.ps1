@@ -29,9 +29,9 @@ function Write-Banner {
 $root = $PSScriptRoot
 Write-Banner 'Win11Forge - Run All Checks'
 
-$fail = $false
+$script:fail = $false
 
-function Run-Step {
+function Invoke-Step {
   param(
     [string]$Name,
     [scriptblock]$Action
@@ -43,7 +43,7 @@ function Run-Step {
   } catch {
     Write-Host "[FAIL] $Name" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor DarkRed
-    $global:fail = $true
+    $script:fail = $true
   }
   Write-Host ''
 }
@@ -51,31 +51,31 @@ function Run-Step {
 # 1) Version consistency
 $verScript = Join-Path $root 'Tools/Verify-VersionConsistency.ps1'
 if (Test-Path $verScript) {
-  Run-Step 'Version consistency check' { & $verScript; if ($LASTEXITCODE -ne 0) { throw 'Version mismatch' } }
+  Invoke-Step 'Version consistency check' { & $verScript; if ($LASTEXITCODE -ne 0) { throw 'Version mismatch' } }
 } else { Write-Host "[SKIP] $verScript not found" -ForegroundColor DarkYellow }
 
 # 2) PSScriptAnalyzer
 $analyze = Join-Path $root 'Tools/Invoke-PSScriptAnalyzer.ps1'
 if (Test-Path $analyze) {
-  Run-Step 'Static analysis (PSScriptAnalyzer)' { & $analyze }
+  Invoke-Step 'Static analysis (PSScriptAnalyzer)' { & $analyze }
 } else { Write-Host "[SKIP] $analyze not found" -ForegroundColor DarkYellow }
 
 # 3) Framework validation
 $validate = Join-Path $root 'Tools/Validate-Framework.ps1'
 if (Test-Path $validate) {
-  Run-Step 'Framework validation' { & $validate -Detailed; if ($LASTEXITCODE -ne 0) { throw 'Validation failed' } }
+  Invoke-Step 'Framework validation' { & $validate -Detailed; if ($LASTEXITCODE -ne 0) { throw 'Validation failed' } }
 } else { Write-Host "[SKIP] $validate not found" -ForegroundColor DarkYellow }
 
 # 4) App DB validation
 $dbval = Join-Path $root 'Tools/Validate-AppDatabase.ps1'
 if (Test-Path $dbval) {
-  Run-Step 'Application database validation' { & $dbval; if ($LASTEXITCODE -ne 0) { throw 'App database validation failed' } }
+  Invoke-Step 'Application database validation' { & $dbval; if ($LASTEXITCODE -ne 0) { throw 'App database validation failed' } }
 } else { Write-Host "[SKIP] $dbval not found" -ForegroundColor DarkYellow }
 
 # 5) Tests (Pester)
 $tests = Join-Path $root 'Tests/Invoke-Tests.ps1'
 if (Test-Path $tests) {
-  Run-Step 'Pester tests' { & $tests; if ($LASTEXITCODE -ne 0) { throw 'Tests failed' } }
+  Invoke-Step 'Pester tests' { & $tests; if ($LASTEXITCODE -ne 0) { throw 'Tests failed' } }
 } else { Write-Host "[SKIP] $tests not found" -ForegroundColor DarkYellow }
 
 if ($fail) {

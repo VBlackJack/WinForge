@@ -1,0 +1,266 @@
+<#
+.SYNOPSIS
+    Pester tests for Prerequisites module
+
+.DESCRIPTION
+    Comprehensive unit tests for Win11Forge Prerequisites v2.5.0
+    Tests prerequisite detection, environment refresh, and installation helpers
+
+.NOTES
+    Author: Julien Bombled
+    Version: 2.5.0
+    Requires: Pester v5+
+#>
+
+BeforeAll {
+    $script:ModuleRoot = Join-Path $PSScriptRoot '..\Modules'
+    $script:PrereqPath = Join-Path $script:ModuleRoot 'Prerequisites.psm1'
+    $script:CorePath = Join-Path $PSScriptRoot '..\Core\Core.psm1'
+
+    # Import Core first
+    if (Test-Path $script:CorePath) {
+        Import-Module $script:CorePath -Force -ErrorAction Stop
+    }
+
+    Import-Module $script:PrereqPath -Force -ErrorAction Stop
+}
+
+Describe 'Prerequisites Module' {
+    Context 'Module Loading' {
+        It 'Should load without errors' {
+            { Import-Module $script:PrereqPath -Force } | Should -Not -Throw
+        }
+
+        It 'Should export Install-Chocolatey function' {
+            Get-Command Install-Chocolatey -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
+
+        It 'Should export Install-PowerShell7 function' {
+            Get-Command Install-PowerShell7 -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
+
+        It 'Should export Install-DotNetRuntime function' {
+            Get-Command Install-DotNetRuntime -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
+
+        It 'Should export Install-VCRedist function' {
+            Get-Command Install-VCRedist -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
+
+        It 'Should export Install-JavaRuntime function' {
+            Get-Command Install-JavaRuntime -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
+
+        It 'Should export Test-Prerequisites function' {
+            Get-Command Test-Prerequisites -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
+
+        It 'Should export Update-EnvironmentPath function' {
+            Get-Command Update-EnvironmentPath -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
+
+        It 'Should export Invoke-EnvironmentRefresh function' {
+            Get-Command Invoke-EnvironmentRefresh -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context 'Update-EnvironmentPath' {
+        It 'Should return a boolean' {
+            $result = Update-EnvironmentPath
+            $result | Should -BeOfType [bool]
+        }
+
+        It 'Should complete without throwing' {
+            { Update-EnvironmentPath } | Should -Not -Throw
+        }
+
+        It 'Should update PATH environment variable' {
+            Update-EnvironmentPath
+            # PATH should still be set (may or may not change)
+            $env:PATH | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context 'Invoke-EnvironmentRefresh' {
+        It 'Should complete without throwing' {
+            { Invoke-EnvironmentRefresh } | Should -Not -Throw
+        }
+
+        It 'Should maintain valid PATH' {
+            Invoke-EnvironmentRefresh
+            $env:PATH | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context 'Test-Prerequisites' {
+        It 'Should return an ordered dictionary' {
+            $result = Test-Prerequisites
+            $result | Should -BeOfType [System.Collections.Specialized.OrderedDictionary]
+        }
+
+        It 'Should have Chocolatey key' {
+            $result = Test-Prerequisites
+            $result.Contains('Chocolatey') | Should -BeTrue
+        }
+
+        It 'Should have PowerShell7 key' {
+            $result = Test-Prerequisites
+            $result.Contains('PowerShell7') | Should -BeTrue
+        }
+
+        It 'Should have Winget key' {
+            $result = Test-Prerequisites
+            $result.Contains('Winget') | Should -BeTrue
+        }
+
+        It 'Should have DotNet key' {
+            $result = Test-Prerequisites
+            $result.Contains('DotNet') | Should -BeTrue
+        }
+
+        It 'Should have DotNetFramework key' {
+            $result = Test-Prerequisites
+            $result.Contains('DotNetFramework') | Should -BeTrue
+        }
+
+        It 'Should have Java key' {
+            $result = Test-Prerequisites
+            $result.Contains('Java') | Should -BeTrue
+        }
+
+        It 'Should have VCRedist key' {
+            $result = Test-Prerequisites
+            $result.Contains('VCRedist') | Should -BeTrue
+        }
+
+        It 'Each prerequisite should have Installed property' {
+            $result = Test-Prerequisites
+            foreach ($key in $result.Keys) {
+                $result[$key].Contains('Installed') | Should -BeTrue -Because "$key should have Installed property"
+            }
+        }
+
+        It 'Each prerequisite should have Version property' {
+            $result = Test-Prerequisites
+            foreach ($key in $result.Keys) {
+                $result[$key].Contains('Version') | Should -BeTrue -Because "$key should have Version property"
+            }
+        }
+
+        It 'Installed properties should be boolean' {
+            $result = Test-Prerequisites
+            foreach ($key in $result.Keys) {
+                $result[$key].Installed | Should -BeOfType [bool] -Because "$key.Installed should be boolean"
+            }
+        }
+
+        It 'Should complete within reasonable time' {
+            $duration = Measure-Command { Test-Prerequisites }
+            $duration.TotalSeconds | Should -BeLessThan 30
+        }
+    }
+
+    Context 'Install-Chocolatey' {
+        It 'Should have Force parameter' {
+            $cmd = Get-Command Install-Chocolatey
+            $cmd.Parameters.ContainsKey('Force') | Should -BeTrue
+        }
+
+        It 'Should return boolean or not throw when already installed' {
+            # If Chocolatey is installed, should return true without action
+            # If not installed, would attempt installation (requires admin)
+            $chocoInstalled = $null -ne (Get-Command -Name 'choco' -ErrorAction SilentlyContinue)
+            if ($chocoInstalled) {
+                $result = Install-Chocolatey
+                $result | Should -BeTrue
+            }
+        }
+    }
+
+    Context 'Install-PowerShell7' {
+        It 'Should have Force parameter' {
+            $cmd = Get-Command Install-PowerShell7
+            $cmd.Parameters.ContainsKey('Force') | Should -BeTrue
+        }
+
+        It 'Should return true if PS7+ already running' {
+            if ($PSVersionTable.PSVersion.Major -ge 7) {
+                $result = Install-PowerShell7
+                $result | Should -BeTrue
+            }
+        }
+    }
+
+    Context 'Install-DotNetRuntime' {
+        It 'Should have Force parameter' {
+            $cmd = Get-Command Install-DotNetRuntime
+            $cmd.Parameters.ContainsKey('Force') | Should -BeTrue
+        }
+
+        It 'Should have CmdletBinding' {
+            $cmd = Get-Command Install-DotNetRuntime
+            $cmd.CmdletBinding | Should -BeTrue
+        }
+    }
+
+    Context 'Install-VCRedist' {
+        It 'Should have Force parameter' {
+            $cmd = Get-Command Install-VCRedist
+            $cmd.Parameters.ContainsKey('Force') | Should -BeTrue
+        }
+    }
+
+    Context 'Install-JavaRuntime' {
+        It 'Should have Force parameter' {
+            $cmd = Get-Command Install-JavaRuntime
+            $cmd.Parameters.ContainsKey('Force') | Should -BeTrue
+        }
+    }
+}
+
+Describe 'Prerequisites Integration Tests' {
+    Context 'Detection Consistency' {
+        It 'Test-Prerequisites should be deterministic' {
+            $first = Test-Prerequisites
+            $second = Test-Prerequisites
+
+            foreach ($key in $first.Keys) {
+                $first[$key].Installed | Should -Be $second[$key].Installed -Because "$key detection should be consistent"
+            }
+        }
+    }
+
+    Context 'Environment Refresh' {
+        It 'Environment refresh should not break PATH' {
+            Invoke-EnvironmentRefresh
+            $env:PATH | Should -Not -BeNullOrEmpty
+            # PATH should contain at least some of the original entries
+            $env:PATH.Length | Should -BeGreaterThan 10
+        }
+
+        It 'Multiple refreshes should be safe' {
+            {
+                Invoke-EnvironmentRefresh
+                Invoke-EnvironmentRefresh
+                Invoke-EnvironmentRefresh
+            } | Should -Not -Throw
+        }
+    }
+
+    Context 'PowerShell Version Detection' {
+        It 'Should correctly detect PowerShell version' {
+            $result = Test-Prerequisites
+            $currentMajor = $PSVersionTable.PSVersion.Major
+
+            if ($currentMajor -ge 7) {
+                $result.PowerShell7.Installed | Should -BeTrue
+            }
+        }
+
+        It 'Should report PowerShell version string' {
+            $result = Test-Prerequisites
+            $result.PowerShell7.Version | Should -Not -BeNullOrEmpty
+            $result.PowerShell7.Version | Should -Match '\d+\.\d+'
+        }
+    }
+}
