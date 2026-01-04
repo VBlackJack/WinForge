@@ -145,7 +145,10 @@ public partial class DeploymentViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            // Show full error for debugging
+            ErrorMessage = ex.InnerException != null
+                ? $"{ex.Message}\n\nInner: {ex.InnerException.Message}\n\nStack: {ex.StackTrace}"
+                : ex.ToString();
         }
         finally
         {
@@ -187,7 +190,13 @@ public partial class DeploymentViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            // Show full error with inner exception for debugging
+            var fullError = ex.ToString();
+            if (ex.InnerException != null)
+            {
+                fullError = $"{ex.Message}\n\nInner: {ex.InnerException.Message}\n\nStack: {ex.StackTrace}";
+            }
+            ErrorMessage = fullError;
             CurrentProfile = null;
             ProfileSummary = string.Empty;
         }

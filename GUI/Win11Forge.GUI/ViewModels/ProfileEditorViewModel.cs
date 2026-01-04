@@ -134,7 +134,10 @@ public partial class ProfileEditorViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            // Show full error for debugging
+            ErrorMessage = ex.InnerException != null
+                ? $"{ex.Message}\n\nInner: {ex.InnerException.Message}\n\nStack: {ex.StackTrace}"
+                : ex.ToString();
         }
         finally
         {

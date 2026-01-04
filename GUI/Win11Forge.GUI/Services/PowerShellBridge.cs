@@ -42,6 +42,91 @@ public class PowerShellBridge : IPowerShellBridge
     }
 
     /// <summary>
+    /// Finds the PowerShell executable path.
+    /// </summary>
+    private static string? _powerShellPath;
+    private static string GetPowerShellPath()
+    {
+        if (_powerShellPath != null) return _powerShellPath;
+
+        // Try PowerShell 7 first
+        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        if (!string.IsNullOrEmpty(programFiles))
+        {
+            var pwshPath = Path.Combine(programFiles, "PowerShell", "7", "pwsh.exe");
+            if (File.Exists(pwshPath))
+            {
+                _powerShellPath = pwshPath;
+                return _powerShellPath;
+            }
+        }
+
+        // Try Windows PowerShell
+        var systemPath = Environment.GetFolderPath(Environment.SpecialFolder.System);
+        if (!string.IsNullOrEmpty(systemPath))
+        {
+            var winPsPath = Path.Combine(systemPath, "WindowsPowerShell", "v1.0", "powershell.exe");
+            if (File.Exists(winPsPath))
+            {
+                _powerShellPath = winPsPath;
+                return _powerShellPath;
+            }
+        }
+
+        // Fallback to just "pwsh" or "powershell" hoping it's in PATH
+        _powerShellPath = "pwsh";
+        return _powerShellPath;
+    }
+
+    /// <summary>
+    /// Creates a PowerShell instance using external process.
+    /// The returned wrapper uses process-based execution.
+    /// </summary>
+    private PowerShellProcessWrapper CreatePowerShellInstance()
+    {
+        return new PowerShellProcessWrapper(GetPowerShellPath(), GetSafeRepositoryRoot());
+    }
+
+    /// <summary>
+    /// Executes a PowerShell script using external process.
+    /// This avoids SDK issues in single-file deployments.
+    /// </summary>
+    private async Task<string> ExecutePowerShellScriptAsync(string script)
+    {
+        var psPath = GetPowerShellPath();
+        var repoRoot = GetSafeRepositoryRoot();
+
+        // Escape script for command line
+        var encodedScript = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(script));
+
+        var startInfo = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = psPath,
+            Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encodedScript}",
+            WorkingDirectory = repoRoot,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+
+        using var process = new System.Diagnostics.Process { StartInfo = startInfo };
+        process.Start();
+
+        var output = await process.StandardOutput.ReadToEndAsync();
+        var error = await process.StandardError.ReadToEndAsync();
+
+        await process.WaitForExitAsync();
+
+        if (process.ExitCode != 0 && !string.IsNullOrEmpty(error))
+        {
+            throw new InvalidOperationException($"PowerShell error: {error}");
+        }
+
+        return output;
+    }
+
+    /// <summary>
     /// Resolves repository root with guaranteed non-null result.
     /// </summary>
     private static string ResolveRepositoryRootSafe()
@@ -89,10 +174,27 @@ public class PowerShellBridge : IPowerShellBridge
     /// <inheritdoc/>
     public string RepositoryRoot => _repositoryRoot;
 
+    /// <summary>
+    /// Gets the repository root, throwing if not properly initialized.
+    /// </summary>
+    private string GetSafeRepositoryRoot()
+    {
+        if (string.IsNullOrEmpty(_repositoryRoot))
+        {
+            throw new InvalidOperationException(
+                $"Repository root is not initialized. " +
+                $"ProcessPath={Environment.ProcessPath}, " +
+                $"BaseDirectory={AppContext.BaseDirectory}, " +
+                $"CurrentDirectory={Environment.CurrentDirectory}");
+        }
+        return _repositoryRoot;
+    }
+
     /// <inheritdoc/>
     public async Task<string> GetWin11ForgeVersionAsync()
     {
-        var versionFilePath = Path.Combine(_repositoryRoot, "Config", "version.json");
+        var repoRoot = GetSafeRepositoryRoot();
+        var versionFilePath = Path.Combine(repoRoot, "Config", "version.json");
 
         if (!File.Exists(versionFilePath))
         {
@@ -120,7 +222,8 @@ public class PowerShellBridge : IPowerShellBridge
     /// <inheritdoc/>
     public async Task<List<string>> GetAvailableProfilesAsync()
     {
-        var profilesDir = Path.Combine(_repositoryRoot, "Profiles");
+        var repoRoot = GetSafeRepositoryRoot();
+        var profilesDir = Path.Combine(repoRoot, "Profiles");
 
         if (!Directory.Exists(profilesDir))
         {
@@ -144,55 +247,138 @@ public class PowerShellBridge : IPowerShellBridge
         // Ensure applications database is loaded
         await EnsureApplicationsCacheAsync();
 
-        var modulePath = Path.Combine(_repositoryRoot, "Modules", "ProfileManager.psm1");
-        var corePath = Path.Combine(_repositoryRoot, "Core", "Core.psm1");
-        var profilesDir = Path.Combine(_repositoryRoot, "Profiles");
+        var repoRoot = GetSafeRepositoryRoot();
+        var profilesDir = Path.Combine(repoRoot, "Profiles");
 
-        return await Task.Run(() =>
+        // Load profile directly from JSON (no PowerShell needed)
+        return await LoadProfileFromJsonAsync(profileName, profilesDir, new List<string>());
+    }
+
+    /// <summary>
+    /// Loads a profile from JSON file with inheritance support.
+    /// </summary>
+    private async Task<DeploymentProfileModel> LoadProfileFromJsonAsync(
+        string profileName,
+        string profilesDir,
+        List<string> inheritanceChain)
+    {
+        var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
+
+        if (!File.Exists(profilePath))
         {
-            using var ps = PowerShell.Create();
+            throw new FileNotFoundException($"Profile not found: {profileName}");
+        }
 
-            // Set execution policy for this process
-            ps.AddCommand("Set-ExecutionPolicy")
-              .AddParameter("ExecutionPolicy", "Bypass")
-              .AddParameter("Scope", "Process")
-              .AddParameter("Force");
-            ps.Invoke();
-            ps.Commands.Clear();
+        var jsonContent = await File.ReadAllTextAsync(profilePath);
+        using var document = JsonDocument.Parse(jsonContent);
+        var root = document.RootElement;
 
-            // Import Core module first (provides Write-Status)
-            ps.AddScript($"Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue");
-            ps.Invoke();
-            ps.Commands.Clear();
+        var profile = new DeploymentProfileModel
+        {
+            Name = GetJsonString(root, "Name") ?? profileName,
+            Description = GetJsonString(root, "Description") ?? string.Empty,
+            Version = GetJsonString(root, "Version") ?? "1.0.0"
+        };
 
-            // Import ProfileManager module
-            ps.AddScript($"Import-Module '{modulePath}' -Force");
-            ps.Invoke();
-            ps.Commands.Clear();
+        // Track inheritance chain
+        inheritanceChain.Add(profileName);
 
-            // Call Get-DeploymentProfile
-            ps.AddCommand("Get-DeploymentProfile")
-              .AddParameter("ProfileName", profileName)
-              .AddParameter("ProfilesDirectory", profilesDir);
+        // Handle inheritance
+        var allAppIds = new List<string>();
 
-            var results = ps.Invoke();
-
-            if (ps.HadErrors)
+        if (root.TryGetProperty("Inherits", out var inheritsElement) &&
+            inheritsElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var parentName in inheritsElement.EnumerateArray())
             {
-                var errors = string.Join(Environment.NewLine,
-                    ps.Streams.Error.Select(e => e.ToString()));
-                throw new InvalidOperationException($"Failed to load profile: {errors}");
+                var parentNameStr = parentName.GetString();
+                if (!string.IsNullOrEmpty(parentNameStr) && !inheritanceChain.Contains(parentNameStr))
+                {
+                    profile.InheritedFrom.Add(parentNameStr);
+
+                    // Load parent profile and merge apps
+                    var parentProfile = await LoadProfileFromJsonAsync(parentNameStr, profilesDir, inheritanceChain);
+                    foreach (var app in parentProfile.Applications)
+                    {
+                        if (!allAppIds.Contains(app.AppId))
+                        {
+                            allAppIds.Add(app.AppId);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Add this profile's applications
+        if (root.TryGetProperty("Applications", out var appsElement) &&
+            appsElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var appElement in appsElement.EnumerateArray())
+            {
+                string? appId = null;
+
+                if (appElement.ValueKind == JsonValueKind.String)
+                {
+                    appId = appElement.GetString();
+                }
+                else if (appElement.ValueKind == JsonValueKind.Object)
+                {
+                    appId = GetJsonString(appElement, "AppId");
+                }
+
+                if (!string.IsNullOrEmpty(appId) && !allAppIds.Contains(appId))
+                {
+                    allAppIds.Add(appId);
+                }
+            }
+        }
+
+        // Convert app IDs to ApplicationModels
+        profile.Applications = new ObservableCollection<ApplicationModel>(
+            allAppIds.Select(appId => CreateApplicationModel(appId))
+                     .OrderBy(a => a.Priority)
+        );
+
+        return profile;
+    }
+
+    /// <summary>
+    /// Creates an ApplicationModel from an app ID using the applications cache.
+    /// </summary>
+    private ApplicationModel CreateApplicationModel(string appId)
+    {
+        var app = new ApplicationModel
+        {
+            AppId = appId,
+            Name = appId,
+            Category = "Unknown",
+            Priority = 50,
+            IsRequired = false,
+            Status = ApplicationStatus.Pending,
+            IsSelected = true
+        };
+
+        // Enrich from applications database
+        if (_applicationsCache != null && _applicationsCache.TryGetValue(appId, out var appData))
+        {
+            app.Name = GetJsonString(appData, "Name") ?? appId;
+            app.Category = GetJsonString(appData, "Category") ?? "Unknown";
+            app.Description = GetJsonString(appData, "Description") ?? string.Empty;
+
+            if (appData.TryGetProperty("DefaultPriority", out var priorityProp) &&
+                priorityProp.ValueKind == JsonValueKind.Number)
+            {
+                app.Priority = priorityProp.GetInt32();
             }
 
-            if (results.Count == 0)
+            if (appData.TryGetProperty("DefaultRequired", out var requiredProp) &&
+                requiredProp.ValueKind == JsonValueKind.True)
             {
-                throw new InvalidOperationException($"Profile '{profileName}' returned no data");
+                app.IsRequired = true;
             }
+        }
 
-            // Convert PSObject/Hashtable to our model
-            var psResult = results[0];
-            return ConvertToDeploymentProfile(psResult);
-        });
+        return app;
     }
 
     /// <inheritdoc/>
@@ -209,9 +395,10 @@ public class PowerShellBridge : IPowerShellBridge
             return InstallResult.DryRun(app.Name);
         }
 
-        var corePath = Path.Combine(_repositoryRoot, "Core", "Core.psm1");
-        var dbModulePath = Path.Combine(_repositoryRoot, "Modules", "ApplicationDatabase.psm1");
-        var enginePath = Path.Combine(_repositoryRoot, "Modules", "InstallationEngine.psm1");
+        var repoRoot = GetSafeRepositoryRoot();
+        var corePath = Path.Combine(repoRoot, "Core", "Core.psm1");
+        var dbModulePath = Path.Combine(repoRoot, "Modules", "ApplicationDatabase.psm1");
+        var enginePath = Path.Combine(repoRoot, "Modules", "InstallationEngine.psm1");
 
         return await Task.Run(() =>
         {
@@ -220,7 +407,7 @@ public class PowerShellBridge : IPowerShellBridge
             try
             {
                 // Create isolated PowerShell instance for thread safety
-                using var ps = PowerShell.Create();
+                using var ps = CreatePowerShellInstance();
 
                 // Capture output streams
                 ps.Streams.Information.DataAdded += (s, e) =>
@@ -457,7 +644,8 @@ public class PowerShellBridge : IPowerShellBridge
     {
         if (_applicationsCache != null) return;
 
-        var dbPath = Path.Combine(_repositoryRoot, "Apps", "Database", "applications.json");
+        var repoRoot = GetSafeRepositoryRoot();
+        var dbPath = Path.Combine(repoRoot, "Apps", "Database", "applications.json");
 
         if (!File.Exists(dbPath))
         {
@@ -505,7 +693,8 @@ public class PowerShellBridge : IPowerShellBridge
     /// </summary>
     public async Task<string> ExecuteScriptAsync(string relativePath)
     {
-        var scriptPath = Path.Combine(_repositoryRoot, relativePath);
+        var repoRoot = GetSafeRepositoryRoot();
+        var scriptPath = Path.Combine(repoRoot, relativePath);
 
         if (!File.Exists(scriptPath))
         {
@@ -514,7 +703,7 @@ public class PowerShellBridge : IPowerShellBridge
 
         return await Task.Run(() =>
         {
-            using var ps = PowerShell.Create();
+            using var ps = CreatePowerShellInstance();
             ps.AddCommand("Set-ExecutionPolicy")
               .AddParameter("ExecutionPolicy", "Bypass")
               .AddParameter("Scope", "Process")
@@ -541,11 +730,12 @@ public class PowerShellBridge : IPowerShellBridge
     /// </summary>
     public async Task<string> ExecuteCommandAsync(string command)
     {
+        var repoRoot = GetSafeRepositoryRoot();
         return await Task.Run(() =>
         {
-            using var ps = PowerShell.Create();
+            using var ps = CreatePowerShellInstance();
 
-            ps.AddScript($"Set-Location '{_repositoryRoot}'");
+            ps.AddScript($"Set-Location '{repoRoot}'");
             ps.Invoke();
             ps.Commands.Clear();
 
@@ -644,14 +834,15 @@ public class PowerShellBridge : IPowerShellBridge
     {
         await EnsureApplicationsCacheAsync();
 
-        var modulePath = Path.Combine(_repositoryRoot, "Modules", "ProfileManager.psm1");
-        var corePath = Path.Combine(_repositoryRoot, "Core", "Core.psm1");
-        var profilesDir = Path.Combine(_repositoryRoot, "Profiles");
+        var repoRoot = GetSafeRepositoryRoot();
+        var modulePath = Path.Combine(repoRoot, "Modules", "ProfileManager.psm1");
+        var corePath = Path.Combine(repoRoot, "Core", "Core.psm1");
+        var profilesDir = Path.Combine(repoRoot, "Profiles");
         var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
 
         return await Task.Run(() =>
         {
-            using var ps = PowerShell.Create();
+            using var ps = CreatePowerShellInstance();
 
             // Set execution policy
             ps.AddCommand("Set-ExecutionPolicy")
@@ -747,15 +938,16 @@ public class PowerShellBridge : IPowerShellBridge
     /// <inheritdoc/>
     public async Task<ApplicationStatus> GetApplicationStatusAsync(string appId)
     {
-        var corePath = Path.Combine(_repositoryRoot, "Core", "Core.psm1");
-        var dbModulePath = Path.Combine(_repositoryRoot, "Modules", "ApplicationDatabase.psm1");
-        var enginePath = Path.Combine(_repositoryRoot, "Modules", "InstallationEngine.psm1");
+        var repoRoot = GetSafeRepositoryRoot();
+        var corePath = Path.Combine(repoRoot, "Core", "Core.psm1");
+        var dbModulePath = Path.Combine(repoRoot, "Modules", "ApplicationDatabase.psm1");
+        var enginePath = Path.Combine(repoRoot, "Modules", "InstallationEngine.psm1");
 
         return await Task.Run(() =>
         {
             try
             {
-                using var ps = PowerShell.Create();
+                using var ps = CreatePowerShellInstance();
 
                 // Set execution policy
                 ps.AddCommand("Set-ExecutionPolicy")
@@ -816,7 +1008,8 @@ public class PowerShellBridge : IPowerShellBridge
     /// <inheritdoc/>
     public async Task SaveProfileAsync(string profileName, string description, string? parentProfile, List<string> addedAppIds)
     {
-        var profilesDir = Path.Combine(_repositoryRoot, "Profiles");
+        var repoRoot = GetSafeRepositoryRoot();
+        var profilesDir = Path.Combine(repoRoot, "Profiles");
         var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
 
         // Ensure profiles directory exists
@@ -887,7 +1080,7 @@ public class PowerShellBridge : IPowerShellBridge
 
             try
             {
-                using var ps = PowerShell.Create();
+                using var ps = CreatePowerShellInstance();
 
                 // Set execution policy
                 ps.AddCommand("Set-ExecutionPolicy")
@@ -1061,4 +1254,232 @@ public class PowerShellBridge : IPowerShellBridge
 
         return null;
     }
+}
+
+/// <summary>
+/// Wrapper that mimics PowerShell SDK API but uses external process execution.
+/// This is needed because the PowerShell SDK doesn't work in single-file deployments.
+/// </summary>
+internal class PowerShellProcessWrapper : IDisposable
+{
+    private readonly string _psPath;
+    private readonly string _workingDir;
+    private readonly List<string> _scripts = new();
+    private readonly List<string> _errors = new();
+    private readonly List<object> _results = new();
+    private bool _hadErrors;
+
+    public PowerShellProcessWrapper(string psPath, string workingDir)
+    {
+        _psPath = psPath;
+        _workingDir = workingDir;
+    }
+
+    public bool HadErrors => _hadErrors;
+    public PowerShellStreams Streams => new(_errors);
+
+    public PowerShellProcessWrapper AddCommand(string command)
+    {
+        _scripts.Add(command);
+        return this;
+    }
+
+    public PowerShellProcessWrapper AddParameter(string name, object? value = null)
+    {
+        if (_scripts.Count > 0)
+        {
+            var lastScript = _scripts[^1];
+            if (value != null)
+            {
+                var valueStr = value.ToString()?.Replace("'", "''") ?? "";
+                _scripts[^1] = $"{lastScript} -{name} '{valueStr}'";
+            }
+            else
+            {
+                // Switch parameter (no value)
+                _scripts[^1] = $"{lastScript} -{name}";
+            }
+        }
+        return this;
+    }
+
+    public PowerShellProcessWrapper AddScript(string script)
+    {
+        _scripts.Add(script);
+        return this;
+    }
+
+    public System.Collections.ObjectModel.Collection<PSObject> Invoke()
+    {
+        var result = new System.Collections.ObjectModel.Collection<PSObject>();
+
+        if (_scripts.Count == 0)
+            return result;
+
+        var fullScript = string.Join("; ", _scripts);
+        var encodedScript = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(fullScript));
+
+        var startInfo = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = _psPath,
+            Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encodedScript}",
+            WorkingDirectory = _workingDir,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+
+        try
+        {
+            using var process = new System.Diagnostics.Process { StartInfo = startInfo };
+            process.Start();
+
+            var output = process.StandardOutput.ReadToEnd();
+            var error = process.StandardError.ReadToEnd();
+
+            process.WaitForExit();
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                _errors.Add(error);
+                _hadErrors = true;
+            }
+
+            if (!string.IsNullOrEmpty(output))
+            {
+                foreach (var line in output.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    result.Add(new PSObject(line.Trim()));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _errors.Add(ex.Message);
+            _hadErrors = true;
+        }
+
+        return result;
+    }
+
+    public void Clear()
+    {
+        _scripts.Clear();
+    }
+
+    public PowerShellCommands Commands => new(this);
+
+    public void Dispose()
+    {
+        _scripts.Clear();
+        _errors.Clear();
+    }
+}
+
+/// <summary>
+/// Wrapper for PowerShell streams.
+/// </summary>
+internal class PowerShellStreams
+{
+    private readonly List<string> _errors;
+
+    public PowerShellStreams(List<string> errors)
+    {
+        _errors = errors;
+    }
+
+    public IEnumerable<PowerShellErrorRecord> Error => _errors.Select(e => new PowerShellErrorRecord(e));
+    public PowerShellDataCollection Information => new();
+    public PowerShellDataCollection Warning => new();
+    public PowerShellDataCollection Verbose => new();
+}
+
+/// <summary>
+/// Wrapper for error records.
+/// </summary>
+internal class PowerShellErrorRecord
+{
+    private readonly string _message;
+
+    public PowerShellErrorRecord(string message)
+    {
+        _message = message;
+    }
+
+    public override string ToString() => _message;
+}
+
+/// <summary>
+/// Wrapper for data collection with DataAdded event.
+/// </summary>
+internal class PowerShellDataCollection
+{
+    private readonly List<string> _items = new();
+
+    public event EventHandler<PowerShellDataAddedEventArgs>? DataAdded;
+
+    public string? this[int index] => index >= 0 && index < _items.Count ? _items[index] : null;
+
+    public void Add(string item)
+    {
+        _items.Add(item);
+        DataAdded?.Invoke(this, new PowerShellDataAddedEventArgs { Index = _items.Count - 1 });
+    }
+}
+
+/// <summary>
+/// Event args for data added.
+/// </summary>
+internal class PowerShellDataAddedEventArgs : EventArgs
+{
+    public int Index { get; set; }
+}
+
+/// <summary>
+/// Wrapper for commands collection.
+/// </summary>
+internal class PowerShellCommands
+{
+    private readonly PowerShellProcessWrapper _wrapper;
+
+    public PowerShellCommands(PowerShellProcessWrapper wrapper)
+    {
+        _wrapper = wrapper;
+    }
+
+    public void Clear() => _wrapper.Clear();
+}
+
+/// <summary>
+/// Simple PSObject replacement for process-based execution.
+/// </summary>
+internal class PSObject
+{
+    public object? BaseObject { get; }
+
+    public PSObject(object? baseObject = null)
+    {
+        BaseObject = baseObject;
+    }
+
+    public PSObjectProperties Properties => new();
+
+    public override string? ToString() => BaseObject?.ToString();
+}
+
+/// <summary>
+/// Properties collection for PSObject.
+/// </summary>
+internal class PSObjectProperties
+{
+    public PSObjectProperty? this[string name] => null;
+}
+
+/// <summary>
+/// Property for PSObject.
+/// </summary>
+internal class PSObjectProperty
+{
+    public object? Value { get; set; }
 }
