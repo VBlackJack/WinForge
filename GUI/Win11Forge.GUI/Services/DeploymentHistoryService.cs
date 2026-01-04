@@ -36,6 +36,15 @@ public class DeploymentHistoryService : IDeploymentHistoryService
     public DeploymentHistoryService()
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+        // Fallback if LocalApplicationData is not available
+        if (string.IsNullOrEmpty(appDataPath))
+        {
+            appDataPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "AppData", "Local");
+        }
+
         var win11ForgePath = Path.Combine(appDataPath, "Win11Forge");
 
         // Ensure directory exists

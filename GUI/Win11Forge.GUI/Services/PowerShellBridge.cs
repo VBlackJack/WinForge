@@ -554,7 +554,7 @@ public class PowerShellBridge : IPowerShellBridge
 
             // Get required from DefaultRequired
             if (appData.TryGetProperty("DefaultRequired", out var requiredProp) &&
-                requiredProp.ValueKind == JsonValueKind.True || requiredProp.ValueKind == JsonValueKind.False)
+                (requiredProp.ValueKind == JsonValueKind.True || requiredProp.ValueKind == JsonValueKind.False))
             {
                 app.IsRequired = requiredProp.GetBoolean();
             }
@@ -948,7 +948,9 @@ public class PowerShellBridge : IPowerShellBridge
         {
             AppContext.BaseDirectory,
             Environment.CurrentDirectory,
-            Path.GetDirectoryName(Environment.ProcessPath) ?? string.Empty
+            Environment.ProcessPath != null
+                ? Path.GetDirectoryName(Environment.ProcessPath) ?? string.Empty
+                : string.Empty
         };
 
         foreach (var basePath in candidatePaths.Where(p => !string.IsNullOrEmpty(p)))

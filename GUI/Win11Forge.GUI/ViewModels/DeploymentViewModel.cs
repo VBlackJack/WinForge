@@ -15,6 +15,7 @@
  */
 
 using System.Collections.ObjectModel;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Models;
@@ -379,54 +380,84 @@ public partial class DeploymentViewModel : ViewModelBase
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                app.Status = ApplicationStatus.Skipped;
-                app.StatusMessage = Resources.Resources.Status_Skipped;
+                UpdateOnUI(() =>
+                {
+                    app.Status = ApplicationStatus.Skipped;
+                    app.StatusMessage = Resources.Resources.Status_Skipped;
+                });
                 return;
             }
 
-            app.Status = ApplicationStatus.Installing;
-            app.StatusMessage = Resources.Resources.Status_Installing;
+            UpdateOnUI(() =>
+            {
+                app.Status = ApplicationStatus.Installing;
+                app.StatusMessage = Resources.Resources.Status_Installing;
+            });
 
             var result = await _powerShellBridge.InstallApplicationAsync(
                 app,
                 IsDryRun,
-                progress => app.StatusMessage = progress);
+                progress => UpdateOnUI(() => app.StatusMessage = progress));
 
-            app.LogOutput = result.Logs;
-
-            if (result.Success)
+            UpdateOnUI(() =>
             {
-                app.Status = result.AlreadyInstalled
-                    ? ApplicationStatus.AlreadyInstalled
-                    : ApplicationStatus.Installed;
-                app.StatusMessage = result.AlreadyInstalled
-                    ? Resources.Resources.Status_AlreadyInstalled
-                    : Resources.Resources.Status_Installed;
-            }
-            else
-            {
-                app.Status = ApplicationStatus.Failed;
-                app.StatusMessage = Resources.Resources.Status_Failed;
-                app.ErrorMessage = result.Message;
-            }
+                app.LogOutput = result.Logs;
 
-            CompletedCount++;
-            OnPropertyChanged(nameof(CompletedCount));
+                if (result.Success)
+                {
+                    app.Status = result.AlreadyInstalled
+                        ? ApplicationStatus.AlreadyInstalled
+                        : ApplicationStatus.Installed;
+                    app.StatusMessage = result.AlreadyInstalled
+                        ? Resources.Resources.Status_AlreadyInstalled
+                        : Resources.Resources.Status_Installed;
+                }
+                else
+                {
+                    app.Status = ApplicationStatus.Failed;
+                    app.StatusMessage = Resources.Resources.Status_Failed;
+                    app.ErrorMessage = result.Message;
+                }
+
+                CompletedCount++;
+                OnPropertyChanged(nameof(CompletedCount));
+            });
         }
         catch (OperationCanceledException)
         {
-            app.Status = ApplicationStatus.Skipped;
-            app.StatusMessage = Resources.Resources.Status_Skipped;
+            UpdateOnUI(() =>
+            {
+                app.Status = ApplicationStatus.Skipped;
+                app.StatusMessage = Resources.Resources.Status_Skipped;
+            });
         }
         catch (Exception ex)
         {
-            app.Status = ApplicationStatus.Failed;
-            app.StatusMessage = Resources.Resources.Status_Failed;
-            app.ErrorMessage = ex.Message;
+            UpdateOnUI(() =>
+            {
+                app.Status = ApplicationStatus.Failed;
+                app.StatusMessage = Resources.Resources.Status_Failed;
+                app.ErrorMessage = ex.Message;
+            });
         }
         finally
         {
             _installSemaphore.Release();
+        }
+    }
+
+    /// <summary>
+    /// Helper to update UI properties on the dispatcher thread.
+    /// </summary>
+    private static void UpdateOnUI(Action action)
+    {
+        if (Application.Current?.Dispatcher?.CheckAccess() == true)
+        {
+            action();
+        }
+        else
+        {
+            Application.Current?.Dispatcher?.Invoke(action);
         }
     }
 
