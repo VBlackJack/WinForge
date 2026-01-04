@@ -171,4 +171,14 @@ public class Resources
     public static string Settings_ClearHistory_Desc => ResourceManager.GetString("Settings_ClearHistory_Desc", resourceCulture);
     public static string Settings_ClearBtn => ResourceManager.GetString("Settings_ClearBtn", resourceCulture);
     public static string Settings_HistoryCleared => ResourceManager.GetString("Settings_HistoryCleared", resourceCulture);
+
+    // Package Managers
+    public static string Dashboard_Sys_Winget => ResourceManager.GetString("Dashboard_Sys_Winget", resourceCulture);
+    public static string Dashboard_Sys_Chocolatey => ResourceManager.GetString("Dashboard_Sys_Chocolatey", resourceCulture);
+
+    // Apps Manager - Extended
+    public static string Apps_Installed => ResourceManager.GetString("Apps_Installed", resourceCulture);
+
+    // Error Messages
+    public static string Common_ErrorFallback => ResourceManager.GetString("Common_ErrorFallback", resourceCulture);
 }

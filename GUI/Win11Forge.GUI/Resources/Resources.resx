@@ -473,4 +473,23 @@
     <value>History cleared</value>
     <comment>Status message after clearing history</comment>
   </data>
+  <!-- Package Managers -->
+  <data name="Dashboard_Sys_Winget" xml:space="preserve">
+    <value>Winget:</value>
+    <comment>System info label for Winget</comment>
+  </data>
+  <data name="Dashboard_Sys_Chocolatey" xml:space="preserve">
+    <value>Chocolatey:</value>
+    <comment>System info label for Chocolatey</comment>
+  </data>
+  <!-- Apps Manager -->
+  <data name="Apps_Installed" xml:space="preserve">
+    <value>installed</value>
+    <comment>Installed count suffix</comment>
+  </data>
+  <!-- Error Messages -->
+  <data name="Common_ErrorFallback" xml:space="preserve">
+    <value>Error</value>
+    <comment>Generic error fallback text</comment>
+  </data>
 </root>

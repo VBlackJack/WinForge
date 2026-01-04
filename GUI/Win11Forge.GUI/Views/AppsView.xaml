@@ -78,7 +78,7 @@
                         <Run Text="{Binding TotalApplicationsCount, Mode=OneWay}"/>
                         <Run Text=" | "/>
                         <Run Text="{Binding InstalledCount, Mode=OneWay}" Foreground="{DynamicResource SecondaryHueMidBrush}"/>
-                        <Run Text=" installed"/>
+                        <Run Text=" "/><Run Text="{loc:Loc Apps_Installed}"/>
                     </TextBlock>
                     <!-- Scan progress -->
                     <StackPanel Orientation="Horizontal"

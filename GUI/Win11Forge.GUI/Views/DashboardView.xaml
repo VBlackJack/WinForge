@@ -210,7 +210,7 @@
                                     <ColumnDefinition Width="120"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Winget:"
+                                <TextBlock Text="{loc:Loc Dashboard_Sys_Winget}"
                                            Style="{StaticResource MaterialDesignBody2TextBlock}"
                                            Opacity="0.7"/>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -230,7 +230,7 @@
                                     <ColumnDefinition Width="120"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Chocolatey:"
+                                <TextBlock Text="{loc:Loc Dashboard_Sys_Chocolatey}"
                                            Style="{StaticResource MaterialDesignBody2TextBlock}"
                                            Opacity="0.7"/>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal">

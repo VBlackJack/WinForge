@@ -124,7 +124,7 @@ public partial class DashboardViewModel : ViewModelBase
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
-            AppVersion = "Error";
+            AppVersion = Resources.Resources.Common_ErrorFallback;
         }
         finally
         {

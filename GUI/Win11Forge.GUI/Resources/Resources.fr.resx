@@ -372,4 +372,19 @@
   <data name="Settings_HistoryCleared" xml:space="preserve">
     <value>Historique efface</value>
   </data>
+  <!-- Package Managers -->
+  <data name="Dashboard_Sys_Winget" xml:space="preserve">
+    <value>Winget :</value>
+  </data>
+  <data name="Dashboard_Sys_Chocolatey" xml:space="preserve">
+    <value>Chocolatey :</value>
+  </data>
+  <!-- Apps Manager -->
+  <data name="Apps_Installed" xml:space="preserve">
+    <value>installe(s)</value>
+  </data>
+  <!-- Error Messages -->
+  <data name="Common_ErrorFallback" xml:space="preserve">
+    <value>Erreur</value>
+  </data>
 </root>
