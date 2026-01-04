@@ -309,3 +309,6 @@ if ($GenerateReport) {
 Write-Host "`n" + ("=" * 60) -ForegroundColor Cyan
 Write-Host "✅ Validation Complete!" -ForegroundColor Green
 Write-Host ("=" * 60) + "`n" -ForegroundColor Cyan
+
+# Explicit success exit
+exit 0
