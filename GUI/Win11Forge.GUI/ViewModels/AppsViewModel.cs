@@ -29,7 +29,7 @@ namespace Win11Forge.GUI.ViewModels;
 public partial class AppsViewModel : ViewModelBase
 {
     private readonly IPowerShellBridge _powerShellBridge;
-    private readonly SemaphoreSlim _scanSemaphore = new(12);
+    private readonly SemaphoreSlim _scanSemaphore = new(8);
     private readonly SemaphoreSlim _installSemaphore = new(1);
     private List<ApplicationModel> _allApplications = [];
     private CancellationTokenSource? _scanCancellationTokenSource;
