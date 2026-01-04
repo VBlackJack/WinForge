@@ -38,7 +38,19 @@ public class PowerShellBridge : IPowerShellBridge
     /// </summary>
     public PowerShellBridge()
     {
-        _repositoryRoot = ResolveRepositoryRoot();
+        try
+        {
+            _repositoryRoot = ResolveRepositoryRoot();
+        }
+        catch (DirectoryNotFoundException)
+        {
+            // Fallback to current directory if repository root not found
+            // This allows the app to start even if the structure is incomplete
+            _repositoryRoot = Environment.CurrentDirectory ?? AppContext.BaseDirectory;
+        }
+
+        // Final safeguard: ensure _repositoryRoot is never null
+        _repositoryRoot ??= AppContext.BaseDirectory;
     }
 
     /// <inheritdoc/>

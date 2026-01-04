@@ -35,22 +35,27 @@ public class DeploymentHistoryService : IDeploymentHistoryService
     /// </summary>
     public DeploymentHistoryService()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-        // Fallback if LocalApplicationData is not available
-        if (string.IsNullOrEmpty(appDataPath))
-        {
-            appDataPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                "AppData", "Local");
-        }
+        // Try multiple fallback paths to ensure we always have a valid location
+        var appDataPath = GetValidStoragePath();
 
         var win11ForgePath = Path.Combine(appDataPath, "Win11Forge");
 
         // Ensure directory exists
-        if (!Directory.Exists(win11ForgePath))
+        try
         {
-            Directory.CreateDirectory(win11ForgePath);
+            if (!Directory.Exists(win11ForgePath))
+            {
+                Directory.CreateDirectory(win11ForgePath);
+            }
+        }
+        catch (Exception)
+        {
+            // If we can't create the directory, use temp folder
+            win11ForgePath = Path.Combine(Path.GetTempPath(), "Win11Forge");
+            if (!Directory.Exists(win11ForgePath))
+            {
+                Directory.CreateDirectory(win11ForgePath);
+            }
         }
 
         _historyFilePath = Path.Combine(win11ForgePath, "history.json");
@@ -60,6 +65,40 @@ public class DeploymentHistoryService : IDeploymentHistoryService
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
+    }
+
+    /// <summary>
+    /// Gets a valid storage path using multiple fallback strategies.
+    /// </summary>
+    private static string GetValidStoragePath()
+    {
+        // Strategy 1: LocalApplicationData (preferred)
+        var path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        if (!string.IsNullOrEmpty(path) && Directory.Exists(Path.GetDirectoryName(path) ?? path))
+        {
+            return path;
+        }
+
+        // Strategy 2: UserProfile\AppData\Local
+        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (!string.IsNullOrEmpty(userProfile))
+        {
+            path = Path.Combine(userProfile, "AppData", "Local");
+            if (Directory.Exists(userProfile))
+            {
+                return path;
+            }
+        }
+
+        // Strategy 3: CommonApplicationData (ProgramData)
+        path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+        if (!string.IsNullOrEmpty(path))
+        {
+            return path;
+        }
+
+        // Strategy 4: Temp folder (ultimate fallback - always exists)
+        return Path.GetTempPath();
     }
 
     /// <inheritdoc/>

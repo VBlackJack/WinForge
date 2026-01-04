@@ -43,30 +43,54 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        // Create shared services
-        _powerShellBridge = new PowerShellBridge();
-        _historyService = new DeploymentHistoryService();
+        try
+        {
+            // Create shared services
+            _powerShellBridge = new PowerShellBridge();
+            _historyService = new DeploymentHistoryService();
 
-        // Create ViewModels
-        _dashboardViewModel = new DashboardViewModel(_powerShellBridge, _historyService);
-        _deploymentViewModel = new DeploymentViewModel(_powerShellBridge, _historyService);
-        _appsViewModel = new AppsViewModel(_powerShellBridge);
-        _profileEditorViewModel = new ProfileEditorViewModel(_powerShellBridge);
-        _settingsViewModel = new SettingsViewModel();
+            // Create ViewModels
+            _dashboardViewModel = new DashboardViewModel(_powerShellBridge, _historyService);
+            _deploymentViewModel = new DeploymentViewModel(_powerShellBridge, _historyService);
+            _appsViewModel = new AppsViewModel(_powerShellBridge);
+            _profileEditorViewModel = new ProfileEditorViewModel(_powerShellBridge);
+            _settingsViewModel = new SettingsViewModel();
 
-        // Wire up DataContexts
-        DashboardViewControl.DataContext = _dashboardViewModel;
-        DeploymentViewControl.DataContext = _deploymentViewModel;
-        AppsViewControl.DataContext = _appsViewModel;
-        ProfileEditorViewControl.DataContext = _profileEditorViewModel;
-        SettingsViewControl.DataContext = _settingsViewModel;
+            // Wire up DataContexts
+            DashboardViewControl.DataContext = _dashboardViewModel;
+            DeploymentViewControl.DataContext = _deploymentViewModel;
+            AppsViewControl.DataContext = _appsViewModel;
+            ProfileEditorViewControl.DataContext = _profileEditorViewModel;
+            SettingsViewControl.DataContext = _settingsViewModel;
 
-        // Initialize on window load
-        Loaded += MainWindow_Loaded;
+            // Initialize on window load
+            Loaded += MainWindow_Loaded;
+        }
+        catch (Exception ex)
+        {
+            // Show error dialog and allow graceful exit
+            MessageBox.Show(
+                $"Failed to initialize Win11Forge:\n\n{ex.Message}\n\nPlease ensure Win11Forge is extracted correctly with all folders (Config/, Modules/, Profiles/).",
+                "Initialization Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+
+            // Set to null to avoid further issues (fields will be checked before use)
+            _powerShellBridge = null!;
+            _historyService = null!;
+            _dashboardViewModel = null!;
+            _deploymentViewModel = null!;
+            _appsViewModel = null!;
+            _profileEditorViewModel = null!;
+            _settingsViewModel = null!;
+        }
     }
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        // Skip if initialization failed
+        if (_dashboardViewModel == null) return;
+
         // Initialize Dashboard (default view)
         await InitializeDashboardAsync();
     }
