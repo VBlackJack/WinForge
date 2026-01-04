@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.IO;
 using System.Windows;
 using Win11Forge.GUI.Services;
 
@@ -24,15 +25,60 @@ namespace Win11Forge.GUI;
 /// </summary>
 public partial class App : Application
 {
+    private static readonly string LogPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+        "Win11Forge_startup.log");
+
     /// <summary>
     /// Called on application startup.
     /// Loads and applies persisted user settings (theme, language).
     /// </summary>
     protected override void OnStartup(StartupEventArgs e)
     {
-        base.OnStartup(e);
+        // Global exception handlers
+        AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+            LogError("UnhandledException", args.ExceptionObject as Exception);
+        DispatcherUnhandledException += (s, args) =>
+        {
+            LogError("DispatcherUnhandledException", args.Exception);
+            args.Handled = true;
+        };
+        TaskScheduler.UnobservedTaskException += (s, args) =>
+            LogError("UnobservedTaskException", args.Exception);
 
-        // Apply saved settings (theme + language) before showing UI
-        AppSettingsService.ApplyStartupSettings();
+        try
+        {
+            Log("App.OnStartup starting...");
+            base.OnStartup(e);
+
+            Log("Applying startup settings...");
+            AppSettingsService.ApplyStartupSettings();
+
+            Log("Startup complete.");
+        }
+        catch (Exception ex)
+        {
+            LogError("OnStartup", ex);
+            throw;
+        }
+    }
+
+    private static void Log(string message)
+    {
+        try
+        {
+            File.AppendAllText(LogPath, $"[{DateTime.Now:HH:mm:ss}] {message}\n");
+        }
+        catch { }
+    }
+
+    private static void LogError(string context, Exception? ex)
+    {
+        try
+        {
+            File.AppendAllText(LogPath,
+                $"[{DateTime.Now:HH:mm:ss}] ERROR in {context}:\n{ex}\n\n");
+        }
+        catch { }
     }
 }

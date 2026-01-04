@@ -231,7 +231,7 @@
                 <!-- Resume Button -->
                 <Button Grid.Column="5"
                         Content="{loc:Loc Btn_Resume}"
-                        Style="{StaticResource MaterialDesignRaisedAccentButton}"
+                        Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
                         Command="{Binding ResumeDeploymentCommand}"
                         Visibility="{Binding CanResumeDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
                         Margin="0,0,8,0"/>

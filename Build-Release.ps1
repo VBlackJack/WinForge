@@ -142,9 +142,7 @@ $publishArgs = @(
     "--runtime", "win-x64"
     "--output", $PublishPath
     "--self-contained", "true"
-    "-p:PublishSingleFile=true"
-    "-p:IncludeNativeLibrariesForSelfExtract=true"
-    "-p:EnableCompressionInSingleFile=true"
+    "-p:PublishSingleFile=false"
     "-p:PublishTrimmed=false"
     "-p:DebugType=none"
     "-p:DebugSymbols=false"
