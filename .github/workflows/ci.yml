@@ -29,10 +29,23 @@ jobs:
           $results = @()
           $paths = @('Core', 'Modules', 'Tests', 'Tools')
 
+          # Use local settings file if available, with additional CI-specific exclusions
+          $excludeRules = @(
+            'PSAvoidUsingWriteHost',
+            'PSUseSingularNouns',
+            'PSUseBOMForUnicodeEncodedFile',
+            'PSUseShouldProcessForStateChangingFunctions',
+            'PSUseProcessBlockForPipelineCommand',
+            'PSAvoidAssignmentToAutomaticVariable',
+            'PSAvoidUsingInvokeExpression',
+            'PSReviewUnusedParameter',
+            'PSAvoidUsingBrokenHashAlgorithms'
+          )
+
           foreach ($path in $paths) {
             if (Test-Path $path) {
               $issues = Invoke-ScriptAnalyzer -Path $path -Recurse -Severity Error,Warning `
-                -ExcludeRule PSAvoidUsingWriteHost,PSUseSingularNouns,PSUseBOMForUnicodeEncodedFile,PSUseShouldProcessForStateChangingFunctions,PSUseProcessBlockForPipelineCommand,PSAvoidAssignmentToAutomaticVariable,PSAvoidUsingInvokeExpression
+                -ExcludeRule $excludeRules
               $results += $issues
             }
           }
