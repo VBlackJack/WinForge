@@ -38,19 +38,52 @@ public class PowerShellBridge : IPowerShellBridge
     /// </summary>
     public PowerShellBridge()
     {
+        _repositoryRoot = ResolveRepositoryRootSafe();
+    }
+
+    /// <summary>
+    /// Resolves repository root with guaranteed non-null result.
+    /// </summary>
+    private static string ResolveRepositoryRootSafe()
+    {
         try
         {
-            _repositoryRoot = ResolveRepositoryRoot();
+            var result = ResolveRepositoryRoot();
+            if (!string.IsNullOrEmpty(result))
+            {
+                return result;
+            }
         }
-        catch (DirectoryNotFoundException)
+        catch
         {
-            // Fallback to current directory if repository root not found
-            // This allows the app to start even if the structure is incomplete
-            _repositoryRoot = Environment.CurrentDirectory ?? AppContext.BaseDirectory;
+            // Fall through to fallbacks
         }
 
-        // Final safeguard: ensure _repositoryRoot is never null
-        _repositoryRoot ??= AppContext.BaseDirectory;
+        // Fallback chain - try each option until we get a non-null value
+        var processPath = Environment.ProcessPath;
+        if (!string.IsNullOrEmpty(processPath))
+        {
+            var dir = Path.GetDirectoryName(processPath);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                return dir;
+            }
+        }
+
+        var currentDir = Environment.CurrentDirectory;
+        if (!string.IsNullOrEmpty(currentDir))
+        {
+            return currentDir;
+        }
+
+        var baseDir = AppContext.BaseDirectory;
+        if (!string.IsNullOrEmpty(baseDir))
+        {
+            return baseDir;
+        }
+
+        // Ultimate fallback - temp folder (always exists)
+        return Path.GetTempPath();
     }
 
     /// <inheritdoc/>
@@ -955,20 +988,38 @@ public class PowerShellBridge : IPowerShellBridge
     /// </summary>
     private static string ResolveRepositoryRoot()
     {
-        // Try multiple strategies for single-file apps
-        var candidatePaths = new List<string>
-        {
-            AppContext.BaseDirectory,
-            Environment.CurrentDirectory,
-            Environment.ProcessPath != null
-                ? Path.GetDirectoryName(Environment.ProcessPath) ?? string.Empty
-                : string.Empty
-        };
+        // Build list of candidate paths, filtering out nulls
+        var candidatePaths = new List<string>();
 
-        foreach (var basePath in candidatePaths.Where(p => !string.IsNullOrEmpty(p)))
+        // Priority 1: ProcessPath directory (best for single-file apps)
+        var processPath = Environment.ProcessPath;
+        if (!string.IsNullOrEmpty(processPath))
+        {
+            var dir = Path.GetDirectoryName(processPath);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                candidatePaths.Add(dir);
+            }
+        }
+
+        // Priority 2: BaseDirectory
+        var baseDir = AppContext.BaseDirectory;
+        if (!string.IsNullOrEmpty(baseDir))
+        {
+            candidatePaths.Add(baseDir);
+        }
+
+        // Priority 3: CurrentDirectory
+        var currentDir = Environment.CurrentDirectory;
+        if (!string.IsNullOrEmpty(currentDir))
+        {
+            candidatePaths.Add(currentDir);
+        }
+
+        foreach (var basePath in candidatePaths)
         {
             var result = TryFindRepositoryRoot(basePath);
-            if (result != null)
+            if (!string.IsNullOrEmpty(result))
             {
                 return result;
             }
