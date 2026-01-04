@@ -144,6 +144,8 @@ $publishArgs = @(
     "--self-contained", "true"
     "-p:PublishSingleFile=false"
     "-p:PublishTrimmed=false"
+    "-p:PublishReadyToRun=true"
+    "-p:IncludeNativeLibrariesForSelfExtract=true"
     "-p:DebugType=none"
     "-p:DebugSymbols=false"
 )
