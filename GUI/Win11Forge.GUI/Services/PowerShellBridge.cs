@@ -17,7 +17,6 @@
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Management.Automation;
 using System.Text.Json;
 using Win11Forge.GUI.Models;
 
