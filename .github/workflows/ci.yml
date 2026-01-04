@@ -3,10 +3,14 @@ name: Win11Forge CI
 on:
   push:
     branches: [main, develop]
+    tags: ['v*']
   pull_request:
     branches: [main]
 
 jobs:
+  # ===========================================
+  # PowerShell Linting
+  # ===========================================
   lint:
     name: PSScriptAnalyzer
     runs-on: windows-latest
@@ -41,7 +45,10 @@ jobs:
 
           Write-Host "PSScriptAnalyzer: No issues found" -ForegroundColor Green
 
-  test:
+  # ===========================================
+  # PowerShell Pester Tests
+  # ===========================================
+  test-powershell:
     name: Pester Tests
     runs-on: windows-latest
     needs: lint
@@ -62,18 +69,52 @@ jobs:
           $config.Run.Exit = $true
           $config.Output.Verbosity = 'Normal'
           $config.TestResult.Enabled = $true
-          $config.TestResult.OutputPath = 'TestResults.xml'
+          $config.TestResult.OutputPath = 'TestResults-Pester.xml'
           $config.TestResult.OutputFormat = 'NUnitXML'
 
           Invoke-Pester -Configuration $config
 
-      - name: Upload Test Results
+      - name: Upload Pester Test Results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results
-          path: TestResults.xml
+          name: pester-test-results
+          path: TestResults-Pester.xml
 
+  # ===========================================
+  # .NET 8 GUI Build & Test
+  # ===========================================
+  test-gui:
+    name: GUI Build & Test (.NET 8)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore GUI/Win11Forge.slnx
+
+      - name: Build GUI (Release)
+        run: dotnet build GUI/Win11Forge.slnx --configuration Release --no-restore
+
+      - name: Run GUI Tests
+        run: dotnet test GUI/Win11Forge.GUI.Tests/Win11Forge.GUI.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=TestResults-GUI.trx"
+
+      - name: Upload GUI Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gui-test-results
+          path: GUI/Win11Forge.GUI.Tests/TestResults/TestResults-GUI.trx
+
+  # ===========================================
+  # Framework Validation
+  # ===========================================
   validate:
     name: Framework Validation
     runs-on: windows-latest
@@ -103,3 +144,49 @@ jobs:
               exit 1
             }
           }
+
+  # ===========================================
+  # Release Build (on tags or main)
+  # ===========================================
+  deploy:
+    name: Build Release Package
+    runs-on: windows-latest
+    needs: [test-powershell, test-gui, validate]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install Pester (for Build-Release tests)
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0.0
+
+      - name: Build Release Package
+        shell: pwsh
+        run: |
+          .\Build-Release.ps1 -SkipTests
+
+      - name: Get Version
+        id: version
+        shell: pwsh
+        run: |
+          $versionFile = "Config/version.json"
+          if (Test-Path $versionFile) {
+            $version = (Get-Content $versionFile -Raw | ConvertFrom-Json).Version
+          } else {
+            $version = "3.0.0"
+          }
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Upload Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Win11Forge_v${{ steps.version.outputs.VERSION }}
+          path: Dist/Win11Forge_v${{ steps.version.outputs.VERSION }}.zip
+          retention-days: 30
