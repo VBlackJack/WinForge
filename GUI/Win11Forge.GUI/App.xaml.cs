@@ -15,6 +15,7 @@
  */
 
 using System.Windows;
+using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI;
 
@@ -23,4 +24,15 @@ namespace Win11Forge.GUI;
 /// </summary>
 public partial class App : Application
 {
+    /// <summary>
+    /// Called on application startup.
+    /// Loads and applies persisted user settings (theme, language).
+    /// </summary>
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+
+        // Apply saved settings (theme + language) before showing UI
+        AppSettingsService.ApplyStartupSettings();
+    }
 }

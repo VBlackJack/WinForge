@@ -25,11 +25,14 @@ namespace Win11Forge.GUI.ViewModels;
 
 /// <summary>
 /// ViewModel for the Settings view.
-/// Handles theme and language configuration.
+/// Handles theme and language configuration with persistence.
 /// </summary>
 public partial class SettingsViewModel : ViewModelBase
 {
     private readonly PaletteHelper _paletteHelper = new();
+    private readonly IAppSettingsService _settingsService;
+    private readonly IDeploymentHistoryService _historyService;
+    private string _initialLanguageCode = string.Empty;
 
     /// <summary>
     /// Whether dark theme is enabled.
@@ -62,15 +65,32 @@ public partial class SettingsViewModel : ViewModelBase
     private string? _statusMessage;
 
     /// <summary>
-    /// Initializes a new instance of SettingsViewModel.
+    /// Win11Forge version string.
+    /// </summary>
+    [ObservableProperty]
+    private string _appVersion = string.Empty;
+
+    /// <summary>
+    /// Initializes a new instance of SettingsViewModel with default services.
     /// </summary>
     public SettingsViewModel()
+        : this(new AppSettingsService(), new DeploymentHistoryService())
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of SettingsViewModel with injected services.
+    /// </summary>
+    public SettingsViewModel(IAppSettingsService settingsService, IDeploymentHistoryService historyService)
+    {
+        _settingsService = settingsService;
+        _historyService = historyService;
+
         // Initialize available languages
         AvailableLanguages =
         [
             new LanguageOption("en", "English"),
-            new LanguageOption("fr", "Français")
+            new LanguageOption("fr", "Francais")
         ];
 
         // Load current settings
@@ -85,18 +105,22 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Loads the current theme and language settings.
+    /// Loads the current theme and language settings from persisted storage.
     /// </summary>
     private void LoadCurrentSettings()
     {
-        // Get current theme
-        var theme = _paletteHelper.GetTheme();
-        IsDarkTheme = theme.GetBaseTheme() == BaseTheme.Dark;
+        var settings = _settingsService.LoadSettings();
 
-        // Get current culture
-        var currentCulture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-        SelectedLanguage = AvailableLanguages.FirstOrDefault(l => l.Code == currentCulture)
+        // Get current theme from settings
+        IsDarkTheme = settings.IsDarkTheme;
+
+        // Get language from settings
+        _initialLanguageCode = settings.LanguageCode;
+        SelectedLanguage = AvailableLanguages.FirstOrDefault(l => l.Code == settings.LanguageCode)
                           ?? AvailableLanguages.First();
+
+        // Apply theme immediately
+        ApplyThemeInternal(IsDarkTheme);
     }
 
     /// <summary>
@@ -104,19 +128,26 @@ public partial class SettingsViewModel : ViewModelBase
     /// </summary>
     partial void OnIsDarkThemeChanged(bool value)
     {
-        ApplyTheme(value);
+        ApplyThemeInternal(value);
+        SaveSettings();
+        StatusMessage = Resources.Resources.Settings_ThemeApplied;
     }
 
     /// <summary>
-    /// Applies the selected theme.
+    /// Applies the theme without saving (internal use).
     /// </summary>
-    private void ApplyTheme(bool isDark)
+    private void ApplyThemeInternal(bool isDark)
     {
-        var theme = _paletteHelper.GetTheme();
-        theme.SetBaseTheme(isDark ? BaseTheme.Dark : BaseTheme.Light);
-        _paletteHelper.SetTheme(theme);
-
-        StatusMessage = Resources.Resources.Settings_ThemeApplied;
+        try
+        {
+            var theme = _paletteHelper.GetTheme();
+            theme.SetBaseTheme(isDark ? BaseTheme.Dark : BaseTheme.Light);
+            _paletteHelper.SetTheme(theme);
+        }
+        catch
+        {
+            // Theme application is non-critical
+        }
     }
 
     /// <summary>
@@ -126,35 +157,55 @@ public partial class SettingsViewModel : ViewModelBase
     {
         if (value == null) return;
 
-        // Check if language actually changed
-        var currentCulture = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-        if (value.Code != currentCulture)
+        // Check if language actually changed from initial
+        if (value.Code != _initialLanguageCode)
         {
             RestartRequired = true;
-            StatusMessage = Resources.Resources.Settings_RestartRequired;
         }
     }
 
     /// <summary>
-    /// Applies the selected language.
+    /// Applies the selected language and saves settings.
     /// </summary>
     [RelayCommand]
     private void ApplyLanguage()
     {
         if (SelectedLanguage == null) return;
 
-        // Set the culture
-        var culture = new CultureInfo(SelectedLanguage.Code);
-        CultureInfo.CurrentCulture = culture;
-        CultureInfo.CurrentUICulture = culture;
-        Thread.CurrentThread.CurrentCulture = culture;
-        Thread.CurrentThread.CurrentUICulture = culture;
+        // Save the language setting (will take effect on restart)
+        SaveSettings();
 
-        // Update resources
-        Resources.Resources.Culture = culture;
+        // Set the culture for immediate partial effect
+        try
+        {
+            var culture = new CultureInfo(SelectedLanguage.Code);
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+            Thread.CurrentThread.CurrentCulture = culture;
+            Thread.CurrentThread.CurrentUICulture = culture;
+            Resources.Resources.Culture = culture;
+        }
+        catch
+        {
+            // Language application is non-critical
+        }
 
         RestartRequired = true;
         StatusMessage = Resources.Resources.Settings_RestartRequired;
+    }
+
+    /// <summary>
+    /// Saves current settings to disk.
+    /// </summary>
+    private void SaveSettings()
+    {
+        var settings = new AppSettings
+        {
+            IsDarkTheme = IsDarkTheme,
+            LanguageCode = SelectedLanguage?.Code ?? "en"
+        };
+
+        _settingsService.SaveSettings(settings);
     }
 
     /// <summary>
@@ -163,8 +214,7 @@ public partial class SettingsViewModel : ViewModelBase
     [RelayCommand]
     private async Task ClearHistoryAsync()
     {
-        var historyService = new DeploymentHistoryService();
-        await historyService.ClearHistoryAsync();
+        await _historyService.ClearHistoryAsync();
         StatusMessage = Resources.Resources.Settings_HistoryCleared;
     }
 }
