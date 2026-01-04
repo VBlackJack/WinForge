@@ -1,0 +1,338 @@
+<UserControl x:Class="Win11Forge.GUI.Views.ProfileEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
+             xmlns:models="clr-namespace:Win11Forge.GUI.Models"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewModels:ProfileEditorViewModel}"
+             d:DesignHeight="800" d:DesignWidth="1200">
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="{Binding EditorTitle}"
+                   Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                   Margin="0,0,0,24"/>
+
+        <!-- Metadata Section -->
+        <materialDesign:Card Grid.Row="1"
+                              Padding="16"
+                              Margin="0,0,0,16"
+                              materialDesign:ElevationAssist.Elevation="Dp2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Profile Name -->
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{loc:Loc Editor_Lbl_Name}"
+                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Margin="0,0,0,8"/>
+                    <TextBox Text="{Binding ProfileName, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             IsEnabled="{Binding IsEditMode, Converter={StaticResource InverseBoolConverter}}"/>
+                </StackPanel>
+
+                <!-- Inherits From -->
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="{loc:Loc Editor_Lbl_Parent}"
+                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Margin="0,0,0,8"/>
+                    <ComboBox ItemsSource="{Binding AvailableParents}"
+                              SelectedItem="{Binding SelectedParent}"
+                              Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
+                </StackPanel>
+
+                <!-- Description -->
+                <StackPanel Grid.Column="4">
+                    <TextBlock Text="{loc:Loc Editor_Lbl_Description}"
+                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Margin="0,0,0,8"/>
+                    <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+                </StackPanel>
+            </Grid>
+        </materialDesign:Card>
+
+        <!-- Applications Section -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Inherited Applications (Left Panel) -->
+            <materialDesign:Card Grid.Column="0"
+                                  Padding="0"
+                                  materialDesign:ElevationAssist.Elevation="Dp2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <materialDesign:ColorZone Grid.Row="0"
+                                               Mode="PrimaryLight"
+                                               Padding="16,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="LinkVariant"
+                                                          Width="20"
+                                                          Height="20"
+                                                          VerticalAlignment="Center"
+                                                          Margin="0,0,8,0"/>
+                                <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                           VerticalAlignment="Center">
+                                    <Run Text="{loc:Loc Editor_Section_Inherited}"/>
+                                    <Run Text=" ("/>
+                                    <Run Text="{Binding InheritedApplications.Count, Mode=OneWay}"/>
+                                    <Run Text=")"/>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <!-- Loading indicator -->
+                            <ProgressBar Grid.Column="1"
+                                         Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                         Value="0"
+                                         IsIndeterminate="True"
+                                         Width="20"
+                                         Height="20"
+                                         Visibility="{Binding IsLoadingInherited, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        </Grid>
+                    </materialDesign:ColorZone>
+
+                    <!-- Inherited Apps List -->
+                    <ListBox Grid.Row="1"
+                             ItemsSource="{Binding InheritedApplications}"
+                             Style="{StaticResource MaterialDesignListBox}"
+                             VirtualizingStackPanel.IsVirtualizing="True"
+                             VirtualizingStackPanel.VirtualizationMode="Recycling">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                <Grid Margin="8,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Name}"
+                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontWeight="Medium"/>
+                                        <TextBlock Text="{Binding Category}"
+                                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                   Opacity="0.7"/>
+                                    </StackPanel>
+
+                                    <materialDesign:PackIcon Grid.Column="1"
+                                                              Kind="Lock"
+                                                              Width="16"
+                                                              Height="16"
+                                                              Opacity="0.5"
+                                                              VerticalAlignment="Center"
+                                                              ToolTip="{loc:Loc Editor_Tooltip_Inherited}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- Empty State -->
+                    <TextBlock Grid.Row="1"
+                               Text="{loc:Loc Editor_Empty_NoParent}"
+                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Opacity="0.5"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Visibility="{Binding InheritedApplications.Count, Converter={StaticResource ZeroToVisibilityConverter}}"/>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- Added Applications (Right Panel) -->
+            <materialDesign:Card Grid.Column="2"
+                                  Padding="0"
+                                  materialDesign:ElevationAssist.Elevation="Dp2">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <materialDesign:ColorZone Grid.Row="0"
+                                               Mode="SecondaryLight"
+                                               Padding="16,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Plus"
+                                                          Width="20"
+                                                          Height="20"
+                                                          VerticalAlignment="Center"
+                                                          Margin="0,0,8,0"/>
+                                <TextBlock Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                           VerticalAlignment="Center">
+                                    <Run Text="{loc:Loc Editor_Section_Added}"/>
+                                    <Run Text=" ("/>
+                                    <Run Text="{Binding AddedApplications.Count, Mode=OneWay}"/>
+                                    <Run Text=")"/>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <!-- Add Button -->
+                            <Button Grid.Column="1"
+                                    Command="{Binding ShowAddApplicationDialogCommand}"
+                                    Style="{StaticResource MaterialDesignIconButton}"
+                                    ToolTip="{loc:Loc Editor_Tooltip_Add}">
+                                <materialDesign:PackIcon Kind="PlusCircle"/>
+                            </Button>
+                        </Grid>
+                    </materialDesign:ColorZone>
+
+                    <!-- Added Apps List -->
+                    <ListBox Grid.Row="1"
+                             ItemsSource="{Binding AddedApplications}"
+                             Style="{StaticResource MaterialDesignListBox}"
+                             VirtualizingStackPanel.IsVirtualizing="True"
+                             VirtualizingStackPanel.VirtualizationMode="Recycling">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                <Grid Margin="8,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Name}"
+                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontWeight="Medium"/>
+                                        <TextBlock Text="{Binding Category}"
+                                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                   Opacity="0.7"/>
+                                    </StackPanel>
+
+                                    <!-- Remove Button -->
+                                    <Button Grid.Column="1"
+                                            Command="{Binding DataContext.RemoveApplicationCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                            CommandParameter="{Binding}"
+                                            Style="{StaticResource MaterialDesignIconButton}"
+                                            ToolTip="{loc:Loc Editor_Tooltip_Remove}"
+                                            Foreground="{DynamicResource MaterialDesignValidationErrorBrush}">
+                                        <materialDesign:PackIcon Kind="Close" Width="18" Height="18"/>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- Empty State -->
+                    <StackPanel Grid.Row="1"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Visibility="{Binding AddedApplications.Count, Converter={StaticResource ZeroToVisibilityConverter}}">
+                        <materialDesign:PackIcon Kind="PackageVariantPlus"
+                                                  Width="48"
+                                                  Height="48"
+                                                  Opacity="0.3"
+                                                  HorizontalAlignment="Center"/>
+                        <TextBlock Text="{loc:Loc Editor_Empty_NoApps}"
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   Opacity="0.5"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </materialDesign:Card>
+        </Grid>
+
+        <!-- Footer - Save/Cancel Buttons -->
+        <materialDesign:Card Grid.Row="3"
+                              Padding="16"
+                              Margin="0,16,0,0"
+                              materialDesign:ElevationAssist.Elevation="Dp2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Messages -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <!-- Error Message -->
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
+                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                               Visibility="{Binding ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}"/>
+
+                    <!-- Success Message -->
+                    <StackPanel Orientation="Horizontal"
+                                Visibility="{Binding SuccessMessage, Converter={StaticResource NullableToVisibilityConverter}}">
+                        <materialDesign:PackIcon Kind="CheckCircle"
+                                                  Width="20"
+                                                  Height="20"
+                                                  VerticalAlignment="Center"
+                                                  Foreground="{DynamicResource MaterialDesignDarkBackground}"
+                                                  Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding SuccessMessage}"
+                                   Foreground="{DynamicResource MaterialDesignDarkBackground}"
+                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Cancel Button -->
+                <Button Grid.Column="1"
+                        Content="{loc:Loc Btn_Cancel}"
+                        Command="{Binding CancelCommand}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}"
+                        Margin="0,0,12,0"/>
+
+                <!-- Save Button with Progress -->
+                <Button Grid.Column="2"
+                        Command="{Binding SaveCommand}"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                     Value="0"
+                                     IsIndeterminate="True"
+                                     Width="16"
+                                     Height="16"
+                                     Margin="0,0,8,0"
+                                     Visibility="{Binding IsSaving, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <TextBlock Text="{loc:Loc Btn_Save}"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </materialDesign:Card>
+    </Grid>
+</UserControl>

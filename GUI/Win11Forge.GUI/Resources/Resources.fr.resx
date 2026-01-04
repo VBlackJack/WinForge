@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Application -->
+  <data name="App_Title" xml:space="preserve">
+    <value>Win11Forge v3.0.0</value>
+  </data>
+  <!-- Main Window -->
+  <data name="MainWindow_Welcome" xml:space="preserve">
+    <value>Bienvenue sur Win11Forge</value>
+  </data>
+  <!-- Dashboard -->
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Tableau de bord</value>
+  </data>
+  <data name="Dashboard_Version_Prefix" xml:space="preserve">
+    <value>Version :</value>
+  </data>
+  <data name="Dashboard_Repository_Prefix" xml:space="preserve">
+    <value>Repertoire :</value>
+  </data>
+  <data name="Dashboard_SystemInfo_Title" xml:space="preserve">
+    <value>Informations systeme</value>
+  </data>
+  <data name="Dashboard_Refresh" xml:space="preserve">
+    <value>Actualiser</value>
+  </data>
+  <data name="Dashboard_Stat_Profiles" xml:space="preserve">
+    <value>Profils</value>
+  </data>
+  <data name="Dashboard_Stat_Apps" xml:space="preserve">
+    <value>Applications</value>
+  </data>
+  <data name="Dashboard_Stat_Deployments" xml:space="preserve">
+    <value>Deploiements</value>
+  </data>
+  <data name="Dashboard_Stat_Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="Dashboard_Sys_Hostname" xml:space="preserve">
+    <value>Nom d'hote :</value>
+  </data>
+  <data name="Dashboard_Sys_OS" xml:space="preserve">
+    <value>Systeme :</value>
+  </data>
+  <data name="Dashboard_Sys_Build" xml:space="preserve">
+    <value>Build :</value>
+  </data>
+  <data name="Dashboard_Sys_Admin" xml:space="preserve">
+    <value>Administrateur :</value>
+  </data>
+  <data name="Dashboard_RecentActivity" xml:space="preserve">
+    <value>Activite recente</value>
+  </data>
+  <data name="Dashboard_NoActivity" xml:space="preserve">
+    <value>Aucun historique de deploiement</value>
+  </data>
+  <!-- Deployment -->
+  <data name="Deploy_Title" xml:space="preserve">
+    <value>Deploiement</value>
+  </data>
+  <data name="Deploy_SelectProfile" xml:space="preserve">
+    <value>Selectionner un profil :</value>
+  </data>
+  <data name="Deploy_ProfileSummary" xml:space="preserve">
+    <value>Resume du profil</value>
+  </data>
+  <data name="Deploy_Applications" xml:space="preserve">
+    <value>Applications</value>
+  </data>
+  <data name="Deploy_TotalApps" xml:space="preserve">
+    <value>Total :</value>
+  </data>
+  <data name="Deploy_RequiredApps" xml:space="preserve">
+    <value>Requis :</value>
+  </data>
+  <data name="Deploy_InheritedFrom" xml:space="preserve">
+    <value>Herite de :</value>
+  </data>
+  <data name="Deploy_SelectAll" xml:space="preserve">
+    <value>Tout selectionner</value>
+  </data>
+  <data name="Deploy_SelectNone" xml:space="preserve">
+    <value>Tout deselectionner</value>
+  </data>
+  <data name="Deploy_Selected" xml:space="preserve">
+    <value>Selectionne :</value>
+  </data>
+  <!-- Column Headers -->
+  <data name="Col_Status" xml:space="preserve">
+    <value>Statut</value>
+  </data>
+  <data name="Col_Application" xml:space="preserve">
+    <value>Application</value>
+  </data>
+  <data name="Col_Category" xml:space="preserve">
+    <value>Categorie</value>
+  </data>
+  <data name="Col_Priority" xml:space="preserve">
+    <value>Priorite</value>
+  </data>
+  <data name="Col_Required" xml:space="preserve">
+    <value>Requis</value>
+  </data>
+  <!-- Common -->
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Chargement...</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>Erreur</value>
+  </data>
+  <!-- Navigation -->
+  <data name="Nav_Dashboard" xml:space="preserve">
+    <value>Tableau de bord</value>
+  </data>
+  <data name="Nav_Deployment" xml:space="preserve">
+    <value>Deploiement</value>
+  </data>
+  <data name="Nav_Apps" xml:space="preserve">
+    <value>Applications</value>
+  </data>
+  <data name="Nav_ProfileEditor" xml:space="preserve">
+    <value>Editeur de profil</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Parametres</value>
+  </data>
+  <!-- Application Manager -->
+  <data name="Apps_Title" xml:space="preserve">
+    <value>Gestionnaire d'applications</value>
+  </data>
+  <data name="Apps_SearchHint" xml:space="preserve">
+    <value>Rechercher des applications...</value>
+  </data>
+  <data name="Apps_CategoryAll" xml:space="preserve">
+    <value>Toutes les categories</value>
+  </data>
+  <data name="Apps_Col_Sources" xml:space="preserve">
+    <value>Sources</value>
+  </data>
+  <data name="Apps_Col_Id" xml:space="preserve">
+    <value>ID Application</value>
+  </data>
+  <data name="Btn_Scan" xml:space="preserve">
+    <value>Scanner les installations</value>
+  </data>
+  <data name="Btn_Install" xml:space="preserve">
+    <value>Installer</value>
+  </data>
+  <data name="Col_Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="Status_Checking" xml:space="preserve">
+    <value>Verification...</value>
+  </data>
+  <data name="Status_Missing" xml:space="preserve">
+    <value>Non installe</value>
+  </data>
+  <!-- Deployment Execution -->
+  <data name="Btn_Deploy" xml:space="preserve">
+    <value>Lancer le deploiement</value>
+  </data>
+  <data name="Btn_Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Lbl_DryRun" xml:space="preserve">
+    <value>Mode simulation</value>
+  </data>
+  <data name="Lbl_DryRun_Hint" xml:space="preserve">
+    <value>Aucune modification ne sera effectuee</value>
+  </data>
+  <!-- Status Messages -->
+  <data name="Status_Pending" xml:space="preserve">
+    <value>En attente</value>
+  </data>
+  <data name="Status_Installing" xml:space="preserve">
+    <value>Installation en cours...</value>
+  </data>
+  <data name="Status_Installed" xml:space="preserve">
+    <value>Installe</value>
+  </data>
+  <data name="Status_Failed" xml:space="preserve">
+    <value>Echec</value>
+  </data>
+  <data name="Status_Skipped" xml:space="preserve">
+    <value>Ignore</value>
+  </data>
+  <data name="Status_AlreadyInstalled" xml:space="preserve">
+    <value>Deja installe</value>
+  </data>
+  <!-- Progress -->
+  <data name="Progress_Installing" xml:space="preserve">
+    <value>Installation des applications...</value>
+  </data>
+  <data name="Progress_Complete" xml:space="preserve">
+    <value>Deploiement termine</value>
+  </data>
+  <data name="Progress_Cancelled" xml:space="preserve">
+    <value>Deploiement annule</value>
+  </data>
+  <!-- Profile Editor -->
+  <data name="Editor_Title_New" xml:space="preserve">
+    <value>Nouveau profil</value>
+  </data>
+  <data name="Editor_Title_Edit" xml:space="preserve">
+    <value>Modifier le profil : {0}</value>
+  </data>
+  <data name="Editor_Lbl_Name" xml:space="preserve">
+    <value>Nom du profil</value>
+  </data>
+  <data name="Editor_Lbl_Parent" xml:space="preserve">
+    <value>Herite de</value>
+  </data>
+  <data name="Editor_Lbl_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Editor_Section_Inherited" xml:space="preserve">
+    <value>Applications heritees</value>
+  </data>
+  <data name="Editor_Section_Added" xml:space="preserve">
+    <value>Applications ajoutees</value>
+  </data>
+  <data name="Editor_NoParent" xml:space="preserve">
+    <value>(Aucun)</value>
+  </data>
+  <data name="Editor_Empty_NoParent" xml:space="preserve">
+    <value>Aucun profil parent selectionne</value>
+  </data>
+  <data name="Editor_Empty_NoApps" xml:space="preserve">
+    <value>Aucune application ajoutee</value>
+  </data>
+  <data name="Editor_Tooltip_Inherited" xml:space="preserve">
+    <value>Herite du parent - lecture seule</value>
+  </data>
+  <data name="Editor_Tooltip_Add" xml:space="preserve">
+    <value>Ajouter une application</value>
+  </data>
+  <data name="Editor_Tooltip_Remove" xml:space="preserve">
+    <value>Supprimer l'application</value>
+  </data>
+  <data name="Editor_Error_NameRequired" xml:space="preserve">
+    <value>Le nom du profil est requis</value>
+  </data>
+  <data name="Editor_Error_LoadParent" xml:space="preserve">
+    <value>Echec du chargement du profil parent : {0}</value>
+  </data>
+  <data name="Editor_Error_InvalidName" xml:space="preserve">
+    <value>Le nom du profil contient des caracteres invalides</value>
+  </data>
+  <data name="Editor_Error_SaveFailed" xml:space="preserve">
+    <value>Echec de l'enregistrement du profil : {0}</value>
+  </data>
+  <data name="Btn_Save" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="Msg_ProfileSaved" xml:space="preserve">
+    <value>Profil enregistre avec succes</value>
+  </data>
+  <!-- Application Picker Dialog -->
+  <data name="Dialog_SelectApp_Title" xml:space="preserve">
+    <value>Selectionner une application</value>
+  </data>
+  <data name="Dialog_SelectApp_Add" xml:space="preserve">
+    <value>Ajouter la selection</value>
+  </data>
+  <data name="Dialog_NoAppsAvailable" xml:space="preserve">
+    <value>Toutes les applications sont deja ajoutees</value>
+  </data>
+  <data name="Dialog_AppsAvailable" xml:space="preserve">
+    <value>applications disponibles</value>
+  </data>
+  <!-- Settings -->
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Parametres</value>
+  </data>
+  <data name="Settings_Section_Appearance" xml:space="preserve">
+    <value>Apparence</value>
+  </data>
+  <data name="Settings_Section_Language" xml:space="preserve">
+    <value>Langue</value>
+  </data>
+  <data name="Settings_Section_Data" xml:space="preserve">
+    <value>Donnees</value>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Settings_Theme_Desc" xml:space="preserve">
+    <value>Basculer entre le mode clair et sombre</value>
+  </data>
+  <data name="Settings_ThemeApplied" xml:space="preserve">
+    <value>Theme applique</value>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Langue</value>
+  </data>
+  <data name="Settings_Language_Desc" xml:space="preserve">
+    <value>Selectionner la langue de l'application</value>
+  </data>
+  <data name="Settings_Apply" xml:space="preserve">
+    <value>Appliquer</value>
+  </data>
+  <data name="Settings_RestartRequired" xml:space="preserve">
+    <value>Redemarrage requis pour le changement de langue</value>
+  </data>
+  <data name="Settings_ClearHistory" xml:space="preserve">
+    <value>Effacer l'historique</value>
+  </data>
+  <data name="Settings_ClearHistory_Desc" xml:space="preserve">
+    <value>Supprimer toutes les entrees d'historique de deploiement</value>
+  </data>
+  <data name="Settings_ClearBtn" xml:space="preserve">
+    <value>Effacer</value>
+  </data>
+  <data name="Settings_HistoryCleared" xml:space="preserve">
+    <value>Historique efface</value>
+  </data>
+</root>

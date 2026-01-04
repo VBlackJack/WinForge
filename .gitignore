@@ -48,3 +48,14 @@ $RECYCLE.BIN/
 *.credentials
 *.secrets
 *apikey*
+
+# .NET build output
+bin/
+obj/
+*.dll
+*.pdb
+*.exe
+!Deploy-Win11Forge.bat
+
+# Backups
+Backups/
