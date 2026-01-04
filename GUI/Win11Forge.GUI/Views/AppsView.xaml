@@ -60,7 +60,7 @@
                 <Button Grid.Column="2"
                         Command="{Binding ClearFiltersCommand}"
                         Style="{StaticResource MaterialDesignOutlinedButton}"
-                        ToolTip="Clear filters"
+                        ToolTip="{loc:Loc Apps_ClearFilters}"
                         Margin="8,0,0,0">
                     <materialDesign:PackIcon Kind="FilterRemove"/>
                 </Button>

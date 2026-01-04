@@ -182,6 +182,10 @@
     <value>All Categories</value>
     <comment>All categories filter option</comment>
   </data>
+  <data name="Apps_ClearFilters" xml:space="preserve">
+    <value>Clear filters</value>
+    <comment>Clear filters button tooltip</comment>
+  </data>
   <data name="Apps_Col_Sources" xml:space="preserve">
     <value>Sources</value>
     <comment>Sources column header</comment>

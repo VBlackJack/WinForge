@@ -192,6 +192,9 @@
   <data name="Apps_CategoryAll" xml:space="preserve">
     <value>Toutes les categories</value>
   </data>
+  <data name="Apps_ClearFilters" xml:space="preserve">
+    <value>Effacer les filtres</value>
+  </data>
   <data name="Apps_Col_Sources" xml:space="preserve">
     <value>Sources</value>
   </data>
