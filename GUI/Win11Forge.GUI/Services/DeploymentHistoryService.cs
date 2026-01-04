@@ -22,7 +22,7 @@ namespace Win11Forge.GUI.Services;
 
 /// <summary>
 /// Service for managing deployment history.
-/// Stores history in a JSON file in LocalAppData.
+/// Stores history in a JSON file with robust path fallback.
 /// </summary>
 public class DeploymentHistoryService : IDeploymentHistoryService
 {
@@ -31,16 +31,15 @@ public class DeploymentHistoryService : IDeploymentHistoryService
     private readonly SemaphoreSlim _fileLock = new(1, 1);
 
     /// <summary>
-    /// Initializes the history service.
+    /// Initializes the history service with crash-proof path resolution.
     /// </summary>
     public DeploymentHistoryService()
     {
-        // Try multiple fallback paths to ensure we always have a valid location
-        var appDataPath = GetValidStoragePath();
+        // Get a guaranteed valid storage path
+        var basePath = GetValidStoragePath();
+        var win11ForgePath = Path.Combine(basePath, "Win11Forge");
 
-        var win11ForgePath = Path.Combine(appDataPath, "Win11Forge");
-
-        // Ensure directory exists
+        // Try to create directory, fallback to temp if permission denied
         try
         {
             if (!Directory.Exists(win11ForgePath))
@@ -48,10 +47,12 @@ public class DeploymentHistoryService : IDeploymentHistoryService
                 Directory.CreateDirectory(win11ForgePath);
             }
         }
-        catch (Exception)
+        catch
         {
-            // If we can't create the directory, use temp folder
-            win11ForgePath = Path.Combine(Path.GetTempPath(), "Win11Forge");
+            // Permission error - use temp folder as ultimate fallback
+            var tempPath = Path.GetTempPath();
+            win11ForgePath = Path.Combine(tempPath, "Win11Forge");
+
             if (!Directory.Exists(win11ForgePath))
             {
                 Directory.CreateDirectory(win11ForgePath);
@@ -69,32 +70,29 @@ public class DeploymentHistoryService : IDeploymentHistoryService
 
     /// <summary>
     /// Gets a valid storage path using multiple fallback strategies.
+    /// NEVER returns null - always returns a valid path.
     /// </summary>
     private static string GetValidStoragePath()
     {
         // Strategy 1: LocalApplicationData (preferred)
         var path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        if (!string.IsNullOrEmpty(path) && Directory.Exists(Path.GetDirectoryName(path) ?? path))
+        if (!string.IsNullOrEmpty(path))
         {
             return path;
         }
 
-        // Strategy 2: UserProfile\AppData\Local
-        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        if (!string.IsNullOrEmpty(userProfile))
+        // Strategy 2: UserProfile + AppData/Local
+        path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (!string.IsNullOrEmpty(path))
         {
-            path = Path.Combine(userProfile, "AppData", "Local");
-            if (Directory.Exists(userProfile))
-            {
-                return path;
-            }
+            return Path.Combine(path, "AppData", "Local");
         }
 
         // Strategy 3: CommonApplicationData (ProgramData)
         path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
         if (!string.IsNullOrEmpty(path))
         {
-            return path;
+            return Path.Combine(path, "Win11Forge", "User");
         }
 
         // Strategy 4: Temp folder (ultimate fallback - always exists)
