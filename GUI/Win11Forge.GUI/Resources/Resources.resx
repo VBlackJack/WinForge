@@ -223,6 +223,14 @@
     <value>Cancel</value>
     <comment>Cancel button text</comment>
   </data>
+  <data name="Btn_Pause" xml:space="preserve">
+    <value>Pause</value>
+    <comment>Pause deployment button text</comment>
+  </data>
+  <data name="Btn_Resume" xml:space="preserve">
+    <value>Resume</value>
+    <comment>Resume deployment button text</comment>
+  </data>
   <data name="Lbl_DryRun" xml:space="preserve">
     <value>Simulation Mode</value>
     <comment>Dry run toggle label</comment>
@@ -256,6 +264,10 @@
     <value>Already Installed</value>
     <comment>Already installed status</comment>
   </data>
+  <data name="Status_Paused" xml:space="preserve">
+    <value>Deployment paused</value>
+    <comment>Deployment paused status message</comment>
+  </data>
   <!-- Progress -->
   <data name="Progress_Installing" xml:space="preserve">
     <value>Installing applications...</value>
@@ -268,6 +280,10 @@
   <data name="Progress_Cancelled" xml:space="preserve">
     <value>Deployment cancelled</value>
     <comment>Deployment cancelled message</comment>
+  </data>
+  <data name="Progress_Deploying" xml:space="preserve">
+    <value>Deploying...</value>
+    <comment>Deployment in progress message</comment>
   </data>
   <!-- Profile Editor -->
   <data name="Nav_ProfileEditor" xml:space="preserve">

@@ -165,6 +165,8 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Dry Run Toggle -->
@@ -192,7 +194,14 @@
                                  IsIndeterminate="True"
                                  Width="24"
                                  Height="24"
-                                 Margin="0,0,12,0"/>
+                                 Margin="0,0,12,0"
+                                 Visibility="{Binding IsPaused, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                    <materialDesign:PackIcon Kind="Pause"
+                                              Width="24"
+                                              Height="24"
+                                              Margin="0,0,12,0"
+                                              Foreground="{DynamicResource SecondaryHueMidBrush}"
+                                              Visibility="{Binding IsPaused, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <TextBlock VerticalAlignment="Center">
                         <Run Text="{Binding CompletedCount, Mode=OneWay}"/>
                         <Run Text="/"/>
@@ -211,8 +220,24 @@
                         Command="{Binding DeployCommand}"
                         Margin="0,0,12,0"/>
 
-                <!-- Cancel Button -->
+                <!-- Pause Button -->
                 <Button Grid.Column="4"
+                        Content="{loc:Loc Btn_Pause}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Command="{Binding PauseDeploymentCommand}"
+                        Visibility="{Binding CanPauseDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Margin="0,0,8,0"/>
+
+                <!-- Resume Button -->
+                <Button Grid.Column="5"
+                        Content="{loc:Loc Btn_Resume}"
+                        Style="{StaticResource MaterialDesignRaisedAccentButton}"
+                        Command="{Binding ResumeDeploymentCommand}"
+                        Visibility="{Binding CanResumeDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Margin="0,0,8,0"/>
+
+                <!-- Cancel Button -->
+                <Button Grid.Column="6"
                         Content="{loc:Loc Btn_Cancel}"
                         Style="{StaticResource MaterialDesignOutlinedButton}"
                         Command="{Binding CancelDeploymentCommand}"

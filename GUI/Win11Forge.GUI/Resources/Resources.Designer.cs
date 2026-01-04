@@ -86,6 +86,7 @@ public class Resources
     public static string Apps_Title => ResourceManager.GetString("Apps_Title", resourceCulture);
     public static string Apps_SearchHint => ResourceManager.GetString("Apps_SearchHint", resourceCulture);
     public static string Apps_CategoryAll => ResourceManager.GetString("Apps_CategoryAll", resourceCulture);
+    public static string Apps_ClearFilters => ResourceManager.GetString("Apps_ClearFilters", resourceCulture);
     public static string Apps_Col_Sources => ResourceManager.GetString("Apps_Col_Sources", resourceCulture);
     public static string Apps_Col_Id => ResourceManager.GetString("Apps_Col_Id", resourceCulture);
     public static string Btn_Scan => ResourceManager.GetString("Btn_Scan", resourceCulture);
@@ -97,6 +98,8 @@ public class Resources
     // Deployment Execution
     public static string Btn_Deploy => ResourceManager.GetString("Btn_Deploy", resourceCulture);
     public static string Btn_Cancel => ResourceManager.GetString("Btn_Cancel", resourceCulture);
+    public static string Btn_Pause => ResourceManager.GetString("Btn_Pause", resourceCulture);
+    public static string Btn_Resume => ResourceManager.GetString("Btn_Resume", resourceCulture);
     public static string Lbl_DryRun => ResourceManager.GetString("Lbl_DryRun", resourceCulture);
     public static string Lbl_DryRun_Hint => ResourceManager.GetString("Lbl_DryRun_Hint", resourceCulture);
 
@@ -107,11 +110,13 @@ public class Resources
     public static string Status_Failed => ResourceManager.GetString("Status_Failed", resourceCulture);
     public static string Status_Skipped => ResourceManager.GetString("Status_Skipped", resourceCulture);
     public static string Status_AlreadyInstalled => ResourceManager.GetString("Status_AlreadyInstalled", resourceCulture);
+    public static string Status_Paused => ResourceManager.GetString("Status_Paused", resourceCulture);
 
     // Progress
     public static string Progress_Installing => ResourceManager.GetString("Progress_Installing", resourceCulture);
     public static string Progress_Complete => ResourceManager.GetString("Progress_Complete", resourceCulture);
     public static string Progress_Cancelled => ResourceManager.GetString("Progress_Cancelled", resourceCulture);
+    public static string Progress_Deploying => ResourceManager.GetString("Progress_Deploying", resourceCulture);
 
     // Profile Editor
     public static string Nav_ProfileEditor => ResourceManager.GetString("Nav_ProfileEditor", resourceCulture);

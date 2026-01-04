@@ -32,6 +32,7 @@ public partial class DeploymentViewModel : ViewModelBase
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IDeploymentHistoryService _historyService;
     private readonly SemaphoreSlim _installSemaphore = new(5);
+    private readonly ManualResetEventSlim _pauseGate = new(true); // Initially open (not paused)
     private CancellationTokenSource? _cancellationTokenSource;
     private DateTime _deploymentStartTime;
 
@@ -71,7 +72,17 @@ public partial class DeploymentViewModel : ViewModelBase
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DeployCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelDeploymentCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PauseDeploymentCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ResumeDeploymentCommand))]
     private bool _isDeploying;
+
+    /// <summary>
+    /// Whether deployment is currently paused.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(PauseDeploymentCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ResumeDeploymentCommand))]
+    private bool _isPaused;
 
     /// <summary>
     /// Whether to run in simulation mode (no actual changes).
@@ -108,6 +119,16 @@ public partial class DeploymentViewModel : ViewModelBase
     /// Whether deployment can start.
     /// </summary>
     public bool CanDeploy => !IsDeploying && SelectedApplicationsCount > 0;
+
+    /// <summary>
+    /// Whether deployment can be paused (running and not already paused).
+    /// </summary>
+    public bool CanPauseDeployment => IsDeploying && !IsPaused;
+
+    /// <summary>
+    /// Whether deployment can be resumed (running and currently paused).
+    /// </summary>
+    public bool CanResumeDeployment => IsDeploying && IsPaused;
 
     /// <summary>
     /// Initializes a new instance of DeploymentViewModel.
@@ -284,6 +305,8 @@ public partial class DeploymentViewModel : ViewModelBase
         if (selectedApps.Count == 0) return;
 
         IsDeploying = true;
+        IsPaused = false;
+        _pauseGate.Set(); // Ensure gate is open at start
         CompletedCount = 0;
         TotalToInstall = selectedApps.Count;
         _cancellationTokenSource = new CancellationTokenSource();
@@ -378,11 +401,28 @@ public partial class DeploymentViewModel : ViewModelBase
 
     /// <summary>
     /// Installs a single application with semaphore-controlled concurrency.
+    /// Respects the pause gate - waits if deployment is paused.
     /// </summary>
     private async Task InstallApplicationWithSemaphoreAsync(
         ApplicationModel app,
         CancellationToken cancellationToken)
     {
+        // Wait for pause gate before proceeding (blocks if paused)
+        // Uses polling to allow cancellation while paused
+        while (!_pauseGate.IsSet)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                UpdateOnUI(() =>
+                {
+                    app.Status = ApplicationStatus.Skipped;
+                    app.StatusMessage = Resources.Resources.Status_Skipped;
+                });
+                return;
+            }
+            await Task.Delay(100, cancellationToken);
+        }
+
         await _installSemaphore.WaitAsync(cancellationToken);
 
         try
@@ -477,6 +517,31 @@ public partial class DeploymentViewModel : ViewModelBase
     private void CancelDeployment()
     {
         _cancellationTokenSource?.Cancel();
+        // Also release the pause gate to allow cancellation to propagate
+        _pauseGate.Set();
         DeploymentStatusMessage = Resources.Resources.Progress_Cancelled;
+    }
+
+    /// <summary>
+    /// Pauses the current deployment.
+    /// New installations will wait until resumed.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanPauseDeployment))]
+    private void PauseDeployment()
+    {
+        _pauseGate.Reset(); // Close the gate - new installs will wait
+        IsPaused = true;
+        DeploymentStatusMessage = Resources.Resources.Status_Paused;
+    }
+
+    /// <summary>
+    /// Resumes a paused deployment.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanResumeDeployment))]
+    private void ResumeDeployment()
+    {
+        IsPaused = false;
+        _pauseGate.Set(); // Open the gate - waiting installs can proceed
+        DeploymentStatusMessage = Resources.Resources.Progress_Deploying;
     }
 }

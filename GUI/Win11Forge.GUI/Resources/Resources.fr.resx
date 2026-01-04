@@ -223,6 +223,12 @@
   <data name="Btn_Cancel" xml:space="preserve">
     <value>Annuler</value>
   </data>
+  <data name="Btn_Pause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="Btn_Resume" xml:space="preserve">
+    <value>Reprendre</value>
+  </data>
   <data name="Lbl_DryRun" xml:space="preserve">
     <value>Mode simulation</value>
   </data>
@@ -248,6 +254,9 @@
   <data name="Status_AlreadyInstalled" xml:space="preserve">
     <value>Deja installe</value>
   </data>
+  <data name="Status_Paused" xml:space="preserve">
+    <value>Deploiement en pause</value>
+  </data>
   <!-- Progress -->
   <data name="Progress_Installing" xml:space="preserve">
     <value>Installation des applications...</value>
@@ -257,6 +266,9 @@
   </data>
   <data name="Progress_Cancelled" xml:space="preserve">
     <value>Deploiement annule</value>
+  </data>
+  <data name="Progress_Deploying" xml:space="preserve">
+    <value>Deploiement en cours...</value>
   </data>
   <!-- Profile Editor -->
   <data name="Editor_Title_New" xml:space="preserve">
