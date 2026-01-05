@@ -784,34 +784,38 @@ try {{
                 app.IsRequired = requiredProp.GetBoolean();
             }
 
-            // Build sources list
-            var sources = new List<string>();
-            if (appData.TryGetProperty("WingetId", out var winget) &&
-                winget.ValueKind == JsonValueKind.String &&
-                !string.IsNullOrEmpty(winget.GetString()))
+            // Build sources list from Sources object
+            var sourcesList = new List<string>();
+            if (appData.TryGetProperty("Sources", out var sourcesObj) &&
+                sourcesObj.ValueKind == JsonValueKind.Object)
             {
-                sources.Add("Winget");
-            }
-            if (appData.TryGetProperty("ChocolateyId", out var choco) &&
-                choco.ValueKind == JsonValueKind.String &&
-                !string.IsNullOrEmpty(choco.GetString()))
-            {
-                sources.Add("Chocolatey");
-            }
-            if (appData.TryGetProperty("StoreId", out var store) &&
-                store.ValueKind == JsonValueKind.String &&
-                !string.IsNullOrEmpty(store.GetString()))
-            {
-                sources.Add("Store");
-            }
-            if (appData.TryGetProperty("DirectUrl", out var url) &&
-                url.ValueKind == JsonValueKind.String &&
-                !string.IsNullOrEmpty(url.GetString()))
-            {
-                sources.Add("Direct");
+                if (sourcesObj.TryGetProperty("Winget", out var winget) &&
+                    winget.ValueKind == JsonValueKind.String &&
+                    !string.IsNullOrEmpty(winget.GetString()))
+                {
+                    sourcesList.Add("Winget");
+                }
+                if (sourcesObj.TryGetProperty("Chocolatey", out var choco) &&
+                    choco.ValueKind == JsonValueKind.String &&
+                    !string.IsNullOrEmpty(choco.GetString()))
+                {
+                    sourcesList.Add("Chocolatey");
+                }
+                if (sourcesObj.TryGetProperty("Store", out var store) &&
+                    store.ValueKind == JsonValueKind.String &&
+                    !string.IsNullOrEmpty(store.GetString()))
+                {
+                    sourcesList.Add("Store");
+                }
+                if (sourcesObj.TryGetProperty("DirectUrl", out var url) &&
+                    url.ValueKind == JsonValueKind.String &&
+                    !string.IsNullOrEmpty(url.GetString()))
+                {
+                    sourcesList.Add("Direct");
+                }
             }
 
-            app.Sources = string.Join(", ", sources);
+            app.Sources = string.Join(", ", sourcesList);
 
             applications.Add(app);
         }
@@ -929,70 +933,53 @@ try {{
     public async Task<ApplicationStatus> GetApplicationStatusAsync(string appId)
     {
         var repoRoot = GetSafeRepositoryRoot();
-        var corePath = Path.Combine(repoRoot, "Core", "Core.psm1");
-        var dbModulePath = Path.Combine(repoRoot, "Modules", "ApplicationDatabase.psm1");
-        var enginePath = Path.Combine(repoRoot, "Modules", "InstallationEngine.psm1");
+        var corePath = Path.Combine(repoRoot, "Core", "Core.psm1").Replace("\\", "/");
+        var dbModulePath = Path.Combine(repoRoot, "Modules", "ApplicationDatabase.psm1").Replace("\\", "/");
+        var enginePath = Path.Combine(repoRoot, "Modules", "InstallationEngine.psm1").Replace("\\", "/");
 
-        return await Task.Run(() =>
+        try
         {
-            try
+            // Use external PowerShell process for reliability
+            var script = $@"
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+$ErrorActionPreference = 'SilentlyContinue'
+
+try {{
+    Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue
+    Import-Module '{dbModulePath}' -Force -ErrorAction Stop
+    Import-Module '{enginePath}' -Force -ErrorAction Stop
+
+    $app = Get-ApplicationById -AppId '{appId.Replace("'", "''")}'
+    if (-not $app) {{
+        Write-Output 'NOT_FOUND'
+        exit
+    }}
+
+    $isInstalled = Test-ApplicationInstalled -Application $app
+    if ($isInstalled) {{
+        Write-Output 'INSTALLED'
+    }} else {{
+        Write-Output 'NOT_INSTALLED'
+    }}
+}} catch {{
+    Write-Output 'ERROR'
+}}
+";
+
+            var output = await ExecutePowerShellScriptAsync(script);
+            var result = output.Trim().Split('\n').LastOrDefault()?.Trim() ?? string.Empty;
+
+            return result switch
             {
-                using var ps = CreatePowerShellInstance();
-
-                // Set execution policy
-                ps.AddCommand("Set-ExecutionPolicy")
-                  .AddParameter("ExecutionPolicy", "Bypass")
-                  .AddParameter("Scope", "Process")
-                  .AddParameter("Force");
-                ps.Invoke();
-                ps.Commands.Clear();
-
-                // Import required modules
-                ps.AddScript($@"
-                    Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue
-                    Import-Module '{dbModulePath}' -Force
-                    Import-Module '{enginePath}' -Force
-                ");
-                ps.Invoke();
-                ps.Commands.Clear();
-
-                if (ps.HadErrors)
-                {
-                    return ApplicationStatus.Pending;
-                }
-
-                // Get full application object from database
-                ps.AddCommand("Get-ApplicationById")
-                  .AddParameter("AppId", appId);
-
-                var appResults = ps.Invoke();
-                ps.Commands.Clear();
-
-                if (appResults.Count == 0)
-                {
-                    return ApplicationStatus.Pending;
-                }
-
-                var appObject = appResults[0];
-
-                // Call Test-ApplicationInstalled
-                ps.AddCommand("Test-ApplicationInstalled")
-                  .AddParameter("Application", appObject);
-
-                var testResults = ps.Invoke();
-
-                if (testResults.Count > 0 && testResults[0]?.BaseObject is bool isInstalled)
-                {
-                    return isInstalled ? ApplicationStatus.Installed : ApplicationStatus.Pending;
-                }
-
-                return ApplicationStatus.Pending;
-            }
-            catch
-            {
-                return ApplicationStatus.Pending;
-            }
-        });
+                "INSTALLED" => ApplicationStatus.Installed,
+                "NOT_INSTALLED" => ApplicationStatus.Pending,
+                _ => ApplicationStatus.Pending
+            };
+        }
+        catch
+        {
+            return ApplicationStatus.Pending;
+        }
     }
 
     /// <inheritdoc/>
@@ -1070,91 +1057,25 @@ try {{
 
             try
             {
-                using var ps = CreatePowerShellInstance();
+                // Get Windows version using native .NET (more reliable than PowerShell SDK)
+                info.WindowsVersion = GetWindowsVersionNative();
+                info.WindowsBuild = GetWindowsBuildNative();
 
-                // Set execution policy
-                ps.AddCommand("Set-ExecutionPolicy")
-                  .AddParameter("ExecutionPolicy", "Bypass")
-                  .AddParameter("Scope", "Process")
-                  .AddParameter("Force");
-                ps.Invoke();
-                ps.Commands.Clear();
+                // Get total memory using native .NET
+                info.TotalMemoryGB = GetTotalMemoryNative();
 
-                // Get Windows version info
-                ps.AddScript(@"
-                    $os = Get-CimInstance Win32_OperatingSystem
-                    @{
-                        Caption = $os.Caption
-                        BuildNumber = $os.BuildNumber
-                        Version = $os.Version
-                    }
-                ");
-                var osResult = ps.Invoke();
-                ps.Commands.Clear();
+                // Check if running as administrator using native .NET
+                info.IsAdministrator = IsRunningAsAdministrator();
 
-                if (osResult.Count > 0 && osResult[0]?.BaseObject is System.Collections.Hashtable osHt)
-                {
-                    info.WindowsVersion = osHt["Caption"]?.ToString() ?? "Windows";
-                    info.WindowsBuild = osHt["Version"]?.ToString() ?? osHt["BuildNumber"]?.ToString() ?? "Unknown";
-                }
+                // Check Winget availability using process
+                var wingetVer = GetCommandVersion("winget", "--version");
+                info.WingetAvailable = !string.IsNullOrEmpty(wingetVer);
+                info.WingetVersion = wingetVer;
 
-                // Get total memory
-                ps.AddScript("(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory");
-                var memResult = ps.Invoke();
-                ps.Commands.Clear();
-
-                if (memResult.Count > 0 && memResult[0]?.BaseObject is ulong totalMem)
-                {
-                    info.TotalMemoryGB = Math.Round(totalMem / 1024.0 / 1024.0 / 1024.0, 1);
-                }
-
-                // Check if running as administrator
-                ps.AddScript(@"
-                    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-                    $principal = New-Object Security.Principal.WindowsPrincipal($identity)
-                    $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-                ");
-                var adminResult = ps.Invoke();
-                ps.Commands.Clear();
-
-                if (adminResult.Count > 0 && adminResult[0]?.BaseObject is bool isAdmin)
-                {
-                    info.IsAdministrator = isAdmin;
-                }
-
-                // Check Winget availability
-                ps.AddScript(@"
-                    try {
-                        $ver = winget --version 2>$null
-                        if ($ver) { $ver.Trim() } else { '' }
-                    } catch { '' }
-                ");
-                var wingetResult = ps.Invoke();
-                ps.Commands.Clear();
-
-                if (wingetResult.Count > 0)
-                {
-                    var wingetVer = wingetResult[0]?.ToString()?.Trim() ?? string.Empty;
-                    info.WingetAvailable = !string.IsNullOrEmpty(wingetVer);
-                    info.WingetVersion = wingetVer;
-                }
-
-                // Check Chocolatey availability
-                ps.AddScript(@"
-                    try {
-                        $ver = choco --version 2>$null
-                        if ($ver) { $ver.Trim() } else { '' }
-                    } catch { '' }
-                ");
-                var chocoResult = ps.Invoke();
-                ps.Commands.Clear();
-
-                if (chocoResult.Count > 0)
-                {
-                    var chocoVer = chocoResult[0]?.ToString()?.Trim() ?? string.Empty;
-                    info.ChocolateyAvailable = !string.IsNullOrEmpty(chocoVer);
-                    info.ChocolateyVersion = chocoVer;
-                }
+                // Check Chocolatey availability using process
+                var chocoVer = GetCommandVersion("choco", "--version");
+                info.ChocolateyAvailable = !string.IsNullOrEmpty(chocoVer);
+                info.ChocolateyVersion = chocoVer;
             }
             catch
             {
@@ -1163,6 +1084,115 @@ try {{
 
             return info;
         });
+    }
+
+    /// <summary>
+    /// Gets Windows version string using native .NET/Registry.
+    /// </summary>
+    private static string GetWindowsVersionNative()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+            var productName = key?.GetValue("ProductName")?.ToString() ?? "Windows";
+            var displayVersion = key?.GetValue("DisplayVersion")?.ToString();
+            if (!string.IsNullOrEmpty(displayVersion))
+            {
+                return $"{productName} ({displayVersion})";
+            }
+            return productName;
+        }
+        catch
+        {
+            return $"Windows {Environment.OSVersion.Version.Major}";
+        }
+    }
+
+    /// <summary>
+    /// Gets Windows build number using native .NET/Registry.
+    /// </summary>
+    private static string GetWindowsBuildNative()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+            var build = key?.GetValue("CurrentBuildNumber")?.ToString() ?? key?.GetValue("CurrentBuild")?.ToString();
+            var ubr = key?.GetValue("UBR")?.ToString();
+            if (!string.IsNullOrEmpty(build))
+            {
+                return !string.IsNullOrEmpty(ubr) ? $"{build}.{ubr}" : build;
+            }
+            return Environment.OSVersion.Version.Build.ToString();
+        }
+        catch
+        {
+            return Environment.OSVersion.Version.Build.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Gets total physical memory using native .NET.
+    /// </summary>
+    private static double GetTotalMemoryNative()
+    {
+        try
+        {
+            // Use GC to get approximate total memory (not perfect but works without WMI)
+            var gcInfo = GC.GetGCMemoryInfo();
+            return Math.Round(gcInfo.TotalAvailableMemoryBytes / 1024.0 / 1024.0 / 1024.0, 1);
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Checks if the current process is running as administrator.
+    /// </summary>
+    private static bool IsRunningAsAdministrator()
+    {
+        try
+        {
+            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+            var principal = new System.Security.Principal.WindowsPrincipal(identity);
+            return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Gets version string from a command using process execution.
+    /// </summary>
+    private static string GetCommandVersion(string command, string arguments)
+    {
+        try
+        {
+            var startInfo = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = command,
+                Arguments = arguments,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            using var process = System.Diagnostics.Process.Start(startInfo);
+            if (process == null) return string.Empty;
+
+            var output = process.StandardOutput.ReadToEnd().Trim();
+            process.WaitForExit(5000);
+
+            return output;
+        }
+        catch
+        {
+            return string.Empty;
+        }
     }
 
     /// <inheritdoc/>

@@ -814,7 +814,7 @@
       "Category": "Configuration",
       "Description": "Windows customization tool",
       "Sources": {
-        "Winget": "WinAero.Tweaker",
+        "Winget": "winaero.tweaker",
         "Chocolatey": "winaero-tweaker",
         "Store": null,
         "DirectUrl": null
@@ -900,8 +900,8 @@
         "DirectUrl": "https://updates.signal.org/desktop/signal-desktop-win-7.0.0.exe"
       },
       "Detection": {
-        "Method": "File",
-        "Path": "C:\\Program Files\\Signal\\Signal.exe"
+        "Method": "Registry",
+        "Path": "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{a80e5614-cb9e-523a-9686-da863390b946}"
       },
       "DefaultPriority": 34,
       "DefaultRequired": false,
@@ -1515,14 +1515,14 @@
       "Category": "Security",
       "Description": "Secure VPN service",
       "Sources": {
-        "Winget": "ProtonTechnologies.ProtonVPN",
+        "Winget": "Proton.ProtonVPN",
         "Chocolatey": "protonvpn",
         "Store": null,
         "DirectUrl": null
       },
       "Detection": {
-        "Method": "File",
-        "Path": "C:\\Program Files\\Proton\\VPN\\ProtonVPN.exe"
+        "Method": "Registry",
+        "Path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Proton VPN_is1"
       },
       "DefaultPriority": 59,
       "DefaultRequired": false,
@@ -1630,7 +1630,7 @@
       "Category": "Security",
       "Description": "Password manager and form filler",
       "Sources": {
-        "Winget": "Siber.RoboForm",
+        "Winget": "SiberSystems.RoboForm",
         "Chocolatey": "roboform",
         "Store": null,
         "DirectUrl": null
@@ -1682,7 +1682,7 @@
       "Category": "Multimedia",
       "Description": "Universal tag editor for audio files",
       "Sources": {
-        "Winget": "Florian.Heidenreich.Mp3tag",
+        "Winget": "FlorianHeidenreich.Mp3tag",
         "Chocolatey": "mp3tag",
         "Store": null,
         "DirectUrl": null

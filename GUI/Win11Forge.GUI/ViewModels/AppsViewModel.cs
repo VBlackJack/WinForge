@@ -151,6 +151,9 @@ public partial class AppsViewModel : ViewModelBase
 
             // Apply initial filter
             ApplyFilter();
+
+            // Notify that Scan command can now execute (applications loaded)
+            ScanCommand.NotifyCanExecuteChanged();
         }
         catch (Exception ex)
         {

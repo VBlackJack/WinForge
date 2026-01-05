@@ -863,88 +863,102 @@ function Test-ApplicationInstalled {
     }
 
     if (-not $Application.Detection) {
-        return (Test-ApplicationByName -Name $appName)
-    }
+        $detected = Test-ApplicationByName -Name $appName
+    } else {
+        $method = $Application.Detection.Method
+        $detected = $false
 
-    $method = $Application.Detection.Method
-
-    switch ($method) {
-        'Registry' {
-            return Test-RegistryKey -Path $Application.Detection.Path
-        }
-        'File' {
-            return Test-Path -Path $Application.Detection.Path -PathType Leaf
-        }
-        'Command' {
-            try {
-                # Secure command execution - parse command into executable and arguments
-                $commandParts = $Application.Detection.Command -split '\s+', 2
-                $executable = $commandParts[0]
-                $arguments = if ($commandParts.Count -gt 1) { $commandParts[1] } else { $null }
-
-                # Validate executable exists
-                if (-not (Get-Command -Name $executable -ErrorAction SilentlyContinue)) {
-                    return $false
-                }
-
-                # Execute securely with Start-Process
-                $process = if ($arguments) {
-                    Start-Process -FilePath $executable -ArgumentList $arguments -Wait -NoNewWindow -PassThru -ErrorAction Stop
-                } else {
-                    Start-Process -FilePath $executable -Wait -NoNewWindow -PassThru -ErrorAction Stop
-                }
-
-                return $process.ExitCode -eq 0
-            } catch {
-                return $false
+        switch ($method) {
+            'Registry' {
+                $detected = Test-RegistryKey -Path $Application.Detection.Path
             }
-        }
-        'WindowsFeature' {
-            $feature = Get-WindowsOptionalFeature -Online -FeatureName $Application.Detection.Feature -ErrorAction SilentlyContinue
-            return $feature -and $feature.State -eq 'Enabled'
-        }
-        'WindowsCapability' {
-            $capability = Get-WindowsCapability -Online -Name "*$($Application.Detection.Capability)*" -ErrorAction SilentlyContinue
-            return $capability -and $capability.State -eq 'Installed'
-        }
-        'StoreApp' {
-            # Use winget list instead of Get-AppxPackage to avoid Appx module conflicts in PowerShell 7
-            if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
+            'File' {
+                $detected = Test-Path -Path $Application.Detection.Path -PathType Leaf
+            }
+            'Command' {
                 try {
-                    $wingetList = & winget list --accept-source-agreements 2>&1 | Out-String
+                    # Secure command execution - parse command into executable and arguments
+                    $commandParts = $Application.Detection.Command -split '\s+', 2
+                    $executable = $commandParts[0]
+                    $arguments = if ($commandParts.Count -gt 1) { $commandParts[1] } else { $null }
 
-                    # Try 1: Match by Store ID (most specific)
-                    if ($Application.Sources.Store) {
-                        if ($wingetList -match [regex]::Escape($Application.Sources.Store) -and $wingetList -notmatch "No installed package") {
-                            return $true
+                    # Validate executable exists
+                    if (Get-Command -Name $executable -ErrorAction SilentlyContinue) {
+                        # Execute securely with Start-Process
+                        $process = if ($arguments) {
+                            Start-Process -FilePath $executable -ArgumentList $arguments -Wait -NoNewWindow -PassThru -ErrorAction Stop
+                        } else {
+                            Start-Process -FilePath $executable -Wait -NoNewWindow -PassThru -ErrorAction Stop
                         }
+                        $detected = $process.ExitCode -eq 0
                     }
-
-                    # Try 2: Match by full PackageName (specific, avoids false positives from vendor prefix)
-                    if ($Application.Detection.PackageName) {
-                        if ($wingetList -match [regex]::Escape($Application.Detection.PackageName)) {
-                            return $true
-                        }
-                    }
-
-                    return $false
                 } catch {
-                    return $false
+                    $detected = $false
                 }
             }
+            'WindowsFeature' {
+                $feature = Get-WindowsOptionalFeature -Online -FeatureName $Application.Detection.Feature -ErrorAction SilentlyContinue
+                $detected = $feature -and $feature.State -eq 'Enabled'
+            }
+            'WindowsCapability' {
+                $capability = Get-WindowsCapability -Online -Name "*$($Application.Detection.Capability)*" -ErrorAction SilentlyContinue
+                $detected = $capability -and $capability.State -eq 'Installed'
+            }
+            'StoreApp' {
+                # Use winget list instead of Get-AppxPackage to avoid Appx module conflicts in PowerShell 7
+                if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
+                    try {
+                        $wingetList = & winget list --accept-source-agreements 2>&1 | Out-String
 
-            # Fallback to Get-AppxPackage if winget not available (PowerShell 5.1)
-            try {
-                $package = Get-AppxPackage -Name "*$($Application.Detection.PackageName)*" -ErrorAction SilentlyContinue
-                return $null -ne $package
-            } catch {
-                return $false
+                        # Try 1: Match by Store ID (most specific)
+                        if ($Application.Sources.Store) {
+                            if ($wingetList -match [regex]::Escape($Application.Sources.Store) -and $wingetList -notmatch "No installed package") {
+                                $detected = $true
+                            }
+                        }
+
+                        # Try 2: Match by full PackageName (specific, avoids false positives from vendor prefix)
+                        if (-not $detected -and $Application.Detection.PackageName) {
+                            if ($wingetList -match [regex]::Escape($Application.Detection.PackageName)) {
+                                $detected = $true
+                            }
+                        }
+                    } catch {
+                        $detected = $false
+                    }
+                } else {
+                    # Fallback to Get-AppxPackage if winget not available (PowerShell 5.1)
+                    try {
+                        $package = Get-AppxPackage -Name "*$($Application.Detection.PackageName)*" -ErrorAction SilentlyContinue
+                        $detected = $null -ne $package
+                    } catch {
+                        $detected = $false
+                    }
+                }
+            }
+            default {
+                $detected = Test-ApplicationByName -Name $appName
             }
         }
-        default {
-            return (Test-ApplicationByName -Name $appName)
+    }
+
+    # Winget-based fallback detection if primary method failed
+    if (-not $detected -and $Application.Sources -and $Application.Sources.Winget) {
+        if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
+            try {
+                $wingetId = $Application.Sources.Winget
+                $wingetResult = & winget list --id $wingetId --accept-source-agreements 2>&1 | Out-String
+                if ($wingetResult -match [regex]::Escape($wingetId) -and $wingetResult -notmatch "No installed package") {
+                    $detected = $true
+                }
+            } catch {
+                # Winget fallback failed silently - keep original detection result
+                Write-Verbose "Winget fallback detection failed for $($Application.Name): $_"
+            }
         }
     }
+
+    return $detected
 }
 
 function Test-ApplicationByName {
