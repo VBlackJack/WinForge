@@ -591,11 +591,23 @@ function Start-ProcessWithTimeout {
             throw "Process execution timed out after $TimeoutSeconds seconds"
         }
 
+        # Refresh process object to ensure ExitCode is available
+        # This is required because Start-Process -PassThru may not update ExitCode after WaitForExit
+        $process.Refresh()
+
+        # Ensure we have a valid exit code (fallback to -1 if null)
+        $exitCode = if ($null -ne $process.ExitCode) { $process.ExitCode } else { -1 }
+
         if ($PassThru) {
-            return $process
+            # Create a wrapper object with guaranteed ExitCode
+            return [PSCustomObject]@{
+                ExitCode = $exitCode
+                Id = $process.Id
+                HasExited = $process.HasExited
+            }
         }
 
-        return $process.ExitCode
+        return $exitCode
     } catch {
         Write-Status -Message "Process execution failed: $($_.Exception.Message)" -Level 'Error'
         throw
@@ -1081,6 +1093,14 @@ function Install-ViaWinget {
                 continue
             }
 
+            # Post-install verification: Check if package is actually installed despite non-zero exit code
+            # This handles cases where winget returns unexpected exit codes but installation succeeded
+            $verifyResult = & winget list --id $PackageId --accept-source-agreements 2>&1 | Out-String
+            if ($verifyResult -match [regex]::Escape($PackageId) -and $verifyResult -notmatch "No installed package") {
+                Write-Status -Message "Installed successfully via Winget (verified post-install)$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                return $true
+            }
+
             Write-Status -Message "Winget installation failed (exit code: $($process.ExitCode))" -Level 'Warning'
             return $false
 
@@ -1150,6 +1170,14 @@ function Install-ViaChocolatey {
                 Write-Status -Message "Transient error detected (exit code: $($process.ExitCode)), retrying in $delay seconds..." -Level 'Warning'
                 Start-Sleep -Seconds $delay
                 continue
+            }
+
+            # Post-install verification: Check if package is actually installed despite non-zero exit code
+            # Chocolatey may return non-zero codes even when installation succeeded
+            $chocoList = & choco list --local-only --exact $PackageName 2>&1 | Out-String
+            if ($chocoList -match $PackageName -and $chocoList -notmatch "0 packages installed") {
+                Write-Status -Message "Installed successfully via Chocolatey (verified post-install)$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                return $true
             }
 
             Write-Status -Message "Chocolatey installation failed (exit code: $($process.ExitCode))" -Level 'Verbose'
