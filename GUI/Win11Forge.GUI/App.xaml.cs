@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.IO;
 using System.Windows;
+using MaterialDesignThemes.Wpf;
 using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI;
@@ -31,7 +33,7 @@ public partial class App : Application
 
     /// <summary>
     /// Called on application startup.
-    /// Loads and applies persisted user settings (theme, language).
+    /// Loads and applies persisted user settings (theme, language) BEFORE UI initialization.
     /// </summary>
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -49,17 +51,71 @@ public partial class App : Application
         try
         {
             Log("App.OnStartup starting...");
+
+            // Step 1: Load settings FIRST (before any UI)
+            Log("Loading settings...");
+            var settingsService = new AppSettingsService();
+            var settings = settingsService.LoadSettings();
+
+            // Step 2: Apply language/culture BEFORE UI initialization
+            Log($"Applying language: {settings.LanguageCode}");
+            if (!string.IsNullOrEmpty(settings.LanguageCode))
+            {
+                try
+                {
+                    var culture = new CultureInfo(settings.LanguageCode);
+                    Thread.CurrentThread.CurrentUICulture = culture;
+                    Thread.CurrentThread.CurrentCulture = culture;
+                    CultureInfo.CurrentUICulture = culture;
+                    CultureInfo.CurrentCulture = culture;
+                    Win11Forge.GUI.Resources.Resources.Culture = culture;
+                }
+                catch (CultureNotFoundException ex)
+                {
+                    Log($"Invalid culture '{settings.LanguageCode}', using system default: {ex.Message}");
+                }
+            }
+
+            // Step 3: Apply theme
+            Log($"Applying theme: {(settings.IsDarkTheme ? "Dark" : "Light")}");
+            try
+            {
+                var paletteHelper = new PaletteHelper();
+                var theme = paletteHelper.GetTheme();
+                theme.SetBaseTheme(settings.IsDarkTheme ? BaseTheme.Dark : BaseTheme.Light);
+                paletteHelper.SetTheme(theme);
+            }
+            catch (Exception ex)
+            {
+                Log($"Theme application failed: {ex.Message}");
+            }
+
+            // Step 4: Call base AFTER settings are applied
             base.OnStartup(e);
 
-            Log("Applying startup settings...");
-            AppSettingsService.ApplyStartupSettings();
+            // Step 5: NOW create and show MainWindow (after culture is set)
+            Log("Creating MainWindow...");
+            var mainWindow = new MainWindow();
+            mainWindow.Show();
 
             Log("Startup complete.");
         }
         catch (Exception ex)
         {
             LogError("OnStartup", ex);
-            throw;
+            base.OnStartup(e);
+
+            // Still try to show MainWindow even if settings failed
+            try
+            {
+                var mainWindow = new MainWindow();
+                mainWindow.Show();
+            }
+            catch (Exception innerEx)
+            {
+                LogError("MainWindow creation failed", innerEx);
+                throw;
+            }
         }
     }
 

@@ -395,135 +395,115 @@ public class PowerShellBridge : IPowerShellBridge
         }
 
         var repoRoot = GetSafeRepositoryRoot();
-        var corePath = Path.Combine(repoRoot, "Core", "Core.psm1");
-        var dbModulePath = Path.Combine(repoRoot, "Modules", "ApplicationDatabase.psm1");
-        var enginePath = Path.Combine(repoRoot, "Modules", "InstallationEngine.psm1");
+        var corePath = Path.Combine(repoRoot, "Core", "Core.psm1").Replace("\\", "/");
+        var dbModulePath = Path.Combine(repoRoot, "Modules", "ApplicationDatabase.psm1").Replace("\\", "/");
+        var enginePath = Path.Combine(repoRoot, "Modules", "InstallationEngine.psm1").Replace("\\", "/");
 
-        return await Task.Run(() =>
+        return await Task.Run(async () =>
         {
             var logBuilder = new System.Text.StringBuilder();
 
             try
             {
-                // Create isolated PowerShell instance for thread safety
-                using var ps = CreatePowerShellInstance();
-
-                // Capture output streams
-                ps.Streams.Information.DataAdded += (s, e) =>
-                {
-                    var msg = ps.Streams.Information[e.Index]?.ToString() ?? string.Empty;
-                    logBuilder.AppendLine(msg);
-                    progressCallback?.Invoke(msg);
-                };
-
-                ps.Streams.Warning.DataAdded += (s, e) =>
-                {
-                    var msg = $"WARNING: {ps.Streams.Warning[e.Index]}";
-                    logBuilder.AppendLine(msg);
-                    progressCallback?.Invoke(msg);
-                };
-
-                ps.Streams.Verbose.DataAdded += (s, e) =>
-                {
-                    var msg = ps.Streams.Verbose[e.Index]?.ToString() ?? string.Empty;
-                    logBuilder.AppendLine(msg);
-                };
-
-                // Set execution policy
                 progressCallback?.Invoke($"Preparing to install {app.Name}...");
-                ps.AddCommand("Set-ExecutionPolicy")
-                  .AddParameter("ExecutionPolicy", "Bypass")
-                  .AddParameter("Scope", "Process")
-                  .AddParameter("Force");
-                ps.Invoke();
-                ps.Commands.Clear();
 
-                // Import required modules
-                progressCallback?.Invoke("Loading modules...");
-                ps.AddScript($@"
-                    Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue
-                    Import-Module '{dbModulePath}' -Force
-                    Import-Module '{enginePath}' -Force
-                ");
-                ps.Invoke();
-                ps.Commands.Clear();
+                // Build a PowerShell script that outputs JSON result
+                var script = $@"
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+$ErrorActionPreference = 'Continue'
 
-                if (ps.HadErrors)
+try {{
+    Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue
+    Import-Module '{dbModulePath}' -Force -ErrorAction Stop
+    Import-Module '{enginePath}' -Force -ErrorAction Stop
+
+    $app = Get-ApplicationById -AppId '{app.AppId.Replace("'", "''")}'
+    if (-not $app) {{
+        @{{ Success = $false; Message = 'Application not found in database'; Method = ''; AlreadyInstalled = $false }} | ConvertTo-Json -Compress
+        exit
+    }}
+
+    $result = Install-Application -Application $app
+    $result | ConvertTo-Json -Compress
+}} catch {{
+    @{{ Success = $false; Message = $_.Exception.Message; Method = ''; AlreadyInstalled = $false }} | ConvertTo-Json -Compress
+}}
+";
+
+                progressCallback?.Invoke($"Installing {app.Name}...");
+
+                var output = await ExecutePowerShellScriptAsync(script);
+                logBuilder.AppendLine(output);
+
+                // Find JSON line in output (last non-empty line that starts with {)
+                var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                string? jsonLine = null;
+                for (int i = lines.Length - 1; i >= 0; i--)
                 {
-                    var moduleErrors = string.Join(Environment.NewLine,
-                        ps.Streams.Error.Select(e => e.ToString()));
-                    logBuilder.AppendLine($"Module import errors: {moduleErrors}");
-                    return InstallResult.Failed($"Failed to load modules", logBuilder.ToString());
+                    var trimmed = lines[i].Trim();
+                    if (trimmed.StartsWith("{") && trimmed.EndsWith("}"))
+                    {
+                        jsonLine = trimmed;
+                        break;
+                    }
                 }
 
-                // Get application object from database
-                progressCallback?.Invoke($"Loading application: {app.AppId}...");
-                ps.AddCommand("Get-ApplicationById")
-                  .AddParameter("AppId", app.AppId);
-
-                var appResults = ps.Invoke();
-                ps.Commands.Clear();
-
-                if (appResults.Count == 0)
+                if (!string.IsNullOrEmpty(jsonLine))
                 {
-                    return InstallResult.Failed(
-                        $"Application '{app.AppId}' not found in database",
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(jsonLine);
+                        var root = doc.RootElement;
+
+                        var success = root.TryGetProperty("Success", out var successProp) &&
+                                      successProp.ValueKind == JsonValueKind.True;
+                        var message = root.TryGetProperty("Message", out var msgProp)
+                            ? msgProp.GetString() ?? string.Empty
+                            : string.Empty;
+                        var method = root.TryGetProperty("Method", out var methodProp)
+                            ? methodProp.GetString() ?? string.Empty
+                            : string.Empty;
+                        var alreadyInstalled = root.TryGetProperty("AlreadyInstalled", out var aiProp) &&
+                                               aiProp.ValueKind == JsonValueKind.True;
+
+                        logBuilder.AppendLine($"Result: Success={success}, Method={method}, Message={message}");
+
+                        if (success)
+                        {
+                            progressCallback?.Invoke($"Completed: {app.Name}");
+                            return InstallResult.Successful(message, logBuilder.ToString(), method, alreadyInstalled);
+                        }
+                        else
+                        {
+                            progressCallback?.Invoke($"Failed: {app.Name} - {message}");
+                            return InstallResult.Failed(message, logBuilder.ToString());
+                        }
+                    }
+                    catch (JsonException)
+                    {
+                        // JSON parsing failed, treat as error
+                        return InstallResult.Failed($"Invalid response format", logBuilder.ToString());
+                    }
+                }
+
+                // No JSON found, check if there's any output indicating success
+                if (output.Contains("successfully", StringComparison.OrdinalIgnoreCase) ||
+                    output.Contains("installed", StringComparison.OrdinalIgnoreCase))
+                {
+                    return InstallResult.Successful(
+                        $"Installation completed for {app.Name}",
                         logBuilder.ToString());
                 }
 
-                var appObject = appResults[0];
-
-                // Call Install-Application
-                progressCallback?.Invoke($"Installing {app.Name}...");
-                ps.AddCommand("Install-Application")
-                  .AddParameter("Application", appObject);
-
-                var installResults = ps.Invoke();
-
-                // Capture any remaining output
-                foreach (var result in installResults)
-                {
-                    logBuilder.AppendLine(result?.ToString() ?? string.Empty);
-                }
-
-                // Check for errors
-                if (ps.HadErrors)
-                {
-                    var errors = string.Join(Environment.NewLine,
-                        ps.Streams.Error.Select(e => e.ToString()));
-                    logBuilder.AppendLine($"Errors: {errors}");
-                    return InstallResult.Failed(errors, logBuilder.ToString());
-                }
-
-                // Parse result hashtable
-                if (installResults.Count > 0 && installResults[0]?.BaseObject is Hashtable resultHt)
-                {
-                    var success = resultHt["Success"] is bool s && s;
-                    var message = resultHt["Message"]?.ToString() ?? string.Empty;
-                    var method = resultHt["Method"]?.ToString() ?? string.Empty;
-                    var alreadyInstalled = resultHt["AlreadyInstalled"] is bool ai && ai;
-
-                    logBuilder.AppendLine($"Result: Success={success}, Method={method}, Message={message}");
-
-                    if (success)
-                    {
-                        return InstallResult.Successful(message, logBuilder.ToString(), method, alreadyInstalled);
-                    }
-                    else
-                    {
-                        return InstallResult.Failed(message, logBuilder.ToString());
-                    }
-                }
-
-                // Default success if no explicit result
-                return InstallResult.Successful(
-                    $"Installation completed for {app.Name}",
+                return InstallResult.Failed(
+                    "Installation completed but status unknown",
                     logBuilder.ToString());
             }
             catch (Exception ex)
             {
                 logBuilder.AppendLine($"Exception: {ex.Message}");
                 logBuilder.AppendLine(ex.StackTrace);
+                progressCallback?.Invoke($"Error: {ex.Message}");
                 return InstallResult.Failed(ex.Message, logBuilder.ToString());
             }
         });

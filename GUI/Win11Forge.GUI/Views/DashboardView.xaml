@@ -299,9 +299,9 @@
                                                            FontWeight="Medium"/>
                                                 <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                                            Opacity="0.7">
-                                                    <Run Text="{Binding Summary}"/>
+                                                    <Run Text="{Binding Summary, Mode=OneWay}"/>
                                                     <Run Text=" - "/>
-                                                    <Run Text="{Binding FormattedDuration}"/>
+                                                    <Run Text="{Binding FormattedDuration, Mode=OneWay}"/>
                                                 </TextBlock>
                                             </StackPanel>
 
