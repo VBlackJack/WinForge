@@ -1,5 +1,11 @@
 # Win11Forge - Git Ignore
 
+# Claude Code (local settings)
+.claude/
+
+# Distribution builds
+Dist/
+
 # Logs
 Logs/*.log
 *.log
