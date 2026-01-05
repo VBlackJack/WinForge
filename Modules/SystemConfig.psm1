@@ -1,21 +1,22 @@
 <#
 .SYNOPSIS
-    Win11Forge - System Configuration Version: 3.0.0 (FIXED)
+    Win11Forge - System Configuration Version: 3.0.0 (Zero Hardcoding)
 
 .DESCRIPTION
     Applies system configuration from profile JSON:
     - Windows Explorer settings
     - Taskbar configuration
-    - Network settings (DNS) - FIXED
+    - Network settings (DNS)
     - Privacy settings
     - Performance optimizations
     - Security settings
 
+    All registry paths, names, types, and values are loaded from
+    Config/SystemSettings.json - TRUE Zero Hardcoding implementation.
+
 .NOTES
     Author: Julien Bombled
     Version: 3.0.0
-    Fixed: DNS array handling bug
-    Fixed: Taskbar error handling
     Requires administrator privileges
 #>
 
@@ -100,6 +101,36 @@ function Get-RegistryPath {
         }
     }
     return $FallbackPath
+}
+
+function Get-RegistryValueDefinition {
+    <#
+    .SYNOPSIS
+        Gets a registry value definition from configuration.
+
+    .PARAMETER Group
+        The group name (Explorer, Taskbar, Privacy, etc.).
+
+    .PARAMETER Setting
+        The setting key name.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Group,
+
+        [Parameter(Mandatory)]
+        [string]$Setting
+    )
+
+    $settings = Get-SystemSettings
+    if ($null -ne $settings -and $null -ne $settings.RegistryValues) {
+        $groupValues = $settings.RegistryValues.$Group
+        if ($null -ne $groupValues) {
+            return $groupValues.$Setting
+        }
+    }
+    return $null
 }
 
 function Get-PowerPlanGuid {
@@ -242,7 +273,6 @@ function Set-RegistryValue {
         }
 
         # Use New-ItemProperty with -Force to create or overwrite the value
-        # Set-ItemProperty doesn't support -Type/-PropertyType parameter
         New-ItemProperty -Path $Path -Name $Name -Value $Value -PropertyType $Type -Force | Out-Null
         Write-Status -Message "Set: $Path\$Name = $Value" -Level 'Verbose'
         return $true
@@ -251,6 +281,86 @@ function Set-RegistryValue {
         Write-Status -Message "Failed to set: $Path\$Name - $($_.Exception.Message)" -Level 'Verbose'
         return $false
     }
+}
+
+function Set-RegistrySettingFromConfig {
+    <#
+    .SYNOPSIS
+        Sets a registry value using configuration from SystemSettings.json.
+
+    .DESCRIPTION
+        Looks up the setting definition in the configuration file and applies
+        the appropriate registry value based on the Enable parameter.
+
+    .PARAMETER Group
+        The configuration group (Explorer, Taskbar, Privacy, etc.).
+
+    .PARAMETER Setting
+        The setting key name within the group.
+
+    .PARAMETER Enable
+        Whether to enable ($true) or disable ($false) the setting.
+
+    .PARAMETER ValueKey
+        Optional specific value key to use (e.g., 'ValueOptimized', 'ValueLeft').
+        If not specified, uses ValueEnabled/ValueDisabled based on Enable parameter.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Group,
+
+        [Parameter(Mandatory)]
+        [string]$Setting,
+
+        [Parameter()]
+        [bool]$Enable = $true,
+
+        [Parameter()]
+        [string]$ValueKey
+    )
+
+    $definition = Get-RegistryValueDefinition -Group $Group -Setting $Setting
+    if ($null -eq $definition) {
+        Write-Status -Message "No configuration found for $Group.$Setting" -Level 'Warning'
+        return $false
+    }
+
+    # Get the registry path from the definition's Path property
+    $pathKey = $definition.Path
+    if (-not $pathKey) {
+        Write-Status -Message "No Path defined for $Group.$Setting" -Level 'Warning'
+        return $false
+    }
+
+    $registryPath = Get-RegistryPath -PathKey $pathKey -FallbackPath ''
+    if (-not $registryPath) {
+        Write-Status -Message "Registry path '$pathKey' not found in configuration" -Level 'Warning'
+        return $false
+    }
+
+    # Determine the value to set
+    $value = $null
+    if ($ValueKey) {
+        # Use specific value key (e.g., ValueOptimized, ValueLeft, ValueCenter)
+        $value = $definition.$ValueKey
+    }
+    else {
+        # Use ValueEnabled or ValueDisabled based on Enable parameter
+        $value = if ($Enable) { $definition.ValueEnabled } else { $definition.ValueDisabled }
+    }
+
+    if ($null -eq $value) {
+        Write-Status -Message "No value found for $Group.$Setting (Enable=$Enable, ValueKey=$ValueKey)" -Level 'Warning'
+        return $false
+    }
+
+    # Get name and type from definition
+    $name = $definition.Name
+    $type = $definition.Type
+    if (-not $type) { $type = 'DWord' }
+
+    return Set-RegistryValue -Path $registryPath -Name $name -Value $value -Type $type
 }
 
 # === EXPLORER CONFIGURATION ===
@@ -271,60 +381,50 @@ function Set-ExplorerConfiguration {
 
     Write-Status -Message "Configuring Windows Explorer..." -Level 'Info'
 
-    $explorerPath = Get-RegistryPath -PathKey 'ExplorerAdvanced' -FallbackPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-    $explorerBasePath = Get-RegistryPath -PathKey 'Explorer' -FallbackPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer'
-    $cabinetStatePath = Get-RegistryPath -PathKey 'ExplorerCabinetState' -FallbackPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\CabinetState'
-    $devModePath = Get-RegistryPath -PathKey 'DeveloperMode' -FallbackPath 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
-    $librariesPath = Get-RegistryPath -PathKey 'LibrariesClsid' -FallbackPath 'HKCU:\Software\Classes\CLSID\{031E4825-7B94-4dc3-B131-E946B44C8DD5}'
-
     # Show hidden files
     if ($Config.ContainsKey('ShowHiddenFiles') -and $Config.ShowHiddenFiles) {
-        Set-RegistryValue -Path $explorerPath -Name 'Hidden' -Value 1 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Explorer' -Setting 'Hidden' -Enable $true | Out-Null
     }
 
     # Show file extensions
     if ($Config.ContainsKey('ShowFileExtensions') -and $Config.ShowFileExtensions) {
-        Set-RegistryValue -Path $explorerPath -Name 'HideFileExt' -Value 0 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Explorer' -Setting 'HideFileExt' -Enable $true | Out-Null
     }
 
     # Navigation pane optimization - Show all folders
     if ($Config.ContainsKey('NavigationPaneOptimized') -and $Config.NavigationPaneOptimized) {
-        Set-RegistryValue -Path $explorerPath -Name 'NavPaneShowAllFolders' -Value 1 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Explorer' -Setting 'NavPaneShowAllFolders' -Enable $true | Out-Null
     }
 
     # Show Libraries in navigation pane
     if ($Config.ContainsKey('ShowLibraries') -and $Config.ShowLibraries) {
-        # Windows 11 uses a different location for libraries visibility
-        Set-RegistryValue -Path $librariesPath -Name 'System.IsPinnedToNameSpaceTree' -Value 1 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Explorer' -Setting 'IsPinnedToNameSpaceTree' -Enable $true | Out-Null
     }
 
     # Expand to open folder (navigation pane follows current folder)
     if ($Config.ContainsKey('ExpandToOpenFolder') -and $Config.ExpandToOpenFolder) {
-        Set-RegistryValue -Path $explorerPath -Name 'NavPaneExpandToCurrentFolder' -Value 1 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Explorer' -Setting 'NavPaneExpandToCurrentFolder' -Enable $true | Out-Null
     }
 
     # Show sync provider notifications (availability status)
     if ($Config.ContainsKey('ShowSyncProviderNotifications') -and $Config.ShowSyncProviderNotifications) {
-        # Enable "Always show availability status" in Windows 11
-        # This shows OneDrive and other cloud storage sync status
-        Set-RegistryValue -Path $explorerPath -Name 'ShowSyncProviderNotifications' -Value 1 -Type DWord | Out-Null
-        # Also enable the Status column visibility
-        Set-RegistryValue -Path $explorerBasePath -Name 'ShowStatusColumn' -Value 1 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Explorer' -Setting 'ShowSyncProviderNotifications' -Enable $true | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Explorer' -Setting 'ShowStatusColumn' -Enable $true | Out-Null
     }
 
     # Show full path in title bar
     if ($Config.ContainsKey('ShowFullPathInTitleBar') -and $Config.ShowFullPathInTitleBar) {
-        Set-RegistryValue -Path $cabinetStatePath -Name 'FullPath' -Value 1 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Explorer' -Setting 'FullPath' -Enable $true | Out-Null
     }
 
     # Launch folder windows in separate process
     if ($Config.ContainsKey('LaunchFolderWindowsInSeparateProcess') -and $Config.LaunchFolderWindowsInSeparateProcess) {
-        Set-RegistryValue -Path $explorerPath -Name 'SeparateProcess' -Value 1 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Explorer' -Setting 'SeparateProcess' -Enable $true | Out-Null
     }
 
-    # Developer mode
+    # Developer mode (uses Security group)
     if ($Config.ContainsKey('DeveloperMode') -and $Config.DeveloperMode) {
-        Set-RegistryValue -Path $devModePath -Name 'AllowDevelopmentWithoutDevLicense' -Value 1 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Security' -Setting 'AllowDevelopmentWithoutDevLicense' -Enable $true | Out-Null
     }
 
     # Restart Explorer to apply changes
@@ -354,40 +454,37 @@ function Set-TaskbarConfiguration {
 
     Write-Status -Message "Configuring Taskbar..." -Level 'Info'
 
-    $taskbarPath = Get-RegistryPath -PathKey 'ExplorerAdvanced' -FallbackPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-    $searchPath = Get-RegistryPath -PathKey 'Search' -FallbackPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search'
-
     try {
-        # Disable widgets
+        # Disable widgets (DisableWidgets = true means we want widgets hidden = ValueDisabled)
         if ($Config.ContainsKey('DisableWidgets') -and $Config.DisableWidgets) {
-            Set-RegistryValue -Path $taskbarPath -Name 'TaskbarDa' -Value 0 -Type DWord | Out-Null
+            Set-RegistrySettingFromConfig -Group 'Taskbar' -Setting 'TaskbarDa' -Enable $false | Out-Null
         }
 
-        # Taskbar alignment (0 = left, 1 = center)
+        # Taskbar alignment (uses special ValueLeft/ValueCenter)
         if ($Config.ContainsKey('StartAlignment') -and $Config.StartAlignment) {
-            $alignment = if ($Config.StartAlignment -eq 'left') { 0 } else { 1 }
-            Set-RegistryValue -Path $taskbarPath -Name 'TaskbarAl' -Value $alignment -Type DWord | Out-Null
+            $valueKey = if ($Config.StartAlignment -eq 'left') { 'ValueLeft' } else { 'ValueCenter' }
+            Set-RegistrySettingFromConfig -Group 'Taskbar' -Setting 'TaskbarAl' -ValueKey $valueKey | Out-Null
         }
 
-        # Search box mode (0 = hidden, 1 = icon only, 2 = box)
+        # Search box mode (uses special ValueHidden/ValueIconOnly/ValueBox)
         if ($Config.ContainsKey('SearchMode') -and $Config.SearchMode) {
-            $searchMode = switch ($Config.SearchMode) {
-                'hidden'    { 0 }
-                'icon_only' { 1 }
-                'box'       { 2 }
-                default     { 1 }
+            $valueKey = switch ($Config.SearchMode) {
+                'hidden'    { 'ValueHidden' }
+                'icon_only' { 'ValueIconOnly' }
+                'box'       { 'ValueBox' }
+                default     { 'ValueIconOnly' }
             }
-            Set-RegistryValue -Path $searchPath -Name 'SearchboxTaskbarMode' -Value $searchMode -Type DWord | Out-Null
+            Set-RegistrySettingFromConfig -Group 'Search' -Setting 'SearchboxTaskbarMode' -ValueKey $valueKey | Out-Null
         }
 
-        # Hide Task View button
+        # Hide Task View button (HideTaskView = true means we want it hidden = ValueDisabled)
         if ($Config.ContainsKey('HideTaskView') -and $Config.HideTaskView) {
-            Set-RegistryValue -Path $taskbarPath -Name 'ShowTaskViewButton' -Value 0 -Type DWord | Out-Null
+            Set-RegistrySettingFromConfig -Group 'Taskbar' -Setting 'ShowTaskViewButton' -Enable $false | Out-Null
         }
 
-        # Hide Chat icon
+        # Hide Chat icon (HideChat = true means we want it hidden = ValueDisabled)
         if ($Config.ContainsKey('HideChat') -and $Config.HideChat) {
-            Set-RegistryValue -Path $taskbarPath -Name 'TaskbarMn' -Value 0 -Type DWord | Out-Null
+            Set-RegistrySettingFromConfig -Group 'Taskbar' -Setting 'TaskbarMn' -Enable $false | Out-Null
         }
 
         Write-Status -Message "Taskbar configuration applied" -Level 'Success'
@@ -416,26 +513,20 @@ function Set-NetworkConfiguration {
 
     Write-Status -Message "Configuring Network settings..." -Level 'Info'
 
-    $tcpipPath = Get-RegistryPath -PathKey 'TcpipParameters' -FallbackPath 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters'
-    $qosPath = Get-RegistryPath -PathKey 'QoSPolicies' -FallbackPath 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Psched'
-
-    # Configure DNS servers - ULTRA ROBUST FIX v2.6.0
+    # Configure DNS servers
     if ($Config.ContainsKey('DnsServers') -and $Config.DnsServers) {
         try {
             # Build DNS array - handle all input types
             $dnsArray = @()
 
-            # Convert to array if needed (handle ArrayList, PSCustomObject arrays, etc.)
             $dnsInput = $Config.DnsServers
             if ($dnsInput -is [System.Collections.ArrayList] -or
                 $dnsInput -is [System.Collections.Generic.List[object]] -or
                 $dnsInput -is [object[]]) {
-                # Already array-like, convert to standard array
                 $dnsArray = @($dnsInput | Where-Object {
                     $_ -and $_ -is [string] -and $_ -match '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'
                 })
             }
-            # Case 2: String (single IP or comma-separated)
             elseif ($dnsInput -is [string]) {
                 if ($dnsInput.Contains(',')) {
                     $dnsArray = @($dnsInput -split ',' | ForEach-Object {
@@ -446,7 +537,6 @@ function Set-NetworkConfiguration {
                     $dnsArray = @($dnsInput)
                 }
             }
-            # Case 3: Try to enumerate it
             else {
                 try {
                     $dnsArray = @($dnsInput | ForEach-Object { $_ } | Where-Object {
@@ -457,7 +547,6 @@ function Set-NetworkConfiguration {
                 }
             }
 
-            # Validate and apply
             if ($dnsArray.Count -gt 0) {
                 Write-Status -Message "Setting DNS servers: $($dnsArray -join ', ')" -Level 'Info'
 
@@ -488,25 +577,24 @@ function Set-NetworkConfiguration {
         }
     }
 
-    # Network optimizations for gaming
+    # Network optimizations for gaming (uses ValueOptimized)
     if ($Config.ContainsKey('GamingOptimizations') -and $Config.GamingOptimizations) {
         Write-Status -Message "Applying gaming network optimizations..." -Level 'Info'
-
-        Set-RegistryValue -Path $tcpipPath -Name 'TcpAckFrequency' -Value 1 -Type DWord | Out-Null
-        Set-RegistryValue -Path $tcpipPath -Name 'TCPNoDelay' -Value 1 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Network' -Setting 'TcpAckFrequency' -ValueKey 'ValueOptimized' | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Network' -Setting 'TCPNoDelay' -ValueKey 'ValueOptimized' | Out-Null
     }
 
     # QoS optimization
     if ($Config.ContainsKey('QoSOptimization') -and $Config.QoSOptimization) {
         Write-Status -Message "Enabling QoS optimization..." -Level 'Info'
-        Set-RegistryValue -Path $qosPath -Name 'NonBestEffortLimit' -Value 0 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Network' -Setting 'NonBestEffortLimit' -ValueKey 'ValueOptimized' | Out-Null
     }
 
-    # Developer optimizations
+    # Developer optimizations (same as gaming)
     if ($Config.ContainsKey('DeveloperOptimizations') -and $Config.DeveloperOptimizations) {
         Write-Status -Message "Applying developer network optimizations..." -Level 'Info'
-        Set-RegistryValue -Path $tcpipPath -Name 'TcpAckFrequency' -Value 1 -Type DWord | Out-Null
-        Set-RegistryValue -Path $tcpipPath -Name 'TCPNoDelay' -Value 1 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Network' -Setting 'TcpAckFrequency' -ValueKey 'ValueOptimized' | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Network' -Setting 'TCPNoDelay' -ValueKey 'ValueOptimized' | Out-Null
     }
 
     Write-Status -Message "Network configuration applied" -Level 'Success'
@@ -530,30 +618,19 @@ function Set-PrivacyConfiguration {
 
     Write-Status -Message "Configuring Privacy settings..." -Level 'Info'
 
-    $dataCollectionPath = Get-RegistryPath -PathKey 'DataCollection' -FallbackPath 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection'
-    $dataCollectionUserPath = Get-RegistryPath -PathKey 'DataCollectionUser' -FallbackPath 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection'
-    $advertisingPath = Get-RegistryPath -PathKey 'AdvertisingInfo' -FallbackPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo'
-    $explorerAdvPath = Get-RegistryPath -PathKey 'ExplorerAdvanced' -FallbackPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'
-    $contentDeliveryPath = Get-RegistryPath -PathKey 'ContentDeliveryManager' -FallbackPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
-    $systemPoliciesPath = Get-RegistryPath -PathKey 'SystemPolicies' -FallbackPath 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\System'
-    $windowsSearchPath = Get-RegistryPath -PathKey 'WindowsSearch' -FallbackPath 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search'
-    $searchPath = Get-RegistryPath -PathKey 'Search' -FallbackPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Search'
-    $cloudContentPath = Get-RegistryPath -PathKey 'CloudContent' -FallbackPath 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
-
     $settings = Get-SystemSettings
     $telemetryService = 'DiagTrack'
     if ($null -ne $settings -and $null -ne $settings.Services -and $settings.Services.Telemetry) {
         $telemetryService = $settings.Services.Telemetry
     }
 
-    # Disable telemetry
+    # Disable telemetry (DisableTelemetry = true means we want telemetry disabled = ValueDisabled)
     if ($Config.ContainsKey('DisableTelemetry') -and $Config.DisableTelemetry) {
         Write-Status -Message "Disabling telemetry..." -Level 'Info'
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'AllowTelemetry' -Enable $false | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'AllowTelemetryUser' -Enable $false | Out-Null
 
-        Set-RegistryValue -Path $dataCollectionPath -Name 'AllowTelemetry' -Value 0 -Type DWord | Out-Null
-        Set-RegistryValue -Path $dataCollectionUserPath -Name 'AllowTelemetry' -Value 0 -Type DWord | Out-Null
-
-        # Disable Connected User Experiences and Telemetry service
+        # Disable telemetry service
         try {
             Set-Service -Name $telemetryService -StartupType Disabled -ErrorAction SilentlyContinue
             Stop-Service -Name $telemetryService -Force -ErrorAction SilentlyContinue
@@ -568,43 +645,44 @@ function Set-PrivacyConfiguration {
         Write-Status -Message "Configuring minimal data collection..." -Level 'Info'
 
         # Disable advertising ID
-        Set-RegistryValue -Path $advertisingPath -Name 'Enabled' -Value 0 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'AdvertisingEnabled' -Enable $false | Out-Null
 
         # Disable app launch tracking
-        Set-RegistryValue -Path $explorerAdvPath -Name 'Start_TrackProgs' -Value 0 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'StartTrackProgs' -Enable $false | Out-Null
 
         # Disable suggested content
-        Set-RegistryValue -Path $contentDeliveryPath -Name 'SubscribedContent-338393Enabled' -Value 0 -Type DWord | Out-Null
-        Set-RegistryValue -Path $contentDeliveryPath -Name 'SubscribedContent-353694Enabled' -Value 0 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'SubscribedContent338393' -Enable $false | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'SubscribedContent353694' -Enable $false | Out-Null
     }
 
     # Disable activity history
     if ($Config.ContainsKey('DisableActivityHistory') -and $Config.DisableActivityHistory) {
-        Set-RegistryValue -Path $systemPoliciesPath -Name 'EnableActivityFeed' -Value 0 -Type DWord | Out-Null
-        Set-RegistryValue -Path $systemPoliciesPath -Name 'PublishUserActivities' -Value 0 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'EnableActivityFeed' -Enable $false | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'PublishUserActivities' -Enable $false | Out-Null
     }
 
-    # Disable Cortana (obsolete with modern AI)
+    # Disable Cortana
     if ($Config.ContainsKey('DisableCortana') -and $Config.DisableCortana) {
         Write-Status -Message "Disabling Cortana..." -Level 'Info'
-        Set-RegistryValue -Path $windowsSearchPath -Name 'AllowCortana' -Value 0 -Type DWord | Out-Null
-        Set-RegistryValue -Path $searchPath -Name 'CortanaConsent' -Value 0 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'AllowCortana' -Enable $false | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Search' -Setting 'CortanaConsent' -Enable $false | Out-Null
     }
 
     # Disable consumer features (bloatware suggestions)
+    # Note: DisableWindowsConsumerFeatures=1 means consumer features ARE disabled
     if ($Config.ContainsKey('DisableConsumerFeatures') -and $Config.DisableConsumerFeatures) {
         Write-Status -Message "Disabling consumer features and bloatware..." -Level 'Info'
-        Set-RegistryValue -Path $cloudContentPath -Name 'DisableWindowsConsumerFeatures' -Value 1 -Type DWord | Out-Null
-        Set-RegistryValue -Path $contentDeliveryPath -Name 'SilentInstalledAppsEnabled' -Value 0 -Type DWord | Out-Null
-        Set-RegistryValue -Path $contentDeliveryPath -Name 'SystemPaneSuggestionsEnabled' -Value 0 -Type DWord | Out-Null
-        Set-RegistryValue -Path $contentDeliveryPath -Name 'PreInstalledAppsEnabled' -Value 0 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'DisableWindowsConsumerFeatures' -Enable $true | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'SilentInstalledAppsEnabled' -Enable $false | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'SystemPaneSuggestionsEnabled' -Enable $false | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'PreInstalledAppsEnabled' -Enable $false | Out-Null
     }
 
     # Disable Windows tips and tricks
     if ($Config.ContainsKey('DisableWindowsTips') -and $Config.DisableWindowsTips) {
         Write-Status -Message "Disabling Windows tips and tricks..." -Level 'Info'
-        Set-RegistryValue -Path $contentDeliveryPath -Name 'SubscribedContent-338389Enabled' -Value 0 -Type DWord | Out-Null
-        Set-RegistryValue -Path $contentDeliveryPath -Name 'SoftLandingEnabled' -Value 0 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'SubscribedContent338389' -Enable $false | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Privacy' -Setting 'SoftLandingEnabled' -Enable $false | Out-Null
     }
 
     Write-Status -Message "Privacy settings configured" -Level 'Success'
@@ -628,20 +706,16 @@ function Set-PerformanceConfiguration {
 
     Write-Status -Message "Configuring Performance settings..." -Level 'Info'
 
-    $visualFXPath = Get-RegistryPath -PathKey 'ExplorerVisualEffects' -FallbackPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects'
-    $gameBarPath = Get-RegistryPath -PathKey 'GameBar' -FallbackPath 'HKCU:\Software\Microsoft\GameBar'
-
-    # Disable visual effects
+    # Disable visual effects (uses ValueBestPerformance)
     if ($Config.ContainsKey('DisableVisualEffects') -and $Config.DisableVisualEffects) {
         Write-Status -Message "Disabling visual effects for best performance..." -Level 'Info'
-        Set-RegistryValue -Path $visualFXPath -Name 'VisualFXSetting' -Value 2 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Performance' -Setting 'VisualFXSetting' -ValueKey 'ValueBestPerformance' | Out-Null
     }
 
-    # Optimize services (Safe global optimization)
+    # Optimize services
     if ($Config.ContainsKey('OptimizeServices') -and $Config.OptimizeServices) {
         Write-Status -Message "Optimizing Windows services (safe mode)..." -Level 'Info'
 
-        # Get services lists from configuration
         $servicesToDisable = Get-ServicesList -ListType 'ToDisable'
         $servicesToManual = Get-ServicesList -ListType 'ToManual'
 
@@ -695,7 +769,7 @@ function Set-PerformanceConfiguration {
     # Game Mode
     if ($Config.ContainsKey('GameMode') -and $Config.GameMode) {
         Write-Status -Message "Enabling Game Mode..." -Level 'Info'
-        Set-RegistryValue -Path $gameBarPath -Name 'AutoGameModeEnabled' -Value 1 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Performance' -Setting 'AutoGameModeEnabled' -Enable $true | Out-Null
     }
 
     Write-Status -Message "Performance settings configured" -Level 'Success'
@@ -718,8 +792,6 @@ function Set-SecurityConfiguration {
     )
 
     Write-Status -Message "Configuring Security settings..." -Level 'Info'
-
-    $devModePath = Get-RegistryPath -PathKey 'DeveloperMode' -FallbackPath 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
 
     # Windows Defender
     if ($Config.ContainsKey('WindowsDefender')) {
@@ -746,7 +818,7 @@ function Set-SecurityConfiguration {
     # Developer mode
     if ($Config.ContainsKey('DeveloperMode') -and $Config.DeveloperMode) {
         Write-Status -Message "Enabling Developer Mode..." -Level 'Info'
-        Set-RegistryValue -Path $devModePath -Name 'AllowDevelopmentWithoutDevLicense' -Value 1 -Type DWord | Out-Null
+        Set-RegistrySettingFromConfig -Group 'Security' -Setting 'AllowDevelopmentWithoutDevLicense' -Enable $true | Out-Null
     }
 
     Write-Status -Message "Security settings configured" -Level 'Success'
@@ -819,10 +891,12 @@ function Set-SystemConfiguration {
 Export-ModuleMember -Function @(
     'Get-SystemSettings',
     'Get-RegistryPath',
+    'Get-RegistryValueDefinition',
     'Get-PowerPlanGuid',
     'Get-ServicesList',
     'Get-TimeoutValue',
     'Set-RegistryValue',
+    'Set-RegistrySettingFromConfig',
     'Set-ExplorerConfiguration',
     'Set-TaskbarConfiguration',
     'Set-NetworkConfiguration',

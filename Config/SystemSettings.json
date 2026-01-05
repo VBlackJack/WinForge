@@ -20,51 +20,277 @@
   },
   "RegistryValues": {
     "Explorer": {
-      "Hidden": { "Name": "Hidden", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
-      "HideFileExt": { "Name": "HideFileExt", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "NavPaneShowAllFolders": { "Name": "NavPaneShowAllFolders", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
-      "NavPaneExpandToCurrentFolder": { "Name": "NavPaneExpandToCurrentFolder", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
-      "ShowSyncProviderNotifications": { "Name": "ShowSyncProviderNotifications", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
-      "ShowStatusColumn": { "Name": "ShowStatusColumn", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
-      "FullPath": { "Name": "FullPath", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
-      "SeparateProcess": { "Name": "SeparateProcess", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
-      "AllowDevelopmentWithoutDevLicense": { "Name": "AllowDevelopmentWithoutDevLicense", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
-      "IsPinnedToNameSpaceTree": { "Name": "System.IsPinnedToNameSpaceTree", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 }
+      "Hidden": {
+        "Name": "Hidden",
+        "Path": "ExplorerAdvanced",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "HideFileExt": {
+        "Name": "HideFileExt",
+        "Path": "ExplorerAdvanced",
+        "Type": "DWord",
+        "ValueEnabled": 0,
+        "ValueDisabled": 1,
+        "Comment": "0 = show extensions (enabled), 1 = hide extensions (disabled)"
+      },
+      "NavPaneShowAllFolders": {
+        "Name": "NavPaneShowAllFolders",
+        "Path": "ExplorerAdvanced",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "NavPaneExpandToCurrentFolder": {
+        "Name": "NavPaneExpandToCurrentFolder",
+        "Path": "ExplorerAdvanced",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "ShowSyncProviderNotifications": {
+        "Name": "ShowSyncProviderNotifications",
+        "Path": "ExplorerAdvanced",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "ShowStatusColumn": {
+        "Name": "ShowStatusColumn",
+        "Path": "Explorer",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "FullPath": {
+        "Name": "FullPath",
+        "Path": "ExplorerCabinetState",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "SeparateProcess": {
+        "Name": "SeparateProcess",
+        "Path": "ExplorerAdvanced",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "IsPinnedToNameSpaceTree": {
+        "Name": "System.IsPinnedToNameSpaceTree",
+        "Path": "LibrariesClsid",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      }
     },
     "Taskbar": {
-      "TaskbarDa": { "Name": "TaskbarDa", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "TaskbarAl": { "Name": "TaskbarAl", "Type": "DWord", "ValueLeft": 0, "ValueCenter": 1 },
-      "ShowTaskViewButton": { "Name": "ShowTaskViewButton", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "TaskbarMn": { "Name": "TaskbarMn", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 }
+      "TaskbarDa": {
+        "Name": "TaskbarDa",
+        "Path": "ExplorerAdvanced",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0,
+        "Comment": "Widgets: 1 = show (enabled), 0 = hide (disabled)"
+      },
+      "TaskbarAl": {
+        "Name": "TaskbarAl",
+        "Path": "ExplorerAdvanced",
+        "Type": "DWord",
+        "ValueLeft": 0,
+        "ValueCenter": 1
+      },
+      "ShowTaskViewButton": {
+        "Name": "ShowTaskViewButton",
+        "Path": "ExplorerAdvanced",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "TaskbarMn": {
+        "Name": "TaskbarMn",
+        "Path": "ExplorerAdvanced",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0,
+        "Comment": "Chat icon: 1 = show (enabled), 0 = hide (disabled)"
+      }
     },
     "Search": {
-      "SearchboxTaskbarMode": { "Name": "SearchboxTaskbarMode", "Type": "DWord", "ValueHidden": 0, "ValueIconOnly": 1, "ValueBox": 2 },
-      "CortanaConsent": { "Name": "CortanaConsent", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 }
+      "SearchboxTaskbarMode": {
+        "Name": "SearchboxTaskbarMode",
+        "Path": "Search",
+        "Type": "DWord",
+        "ValueHidden": 0,
+        "ValueIconOnly": 1,
+        "ValueBox": 2
+      },
+      "CortanaConsent": {
+        "Name": "CortanaConsent",
+        "Path": "Search",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      }
     },
     "Privacy": {
-      "AllowTelemetry": { "Name": "AllowTelemetry", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "AdvertisingEnabled": { "Name": "Enabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "StartTrackProgs": { "Name": "Start_TrackProgs", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "SubscribedContent338393": { "Name": "SubscribedContent-338393Enabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "SubscribedContent353694": { "Name": "SubscribedContent-353694Enabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "SubscribedContent338389": { "Name": "SubscribedContent-338389Enabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "EnableActivityFeed": { "Name": "EnableActivityFeed", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "PublishUserActivities": { "Name": "PublishUserActivities", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "AllowCortana": { "Name": "AllowCortana", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "DisableWindowsConsumerFeatures": { "Name": "DisableWindowsConsumerFeatures", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
-      "SilentInstalledAppsEnabled": { "Name": "SilentInstalledAppsEnabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "SystemPaneSuggestionsEnabled": { "Name": "SystemPaneSuggestionsEnabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "PreInstalledAppsEnabled": { "Name": "PreInstalledAppsEnabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
-      "SoftLandingEnabled": { "Name": "SoftLandingEnabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 }
+      "AllowTelemetry": {
+        "Name": "AllowTelemetry",
+        "Path": "DataCollection",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0,
+        "Comment": "Telemetry: 0 = disabled, 1 = enabled"
+      },
+      "AllowTelemetryUser": {
+        "Name": "AllowTelemetry",
+        "Path": "DataCollectionUser",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "AdvertisingEnabled": {
+        "Name": "Enabled",
+        "Path": "AdvertisingInfo",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "StartTrackProgs": {
+        "Name": "Start_TrackProgs",
+        "Path": "ExplorerAdvanced",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "SubscribedContent338393": {
+        "Name": "SubscribedContent-338393Enabled",
+        "Path": "ContentDeliveryManager",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "SubscribedContent353694": {
+        "Name": "SubscribedContent-353694Enabled",
+        "Path": "ContentDeliveryManager",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "SubscribedContent338389": {
+        "Name": "SubscribedContent-338389Enabled",
+        "Path": "ContentDeliveryManager",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "EnableActivityFeed": {
+        "Name": "EnableActivityFeed",
+        "Path": "SystemPolicies",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "PublishUserActivities": {
+        "Name": "PublishUserActivities",
+        "Path": "SystemPolicies",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "AllowCortana": {
+        "Name": "AllowCortana",
+        "Path": "WindowsSearch",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "DisableWindowsConsumerFeatures": {
+        "Name": "DisableWindowsConsumerFeatures",
+        "Path": "CloudContent",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0,
+        "Comment": "1 = consumer features disabled"
+      },
+      "SilentInstalledAppsEnabled": {
+        "Name": "SilentInstalledAppsEnabled",
+        "Path": "ContentDeliveryManager",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "SystemPaneSuggestionsEnabled": {
+        "Name": "SystemPaneSuggestionsEnabled",
+        "Path": "ContentDeliveryManager",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "PreInstalledAppsEnabled": {
+        "Name": "PreInstalledAppsEnabled",
+        "Path": "ContentDeliveryManager",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      },
+      "SoftLandingEnabled": {
+        "Name": "SoftLandingEnabled",
+        "Path": "ContentDeliveryManager",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      }
     },
     "Performance": {
-      "VisualFXSetting": { "Name": "VisualFXSetting", "Type": "DWord", "ValueBestPerformance": 2, "ValueBestAppearance": 1, "ValueCustom": 3 },
-      "AutoGameModeEnabled": { "Name": "AutoGameModeEnabled", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 }
+      "VisualFXSetting": {
+        "Name": "VisualFXSetting",
+        "Path": "ExplorerVisualEffects",
+        "Type": "DWord",
+        "ValueBestPerformance": 2,
+        "ValueBestAppearance": 1,
+        "ValueCustom": 3
+      },
+      "AutoGameModeEnabled": {
+        "Name": "AutoGameModeEnabled",
+        "Path": "GameBar",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      }
     },
     "Network": {
-      "TcpAckFrequency": { "Name": "TcpAckFrequency", "Type": "DWord", "ValueOptimized": 1 },
-      "TCPNoDelay": { "Name": "TCPNoDelay", "Type": "DWord", "ValueOptimized": 1 },
-      "NonBestEffortLimit": { "Name": "NonBestEffortLimit", "Type": "DWord", "ValueOptimized": 0 }
+      "TcpAckFrequency": {
+        "Name": "TcpAckFrequency",
+        "Path": "TcpipParameters",
+        "Type": "DWord",
+        "ValueOptimized": 1,
+        "ValueDefault": 2
+      },
+      "TCPNoDelay": {
+        "Name": "TCPNoDelay",
+        "Path": "TcpipParameters",
+        "Type": "DWord",
+        "ValueOptimized": 1,
+        "ValueDefault": 0
+      },
+      "NonBestEffortLimit": {
+        "Name": "NonBestEffortLimit",
+        "Path": "QoSPolicies",
+        "Type": "DWord",
+        "ValueOptimized": 0,
+        "ValueDefault": 20
+      }
+    },
+    "Security": {
+      "AllowDevelopmentWithoutDevLicense": {
+        "Name": "AllowDevelopmentWithoutDevLicense",
+        "Path": "DeveloperMode",
+        "Type": "DWord",
+        "ValueEnabled": 1,
+        "ValueDisabled": 0
+      }
     }
   },
   "PowerPlans": {
