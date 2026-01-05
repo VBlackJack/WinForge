@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Resource Include="Win11Forge.ico" />
+    <Resource Include="icon_cropped.png" />
   </ItemGroup>
 
   <ItemGroup>

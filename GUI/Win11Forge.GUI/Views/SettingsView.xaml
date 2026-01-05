@@ -210,79 +210,88 @@
                 <materialDesign:Card Padding="16"
                                       Margin="0,0,0,16"
                                       materialDesign:ElevationAssist.Elevation="Dp2">
-                    <StackPanel>
-                        <!-- Section Header -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                            <materialDesign:PackIcon Kind="InformationOutline"
-                                                      Width="24" Height="24"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,12,0"/>
-                            <TextBlock Text="{loc:Loc Settings_Section_About}"
-                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                       VerticalAlignment="Center"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- App Info (Left) -->
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Win11Forge"
+                                       Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                                       FontWeight="Bold"
+                                       Margin="0,0,0,16"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Version -->
+                                <TextBlock Grid.Row="0" Grid.Column="0"
+                                           Text="{loc:Loc About_Version}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontWeight="Medium"
+                                           Margin="0,0,24,8"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1"
+                                           Text="{Binding AppVersion}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           Margin="0,0,0,8"/>
+
+                                <!-- Author -->
+                                <TextBlock Grid.Row="1" Grid.Column="0"
+                                           Text="{loc:Loc About_Author}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontWeight="Medium"
+                                           Margin="0,0,24,8"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1"
+                                           Text="{loc:Loc About_AuthorName}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           Margin="0,0,0,8"/>
+
+                                <!-- License -->
+                                <TextBlock Grid.Row="2" Grid.Column="0"
+                                           Text="{loc:Loc About_License}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontWeight="Medium"
+                                           Margin="0,0,24,8"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1"
+                                           Text="{loc:Loc About_LicenseValue}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           Margin="0,0,0,8"/>
+
+                                <!-- GitHub -->
+                                <TextBlock Grid.Row="3" Grid.Column="0"
+                                           Text="{loc:Loc About_Repository}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontWeight="Medium"
+                                           Margin="0,0,24,0"/>
+                                <Button Grid.Row="3" Grid.Column="1"
+                                        Content="{loc:Loc About_RepoUrl}"
+                                        Command="{Binding OpenGitHubCommand}"
+                                        Style="{StaticResource MaterialDesignFlatButton}"
+                                        HorizontalAlignment="Left"
+                                        Padding="0"
+                                        Margin="0"/>
+                            </Grid>
                         </StackPanel>
 
-                        <!-- App Info -->
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <!-- Author -->
-                            <TextBlock Grid.Row="0" Grid.Column="0"
-                                       Text="{loc:Loc About_Author}"
-                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       FontWeight="Medium"
-                                       Margin="0,0,24,8"/>
-                            <TextBlock Grid.Row="0" Grid.Column="1"
-                                       Text="{loc:Loc About_AuthorName}"
-                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       Margin="0,0,0,8"/>
-
-                            <!-- Version -->
-                            <TextBlock Grid.Row="1" Grid.Column="0"
-                                       Text="{loc:Loc About_Version}"
-                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       FontWeight="Medium"
-                                       Margin="0,0,24,8"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1"
-                                       Text="{Binding AppVersion}"
-                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       Margin="0,0,0,8"/>
-
-                            <!-- License -->
-                            <TextBlock Grid.Row="2" Grid.Column="0"
-                                       Text="{loc:Loc About_License}"
-                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       FontWeight="Medium"
-                                       Margin="0,0,24,8"/>
-                            <TextBlock Grid.Row="2" Grid.Column="1"
-                                       Text="{loc:Loc About_LicenseValue}"
-                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       Margin="0,0,0,8"/>
-
-                            <!-- GitHub -->
-                            <TextBlock Grid.Row="3" Grid.Column="0"
-                                       Text="{loc:Loc About_Repository}"
-                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       FontWeight="Medium"
-                                       Margin="0,0,24,0"/>
-                            <Button Grid.Row="3" Grid.Column="1"
-                                    Content="{loc:Loc About_RepoUrl}"
-                                    Command="{Binding OpenGitHubCommand}"
-                                    Style="{StaticResource MaterialDesignFlatButton}"
-                                    HorizontalAlignment="Left"
-                                    Padding="0"
-                                    Margin="0"/>
-                        </Grid>
-                    </StackPanel>
+                        <!-- Logo (Right) -->
+                        <Image Grid.Column="1"
+                               Source="/icon_cropped.png"
+                               Width="120" Height="120"
+                               RenderOptions.BitmapScalingMode="HighQuality"
+                               VerticalAlignment="Center"
+                               Margin="24,0,0,0"/>
+                    </Grid>
                 </materialDesign:Card>
 
                 <!-- Status Message -->
