@@ -327,6 +327,7 @@ internal class ProfileEditorMockBridge : IPowerShellBridge
     public Task<InstallResult> InstallApplicationAsync(
         ApplicationModel app,
         bool isDryRun,
+        bool forceUpdate = false,
         Action<string>? progressCallback = null) =>
         Task.FromResult(new InstallResult { Success = true });
 

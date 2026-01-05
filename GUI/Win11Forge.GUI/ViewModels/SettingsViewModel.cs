@@ -264,7 +264,7 @@ public partial class SettingsViewModel : ViewModelBase
         {
             Process.Start(new ProcessStartInfo
             {
-                FileName = "https://github.com/youen/Win11Forge",
+                FileName = "https://github.com/VBlackJack/Win11Forge",
                 UseShellExecute = true
             });
         }

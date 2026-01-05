@@ -242,7 +242,7 @@
                                        FontWeight="Medium"
                                        Margin="0,0,24,8"/>
                             <TextBlock Grid.Row="0" Grid.Column="1"
-                                       Text="Julien Bombled"
+                                       Text="{loc:Loc About_AuthorName}"
                                        Style="{StaticResource MaterialDesignBody1TextBlock}"
                                        Margin="0,0,0,8"/>
 
@@ -264,7 +264,7 @@
                                        FontWeight="Medium"
                                        Margin="0,0,24,8"/>
                             <TextBlock Grid.Row="2" Grid.Column="1"
-                                       Text="Apache License 2.0"
+                                       Text="{loc:Loc About_LicenseValue}"
                                        Style="{StaticResource MaterialDesignBody1TextBlock}"
                                        Margin="0,0,0,8"/>
 
@@ -275,7 +275,7 @@
                                        FontWeight="Medium"
                                        Margin="0,0,24,0"/>
                             <Button Grid.Row="3" Grid.Column="1"
-                                    Content="github.com/youen/Win11Forge"
+                                    Content="{loc:Loc About_RepoUrl}"
                                     Command="{Binding OpenGitHubCommand}"
                                     Style="{StaticResource MaterialDesignFlatButton}"
                                     HorizontalAlignment="Left"

@@ -80,13 +80,14 @@
                                 <Run Text="/"/>
                                 <Run Text="{Binding Status.TotalCount, Mode=OneWay}"/>
                                 <Run Text=" "/>
-                                <Run Text="components installed"/>
+                                <Run Text="{loc:Loc Prerequisites_ComponentsInstalled}"/>
                             </TextBlock>
                             <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
                                        Opacity="0.7"
                                        Visibility="{Binding Status.AllInstalled, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                                 <Run Text="{Binding Status.TotalMissingCount, Mode=OneWay}"/>
-                                <Run Text=" missing"/>
+                                <Run Text=" "/>
+                                <Run Text="{loc:Loc Prerequisites_Missing}"/>
                             </TextBlock>
                         </StackPanel>
                     </StackPanel>
@@ -388,7 +389,7 @@
                                                       Width="24" Height="24"
                                                       VerticalAlignment="Center"
                                                       Margin="0,0,8,0"/>
-                            <TextBlock Text="Installation Log"
+                            <TextBlock Text="{loc:Loc Prerequisites_LogTitle}"
                                        Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                        VerticalAlignment="Center"/>
                             <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"

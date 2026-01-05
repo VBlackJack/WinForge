@@ -15,7 +15,8 @@
         TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
         TextElement.FontWeight="Medium"
         TextElement.FontSize="14"
-        FontFamily="{materialDesign:MaterialDesignFont}">
+        FontFamily="{materialDesign:MaterialDesignFont}"
+        Icon="Win11Forge.ico">
 
     <materialDesign:DialogHost Identifier="RootDialog"
                                 DialogTheme="Inherit"

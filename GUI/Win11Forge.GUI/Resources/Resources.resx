@@ -698,4 +698,28 @@
     <value>Install All Missing</value>
     <comment>Install all missing prerequisites button</comment>
   </data>
+  <data name="Prerequisites_ComponentsInstalled" xml:space="preserve">
+    <value>components installed</value>
+    <comment>Status summary suffix for installed components</comment>
+  </data>
+  <data name="Prerequisites_Missing" xml:space="preserve">
+    <value>missing</value>
+    <comment>Status suffix for missing components</comment>
+  </data>
+  <data name="Prerequisites_LogTitle" xml:space="preserve">
+    <value>Installation Log</value>
+    <comment>Installation log section title</comment>
+  </data>
+  <data name="About_AuthorName" xml:space="preserve">
+    <value>Julien Bombled</value>
+    <comment>Author name value</comment>
+  </data>
+  <data name="About_LicenseValue" xml:space="preserve">
+    <value>Apache License 2.0</value>
+    <comment>License name value</comment>
+  </data>
+  <data name="About_RepoUrl" xml:space="preserve">
+    <value>github.com/VBlackJack/Win11Forge</value>
+    <comment>Repository URL display text</comment>
+  </data>
 </root>

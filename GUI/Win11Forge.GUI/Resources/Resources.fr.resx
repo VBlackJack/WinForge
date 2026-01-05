@@ -542,4 +542,22 @@
   <data name="Prerequisites_InstallAll" xml:space="preserve">
     <value>Installer les manquants</value>
   </data>
+  <data name="Prerequisites_ComponentsInstalled" xml:space="preserve">
+    <value>composants installes</value>
+  </data>
+  <data name="Prerequisites_Missing" xml:space="preserve">
+    <value>manquant(s)</value>
+  </data>
+  <data name="Prerequisites_LogTitle" xml:space="preserve">
+    <value>Journal d'installation</value>
+  </data>
+  <data name="About_AuthorName" xml:space="preserve">
+    <value>Julien Bombled</value>
+  </data>
+  <data name="About_LicenseValue" xml:space="preserve">
+    <value>Apache License 2.0</value>
+  </data>
+  <data name="About_RepoUrl" xml:space="preserve">
+    <value>github.com/VBlackJack/Win11Forge</value>
+  </data>
 </root>
