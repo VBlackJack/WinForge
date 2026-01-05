@@ -16,6 +16,8 @@
 
 using System.Windows;
 using System.Windows.Controls;
+using CommunityToolkit.Mvvm.Messaging;
+using Win11Forge.GUI.Messages;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
 
@@ -65,6 +67,12 @@ public partial class MainWindow : Window
 
             // Initialize on window load
             Loaded += MainWindow_Loaded;
+
+            // Subscribe to navigation messages
+            WeakReferenceMessenger.Default.Register<NavigateMessage>(this, (r, m) =>
+            {
+                Dispatcher.Invoke(() => NavigateTo(m.TargetViewIndex));
+            });
         }
         catch (Exception ex)
         {

@@ -239,6 +239,10 @@
     <value>No changes will be made</value>
     <comment>Dry run hint text</comment>
   </data>
+  <data name="Deploy_DryRunBanner" xml:space="preserve">
+    <value>SIMULATION MODE ACTIVE: No changes will be made</value>
+    <comment>High visibility banner when dry run is enabled</comment>
+  </data>
   <!-- Status Messages -->
   <data name="Status_Pending" xml:space="preserve">
     <value>Pending</value>
@@ -428,6 +432,14 @@
     <value>No deployment history</value>
     <comment>Empty state for recent activity</comment>
   </data>
+  <data name="Dashboard_Btn_StartDeploy" xml:space="preserve">
+    <value>Start New Deployment</value>
+    <comment>Call-to-action button on dashboard</comment>
+  </data>
+  <data name="Dashboard_QuickActions_Title" xml:space="preserve">
+    <value>Quick Actions</value>
+    <comment>Title for quick actions section on dashboard</comment>
+  </data>
   <!-- Settings -->
   <data name="Nav_Settings" xml:space="preserve">
     <value>Settings</value>
@@ -492,6 +504,14 @@
   <data name="Settings_HistoryCleared" xml:space="preserve">
     <value>History cleared</value>
     <comment>Status message after clearing history</comment>
+  </data>
+  <data name="Settings_Btn_OpenLogs" xml:space="preserve">
+    <value>Open Log Folder</value>
+    <comment>Button to open logs folder in explorer</comment>
+  </data>
+  <data name="Settings_OpenLogs_Desc" xml:space="preserve">
+    <value>View deployment and error logs</value>
+    <comment>Open logs button description</comment>
   </data>
   <!-- Package Managers -->
   <data name="Dashboard_Sys_Winget" xml:space="preserve">

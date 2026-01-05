@@ -19,6 +19,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -470,8 +471,41 @@
                 </Grid>
             </materialDesign:Card>
 
-            <!-- Repository Path -->
+            <!-- Quick Actions Card -->
             <materialDesign:Card Grid.Row="4"
+                                  Padding="16"
+                                  Margin="0,0,0,16"
+                                  materialDesign:ElevationAssist.Elevation="Dp2">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="RocketLaunch"
+                                                  Width="24" Height="24"
+                                                  VerticalAlignment="Center"
+                                                  Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                  Margin="0,0,12,0"/>
+                        <TextBlock Text="{loc:Loc Dashboard_QuickActions_Title}"
+                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Command="{Binding StartDeploymentCommand}"
+                            Style="{StaticResource MaterialDesignRaisedButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Play" Width="20" Height="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Dashboard_Btn_StartDeploy}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- Repository Path -->
+            <materialDesign:Card Grid.Row="5"
                                   Padding="12"
                                   materialDesign:ElevationAssist.Elevation="Dp1">
                 <StackPanel Orientation="Horizontal">

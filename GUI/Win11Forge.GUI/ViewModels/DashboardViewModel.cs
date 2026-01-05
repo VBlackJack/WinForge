@@ -17,6 +17,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using Win11Forge.GUI.Messages;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 
@@ -227,6 +229,15 @@ public partial class DashboardViewModel : ViewModelBase
         {
             IsCheckingPrerequisites = false;
         }
+    }
+
+    /// <summary>
+    /// Navigates to the Deployment view to start a new deployment.
+    /// </summary>
+    [RelayCommand]
+    private void StartDeployment()
+    {
+        WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Deployment));
     }
 
     /// <summary>

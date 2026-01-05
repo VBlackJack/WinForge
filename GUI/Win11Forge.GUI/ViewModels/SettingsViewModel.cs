@@ -15,7 +15,9 @@
  */
 
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
@@ -216,6 +218,37 @@ public partial class SettingsViewModel : ViewModelBase
     {
         await _historyService.ClearHistoryAsync();
         StatusMessage = Resources.Resources.Settings_HistoryCleared;
+    }
+
+    /// <summary>
+    /// Opens the log folder in Windows Explorer.
+    /// </summary>
+    [RelayCommand]
+    private void OpenLogFolder()
+    {
+        try
+        {
+            // Get the Win11Forge Logs folder path (LocalAppData)
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var logFolderPath = Path.Combine(localAppData, "Win11Forge", "Logs");
+
+            // Create the directory if it doesn't exist
+            if (!Directory.Exists(logFolderPath))
+            {
+                Directory.CreateDirectory(logFolderPath);
+            }
+
+            // Open in Windows Explorer
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = logFolderPath,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = ex.Message;
+        }
     }
 }
 

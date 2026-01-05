@@ -156,7 +156,7 @@
                         </StackPanel>
 
                         <!-- Clear History -->
-                        <Grid>
+                        <Grid Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -176,6 +176,32 @@
                                     Command="{Binding ClearHistoryCommand}"
                                     Style="{StaticResource MaterialDesignOutlinedButton}"
                                     Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"/>
+                        </Grid>
+
+                        <!-- Open Log Folder -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{loc:Loc Settings_Btn_OpenLogs}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontWeight="Medium"/>
+                                <TextBlock Text="{loc:Loc Settings_OpenLogs_Desc}"
+                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                           Opacity="0.7"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="1"
+                                    Command="{Binding OpenLogFolderCommand}"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="FolderOpen" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{loc:Loc Settings_Btn_OpenLogs}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </Grid>
                     </StackPanel>
                 </materialDesign:Card>

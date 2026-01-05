@@ -112,6 +112,12 @@
   <data name="Dashboard_NoActivity" xml:space="preserve">
     <value>Aucun historique de deploiement</value>
   </data>
+  <data name="Dashboard_Btn_StartDeploy" xml:space="preserve">
+    <value>Demarrer un nouveau deploiement</value>
+  </data>
+  <data name="Dashboard_QuickActions_Title" xml:space="preserve">
+    <value>Actions rapides</value>
+  </data>
   <!-- Deployment -->
   <data name="Deploy_Title" xml:space="preserve">
     <value>Deploiement</value>
@@ -234,6 +240,9 @@
   </data>
   <data name="Lbl_DryRun_Hint" xml:space="preserve">
     <value>Aucune modification ne sera effectuee</value>
+  </data>
+  <data name="Deploy_DryRunBanner" xml:space="preserve">
+    <value>MODE SIMULATION ACTIF : Aucune modification ne sera effectuee</value>
   </data>
   <!-- Status Messages -->
   <data name="Status_Pending" xml:space="preserve">
@@ -386,6 +395,12 @@
   </data>
   <data name="Settings_HistoryCleared" xml:space="preserve">
     <value>Historique efface</value>
+  </data>
+  <data name="Settings_Btn_OpenLogs" xml:space="preserve">
+    <value>Ouvrir le dossier des journaux</value>
+  </data>
+  <data name="Settings_OpenLogs_Desc" xml:space="preserve">
+    <value>Afficher les journaux de deploiement et d'erreurs</value>
   </data>
   <!-- Package Managers -->
   <data name="Dashboard_Sys_Winget" xml:space="preserve">

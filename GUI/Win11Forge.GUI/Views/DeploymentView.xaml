@@ -17,6 +17,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -245,8 +246,32 @@
             </Grid>
         </materialDesign:Card>
 
+        <!-- Dry Run Warning Banner -->
+        <Border Grid.Row="4"
+                Background="#FFF3E0"
+                BorderBrush="#FF9800"
+                BorderThickness="2"
+                CornerRadius="4"
+                Padding="16,12"
+                Margin="0,0,0,16"
+                Visibility="{Binding IsDryRun, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <materialDesign:PackIcon Kind="AlertCircleOutline"
+                                          Width="24"
+                                          Height="24"
+                                          Foreground="#E65100"
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,12,0"/>
+                <TextBlock Text="{loc:Loc Deploy_DryRunBanner}"
+                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                           FontWeight="Bold"
+                           Foreground="#E65100"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
         <!-- Applications DataGrid -->
-        <materialDesign:Card Grid.Row="4"
+        <materialDesign:Card Grid.Row="5"
                               Padding="0"
                               materialDesign:ElevationAssist.Elevation="Dp2"
                               Visibility="{Binding CurrentProfile, Converter={StaticResource NullableToVisibilityConverter}}">
@@ -371,7 +396,7 @@
         </materialDesign:Card>
 
         <!-- Error Message -->
-        <TextBlock Grid.Row="4"
+        <TextBlock Grid.Row="5"
                    Text="{Binding ErrorMessage}"
                    Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
                    Style="{StaticResource MaterialDesignBody1TextBlock}"
