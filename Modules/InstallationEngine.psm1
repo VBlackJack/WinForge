@@ -639,8 +639,7 @@ function Invoke-FileDownloadWithProgress {
         $webClient = New-Object System.Net.WebClient
         $webClient.Headers.Add("User-Agent", "Win11Forge/3.0.0")
 
-        # Set timeout
-        $webClient.Timeout = $TimeoutSeconds * 1000
+        # Note: WebClient doesn't have a Timeout property - timeout is handled via cancellation token in async download
 
         # Progress reporting (optional, can be enhanced)
         $progressHandler = {
