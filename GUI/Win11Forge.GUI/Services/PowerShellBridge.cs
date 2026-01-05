@@ -112,10 +112,17 @@ public class PowerShellBridge : IPowerShellBridge
         using var process = new System.Diagnostics.Process { StartInfo = startInfo };
         process.Start();
 
-        var output = await process.StandardOutput.ReadToEndAsync();
-        var error = await process.StandardError.ReadToEndAsync();
+        // Read stdout and stderr concurrently to prevent deadlocks
+        // This is critical for long-running installations like Office
+        // that may produce large amounts of output on both streams
+        var outputTask = process.StandardOutput.ReadToEndAsync();
+        var errorTask = process.StandardError.ReadToEndAsync();
 
-        await process.WaitForExitAsync();
+        // Wait for both streams AND the process to complete
+        await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
+
+        var output = await outputTask;
+        var error = await errorTask;
 
         if (process.ExitCode != 0 && !string.IsNullOrEmpty(error))
         {
