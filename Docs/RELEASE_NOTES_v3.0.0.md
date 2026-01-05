@@ -239,6 +239,25 @@ Dist/Win11Forge_v3.0.0.zip   # Distribution archive
 
 ---
 
+## Recent Updates (v3.0.0 Final)
+
+### Application Detection Improvements
+- **Winget fallback detection** - When Registry/File detection fails, automatically tries `winget list --id` as fallback
+- **Office installation wait** - Polls for Office executables after Click-to-Run async installation completes
+- **Increased timeouts** - Default 30 minutes, Office-specific 45 minutes for slow VMs
+
+### Bug Fixes
+- Fixed PowerShell script execution deadlock (concurrent stdout/stderr reading)
+- Fixed system info retrieval using native .NET instead of PowerShell SDK
+- Fixed Sources column not displaying in Applications view
+- Fixed Scan button staying greyed out after loading applications
+- Fixed winget IDs: ProtonVPN, RoboForm, Mp3tag, WinAero Tweaker
+
+### New Views
+- **Prerequisites page** - Visual prerequisite checker with one-click installation
+
+---
+
 ## Known Limitations
 
 1. **Language change** requires application restart

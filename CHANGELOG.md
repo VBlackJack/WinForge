@@ -2,6 +2,58 @@
 
 Note: la source de vérité de la version du framework est `Config/version.json`. Les lanceurs et la GUI lisent dynamiquement cette valeur.
 
+## [3.0.0] - 2026-01-05
+
+### Major Release - Modern WPF GUI
+
+Win11Forge v3.0.0 introduces a complete graphical interface while maintaining full CLI compatibility.
+
+### New Features
+
+#### WPF GUI Application
+- **Dashboard** - System info, stats cards, recent deployments history
+- **Prerequisites** - Visual prerequisite checker with one-click installation
+- **Deployment** - Profile selection, parallel installation with progress tracking
+- **Applications Manager** - Search, filter, scan installed apps, batch installation
+- **Profile Editor** - Create/edit profiles with inheritance support
+- **Settings** - Dark/Light theme, English/French language
+
+#### Technical Highlights
+- .NET 8.0 with MaterialDesignThemes
+- MVVM architecture with CommunityToolkit.Mvvm
+- PowerShell Bridge for CLI integration
+- Self-contained deployment (no .NET install required)
+- i18n support (EN/FR)
+
+### Improvements
+
+#### Application Detection
+- **Winget fallback detection** - If Registry/File detection fails, uses `winget list --id` as fallback
+- **Office installation wait** - Polls for Office executables after Click-to-Run async install
+- **Increased timeouts** - Default 30min, Office-specific 45min for slow VMs
+
+#### GUI Fixes
+- Fixed PowerShell script execution deadlock (concurrent stdout/stderr reading)
+- Fixed system info retrieval using native .NET instead of PowerShell SDK
+- Fixed Sources column not displaying (JSON parsing correction)
+- Fixed Scan button staying greyed out after loading apps
+
+#### Database Updates
+- Fixed winget IDs: ProtonVPN, RoboForm, Mp3tag, WinAero Tweaker
+- Updated Signal/ProtonVPN detection paths
+
+### Dependencies
+| Package | Version |
+|---------|---------|
+| .NET | 8.0 |
+| MaterialDesignThemes | 5.1.0 |
+| CommunityToolkit.Mvvm | 8.3.2 |
+
+### Breaking Changes
+- None - Full backward compatibility with v2.x profiles and CLI
+
+---
+
 ## [2.4.0] - 2025-10-06
 
 ### 🎉 Compatibility & Performance Release
