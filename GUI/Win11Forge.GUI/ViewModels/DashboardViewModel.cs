@@ -116,6 +116,12 @@ public partial class DashboardViewModel : ViewModelBase
     private string? _prerequisitesProgressMessage;
 
     /// <summary>
+    /// Prerequisites installation log output.
+    /// </summary>
+    [ObservableProperty]
+    private string _prerequisitesLogOutput = string.Empty;
+
+    /// <summary>
     /// Initializes a new instance of DashboardViewModel.
     /// </summary>
     public DashboardViewModel(IPowerShellBridge powerShellBridge, IDeploymentHistoryService historyService)
@@ -248,12 +254,18 @@ public partial class DashboardViewModel : ViewModelBase
     {
         IsInstallingPrerequisites = true;
         PrerequisitesProgressMessage = Resources.Resources.Prerequisites_Starting;
+        PrerequisitesLogOutput = string.Empty;
 
         try
         {
             var success = await _powerShellBridge.InstallPrerequisitesAsync(msg =>
             {
-                PrerequisitesProgressMessage = msg;
+                // Update on UI thread
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    PrerequisitesProgressMessage = msg;
+                    PrerequisitesLogOutput += msg + Environment.NewLine;
+                });
             });
 
             if (success)
@@ -265,11 +277,11 @@ public partial class DashboardViewModel : ViewModelBase
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
+            PrerequisitesLogOutput += $"Exception: {ex.Message}" + Environment.NewLine;
         }
         finally
         {
             IsInstallingPrerequisites = false;
-            PrerequisitesProgressMessage = null;
         }
     }
 }

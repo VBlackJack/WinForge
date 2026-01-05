@@ -16,6 +16,7 @@
             <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
             <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
             <converters:NullableToVisibilityConverter x:Key="NullableToVisibilityConverter"/>
+            <converters:InverseNullableToVisibilityConverter x:Key="InverseNullableToVisibilityConverter"/>
             <converters:BoolToRequiredIconConverter x:Key="BoolToRequiredIconConverter"/>
             <converters:BoolToRequiredColorConverter x:Key="BoolToRequiredColorConverter"/>
             <converters:StatusToIconConverter x:Key="StatusToIconConverter"/>
@@ -23,6 +24,7 @@
             <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
             <converters:BoolToInstalledIconConverter x:Key="BoolToInstalledIconConverter"/>
             <converters:BoolToInstalledColorConverter x:Key="BoolToInstalledColorConverter"/>
+            <converters:BoolToPauseIconConverter x:Key="BoolToPauseIconConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -35,11 +35,13 @@ public partial class MainWindow : Window
     private readonly AppsViewModel _appsViewModel;
     private readonly ProfileEditorViewModel _profileEditorViewModel;
     private readonly SettingsViewModel _settingsViewModel;
+    private readonly PrerequisitesViewModel _prerequisitesViewModel;
 
     private bool _dashboardInitialized;
     private bool _deploymentInitialized;
     private bool _appsInitialized;
     private bool _settingsInitialized;
+    private bool _prerequisitesInitialized;
 
     public MainWindow()
     {
@@ -57,6 +59,7 @@ public partial class MainWindow : Window
             _appsViewModel = new AppsViewModel(_powerShellBridge);
             _profileEditorViewModel = new ProfileEditorViewModel(_powerShellBridge);
             _settingsViewModel = new SettingsViewModel();
+            _prerequisitesViewModel = new PrerequisitesViewModel(_powerShellBridge);
 
             // Wire up DataContexts
             DashboardViewControl.DataContext = _dashboardViewModel;
@@ -64,6 +67,7 @@ public partial class MainWindow : Window
             AppsViewControl.DataContext = _appsViewModel;
             ProfileEditorViewControl.DataContext = _profileEditorViewModel;
             SettingsViewControl.DataContext = _settingsViewModel;
+            PrerequisitesViewControl.DataContext = _prerequisitesViewModel;
 
             // Initialize on window load
             Loaded += MainWindow_Loaded;
@@ -91,6 +95,7 @@ public partial class MainWindow : Window
             _appsViewModel = null!;
             _profileEditorViewModel = null!;
             _settingsViewModel = null!;
+            _prerequisitesViewModel = null!;
         }
     }
 
@@ -133,6 +138,7 @@ public partial class MainWindow : Window
         AppsViewControl.Visibility = Visibility.Collapsed;
         ProfileEditorViewControl.Visibility = Visibility.Collapsed;
         SettingsViewControl.Visibility = Visibility.Collapsed;
+        PrerequisitesViewControl.Visibility = Visibility.Collapsed;
 
         // Show selected view and initialize if needed
         switch (selectedIndex)
@@ -142,22 +148,27 @@ public partial class MainWindow : Window
                 _ = InitializeDashboardAsync();
                 break;
 
-            case 1: // Deployment
+            case 1: // Prerequisites
+                PrerequisitesViewControl.Visibility = Visibility.Visible;
+                _ = InitializePrerequisitesAsync();
+                break;
+
+            case 2: // Deployment
                 DeploymentViewControl.Visibility = Visibility.Visible;
                 _ = InitializeDeploymentAsync();
                 break;
 
-            case 2: // Apps
+            case 3: // Apps
                 AppsViewControl.Visibility = Visibility.Visible;
                 _ = InitializeAppsAsync();
                 break;
 
-            case 3: // Profile Editor
+            case 4: // Profile Editor
                 ProfileEditorViewControl.Visibility = Visibility.Visible;
                 _ = InitializeProfileEditorNewAsync();
                 break;
 
-            case 4: // Settings
+            case 5: // Settings
                 SettingsViewControl.Visibility = Visibility.Visible;
                 _ = InitializeSettingsAsync();
                 break;
@@ -206,6 +217,14 @@ public partial class MainWindow : Window
         _settingsInitialized = true;
     }
 
+    private async Task InitializePrerequisitesAsync()
+    {
+        if (_prerequisitesInitialized) return;
+
+        await _prerequisitesViewModel.InitializeAsync();
+        _prerequisitesInitialized = true;
+    }
+
     /// <summary>
     /// Navigates to the specified view by index.
     /// Can be called from ViewModels via WeakReferenceMessenger or direct reference.
@@ -225,13 +244,14 @@ public partial class MainWindow : Window
     {
         // Hide all views
         DashboardViewControl.Visibility = Visibility.Collapsed;
+        PrerequisitesViewControl.Visibility = Visibility.Collapsed;
         DeploymentViewControl.Visibility = Visibility.Collapsed;
         AppsViewControl.Visibility = Visibility.Collapsed;
         SettingsViewControl.Visibility = Visibility.Collapsed;
         ProfileEditorViewControl.Visibility = Visibility.Visible;
 
         // Deselect navigation (since this might be triggered from a button, not nav)
-        NavigationListBox.SelectedIndex = 3;
+        NavigationListBox.SelectedIndex = 4;
 
         if (string.IsNullOrEmpty(profileName))
         {

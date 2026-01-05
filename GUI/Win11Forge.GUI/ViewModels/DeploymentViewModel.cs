@@ -110,6 +110,12 @@ public partial class DeploymentViewModel : ViewModelBase
     private int _totalToInstall;
 
     /// <summary>
+    /// Deployment progress percentage (0-100).
+    /// </summary>
+    public double ProgressPercentage =>
+        TotalToInstall > 0 ? (double)CompletedCount / TotalToInstall * 100 : 0;
+
+    /// <summary>
     /// Number of selected applications.
     /// </summary>
     public int SelectedApplicationsCount =>
@@ -119,6 +125,18 @@ public partial class DeploymentViewModel : ViewModelBase
     /// Whether deployment can start.
     /// </summary>
     public bool CanDeploy => !IsDeploying && SelectedApplicationsCount > 0;
+
+    /// <summary>
+    /// Application whose logs are being viewed.
+    /// </summary>
+    [ObservableProperty]
+    private ApplicationModel? _logViewerApplication;
+
+    /// <summary>
+    /// Whether the log viewer dialog is open.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isLogViewerOpen;
 
     /// <summary>
     /// Whether deployment can be paused (running and not already paused).
@@ -351,6 +369,11 @@ public partial class DeploymentViewModel : ViewModelBase
 
             // Record deployment in history
             await RecordDeploymentHistoryAsync(selectedApps, wasCancelled);
+
+            // Force re-evaluation of CanDeploy after deployment ends
+            OnPropertyChanged(nameof(SelectedApplicationsCount));
+            OnPropertyChanged(nameof(CanDeploy));
+            DeployCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -473,6 +496,7 @@ public partial class DeploymentViewModel : ViewModelBase
 
                 CompletedCount++;
                 OnPropertyChanged(nameof(CompletedCount));
+                OnPropertyChanged(nameof(ProgressPercentage));
             });
         }
         catch (OperationCanceledException)
@@ -546,5 +570,27 @@ public partial class DeploymentViewModel : ViewModelBase
         IsPaused = false;
         _pauseGate.Set(); // Open the gate - waiting installs can proceed
         DeploymentStatusMessage = Resources.Resources.Progress_Deploying;
+    }
+
+    /// <summary>
+    /// Opens the log viewer for a specific application.
+    /// </summary>
+    [RelayCommand]
+    private void ViewLogs(ApplicationModel? app)
+    {
+        if (app == null) return;
+
+        LogViewerApplication = app;
+        IsLogViewerOpen = true;
+    }
+
+    /// <summary>
+    /// Closes the log viewer dialog.
+    /// </summary>
+    [RelayCommand]
+    private void CloseLogViewer()
+    {
+        IsLogViewerOpen = false;
+        LogViewerApplication = null;
     }
 }

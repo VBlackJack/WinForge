@@ -27,10 +27,11 @@ public class NavigateMessage
     public static class ViewIndex
     {
         public const int Dashboard = 0;
-        public const int Deployment = 1;
-        public const int Apps = 2;
-        public const int ProfileEditor = 3;
-        public const int Settings = 4;
+        public const int Prerequisites = 1;
+        public const int Deployment = 2;
+        public const int Apps = 3;
+        public const int ProfileEditor = 4;
+        public const int Settings = 5;
     }
 
     /// <summary>

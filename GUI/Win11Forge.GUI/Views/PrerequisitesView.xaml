@@ -1,0 +1,439 @@
+<UserControl x:Class="Win11Forge.GUI.Views.PrerequisitesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewModels:PrerequisitesViewModel}"
+             d:DesignHeight="800" d:DesignWidth="1000">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{loc:Loc Prerequisites_PageTitle}"
+                               Style="{StaticResource MaterialDesignHeadline4TextBlock}"/>
+                    <TextBlock Text="{loc:Loc Prerequisites_PageDescription}"
+                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                               Opacity="0.7"
+                               Margin="0,8,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Command="{Binding CheckPrerequisitesCommand}"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Margin="0,0,8,0"
+                            IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                         Value="0" IsIndeterminate="True"
+                                         Width="16" Height="16"
+                                         Margin="0,0,8,0"
+                                         Visibility="{Binding IsChecking, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <materialDesign:PackIcon Kind="Refresh" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"
+                                                      Visibility="{Binding IsChecking, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                            <TextBlock Text="{loc:Loc Prerequisites_Check}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Status Summary Card -->
+            <materialDesign:Card Grid.Row="1"
+                                  Padding="16"
+                                  Margin="0,0,0,16"
+                                  materialDesign:ElevationAssist.Elevation="Dp2"
+                                  Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="{Binding Status.AllInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                  Width="32" Height="32"
+                                                  Foreground="{Binding Status.AllInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,16,0"/>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}">
+                                <Run Text="{Binding Status.InstalledCount, Mode=OneWay}"/>
+                                <Run Text="/"/>
+                                <Run Text="{Binding Status.TotalCount, Mode=OneWay}"/>
+                                <Run Text=" "/>
+                                <Run Text="components installed"/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       Opacity="0.7"
+                                       Visibility="{Binding Status.AllInstalled, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                <Run Text="{Binding Status.TotalMissingCount, Mode=OneWay}"/>
+                                <Run Text=" missing"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Command="{Binding InstallPrerequisitesCommand}"
+                            Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
+                            Visibility="{Binding Status.AllInstalled, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                            IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                         Value="0" IsIndeterminate="True"
+                                         Width="16" Height="16"
+                                         Margin="0,0,8,0"
+                                         Visibility="{Binding IsInstalling, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <materialDesign:PackIcon Kind="Download" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"
+                                                      Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                            <TextBlock Text="{loc:Loc Prerequisites_InstallAll}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- Package Managers Section -->
+            <materialDesign:Card Grid.Row="2"
+                                  Padding="16"
+                                  Margin="0,0,0,16"
+                                  materialDesign:ElevationAssist.Elevation="Dp2"
+                                  Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Section Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                        <materialDesign:PackIcon Kind="Package"
+                                                  Width="24" Height="24"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,8,0"/>
+                        <TextBlock Text="{loc:Loc Prerequisites_CategoryPackageManagers}"
+                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                   VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource PrimaryHueLightBrush}"
+                                CornerRadius="4"
+                                Padding="8,2"
+                                Margin="12,0,0,0"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{loc:Loc Prerequisites_Required}"
+                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       Foreground="{DynamicResource PrimaryHueLightForegroundBrush}"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Package Managers List -->
+                    <UniformGrid Grid.Row="1" Columns="3">
+                        <!-- PowerShell 7 -->
+                        <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                BorderThickness="0,0,1,0"
+                                Padding="0,0,16,0"
+                                Margin="0,0,16,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0"
+                                                          Kind="{Binding Status.PowerShell7Installed, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                          Width="24" Height="24"
+                                                          Foreground="{Binding Status.PowerShell7Installed, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                          VerticalAlignment="Center"
+                                                          Margin="0,0,12,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{loc:Loc Prerequisites_PowerShell7}"
+                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding Status.PowerShellVersion}"
+                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                               Opacity="0.7"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Winget -->
+                        <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                BorderThickness="0,0,1,0"
+                                Padding="0,0,16,0"
+                                Margin="0,0,16,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0"
+                                                          Kind="{Binding Status.WingetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                          Width="24" Height="24"
+                                                          Foreground="{Binding Status.WingetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                          VerticalAlignment="Center"
+                                                          Margin="0,0,12,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{loc:Loc Prerequisites_Winget}"
+                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding Status.WingetVersion}"
+                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                               Opacity="0.7"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Chocolatey -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Grid.Column="0"
+                                                      Kind="{Binding Status.ChocolateyInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                      Width="24" Height="24"
+                                                      Foreground="{Binding Status.ChocolateyInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                      VerticalAlignment="Center"
+                                                      Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="{loc:Loc Prerequisites_Chocolatey}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontWeight="Medium"/>
+                                <TextBlock Text="{Binding Status.ChocolateyVersion}"
+                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                           Opacity="0.7"/>
+                            </StackPanel>
+                        </Grid>
+                    </UniformGrid>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- Runtime Environments Section -->
+            <materialDesign:Card Grid.Row="3"
+                                  Padding="16"
+                                  Margin="0,0,0,16"
+                                  materialDesign:ElevationAssist.Elevation="Dp2"
+                                  Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Section Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                        <materialDesign:PackIcon Kind="CodeBraces"
+                                                  Width="24" Height="24"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,8,0"/>
+                        <TextBlock Text="{loc:Loc Prerequisites_CategoryRuntimes}"
+                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                   VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource MaterialDesignDivider}"
+                                CornerRadius="4"
+                                Padding="8,2"
+                                Margin="12,0,0,0"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{loc:Loc Prerequisites_Optional}"
+                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       Opacity="0.7"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Runtimes List -->
+                    <UniformGrid Grid.Row="1" Columns="2" Rows="2">
+                        <!-- .NET Core -->
+                        <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                BorderThickness="0,0,1,1"
+                                Padding="0,0,16,16"
+                                Margin="0,0,16,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0"
+                                                          Kind="{Binding Status.DotNetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                          Width="24" Height="24"
+                                                          Foreground="{Binding Status.DotNetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                          VerticalAlignment="Center"
+                                                          Margin="0,0,12,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{loc:Loc Prerequisites_DotNet}"
+                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding Status.DotNetVersion}"
+                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                               Opacity="0.7"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- .NET Framework -->
+                        <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                BorderThickness="0,0,0,1"
+                                Padding="0,0,0,16"
+                                Margin="0,0,0,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0"
+                                                          Kind="{Binding Status.DotNetFrameworkInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                          Width="24" Height="24"
+                                                          Foreground="{Binding Status.DotNetFrameworkInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                          VerticalAlignment="Center"
+                                                          Margin="0,0,12,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{loc:Loc Prerequisites_DotNetFramework}"
+                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding Status.DotNetFrameworkVersion}"
+                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                               Opacity="0.7"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Visual C++ Redistributable -->
+                        <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                BorderThickness="0,0,1,0"
+                                Padding="0,0,16,0"
+                                Margin="0,0,16,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Grid.Column="0"
+                                                          Kind="{Binding Status.VCRedistInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                          Width="24" Height="24"
+                                                          Foreground="{Binding Status.VCRedistInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                          VerticalAlignment="Center"
+                                                          Margin="0,0,12,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{loc:Loc Prerequisites_VCRedist}"
+                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding Status.VCRedistVersion}"
+                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                               Opacity="0.7"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Java Runtime -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Grid.Column="0"
+                                                      Kind="{Binding Status.JavaInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                      Width="24" Height="24"
+                                                      Foreground="{Binding Status.JavaInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                      VerticalAlignment="Center"
+                                                      Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="{loc:Loc Prerequisites_Java}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontWeight="Medium"/>
+                                <TextBlock Text="{Binding Status.JavaVersion}"
+                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                           Opacity="0.7"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </Grid>
+                    </UniformGrid>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- Installation Log Panel -->
+            <materialDesign:Card Grid.Row="4"
+                                  Padding="16"
+                                  materialDesign:ElevationAssist.Elevation="Dp2"
+                                  Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Log Header -->
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Console"
+                                                      Width="24" Height="24"
+                                                      VerticalAlignment="Center"
+                                                      Margin="0,0,8,0"/>
+                            <TextBlock Text="Installation Log"
+                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                       VerticalAlignment="Center"/>
+                            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                         Value="0" IsIndeterminate="True"
+                                         Width="16" Height="16"
+                                         Margin="12,0,0,0"
+                                         Visibility="{Binding IsInstalling, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Command="{Binding ClearLogCommand}"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <TextBlock Text="{loc:Loc Prerequisites_ClearLog}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- Log Content -->
+                    <Border Grid.Row="1"
+                            Background="{DynamicResource MaterialDesignCardBackground}"
+                            BorderBrush="{DynamicResource MaterialDesignDivider}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            MaxHeight="300">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      x:Name="LogScroller">
+                            <TextBox Text="{Binding LogOutput, Mode=OneWay}"
+                                     IsReadOnly="True"
+                                     TextWrapping="NoWrap"
+                                     FontFamily="Consolas"
+                                     FontSize="11"
+                                     BorderThickness="0"
+                                     Padding="12"
+                                     Background="Transparent"
+                                     VerticalScrollBarVisibility="Disabled"
+                                     HorizontalScrollBarVisibility="Disabled"
+                                     TextChanged="Log_TextChanged"/>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </materialDesign:Card>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

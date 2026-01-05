@@ -19,11 +19,11 @@ using System.Windows.Controls;
 namespace Win11Forge.GUI.Views;
 
 /// <summary>
-/// Dashboard view displaying system information and version.
+/// Prerequisites view displaying all system prerequisites status.
 /// </summary>
-public partial class DashboardView : UserControl
+public partial class PrerequisitesView : UserControl
 {
-    public DashboardView()
+    public PrerequisitesView()
     {
         InitializeComponent();
     }
@@ -31,14 +31,13 @@ public partial class DashboardView : UserControl
     /// <summary>
     /// Auto-scrolls to the bottom when new log text is added.
     /// </summary>
-    private void PrerequisitesLog_TextChanged(object sender, TextChangedEventArgs e)
+    private void Log_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (sender is TextBox textBox)
         {
             textBox.ScrollToEnd();
         }
 
-        // Also scroll the parent ScrollViewer
-        PrerequisitesLogScroller?.ScrollToEnd();
+        LogScroller?.ScrollToEnd();
     }
 }

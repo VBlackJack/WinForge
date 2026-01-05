@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
+using System.Windows;
 using System.Windows.Controls;
+using MaterialDesignThemes.Wpf;
+using Win11Forge.GUI.ViewModels;
 
 namespace Win11Forge.GUI.Views;
 
@@ -26,5 +29,31 @@ public partial class DeploymentView : UserControl
     public DeploymentView()
     {
         InitializeComponent();
+    }
+
+    /// <summary>
+    /// Handles dialog closing to update ViewModel state.
+    /// </summary>
+    private void DialogHost_DialogClosing(object sender, DialogClosingEventArgs e)
+    {
+        if (DataContext is DeploymentViewModel vm)
+        {
+            vm.CloseLogViewerCommand.Execute(null);
+        }
+    }
+
+    /// <summary>
+    /// Copies logs to clipboard.
+    /// </summary>
+    private void CopyLogsToClipboard_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is DeploymentViewModel vm && vm.LogViewerApplication != null)
+        {
+            var logs = vm.LogViewerApplication.LogOutput;
+            if (!string.IsNullOrEmpty(logs))
+            {
+                Clipboard.SetText(logs);
+            }
+        }
     }
 }

@@ -445,6 +445,10 @@
     <value>Settings</value>
     <comment>Settings navigation item</comment>
   </data>
+  <data name="Nav_Prerequisites" xml:space="preserve">
+    <value>Prerequisites</value>
+    <comment>Prerequisites navigation item</comment>
+  </data>
   <data name="Settings_Title" xml:space="preserve">
     <value>Settings</value>
     <comment>Settings page title</comment>
@@ -513,6 +517,26 @@
     <value>View deployment and error logs</value>
     <comment>Open logs button description</comment>
   </data>
+  <data name="Settings_Section_About" xml:space="preserve">
+    <value>About</value>
+    <comment>About section header</comment>
+  </data>
+  <data name="About_Author" xml:space="preserve">
+    <value>Author:</value>
+    <comment>Author label</comment>
+  </data>
+  <data name="About_Version" xml:space="preserve">
+    <value>Version:</value>
+    <comment>Version label</comment>
+  </data>
+  <data name="About_License" xml:space="preserve">
+    <value>License:</value>
+    <comment>License label</comment>
+  </data>
+  <data name="About_Repository" xml:space="preserve">
+    <value>Repository:</value>
+    <comment>Repository label</comment>
+  </data>
   <!-- Package Managers -->
   <data name="Dashboard_Sys_Winget" xml:space="preserve">
     <value>Winget:</value>
@@ -547,6 +571,31 @@
   <data name="Common_ErrorFallback" xml:space="preserve">
     <value>Error</value>
     <comment>Generic error fallback text</comment>
+  </data>
+  <!-- Log Viewer -->
+  <data name="LogViewer_Title" xml:space="preserve">
+    <value>Installation Log</value>
+    <comment>Log viewer dialog title</comment>
+  </data>
+  <data name="LogViewer_NoLogs" xml:space="preserve">
+    <value>No logs available</value>
+    <comment>Message when no logs are recorded</comment>
+  </data>
+  <data name="LogViewer_Close" xml:space="preserve">
+    <value>Close</value>
+    <comment>Close log viewer button</comment>
+  </data>
+  <data name="LogViewer_Copy" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+    <comment>Copy logs to clipboard button</comment>
+  </data>
+  <data name="Col_Logs" xml:space="preserve">
+    <value>Logs</value>
+    <comment>Logs column header</comment>
+  </data>
+  <data name="Btn_ViewLogs" xml:space="preserve">
+    <value>View</value>
+    <comment>View logs button tooltip</comment>
   </data>
   <!-- Prerequisites -->
   <data name="Prerequisites_Title" xml:space="preserve">
@@ -596,5 +645,57 @@
   <data name="Prerequisites_Chocolatey" xml:space="preserve">
     <value>Chocolatey</value>
     <comment>Chocolatey label</comment>
+  </data>
+  <data name="Prerequisites_DotNet" xml:space="preserve">
+    <value>.NET Runtime</value>
+    <comment>.NET Core runtime label</comment>
+  </data>
+  <data name="Prerequisites_DotNetFramework" xml:space="preserve">
+    <value>.NET Framework</value>
+    <comment>.NET Framework label</comment>
+  </data>
+  <data name="Prerequisites_VCRedist" xml:space="preserve">
+    <value>Visual C++ Redistributable</value>
+    <comment>VC++ redistributable label</comment>
+  </data>
+  <data name="Prerequisites_Java" xml:space="preserve">
+    <value>Java Runtime</value>
+    <comment>Java runtime label</comment>
+  </data>
+  <data name="Prerequisites_PageTitle" xml:space="preserve">
+    <value>System Prerequisites</value>
+    <comment>Prerequisites page title</comment>
+  </data>
+  <data name="Prerequisites_PageDescription" xml:space="preserve">
+    <value>Win11Forge requires the following components to be installed for full functionality.</value>
+    <comment>Prerequisites page description</comment>
+  </data>
+  <data name="Prerequisites_CategoryPackageManagers" xml:space="preserve">
+    <value>Package Managers</value>
+    <comment>Package managers category</comment>
+  </data>
+  <data name="Prerequisites_CategoryRuntimes" xml:space="preserve">
+    <value>Runtime Environments</value>
+    <comment>Runtime environments category</comment>
+  </data>
+  <data name="Prerequisites_Required" xml:space="preserve">
+    <value>Required</value>
+    <comment>Required prerequisite tag</comment>
+  </data>
+  <data name="Prerequisites_Optional" xml:space="preserve">
+    <value>Optional</value>
+    <comment>Optional prerequisite tag</comment>
+  </data>
+  <data name="Prerequisites_StatusSummary" xml:space="preserve">
+    <value>{0} of {1} components installed</value>
+    <comment>Prerequisites status summary</comment>
+  </data>
+  <data name="Prerequisites_ClearLog" xml:space="preserve">
+    <value>Clear Log</value>
+    <comment>Clear log button</comment>
+  </data>
+  <data name="Prerequisites_InstallAll" xml:space="preserve">
+    <value>Install All Missing</value>
+    <comment>Install all missing prerequisites button</comment>
   </data>
 </root>

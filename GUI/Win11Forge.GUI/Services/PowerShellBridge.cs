@@ -1161,158 +1161,412 @@ try {{
     /// <inheritdoc/>
     public async Task<PrerequisitesStatus> CheckPrerequisitesAsync()
     {
-        return await Task.Run(() =>
+        // Refresh environment variables to pick up any changes from installations
+        RefreshEnvironmentVariables();
+
+        var script = @"
+$result = @{}
+
+# Check PowerShell 7
+try {
+    $ver = pwsh --version 2>$null
+    $result.PowerShell7Installed = $null -ne $ver
+    $result.PowerShellVersion = if ($ver) { $ver.Trim() } else { 'Not installed' }
+} catch {
+    $result.PowerShell7Installed = $false
+    $result.PowerShellVersion = 'Not installed'
+}
+
+# Check Winget
+try {
+    $ver = winget --version 2>$null
+    $result.WingetInstalled = $null -ne $ver
+    $result.WingetVersion = if ($ver) { $ver.Trim() } else { 'Not installed' }
+} catch {
+    $result.WingetInstalled = $false
+    $result.WingetVersion = 'Not installed'
+}
+
+# Check Chocolatey
+try {
+    $ver = choco --version 2>$null
+    $result.ChocolateyInstalled = $null -ne $ver
+    $result.ChocolateyVersion = if ($ver) { $ver.Trim() } else { 'Not installed' }
+} catch {
+    $result.ChocolateyInstalled = $false
+    $result.ChocolateyVersion = 'Not installed'
+}
+
+# Check .NET Core
+try {
+    $runtimes = dotnet --list-runtimes 2>$null
+    $result.DotNetInstalled = $null -ne $runtimes -and $runtimes.Count -gt 0
+    if ($result.DotNetInstalled) {
+        $versions = @($runtimes | ForEach-Object { if ($_ -match 'Microsoft\.NETCore\.App (\d+\.\d+)') { $matches[1] } }) | Select-Object -Unique
+        $result.DotNetVersion = ($versions -join ', ')
+    } else {
+        $result.DotNetVersion = 'Not installed'
+    }
+} catch {
+    $result.DotNetInstalled = $false
+    $result.DotNetVersion = 'Not installed'
+}
+
+# Check .NET Framework
+try {
+    $fxKey = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -ErrorAction SilentlyContinue
+    if ($fxKey -and $fxKey.Release) {
+        $result.DotNetFrameworkInstalled = $true
+        $releaseNum = $fxKey.Release
+        $fxVersion = switch ($true) {
+            ($releaseNum -ge 533320) { '4.8.1' }
+            ($releaseNum -ge 528040) { '4.8' }
+            ($releaseNum -ge 461808) { '4.7.2' }
+            default { '4.x' }
+        }
+        $result.DotNetFrameworkVersion = $fxVersion
+    } else {
+        $result.DotNetFrameworkInstalled = $false
+        $result.DotNetFrameworkVersion = 'Not installed'
+    }
+} catch {
+    $result.DotNetFrameworkInstalled = $false
+    $result.DotNetFrameworkVersion = 'Not installed'
+}
+
+# Check Visual C++ Redistributable
+try {
+    $vcKeys = @(
+        'HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64',
+        'HKLM:\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64'
+    )
+    $vcInfo = $null
+    foreach ($key in $vcKeys) {
+        if (Test-Path $key) {
+            $vcInfo = Get-ItemProperty -Path $key -ErrorAction SilentlyContinue
+            if ($vcInfo) { break }
+        }
+    }
+    if ($vcInfo -and $vcInfo.Version) {
+        $result.VCRedistInstalled = $true
+        $result.VCRedistVersion = ""2015-2022 ($($vcInfo.Version))""
+    } else {
+        $result.VCRedistInstalled = $false
+        $result.VCRedistVersion = 'Not installed'
+    }
+} catch {
+    $result.VCRedistInstalled = $false
+    $result.VCRedistVersion = 'Not installed'
+}
+
+# Check Java
+try {
+    $javaVer = java -version 2>&1 | Select-Object -First 1
+    if ($LASTEXITCODE -eq 0 -and $javaVer) {
+        $result.JavaInstalled = $true
+        $result.JavaVersion = $javaVer.ToString().Trim()
+    } else {
+        $result.JavaInstalled = $false
+        $result.JavaVersion = 'Not installed'
+    }
+} catch {
+    $result.JavaInstalled = $false
+    $result.JavaVersion = 'Not installed'
+}
+
+$result | ConvertTo-Json -Compress
+";
+
+        try
         {
-            var status = new PrerequisitesStatus();
+            var output = await ExecutePowerShellScriptAsync(script);
+            var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-            try
+            foreach (var line in lines.Reverse())
             {
-                using var ps = CreatePowerShellInstance();
-
-                // Check PowerShell 7
-                ps.AddScript(@"
-                    try {
-                        $ver = pwsh --version 2>$null
-                        if ($ver) { $ver.Trim() } else { '' }
-                    } catch { '' }
-                ");
-                var ps7Result = ps.Invoke();
-                ps.Commands.Clear();
-
-                if (ps7Result.Count > 0)
+                var trimmed = line.Trim();
+                if (trimmed.StartsWith("{") && trimmed.EndsWith("}"))
                 {
-                    var version = ps7Result[0]?.ToString()?.Trim() ?? string.Empty;
-                    status.PowerShell7Installed = !string.IsNullOrEmpty(version);
-                    status.PowerShellVersion = version;
-                }
+                    using var doc = JsonDocument.Parse(trimmed);
+                    var root = doc.RootElement;
 
-                // Check Winget
-                ps.AddScript(@"
-                    try {
-                        $null = winget --version 2>$null
-                        $LASTEXITCODE -eq 0
-                    } catch { $false }
-                ");
-                var wingetResult = ps.Invoke();
-                ps.Commands.Clear();
-
-                if (wingetResult.Count > 0)
-                {
-                    status.WingetInstalled = wingetResult[0]?.ToString()?.Trim().ToLower() == "true";
-                }
-
-                // Check Chocolatey
-                ps.AddScript(@"
-                    try {
-                        $null = choco --version 2>$null
-                        $LASTEXITCODE -eq 0
-                    } catch { $false }
-                ");
-                var chocoResult = ps.Invoke();
-                ps.Commands.Clear();
-
-                if (chocoResult.Count > 0)
-                {
-                    status.ChocolateyInstalled = chocoResult[0]?.ToString()?.Trim().ToLower() == "true";
+                    return new PrerequisitesStatus
+                    {
+                        PowerShell7Installed = GetJsonBool(root, "PowerShell7Installed"),
+                        PowerShellVersion = GetJsonString(root, "PowerShellVersion") ?? string.Empty,
+                        WingetInstalled = GetJsonBool(root, "WingetInstalled"),
+                        WingetVersion = GetJsonString(root, "WingetVersion") ?? string.Empty,
+                        ChocolateyInstalled = GetJsonBool(root, "ChocolateyInstalled"),
+                        ChocolateyVersion = GetJsonString(root, "ChocolateyVersion") ?? string.Empty,
+                        DotNetInstalled = GetJsonBool(root, "DotNetInstalled"),
+                        DotNetVersion = GetJsonString(root, "DotNetVersion") ?? string.Empty,
+                        DotNetFrameworkInstalled = GetJsonBool(root, "DotNetFrameworkInstalled"),
+                        DotNetFrameworkVersion = GetJsonString(root, "DotNetFrameworkVersion") ?? string.Empty,
+                        VCRedistInstalled = GetJsonBool(root, "VCRedistInstalled"),
+                        VCRedistVersion = GetJsonString(root, "VCRedistVersion") ?? string.Empty,
+                        JavaInstalled = GetJsonBool(root, "JavaInstalled"),
+                        JavaVersion = GetJsonString(root, "JavaVersion") ?? string.Empty
+                    };
                 }
             }
-            catch
+        }
+        catch
+        {
+            // Return default status on error
+        }
+
+        return new PrerequisitesStatus();
+    }
+
+    private static bool GetJsonBool(JsonElement root, string propertyName)
+    {
+        return root.TryGetProperty(propertyName, out var prop) && prop.ValueKind == JsonValueKind.True;
+    }
+
+    /// <summary>
+    /// Refreshes environment variables in the current process from the registry.
+    /// This is needed after installing software that modifies PATH.
+    /// </summary>
+    private static void RefreshEnvironmentVariables()
+    {
+        try
+        {
+            // Read PATH from Machine and User registry keys
+            using var machineKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                @"SYSTEM\CurrentControlSet\Control\Session Manager\Environment");
+            using var userKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Environment");
+
+            var machinePath = machineKey?.GetValue("Path", "", Microsoft.Win32.RegistryValueOptions.DoNotExpandEnvironmentNames) as string ?? "";
+            var userPath = userKey?.GetValue("Path", "", Microsoft.Win32.RegistryValueOptions.DoNotExpandEnvironmentNames) as string ?? "";
+
+            // Combine and set new PATH
+            var combinedPath = $"{machinePath};{userPath}";
+            // Expand environment variables
+            combinedPath = Environment.ExpandEnvironmentVariables(combinedPath);
+            // Remove duplicate semicolons
+            while (combinedPath.Contains(";;"))
             {
-                // Return default status on error
+                combinedPath = combinedPath.Replace(";;", ";");
             }
 
-            return status;
-        });
+            Environment.SetEnvironmentVariable("Path", combinedPath, EnvironmentVariableTarget.Process);
+
+            // Also refresh other common variables
+            var commonVars = new[] { "JAVA_HOME", "ChocolateyInstall", "DOTNET_ROOT" };
+            foreach (var varName in commonVars)
+            {
+                var machineValue = machineKey?.GetValue(varName) as string;
+                var userValue = userKey?.GetValue(varName) as string;
+                var value = userValue ?? machineValue;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    Environment.SetEnvironmentVariable(varName, value, EnvironmentVariableTarget.Process);
+                }
+            }
+        }
+        catch
+        {
+            // Environment refresh is non-critical
+        }
+    }
+
+    /// <summary>
+    /// Extracts readable messages from PowerShell output, filtering out CLIXML serialization.
+    /// </summary>
+    private static string ExtractReadableMessage(string line)
+    {
+        // If the line contains CLIXML, extract all ToString messages
+        if (line.Contains("<Objs") || line.Contains("<ToString>"))
+        {
+            var messages = new List<string>();
+
+            // Extract all ToString content (these contain the actual messages)
+            var toStringPattern = new System.Text.RegularExpressions.Regex(
+                @"<ToString>([^<]*)</ToString>",
+                System.Text.RegularExpressions.RegexOptions.Compiled);
+
+            var matches = toStringPattern.Matches(line);
+            foreach (System.Text.RegularExpressions.Match match in matches)
+            {
+                var message = match.Groups[1].Value;
+                if (!string.IsNullOrWhiteSpace(message))
+                {
+                    // Decode XML entities and newline markers
+                    message = message.Replace("_x000D__x000A_", "\n")
+                                     .Replace("_x000A_", "\n")
+                                     .Replace("&lt;", "<")
+                                     .Replace("&gt;", ">")
+                                     .Replace("&amp;", "&")
+                                     .Trim();
+
+                    // Skip duplicate or empty messages
+                    if (!string.IsNullOrWhiteSpace(message) && !messages.Contains(message))
+                    {
+                        messages.Add(message);
+                    }
+                }
+            }
+
+            return string.Join("\n", messages);
+        }
+
+        // Skip XML-looking lines
+        if (line.StartsWith("<") && line.Contains(">"))
+        {
+            return string.Empty;
+        }
+
+        // Pass through normal text lines
+        return line;
     }
 
     /// <inheritdoc/>
     public async Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null)
     {
         var repoRoot = GetSafeRepositoryRoot();
-        var prerequisitesModule = Path.Combine(repoRoot, "Modules", "Prerequisites.psm1");
-        var corePath = Path.Combine(repoRoot, "Core", "Core.psm1");
+        var prerequisitesModule = Path.Combine(repoRoot, "Modules", "Prerequisites.psm1").Replace("\\", "/");
+        var corePath = Path.Combine(repoRoot, "Core", "Core.psm1").Replace("\\", "/");
 
-        return await Task.Run(() =>
+        progressCallback?.Invoke(Resources.Resources.Prerequisites_Starting);
+
+        try
         {
-            try
-            {
-                progressCallback?.Invoke(Resources.Resources.Prerequisites_Starting);
+            progressCallback?.Invoke(Resources.Resources.Prerequisites_LoadingModules);
 
-                // Create a temporary script to run with elevation
-                var tempScript = Path.Combine(Path.GetTempPath(), $"Win11Forge_Prerequisites_{Guid.NewGuid():N}.ps1");
-                var scriptContent = $@"
+            // Build a PowerShell script that outputs progress in real-time
+            var script = $@"
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue'
 
 try {{
-    Import-Module '{corePath.Replace("'", "''")}' -Force -ErrorAction SilentlyContinue
-    Import-Module '{prerequisitesModule.Replace("'", "''")}' -Force
+    Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue
+    Import-Module '{prerequisitesModule}' -Force -ErrorAction Stop
 
-    Start-PrerequisitesInstallation
+    # Run prerequisites installation
+    $result = Start-PrerequisitesInstallation
 
-    Write-Host ''
-    Write-Host 'Prerequisites installation complete. Press any key to close...' -ForegroundColor Green
-    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+    # Output success marker
+    Write-Output '___SUCCESS___'
 }} catch {{
-    Write-Host ""Error: $($_.Exception.Message)"" -ForegroundColor Red
-    Write-Host ''
-    Write-Host 'Press any key to close...' -ForegroundColor Yellow
-    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
-    exit 1
+    Write-Output ""___ERROR___: $($_.Exception.Message)""
 }}
 ";
-                File.WriteAllText(tempScript, scriptContent);
 
-                progressCallback?.Invoke(Resources.Resources.Prerequisites_Installing);
+            progressCallback?.Invoke(Resources.Resources.Prerequisites_Installing);
 
-                // Find PowerShell executable (prefer pwsh.exe, fall back to powershell.exe)
-                var pwshPath = FindPowerShellExecutable();
+            // Execute with real-time output streaming
+            var result = await ExecutePowerShellWithStreamingAsync(script, progressCallback);
 
-                // Launch elevated PowerShell process
-                var psi = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = pwshPath,
-                    Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{tempScript}\"",
-                    UseShellExecute = true,
-                    Verb = "runas", // Request UAC elevation
-                    WorkingDirectory = repoRoot
-                };
-
-                using var process = System.Diagnostics.Process.Start(psi);
-                if (process == null)
-                {
-                    progressCallback?.Invoke("Failed to start elevated process");
-                    return false;
-                }
-
-                process.WaitForExit();
-
-                // Clean up temp script
-                try { File.Delete(tempScript); } catch { /* Ignore cleanup errors */ }
-
-                if (process.ExitCode == 0)
-                {
-                    progressCallback?.Invoke(Resources.Resources.Prerequisites_Complete);
-                    return true;
-                }
-                else
-                {
-                    progressCallback?.Invoke($"Installation failed (exit code: {process.ExitCode})");
-                    return false;
-                }
-            }
-            catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
+            if (result.Success)
             {
-                // User cancelled UAC prompt
-                progressCallback?.Invoke("Installation cancelled by user");
+                // Refresh environment variables in current process
+                RefreshEnvironmentVariables();
+                progressCallback?.Invoke(Resources.Resources.Prerequisites_Complete);
+                return true;
+            }
+            else
+            {
+                progressCallback?.Invoke($"Error: {result.ErrorMessage}");
                 return false;
             }
-            catch (Exception ex)
+        }
+        catch (Exception ex)
+        {
+            progressCallback?.Invoke($"Exception: {ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Executes a PowerShell script with real-time output streaming.
+    /// </summary>
+    private async Task<(bool Success, string ErrorMessage)> ExecutePowerShellWithStreamingAsync(
+        string script,
+        Action<string>? outputCallback)
+    {
+        var psPath = GetPowerShellPath();
+        var repoRoot = GetSafeRepositoryRoot();
+
+        var encodedScript = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(script));
+
+        var startInfo = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = psPath,
+            Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encodedScript}",
+            WorkingDirectory = repoRoot,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+
+        using var process = new System.Diagnostics.Process { StartInfo = startInfo };
+
+        var success = false;
+        var errorMessage = string.Empty;
+        var outputComplete = new TaskCompletionSource<bool>();
+
+        // Handle stdout line by line
+        process.OutputDataReceived += (sender, e) =>
+        {
+            if (e.Data != null)
             {
-                progressCallback?.Invoke($"Exception: {ex.Message}");
-                return false;
+                var line = e.Data.Trim();
+
+                if (line == "___SUCCESS___")
+                {
+                    success = true;
+                }
+                else if (line.StartsWith("___ERROR___:"))
+                {
+                    errorMessage = line.Substring("___ERROR___:".Length).Trim();
+                }
+                else if (!string.IsNullOrWhiteSpace(line))
+                {
+                    // Filter out CLIXML serialized data and extract readable messages
+                    var cleanLine = ExtractReadableMessage(line);
+                    if (!string.IsNullOrWhiteSpace(cleanLine))
+                    {
+                        outputCallback?.Invoke(cleanLine);
+                    }
+                }
             }
-        });
+        };
+
+        // Handle stderr
+        process.ErrorDataReceived += (sender, e) =>
+        {
+            if (!string.IsNullOrWhiteSpace(e.Data))
+            {
+                outputCallback?.Invoke($"[ERROR] {e.Data}");
+            }
+        };
+
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        await process.WaitForExitAsync();
+
+        // If process exited with 0 and we saw success marker, it's successful
+        if (process.ExitCode == 0 && success)
+        {
+            return (true, string.Empty);
+        }
+
+        // If we have an error message, return it
+        if (!string.IsNullOrEmpty(errorMessage))
+        {
+            return (false, errorMessage);
+        }
+
+        // Fallback: check exit code
+        if (process.ExitCode == 0)
+        {
+            return (true, string.Empty);
+        }
+
+        return (false, $"Process exited with code {process.ExitCode}");
     }
 
     /// <summary>

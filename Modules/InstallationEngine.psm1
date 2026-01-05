@@ -2244,31 +2244,40 @@ function Test-AppInstalledParallel {
 
             # 3. Microsoft Store
             if ($sources.Store -and (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)) {
-                Write-ParallelLog "Attempting installation via Microsoft Store: $($sources.Store)" 'Info'
-                $arguments = @(
-                    'install',
-                    '--id', $sources.Store,
-                    '--source', 'msstore',
-                    '--accept-package-agreements',
-                    '--accept-source-agreements',
-                    '--silent'
-                )
+                # Check for Windows Sandbox - Store is unavailable
+                $isSandbox = ($env:USERNAME -eq 'WDAGUtilityAccount') -or
+                             ($env:COMPUTERNAME -match '^SANDBOX-') -or
+                             (Test-Path 'HKLM:\SYSTEM\CurrentControlSet\Control\ContainerManager' -ErrorAction SilentlyContinue)
 
-                $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru
-                $timeoutMs = 600000  # 10 minutes
-
-                if (-not $process.WaitForExit($timeoutMs)) {
-                    Write-ParallelLog "Process timed out after 600 seconds - terminating" 'Warning'
-                    $process.Kill()
-                    Write-ParallelLog "Microsoft Store installation failed (timeout)" 'Warning'
-                } elseif ($process.ExitCode -eq 0) {
-                    Write-ParallelLog "Installed successfully via Microsoft Store" 'Success'
-                    $result.Success = $true
-                    $result.Method = 'Store'
-                    $result.Message = 'Installed via Microsoft Store'
-                    return $result
+                if ($isSandbox) {
+                    Write-ParallelLog "Skipping Store install - Windows Store unavailable in Sandbox" 'Warning'
                 } else {
-                    Write-ParallelLog "Microsoft Store installation failed (exit code: $($process.ExitCode))" 'Warning'
+                    Write-ParallelLog "Attempting installation via Microsoft Store: $($sources.Store)" 'Info'
+                    $arguments = @(
+                        'install',
+                        '--id', $sources.Store,
+                        '--source', 'msstore',
+                        '--accept-package-agreements',
+                        '--accept-source-agreements',
+                        '--silent'
+                    )
+
+                    $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru
+                    $timeoutMs = 600000  # 10 minutes
+
+                    if (-not $process.WaitForExit($timeoutMs)) {
+                        Write-ParallelLog "Process timed out after 600 seconds - terminating" 'Warning'
+                        $process.Kill()
+                        Write-ParallelLog "Microsoft Store installation failed (timeout)" 'Warning'
+                    } elseif ($process.ExitCode -eq 0) {
+                        Write-ParallelLog "Installed successfully via Microsoft Store" 'Success'
+                        $result.Success = $true
+                        $result.Method = 'Store'
+                        $result.Message = 'Installed via Microsoft Store'
+                        return $result
+                    } else {
+                        Write-ParallelLog "Microsoft Store installation failed (exit code: $($process.ExitCode))" 'Warning'
+                    }
                 }
             }
 

@@ -69,6 +69,16 @@
                     </ListBoxItem>
                     <ListBoxItem>
                         <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="CheckboxMarkedCircleOutline"
+                                                      Width="24"
+                                                      Height="24"
+                                                      Margin="0,0,16,0"/>
+                            <TextBlock Text="{loc:Loc Nav_Prerequisites}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Rocket"
                                                       Width="24"
                                                       Height="24"
@@ -132,6 +142,10 @@
             <!-- Settings View -->
             <views:SettingsView x:Name="SettingsViewControl"
                                  Visibility="Collapsed"/>
+
+            <!-- Prerequisites View -->
+            <views:PrerequisitesView x:Name="PrerequisitesViewControl"
+                                      Visibility="Collapsed"/>
         </Grid>
     </Grid>
     </materialDesign:DialogHost>

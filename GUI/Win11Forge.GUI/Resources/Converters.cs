@@ -92,6 +92,27 @@ public class NullableToVisibilityConverter : IValueConverter
 }
 
 /// <summary>
+/// Converts nullable/empty string to Visibility (null/empty = Visible, non-empty = Collapsed).
+/// Inverse of NullableToVisibilityConverter.
+/// </summary>
+public class InverseNullableToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is string str)
+        {
+            return string.IsNullOrWhiteSpace(str) ? Visibility.Visible : Visibility.Collapsed;
+        }
+        return value is null ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
 /// Converts boolean (IsRequired) to Material Design icon kind.
 /// </summary>
 public class BoolToRequiredIconConverter : IValueConverter
@@ -245,6 +266,23 @@ public class BoolToInstalledColorConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return value is true ? InstalledBrush : NotInstalledBrush;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean (IsPaused) to Material Design icon kind.
+/// True = Pause, False = Play (running).
+/// </summary>
+public class BoolToPauseIconConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value is true ? PackIconKind.Pause : PackIconKind.Play;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

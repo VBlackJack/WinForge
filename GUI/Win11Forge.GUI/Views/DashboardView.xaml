@@ -347,6 +347,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <!-- Header -->
@@ -419,11 +420,16 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Progress Message -->
-                        <TextBlock Grid.Column="0"
-                                   Text="{Binding PrerequisitesProgressMessage}"
-                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                   VerticalAlignment="Center"
-                                   Visibility="{Binding IsInstallingPrerequisites, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                    Visibility="{Binding IsInstallingPrerequisites, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                         Value="0" IsIndeterminate="True"
+                                         Width="16" Height="16"
+                                         Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding PrerequisitesProgressMessage}"
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
 
                         <!-- Status Message (when not installing) -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal"
@@ -456,18 +462,38 @@
                                     Visibility="{Binding PrerequisitesStatus.AllPrerequisitesMet, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                                     IsEnabled="{Binding IsInstallingPrerequisites, Converter={StaticResource InverseBoolConverter}}">
                                 <StackPanel Orientation="Horizontal">
-                                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                                 Value="0" IsIndeterminate="True"
-                                                 Width="16" Height="16"
-                                                 Margin="0,0,8,0"
-                                                 Visibility="{Binding IsInstallingPrerequisites, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                    <materialDesign:PackIcon Kind="Download" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"
-                                                              Visibility="{Binding IsInstallingPrerequisites, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                    <materialDesign:PackIcon Kind="Download" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"/>
                                     <TextBlock Text="{loc:Loc Prerequisites_Install}" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                         </StackPanel>
                     </Grid>
+
+                    <!-- Log Output Panel (visible during/after installation) -->
+                    <Border Grid.Row="3"
+                            Background="{DynamicResource MaterialDesignCardBackground}"
+                            BorderBrush="{DynamicResource MaterialDesignDivider}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Margin="0,16,0,0"
+                            MaxHeight="200"
+                            Visibility="{Binding PrerequisitesLogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      x:Name="PrerequisitesLogScroller">
+                            <TextBox Text="{Binding PrerequisitesLogOutput, Mode=OneWay}"
+                                     IsReadOnly="True"
+                                     TextWrapping="NoWrap"
+                                     FontFamily="Consolas"
+                                     FontSize="11"
+                                     BorderThickness="0"
+                                     Padding="12"
+                                     Background="Transparent"
+                                     VerticalScrollBarVisibility="Disabled"
+                                     HorizontalScrollBarVisibility="Disabled"
+                                     TextChanged="PrerequisitesLog_TextChanged"/>
+                        </ScrollViewer>
+                    </Border>
                 </Grid>
             </materialDesign:Card>
 

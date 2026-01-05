@@ -188,6 +188,9 @@
   <data name="Nav_Settings" xml:space="preserve">
     <value>Parametres</value>
   </data>
+  <data name="Nav_Prerequisites" xml:space="preserve">
+    <value>Prerequis</value>
+  </data>
   <!-- Application Manager -->
   <data name="Apps_Title" xml:space="preserve">
     <value>Gestionnaire d'applications</value>
@@ -402,6 +405,21 @@
   <data name="Settings_OpenLogs_Desc" xml:space="preserve">
     <value>Afficher les journaux de deploiement et d'erreurs</value>
   </data>
+  <data name="Settings_Section_About" xml:space="preserve">
+    <value>A propos</value>
+  </data>
+  <data name="About_Author" xml:space="preserve">
+    <value>Auteur :</value>
+  </data>
+  <data name="About_Version" xml:space="preserve">
+    <value>Version :</value>
+  </data>
+  <data name="About_License" xml:space="preserve">
+    <value>Licence :</value>
+  </data>
+  <data name="About_Repository" xml:space="preserve">
+    <value>Depot :</value>
+  </data>
   <!-- Package Managers -->
   <data name="Dashboard_Sys_Winget" xml:space="preserve">
     <value>Winget :</value>
@@ -428,6 +446,25 @@
   <!-- Error Messages -->
   <data name="Common_ErrorFallback" xml:space="preserve">
     <value>Erreur</value>
+  </data>
+  <!-- Log Viewer -->
+  <data name="LogViewer_Title" xml:space="preserve">
+    <value>Journal d'installation</value>
+  </data>
+  <data name="LogViewer_NoLogs" xml:space="preserve">
+    <value>Aucun journal disponible</value>
+  </data>
+  <data name="LogViewer_Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="LogViewer_Copy" xml:space="preserve">
+    <value>Copier dans le presse-papiers</value>
+  </data>
+  <data name="Col_Logs" xml:space="preserve">
+    <value>Journaux</value>
+  </data>
+  <data name="Btn_ViewLogs" xml:space="preserve">
+    <value>Voir</value>
   </data>
   <!-- Prerequisites -->
   <data name="Prerequisites_Title" xml:space="preserve">
@@ -465,5 +502,44 @@
   </data>
   <data name="Prerequisites_Chocolatey" xml:space="preserve">
     <value>Chocolatey</value>
+  </data>
+  <data name="Prerequisites_DotNet" xml:space="preserve">
+    <value>Runtime .NET</value>
+  </data>
+  <data name="Prerequisites_DotNetFramework" xml:space="preserve">
+    <value>.NET Framework</value>
+  </data>
+  <data name="Prerequisites_VCRedist" xml:space="preserve">
+    <value>Visual C++ Redistributable</value>
+  </data>
+  <data name="Prerequisites_Java" xml:space="preserve">
+    <value>Runtime Java</value>
+  </data>
+  <data name="Prerequisites_PageTitle" xml:space="preserve">
+    <value>Prerequis Systeme</value>
+  </data>
+  <data name="Prerequisites_PageDescription" xml:space="preserve">
+    <value>Win11Forge necessite les composants suivants pour fonctionner correctement.</value>
+  </data>
+  <data name="Prerequisites_CategoryPackageManagers" xml:space="preserve">
+    <value>Gestionnaires de paquets</value>
+  </data>
+  <data name="Prerequisites_CategoryRuntimes" xml:space="preserve">
+    <value>Environnements d'execution</value>
+  </data>
+  <data name="Prerequisites_Required" xml:space="preserve">
+    <value>Requis</value>
+  </data>
+  <data name="Prerequisites_Optional" xml:space="preserve">
+    <value>Optionnel</value>
+  </data>
+  <data name="Prerequisites_StatusSummary" xml:space="preserve">
+    <value>{0} sur {1} composants installes</value>
+  </data>
+  <data name="Prerequisites_ClearLog" xml:space="preserve">
+    <value>Effacer le journal</value>
+  </data>
+  <data name="Prerequisites_InstallAll" xml:space="preserve">
+    <value>Installer les manquants</value>
   </data>
 </root>

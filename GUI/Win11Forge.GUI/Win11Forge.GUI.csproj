@@ -8,6 +8,7 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>Win11Forge.GUI</RootNamespace>
     <AssemblyName>Win11Forge.GUI</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <!-- Self-contained deployment is configured via Build-Release.ps1 command line,

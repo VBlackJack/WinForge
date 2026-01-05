@@ -95,6 +95,9 @@ public partial class SettingsViewModel : ViewModelBase
             new LanguageOption("fr", "Francais")
         ];
 
+        // Initialize version
+        AppVersion = "3.0.0";
+
         // Load current settings
         LoadCurrentSettings();
     }
@@ -248,6 +251,26 @@ public partial class SettingsViewModel : ViewModelBase
         catch (Exception ex)
         {
             StatusMessage = ex.Message;
+        }
+    }
+
+    /// <summary>
+    /// Opens the GitHub repository in the default browser.
+    /// </summary>
+    [RelayCommand]
+    private void OpenGitHub()
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "https://github.com/youen/Win11Forge",
+                UseShellExecute = true
+            });
+        }
+        catch
+        {
+            // Browser launch is non-critical
         }
     }
 }
