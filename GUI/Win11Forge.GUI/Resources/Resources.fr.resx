@@ -560,4 +560,8 @@
   <data name="About_RepoUrl" xml:space="preserve">
     <value>github.com/VBlackJack/Win11Forge</value>
   </data>
+  <data name="App_Name" xml:space="preserve">
+    <value>Win11Forge</value>
+    <comment>Application name (brand name, not translated)</comment>
+  </data>
 </root>

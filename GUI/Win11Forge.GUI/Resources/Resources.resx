@@ -63,6 +63,10 @@
     <value>Win11Forge v{0}</value>
     <comment>Main application window title (0=version number)</comment>
   </data>
+  <data name="App_Name" xml:space="preserve">
+    <value>Win11Forge</value>
+    <comment>Application name (brand name, not translated)</comment>
+  </data>
   <!-- Main Window -->
   <data name="MainWindow_Welcome" xml:space="preserve">
     <value>Welcome to Win11Forge</value>
