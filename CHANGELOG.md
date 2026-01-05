@@ -8,6 +8,18 @@ Note: la source de vérité de la version du framework est `Config/version.json`
 
 Win11Forge v3.0.0 introduces a complete graphical interface while maintaining full CLI compatibility.
 
+### Recent Fixes (2026-01-05)
+
+#### Installation Engine Reliability
+- **Fixed**: SHA256 property access in StrictMode for DirectUrl installations (Battle.net)
+- **Fixed**: Chocolatey "already installed" detection - no longer triggers unnecessary retries
+- **Fixed**: Winget "No available upgrade" detection - treats as success
+- **Fixed**: Store "already installed" detection - same improvement
+- **Fixed**: WebClient Timeout property error - removed invalid property assignment
+
+#### Localization
+- **Fixed**: Hardcoded "Win11Forge" text in Settings view - now uses localized App_Name key
+
 ### New Features
 
 #### WPF GUI Application
