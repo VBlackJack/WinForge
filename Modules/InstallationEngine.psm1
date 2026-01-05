@@ -1076,19 +1076,30 @@ function Install-ViaWinget {
                 Write-Status -Message "Retry $attempt/$MaxRetries for Winget: $PackageId" -Level 'Info'
             }
 
-            # Execute with timeout protection
-            $process = Start-ProcessWithTimeout -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+            # Execute winget and capture output to detect "already installed" patterns
+            $wingetOutput = & winget @arguments 2>&1 | Out-String
+            $exitCode = $LASTEXITCODE
 
-            if ($process.ExitCode -eq 0) {
+            # Check for "already installed" patterns in output - treat as success
+            # Winget may say "already installed", "No available upgrade", "No newer package versions"
+            if ($wingetOutput -match 'already installed' -or
+                $wingetOutput -match 'No available upgrade' -or
+                $wingetOutput -match 'No newer package versions' -or
+                $wingetOutput -match 'Successfully installed') {
+                Write-Status -Message "Installed successfully via Winget$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                return $true
+            }
+
+            if ($exitCode -eq 0) {
                 Write-Status -Message "Installed successfully via Winget$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
                 return $true
             }
 
             # Check for transient network errors (exit codes that might benefit from retry)
             $transientErrors = @(-1978335189, -1978335212)  # Common Winget network errors
-            if ($transientErrors -contains $process.ExitCode -and $attempt -lt $MaxRetries) {
+            if ($transientErrors -contains $exitCode -and $attempt -lt $MaxRetries) {
                 $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
-                Write-Status -Message "Transient error detected (exit code: $($process.ExitCode)), retrying in $delay seconds..." -Level 'Warning'
+                Write-Status -Message "Transient error detected (exit code: $exitCode), retrying in $delay seconds..." -Level 'Warning'
                 Start-Sleep -Seconds $delay
                 continue
             }
@@ -1101,7 +1112,7 @@ function Install-ViaWinget {
                 return $true
             }
 
-            Write-Status -Message "Winget installation failed (exit code: $($process.ExitCode))" -Level 'Warning'
+            Write-Status -Message "Winget installation failed (exit code: $exitCode)" -Level 'Warning'
             return $false
 
         } catch {
@@ -1155,19 +1166,33 @@ function Install-ViaChocolatey {
                 Write-Status -Message "Retry $attempt/$MaxRetries for Chocolatey: $PackageName" -Level 'Info'
             }
 
-            # Execute with timeout protection
-            $process = Start-ProcessWithTimeout -FilePath 'choco' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+            # Execute choco and capture output to detect "already installed"
+            $chocoOutput = & choco @arguments 2>&1 | Out-String
+            $exitCode = $LASTEXITCODE
 
-            if ($process.ExitCode -eq 0) {
+            # Check for "already installed" pattern in output - treat as success
+            if ($chocoOutput -match 'already installed' -or $chocoOutput -match 'has been installed') {
                 Write-Status -Message "Installed successfully via Chocolatey$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
                 return $true
             }
 
-            # Check for transient network errors
+            if ($exitCode -eq 0) {
+                Write-Status -Message "Installed successfully via Chocolatey$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                return $true
+            }
+
+            # Check for transient network errors (but NOT if already installed)
             $transientErrors = @(1641, 3010, -1)  # Common Chocolatey transient errors (reboot required, network timeout)
-            if ($transientErrors -contains $process.ExitCode -and $attempt -lt $MaxRetries) {
+            if ($transientErrors -contains $exitCode -and $attempt -lt $MaxRetries) {
+                # Before retrying, check if package is already installed
+                $chocoList = & choco list --local-only --exact $PackageName 2>&1 | Out-String
+                if ($chocoList -match $PackageName -and $chocoList -notmatch "0 packages installed") {
+                    Write-Status -Message "Installed successfully via Chocolatey (verified)$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                    return $true
+                }
+
                 $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
-                Write-Status -Message "Transient error detected (exit code: $($process.ExitCode)), retrying in $delay seconds..." -Level 'Warning'
+                Write-Status -Message "Transient error detected (exit code: $exitCode), retrying in $delay seconds..." -Level 'Warning'
                 Start-Sleep -Seconds $delay
                 continue
             }
@@ -1180,7 +1205,7 @@ function Install-ViaChocolatey {
                 return $true
             }
 
-            Write-Status -Message "Chocolatey installation failed (exit code: $($process.ExitCode))" -Level 'Verbose'
+            Write-Status -Message "Chocolatey installation failed (exit code: $exitCode)" -Level 'Verbose'
             return $false
 
         } catch {
@@ -1226,10 +1251,20 @@ function Install-ViaStore {
                 '--silent'
             )
 
-            # Execute with timeout protection
-            $process = Start-ProcessWithTimeout -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+            # Execute winget and capture output to detect "already installed" patterns
+            $storeOutput = & winget @arguments 2>&1 | Out-String
+            $exitCode = $LASTEXITCODE
 
-            if ($process.ExitCode -eq 0) {
+            # Check for "already installed" patterns in output - treat as success
+            if ($storeOutput -match 'already installed' -or
+                $storeOutput -match 'No available upgrade' -or
+                $storeOutput -match 'No newer package versions' -or
+                $storeOutput -match 'Successfully installed') {
+                Write-Status -Message "Installed successfully via Microsoft Store" -Level 'Success'
+                return $true
+            }
+
+            if ($exitCode -eq 0) {
                 Write-Status -Message "Installed successfully via Microsoft Store" -Level 'Success'
                 return $true
             }
@@ -1759,8 +1794,8 @@ function Invoke-InstallationMethodSequence {
             $installParams['DetectionPath'] = $Application.Detection.Path
         }
 
-        # SHA256 checksum if available
-        if ($sources.SHA256) {
+        # SHA256 checksum if available (StrictMode-safe property access)
+        if ($sources.PSObject.Properties['SHA256'] -and $sources.SHA256) {
             $installParams['ExpectedSHA256'] = $sources.SHA256
         }
 
