@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================================
-REM Win11Forge GUI Launcher v2.6.0 (Administrator)
+REM Win11Forge GUI Launcher v3.0.0 (Administrator)
 REM Auto-installs PowerShell 7 if missing, with fallback to PowerShell 5.1
 REM ============================================================================
 
@@ -27,8 +27,8 @@ set "SCRIPT_DIR=%~dp0"
 set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
 set "GUI_SCRIPT=%SCRIPT_DIR%\Start-Win11ForgeGUI.ps1"
 
-REM Resolve framework version dynamically (fallback to 2.6.0)
-set "FRAMEWORK_VERSION=2.6.0"
+REM Resolve framework version dynamically (fallback to 3.0.0)
+set "FRAMEWORK_VERSION=3.0.0"
 for /f "usebackq delims=" %%v in (`powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%\Tools\Get-Win11ForgeVersion.ps1"`) do set "FRAMEWORK_VERSION=%%v"
 
 echo.
