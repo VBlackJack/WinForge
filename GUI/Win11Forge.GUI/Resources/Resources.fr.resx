@@ -60,7 +60,7 @@
   </resheader>
   <!-- Application -->
   <data name="App_Title" xml:space="preserve">
-    <value>Win11Forge v3.0.0</value>
+    <value>Win11Forge v{0}</value>
   </data>
   <!-- Main Window -->
   <data name="MainWindow_Welcome" xml:space="preserve">

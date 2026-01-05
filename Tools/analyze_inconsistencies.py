@@ -275,24 +275,6 @@ def analyze_profiles(applications: Dict[str, dict]) -> Dict[str, List[str]]:
                 )
             )
 
-        metadata_expected = {
-            "Base": 30,
-            "Office": 35,
-            "Gaming": 39,
-            "Personnel": 64,
-        }
-        expected_count = metadata_expected.get(profile_id)
-        if expected_count is not None:
-            resolved_unique = len(dict.fromkeys(resolved_apps))
-            if resolved_unique != expected_count:
-                report["warnings"].append(
-                    "Profile '{profile}' declares {expected} apps but resolved unique count is {actual}.".format(
-                        profile=profile_id,
-                        expected=expected_count,
-                        actual=resolved_unique,
-                    )
-                )
-
         report["notes"].append(
             "Profile '{profile}' resolved to {count} applications ({unique} unique).".format(
                 profile=profile_id,

@@ -28,6 +28,16 @@ namespace Win11Forge.GUI.ViewModels;
 /// </summary>
 public partial class DashboardViewModel : ViewModelBase
 {
+    /// <summary>
+    /// Maximum number of recent deployment entries to display.
+    /// </summary>
+    private const int MaxRecentHistory = 5;
+
+    /// <summary>
+    /// Maximum number of history entries to load for total count.
+    /// </summary>
+    private const int MaxTotalHistory = 100;
+
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IDeploymentHistoryService _historyService;
 
@@ -162,10 +172,10 @@ public partial class DashboardViewModel : ViewModelBase
     /// </summary>
     private async Task LoadRecentDeploymentsAsync()
     {
-        var history = await _historyService.GetRecentHistoryAsync(5);
+        var history = await _historyService.GetRecentHistoryAsync(MaxRecentHistory);
         RecentDeployments = new ObservableCollection<DeploymentHistoryEntry>(history);
 
-        var allHistory = await _historyService.GetHistoryAsync(100);
+        var allHistory = await _historyService.GetHistoryAsync(MaxTotalHistory);
         TotalDeployments = allHistory.Count;
     }
 

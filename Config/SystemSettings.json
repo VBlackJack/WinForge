@@ -1,0 +1,103 @@
+{
+  "RegistryPaths": {
+    "ExplorerAdvanced": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+    "Explorer": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+    "ExplorerCabinetState": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\CabinetState",
+    "ExplorerVisualEffects": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects",
+    "Search": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Search",
+    "AdvertisingInfo": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo",
+    "ContentDeliveryManager": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+    "GameBar": "HKCU:\\Software\\Microsoft\\GameBar",
+    "DataCollection": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+    "DataCollectionUser": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection",
+    "SystemPolicies": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+    "WindowsSearch": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Search",
+    "CloudContent": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+    "TcpipParameters": "HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters",
+    "QoSPolicies": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Psched",
+    "DeveloperMode": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock",
+    "LibrariesClsid": "HKCU:\\Software\\Classes\\CLSID\\{031E4825-7B94-4dc3-B131-E946B44C8DD5}"
+  },
+  "RegistryValues": {
+    "Explorer": {
+      "Hidden": { "Name": "Hidden", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
+      "HideFileExt": { "Name": "HideFileExt", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "NavPaneShowAllFolders": { "Name": "NavPaneShowAllFolders", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
+      "NavPaneExpandToCurrentFolder": { "Name": "NavPaneExpandToCurrentFolder", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
+      "ShowSyncProviderNotifications": { "Name": "ShowSyncProviderNotifications", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
+      "ShowStatusColumn": { "Name": "ShowStatusColumn", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
+      "FullPath": { "Name": "FullPath", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
+      "SeparateProcess": { "Name": "SeparateProcess", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
+      "AllowDevelopmentWithoutDevLicense": { "Name": "AllowDevelopmentWithoutDevLicense", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
+      "IsPinnedToNameSpaceTree": { "Name": "System.IsPinnedToNameSpaceTree", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 }
+    },
+    "Taskbar": {
+      "TaskbarDa": { "Name": "TaskbarDa", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "TaskbarAl": { "Name": "TaskbarAl", "Type": "DWord", "ValueLeft": 0, "ValueCenter": 1 },
+      "ShowTaskViewButton": { "Name": "ShowTaskViewButton", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "TaskbarMn": { "Name": "TaskbarMn", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 }
+    },
+    "Search": {
+      "SearchboxTaskbarMode": { "Name": "SearchboxTaskbarMode", "Type": "DWord", "ValueHidden": 0, "ValueIconOnly": 1, "ValueBox": 2 },
+      "CortanaConsent": { "Name": "CortanaConsent", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 }
+    },
+    "Privacy": {
+      "AllowTelemetry": { "Name": "AllowTelemetry", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "AdvertisingEnabled": { "Name": "Enabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "StartTrackProgs": { "Name": "Start_TrackProgs", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "SubscribedContent338393": { "Name": "SubscribedContent-338393Enabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "SubscribedContent353694": { "Name": "SubscribedContent-353694Enabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "SubscribedContent338389": { "Name": "SubscribedContent-338389Enabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "EnableActivityFeed": { "Name": "EnableActivityFeed", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "PublishUserActivities": { "Name": "PublishUserActivities", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "AllowCortana": { "Name": "AllowCortana", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "DisableWindowsConsumerFeatures": { "Name": "DisableWindowsConsumerFeatures", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 },
+      "SilentInstalledAppsEnabled": { "Name": "SilentInstalledAppsEnabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "SystemPaneSuggestionsEnabled": { "Name": "SystemPaneSuggestionsEnabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "PreInstalledAppsEnabled": { "Name": "PreInstalledAppsEnabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 },
+      "SoftLandingEnabled": { "Name": "SoftLandingEnabled", "Type": "DWord", "ValueEnabled": 0, "ValueDisabled": 1 }
+    },
+    "Performance": {
+      "VisualFXSetting": { "Name": "VisualFXSetting", "Type": "DWord", "ValueBestPerformance": 2, "ValueBestAppearance": 1, "ValueCustom": 3 },
+      "AutoGameModeEnabled": { "Name": "AutoGameModeEnabled", "Type": "DWord", "ValueEnabled": 1, "ValueDisabled": 0 }
+    },
+    "Network": {
+      "TcpAckFrequency": { "Name": "TcpAckFrequency", "Type": "DWord", "ValueOptimized": 1 },
+      "TCPNoDelay": { "Name": "TCPNoDelay", "Type": "DWord", "ValueOptimized": 1 },
+      "NonBestEffortLimit": { "Name": "NonBestEffortLimit", "Type": "DWord", "ValueOptimized": 0 }
+    }
+  },
+  "PowerPlans": {
+    "HighPerformance": "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c",
+    "Balanced": "381b4222-f694-41f0-9685-ff5bb260df2e",
+    "PowerSaver": "a1841308-3541-4fab-bc81-f71556f20b4a"
+  },
+  "GUIDs": {
+    "LibrariesNamespaceGuid": "{031E4825-7B94-4dc3-B131-E946B44C8DD5}"
+  },
+  "Services": {
+    "ToDisable": [
+      "MapsBroker",
+      "lfsvc",
+      "RetailDemo",
+      "PhoneSvc",
+      "Fax",
+      "XblAuthManager",
+      "XblGameSave",
+      "XboxNetApiSvc",
+      "XboxGipSvc",
+      "WalletService",
+      "WMPNetworkSvc"
+    ],
+    "ToManual": [
+      "WSearch",
+      "SysMain",
+      "TrkWks",
+      "WbioSrvc"
+    ],
+    "Telemetry": "DiagTrack"
+  },
+  "Timeouts": {
+    "ExplorerRestartDelaySeconds": 2
+  }
+}

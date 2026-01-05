@@ -93,6 +93,23 @@ public partial class MainWindow : Window
 
         // Initialize Dashboard (default view)
         await InitializeDashboardAsync();
+
+        // Set window title with dynamic version
+        await UpdateWindowTitleAsync();
+    }
+
+    private async Task UpdateWindowTitleAsync()
+    {
+        try
+        {
+            var version = await _powerShellBridge.GetWin11ForgeVersionAsync();
+            Title = string.Format(Win11Forge.GUI.Resources.Resources.App_Title, version);
+        }
+        catch
+        {
+            // Fallback to static title if version retrieval fails
+            Title = string.Format(Win11Forge.GUI.Resources.Resources.App_Title, "3.0.0");
+        }
     }
 
     private void NavigationListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
