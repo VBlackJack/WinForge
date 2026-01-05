@@ -77,7 +77,8 @@ if (-not (Get-Command -Name Test-IsWindowsSandbox -ErrorAction SilentlyContinue)
 # === CONFIGURATION ===
 $script:MaxParallelJobs = 5
 $script:JobCheckInterval = 2
-$script:DefaultInstallTimeoutSeconds = 600  # 10 minutes
+$script:DefaultInstallTimeoutSeconds = 1800  # 30 minutes (increased for slower VMs/networks)
+$script:OfficeInstallTimeoutSeconds = 2700   # 45 minutes for Office (Click-to-Run is slow)
 
 # === ROLLBACK & RESUME SYSTEM ===
 $script:RollbackStateFile = Join-Path $env:TEMP 'Win11Forge_RollbackState.json'
@@ -741,6 +742,86 @@ function Test-EnvironmentRestriction {
 }
 
 # === DETECTION FUNCTIONS ===
+
+function Wait-ForOfficeInstallation {
+    <#
+    .SYNOPSIS
+        Waits for Office Click-to-Run installation to complete.
+
+    .DESCRIPTION
+        Office installations via Winget/Chocolatey often return before the actual
+        installation is complete because Click-to-Run downloads and installs in the
+        background. This function polls for Office executables until they appear
+        or until timeout is reached.
+
+    .PARAMETER TimeoutSeconds
+        Maximum time to wait for installation completion. Default: 2700 (45 minutes).
+
+    .PARAMETER PollIntervalSeconds
+        Time between checks. Default: 30 seconds.
+
+    .OUTPUTS
+        [bool] True if Office was detected as installed, false if timeout reached.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter()]
+        [int]$TimeoutSeconds = 2700,
+
+        [Parameter()]
+        [int]$PollIntervalSeconds = 30
+    )
+
+    Write-Status -Message "Waiting for Office Click-to-Run installation to complete..." -Level 'Info'
+
+    $officePaths = @(
+        "${env:ProgramFiles}\Microsoft Office\root\Office16\WINWORD.EXE",
+        "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\WINWORD.EXE",
+        "${env:ProgramFiles}\Microsoft Office\root\Office16\EXCEL.EXE",
+        "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\EXCEL.EXE"
+    )
+
+    $startTime = Get-Date
+    $endTime = $startTime.AddSeconds($TimeoutSeconds)
+
+    while ((Get-Date) -lt $endTime) {
+        # Check if any Office executable exists
+        foreach ($path in $officePaths) {
+            if (Test-Path -Path $path -PathType Leaf) {
+                Write-Status -Message "Office installation detected: $path" -Level 'Success'
+                return $true
+            }
+        }
+
+        # Check if OfficeClickToRun process is still running (installation in progress)
+        $clickToRunProcess = Get-Process -Name "OfficeClickToRun" -ErrorAction SilentlyContinue
+        if ($clickToRunProcess) {
+            $elapsed = [math]::Round(((Get-Date) - $startTime).TotalMinutes, 1)
+            Write-Status -Message "Office Click-to-Run still installing... ($elapsed minutes elapsed)" -Level 'Info'
+        }
+
+        # Also check for OfficeC2RClient which handles updates/installs
+        $c2rClient = Get-Process -Name "OfficeC2RClient" -ErrorAction SilentlyContinue
+        if ($c2rClient) {
+            $elapsed = [math]::Round(((Get-Date) - $startTime).TotalMinutes, 1)
+            Write-Status -Message "Office C2R Client active... ($elapsed minutes elapsed)" -Level 'Info'
+        }
+
+        Start-Sleep -Seconds $PollIntervalSeconds
+    }
+
+    # Final check before returning failure
+    foreach ($path in $officePaths) {
+        if (Test-Path -Path $path -PathType Leaf) {
+            Write-Status -Message "Office installation detected: $path" -Level 'Success'
+            return $true
+        }
+    }
+
+    Write-Status -Message "Office installation detection timed out after $([math]::Round($TimeoutSeconds / 60)) minutes" -Level 'Warning'
+    return $false
+}
 
 function Test-ApplicationInstalled {
     [CmdletBinding()]
@@ -1533,12 +1614,26 @@ function Invoke-InstallationMethodSequence {
         return $false
     }
 
+    # Helper to check if this is an Office installation requiring special handling
+    $isOfficeApp = $sources.Winget -eq 'Microsoft.Office' -or
+                   $sources.Chocolatey -eq 'microsoft-office-deployment' -or
+                   $Application.Name -match 'Office\s*(365|2019|2021|2024)'
+
     # 1. Try Winget
     if ($sources.Winget) {
         $result.AttemptedMethods += 'Winget'
         & $writeLog "Attempting Winget: $($sources.Winget)" 'Verbose'
 
         if (Install-ViaWinget -PackageId $sources.Winget) {
+            # Special handling for Office - wait for Click-to-Run to complete
+            if ($isOfficeApp) {
+                & $writeLog "Office installation initiated, waiting for Click-to-Run to complete..." 'Info'
+                $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $script:OfficeInstallTimeoutSeconds
+                if (-not $officeInstalled) {
+                    $result.FailureReasons += "Office Click-to-Run did not complete in time"
+                    # Don't return failure yet - continue to check if actually installed
+                }
+            }
             $result.Success = $true
             $result.Method = 'Winget'
             $result.Message = 'Installed via Winget'
@@ -1562,6 +1657,14 @@ function Invoke-InstallationMethodSequence {
         & $writeLog "Attempting Chocolatey: $($sources.Chocolatey)" 'Verbose'
 
         if (Install-ViaChocolatey -PackageName $sources.Chocolatey) {
+            # Special handling for Office - wait for Click-to-Run to complete
+            if ($isOfficeApp) {
+                & $writeLog "Office installation initiated, waiting for Click-to-Run to complete..." 'Info'
+                $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $script:OfficeInstallTimeoutSeconds
+                if (-not $officeInstalled) {
+                    $result.FailureReasons += "Office Click-to-Run did not complete in time"
+                }
+            }
             $result.Success = $true
             $result.Method = 'Chocolatey'
             $result.Message = 'Installed via Chocolatey'
@@ -2484,6 +2587,7 @@ Export-ModuleMember -Function @(
     # Detection functions
     'Test-ApplicationInstalled',
     'Test-ApplicationByName',
+    'Wait-ForOfficeInstallation',
     # Environment helper
     'Test-EnvironmentRestriction',
     # Individual installation methods

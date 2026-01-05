@@ -104,6 +104,18 @@ public partial class AppsViewModel : ViewModelBase
     private bool _isInstalling;
 
     /// <summary>
+    /// Whether the log viewer dialog is open.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isLogViewerOpen;
+
+    /// <summary>
+    /// The application whose logs are being viewed.
+    /// </summary>
+    [ObservableProperty]
+    private ApplicationModel? _logViewerApplication;
+
+    /// <summary>
     /// Initializes a new instance of AppsViewModel.
     /// </summary>
     public AppsViewModel(IPowerShellBridge powerShellBridge)
@@ -472,5 +484,26 @@ public partial class AppsViewModel : ViewModelBase
             app.IsSelected = false;
         }
         UpdateSelectedCount();
+    }
+
+    /// <summary>
+    /// Opens the log viewer for a specific application.
+    /// </summary>
+    [RelayCommand]
+    private void ViewLogs(ApplicationModel? app)
+    {
+        if (app == null || string.IsNullOrEmpty(app.LogOutput)) return;
+        LogViewerApplication = app;
+        IsLogViewerOpen = true;
+    }
+
+    /// <summary>
+    /// Closes the log viewer dialog.
+    /// </summary>
+    [RelayCommand]
+    private void CloseLogViewer()
+    {
+        IsLogViewerOpen = false;
+        LogViewerApplication = null;
     }
 }

@@ -16,6 +16,7 @@
 
 using System.Windows;
 using System.Windows.Controls;
+using MaterialDesignThemes.Wpf;
 using Win11Forge.GUI.ViewModels;
 
 namespace Win11Forge.GUI.Views;
@@ -38,6 +39,28 @@ public partial class AppsView : UserControl
         if (DataContext is AppsViewModel viewModel)
         {
             viewModel.UpdateSelectedCount();
+        }
+    }
+
+    /// <summary>
+    /// Handles log viewer dialog closing event.
+    /// </summary>
+    private void LogViewerDialog_Closing(object sender, DialogClosingEventArgs e)
+    {
+        if (DataContext is AppsViewModel viewModel)
+        {
+            viewModel.CloseLogViewerCommand.Execute(null);
+        }
+    }
+
+    /// <summary>
+    /// Copies the log output to clipboard.
+    /// </summary>
+    private void CopyLogsToClipboard_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is AppsViewModel viewModel && viewModel.LogViewerApplication?.LogOutput != null)
+        {
+            Clipboard.SetText(viewModel.LogViewerApplication.LogOutput);
         }
     }
 }
