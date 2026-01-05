@@ -15,6 +15,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -79,6 +80,9 @@
                         <Run Text=" | "/>
                         <Run Text="{Binding InstalledCount, Mode=OneWay}" Foreground="{DynamicResource SecondaryHueMidBrush}"/>
                         <Run Text=" "/><Run Text="{loc:Loc Apps_Installed}"/>
+                        <Run Text=" | "/>
+                        <Run Text="{Binding SelectedCount, Mode=OneWay}" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                        <Run Text=" "/><Run Text="{loc:Loc Apps_Selected}"/>
                     </TextBlock>
                     <!-- Scan progress -->
                     <StackPanel Orientation="Horizontal"
@@ -114,8 +118,52 @@
             </Grid>
         </materialDesign:Card>
 
-        <!-- Applications DataGrid -->
+        <!-- Selection Action Bar -->
         <materialDesign:Card Grid.Row="2"
+                              Padding="12"
+                              Margin="0,0,0,8"
+                              materialDesign:ElevationAssist.Elevation="Dp1"
+                              Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Select All/None Buttons -->
+                <Button Grid.Column="0"
+                        Content="{loc:Loc Apps_SelectAll}"
+                        Command="{Binding SelectAllCommand}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Padding="12,4"
+                        Margin="0,0,8,0"/>
+                <Button Grid.Column="1"
+                        Content="{loc:Loc Apps_SelectNone}"
+                        Command="{Binding SelectNoneCommand}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Padding="12,4"/>
+
+                <!-- Install Selected Button -->
+                <Button Grid.Column="3"
+                        Command="{Binding InstallSelectedCommand}"
+                        Style="{StaticResource MaterialDesignRaisedButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Download" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="{loc:Loc Apps_InstallSelected}" VerticalAlignment="Center"/>
+                        <TextBlock VerticalAlignment="Center" Margin="8,0,0,0">
+                            <Run Text="("/>
+                            <Run Text="{Binding SelectedCount, Mode=OneWay}"/>
+                            <Run Text=")"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Button>
+            </Grid>
+        </materialDesign:Card>
+
+        <!-- Applications DataGrid -->
+        <materialDesign:Card Grid.Row="3"
                               Padding="0"
                               materialDesign:ElevationAssist.Elevation="Dp2">
             <Grid>
@@ -151,6 +199,19 @@
                           materialDesign:DataGridAssist.ColumnHeaderPadding="16 8"
                           Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <DataGrid.Columns>
+                        <!-- Selection Checkbox Column -->
+                        <DataGridTemplateColumn Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                    <CheckBox IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}"
+                                              Style="{StaticResource MaterialDesignCheckBox}"
+                                              HorizontalAlignment="Center"
+                                              Checked="SelectionCheckBox_Changed"
+                                              Unchecked="SelectionCheckBox_Changed"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <!-- Application Name Column -->
                         <DataGridTemplateColumn Width="*" MinWidth="200">
                             <DataGridTemplateColumn.Header>
@@ -291,7 +352,7 @@
         </materialDesign:Card>
 
         <!-- Error Message -->
-        <TextBlock Grid.Row="2"
+        <TextBlock Grid.Row="3"
                    Text="{Binding ErrorMessage}"
                    Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
                    Style="{StaticResource MaterialDesignBody1TextBlock}"

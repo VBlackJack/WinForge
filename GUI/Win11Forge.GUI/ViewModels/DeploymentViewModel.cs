@@ -448,6 +448,7 @@ public partial class DeploymentViewModel : ViewModelBase
             var result = await _powerShellBridge.InstallApplicationAsync(
                 app,
                 IsDryRun,
+                forceUpdate: false,
                 progress => UpdateOnUI(() => app.StatusMessage = progress));
 
             UpdateOnUI(() =>

@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+using System.Windows;
 using System.Windows.Controls;
+using Win11Forge.GUI.ViewModels;
 
 namespace Win11Forge.GUI.Views;
 
@@ -26,5 +28,16 @@ public partial class AppsView : UserControl
     public AppsView()
     {
         InitializeComponent();
+    }
+
+    /// <summary>
+    /// Handles checkbox state changes to update selected count.
+    /// </summary>
+    private void SelectionCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is AppsViewModel viewModel)
+        {
+            viewModel.UpdateSelectedCount();
+        }
     }
 }

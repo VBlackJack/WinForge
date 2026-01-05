@@ -90,6 +90,20 @@ public partial class AppsViewModel : ViewModelBase
     private int _installedCount;
 
     /// <summary>
+    /// Number of selected applications for batch installation.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(InstallSelectedCommand))]
+    private int _selectedCount;
+
+    /// <summary>
+    /// Whether a batch installation is in progress.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(InstallSelectedCommand))]
+    private bool _isInstalling;
+
+    /// <summary>
     /// Initializes a new instance of AppsViewModel.
     /// </summary>
     public AppsViewModel(IPowerShellBridge powerShellBridge)
@@ -180,6 +194,17 @@ public partial class AppsViewModel : ViewModelBase
         var filteredList = filtered.ToList();
         FilteredApplications = new ObservableCollection<ApplicationModel>(filteredList);
         FilteredCount = filteredList.Count;
+
+        // Update selected count
+        UpdateSelectedCount();
+    }
+
+    /// <summary>
+    /// Updates the count of selected applications.
+    /// </summary>
+    public void UpdateSelectedCount()
+    {
+        SelectedCount = _allApplications.Count(a => a.IsSelected);
     }
 
     /// <summary>
@@ -301,6 +326,7 @@ public partial class AppsViewModel : ViewModelBase
             var result = await _powerShellBridge.InstallApplicationAsync(
                 app,
                 isDryRun: false,
+                forceUpdate: false,
                 progress => app.StatusMessage = progress);
 
             app.LogOutput = result.Logs;
@@ -345,5 +371,106 @@ public partial class AppsViewModel : ViewModelBase
     private void CancelScan()
     {
         _scanCancellationTokenSource?.Cancel();
+    }
+
+    /// <summary>
+    /// Whether the InstallSelected command can execute.
+    /// </summary>
+    private bool CanInstallSelected => SelectedCount > 0 && !IsInstalling;
+
+    /// <summary>
+    /// Installs all selected applications with ForceUpdate enabled.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanInstallSelected))]
+    private async Task InstallSelectedAsync()
+    {
+        var selectedApps = _allApplications.Where(a => a.IsSelected).ToList();
+        if (selectedApps.Count == 0) return;
+
+        IsInstalling = true;
+
+        try
+        {
+            foreach (var app in selectedApps)
+            {
+                await _installSemaphore.WaitAsync();
+
+                try
+                {
+                    app.Status = ApplicationStatus.Installing;
+                    app.StatusMessage = Resources.Resources.Status_Installing;
+
+                    // Use forceUpdate: true to allow upgrades for already installed apps
+                    var result = await _powerShellBridge.InstallApplicationAsync(
+                        app,
+                        isDryRun: false,
+                        forceUpdate: true,
+                        progress => app.StatusMessage = progress);
+
+                    app.LogOutput = result.Logs;
+
+                    if (result.Success)
+                    {
+                        app.Status = result.AlreadyInstalled
+                            ? ApplicationStatus.AlreadyInstalled
+                            : ApplicationStatus.Installed;
+                        app.StatusMessage = result.AlreadyInstalled
+                            ? Resources.Resources.Status_AlreadyInstalled
+                            : Resources.Resources.Status_Installed;
+
+                        if (!result.AlreadyInstalled)
+                        {
+                            InstalledCount++;
+                        }
+                    }
+                    else
+                    {
+                        app.Status = ApplicationStatus.Failed;
+                        app.StatusMessage = Resources.Resources.Status_Failed;
+                        app.ErrorMessage = result.Message;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    app.Status = ApplicationStatus.Failed;
+                    app.StatusMessage = Resources.Resources.Status_Failed;
+                    app.ErrorMessage = ex.Message;
+                }
+                finally
+                {
+                    _installSemaphore.Release();
+                }
+            }
+        }
+        finally
+        {
+            IsInstalling = false;
+        }
+    }
+
+    /// <summary>
+    /// Selects all visible (filtered) applications.
+    /// </summary>
+    [RelayCommand]
+    private void SelectAll()
+    {
+        foreach (var app in FilteredApplications)
+        {
+            app.IsSelected = true;
+        }
+        UpdateSelectedCount();
+    }
+
+    /// <summary>
+    /// Deselects all applications.
+    /// </summary>
+    [RelayCommand]
+    private void SelectNone()
+    {
+        foreach (var app in _allApplications)
+        {
+            app.IsSelected = false;
+        }
+        UpdateSelectedCount();
     }
 }

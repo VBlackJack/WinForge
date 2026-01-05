@@ -53,11 +53,13 @@ public interface IPowerShellBridge
     /// </summary>
     /// <param name="app">Application model to install</param>
     /// <param name="isDryRun">If true, simulates installation without making changes</param>
+    /// <param name="forceUpdate">If true, attempts to upgrade already installed apps</param>
     /// <param name="progressCallback">Optional callback for progress updates</param>
     /// <returns>Installation result</returns>
     Task<InstallResult> InstallApplicationAsync(
         ApplicationModel app,
         bool isDryRun,
+        bool forceUpdate = false,
         Action<string>? progressCallback = null);
 
     /// <summary>

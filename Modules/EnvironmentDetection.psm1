@@ -228,6 +228,63 @@ function Test-IsVirtualMachine {
     return $envType -ne [EnvironmentType]::Physical
 }
 
+function Test-IsWindowsSandbox {
+    <#
+    .SYNOPSIS
+        Checks if running inside Windows Sandbox environment.
+
+    .DESCRIPTION
+        Uses multiple detection methods to identify Windows Sandbox:
+        - Check for WDAGUtilityAccount user (Sandbox uses this account)
+        - Check for specific Sandbox registry keys
+        - Check computer name pattern
+
+        This is critical for Store/Winget msstore installations which crash in Sandbox.
+
+    .OUTPUTS
+        [bool] True if running in Windows Sandbox
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    # Method 1: Check for WDAGUtilityAccount (Sandbox-specific user)
+    if ($env:USERNAME -eq 'WDAGUtilityAccount') {
+        Write-Verbose "Windows Sandbox detected via WDAGUtilityAccount user"
+        return $true
+    }
+
+    # Method 2: Check computer name pattern (Sandbox uses SANDBOX- prefix)
+    if ($env:COMPUTERNAME -match '^SANDBOX-') {
+        Write-Verbose "Windows Sandbox detected via computer name: $($env:COMPUTERNAME)"
+        return $true
+    }
+
+    # Method 3: Check for Sandbox-specific registry key
+    try {
+        $sandboxKey = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'InstallationType' -ErrorAction SilentlyContinue
+        if ($sandboxKey.InstallationType -eq 'WindowsSandbox') {
+            Write-Verbose "Windows Sandbox detected via registry InstallationType"
+            return $true
+        }
+    } catch {
+        Write-Verbose "Could not check Sandbox registry key"
+    }
+
+    # Method 4: Check for container environment
+    try {
+        $containerKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\ContainerManager' -ErrorAction SilentlyContinue
+        if ($containerKey) {
+            Write-Verbose "Windows Sandbox detected via container manager"
+            return $true
+        }
+    } catch {
+        Write-Verbose "Could not check container manager"
+    }
+
+    return $false
+}
+
 function Get-EnvironmentCapabilities {
     <#
     .SYNOPSIS
@@ -394,6 +451,7 @@ Export-ModuleMember -Function @(
     'Get-SystemEnvironmentType',
     'Test-WindowsSandbox',
     'Test-IsVirtualMachine',
+    'Test-IsWindowsSandbox',
     'Get-EnvironmentCapabilities',
     'Test-ApplicationCompatibleWithEnvironment',
     'Get-EnvironmentReport'

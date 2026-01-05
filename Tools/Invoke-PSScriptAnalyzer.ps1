@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    PSScriptAnalyzer validation for Win11Forge v2.6.0
+    PSScriptAnalyzer validation for Win11Forge v3.0.0
 
 .DESCRIPTION
     Analyzes all PowerShell scripts and modules for code quality issues
@@ -29,7 +29,7 @@
 
 .NOTES
     Author: Win11Forge Team
-    Version: 2.6.0
+    Version: 3.0.0
     Requires: PSScriptAnalyzer
 #>
 
@@ -48,7 +48,7 @@ $ErrorActionPreference = 'Stop'
 
 # === PREREQUISITES CHECK ===
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  Win11Forge v2.6.0 - PSScriptAnalyzer" -ForegroundColor Cyan
+Write-Host "  Win11Forge v3.0.0 - PSScriptAnalyzer" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 
@@ -279,7 +279,7 @@ if ($Report) {
 <html>
 <head>
     <meta charset="utf-8">
-    <title>PSScriptAnalyzer Report - Win11Forge v2.6.0</title>
+    <title>PSScriptAnalyzer Report - Win11Forge v3.0.0</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f5f5f5; }
         h1 { color: #0078d4; }
@@ -298,7 +298,7 @@ if ($Report) {
 </head>
 <body>
     <h1>PSScriptAnalyzer Report</h1>
-    <p><strong>Win11Forge Framework v2.6.0</strong></p>
+    <p><strong>Win11Forge Framework v3.0.0</strong></p>
     <p>Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')</p>
 
     <div class="summary">

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge GUI Module v2.6.0
+    Win11Forge GUI Module v3.0.0
 
 .DESCRIPTION
     PowerShell graphical interface for Win11Forge deployment framework
@@ -9,7 +9,7 @@
 .NOTES
     Author: Julien Bombled
     Version: 3.0.0
-    Requires: PowerShell 5.1+, Win11Forge v2.6.0+
+    Requires: PowerShell 5.1+, Win11Forge v3.0.0+
 #>
 
 Set-StrictMode -Version Latest
@@ -29,8 +29,8 @@ $script:FrameworkVersion = try {
     if (Test-Path $versionPath) {
         $versionData = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
         $versionData.Version
-    } else { '2.6.0' }
-} catch { '2.6.0' }
+    } else { '3.0.0' }
+} catch { '3.0.0' }
 
 # ============================================================================
 # INITIALIZATION

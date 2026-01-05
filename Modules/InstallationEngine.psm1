@@ -33,7 +33,7 @@
     - QUALITY: Added comprehensive Pester test suite (145+ tests, ~50% coverage)
     - QUALITY: Added PSScriptAnalyzer integration with custom ruleset
     - MAINTAINABILITY: Identified long functions for v3.0.0 refactoring
-    - USER AGENT: Updated to Win11Forge/2.6.0
+    - USER AGENT: Updated to Win11Forge/3.0.0
 
     Changelog v2.4.0 (Security & Performance Update):
     - SECURITY: Replaced Invoke-Expression with secure Start-Process (eliminates command injection vulnerability)
@@ -59,10 +59,18 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
+$script:EnvironmentDetectionPath = Join-Path $script:ModuleRoot 'EnvironmentDetection.psm1'
 
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
+    }
+}
+
+# Import EnvironmentDetection for sandbox detection
+if (-not (Get-Command -Name Test-IsWindowsSandbox -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:EnvironmentDetectionPath) {
+        Import-Module -Name $script:EnvironmentDetectionPath -Force
     }
 }
 
@@ -616,7 +624,7 @@ function Invoke-FileDownloadWithProgress {
 
     try {
         $webClient = New-Object System.Net.WebClient
-        $webClient.Headers.Add("User-Agent", "Win11Forge/2.6.0")
+        $webClient.Headers.Add("User-Agent", "Win11Forge/3.0.0")
 
         # Set timeout
         $webClient.Timeout = $TimeoutSeconds * 1000
@@ -1075,6 +1083,12 @@ function Install-ViaStore {
         [Parameter(Mandatory)]
         [string]$ProductId
     )
+
+    # Check for Windows Sandbox - Store is unavailable
+    if (Test-IsWindowsSandbox) {
+        Write-Status -Message "Skipping Store install for $ProductId - Windows Store is unavailable in Sandbox" -Level 'Warning'
+        return $false
+    }
 
     try {
         Write-Status -Message "Installing via Microsoft Store: $ProductId" -Level 'Info'
@@ -1626,6 +1640,110 @@ function Invoke-InstallationMethodSequence {
     return $result
 }
 
+# === APPLICATION UPGRADE ===
+
+function Invoke-ApplicationUpgrade {
+    <#
+    .SYNOPSIS
+        Attempts to upgrade an already installed application.
+
+    .DESCRIPTION
+        Tries to upgrade using Winget or Chocolatey upgrade commands.
+        Handles exit codes gracefully - "no update available" is not an error.
+
+    .PARAMETER Application
+        The application object containing installation sources.
+
+    .OUTPUTS
+        [hashtable] Upgrade result with Success, Method, Message properties.
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject]$Application
+    )
+
+    $result = @{
+        ApplicationName = $Application.Name
+        Success = $false
+        AlreadyInstalled = $true
+        Method = $null
+        Message = ''
+    }
+
+    # Get application sources
+    $sources = Get-ApplicationSources -Application $Application
+
+    # Try Winget upgrade first
+    if ($sources.Winget -and (Test-CommandExists -Name 'winget')) {
+        try {
+            Write-Status -Message "Attempting Winget upgrade: $($sources.Winget)" -Level 'Info'
+
+            $arguments = @(
+                'upgrade',
+                '--id', $sources.Winget,
+                '--accept-package-agreements',
+                '--accept-source-agreements',
+                '--silent'
+            )
+
+            $process = Start-ProcessWithTimeout -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+
+            # Winget exit codes:
+            # 0 = Success
+            # -1978335189 = No applicable update found (APPINSTALLER_CLI_ERROR_UPDATE_NOT_APPLICABLE)
+            # Other non-zero = Error
+            if ($process.ExitCode -eq 0) {
+                Write-Status -Message "Successfully upgraded: $($Application.Name)" -Level 'Success'
+                $result.Success = $true
+                $result.Method = 'Winget'
+                $result.Message = 'Upgraded successfully'
+                return $result
+            } elseif ($process.ExitCode -eq -1978335189) {
+                Write-Status -Message "No update available via Winget for: $($Application.Name)" -Level 'Verbose'
+                # Not an error, just no update available
+            } else {
+                Write-Status -Message "Winget upgrade returned exit code: $($process.ExitCode)" -Level 'Verbose'
+            }
+        } catch {
+            Write-Status -Message "Winget upgrade error: $($_.Exception.Message)" -Level 'Verbose'
+        }
+    }
+
+    # Try Chocolatey upgrade
+    if ($sources.Chocolatey -and (Test-CommandExists -Name 'choco')) {
+        try {
+            Write-Status -Message "Attempting Chocolatey upgrade: $($sources.Chocolatey)" -Level 'Info'
+
+            $arguments = @(
+                'upgrade',
+                $sources.Chocolatey,
+                '-y',
+                '--no-progress'
+            )
+
+            $process = Start-ProcessWithTimeout -FilePath 'choco' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+
+            if ($process.ExitCode -eq 0) {
+                Write-Status -Message "Successfully upgraded via Chocolatey: $($Application.Name)" -Level 'Success'
+                $result.Success = $true
+                $result.Method = 'Chocolatey'
+                $result.Message = 'Upgraded successfully'
+                return $result
+            } else {
+                Write-Status -Message "Chocolatey upgrade returned exit code: $($process.ExitCode)" -Level 'Verbose'
+            }
+        } catch {
+            Write-Status -Message "Chocolatey upgrade error: $($_.Exception.Message)" -Level 'Verbose'
+        }
+    }
+
+    # No upgrade method succeeded or available
+    $result.Message = 'No update available or upgrade not supported'
+    return $result
+}
+
 # === SEQUENTIAL INSTALLATION ===
 
 function Install-Application {
@@ -1636,7 +1754,7 @@ function Install-Application {
     .DESCRIPTION
         Orchestrates application installation by:
         1. Checking environment restrictions
-        2. Verifying if already installed
+        2. Verifying if already installed (skip or upgrade based on ForceUpdate)
         3. Using custom install methods (WindowsFeature/Capability) if specified
         4. Trying standard methods in sequence (Winget -> Chocolatey -> Store -> DirectDownload)
 
@@ -1645,6 +1763,9 @@ function Install-Application {
 
     .PARAMETER Force
         Force installation even if already detected.
+
+    .PARAMETER ForceUpdate
+        If the app is already installed, attempt to upgrade it instead of skipping.
 
     .OUTPUTS
         [hashtable] Installation result with Success, Method, Message properties.
@@ -1656,7 +1777,10 @@ function Install-Application {
         [PSCustomObject]$Application,
 
         [Parameter()]
-        [switch]$Force
+        [switch]$Force,
+
+        [Parameter()]
+        [switch]$ForceUpdate
     )
 
     $result = @{
@@ -1676,7 +1800,23 @@ function Install-Application {
 
     # 2. Check if already installed
     if (-not $Force) {
-        if (Test-ApplicationInstalled -Application $Application) {
+        $isInstalled = Test-ApplicationInstalled -Application $Application
+        if ($isInstalled) {
+            # If ForceUpdate is specified, try to upgrade instead of skipping
+            if ($ForceUpdate) {
+                Write-Status -Message "Checking for updates: $($Application.Name)" -Level 'Info'
+                $upgradeResult = Invoke-ApplicationUpgrade -Application $Application
+                if ($upgradeResult.Success) {
+                    return $upgradeResult
+                }
+                # If upgrade failed (no update available or error), still return success since app is installed
+                Write-Status -Message "No update available or upgrade not supported for: $($Application.Name)" -Level 'Info'
+                $result.AlreadyInstalled = $true
+                $result.Success = $true
+                $result.Message = 'Already installed (no update available)'
+                return $result
+            }
+
             Write-Status -Message "Already installed: $($Application.Name)" -Level 'Success'
             $result.AlreadyInstalled = $true
             $result.Success = $true
@@ -2159,7 +2299,7 @@ function Test-AppInstalledParallel {
                     # Use streaming download for memory efficiency (inline version for parallel scope)
                     $webClient = New-Object System.Net.WebClient
                     try {
-                        $webClient.Headers.Add("User-Agent", "Win11Forge/2.6.0")
+                        $webClient.Headers.Add("User-Agent", "Win11Forge/3.0.0")
                         $downloadTask = $webClient.DownloadFileTaskAsync($sources.DirectUrl, $tempFile)
                         $downloadTask.Wait()
                         if (-not (Test-Path -Path $tempFile)) {
@@ -2347,6 +2487,7 @@ Export-ModuleMember -Function @(
     # Orchestration helpers
     'Invoke-CustomInstallMethod',
     'Invoke-InstallationMethodSequence',
+    'Invoke-ApplicationUpgrade',
     # Main installation functions
     'Install-Application',
     'Install-ApplicationsParallel'

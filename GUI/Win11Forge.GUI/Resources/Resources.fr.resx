@@ -413,6 +413,18 @@
   <data name="Apps_Installed" xml:space="preserve">
     <value>installe(s)</value>
   </data>
+  <data name="Apps_Selected" xml:space="preserve">
+    <value>selectionne(s)</value>
+  </data>
+  <data name="Apps_InstallSelected" xml:space="preserve">
+    <value>Installer la selection</value>
+  </data>
+  <data name="Apps_SelectAll" xml:space="preserve">
+    <value>Tout selectionner</value>
+  </data>
+  <data name="Apps_SelectNone" xml:space="preserve">
+    <value>Effacer la selection</value>
+  </data>
   <!-- Error Messages -->
   <data name="Common_ErrorFallback" xml:space="preserve">
     <value>Erreur</value>

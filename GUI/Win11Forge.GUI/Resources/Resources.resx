@@ -527,6 +527,22 @@
     <value>installed</value>
     <comment>Installed count suffix</comment>
   </data>
+  <data name="Apps_Selected" xml:space="preserve">
+    <value>selected</value>
+    <comment>Selected count suffix</comment>
+  </data>
+  <data name="Apps_InstallSelected" xml:space="preserve">
+    <value>Install Selected</value>
+    <comment>Button to install selected apps</comment>
+  </data>
+  <data name="Apps_SelectAll" xml:space="preserve">
+    <value>Select All</value>
+    <comment>Button to select all visible apps</comment>
+  </data>
+  <data name="Apps_SelectNone" xml:space="preserve">
+    <value>Clear Selection</value>
+    <comment>Button to clear all selections</comment>
+  </data>
   <!-- Error Messages -->
   <data name="Common_ErrorFallback" xml:space="preserve">
     <value>Error</value>

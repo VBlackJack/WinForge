@@ -384,6 +384,7 @@ public class PowerShellBridge : IPowerShellBridge
     public async Task<InstallResult> InstallApplicationAsync(
         ApplicationModel app,
         bool isDryRun,
+        bool forceUpdate = false,
         Action<string>? progressCallback = null)
     {
         // Handle dry run mode
@@ -407,6 +408,9 @@ public class PowerShellBridge : IPowerShellBridge
             {
                 progressCallback?.Invoke($"Preparing to install {app.Name}...");
 
+                // Build the ForceUpdate switch if needed
+                var forceUpdateSwitch = forceUpdate ? " -ForceUpdate" : "";
+
                 // Build a PowerShell script that outputs JSON result
                 var script = $@"
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
@@ -423,7 +427,7 @@ try {{
         exit
     }}
 
-    $result = Install-Application -Application $app
+    $result = Install-Application -Application $app{forceUpdateSwitch}
     $result | ConvertTo-Json -Compress
 }} catch {{
     @{{ Success = $false; Message = $_.Exception.Message; Method = ''; AlreadyInstalled = $false }} | ConvertTo-Json -Compress
