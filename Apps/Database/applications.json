@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft-07/schema#",
   "DatabaseVersion": "3.0.0",
   "LastUpdated": "2025-10-06",
-  "TotalApplications": 66,
+  "TotalApplications": 67,
   "PriorityRanges": {
     "Description": "Priority ranges for application installation order",
     "Ranges": {
@@ -1155,6 +1155,34 @@
       "LastVerified": "2025-10-03",
       "Verified": true,
       "Homepage": "https://git-scm.com/"
+    },
+    "WSL2": {
+      "Name": "Windows Subsystem for Linux",
+      "Category": "Development",
+      "Description": "Run Linux distributions on Windows",
+      "Sources": {
+        "Winget": "Microsoft.WSL",
+        "Chocolatey": "wsl2",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Command",
+        "Command": "wsl --status"
+      },
+      "DefaultPriority": 44,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": ["!Sandbox"],
+      "Tags": [
+        "development",
+        "linux",
+        "virtualization",
+        "microsoft"
+      ],
+      "LastVerified": "2026-01-05",
+      "Verified": true,
+      "Notes": "Requires Windows 10 version 2004+ or Windows 11. May require system restart.",
+      "Homepage": "https://learn.microsoft.com/en-us/windows/wsl/"
     },
     "PuTTY": {
       "Name": "PuTTY",
