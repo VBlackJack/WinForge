@@ -15,6 +15,22 @@
     This module must be loaded before any other framework modules
 #>
 
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 Set-StrictMode -Version Latest
 
 # === MODULE VARIABLES ===
@@ -285,8 +301,8 @@ function Assert-Administrator {
     param()
 
     if (-not (Test-Administrator)) {
-        Write-Status -Message 'ERROR: Administrator privileges required' -Level 'Error'
-        Write-Status -Message 'Please run this script as Administrator' -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'core.admin_required') -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'core.admin_run_as') -Level 'Error'
         throw 'Administrator privileges required'
     }
 }
@@ -299,15 +315,15 @@ function Assert-InternetConnection {
     [CmdletBinding()]
     param()
 
-    Write-Status -Message 'Checking internet connectivity...' -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'core.internet_checking') -Level 'Info'
 
     if (-not (Test-InternetConnection)) {
-        Write-Status -Message 'ERROR: No internet connection detected' -Level 'Error'
-        Write-Status -Message 'Please ensure you have an active internet connection' -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'core.internet_no_connection') -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'core.internet_ensure_connection') -Level 'Error'
         throw 'Internet connection required'
     }
 
-    Write-Status -Message 'Internet connection verified' -Level 'Success'
+    Write-Status -Message (Get-LocalizedString -Key 'core.internet_verified') -Level 'Success'
 }
 
 # === UTILITY FUNCTIONS ===
@@ -590,6 +606,13 @@ function Clear-TemporaryFiles {
     catch {
         Write-Status -Message "Error cleaning temporary files: $($_.Exception.Message)" -Level 'Verbose'
     }
+}
+
+# === LOCALIZATION INTEGRATION ===
+
+$script:LocalizationModulePath = Join-Path -Path $PSScriptRoot -ChildPath 'Localization.psm1'
+if (Test-Path -Path $script:LocalizationModulePath) {
+    Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
 }
 
 # === MODULE EXPORTS ===

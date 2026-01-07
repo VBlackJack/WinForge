@@ -59,6 +59,26 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# === LOCALIZATION ===
+
+$script:FrameworkRoot = $PSScriptRoot
+
+# Import Localization module
+$localizationModule = Join-Path $script:FrameworkRoot 'Core\Localization.psm1'
+if (Test-Path $localizationModule) {
+    Import-Module $localizationModule -Force
+    Initialize-Localization
+}
+
+# Helper function for localization (fallback if module not loaded)
+function Get-Text {
+    param([string]$Key, [hashtable]$Parameters = @{}, [string]$Default = $Key)
+    if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
+        return Get-LocalizedString -Key $Key -Parameters $Parameters -DefaultValue $Default
+    }
+    return $Default
+}
+
 # === HELPER FUNCTIONS ===
 
 function Write-CleanupStatus {
@@ -95,7 +115,6 @@ function Format-FileSize {
 
 # === INITIALIZATION ===
 
-$script:FrameworkRoot = $PSScriptRoot
 $script:Stats = @{
     FilesDeleted = 0
     SpaceFreed = 0
@@ -106,18 +125,18 @@ $versionInfo = & "$PSScriptRoot\Tools\Get-Win11ForgeVersion.ps1"
 $version = $versionInfo.Version
 
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║      Win11Forge Framework Cleanup & Maintenance v$version     ║" -ForegroundColor Cyan
-Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "======================================================================" -ForegroundColor Cyan
+Write-Host "  $(Get-Text -Key 'cleanup.banner_title' -Parameters @{ Version = $version } -Default "Win11Forge Framework Cleanup & Maintenance v$version")" -ForegroundColor Cyan
+Write-Host "======================================================================" -ForegroundColor Cyan
 Write-Host ""
 
-Write-CleanupStatus "Framework path: $script:FrameworkRoot" -Level Info
+Write-CleanupStatus (Get-Text -Key 'cleanup.framework_path' -Parameters @{ Path = $script:FrameworkRoot } -Default "Framework path: $script:FrameworkRoot") -Level Info
 Write-Host ""
 
 # === LOG CLEANUP ===
 
 if ($CleanLogs) {
-    Write-CleanupStatus "Cleaning log files older than $DaysToKeep days..." -Level Info
+    Write-CleanupStatus (Get-Text -Key 'cleanup.cleaning_logs' -Parameters @{ Days = $DaysToKeep } -Default "Cleaning log files older than $DaysToKeep days...") -Level Info
 
     $logsPath = Join-Path $script:FrameworkRoot 'Logs'
 
@@ -129,28 +148,28 @@ if ($CleanLogs) {
         if ($oldLogs.Count -gt 0) {
             $totalSize = ($oldLogs | Measure-Object -Property Length -Sum).Sum
 
-            Write-CleanupStatus "Found $($oldLogs.Count) old log files ($(Format-FileSize $totalSize))" -Level Info
+            Write-CleanupStatus (Get-Text -Key 'cleanup.found_old_logs' -Parameters @{ Count = $oldLogs.Count; Size = (Format-FileSize $totalSize) } -Default "Found $($oldLogs.Count) old log files ($(Format-FileSize $totalSize))") -Level Info
 
-            $confirm = Read-Host "Delete these files? (Y/N)"
+            $confirm = Read-Host (Get-Text -Key 'cleanup.delete_prompt' -Default 'Delete these files? (Y/N)')
             if ($confirm -match '^[Yy]') {
                 foreach ($log in $oldLogs) {
                     try {
                         Remove-Item -Path $log.FullName -Force
                         $script:Stats.FilesDeleted++
                         $script:Stats.SpaceFreed += $log.Length
-                        Write-CleanupStatus "Deleted: $($log.Name)" -Level Success
+                        Write-CleanupStatus (Get-Text -Key 'cleanup.deleted_file' -Parameters @{ Name = $log.Name } -Default "Deleted: $($log.Name)") -Level Success
                     } catch {
-                        Write-CleanupStatus "Failed to delete: $($log.Name)" -Level Warning
+                        Write-CleanupStatus (Get-Text -Key 'cleanup.delete_failed' -Parameters @{ Name = $log.Name } -Default "Failed to delete: $($log.Name)") -Level Warning
                     }
                 }
             } else {
-                Write-CleanupStatus "Log cleanup cancelled" -Level Info
+                Write-CleanupStatus (Get-Text -Key 'cleanup.cleanup_cancelled' -Default 'Log cleanup cancelled') -Level Info
             }
         } else {
-            Write-CleanupStatus "No old log files found" -Level Info
+            Write-CleanupStatus (Get-Text -Key 'cleanup.no_old_logs' -Default 'No old log files found') -Level Info
         }
     } else {
-        Write-CleanupStatus "Logs directory not found" -Level Warning
+        Write-CleanupStatus (Get-Text -Key 'cleanup.logs_dir_not_found' -Default 'Logs directory not found') -Level Warning
     }
 
     Write-Host ""
@@ -159,7 +178,7 @@ if ($CleanLogs) {
 # === TEMP FILE CLEANUP ===
 
 if ($CleanTemp) {
-    Write-CleanupStatus "Cleaning temporary files..." -Level Info
+    Write-CleanupStatus (Get-Text -Key 'cleanup.cleaning_temp' -Default 'Cleaning temporary files...') -Level Info
 
     $tempPaths = @(
         $env:TEMP,
@@ -174,7 +193,7 @@ if ($CleanTemp) {
         $frameworkTemp = Get-ChildItem -Path $tempPath -Filter 'Win11Forge_*' -ErrorAction SilentlyContinue
 
         if ($frameworkTemp.Count -gt 0) {
-            Write-CleanupStatus "Found $($frameworkTemp.Count) Win11Forge temp items in $tempPath" -Level Info
+            Write-CleanupStatus (Get-Text -Key 'cleanup.found_temp_items' -Parameters @{ Count = $frameworkTemp.Count; Path = $tempPath } -Default "Found $($frameworkTemp.Count) Win11Forge temp items in $tempPath") -Level Info
 
             foreach ($item in $frameworkTemp) {
                 try {
@@ -184,9 +203,9 @@ if ($CleanTemp) {
                         Remove-Item -Path $item.FullName -Force
                     }
                     $script:Stats.FilesDeleted++
-                    Write-CleanupStatus "Deleted: $($item.Name)" -Level Success
+                    Write-CleanupStatus (Get-Text -Key 'cleanup.deleted_file' -Parameters @{ Name = $item.Name } -Default "Deleted: $($item.Name)") -Level Success
                 } catch {
-                    Write-CleanupStatus "Failed to delete: $($item.Name)" -Level Warning
+                    Write-CleanupStatus (Get-Text -Key 'cleanup.delete_failed' -Parameters @{ Name = $item.Name } -Default "Failed to delete: $($item.Name)") -Level Warning
                 }
             }
         }
@@ -197,16 +216,16 @@ if ($CleanTemp) {
         $chocoCache = Get-ChildItem -Path 'C:\ProgramData\chocolatey\cache' -ErrorAction SilentlyContinue
         if ($chocoCache.Count -gt 0) {
             $cacheSize = ($chocoCache | Measure-Object -Property Length -Sum).Sum
-            Write-CleanupStatus "Chocolatey cache: $($chocoCache.Count) files ($(Format-FileSize $cacheSize))" -Level Info
+            Write-CleanupStatus (Get-Text -Key 'cleanup.choco_cache_info' -Parameters @{ Count = $chocoCache.Count; Size = (Format-FileSize $cacheSize) } -Default "Chocolatey cache: $($chocoCache.Count) files ($(Format-FileSize $cacheSize))") -Level Info
 
-            $confirm = Read-Host "Clear Chocolatey cache? (Y/N)"
+            $confirm = Read-Host (Get-Text -Key 'cleanup.clear_choco_prompt' -Default 'Clear Chocolatey cache? (Y/N)')
             if ($confirm -match '^[Yy]') {
                 try {
                     Remove-Item -Path 'C:\ProgramData\chocolatey\cache\*' -Force -Recurse
                     $script:Stats.SpaceFreed += $cacheSize
-                    Write-CleanupStatus "Chocolatey cache cleared" -Level Success
+                    Write-CleanupStatus (Get-Text -Key 'cleanup.choco_cleared' -Default 'Chocolatey cache cleared') -Level Success
                 } catch {
-                    Write-CleanupStatus "Failed to clear Chocolatey cache" -Level Warning
+                    Write-CleanupStatus (Get-Text -Key 'cleanup.choco_clear_failed' -Default 'Failed to clear Chocolatey cache') -Level Warning
                 }
             }
         }
@@ -218,15 +237,15 @@ if ($CleanTemp) {
 # === CONFIGURATION RESET ===
 
 if ($ResetConfig) {
-    Write-CleanupStatus "Resetting framework configuration..." -Level Warning
+    Write-CleanupStatus (Get-Text -Key 'cleanup.resetting_config' -Default 'Resetting framework configuration...') -Level Warning
     Write-Host ""
-    Write-Host "This will:" -ForegroundColor Yellow
-    Write-Host "  • Backup current profiles to Profiles/Backup_TIMESTAMP"
-    Write-Host "  • Reset to default Base profile"
-    Write-Host "  • Keep all installed applications"
+    Write-Host (Get-Text -Key 'cleanup.reset_will' -Default 'This will:') -ForegroundColor Yellow
+    Write-Host "  $(Get-Text -Key 'cleanup.reset_backup' -Default 'Backup current profiles to Profiles/Backup_TIMESTAMP')"
+    Write-Host "  $(Get-Text -Key 'cleanup.reset_default' -Default 'Reset to default Base profile')"
+    Write-Host "  $(Get-Text -Key 'cleanup.reset_keep_apps' -Default 'Keep all installed applications')"
     Write-Host ""
 
-    $confirm = Read-Host "Continue with configuration reset? (Y/N)"
+    $confirm = Read-Host (Get-Text -Key 'cleanup.reset_confirm' -Default 'Continue with configuration reset? (Y/N)')
 
     if ($confirm -match '^[Yy]') {
         $profilesPath = Join-Path $script:FrameworkRoot 'Profiles'
@@ -238,16 +257,16 @@ if ($ResetConfig) {
             try {
                 New-Item -ItemType Directory -Path $backupPath -Force | Out-Null
                 Copy-Item -Path "$profilesPath\*.json" -Destination $backupPath -Force
-                Write-CleanupStatus "Configuration backed up to: $backupPath" -Level Success
+                Write-CleanupStatus (Get-Text -Key 'cleanup.config_backed_up' -Parameters @{ Path = $backupPath } -Default "Configuration backed up to: $backupPath") -Level Success
             } catch {
-                Write-CleanupStatus "Failed to backup configuration" -Level Error
+                Write-CleanupStatus (Get-Text -Key 'cleanup.backup_failed' -Default 'Failed to backup configuration') -Level Error
                 return
             }
         }
 
-        Write-CleanupStatus "Configuration reset complete" -Level Success
+        Write-CleanupStatus (Get-Text -Key 'cleanup.reset_complete' -Default 'Configuration reset complete') -Level Success
     } else {
-        Write-CleanupStatus "Configuration reset cancelled" -Level Info
+        Write-CleanupStatus (Get-Text -Key 'cleanup.reset_cancelled' -Default 'Configuration reset cancelled') -Level Info
     }
 
     Write-Host ""
@@ -257,48 +276,48 @@ if ($ResetConfig) {
 
 if ($Uninstall) {
     Write-Host ""
-    Write-CleanupStatus "UNINSTALL FRAMEWORK" -Level Error
+    Write-CleanupStatus (Get-Text -Key 'cleanup.uninstall_title' -Default 'UNINSTALL FRAMEWORK') -Level Error
     Write-Host ""
-    Write-Host "⚠️  WARNING: This will completely remove Win11Forge!" -ForegroundColor Red
+    Write-Host (Get-Text -Key 'cleanup.uninstall_warning' -Default 'WARNING: This will completely remove Win11Forge!') -ForegroundColor Red
     Write-Host ""
-    Write-Host "This will:" -ForegroundColor Yellow
-    Write-Host "  • Delete all framework files and directories"
-    Write-Host "  • Remove all logs and temporary files"
-    Write-Host "  • Delete desktop shortcuts (if any)"
+    Write-Host (Get-Text -Key 'cleanup.uninstall_will' -Default 'This will:') -ForegroundColor Yellow
+    Write-Host "  $(Get-Text -Key 'cleanup.uninstall_delete_files' -Default 'Delete all framework files and directories')"
+    Write-Host "  $(Get-Text -Key 'cleanup.uninstall_delete_logs' -Default 'Remove all logs and temporary files')"
+    Write-Host "  $(Get-Text -Key 'cleanup.uninstall_delete_shortcuts' -Default 'Delete desktop shortcuts (if any)')"
     Write-Host ""
-    Write-Host "This will NOT:" -ForegroundColor Green
-    Write-Host "  • Uninstall applications that were installed"
-    Write-Host "  • Revert system configuration changes"
-    Write-Host "  • Remove Chocolatey or Winget"
+    Write-Host (Get-Text -Key 'cleanup.uninstall_will_not' -Default 'This will NOT:') -ForegroundColor Green
+    Write-Host "  $(Get-Text -Key 'cleanup.uninstall_keep_apps' -Default 'Uninstall applications that were installed')"
+    Write-Host "  $(Get-Text -Key 'cleanup.uninstall_keep_config' -Default 'Revert system configuration changes')"
+    Write-Host "  $(Get-Text -Key 'cleanup.uninstall_keep_choco' -Default 'Remove Chocolatey or Winget')"
     Write-Host ""
 
-    $confirm1 = Read-Host "Are you sure you want to uninstall? (yes/no)"
+    $confirm1 = Read-Host (Get-Text -Key 'cleanup.uninstall_confirm1' -Default 'Are you sure you want to uninstall? (yes/no)')
 
     if ($confirm1 -eq 'yes') {
-        $confirm2 = Read-Host "Type 'DELETE' to confirm uninstallation"
+        $confirm2 = Read-Host (Get-Text -Key 'cleanup.uninstall_confirm2' -Default "Type 'DELETE' to confirm uninstallation")
 
         if ($confirm2 -eq 'DELETE') {
-            Write-CleanupStatus "Starting uninstallation..." -Level Warning
+            Write-CleanupStatus (Get-Text -Key 'cleanup.uninstall_starting' -Default 'Starting uninstallation...') -Level Warning
 
             # Remove desktop shortcut
             $desktopShortcut = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Win11Forge.lnk'
             if (Test-Path -Path $desktopShortcut) {
                 Remove-Item -Path $desktopShortcut -Force
-                Write-CleanupStatus "Removed desktop shortcut" -Level Success
+                Write-CleanupStatus (Get-Text -Key 'cleanup.shortcut_removed' -Default 'Removed desktop shortcut') -Level Success
             }
 
             # Calculate total size
             $totalSize = (Get-ChildItem -Path $script:FrameworkRoot -Recurse -File |
                          Measure-Object -Property Length -Sum).Sum
 
-            Write-CleanupStatus "Framework size: $(Format-FileSize $totalSize)" -Level Info
+            Write-CleanupStatus (Get-Text -Key 'cleanup.framework_size' -Parameters @{ Size = (Format-FileSize $totalSize) } -Default "Framework size: $(Format-FileSize $totalSize)") -Level Info
             Write-Host ""
 
             # Final confirmation
-            Write-Host "Last chance to cancel! Press Ctrl+C to abort." -ForegroundColor Red
+            Write-Host (Get-Text -Key 'cleanup.last_chance' -Default 'Last chance to cancel! Press Ctrl+C to abort.') -ForegroundColor Red
             Start-Sleep -Seconds 5
 
-            Write-CleanupStatus "Removing framework directory..." -Level Warning
+            Write-CleanupStatus (Get-Text -Key 'cleanup.removing_framework' -Default 'Removing framework directory...') -Level Warning
 
             try {
                 # Move to parent directory
@@ -309,21 +328,21 @@ if ($Uninstall) {
                 Remove-Item -Path $script:FrameworkRoot -Recurse -Force
 
                 Write-Host ""
-                Write-CleanupStatus "Framework successfully uninstalled!" -Level Success
-                Write-CleanupStatus "Freed $(Format-FileSize $totalSize) of disk space" -Level Success
+                Write-CleanupStatus (Get-Text -Key 'cleanup.uninstall_success' -Default 'Framework successfully uninstalled!') -Level Success
+                Write-CleanupStatus (Get-Text -Key 'cleanup.space_freed' -Parameters @{ Size = (Format-FileSize $totalSize) } -Default "Freed $(Format-FileSize $totalSize) of disk space") -Level Success
                 Write-Host ""
-                Write-Host "Thank you for using Win11Forge!" -ForegroundColor Cyan
+                Write-Host (Get-Text -Key 'cleanup.thank_you' -Default 'Thank you for using Win11Forge!') -ForegroundColor Cyan
 
             } catch {
-                Write-CleanupStatus "Failed to uninstall: $($_.Exception.Message)" -Level Error
-                Write-CleanupStatus "You may need to manually delete: $script:FrameworkRoot" -Level Warning
+                Write-CleanupStatus (Get-Text -Key 'cleanup.uninstall_failed' -Parameters @{ Error = $_.Exception.Message } -Default "Failed to uninstall: $($_.Exception.Message)") -Level Error
+                Write-CleanupStatus (Get-Text -Key 'cleanup.manual_delete_hint' -Parameters @{ Path = $script:FrameworkRoot } -Default "You may need to manually delete: $script:FrameworkRoot") -Level Warning
             }
 
         } else {
-            Write-CleanupStatus "Uninstallation cancelled (confirmation mismatch)" -Level Info
+            Write-CleanupStatus (Get-Text -Key 'cleanup.uninstall_cancelled_mismatch' -Default 'Uninstallation cancelled (confirmation mismatch)') -Level Info
         }
     } else {
-        Write-CleanupStatus "Uninstallation cancelled" -Level Info
+        Write-CleanupStatus (Get-Text -Key 'cleanup.uninstall_cancelled' -Default 'Uninstallation cancelled') -Level Info
     }
 
     return
@@ -333,25 +352,25 @@ if ($Uninstall) {
 
 if ($CleanLogs -or $CleanTemp -or $ResetConfig) {
     Write-Host ""
-    Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "║              Cleanup Summary                                 ║" -ForegroundColor Green
-    Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Green
+    Write-Host "======================================================================" -ForegroundColor Green
+    Write-Host "  $(Get-Text -Key 'cleanup.summary_title' -Default 'Cleanup Summary')" -ForegroundColor Green
+    Write-Host "======================================================================" -ForegroundColor Green
     Write-Host ""
-    Write-Host "  Files deleted:  $($script:Stats.FilesDeleted)"
-    Write-Host "  Space freed:    $(Format-FileSize $script:Stats.SpaceFreed)"
+    Write-Host "  $(Get-Text -Key 'cleanup.files_deleted' -Default 'Files deleted:')  $($script:Stats.FilesDeleted)"
+    Write-Host "  $(Get-Text -Key 'cleanup.space_freed_label' -Default 'Space freed:')    $(Format-FileSize $script:Stats.SpaceFreed)"
     Write-Host ""
-    Write-CleanupStatus "Cleanup completed successfully!" -Level Success
+    Write-CleanupStatus (Get-Text -Key 'cleanup.cleanup_success' -Default 'Cleanup completed successfully!') -Level Success
 } else {
     Write-Host ""
-    Write-CleanupStatus "No cleanup operations specified" -Level Info
+    Write-CleanupStatus (Get-Text -Key 'cleanup.no_operations' -Default 'No cleanup operations specified') -Level Info
     Write-Host ""
-    Write-Host "Available options:" -ForegroundColor Cyan
-    Write-Host "  -CleanLogs       Remove old log files"
-    Write-Host "  -CleanTemp       Clean temporary files"
-    Write-Host "  -ResetConfig     Reset to default configuration"
-    Write-Host "  -Uninstall       Completely remove framework"
+    Write-Host (Get-Text -Key 'cleanup.available_options' -Default 'Available options:') -ForegroundColor Cyan
+    Write-Host "  $(Get-Text -Key 'cleanup.option_logs' -Default '-CleanLogs       Remove old log files')"
+    Write-Host "  $(Get-Text -Key 'cleanup.option_temp' -Default '-CleanTemp       Clean temporary files')"
+    Write-Host "  $(Get-Text -Key 'cleanup.option_config' -Default '-ResetConfig     Reset to default configuration')"
+    Write-Host "  $(Get-Text -Key 'cleanup.option_uninstall' -Default '-Uninstall       Completely remove framework')"
     Write-Host ""
-    Write-Host "Examples:" -ForegroundColor Cyan
+    Write-Host (Get-Text -Key 'cleanup.examples' -Default 'Examples:') -ForegroundColor Cyan
     Write-Host "  .\Cleanup-Framework.ps1 -CleanLogs -DaysToKeep 7"
     Write-Host "  .\Cleanup-Framework.ps1 -CleanTemp"
     Write-Host "  .\Cleanup-Framework.ps1 -Uninstall"

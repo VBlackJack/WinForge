@@ -121,7 +121,7 @@ public partial class MainWindow : Window
         catch
         {
             // Fallback to static title if version retrieval fails
-            Title = string.Format(Win11Forge.GUI.Resources.Resources.App_Title, "3.0.0");
+            Title = string.Format(Win11Forge.GUI.Resources.Resources.App_Title, "3.0.1");
         }
     }
 

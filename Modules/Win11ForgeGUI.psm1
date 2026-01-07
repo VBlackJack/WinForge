@@ -12,6 +12,22 @@
     Requires: PowerShell 5.1+, Win11Forge v3.0.0+
 #>
 
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 Set-StrictMode -Version Latest
 
 # ============================================================================
@@ -46,6 +62,12 @@ function Initialize-GUIModules {
         $coreModule = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
         if (Test-Path $coreModule) {
             Import-Module $coreModule -Force -Global
+        }
+
+        # Load Localization module for i18n support
+        $locModule = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
+        if (Test-Path $locModule) {
+            Import-Module $locModule -Force -Global
         }
 
         # Load EnvironmentDetection module
@@ -84,7 +106,7 @@ function Initialize-GUIModules {
             Write-Verbose "Database loaded: $($script:AppDatabase.Keys.Count) applications" -Verbose
         }
         else {
-            Write-Host "Warning: Database file not found at $dbPath" -ForegroundColor Yellow
+            Write-Host (Get-LocalizedString -Key 'common.warning' -DefaultValue 'Warning') + ": Database file not found at $dbPath" -ForegroundColor Yellow
         }
 
         # Load ProfileManager module
@@ -108,7 +130,7 @@ function Initialize-GUIModules {
         return $true
     }
     catch {
-        Write-Host "Error loading modules: $_" -ForegroundColor Red
+        Write-Host "$(Get-LocalizedString -Key 'common.error' -DefaultValue 'Error'): $_" -ForegroundColor Red
         return $false
     }
 }
@@ -128,7 +150,7 @@ function Get-DatabaseApps {
     )
 
     if (-not $script:AppDatabase) {
-        Write-Host "Error: Database not loaded" -ForegroundColor Red
+        Write-Host (Get-LocalizedString -Key 'gui.errors.db_not_loaded') -ForegroundColor Red
         return @()
     }
 
@@ -344,7 +366,7 @@ function Read-Choice {
             return $choice
         }
 
-        Write-Host "Invalid choice. Please try again. (Press 0 to go back)" -ForegroundColor Red
+        Write-Host "$(Get-LocalizedString -Key 'gui.menu.invalid_choice') $(Get-LocalizedString -Key 'gui.menu.press_back')" -ForegroundColor Red
     }
 }
 
@@ -383,20 +405,20 @@ function Show-MainMenu {
     #>
 
     while ($true) {
-        Show-Header -Title "Win11Forge v$script:FrameworkVersion - Main Menu"
+        Show-Header -Title "Win11Forge v$script:FrameworkVersion - $(Get-LocalizedString -Key 'gui.menu.main_title' -DefaultValue 'Main Menu')"
 
-        Write-Host "  1. Deploy Profile" -ForegroundColor White
-        Write-Host "  2. Browse Applications Database ($($script:AppDatabase.Count) apps)" -ForegroundColor White
-        Write-Host "  3. Browse Profiles" -ForegroundColor White
-        Write-Host "  4. Create Custom Profile" -ForegroundColor White
-        Write-Host "  5. Database Statistics" -ForegroundColor White
-        Write-Host "  6. Validate Database" -ForegroundColor White
-        Write-Host "  7. Add New Application" -ForegroundColor Cyan
-        Write-Host "  0. Exit" -ForegroundColor White
+        Write-Host "  1. $(Get-LocalizedString -Key 'gui.menu.deploy_profile')" -ForegroundColor White
+        Write-Host "  2. $(Get-LocalizedString -Key 'gui.menu.browse_apps' -Parameters @{ Count = $script:AppDatabase.Count })" -ForegroundColor White
+        Write-Host "  3. $(Get-LocalizedString -Key 'gui.menu.browse_profiles')" -ForegroundColor White
+        Write-Host "  4. $(Get-LocalizedString -Key 'gui.menu.create_profile')" -ForegroundColor White
+        Write-Host "  5. $(Get-LocalizedString -Key 'gui.menu.statistics')" -ForegroundColor White
+        Write-Host "  6. $(Get-LocalizedString -Key 'gui.menu.validate_db')" -ForegroundColor White
+        Write-Host "  7. $(Get-LocalizedString -Key 'gui.menu.add_app')" -ForegroundColor Cyan
+        Write-Host "  0. $(Get-LocalizedString -Key 'gui.menu.exit')" -ForegroundColor White
 
         Show-Footer
 
-        $choice = Read-Choice -Prompt "Select option [0-7]" -ValidChoices @('0','1','2','3','4','5','6','7')
+        $choice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.menu.select_option') [0-7]" -ValidChoices @('0','1','2','3','4','5','6','7')
 
         switch ($choice) {
             '1' { Show-DeployProfileMenu }
@@ -407,7 +429,7 @@ function Show-MainMenu {
             '6' { Start-DatabaseValidation }
             '7' { Show-AddApplicationMenu }
             '0' {
-                Write-Host "`nGoodbye!" -ForegroundColor Green
+                Write-Host "`n$(Get-LocalizedString -Key 'common.exit')!" -ForegroundColor Green
                 return
             }
         }
@@ -424,13 +446,13 @@ function Show-DeployProfileMenu {
         Display profile deployment menu
     #>
 
-    Show-Header -Title "Deploy Profile"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.deploy.title')
 
     # List available profiles
     $profilesPath = Join-Path $script:RepositoryRoot 'Profiles'
     $profiles = Get-ChildItem -Path $profilesPath -Filter '*.json' | Where-Object { $_.Name -notlike '*legacy*' }
 
-    Write-Host "Available Profiles:" -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.deploy.available_profiles') -ForegroundColor Yellow
     Write-Host ""
 
     for ($i = 0; $i -lt $profiles.Count; $i++) {
@@ -441,15 +463,15 @@ function Show-DeployProfileMenu {
         $version = $profileData.Version
         $appCount = $profileData.Applications.Count
 
-        Write-Host "  $($i + 1). $name (v$version) - $appCount apps" -ForegroundColor White
+        Write-Host "  $($i + 1). $(Get-LocalizedString -Key 'gui.deploy.profile_info' -Parameters @{ Name = $name; Version = $version; Count = $appCount })" -ForegroundColor White
     }
 
-    Write-Host "  0. Back to Main Menu" -ForegroundColor White
+    Write-Host "  0. $(Get-LocalizedString -Key 'gui.menu.back_to_main')" -ForegroundColor White
 
     Show-Footer
 
     $validChoices = @('0') + (1..$profiles.Count | ForEach-Object { $_.ToString() })
-    $choice = Read-Choice -Prompt "Select profile to deploy [0-$($profiles.Count)]" -ValidChoices $validChoices
+    $choice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.deploy.select_profile') [0-$($profiles.Count)]" -ValidChoices $validChoices
 
     if ($choice -eq '0') { return }
 
@@ -457,18 +479,18 @@ function Show-DeployProfileMenu {
     $profileName = $selectedProfile.BaseName
 
     # Deployment options
-    Show-Header -Title "Deploy: $profileName"
+    Show-Header -Title "$(Get-LocalizedString -Key 'gui.deploy.title'): $profileName"
 
-    Write-Host "Deployment Options:" -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.deploy.options_title') -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "  1. Standard Deployment (Sequential)" -ForegroundColor White
-    Write-Host "  2. Parallel Deployment (Faster, requires PowerShell 7)" -ForegroundColor White
-    Write-Host "  3. Test Mode (Dry run, no installation)" -ForegroundColor White
-    Write-Host "  0. Cancel" -ForegroundColor White
+    Write-Host "  1. $(Get-LocalizedString -Key 'gui.deploy.mode_sequential')" -ForegroundColor White
+    Write-Host "  2. $(Get-LocalizedString -Key 'gui.deploy.mode_parallel')" -ForegroundColor White
+    Write-Host "  3. $(Get-LocalizedString -Key 'gui.deploy.mode_test')" -ForegroundColor White
+    Write-Host "  0. $(Get-LocalizedString -Key 'common.cancel')" -ForegroundColor White
 
     Show-Footer
 
-    $modeChoice = Read-Choice -Prompt "Select deployment mode [0-3]" -ValidChoices @('0','1','2','3')
+    $modeChoice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.deploy.select_mode') [0-3]" -ValidChoices @('0','1','2','3')
 
     if ($modeChoice -eq '0') { return }
 
@@ -487,15 +509,16 @@ function Show-DeployProfileMenu {
 
     # Confirm deployment
     Write-Host ""
-    Write-Host "Ready to deploy profile: $profileName" -ForegroundColor Yellow
-    Write-Host "Mode: $(if ($modeChoice -eq '2') { 'Parallel' } elseif ($modeChoice -eq '3') { 'Test' } else { 'Sequential' })" -ForegroundColor Gray
+    Write-Host (Get-LocalizedString -Key 'gui.deploy.ready_to_deploy' -Parameters @{ Name = $profileName }) -ForegroundColor Yellow
+    $modeName = if ($modeChoice -eq '2') { Get-LocalizedString -Key 'gui.deploy.mode_name_parallel' } elseif ($modeChoice -eq '3') { Get-LocalizedString -Key 'gui.deploy.mode_name_test' } else { Get-LocalizedString -Key 'gui.deploy.mode_name_sequential' }
+    Write-Host (Get-LocalizedString -Key 'gui.deploy.mode_label' -Parameters @{ Mode = $modeName }) -ForegroundColor Gray
     Write-Host ""
 
-    $confirm = Read-Host "Start deployment? (Y/N)"
+    $confirm = Read-Host (Get-LocalizedString -Key 'gui.deploy.confirm_start')
 
     if ($confirm -eq 'Y' -or $confirm -eq 'y') {
         Write-Host ""
-        Write-Host "Starting deployment..." -ForegroundColor Green
+        Write-Host (Get-LocalizedString -Key 'gui.deploy.starting') -ForegroundColor Green
         Write-Host ""
 
         # Execute deployment script using & with splatting
@@ -506,13 +529,13 @@ function Show-DeployProfileMenu {
 
         # Show deployment result summary
         if ($deployExitCode -eq 0) {
-            Write-Host "Deployment completed - Check log for details" -ForegroundColor Green
+            Write-Host (Get-LocalizedString -Key 'gui.deploy.completed') -ForegroundColor Green
         } else {
-            Write-Host "Deployment completed with failures - Exit code: $deployExitCode" -ForegroundColor Red
+            Write-Host (Get-LocalizedString -Key 'gui.deploy.completed_with_failures' -Parameters @{ Code = $deployExitCode }) -ForegroundColor Red
         }
 
         Write-Host ""
-        Read-Host "Press Enter to continue"
+        Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
     }
 }
 
@@ -527,20 +550,20 @@ function Show-ApplicationBrowser {
     #>
 
     while ($true) {
-        Show-Header -Title "Application Browser ($($script:AppDatabase.Count) apps)"
+        Show-Header -Title (Get-LocalizedString -Key 'gui.apps.browse_title' -Parameters @{ Count = $script:AppDatabase.Count })
 
-        Write-Host "Browse Options:" -ForegroundColor Yellow
+        Write-Host (Get-LocalizedString -Key 'gui.apps.browse_options') -ForegroundColor Yellow
         Write-Host ""
-        Write-Host "  1. View All Applications" -ForegroundColor White
-        Write-Host "  2. Browse by Category" -ForegroundColor White
-        Write-Host "  3. Browse by Tag" -ForegroundColor White
-        Write-Host "  4. Search Applications" -ForegroundColor White
-        Write-Host "  5. View Application Details" -ForegroundColor White
-        Write-Host "  0. Back to Main Menu" -ForegroundColor White
+        Write-Host "  1. $(Get-LocalizedString -Key 'gui.apps.view_all')" -ForegroundColor White
+        Write-Host "  2. $(Get-LocalizedString -Key 'gui.apps.by_category')" -ForegroundColor White
+        Write-Host "  3. $(Get-LocalizedString -Key 'gui.apps.by_tag')" -ForegroundColor White
+        Write-Host "  4. $(Get-LocalizedString -Key 'gui.apps.search')" -ForegroundColor White
+        Write-Host "  5. $(Get-LocalizedString -Key 'gui.apps.view_details')" -ForegroundColor White
+        Write-Host "  0. $(Get-LocalizedString -Key 'gui.menu.back_to_main')" -ForegroundColor White
 
         Show-Footer
 
-        $choice = Read-Choice -Prompt "Select option [0-5]" -ValidChoices @('0','1','2','3','4','5')
+        $choice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.menu.select_option') [0-5]" -ValidChoices @('0','1','2','3','4','5')
 
         switch ($choice) {
             '1' { Show-AllApplications }
@@ -559,7 +582,7 @@ function Show-AllApplications {
         Display all applications with pagination
     #>
 
-    Show-Header -Title "All Applications"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.apps.all_apps_title')
 
     $apps = Get-DatabaseApps | Sort-Object -Property Name
     $pageSize = 20
@@ -571,9 +594,9 @@ function Show-AllApplications {
         $end = [math]::Min($start + $pageSize, $apps.Count)
         $pageApps = $apps[$start..($end - 1)]
 
-        Show-Header -Title "All Applications (Page $($currentPage + 1)/$totalPages)"
+        Show-Header -Title "$(Get-LocalizedString -Key 'gui.apps.all_apps_title') ($(Get-LocalizedString -Key 'gui.apps.page_info' -Parameters @{ Current = ($currentPage + 1); Total = $totalPages }))"
 
-        Write-Host ("{0,-5} {1,-30} {2,-15} {3}" -f "No.", "Name", "Category", "Winget ID") -ForegroundColor Yellow
+        Write-Host ("{0,-5} {1,-30} {2,-15} {3}" -f (Get-LocalizedString -Key 'gui.apps.col_no'), (Get-LocalizedString -Key 'gui.apps.col_name'), (Get-LocalizedString -Key 'gui.apps.col_category'), (Get-LocalizedString -Key 'gui.apps.col_winget')) -ForegroundColor Yellow
         Write-Host ("-" * 70) -ForegroundColor DarkGray
 
         for ($i = 0; $i -lt $pageApps.Count; $i++) {
@@ -585,11 +608,11 @@ function Show-AllApplications {
         }
 
         Write-Host ""
-        Write-Host "N = Next Page | P = Previous Page | Q = Back" -ForegroundColor Gray
+        Write-Host (Get-LocalizedString -Key 'gui.apps.nav_help') -ForegroundColor Gray
 
         Show-Footer
 
-        $nav = Read-Choice -Prompt "Navigate" -ValidChoices @('N','n','P','p','Q','q')
+        $nav = Read-Choice -Prompt (Get-LocalizedString -Key 'gui.apps.navigate') -ValidChoices @('N','n','P','p','Q','q')
 
         if ($nav -eq 'Q' -or $nav -eq 'q') { break }
         if ($nav -eq 'N' -or $nav -eq 'n') {
@@ -607,34 +630,34 @@ function Show-ApplicationsByCategory {
         Browse applications by category
     #>
 
-    Show-Header -Title "Browse by Category"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.apps.category_title')
 
     $categories = Get-DatabaseCategories | Sort-Object
 
-    Write-Host "Available Categories:" -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.apps.available_categories') -ForegroundColor Yellow
     Write-Host ""
 
     for ($i = 0; $i -lt $categories.Count; $i++) {
         $category = $categories[$i]
         $count = (Get-DatabaseApps -Category $category).Count
-        Write-Host "  $($i + 1). $category ($count apps)" -ForegroundColor White
+        Write-Host "  $($i + 1). $(Get-LocalizedString -Key 'gui.apps.category_count' -Parameters @{ Name = $category; Count = $count })" -ForegroundColor White
     }
 
-    Write-Host "  0. Back" -ForegroundColor White
+    Write-Host "  0. $(Get-LocalizedString -Key 'common.back')" -ForegroundColor White
 
     Show-Footer
 
     $validChoices = @('0') + (1..$categories.Count | ForEach-Object { $_.ToString() })
-    $choice = Read-Choice -Prompt "Select category [0-$($categories.Count)]" -ValidChoices $validChoices
+    $choice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.apps.select_category') [0-$($categories.Count)]" -ValidChoices $validChoices
 
     if ($choice -eq '0') { return }
 
     $selectedCategory = $categories[$choice - 1]
     $apps = Get-DatabaseApps -Category $selectedCategory | Sort-Object -Property Name
 
-    Show-Header -Title "Category: $selectedCategory ($($apps.Count) apps)"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.apps.category_header' -Parameters @{ Name = $selectedCategory; Count = $apps.Count })
 
-    Write-Host ("{0,-30} {1}" -f "Name", "Winget ID") -ForegroundColor Yellow
+    Write-Host ("{0,-30} {1}" -f (Get-LocalizedString -Key 'gui.apps.col_name'), (Get-LocalizedString -Key 'gui.apps.col_winget')) -ForegroundColor Yellow
     Write-Host ("-" * 70) -ForegroundColor DarkGray
 
     foreach ($app in $apps) {
@@ -643,7 +666,7 @@ function Show-ApplicationsByCategory {
     }
 
     Write-Host ""
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 function Show-ApplicationsByTag {
@@ -652,36 +675,36 @@ function Show-ApplicationsByTag {
         Browse applications by tag
     #>
 
-    Show-Header -Title "Browse by Tag"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.apps.tag_title')
 
     # Get all unique tags
     $allApps = Get-DatabaseApps
     $tags = $allApps | Where-Object { $_.Tags } | ForEach-Object { $_.Tags } | Select-Object -Unique | Sort-Object
 
-    Write-Host "Available Tags:" -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.apps.available_tags') -ForegroundColor Yellow
     Write-Host ""
 
     for ($i = 0; $i -lt $tags.Count; $i++) {
         $tag = $tags[$i]
         $count = (Get-DatabaseApps -Tag $tag).Count
-        Write-Host "  $($i + 1). $tag ($count apps)" -ForegroundColor White
+        Write-Host "  $($i + 1). $(Get-LocalizedString -Key 'gui.apps.tag_count' -Parameters @{ Name = $tag; Count = $count })" -ForegroundColor White
     }
 
-    Write-Host "  0. Back" -ForegroundColor White
+    Write-Host "  0. $(Get-LocalizedString -Key 'common.back')" -ForegroundColor White
 
     Show-Footer
 
     $validChoices = @('0') + (1..$tags.Count | ForEach-Object { $_.ToString() })
-    $choice = Read-Choice -Prompt "Select tag [0-$($tags.Count)]" -ValidChoices $validChoices
+    $choice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.apps.select_tag') [0-$($tags.Count)]" -ValidChoices $validChoices
 
     if ($choice -eq '0') { return }
 
     $selectedTag = $tags[$choice - 1]
     $apps = Get-DatabaseApps -Tag $selectedTag | Sort-Object -Property Name
 
-    Show-Header -Title "Tag: $selectedTag ($($apps.Count) apps)"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.apps.tag_header' -Parameters @{ Name = $selectedTag; Count = $apps.Count })
 
-    Write-Host ("{0,-30} {1,-15} {2}" -f "Name", "Category", "Winget ID") -ForegroundColor Yellow
+    Write-Host ("{0,-30} {1,-15} {2}" -f (Get-LocalizedString -Key 'gui.apps.col_name'), (Get-LocalizedString -Key 'gui.apps.col_category'), (Get-LocalizedString -Key 'gui.apps.col_winget')) -ForegroundColor Yellow
     Write-Host ("-" * 70) -ForegroundColor DarkGray
 
     foreach ($app in $apps) {
@@ -690,7 +713,7 @@ function Show-ApplicationsByTag {
     }
 
     Write-Host ""
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 function Show-ApplicationSearch {
@@ -699,22 +722,22 @@ function Show-ApplicationSearch {
         Search applications by name
     #>
 
-    Show-Header -Title "Search Applications"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.apps.search_title')
 
-    Write-Host "Enter search term (or press Enter to cancel):" -ForegroundColor Yellow
-    $searchTerm = Read-Host "Search"
+    Write-Host (Get-LocalizedString -Key 'gui.apps.search_prompt') -ForegroundColor Yellow
+    $searchTerm = Read-Host (Get-LocalizedString -Key 'gui.apps.search_label')
 
     if ([string]::IsNullOrWhiteSpace($searchTerm)) { return }
 
     $results = Search-DatabaseApps -SearchTerm $searchTerm
 
-    Show-Header -Title "Search Results: '$searchTerm' ($($results.Count) found)"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.apps.search_results' -Parameters @{ Term = $searchTerm; Count = $results.Count })
 
     if ($results.Count -eq 0) {
-        Write-Host "No applications found matching '$searchTerm'" -ForegroundColor Yellow
+        Write-Host (Get-LocalizedString -Key 'gui.apps.no_results' -Parameters @{ Term = $searchTerm }) -ForegroundColor Yellow
     }
     else {
-        Write-Host ("{0,-30} {1,-15} {2}" -f "Name", "Category", "Winget ID") -ForegroundColor Yellow
+        Write-Host ("{0,-30} {1,-15} {2}" -f (Get-LocalizedString -Key 'gui.apps.col_name'), (Get-LocalizedString -Key 'gui.apps.col_category'), (Get-LocalizedString -Key 'gui.apps.col_winget')) -ForegroundColor Yellow
         Write-Host ("-" * 70) -ForegroundColor DarkGray
 
         foreach ($app in $results) {
@@ -724,7 +747,7 @@ function Show-ApplicationSearch {
     }
 
     Write-Host ""
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 function Show-ApplicationDetails {
@@ -733,10 +756,10 @@ function Show-ApplicationDetails {
         Display detailed information about an application
     #>
 
-    Show-Header -Title "Application Details"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.apps.details_title')
 
-    Write-Host "Enter Application ID or search term:" -ForegroundColor Yellow
-    $input = Read-Host "AppId/Search"
+    Write-Host (Get-LocalizedString -Key 'gui.apps.details_prompt') -ForegroundColor Yellow
+    $input = Read-Host (Get-LocalizedString -Key 'gui.apps.details_input')
 
     if ([string]::IsNullOrWhiteSpace($input)) { return }
 
@@ -750,69 +773,69 @@ function Show-ApplicationDetails {
             $app = $results[0]
         }
         elseif ($results.Count -gt 1) {
-            Write-Host "Multiple applications found. Please be more specific." -ForegroundColor Yellow
-            Read-Host "Press Enter to continue"
+            Write-Host (Get-LocalizedString -Key 'gui.apps.multiple_found') -ForegroundColor Yellow
+            Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
             return
         }
     }
 
     if (-not $app) {
-        Write-Host "Application not found: $input" -ForegroundColor Red
-        Read-Host "Press Enter to continue"
+        Write-Host (Get-LocalizedString -Key 'gui.apps.not_found' -Parameters @{ Input = $input }) -ForegroundColor Red
+        Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
         return
     }
 
-    Show-Header -Title "Application: $($app.Name)"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.apps.app_header' -Parameters @{ Name = $app.Name })
 
-    Write-Host "AppId:        " -NoNewline -ForegroundColor Yellow
+    Write-Host "$(Get-LocalizedString -Key 'gui.apps.label_appid')        " -NoNewline -ForegroundColor Yellow
     Write-Host $app.AppId -ForegroundColor White
 
-    Write-Host "Name:         " -NoNewline -ForegroundColor Yellow
+    Write-Host "$(Get-LocalizedString -Key 'gui.apps.label_name')         " -NoNewline -ForegroundColor Yellow
     Write-Host $app.Name -ForegroundColor White
 
-    Write-Host "Category:     " -NoNewline -ForegroundColor Yellow
+    Write-Host "$(Get-LocalizedString -Key 'gui.apps.label_category')     " -NoNewline -ForegroundColor Yellow
     Write-Host $app.Category -ForegroundColor White
 
     if ($app.Description) {
-        Write-Host "Description:  " -NoNewline -ForegroundColor Yellow
+        Write-Host "$(Get-LocalizedString -Key 'gui.apps.label_description')  " -NoNewline -ForegroundColor Yellow
         Write-Host $app.Description -ForegroundColor White
     }
 
-    Write-Host "`nSources:" -ForegroundColor Yellow
+    Write-Host "`n$(Get-LocalizedString -Key 'gui.apps.label_sources')" -ForegroundColor Yellow
     if ($app.Sources -and $app.Sources.PSObject.Properties['Winget'] -and $app.Sources.Winget) {
-        Write-Host "  Winget:     " -NoNewline -ForegroundColor Gray
+        Write-Host "  $(Get-LocalizedString -Key 'gui.apps.label_winget')     " -NoNewline -ForegroundColor Gray
         Write-Host $app.Sources.Winget -ForegroundColor White
     }
     if ($app.Sources -and $app.Sources.PSObject.Properties['Chocolatey'] -and $app.Sources.Chocolatey) {
-        Write-Host "  Chocolatey: " -NoNewline -ForegroundColor Gray
+        Write-Host "  $(Get-LocalizedString -Key 'gui.apps.label_chocolatey') " -NoNewline -ForegroundColor Gray
         Write-Host $app.Sources.Chocolatey -ForegroundColor White
     }
     if ($app.Sources -and $app.Sources.PSObject.Properties['Store'] -and $app.Sources.Store) {
-        Write-Host "  Store:      " -NoNewline -ForegroundColor Gray
+        Write-Host "  $(Get-LocalizedString -Key 'gui.apps.label_store')      " -NoNewline -ForegroundColor Gray
         Write-Host $app.Sources.Store -ForegroundColor White
     }
     if ($app.Sources -and $app.Sources.PSObject.Properties['DirectUrl'] -and $app.Sources.DirectUrl) {
-        Write-Host "  DirectUrl:  " -NoNewline -ForegroundColor Gray
+        Write-Host "  $(Get-LocalizedString -Key 'gui.apps.label_directurl')  " -NoNewline -ForegroundColor Gray
         Write-Host $app.Sources.DirectUrl -ForegroundColor White
     }
 
     if ($app.Tags -and $app.Tags.Count -gt 0) {
-        Write-Host "`nTags:         " -NoNewline -ForegroundColor Yellow
+        Write-Host "`n$(Get-LocalizedString -Key 'gui.apps.label_tags')         " -NoNewline -ForegroundColor Yellow
         Write-Host ($app.Tags -join ', ') -ForegroundColor White
     }
 
     if ($app.Homepage) {
-        Write-Host "Homepage:     " -NoNewline -ForegroundColor Yellow
+        Write-Host "$(Get-LocalizedString -Key 'gui.apps.label_homepage')     " -NoNewline -ForegroundColor Yellow
         Write-Host $app.Homepage -ForegroundColor White
     }
 
     if ($app.Verified) {
-        Write-Host "`nVerified:     " -NoNewline -ForegroundColor Yellow
-        Write-Host "Yes ($($app.LastVerified))" -ForegroundColor Green
+        Write-Host "`n$(Get-LocalizedString -Key 'gui.apps.label_verified')     " -NoNewline -ForegroundColor Yellow
+        Write-Host (Get-LocalizedString -Key 'gui.apps.verified_yes' -Parameters @{ Date = $app.LastVerified }) -ForegroundColor Green
     }
 
     Write-Host ""
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 # ============================================================================
@@ -825,30 +848,30 @@ function Show-ProfileBrowser {
         Browse available profiles
     #>
 
-    Show-Header -Title "Profile Browser"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.profiles.browse_title')
 
     $profilesPath = Join-Path $script:RepositoryRoot 'Profiles'
     $profiles = Get-ChildItem -Path $profilesPath -Filter '*.json' | Where-Object { $_.Name -notlike '*legacy*' }
 
-    Write-Host "Available Profiles:" -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.profiles.available') -ForegroundColor Yellow
     Write-Host ""
 
     for ($i = 0; $i -lt $profiles.Count; $i++) {
         $profile = $profiles[$i]
         $profileData = Get-Content $profile.FullName | ConvertFrom-Json
 
-        Write-Host "  $($i + 1). $($profileData.Name) (v$($profileData.Version))" -ForegroundColor White
-        Write-Host "      Apps: $($profileData.Applications.Count)" -ForegroundColor Gray
-        Write-Host "      Desc: $($profileData.Description)" -ForegroundColor Gray
+        Write-Host "  $($i + 1). $(Get-LocalizedString -Key 'gui.profiles.profile_info' -Parameters @{ Name = $profileData.Name; Version = $profileData.Version })" -ForegroundColor White
+        Write-Host "      $(Get-LocalizedString -Key 'gui.profiles.apps_count' -Parameters @{ Count = $profileData.Applications.Count })" -ForegroundColor Gray
+        Write-Host "      $(Get-LocalizedString -Key 'gui.profiles.desc_label' -Parameters @{ Description = $profileData.Description })" -ForegroundColor Gray
         Write-Host ""
     }
 
-    Write-Host "  0. Back to Main Menu" -ForegroundColor White
+    Write-Host "  0. $(Get-LocalizedString -Key 'gui.menu.back_to_main')" -ForegroundColor White
 
     Show-Footer
 
     $validChoices = @('0') + (1..$profiles.Count | ForEach-Object { $_.ToString() })
-    $choice = Read-Choice -Prompt "Select profile to view [0-$($profiles.Count)]" -ValidChoices $validChoices
+    $choice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.profiles.select_view') [0-$($profiles.Count)]" -ValidChoices $validChoices
 
     if ($choice -eq '0') { return }
 
@@ -867,24 +890,24 @@ function Show-ProfileDetails {
 
     $profileData = Get-Content $ProfilePath | ConvertFrom-Json
 
-    Show-Header -Title "Profile: $($profileData.Name)"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.profiles.details_title' -Parameters @{ Name = $profileData.Name })
 
-    Write-Host "Name:         " -NoNewline -ForegroundColor Yellow
+    Write-Host "$(Get-LocalizedString -Key 'gui.profiles.label_name')         " -NoNewline -ForegroundColor Yellow
     Write-Host $profileData.Name -ForegroundColor White
 
-    Write-Host "Version:      " -NoNewline -ForegroundColor Yellow
+    Write-Host "$(Get-LocalizedString -Key 'gui.profiles.label_version')      " -NoNewline -ForegroundColor Yellow
     Write-Host $profileData.Version -ForegroundColor White
 
-    Write-Host "Description:  " -NoNewline -ForegroundColor Yellow
+    Write-Host "$(Get-LocalizedString -Key 'gui.profiles.label_description')  " -NoNewline -ForegroundColor Yellow
     Write-Host $profileData.Description -ForegroundColor White
 
     if ($profileData.Inherits -and $profileData.Inherits.Count -gt 0) {
-        Write-Host "Inherits:     " -NoNewline -ForegroundColor Yellow
+        Write-Host "$(Get-LocalizedString -Key 'gui.profiles.label_inherits')     " -NoNewline -ForegroundColor Yellow
         Write-Host ($profileData.Inherits -join ', ') -ForegroundColor White
     }
 
-    Write-Host "`nApplications: " -NoNewline -ForegroundColor Yellow
-    Write-Host "$($profileData.Applications.Count) apps" -ForegroundColor White
+    Write-Host "`n$(Get-LocalizedString -Key 'gui.profiles.label_applications') " -NoNewline -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.profiles.apps_summary' -Parameters @{ Count = $profileData.Applications.Count }) -ForegroundColor White
     Write-Host ""
 
     foreach ($app in $profileData.Applications) {
@@ -898,7 +921,7 @@ function Show-ProfileDetails {
     }
 
     Write-Host ""
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 # ============================================================================
@@ -911,45 +934,45 @@ function Show-ProfileCreator {
         Interactive profile creation wizard
     #>
 
-    Show-Header -Title "Create Custom Profile"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.creator.title')
 
-    Write-Host "This wizard will help you create a custom deployment profile." -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.creator.wizard_intro') -ForegroundColor Yellow
     Write-Host ""
 
     # Profile name
-    Write-Host "Enter profile name:" -ForegroundColor Yellow
-    $profileName = Read-Choice -Prompt "Name"
+    Write-Host (Get-LocalizedString -Key 'gui.creator.enter_name') -ForegroundColor Yellow
+    $profileName = Read-Choice -Prompt (Get-LocalizedString -Key 'gui.creator.name_prompt')
 
     # Profile description
-    Write-Host "`nEnter profile description:" -ForegroundColor Yellow
-    $profileDesc = Read-Choice -Prompt "Description"
+    Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.enter_desc')" -ForegroundColor Yellow
+    $profileDesc = Read-Choice -Prompt (Get-LocalizedString -Key 'gui.creator.desc_prompt')
 
     # Inheritance
-    Write-Host "`nInherit from existing profile? (Y/N)" -ForegroundColor Yellow
-    $inheritChoice = Read-Host "Inherit"
+    Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.inherit_prompt')" -ForegroundColor Yellow
+    $inheritChoice = Read-Host (Get-LocalizedString -Key 'gui.creator.inherit_label')
 
     $inherits = @()
     if ($inheritChoice -eq 'Y' -or $inheritChoice -eq 'y') {
         $profilesPath = Join-Path $script:RepositoryRoot 'Profiles'
         $profiles = Get-ChildItem -Path $profilesPath -Filter '*.json' | Where-Object { $_.Name -notlike '*legacy*' }
 
-        Write-Host "`nAvailable profiles to inherit from:" -ForegroundColor Yellow
+        Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.available_inherit')" -ForegroundColor Yellow
         for ($i = 0; $i -lt $profiles.Count; $i++) {
             Write-Host "  $($i + 1). $($profiles[$i].BaseName)" -ForegroundColor White
         }
 
         $validChoices = 1..$profiles.Count | ForEach-Object { $_.ToString() }
-        $inheritIdx = Read-Choice -Prompt "Select profile [1-$($profiles.Count)]" -ValidChoices $validChoices
+        $inheritIdx = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.creator.select_inherit') [1-$($profiles.Count)]" -ValidChoices $validChoices
 
         $inherits = @($profiles[$inheritIdx - 1].BaseName)
     }
 
     # Application selection
-    Write-Host "`nSelect applications to include:" -ForegroundColor Yellow
-    Write-Host "  1. Browse and select from database" -ForegroundColor White
-    Write-Host "  2. Enter AppIds manually" -ForegroundColor White
+    Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.select_apps_title')" -ForegroundColor Yellow
+    Write-Host "  1. $(Get-LocalizedString -Key 'gui.creator.method_browse')" -ForegroundColor White
+    Write-Host "  2. $(Get-LocalizedString -Key 'gui.creator.method_manual')" -ForegroundColor White
 
-    $appChoice = Read-Choice -Prompt "Method [1-2]" -ValidChoices @('1','2')
+    $appChoice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.creator.method_prompt') [1-2]" -ValidChoices @('1','2')
 
     $selectedApps = @()
 
@@ -957,8 +980,8 @@ function Show-ProfileCreator {
         $selectedApps = Select-ApplicationsFromDatabase
     }
     else {
-        Write-Host "`nEnter AppIds separated by commas:" -ForegroundColor Yellow
-        $appInput = Read-Host "AppIds"
+        Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.enter_appids')" -ForegroundColor Yellow
+        $appInput = Read-Host (Get-LocalizedString -Key 'gui.creator.appids_prompt')
         $selectedApps = $appInput -split ',' | ForEach-Object { $_.Trim() }
     }
 
@@ -986,13 +1009,13 @@ function Show-ProfileCreator {
     }
 
     # Preview
-    Show-Header -Title "Profile Preview"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.creator.preview_title')
 
     Write-Host ($newProfile | ConvertTo-Json -Depth 10) -ForegroundColor Gray
 
     Write-Host ""
-    Write-Host "Save this profile? (Y/N)" -ForegroundColor Yellow
-    $saveChoice = Read-Host "Save"
+    Write-Host (Get-LocalizedString -Key 'gui.creator.save_prompt') -ForegroundColor Yellow
+    $saveChoice = Read-Host (Get-LocalizedString -Key 'gui.creator.save_label')
 
     if ($saveChoice -eq 'Y' -or $saveChoice -eq 'y') {
         $profilesPath = Join-Path $script:RepositoryRoot 'Profiles'
@@ -1000,14 +1023,14 @@ function Show-ProfileCreator {
 
         $newProfile | ConvertTo-Json -Depth 10 | Set-Content -Path $profileFile -Encoding UTF8
 
-        Write-Host "`nProfile saved: $profileFile" -ForegroundColor Green
+        Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.saved' -Parameters @{ Path = $profileFile })" -ForegroundColor Green
     }
     else {
-        Write-Host "`nProfile discarded." -ForegroundColor Yellow
+        Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.discarded')" -ForegroundColor Yellow
     }
 
     Write-Host ""
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 function Select-ApplicationsFromDatabase {
@@ -1019,31 +1042,31 @@ function Select-ApplicationsFromDatabase {
     $selected = @()
 
     while ($true) {
-        Show-Header -Title "Select Applications ($($selected.Count) selected)"
+        Show-Header -Title (Get-LocalizedString -Key 'gui.creator.select_title' -Parameters @{ Count = $selected.Count })
 
-        Write-Host "Options:" -ForegroundColor Yellow
-        Write-Host "  1. Add by Category" -ForegroundColor White
-        Write-Host "  2. Add by Tag" -ForegroundColor White
-        Write-Host "  3. Add by Search" -ForegroundColor White
-        Write-Host "  4. Add by AppId" -ForegroundColor White
-        Write-Host "  5. View Selected ($($selected.Count))" -ForegroundColor White
-        Write-Host "  6. Remove Selected" -ForegroundColor White
-        Write-Host "  0. Done" -ForegroundColor White
+        Write-Host (Get-LocalizedString -Key 'gui.creator.options') -ForegroundColor Yellow
+        Write-Host "  1. $(Get-LocalizedString -Key 'gui.creator.add_by_category')" -ForegroundColor White
+        Write-Host "  2. $(Get-LocalizedString -Key 'gui.creator.add_by_tag')" -ForegroundColor White
+        Write-Host "  3. $(Get-LocalizedString -Key 'gui.creator.add_by_search')" -ForegroundColor White
+        Write-Host "  4. $(Get-LocalizedString -Key 'gui.creator.add_by_appid')" -ForegroundColor White
+        Write-Host "  5. $(Get-LocalizedString -Key 'gui.creator.view_selected' -Parameters @{ Count = $selected.Count })" -ForegroundColor White
+        Write-Host "  6. $(Get-LocalizedString -Key 'gui.creator.remove_selected')" -ForegroundColor White
+        Write-Host "  0. $(Get-LocalizedString -Key 'gui.creator.done')" -ForegroundColor White
 
         Show-Footer
 
-        $choice = Read-Choice -Prompt "Option [0-6]" -ValidChoices @('0','1','2','3','4','5','6')
+        $choice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.settings.option_prompt') [0-6]" -ValidChoices @('0','1','2','3','4','5','6')
 
         switch ($choice) {
             '1' {
                 $categories = Get-DatabaseCategories | Sort-Object
-                Write-Host "`nCategories:" -ForegroundColor Yellow
-                Write-Host "  0. Cancel" -ForegroundColor Gray
+                Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.categories_label')" -ForegroundColor Yellow
+                Write-Host "  0. $(Get-LocalizedString -Key 'gui.creator.cancel')" -ForegroundColor Gray
                 for ($i = 0; $i -lt $categories.Count; $i++) {
                     Write-Host "  $($i + 1). $($categories[$i])" -ForegroundColor White
                 }
                 $validChoices = 1..$categories.Count | ForEach-Object { $_.ToString() }
-                $catChoice = Read-Choice -Prompt "Category [1-$($categories.Count)] or 0 to cancel" -ValidChoices $validChoices
+                $catChoice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.apps.select_category') [1-$($categories.Count)]" -ValidChoices $validChoices
                 if ($catChoice -ne '0') {
                     $apps = Get-DatabaseApps -Category $categories[$catChoice - 1]
                     $selected += $apps | ForEach-Object { $_.AppId }
@@ -1052,42 +1075,42 @@ function Select-ApplicationsFromDatabase {
             '2' {
                 $allApps = Get-DatabaseApps
                 $tags = $allApps | Where-Object { $_.Tags } | ForEach-Object { $_.Tags } | Select-Object -Unique | Sort-Object
-                Write-Host "`nTags:" -ForegroundColor Yellow
-                Write-Host "  0. Cancel" -ForegroundColor Gray
+                Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.tags_label')" -ForegroundColor Yellow
+                Write-Host "  0. $(Get-LocalizedString -Key 'gui.creator.cancel')" -ForegroundColor Gray
                 for ($i = 0; $i -lt $tags.Count; $i++) {
                     Write-Host "  $($i + 1). $($tags[$i])" -ForegroundColor White
                 }
                 $validChoices = 1..$tags.Count | ForEach-Object { $_.ToString() }
-                $tagChoice = Read-Choice -Prompt "Tag [1-$($tags.Count)] or 0 to cancel" -ValidChoices $validChoices
+                $tagChoice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.apps.select_tag') [1-$($tags.Count)]" -ValidChoices $validChoices
                 if ($tagChoice -ne '0') {
                     $apps = Get-DatabaseApps -Tag $tags[$tagChoice - 1]
                     $selected += $apps | ForEach-Object { $_.AppId }
                 }
             }
             '3' {
-                Write-Host "`nSearch term:" -ForegroundColor Yellow
-                $searchTerm = Read-Host "Search"
+                Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.search_term')" -ForegroundColor Yellow
+                $searchTerm = Read-Host (Get-LocalizedString -Key 'gui.apps.search_label')
                 $apps = Search-DatabaseApps -SearchTerm $searchTerm
                 $selected += $apps | ForEach-Object { $_.AppId }
             }
             '4' {
-                Write-Host "`nAppId:" -ForegroundColor Yellow
-                $appId = Read-Host "AppId"
+                Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.appid_label')" -ForegroundColor Yellow
+                $appId = Read-Host (Get-LocalizedString -Key 'gui.creator.appid_label')
                 if (Get-DatabaseAppById -AppId $appId) {
                     $selected += $appId
                 }
                 else {
-                    Write-Host "Invalid AppId: $appId" -ForegroundColor Red
+                    Write-Host (Get-LocalizedString -Key 'gui.creator.invalid_appid' -Parameters @{ AppId = $appId }) -ForegroundColor Red
                 }
             }
             '5' {
-                Show-Header -Title "Selected Applications ($($selected.Count))"
+                Show-Header -Title (Get-LocalizedString -Key 'gui.creator.selected_apps_title' -Parameters @{ Count = $selected.Count })
                 $selected | ForEach-Object { Write-Host "  - $_" -ForegroundColor White }
-                Read-Host "`nPress Enter to continue"
+                Read-Host "`n$(Get-LocalizedString -Key 'gui.deploy.press_enter')"
             }
             '6' {
-                Write-Host "`nAppId to remove:" -ForegroundColor Yellow
-                $removeId = Read-Host "AppId"
+                Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.appid_remove')" -ForegroundColor Yellow
+                $removeId = Read-Host (Get-LocalizedString -Key 'gui.creator.appid_label')
                 $selected = $selected | Where-Object { $_ -ne $removeId }
             }
             '0' { break }
@@ -1110,36 +1133,36 @@ function Show-DatabaseStatistics {
         Display database statistics
     #>
 
-    Show-Header -Title "Database Statistics"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.statistics.title')
 
     $stats = Get-DatabaseStats
 
-    Write-Host "Total Applications:      " -NoNewline -ForegroundColor Yellow
+    Write-Host "$(Get-LocalizedString -Key 'gui.statistics.total_apps')      " -NoNewline -ForegroundColor Yellow
     Write-Host $stats.TotalApplications -ForegroundColor White
 
-    Write-Host "Verified Applications:   " -NoNewline -ForegroundColor Yellow
-    Write-Host "$($stats.VerifiedApplications) ($([math]::Round($stats.VerificationRate))%)" -ForegroundColor Green
+    Write-Host "$(Get-LocalizedString -Key 'gui.statistics.verified_apps')   " -NoNewline -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.statistics.verified_percent' -Parameters @{ Count = $stats.VerifiedApplications; Percent = [math]::Round($stats.VerificationRate) }) -ForegroundColor Green
 
-    Write-Host "Categories:              " -NoNewline -ForegroundColor Yellow
+    Write-Host "$(Get-LocalizedString -Key 'gui.statistics.categories')              " -NoNewline -ForegroundColor Yellow
     Write-Host $stats.TotalCategories -ForegroundColor White
 
-    Write-Host "`nSources:" -ForegroundColor Yellow
-    Write-Host "  Winget:                " -NoNewline -ForegroundColor Gray
+    Write-Host "`n$(Get-LocalizedString -Key 'gui.statistics.sources_title')" -ForegroundColor Yellow
+    Write-Host "  $(Get-LocalizedString -Key 'gui.statistics.label_winget')                " -NoNewline -ForegroundColor Gray
     Write-Host $stats.AppsWithWinget -ForegroundColor White
-    Write-Host "  Chocolatey:            " -NoNewline -ForegroundColor Gray
+    Write-Host "  $(Get-LocalizedString -Key 'gui.statistics.label_chocolatey')            " -NoNewline -ForegroundColor Gray
     Write-Host $stats.AppsWithChocolatey -ForegroundColor White
-    Write-Host "  Store:                 " -NoNewline -ForegroundColor Gray
+    Write-Host "  $(Get-LocalizedString -Key 'gui.statistics.label_store')                 " -NoNewline -ForegroundColor Gray
     Write-Host $stats.AppsWithStore -ForegroundColor White
-    Write-Host "  DirectUrl:             " -NoNewline -ForegroundColor Gray
+    Write-Host "  $(Get-LocalizedString -Key 'gui.statistics.label_directurl')             " -NoNewline -ForegroundColor Gray
     Write-Host $stats.AppsWithDirectUrl -ForegroundColor White
 
-    Write-Host "`nTop 5 Categories:" -ForegroundColor Yellow
+    Write-Host "`n$(Get-LocalizedString -Key 'gui.statistics.top_categories')" -ForegroundColor Yellow
     $stats.CategoryBreakdown.GetEnumerator() | Sort-Object -Property Value -Descending | Select-Object -First 5 | ForEach-Object {
         Write-Host ("  {0,-20} {1}" -f $_.Key, $_.Value) -ForegroundColor White
     }
 
     Write-Host ""
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 # ============================================================================
@@ -1152,18 +1175,18 @@ function Start-DatabaseValidation {
         Run database validation
     #>
 
-    Show-Header -Title "Database Validation"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.validation.title')
 
-    Write-Host "This will validate all application sources in the database." -ForegroundColor Yellow
-    Write-Host "This process may take several minutes." -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.validation.intro') -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.validation.time_warning') -ForegroundColor Yellow
     Write-Host ""
 
-    $confirm = Read-Host "Continue? (Y/N)"
+    $confirm = Read-Host (Get-LocalizedString -Key 'gui.validation.confirm')
 
     if ($confirm -ne 'Y' -and $confirm -ne 'y') { return }
 
     Write-Host ""
-    Write-Host "Validating database..." -ForegroundColor Green
+    Write-Host (Get-LocalizedString -Key 'gui.validation.validating') -ForegroundColor Green
     Write-Host ""
 
     $validationScript = Join-Path $script:RepositoryRoot 'Tools\Validate-AppDatabase.ps1'
@@ -1172,11 +1195,11 @@ function Start-DatabaseValidation {
         & $validationScript -ValidateWinget -ValidateChocolatey
     }
     else {
-        Write-Host "Validation script not found: $validationScript" -ForegroundColor Red
+        Write-Host (Get-LocalizedString -Key 'gui.validation.script_not_found' -Parameters @{ Path = $validationScript }) -ForegroundColor Red
     }
 
     Write-Host ""
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 # ============================================================================
@@ -1189,17 +1212,17 @@ function Show-SettingsMenu {
         Display settings and options
     #>
 
-    Show-Header -Title "Settings & Options"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.settings.title')
 
-    Write-Host "  1. View Framework Information" -ForegroundColor White
-    Write-Host "  2. View Logs Directory" -ForegroundColor White
-    Write-Host "  3. Check for Updates" -ForegroundColor White
-    Write-Host "  4. About Win11Forge" -ForegroundColor White
-    Write-Host "  0. Back to Main Menu" -ForegroundColor White
+    Write-Host "  1. $(Get-LocalizedString -Key 'gui.settings.view_info')" -ForegroundColor White
+    Write-Host "  2. $(Get-LocalizedString -Key 'gui.settings.view_logs')" -ForegroundColor White
+    Write-Host "  3. $(Get-LocalizedString -Key 'gui.settings.check_updates')" -ForegroundColor White
+    Write-Host "  4. $(Get-LocalizedString -Key 'gui.settings.about')" -ForegroundColor White
+    Write-Host "  0. $(Get-LocalizedString -Key 'gui.menu.back_to_main')" -ForegroundColor White
 
     Show-Footer
 
-    $choice = Read-Choice -Prompt "Option [0-4]" -ValidChoices @('0','1','2','3','4')
+    $choice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.settings.option_prompt') [0-4]" -ValidChoices @('0','1','2','3','4')
 
     switch ($choice) {
         '1' { Show-FrameworkInfo }
@@ -1211,82 +1234,82 @@ function Show-SettingsMenu {
 }
 
 function Show-FrameworkInfo {
-    Show-Header -Title "Framework Information"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.info.title')
 
-    Write-Host "Win11Forge Version:      " -NoNewline -ForegroundColor Yellow
-    Write-Host "2.4.0" -ForegroundColor White
+    Write-Host "$(Get-LocalizedString -Key 'gui.info.version')      " -NoNewline -ForegroundColor Yellow
+    Write-Host $script:FrameworkVersion -ForegroundColor White
 
-    Write-Host "PowerShell Version:      " -NoNewline -ForegroundColor Yellow
+    Write-Host "$(Get-LocalizedString -Key 'gui.info.ps_version')      " -NoNewline -ForegroundColor Yellow
     Write-Host "$($PSVersionTable.PSVersion)" -ForegroundColor White
 
-    Write-Host "Repository Path:         " -NoNewline -ForegroundColor Yellow
+    Write-Host "$(Get-LocalizedString -Key 'gui.info.repo_path')         " -NoNewline -ForegroundColor Yellow
     Write-Host $script:RepositoryRoot -ForegroundColor White
 
-    Write-Host "Database Loaded:         " -NoNewline -ForegroundColor Yellow
+    Write-Host "$(Get-LocalizedString -Key 'gui.info.db_loaded')         " -NoNewline -ForegroundColor Yellow
     Write-Host $script:DatabaseLoaded -ForegroundColor White
 
     Write-Host ""
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 function Show-LogsDirectory {
     $logsPath = Join-Path $script:RepositoryRoot 'Logs'
 
-    Show-Header -Title "Logs Directory"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.logs.title')
 
-    Write-Host "Logs Path: $logsPath" -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.logs.path' -Parameters @{ Path = $logsPath }) -ForegroundColor Yellow
     Write-Host ""
 
     if (Test-Path $logsPath) {
         $logs = Get-ChildItem -Path $logsPath -Filter '*.log' | Sort-Object -Property LastWriteTime -Descending
 
         if ($logs.Count -gt 0) {
-            Write-Host "Recent Logs:" -ForegroundColor Yellow
+            Write-Host (Get-LocalizedString -Key 'gui.logs.recent') -ForegroundColor Yellow
             $logs | Select-Object -First 10 | ForEach-Object {
                 Write-Host "  $($_.Name) - $($_.LastWriteTime)" -ForegroundColor White
             }
         }
         else {
-            Write-Host "No logs found." -ForegroundColor Gray
+            Write-Host (Get-LocalizedString -Key 'gui.logs.no_logs') -ForegroundColor Gray
         }
     }
     else {
-        Write-Host "Logs directory does not exist yet." -ForegroundColor Gray
+        Write-Host (Get-LocalizedString -Key 'gui.logs.no_directory') -ForegroundColor Gray
     }
 
     Write-Host ""
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 function Test-Updates {
-    Show-Header -Title "Check for Updates"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.updates.title')
 
-    Write-Host "Current Version: $script:FrameworkVersion" -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.updates.current_version' -Parameters @{ Version = $script:FrameworkVersion }) -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "No update mechanism configured (requires Git repository)." -ForegroundColor Gray
+    Write-Host (Get-LocalizedString -Key 'gui.updates.no_mechanism') -ForegroundColor Gray
 
     Write-Host ""
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 function Show-About {
-    Show-Header -Title "About Win11Forge"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.about.title')
 
     Write-Host "Win11Forge v$script:FrameworkVersion" -ForegroundColor Cyan
-    Write-Host "Windows 11 Deployment Framework with Centralized Database" -ForegroundColor White
+    Write-Host (Get-LocalizedString -Key 'gui.about.subtitle') -ForegroundColor White
     Write-Host ""
-    Write-Host "Features:" -ForegroundColor Yellow
-    Write-Host "  - 66 pre-configured applications" -ForegroundColor White
-    Write-Host "  - Profile-based deployment" -ForegroundColor White
-    Write-Host "  - Parallel installation support" -ForegroundColor White
-    Write-Host "  - Interactive GUI" -ForegroundColor White
-    Write-Host "  - Centralized application database" -ForegroundColor White
-    Write-Host "  - Custom profile creation" -ForegroundColor White
+    Write-Host (Get-LocalizedString -Key 'gui.about.features_title') -ForegroundColor Yellow
+    Write-Host "  - $(Get-LocalizedString -Key 'gui.about.feature_apps' -Parameters @{ Count = $script:AppDatabase.Count })" -ForegroundColor White
+    Write-Host "  - $(Get-LocalizedString -Key 'gui.about.feature_profiles')" -ForegroundColor White
+    Write-Host "  - $(Get-LocalizedString -Key 'gui.about.feature_parallel')" -ForegroundColor White
+    Write-Host "  - $(Get-LocalizedString -Key 'gui.about.feature_gui')" -ForegroundColor White
+    Write-Host "  - $(Get-LocalizedString -Key 'gui.about.feature_database')" -ForegroundColor White
+    Write-Host "  - $(Get-LocalizedString -Key 'gui.about.feature_custom')" -ForegroundColor White
     Write-Host ""
-    Write-Host "Documentation: See Apps/README.md and Apps/QUICK_START.md" -ForegroundColor Gray
+    Write-Host (Get-LocalizedString -Key 'gui.about.docs') -ForegroundColor Gray
 
     Write-Host ""
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 # ============================================================================
@@ -1299,34 +1322,34 @@ function Show-AddApplicationMenu {
         Interactive menu to add a new application to the database
     #>
 
-    Show-Header -Title "Add New Application"
+    Show-Header -Title (Get-LocalizedString -Key 'gui.add_app.title')
 
-    Write-Host "This wizard will help you add a new application to the database." -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.add_app.wizard_intro') -ForegroundColor Yellow
     Write-Host ""
 
     # Step 1: Get application name
-    Write-Host "Step 1: Application Name" -ForegroundColor Cyan
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
+    Write-Host (Get-LocalizedString -Key 'gui.add_app.step_name') -ForegroundColor Cyan
+    Write-Host "-------------------------------------------------------------------" -ForegroundColor Cyan
     Write-Host ""
-    $appName = Read-Host "Enter application name (e.g., 'Discord', 'Spotify')"
+    $appName = Read-Host (Get-LocalizedString -Key 'gui.add_app.enter_name')
 
     if ([string]::IsNullOrWhiteSpace($appName)) {
         Write-Host ""
-        Write-Host "❌ Application name cannot be empty" -ForegroundColor Red
-        Read-Host "Press Enter to continue"
+        Write-Host (Get-LocalizedString -Key 'gui.add_app.name_empty') -ForegroundColor Red
+        Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
         return
     }
 
     Write-Host ""
-    Write-Host "Searching for '$appName' across all sources..." -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'gui.add_app.searching' -Parameters @{ Name = $appName }) -ForegroundColor Yellow
     Write-Host ""
 
     # Step 2: Run search script
     $searchScript = Join-Path $script:RepositoryRoot 'Tools\Search-ApplicationSources.ps1'
 
     if (-not (Test-Path $searchScript)) {
-        Write-Host "❌ Search script not found at: $searchScript" -ForegroundColor Red
-        Read-Host "Press Enter to continue"
+        Write-Host (Get-LocalizedString -Key 'gui.add_app.search_script_missing' -Parameters @{ Path = $searchScript }) -ForegroundColor Red
+        Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
         return
     }
 
@@ -1335,49 +1358,49 @@ function Show-AddApplicationMenu {
         & $searchScript -AppName $appName
 
         Write-Host ""
-        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
+        Write-Host "-------------------------------------------------------------------" -ForegroundColor Cyan
         Write-Host ""
 
         # Step 3: Ask if user wants to add to database
-        Write-Host "Do you want to add this application to the database? " -ForegroundColor Yellow -NoNewline
-        Write-Host "(Y/N): " -ForegroundColor White -NoNewline
+        Write-Host (Get-LocalizedString -Key 'gui.add_app.add_to_db_prompt') -ForegroundColor Yellow -NoNewline
+        Write-Host " (Y/N): " -ForegroundColor White -NoNewline
         $addToDb = Read-Host
 
         if ($addToDb -ne 'Y' -and $addToDb -ne 'y') {
             Write-Host ""
-            Write-Host "ℹ️  Application not added" -ForegroundColor Gray
-            Read-Host "Press Enter to continue"
+            Write-Host (Get-LocalizedString -Key 'gui.add_app.not_added') -ForegroundColor Gray
+            Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
             return
         }
 
         # Step 4: Collect additional information
         Write-Host ""
-        Write-Host "Step 2: Additional Information" -ForegroundColor Cyan
-        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
+        Write-Host (Get-LocalizedString -Key 'gui.add_app.step_info') -ForegroundColor Cyan
+        Write-Host "-------------------------------------------------------------------" -ForegroundColor Cyan
         Write-Host ""
 
         $appId = $appName -replace '\s+', ''
-        Write-Host "Generated App ID: " -NoNewline -ForegroundColor Yellow
+        Write-Host "$(Get-LocalizedString -Key 'gui.add_app.generated_id') " -NoNewline -ForegroundColor Yellow
         Write-Host $appId -ForegroundColor White
 
         Write-Host ""
-        $wingetId = Read-Host "Winget ID (leave empty if none)"
-        $chocoId = Read-Host "Chocolatey ID (leave empty if none)"
-        $storeId = Read-Host "Microsoft Store ID (leave empty if none)"
-        $directUrl = Read-Host "Direct Download URL (leave empty if none)"
+        $wingetId = Read-Host (Get-LocalizedString -Key 'gui.add_app.winget_id')
+        $chocoId = Read-Host (Get-LocalizedString -Key 'gui.add_app.choco_id')
+        $storeId = Read-Host (Get-LocalizedString -Key 'gui.add_app.store_id')
+        $directUrl = Read-Host (Get-LocalizedString -Key 'gui.add_app.direct_url')
 
         Write-Host ""
-        $category = Read-Host "Category (e.g., Browser, Development, Gaming)"
-        $description = Read-Host "Description"
-        $homepage = Read-Host "Homepage URL"
+        $category = Read-Host (Get-LocalizedString -Key 'gui.add_app.category_prompt')
+        $description = Read-Host (Get-LocalizedString -Key 'gui.add_app.description_prompt')
+        $homepage = Read-Host (Get-LocalizedString -Key 'gui.add_app.homepage_prompt')
 
         Write-Host ""
-        Write-Host "Detection Method:" -ForegroundColor Yellow
-        Write-Host "  1. Registry"
-        Write-Host "  2. File"
-        Write-Host "  3. Command"
-        Write-Host "  4. StoreApp"
-        $detectionChoice = Read-Choice -Prompt "Select detection method [1-4]" -ValidChoices @('1','2','3','4')
+        Write-Host (Get-LocalizedString -Key 'gui.add_app.detection_title') -ForegroundColor Yellow
+        Write-Host "  1. $(Get-LocalizedString -Key 'gui.add_app.detection_registry')"
+        Write-Host "  2. $(Get-LocalizedString -Key 'gui.add_app.detection_file')"
+        Write-Host "  3. $(Get-LocalizedString -Key 'gui.add_app.detection_command')"
+        Write-Host "  4. $(Get-LocalizedString -Key 'gui.add_app.detection_storeapp')"
+        $detectionChoice = Read-Choice -Prompt "$(Get-LocalizedString -Key 'gui.add_app.select_detection') [1-4]" -ValidChoices @('1','2','3','4')
 
         $detectionMethod = switch ($detectionChoice) {
             '1' { 'Registry' }
@@ -1387,12 +1410,12 @@ function Show-AddApplicationMenu {
         }
 
         Write-Host ""
-        $detectionPath = Read-Host "Detection path (e.g., 'HKLM:\SOFTWARE\AppName' or 'C:\Program Files\App\app.exe')"
+        $detectionPath = Read-Host (Get-LocalizedString -Key 'gui.add_app.detection_path')
 
         # Step 5: Generate JSON entry
         Write-Host ""
-        Write-Host "Step 3: Review & Save" -ForegroundColor Cyan
-        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
+        Write-Host (Get-LocalizedString -Key 'gui.add_app.step_review') -ForegroundColor Cyan
+        Write-Host "-------------------------------------------------------------------" -ForegroundColor Cyan
         Write-Host ""
 
         $newApp = [PSCustomObject]@{
@@ -1418,20 +1441,20 @@ function Show-AddApplicationMenu {
             Homepage                 = if ($homepage) { $homepage } else { $null }
         }
 
-        Write-Host "Application JSON Preview:" -ForegroundColor Yellow
-        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
+        Write-Host (Get-LocalizedString -Key 'gui.add_app.json_preview') -ForegroundColor Yellow
+        Write-Host "-------------------------------------------------------------------" -ForegroundColor Gray
         $newApp | ConvertTo-Json -Depth 10 | Write-Host -ForegroundColor Gray
-        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Gray
+        Write-Host "-------------------------------------------------------------------" -ForegroundColor Gray
         Write-Host ""
 
-        Write-Host "Save this application to database? " -ForegroundColor Yellow -NoNewline
-        Write-Host "(Y/N): " -ForegroundColor White -NoNewline
+        Write-Host (Get-LocalizedString -Key 'gui.add_app.save_prompt') -ForegroundColor Yellow -NoNewline
+        Write-Host " (Y/N): " -ForegroundColor White -NoNewline
         $confirmSave = Read-Host
 
         if ($confirmSave -ne 'Y' -and $confirmSave -ne 'y') {
             Write-Host ""
-            Write-Host "ℹ️  Application not saved" -ForegroundColor Gray
-            Read-Host "Press Enter to continue"
+            Write-Host (Get-LocalizedString -Key 'gui.add_app.not_saved') -ForegroundColor Gray
+            Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
             return
         }
 
@@ -1440,8 +1463,8 @@ function Show-AddApplicationMenu {
 
         if (-not (Test-Path $dbPath)) {
             Write-Host ""
-            Write-Host "❌ Database file not found: $dbPath" -ForegroundColor Red
-            Read-Host "Press Enter to continue"
+            Write-Host (Get-LocalizedString -Key 'gui.add_app.db_not_found' -Parameters @{ Path = $dbPath }) -ForegroundColor Red
+            Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
             return
         }
 
@@ -1467,20 +1490,20 @@ function Show-AddApplicationMenu {
         "const WIN11FORGE_APPS = $appsJson;" | Set-Content -Path $jsPath -Encoding UTF8
 
         Write-Host ""
-        Write-Host "✅ Application '$appName' added successfully!" -ForegroundColor Green
-        Write-Host "   - App ID: $appId" -ForegroundColor Gray
-        Write-Host "   - Total apps in database: $($db.TotalApplications)" -ForegroundColor Gray
-        Write-Host "   - applications-data.js updated" -ForegroundColor Gray
+        Write-Host (Get-LocalizedString -Key 'gui.add_app.success' -Parameters @{ Name = $appName }) -ForegroundColor Green
+        Write-Host "   - $(Get-LocalizedString -Key 'gui.add_app.success_appid' -Parameters @{ AppId = $appId })" -ForegroundColor Gray
+        Write-Host "   - $(Get-LocalizedString -Key 'gui.add_app.success_total' -Parameters @{ Count = $db.TotalApplications })" -ForegroundColor Gray
+        Write-Host "   - $(Get-LocalizedString -Key 'gui.add_app.success_js')" -ForegroundColor Gray
         Write-Host ""
 
     }
     catch {
         Write-Host ""
-        Write-Host "❌ Error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "$(Get-LocalizedString -Key 'common.error'): $($_.Exception.Message)" -ForegroundColor Red
         Write-Host ""
     }
 
-    Read-Host "Press Enter to continue"
+    Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
 }
 
 # ============================================================================

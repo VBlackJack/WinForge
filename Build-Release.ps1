@@ -35,6 +35,22 @@
     License: Apache 2.0
 #>
 
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 [CmdletBinding()]
 param(
     [Parameter()]
@@ -173,14 +189,17 @@ if (-not (Test-Path $DistRoot)) {
 
 New-Item -ItemType Directory -Path $ReleasePath -Force | Out-Null
 
-# Copy the entire publish output (WPF apps require all DLLs, not just .exe)
+# Copy the GUI to a subfolder (WPF apps require all DLLs)
+$guiDestPath = Join-Path $ReleasePath "GUI"
+New-Item -ItemType Directory -Path $guiDestPath -Force | Out-Null
+
 $exePath = Join-Path $PublishPath "Win11Forge.GUI.exe"
 if (Test-Path $exePath) {
-    # Copy all files from publish folder
-    Copy-Item "$PublishPath\*" -Destination $ReleasePath -Recurse
+    # Copy all files from publish folder to GUI subfolder
+    Copy-Item "$PublishPath\*" -Destination $guiDestPath -Recurse
     $fileCount = (Get-ChildItem $PublishPath -File).Count
     $totalSize = [math]::Round((Get-ChildItem $PublishPath -Recurse -File | Measure-Object -Property Length -Sum).Sum / 1MB, 2)
-    Write-Host "  Copied: GUI files ($fileCount files, $totalSize MB)" -ForegroundColor Gray
+    Write-Host "  Copied: GUI/ ($fileCount files, $totalSize MB)" -ForegroundColor Gray
 } else {
     Write-Host "ERROR: Win11Forge.GUI.exe not found at $exePath" -ForegroundColor Red
     exit 1
@@ -192,7 +211,7 @@ if (Test-Path $exePath) {
 $currentStep++
 Write-Host "[$currentStep/$stepCount] Copying PowerShell infrastructure..." -ForegroundColor Yellow
 
-$foldersToCopy = @("Modules", "Core", "Apps", "Profiles", "Config")
+$foldersToCopy = @("Modules", "Core", "Apps", "Profiles", "Config", "Docs")
 foreach ($folder in $foldersToCopy) {
     $sourcePath = Join-Path $ScriptRoot $folder
     $destPath = Join-Path $ReleasePath $folder
@@ -207,10 +226,8 @@ foreach ($folder in $foldersToCopy) {
 
 # Copy essential root files
 $rootFiles = @(
-    "Win11Forge.ps1",
-    "Win11Forge.psd1",
-    "Deploy-Win11Forge.bat",
     "Deploy-Win11Environment.ps1",
+    "CHANGELOG.md",
     "LICENSE",
     "README.md"
 )
@@ -223,50 +240,18 @@ foreach ($file in $rootFiles) {
     }
 }
 
-# Create launcher script
+# Create launcher script (simple .cmd)
 $launcherContent = @'
-<#
-.SYNOPSIS
-    Launches Win11Forge GUI or CLI.
-
-.DESCRIPTION
-    This script launches the Win11Forge WPF application.
-    Use -CLI to run in command-line mode instead.
-
-.PARAMETER CLI
-    Launch in CLI mode instead of GUI.
-
-.EXAMPLE
-    .\Start-Win11Forge.ps1
-    .\Start-Win11Forge.ps1 -CLI
-#>
-
-[CmdletBinding()]
-param(
-    [switch]$CLI
-)
-
-$ScriptRoot = $PSScriptRoot
-$GuiExe = Join-Path $ScriptRoot "Win11Forge.GUI.exe"
-$CliScript = Join-Path $ScriptRoot "Win11Forge.ps1"
-
-if ($CLI -or -not (Test-Path $GuiExe)) {
-    if (Test-Path $CliScript) {
-        Write-Host "Launching Win11Forge CLI..." -ForegroundColor Cyan
-        & $CliScript @args
-    } else {
-        Write-Host "ERROR: Neither GUI nor CLI found!" -ForegroundColor Red
-        exit 1
-    }
-} else {
-    Write-Host "Launching Win11Forge GUI..." -ForegroundColor Cyan
-    Start-Process $GuiExe -WorkingDirectory $ScriptRoot
-}
+@echo off
+:: Win11Forge GUI Launcher
+:: This script launches the Win11Forge GUI application
+cd /d "%~dp0GUI"
+start "" "Win11Forge.GUI.exe"
 '@
 
-$launcherPath = Join-Path $ReleasePath "Start-Win11Forge.ps1"
-Set-Content -Path $launcherPath -Value $launcherContent -Encoding UTF8
-Write-Host "  Created: Start-Win11Forge.ps1" -ForegroundColor Gray
+$launcherPath = Join-Path $ReleasePath "Win11Forge.cmd"
+Set-Content -Path $launcherPath -Value $launcherContent -Encoding ASCII
+Write-Host "  Created: Win11Forge.cmd" -ForegroundColor Gray
 
 # ============================================
 # Step 6: Clean unnecessary files

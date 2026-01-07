@@ -96,7 +96,7 @@ public partial class SettingsViewModel : ViewModelBase
         ];
 
         // Initialize version
-        AppVersion = "3.0.0";
+        AppVersion = "3.0.1";
 
         // Load current settings
         LoadCurrentSettings();

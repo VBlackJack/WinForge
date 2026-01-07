@@ -20,12 +20,29 @@
     All bugs from deployment test have been corrected
 #>
 
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 Set-StrictMode -Version Latest
 
 # === MODULE INITIALIZATION ===
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
+$script:DownloadSourcesPath = Join-Path $script:RepositoryRoot 'Config\download-sources.json'
 
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
@@ -33,6 +50,68 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     } else {
         throw 'Core module is required before loading Prerequisites.psm1'
     }
+}
+
+# Import Localization module for i18n support
+$script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force
+    }
+}
+
+# === DOWNLOAD SOURCES CONFIGURATION ===
+$script:DownloadSources = $null
+
+function Get-DownloadSources {
+    <#
+    .SYNOPSIS
+        Loads download sources configuration from JSON file.
+    .OUTPUTS
+        Hashtable containing download URLs and configuration
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param()
+
+    if ($null -eq $script:DownloadSources) {
+        if (Test-Path -Path $script:DownloadSourcesPath) {
+            try {
+                $content = Get-Content -Path $script:DownloadSourcesPath -Raw -Encoding UTF8
+                # PS5.1 compatible: don't use -AsHashtable, dot notation works with PSCustomObject
+                $script:DownloadSources = $content | ConvertFrom-Json -ErrorAction Stop
+            }
+            catch {
+                Write-Warning "Failed to load download sources config: $($_.Exception.Message)"
+                # Fallback to default values
+                $script:DownloadSources = @{
+                    prerequisites = @{
+                        chocolatey = @{
+                            downloadUrl = 'https://community.chocolatey.org/api/v2/package/chocolatey'
+                        }
+                        powershell7 = @{
+                            downloadUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/PowerShell-7.4.6-win-x64.msi'
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            # Fallback to default values if config file doesn't exist
+            $script:DownloadSources = @{
+                prerequisites = @{
+                    chocolatey = @{
+                        downloadUrl = 'https://community.chocolatey.org/api/v2/package/chocolatey'
+                    }
+                    powershell7 = @{
+                        downloadUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/PowerShell-7.4.6-win-x64.msi'
+                    }
+                }
+            }
+        }
+    }
+
+    return $script:DownloadSources
 }
 
 # === ENVIRONMENT REFRESH ===
@@ -115,7 +194,7 @@ function Invoke-EnvironmentRefresh {
     # Force Get-Command cache refresh
     Get-Command -All | Out-Null
 
-    Write-Status -Message "Environment refreshed" -Level 'Success'
+    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.environment.refreshed') -Level 'Success'
 }
 
 # === HELPER FUNCTIONS ===
@@ -184,12 +263,12 @@ function Install-Chocolatey {
     $chocolateyAvailable = Test-CommandAvailable -Name 'choco'
 
     if ($chocolateyAvailable -and -not $Force) {
-        Write-Status -Message 'Chocolatey is already installed' -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.already_installed') -Level 'Info'
         return $true
     }
 
     try {
-        Write-Status -Message 'Installing Chocolatey package manager...' -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.installing') -Level 'Info'
 
         Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
@@ -209,14 +288,16 @@ function Install-Chocolatey {
 
         try {
             # Download latest Chocolatey nupkg
-            Write-Status -Message 'Downloading Chocolatey package...' -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.downloading') -Level 'Info'
             $chocoNupkg = Join-Path $chocoTempPath 'chocolatey.nupkg'
             $webClient = New-Object System.Net.WebClient
-            $webClient.DownloadFile('https://community.chocolatey.org/api/v2/package/chocolatey', $chocoNupkg)
+            $sources = Get-DownloadSources
+            $chocoUrl = $sources.prerequisites.chocolatey.downloadUrl
+            $webClient.DownloadFile($chocoUrl, $chocoNupkg)
             $webClient.Dispose()
 
             # Extract nupkg (it's just a ZIP file)
-            Write-Status -Message 'Extracting Chocolatey package...' -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.extracting') -Level 'Info'
             $chocoExtractPath = Join-Path $chocoTempPath 'chocolatey'
             [System.IO.Compression.ZipFile]::ExtractToDirectory($chocoNupkg, $chocoExtractPath)
 
@@ -230,7 +311,7 @@ function Install-Chocolatey {
             $env:ChocolateyInstall = $chocoInstallPath
 
             # Create Chocolatey directory structure
-            Write-Status -Message 'Setting up Chocolatey directories...' -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.setup_dirs') -Level 'Info'
             $chocoLibPath = Join-Path $chocoInstallPath 'lib'
             $chocoBinPath = Join-Path $chocoInstallPath 'bin'
             New-Item -ItemType Directory -Path $chocoLibPath -Force | Out-Null
@@ -244,7 +325,7 @@ function Install-Chocolatey {
             Copy-Item $chocoExtractPath -Destination $chocoLibChoco -Recurse
 
             # Run the chocolatey install script
-            Write-Status -Message 'Running Chocolatey setup...' -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.running_setup') -Level 'Info'
             & $installScript
 
             # Add Chocolatey to PATH if not already there
@@ -267,16 +348,16 @@ function Install-Chocolatey {
         Invoke-EnvironmentRefresh
 
     } catch {
-        Write-Status -Message "Chocolatey installation failed: $($_.Exception.Message)" -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.install_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         throw "Chocolatey installation failed: $($_.Exception.Message)"
     }
 
     if (Test-CommandAvailable -Name 'choco') {
-        Write-Status -Message 'Chocolatey installed successfully' -Level 'Success'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.installed_success') -Level 'Success'
         return $true
     }
 
-    Write-Status -Message 'Chocolatey installation failed: Unknown error' -Level 'Error'
+    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.install_failed_unknown') -Level 'Error'
     return $false
 }
 
@@ -293,11 +374,11 @@ function Install-PowerShell7 {
     $currentVersion = $PSVersionTable.PSVersion
 
     if ($currentVersion.Major -ge 7 -and -not $Force) {
-        Write-Status -Message "PowerShell $currentVersion is already installed" -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.already_installed' -Parameters @{ Version = $currentVersion }) -Level 'Info'
         return $true
     }
 
-    Write-Status -Message 'Installing PowerShell 7...' -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.installing') -Level 'Info'
 
     # Try Winget first
     if (Test-CommandAvailable -Name 'winget') {
@@ -306,8 +387,8 @@ function Install-PowerShell7 {
             if ($Force) { $arguments += '--force' }
 
             if (Invoke-ExternalProcess -FilePath 'winget' -ArgumentList $arguments -RefreshEnvironment) {
-                Write-Status -Message 'PowerShell 7 installation completed successfully' -Level 'Success'
-                Write-Status -Message 'IMPORTANT: Please restart this script in PowerShell 7 for full functionality' -Level 'Warning'
+                Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.completed') -Level 'Success'
+                Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.restart_required') -Level 'Warning'
                 return $true
             }
         } catch {
@@ -322,8 +403,8 @@ function Install-PowerShell7 {
             if ($Force) { $arguments += '--force' }
 
             if (Invoke-ExternalProcess -FilePath 'choco' -ArgumentList $arguments -RefreshEnvironment) {
-                Write-Status -Message 'PowerShell 7 installation completed successfully' -Level 'Success'
-                Write-Status -Message 'IMPORTANT: Please restart this script in PowerShell 7 for full functionality' -Level 'Warning'
+                Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.completed') -Level 'Success'
+                Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.restart_required') -Level 'Warning'
                 return $true
             }
         } catch {
@@ -333,18 +414,20 @@ function Install-PowerShell7 {
 
     # Direct download as last resort
     try {
-        Write-Status -Message 'Attempting direct download...' -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.direct_download') -Level 'Info'
 
-        $downloadUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/PowerShell-7.4.6-win-x64.msi'
-        $tempPath = Join-Path -Path $env:TEMP -ChildPath 'PowerShell-7.4.6-win-x64.msi'
+        $sources = Get-DownloadSources
+        $downloadUrl = $sources.prerequisites.powershell7.downloadUrl
+        $fileName = [System.IO.Path]::GetFileName($downloadUrl)
+        $tempPath = Join-Path -Path $env:TEMP -ChildPath $fileName
 
         Invoke-WebRequest -Uri $downloadUrl -OutFile $tempPath -UseBasicParsing
 
         $arguments = @('/i', "`"$tempPath`"", '/qn', '/norestart', 'ADD_PATH=1', 'ENABLE_MU=1')
         if (Invoke-ExternalProcess -FilePath 'msiexec.exe' -ArgumentList $arguments -RefreshEnvironment) {
             Remove-Item -Path $tempPath -Force -ErrorAction SilentlyContinue
-            Write-Status -Message 'PowerShell 7 installation completed successfully' -Level 'Success'
-            Write-Status -Message 'IMPORTANT: Please restart this script in PowerShell 7 for full functionality' -Level 'Warning'
+            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.completed') -Level 'Success'
+            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.restart_required') -Level 'Warning'
             return $true
         }
 
@@ -353,7 +436,7 @@ function Install-PowerShell7 {
         Write-Verbose "Direct download failed: $($_.Exception.Message)"
     }
 
-    Write-Status -Message 'PowerShell 7 installation failed: Unknown error' -Level 'Error'
+    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.powershell.install_failed_unknown') -Level 'Error'
     return $false
 }
 
@@ -403,7 +486,7 @@ function Install-DotNetRuntime {
     $allSucceeded = $true
 
     foreach ($runtime in $runtimes) {
-        Write-Status -Message "Installing $($runtime.Name)..." -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.dotnet.installing' -Parameters @{ Name = $runtime.Name }) -Level 'Info'
         $installed = $false
 
         # Try Winget first
@@ -423,9 +506,9 @@ function Install-DotNetRuntime {
         }
 
         if ($installed) {
-            Write-Status -Message "$($runtime.Name) installed successfully" -Level 'Success'
+            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.dotnet.installed_success' -Parameters @{ Name = $runtime.Name }) -Level 'Success'
         } else {
-            Write-Status -Message "Installation failed for $($runtime.Name)" -Level 'Warning'
+            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.dotnet.install_failed' -Parameters @{ Name = $runtime.Name }) -Level 'Warning'
             $allSucceeded = $false
         }
     }
@@ -462,7 +545,7 @@ function Install-VCRedist {
     $allSucceeded = $true
 
     foreach ($vcRedist in $vcRedists) {
-        Write-Status -Message "Installing $($vcRedist.Name)..." -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.vcredist.installing' -Parameters @{ Name = $vcRedist.Name }) -Level 'Info'
         $installed = $false
 
         # Try Chocolatey first (more reliable for VCRedist)
@@ -483,9 +566,9 @@ function Install-VCRedist {
         }
 
         if ($installed) {
-            Write-Status -Message "$($vcRedist.Name) installed successfully" -Level 'Success'
+            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.vcredist.installed_success' -Parameters @{ Name = $vcRedist.Name }) -Level 'Success'
         } else {
-            Write-Status -Message "Installation failed for $($vcRedist.Name)" -Level 'Warning'
+            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.vcredist.install_failed' -Parameters @{ Name = $vcRedist.Name }) -Level 'Warning'
             $allSucceeded = $false
         }
     }
@@ -507,7 +590,7 @@ function Install-JavaRuntime {
     try {
         & java -version 2>&1 | Out-Null
         if ($LASTEXITCODE -eq 0 -and -not $Force) {
-            Write-Status -Message 'Java runtime is already installed' -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'prerequisites.java.already_installed') -Level 'Info'
             $javaVersion = & java -version 2>&1 | Select-Object -First 1
             Write-Verbose "Detected: $javaVersion"
             return $true
@@ -517,7 +600,7 @@ function Install-JavaRuntime {
         Write-Verbose "Java detection failed, continuing with installation: $($_.Exception.Message)"
     }
 
-    Write-Status -Message 'Installing Java runtime (Temurin JRE 21)...' -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.java.installing') -Level 'Info'
     $installed = $false
 
     # Try Winget first
@@ -542,7 +625,7 @@ function Install-JavaRuntime {
         try {
             & java -version 2>&1 | Out-Null
             if ($LASTEXITCODE -eq 0) {
-                Write-Status -Message 'Java runtime installed and verified successfully' -Level 'Success'
+                Write-Status -Message (Get-LocalizedString -Key 'prerequisites.java.installed_verified') -Level 'Success'
                 return $true
             }
         } catch {
@@ -550,7 +633,7 @@ function Install-JavaRuntime {
         }
     }
 
-    Write-Status -Message 'Java runtime installation failed or could not be verified' -Level 'Warning'
+    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.java.install_failed') -Level 'Warning'
     return $false
 }
 
@@ -671,7 +754,7 @@ function Start-PrerequisitesInstallation {
     [CmdletBinding()]
     param([switch]$Force)
 
-    Write-Status -Message 'Starting prerequisite installation workflow...' -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'prerequisites.workflow.starting') -Level 'Info'
 
     try {
         # Install package managers first
@@ -682,21 +765,20 @@ function Start-PrerequisitesInstallation {
         Install-PowerShell7 -Force:$Force | Out-Null
 
         # Install runtimes
-        Write-Status -Message 'Installing runtime environments...' -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.workflow.installing_runtimes') -Level 'Info'
         Install-DotNetRuntime -Force:$Force | Out-Null
         Install-VCRedist -Force:$Force | Out-Null
         Install-JavaRuntime -Force:$Force | Out-Null
 
         # Final environment refresh
-        Write-Status -Message 'Performing final environment refresh...' -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.workflow.final_refresh') -Level 'Info'
         Invoke-EnvironmentRefresh
 
         # Test and report results
         $results = Test-Prerequisites
 
-        # FIXED: Use Write-Host for empty lines instead of Write-Status
         Write-Host ""
-        Write-Status -Message '=== Prerequisite Installation Summary ===' -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.workflow.summary_title') -Level 'Info'
 
         foreach ($key in $results.Keys) {
             $status = if ($results[$key].Installed) { '[OK]' } else { '[MISSING]' }
@@ -704,11 +786,11 @@ function Start-PrerequisitesInstallation {
             Write-Status -Message "$status $key : $($results[$key].Version)" -Level $statusLevel
         }
 
-        Write-Status -Message 'Prerequisite installation workflow completed' -Level 'Success'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.workflow.completed') -Level 'Success'
 
         return $results
     } catch {
-        Write-Status -Message "Prerequisite installation failed: $($_.Exception.Message)" -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'prerequisites.workflow.failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         throw
     }
 }

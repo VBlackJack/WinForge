@@ -331,6 +331,9 @@ function Test-PrerequisitesValidation {
             return
         }
 
+        # Optional prerequisites (warning instead of failure if missing)
+        $optionalPrereqs = @('PowerShell7', 'Java')
+
         foreach ($key in $prereqs.Keys) {
             # Ensure we have valid data
             if ($null -eq $prereqs[$key]) {
@@ -371,7 +374,14 @@ function Test-PrerequisitesValidation {
                 $installed = $true
             }
 
-            Write-ValidationResult -Test "$key installed" -Passed $installed
+            # Optional prerequisites: show warning instead of failure
+            if (-not $installed -and $key -in $optionalPrereqs) {
+                Write-ValidationWarning "$key not installed (optional)"
+                # Still show as OK since it's optional
+                Write-ValidationResult -Test "$key installed" -Passed $true -Message "(optional)"
+            } else {
+                Write-ValidationResult -Test "$key installed" -Passed $installed
+            }
 
             # Show version if available and in detailed mode
             if ($Detailed) {

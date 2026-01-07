@@ -1,7 +1,7 @@
 {
   "Name": "Office",
   "Description": "Professional productivity profile - Base + office and collaboration tools (v3.0.0 - Database Mode)",
-  "Version": "3.0.0",
+  "Version": "3.0.1",
   "Inherits": ["Base"],
   "Applications": [
     "Office365",

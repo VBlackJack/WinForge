@@ -14,6 +14,22 @@
     Requires: PowerShell 5.1+, Administrator privileges
 #>
 
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 Set-StrictMode -Version Latest
 
 # === MODULE INITIALIZATION ===
@@ -24,6 +40,14 @@ $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
+    }
+}
+
+# Import Localization module for i18n support
+$script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force
     }
 }
 
@@ -110,7 +134,7 @@ function Get-StartupApplications {
         }
     }
     catch {
-        Write-Status -Message "Could not enumerate scheduled tasks: $($_.Exception.Message)" -Level 'Verbose'
+        Write-Status -Message (Get-LocalizedString -Key 'startup.could_not_enum_tasks' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
     }
 
     return $startupApps
@@ -151,7 +175,7 @@ function Disable-StartupApplication {
     }
 
     if ($matchingApps.Count -eq 0) {
-        Write-Status -Message "No startup application found matching: $Name" -Level 'Warning'
+        Write-Status -Message (Get-LocalizedString -Key 'startup.not_found' -Parameters @{ Name = $Name }) -Level 'Warning'
         return $false
     }
 
@@ -162,28 +186,28 @@ function Disable-StartupApplication {
                 'Registry' {
                     if ($PSCmdlet.ShouldProcess($app.Name, "Remove from registry: $($app.Path)")) {
                         Remove-ItemProperty -Path $app.Path -Name $app.Name -ErrorAction Stop
-                        Write-Status -Message "Disabled: $($app.Name) (Registry: $($app.Location))" -Level 'Success'
+                        Write-Status -Message (Get-LocalizedString -Key 'startup.disabled_registry' -Parameters @{ Name = $app.Name; Location = $app.Location }) -Level 'Success'
                         $disabled++
                     }
                 }
                 'Shortcut' {
                     if ($PSCmdlet.ShouldProcess($app.Name, "Remove shortcut: $($app.Path)")) {
                         Remove-Item -Path $app.Path -Force -ErrorAction Stop
-                        Write-Status -Message "Disabled: $($app.Name) (Shortcut removed)" -Level 'Success'
+                        Write-Status -Message (Get-LocalizedString -Key 'startup.disabled_shortcut' -Parameters @{ Name = $app.Name }) -Level 'Success'
                         $disabled++
                     }
                 }
                 'ScheduledTask' {
                     if ($PSCmdlet.ShouldProcess($app.Name, "Disable scheduled task")) {
                         Disable-ScheduledTask -TaskName $app.Name -ErrorAction Stop | Out-Null
-                        Write-Status -Message "Disabled: $($app.Name) (Scheduled Task)" -Level 'Success'
+                        Write-Status -Message (Get-LocalizedString -Key 'startup.disabled_task' -Parameters @{ Name = $app.Name }) -Level 'Success'
                         $disabled++
                     }
                 }
             }
         }
         catch {
-            Write-Status -Message "Failed to disable $($app.Name): $($_.Exception.Message)" -Level 'Error'
+            Write-Status -Message (Get-LocalizedString -Key 'startup.failed_disable' -Parameters @{ Name = $app.Name; Error = $_.Exception.Message }) -Level 'Error'
         }
     }
 
@@ -207,7 +231,7 @@ function Disable-StartupApplications {
         [string[]]$ApplicationNames
     )
 
-    Write-Status -Message "Disabling startup applications..." -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'startup.disabling') -Level 'Info'
 
     $stats = @{
         Total = $ApplicationNames.Count
@@ -216,7 +240,7 @@ function Disable-StartupApplications {
     }
 
     foreach ($appName in $ApplicationNames) {
-        Write-Status -Message "Processing: $appName" -Level 'Verbose'
+        Write-Status -Message (Get-LocalizedString -Key 'startup.processing' -Parameters @{ Name = $appName }) -Level 'Verbose'
 
         $result = Disable-StartupApplication -Name $appName -WhatIf:$WhatIfPreference
 
@@ -229,12 +253,13 @@ function Disable-StartupApplications {
     }
 
     # Summary
-    Write-Status -Message "`n=== Startup Applications Management ===" -Level 'Info'
-    Write-Status -Message "Total applications processed: $($stats.Total)" -Level 'Info'
-    Write-Status -Message "Successfully disabled: $($stats.Disabled)" -Level 'Success'
+    Write-Host ""
+    Write-Status -Message (Get-LocalizedString -Key 'startup.summary_title') -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'startup.total_processed' -Parameters @{ Count = $stats.Total }) -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'startup.success_disabled' -Parameters @{ Count = $stats.Disabled }) -Level 'Success'
 
     if ($stats.NotFound -gt 0) {
-        Write-Status -Message "Not found: $($stats.NotFound)" -Level 'Warning'
+        Write-Status -Message (Get-LocalizedString -Key 'startup.not_found_count' -Parameters @{ Count = $stats.NotFound }) -Level 'Warning'
     }
 }
 
@@ -250,16 +275,16 @@ function Show-StartupApplications {
     [CmdletBinding()]
     param()
 
-    Write-Status -Message "=== Startup Applications ===" -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'startup.apps_title') -Level 'Info'
 
     $startupApps = Get-StartupApplications
 
     if ($startupApps.Count -eq 0) {
-        Write-Status -Message "No startup applications found" -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'startup.no_apps_found') -Level 'Info'
         return
     }
 
-    Write-Status -Message "Found $($startupApps.Count) startup applications:" -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'startup.found_count' -Parameters @{ Count = $startupApps.Count }) -Level 'Info'
     Write-Host ""
 
     # Group by location
@@ -305,11 +330,11 @@ function Invoke-StartupBlacklist {
         $ConfigPath = Join-Path $repoRoot 'Config\startup-blacklist.json'
     }
 
-    Write-Status -Message "=== Applying Startup Blacklist ===" -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'startup.blacklist_title') -Level 'Info'
 
     # Check if config file exists
     if (-not (Test-Path $ConfigPath)) {
-        Write-Status -Message "Startup blacklist config not found: $ConfigPath" -Level 'Warning'
+        Write-Status -Message (Get-LocalizedString -Key 'startup.blacklist_not_found' -Parameters @{ Path = $ConfigPath }) -Level 'Warning'
         return
     }
 
@@ -317,29 +342,29 @@ function Invoke-StartupBlacklist {
         # Load configuration
         $config = Get-Content -Path $ConfigPath -Raw | ConvertFrom-Json
 
-        Write-Status -Message "Loaded configuration: $($config.Description)" -Level 'Info'
-        Write-Status -Message "Version: $($config.Version)" -Level 'Verbose'
+        Write-Status -Message (Get-LocalizedString -Key 'startup.blacklist_loaded' -Parameters @{ Description = $config.Description }) -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'startup.blacklist_version' -Parameters @{ Version = $config.Version }) -Level 'Verbose'
 
         # Filter enabled applications
         $appsToDisable = $config.DisabledApplications | Where-Object { $_.Enabled -eq $true }
 
         if ($appsToDisable.Count -eq 0) {
-            Write-Status -Message "No applications configured for startup removal" -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'startup.no_apps_configured') -Level 'Info'
             return
         }
 
-        Write-Status -Message "Found $($appsToDisable.Count) applications to disable" -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'startup.apps_to_disable' -Parameters @{ Count = $appsToDisable.Count }) -Level 'Info'
 
         # Extract just the names
         $appNames = $appsToDisable | ForEach-Object { $_.Name }
 
         # Show what will be disabled
         Write-Host ""
-        Write-Host "Applications to disable from startup:" -ForegroundColor Yellow
+        Write-Host (Get-LocalizedString -Key 'startup.apps_list_header') -ForegroundColor Yellow
         foreach ($app in $appsToDisable) {
             Write-Host "  - $($app.Name)" -ForegroundColor White
             if ($app.Reason) {
-                Write-Host "    Reason: $($app.Reason)" -ForegroundColor Gray
+                Write-Host "    $(Get-LocalizedString -Key 'startup.app_reason' -Parameters @{ Reason = $app.Reason })" -ForegroundColor Gray
             }
         }
         Write-Host ""
@@ -347,10 +372,10 @@ function Invoke-StartupBlacklist {
         # Disable the applications
         Disable-StartupApplications -ApplicationNames $appNames -WhatIf:$WhatIfPreference
 
-        Write-Status -Message "Startup blacklist applied successfully" -Level 'Success'
+        Write-Status -Message (Get-LocalizedString -Key 'startup.blacklist_applied') -Level 'Success'
     }
     catch {
-        Write-Status -Message "Error applying startup blacklist: $($_.Exception.Message)" -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'startup.blacklist_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
     }
 }
 

@@ -17,6 +17,22 @@
     NEW: Supports Application Database references (AppId strings or objects)
 #>
 
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 Set-StrictMode -Version Latest
 
 # === MODULE INITIALIZATION ===
@@ -28,6 +44,14 @@ $script:AppDatabaseModulePath = Join-Path $script:ModuleRoot 'ApplicationDatabas
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
+    }
+}
+
+# Import Localization module for i18n support
+$script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force
     }
 }
 
@@ -668,7 +692,9 @@ function Test-ProfileValid {
                 }
             }
 
-            if (-not $hasSources -and -not $app.InstallMethod) {
+            # PS5.1 compatible: check if property exists before accessing
+            $hasInstallMethod = $null -ne $app.PSObject.Properties['InstallMethod'] -and $app.InstallMethod
+            if (-not $hasSources -and -not $hasInstallMethod) {
                 $result.Warnings += "Application '$($app.Name)' has no installation sources"
             }
 

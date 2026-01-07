@@ -49,6 +49,26 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# === LOCALIZATION ===
+
+$script:ScriptRoot = $PSScriptRoot
+
+# Import Localization module
+$localizationModule = Join-Path $script:ScriptRoot 'Core\Localization.psm1'
+if (Test-Path $localizationModule) {
+    Import-Module $localizationModule -Force
+    Initialize-Localization
+}
+
+# Helper function for localization (fallback if module not loaded)
+function Get-Text {
+    param([string]$Key, [hashtable]$Parameters = @{}, [string]$Default = $Key)
+    if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
+        return Get-LocalizedString -Key $Key -Parameters $Parameters -DefaultValue $Default
+    }
+    return $Default
+}
+
 # === HELPER FUNCTIONS ===
 
 function Write-SetupStatus {
@@ -88,37 +108,37 @@ $versionInfo = & "$PSScriptRoot\Tools\Get-Win11ForgeVersion.ps1"
 $version = $versionInfo.Version
 
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║        Win11Forge Framework Setup v$version                    ║" -ForegroundColor Cyan
-Write-Host "║        Automated Installation & Configuration               ║" -ForegroundColor Cyan
-Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "======================================================================" -ForegroundColor Cyan
+Write-Host "  $(Get-Text -Key 'setup.banner_title' -Parameters @{ Version = $version } -Default "Win11Forge Framework Setup v$version")" -ForegroundColor Cyan
+Write-Host "  $(Get-Text -Key 'setup.banner_subtitle' -Default 'Automated Installation & Configuration')" -ForegroundColor Cyan
+Write-Host "======================================================================" -ForegroundColor Cyan
 Write-Host ""
 
 # === PREREQUISITES CHECK ===
 
-Write-SetupStatus "Checking prerequisites..." -Level Info
+Write-SetupStatus (Get-Text -Key 'setup.checking_prereq' -Default 'Checking prerequisites...') -Level Info
 
 if (-not (Test-AdminPrivileges)) {
-    Write-SetupStatus "Administrator privileges required!" -Level Error
-    Write-SetupStatus "Please run this script as Administrator" -Level Error
+    Write-SetupStatus (Get-Text -Key 'setup.error.admin_required' -Default 'Administrator privileges required!') -Level Error
+    Write-SetupStatus (Get-Text -Key 'setup.error.run_as_admin' -Default 'Please run this script as Administrator') -Level Error
     exit 1
 }
 
-Write-SetupStatus "Administrator privileges confirmed" -Level Success
+Write-SetupStatus (Get-Text -Key 'setup.admin_confirmed' -Default 'Administrator privileges confirmed') -Level Success
 
 # Check PowerShell version
 $psVersion = $PSVersionTable.PSVersion
-Write-SetupStatus "PowerShell version: $psVersion" -Level Info
+Write-SetupStatus (Get-Text -Key 'setup.ps_version' -Parameters @{ Version = $psVersion } -Default "PowerShell version: $psVersion") -Level Info
 
 if ($psVersion.Major -lt 5) {
-    Write-SetupStatus "PowerShell 5.1 or higher required!" -Level Error
+    Write-SetupStatus (Get-Text -Key 'setup.error.ps_version_required' -Default 'PowerShell 5.1 or higher required!') -Level Error
     exit 1
 }
 
 # === DIRECTORY STRUCTURE CREATION ===
 
 Write-Host ""
-Write-SetupStatus "Creating directory structure..." -Level Info
+Write-SetupStatus (Get-Text -Key 'setup.creating_dirs' -Default 'Creating directory structure...') -Level Info
 
 $directories = @(
     $InstallPath,
@@ -131,13 +151,13 @@ $directories = @(
 
 foreach ($dir in $directories) {
     if (Test-Path -Path $dir) {
-        Write-SetupStatus "Directory exists: $dir" -Level Warning
+        Write-SetupStatus (Get-Text -Key 'setup.dir_exists' -Parameters @{ Path = $dir } -Default "Directory exists: $dir") -Level Warning
     } else {
         try {
             New-Item -ItemType Directory -Path $dir -Force | Out-Null
-            Write-SetupStatus "Created: $dir" -Level Success
+            Write-SetupStatus (Get-Text -Key 'setup.dir_created' -Parameters @{ Path = $dir } -Default "Created: $dir") -Level Success
         } catch {
-            Write-SetupStatus "Failed to create: $dir - $($_.Exception.Message)" -Level Error
+            Write-SetupStatus (Get-Text -Key 'setup.dir_failed' -Parameters @{ Path = $dir; Error = $_.Exception.Message } -Default "Failed to create: $dir - $($_.Exception.Message)") -Level Error
             exit 1
         }
     }
@@ -183,7 +203,7 @@ $fileStructure = @{
 # === FILE COPYING ===
 
 Write-Host ""
-Write-SetupStatus "Copying framework files..." -Level Info
+Write-SetupStatus (Get-Text -Key 'setup.copying_files' -Default 'Copying framework files...') -Level Info
 
 $totalFiles = 0
 $copiedFiles = 0
@@ -196,12 +216,12 @@ if (-not $SourcePath) {
 }
 
 if (-not (Test-Path -Path $SourcePath)) {
-    Write-SetupStatus "Source path not found: $SourcePath" -Level Error
-    Write-SetupStatus "Please specify -SourcePath parameter" -Level Error
+    Write-SetupStatus (Get-Text -Key 'setup.source_not_found' -Parameters @{ Path = $SourcePath } -Default "Source path not found: $SourcePath") -Level Error
+    Write-SetupStatus (Get-Text -Key 'setup.specify_source' -Default 'Please specify -SourcePath parameter') -Level Error
     exit 1
 }
 
-Write-SetupStatus "Source path: $SourcePath" -Level Info
+Write-SetupStatus (Get-Text -Key 'setup.source_path' -Parameters @{ Path = $SourcePath } -Default "Source path: $SourcePath") -Level Info
 
 foreach ($category in $fileStructure.Keys) {
     $destPath = if ($category -eq 'Root') { $InstallPath } else { Join-Path $InstallPath $category }
@@ -228,14 +248,14 @@ foreach ($category in $fileStructure.Keys) {
         if ($sourceFile) {
             try {
                 Copy-Item -Path $sourceFile -Destination $destFile -Force
-                Write-SetupStatus "Copied: $file" -Level Success
+                Write-SetupStatus (Get-Text -Key 'setup.file_copied' -Parameters @{ File = $file } -Default "Copied: $file") -Level Success
                 $copiedFiles++
             } catch {
-                Write-SetupStatus "Failed to copy: $file - $($_.Exception.Message)" -Level Error
+                Write-SetupStatus (Get-Text -Key 'setup.file_copy_failed' -Parameters @{ File = $file; Error = $_.Exception.Message } -Default "Failed to copy: $file - $($_.Exception.Message)") -Level Error
                 $failedFiles++
             }
         } else {
-            Write-SetupStatus "Not found: $file (will need manual copy)" -Level Warning
+            Write-SetupStatus (Get-Text -Key 'setup.file_not_found' -Parameters @{ File = $file } -Default "Not found: $file (will need manual copy)") -Level Warning
             $skippedFiles++
         }
     }
@@ -244,38 +264,38 @@ foreach ($category in $fileStructure.Keys) {
 # === COPY SUMMARY ===
 
 Write-Host ""
-Write-SetupStatus "File copy summary:" -Level Info
-Write-Host "  Total files:   $totalFiles"
-Write-Host "  Copied:        $copiedFiles" -ForegroundColor Green
-Write-Host "  Skipped:       $skippedFiles" -ForegroundColor Yellow
-Write-Host "  Failed:        $failedFiles" -ForegroundColor Red
+Write-SetupStatus (Get-Text -Key 'setup.copy_summary' -Default 'File copy summary:') -Level Info
+Write-Host "  $(Get-Text -Key 'setup.total_files' -Default 'Total files:')   $totalFiles"
+Write-Host "  $(Get-Text -Key 'setup.copied_count' -Default 'Copied:')        $copiedFiles" -ForegroundColor Green
+Write-Host "  $(Get-Text -Key 'setup.skipped_count' -Default 'Skipped:')       $skippedFiles" -ForegroundColor Yellow
+Write-Host "  $(Get-Text -Key 'setup.failed_count' -Default 'Failed:')        $failedFiles" -ForegroundColor Red
 
 if ($skippedFiles -gt 0) {
     Write-Host ""
-    Write-SetupStatus "Some files were not found in source" -Level Warning
-    Write-SetupStatus "You may need to copy them manually" -Level Warning
-    Write-SetupStatus "Required files are listed in PROJET_STRUCTURE.md" -Level Info
+    Write-SetupStatus (Get-Text -Key 'setup.files_missing_warning' -Default 'Some files were not found in source') -Level Warning
+    Write-SetupStatus (Get-Text -Key 'setup.manual_copy_hint' -Default 'You may need to copy them manually') -Level Warning
+    Write-SetupStatus (Get-Text -Key 'setup.files_listed_in' -Default 'Required files are listed in PROJET_STRUCTURE.md') -Level Info
 }
 
 # === PERMISSIONS CHECK ===
 
 Write-Host ""
-Write-SetupStatus "Checking permissions..." -Level Info
+Write-SetupStatus (Get-Text -Key 'setup.checking_perms' -Default 'Checking permissions...') -Level Info
 
 try {
     $testFile = Join-Path $InstallPath "test_$(Get-Random).tmp"
     "test" | Out-File -FilePath $testFile -Force
     Remove-Item -Path $testFile -Force
-    Write-SetupStatus "Write permissions confirmed" -Level Success
+    Write-SetupStatus (Get-Text -Key 'setup.write_perms_ok' -Default 'Write permissions confirmed') -Level Success
 } catch {
-    Write-SetupStatus "Insufficient write permissions!" -Level Error
+    Write-SetupStatus (Get-Text -Key 'setup.write_perms_fail' -Default 'Insufficient write permissions!') -Level Error
     exit 1
 }
 
 # === CREATE DESKTOP SHORTCUT ===
 
 Write-Host ""
-$createShortcut = Read-Host "Create desktop shortcut? (Y/N)"
+$createShortcut = Read-Host (Get-Text -Key 'setup.create_shortcut_prompt' -Default 'Create desktop shortcut? (Y/N)')
 
 if ($createShortcut -match '^[Yy]') {
     try {
@@ -287,9 +307,9 @@ if ($createShortcut -match '^[Yy]') {
         $shortcut.Description = 'Win11Forge Framework Launcher'
         $shortcut.Save()
 
-        Write-SetupStatus "Desktop shortcut created" -Level Success
+        Write-SetupStatus (Get-Text -Key 'setup.shortcut_created' -Default 'Desktop shortcut created') -Level Success
     } catch {
-        Write-SetupStatus "Failed to create shortcut: $($_.Exception.Message)" -Level Warning
+        Write-SetupStatus (Get-Text -Key 'setup.shortcut_failed' -Parameters @{ Error = $_.Exception.Message } -Default "Failed to create shortcut: $($_.Exception.Message)") -Level Warning
     }
 }
 
@@ -297,7 +317,7 @@ if ($createShortcut -match '^[Yy]') {
 
 if (-not $SkipValidation) {
     Write-Host ""
-    Write-SetupStatus "Running framework validation..." -Level Info
+    Write-SetupStatus (Get-Text -Key 'setup.running_validation' -Default 'Running framework validation...') -Level Info
     Write-Host ""
 
     $validationScript = Join-Path $InstallPath 'Tools\Validate-Framework.ps1'
@@ -306,36 +326,36 @@ if (-not $SkipValidation) {
         try {
             & $validationScript
         } catch {
-            Write-SetupStatus "Validation encountered errors" -Level Warning
+            Write-SetupStatus (Get-Text -Key 'setup.validation_errors' -Default 'Validation encountered errors') -Level Warning
         }
     } else {
-        Write-SetupStatus "Validation script not found - skipping validation" -Level Warning
+        Write-SetupStatus (Get-Text -Key 'setup.validation_not_found' -Default 'Validation script not found - skipping validation') -Level Warning
     }
 }
 
 # === COMPLETION ===
 
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║           Setup Completed Successfully!                     ║" -ForegroundColor Green
-Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host "======================================================================" -ForegroundColor Green
+Write-Host "  $(Get-Text -Key 'setup.completed_title' -Default 'Setup Completed Successfully!')" -ForegroundColor Green
+Write-Host "======================================================================" -ForegroundColor Green
 Write-Host ""
 
-Write-SetupStatus "Installation path: $InstallPath" -Level Info
+Write-SetupStatus (Get-Text -Key 'setup.install_path' -Parameters @{ Path = $InstallPath } -Default "Installation path: $InstallPath") -Level Info
 Write-Host ""
-Write-Host "Next steps:" -ForegroundColor Cyan
-Write-Host "  1. Review configuration in Profiles/*.json"
-Write-Host "  2. Run: .\Deploy-Win11Environment.ps1 -ProfileName 'Base' -TestMode"
-Write-Host "  3. For full deployment: .\Deploy-Win11Forge.bat"
+Write-Host (Get-Text -Key 'setup.next_steps' -Default 'Next steps:') -ForegroundColor Cyan
+Write-Host "  $(Get-Text -Key 'setup.step_review' -Default '1. Review configuration in Profiles/*.json')"
+Write-Host "  $(Get-Text -Key 'setup.step_test' -Default "2. Run: .\Deploy-Win11Environment.ps1 -ProfileName 'Base' -TestMode")"
+Write-Host "  $(Get-Text -Key 'setup.step_deploy' -Default '3. For full deployment: .\Deploy-Win11Forge.bat')"
 Write-Host ""
-Write-Host "Documentation:" -ForegroundColor Cyan
-Write-Host "  • README.md            - Complete documentation"
-Write-Host "  • PROJET_STRUCTURE.md  - Framework architecture"
-Write-Host "  • CHANGELOG.md         - Version history"
+Write-Host (Get-Text -Key 'setup.documentation' -Default 'Documentation:') -ForegroundColor Cyan
+Write-Host "  $(Get-Text -Key 'setup.doc_readme' -Default 'README.md            - Complete documentation')"
+Write-Host "  $(Get-Text -Key 'setup.doc_structure' -Default 'PROJET_STRUCTURE.md  - Framework architecture')"
+Write-Host "  $(Get-Text -Key 'setup.doc_changelog' -Default 'CHANGELOG.md         - Version history')"
 Write-Host ""
 
 # Open documentation
-$openDocs = Read-Host "Open README.md now? (Y/N)"
+$openDocs = Read-Host (Get-Text -Key 'setup.open_readme_prompt' -Default 'Open README.md now? (Y/N)')
 
 if ($openDocs -match '^[Yy]') {
     $readmePath = Join-Path $InstallPath 'README.md'
@@ -345,5 +365,5 @@ if ($openDocs -match '^[Yy]') {
 }
 
 Write-Host ""
-Write-SetupStatus "Setup complete! Happy deploying! 🚀" -Level Success
+Write-SetupStatus (Get-Text -Key 'setup.setup_complete' -Default 'Setup complete! Happy deploying!') -Level Success
 Write-Host ""

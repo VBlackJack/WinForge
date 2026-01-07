@@ -6,22 +6,22 @@
   "DisabledApplications": [
     {
       "Name": "Epic Games Launcher",
-      "Reason": "Désactivé via Startup Manager",
+      "Reason": "Disabled via Startup Manager",
       "Enabled": true
     },
     {
       "Name": "Battle.net",
-      "Reason": "Désactivé via Startup Manager",
+      "Reason": "Disabled via Startup Manager",
       "Enabled": true
     },
     {
       "Name": "Discord",
-      "Reason": "Désactivé via Startup Manager",
+      "Reason": "Disabled via Startup Manager",
       "Enabled": true
     },
     {
       "Name": "Steam",
-      "Reason": "Désactivé via Startup Manager",
+      "Reason": "Disabled via Startup Manager",
       "Enabled": true
     }
   ],

@@ -39,9 +39,20 @@ $ErrorActionPreference = 'Continue'
 $scriptRoot = Split-Path -Parent $PSCommandPath
 $repositoryRoot = Split-Path -Parent $scriptRoot
 $coreModulePath = Join-Path $repositoryRoot 'Core\Core.psm1'
+$downloadSourcesPath = Join-Path $repositoryRoot 'Config\download-sources.json'
 
 if (Test-Path $coreModulePath) {
     Import-Module $coreModulePath -Force
+}
+
+# Load download sources configuration
+$script:DownloadSources = $null
+if (Test-Path $downloadSourcesPath) {
+    try {
+        $script:DownloadSources = Get-Content -Path $downloadSourcesPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch {
+        Write-Warning "Failed to load download sources config: $($_.Exception.Message)"
+    }
 }
 
 # ============================================================================
@@ -258,14 +269,13 @@ function Search-DirectDownload {
 
     $suggestions = @()
 
-    # Check common patterns
-    $commonPatterns = @{
-        'Discord'     = 'https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64'
-        'Steam'       = 'https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe'
-        'Battle.net'  = 'https://downloader.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP&version=Live'
-        'VLC'         = 'https://get.videolan.org/vlc/last/win64/vlc-*-win64.exe'
-        'Firefox'     = 'https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US'
-        'Chrome'      = 'https://dl.google.com/chrome/install/latest/chrome_installer.exe'
+    # Load known patterns from download-sources.json configuration
+    $commonPatterns = @{}
+    if ($script:DownloadSources -and $script:DownloadSources.directDownloads -and $script:DownloadSources.directDownloads.applications) {
+        $apps = $script:DownloadSources.directDownloads.applications
+        foreach ($prop in $apps.PSObject.Properties) {
+            $commonPatterns[$prop.Name] = $prop.Value.url
+        }
     }
 
     foreach ($pattern in $commonPatterns.GetEnumerator()) {
@@ -273,7 +283,7 @@ function Search-DirectDownload {
             $suggestions += [PSCustomObject]@{
                 Name = $pattern.Key
                 Url  = $pattern.Value
-                Type = 'Known Pattern'
+                Type = 'Known Pattern (from config)'
             }
         }
     }

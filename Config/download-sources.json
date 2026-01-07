@@ -1,0 +1,149 @@
+{
+  "_meta": {
+    "description": "External download sources configuration for Win11Forge",
+    "version": "3.0.0",
+    "author": "Julien Bombled",
+    "lastUpdated": "2026-01-06"
+  },
+  "prerequisites": {
+    "chocolatey": {
+      "description": "Chocolatey package manager",
+      "downloadUrl": "https://community.chocolatey.org/api/v2/package/chocolatey",
+      "homepage": "https://chocolatey.org/",
+      "verifyUrl": "https://community.chocolatey.org/",
+      "notes": "Downloaded as .nupkg, extracted and installed via chocolateyInstall.ps1"
+    },
+    "powershell7": {
+      "description": "PowerShell 7 MSI installer",
+      "version": "7.4.6",
+      "downloadUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/PowerShell-7.4.6-win-x64.msi",
+      "homepage": "https://github.com/PowerShell/PowerShell",
+      "checksumUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/hashes.sha256",
+      "notes": "Update version and URL when new stable release is available"
+    }
+  },
+  "trustedDomains": {
+    "description": "Whitelist of trusted domains for direct downloads",
+    "domains": [
+      "github.com",
+      "githubusercontent.com",
+      "github.io",
+      "microsoft.com",
+      "aka.ms",
+      "windowsupdate.com",
+      "chocolatey.org",
+      "community.chocolatey.org",
+      "discord.com",
+      "discordapp.com",
+      "steampowered.com",
+      "steamstatic.com",
+      "battle.net",
+      "blizzard.com",
+      "videolan.org",
+      "mozilla.org",
+      "mozilla.net",
+      "google.com",
+      "dl.google.com",
+      "sourceforge.net",
+      "sf.net",
+      "7-zip.org",
+      "rarlab.com",
+      "notepad-plus-plus.org",
+      "sublimetext.com",
+      "jetbrains.com",
+      "visualstudio.com",
+      "visualstudio.microsoft.com",
+      "code.visualstudio.com",
+      "python.org",
+      "nodejs.org",
+      "adoptium.net",
+      "oracle.com",
+      "docker.com",
+      "git-scm.com",
+      "tortoisegit.org",
+      "tortoisesvn.net",
+      "gimp.org",
+      "inkscape.org",
+      "libreoffice.org",
+      "documentfoundation.org",
+      "getpaint.net",
+      "faststone.org",
+      "irfanview.com",
+      "spotify.com",
+      "zoom.us",
+      "slack.com",
+      "notion.so",
+      "obsidian.md",
+      "bitwarden.com",
+      "keepassxc.org",
+      "proton.me",
+      "protonvpn.com",
+      "nordvpn.com",
+      "wireguard.com",
+      "openvpn.net",
+      "filezilla-project.org",
+      "winscp.net",
+      "putty.org",
+      "chiark.greenend.org.uk",
+      "qbittorrent.org",
+      "crystalidea.com",
+      "voidtools.com",
+      "autohotkey.com",
+      "wireshark.org",
+      "sysinternals.com"
+    ]
+  },
+  "directDownloads": {
+    "description": "Pre-configured direct download URLs for applications not available via package managers",
+    "applications": {
+      "Discord": {
+        "url": "https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64",
+        "silentArgs": "-s",
+        "notes": "Always downloads latest stable version"
+      },
+      "Steam": {
+        "url": "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
+        "silentArgs": "/S",
+        "sha256": null,
+        "notes": "Checksum not available - installer auto-updates"
+      },
+      "BattleNet": {
+        "url": "https://downloader.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP&version=Live",
+        "silentArgs": "--lang=enUS --installpath=\"C:\\Program Files (x86)\\Battle.net\"",
+        "notes": "Blizzard Battle.net launcher"
+      },
+      "VLC": {
+        "url": "https://get.videolan.org/vlc/last/win64/",
+        "pattern": "vlc-*-win64.exe",
+        "silentArgs": "/S",
+        "notes": "VideoLAN VLC media player - URL points to directory, pattern matches latest"
+      },
+      "Firefox": {
+        "url": "https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US",
+        "silentArgs": "-ms",
+        "notes": "Always downloads latest stable Firefox"
+      },
+      "Chrome": {
+        "url": "https://dl.google.com/chrome/install/latest/chrome_installer.exe",
+        "silentArgs": "/silent /install",
+        "notes": "Google Chrome enterprise installer"
+      }
+    }
+  },
+  "packageManagers": {
+    "winget": {
+      "source": "winget",
+      "repositoryUrl": "https://github.com/microsoft/winget-pkgs",
+      "searchUrl": "https://winget.run/"
+    },
+    "chocolatey": {
+      "source": "chocolatey",
+      "repositoryUrl": "https://community.chocolatey.org/packages",
+      "searchUrl": "https://community.chocolatey.org/packages"
+    },
+    "microsoftStore": {
+      "source": "msstore",
+      "notes": "Use winget with --source msstore for Store apps"
+    }
+  }
+}

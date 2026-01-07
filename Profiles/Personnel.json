@@ -1,7 +1,7 @@
 {
   "Name": "Personnel",
   "Description": "Advanced personal profile - Gaming + development and power user tools (v3.0.0 - Database Mode)",
-  "Version": "3.0.0",
+  "Version": "3.0.1",
   "Inherits": ["Gaming"],
   "Applications": [
     "VSCode",

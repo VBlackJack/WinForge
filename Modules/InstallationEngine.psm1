@@ -53,17 +53,41 @@
     - Automatic fallback on installation failure
 #>
 
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 Set-StrictMode -Version Latest
 
 # === MODULE INITIALIZATION ===
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
+$script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
 $script:EnvironmentDetectionPath = Join-Path $script:ModuleRoot 'EnvironmentDetection.psm1'
 
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
+    }
+}
+
+# Import Localization module for i18n support
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force
     }
 }
 
@@ -2048,9 +2072,9 @@ function Install-ApplicationsParallel {
     }
 
     if (-not $hasParallelSupport) {
-        Write-Host "WARNING: Parallel installation requires PowerShell 7+ with ForEach-Object -Parallel support" -ForegroundColor Yellow
-        Write-Host "Current version: $($PSVersionTable.PSVersion)" -ForegroundColor Yellow
-        Write-Host "Falling back to sequential installation..." -ForegroundColor Yellow
+        Write-Host (Get-LocalizedString -Key 'parallel.requires_ps7') -ForegroundColor Yellow
+        Write-Host (Get-LocalizedString -Key 'parallel.current_version' -Parameters @{ Version = $PSVersionTable.PSVersion }) -ForegroundColor Yellow
+        Write-Host (Get-LocalizedString -Key 'parallel.fallback_sequential') -ForegroundColor Yellow
 
         $results = @()
         foreach ($app in $Applications) {
@@ -2060,9 +2084,9 @@ function Install-ApplicationsParallel {
     }
 
     Write-Host ""
-    Write-Host "=== Parallel Installation Mode ===" -ForegroundColor Cyan
-    Write-Host "Max parallel threads: $MaxParallel" -ForegroundColor Cyan
-    Write-Host "Total applications: $($Applications.Count)" -ForegroundColor Cyan
+    Write-Host (Get-LocalizedString -Key 'parallel.title') -ForegroundColor Cyan
+    Write-Host (Get-LocalizedString -Key 'parallel.max_threads' -Parameters @{ Count = $MaxParallel }) -ForegroundColor Cyan
+    Write-Host (Get-LocalizedString -Key 'parallel.total_apps' -Parameters @{ Count = $Applications.Count }) -ForegroundColor Cyan
     Write-Host ""
 
     $startTime = Get-Date
@@ -2161,14 +2185,14 @@ function Test-AppInstalledParallel {
     foreach ($app in $sortedApps) {
         if ($app.EnvironmentRestrictions -and $app.EnvironmentRestrictions.Count -gt 0) {
             if ($app.EnvironmentRestrictions -contains $currentEnvironment) {
-                Write-Host "[SKIP] $($app.Name) - Not compatible with $currentEnvironment" -ForegroundColor Yellow
+                Write-Host (Get-LocalizedString -Key 'install.skipping_environment' -Parameters @{ AppName = $app.Name; Environment = $currentEnvironment }) -ForegroundColor Yellow
                 $skippedApps += [PSCustomObject]@{
                     ApplicationName = $app.Name
                     Success = $false
                     Skipped = $true
                     AlreadyInstalled = $false
                     Method = $null
-                    Message = "Not compatible with $currentEnvironment environment"
+                    Message = (Get-LocalizedString -Key 'install.skipping_environment' -Parameters @{ AppName = $app.Name; Environment = $currentEnvironment })
                 }
                 continue
             }
@@ -2176,8 +2200,8 @@ function Test-AppInstalledParallel {
         $appsToInstall += $app
     }
 
-    Write-Host "Applications to install: $($appsToInstall.Count)" -ForegroundColor Cyan
-    Write-Host "Skipped due to environment: $($skippedApps.Count)" -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'parallel.apps_to_install' -Parameters @{ Count = $appsToInstall.Count }) -ForegroundColor Cyan
+    Write-Host (Get-LocalizedString -Key 'parallel.skipped_environment' -Parameters @{ Count = $skippedApps.Count }) -ForegroundColor Yellow
     Write-Host ""
 
     # Create parallel logs directory with thread-safe creation and retention policy
@@ -2194,7 +2218,7 @@ function Test-AppInstalledParallel {
         } catch {
             $retryCount++
             if ($retryCount -ge $maxRetries) {
-                Write-Host "Failed to create parallel logs directory after $maxRetries attempts: $_" -ForegroundColor Red
+                Write-Host (Get-LocalizedString -Key 'parallel.logs_create_failed' -Parameters @{ Retries = $maxRetries; Error = $_ }) -ForegroundColor Red
                 throw
             }
             Start-Sleep -Milliseconds (100 * $retryCount)  # Exponential backoff
@@ -2209,7 +2233,7 @@ function Test-AppInstalledParallel {
             Remove-Item -Force -ErrorAction SilentlyContinue
     } catch {
         # Non-critical error, continue execution
-        Write-Host "Warning: Could not cleanup old logs: $_" -ForegroundColor Yellow
+        Write-Host (Get-LocalizedString -Key 'parallel.logs_cleanup_failed' -Parameters @{ Error = $_ }) -ForegroundColor Yellow
     }
 
     $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
@@ -2626,29 +2650,29 @@ function Test-AppInstalledParallel {
     $totalTime = $endTime - $startTime
 
     Write-Host ""
-    Write-Host "=== Parallel Installation Summary ===" -ForegroundColor Green
-    Write-Host "Total time: $($totalTime.ToString('mm\:ss'))" -ForegroundColor Cyan
-    Write-Host "Applications processed: $($Applications.Count)" -ForegroundColor Cyan
+    Write-Host (Get-LocalizedString -Key 'parallel.summary.title') -ForegroundColor Green
+    Write-Host (Get-LocalizedString -Key 'parallel.summary.total_time' -Parameters @{ Time = $totalTime.ToString('mm\:ss') }) -ForegroundColor Cyan
+    Write-Host (Get-LocalizedString -Key 'parallel.summary.apps_processed' -Parameters @{ Count = $Applications.Count }) -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "Detailed logs saved to: $parallelLogsDir" -ForegroundColor Yellow
-    Write-Host "Individual app logs: parallel_${timestamp}_<AppName>.log" -ForegroundColor Gray
+    Write-Host (Get-LocalizedString -Key 'parallel.logs_directory' -Parameters @{ Path = $parallelLogsDir }) -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'parallel.logs_pattern' -Parameters @{ Timestamp = $timestamp }) -ForegroundColor Gray
     Write-Host ""
 
-    Write-Host "Installation Results:" -ForegroundColor Cyan
+    Write-Host (Get-LocalizedString -Key 'parallel.summary.results_title') -ForegroundColor Cyan
     foreach ($result in $allResults) {
         # Check if Skipped property exists and is true
         if ($result.PSObject.Properties['Skipped'] -and $result.Skipped) {
-            Write-Host "  SKIP $($result.ApplicationName) - Skipped" -ForegroundColor Yellow
-            Write-Host "    Reason: $($result.Message)" -ForegroundColor Gray
+            Write-Host (Get-LocalizedString -Key 'parallel.summary.result_skip' -Parameters @{ AppName = $result.ApplicationName }) -ForegroundColor Yellow
+            Write-Host "    $(Get-LocalizedString -Key 'parallel.summary.reason' -Parameters @{ Message = $result.Message })" -ForegroundColor Gray
         } elseif ($result.Success -or $result.AlreadyInstalled) {
-            $status = if ($result.AlreadyInstalled) { "Already Installed" } else { "Success" }
-            Write-Host "  OK $($result.ApplicationName) - $status" -ForegroundColor Green
+            $status = if ($result.AlreadyInstalled) { (Get-LocalizedString -Key 'install.already_installed' -Parameters @{ AppName = '' }) } else { (Get-LocalizedString -Key 'common.success') }
+            Write-Host (Get-LocalizedString -Key 'parallel.summary.result_ok' -Parameters @{ AppName = $result.ApplicationName; Status = $status }) -ForegroundColor Green
             if ($result.Method) {
-                Write-Host "    Method: $($result.Method)" -ForegroundColor Gray
+                Write-Host "    $(Get-LocalizedString -Key 'parallel.summary.method_used' -Parameters @{ Method = $result.Method })" -ForegroundColor Gray
             }
         } else {
-            Write-Host "  FAILED $($result.ApplicationName) - Failed" -ForegroundColor Red
-            Write-Host "    Reason: $($result.Message)" -ForegroundColor Gray
+            Write-Host (Get-LocalizedString -Key 'parallel.summary.result_failed' -Parameters @{ AppName = $result.ApplicationName }) -ForegroundColor Red
+            Write-Host "    $(Get-LocalizedString -Key 'parallel.summary.reason' -Parameters @{ Message = $result.Message })" -ForegroundColor Gray
         }
     }
 

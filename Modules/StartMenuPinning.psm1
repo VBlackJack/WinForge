@@ -22,6 +22,22 @@
     This module uses the working alternative: copying start2.bin/start.bin
 #>
 
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 Set-StrictMode -Version Latest
 
 # === MODULE INITIALIZATION ===
@@ -32,6 +48,14 @@ $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
+    }
+}
+
+# Import Localization module for i18n support
+$script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force
     }
 }
 
@@ -150,19 +174,19 @@ function Backup-StartMenuLayout {
         [string]$BackupName
     )
 
-    Write-Status -Message "Capturing current Start Menu layout..." -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'startmenu.capturing') -Level 'Info'
 
     # Find current user's binary
     $sourcePath = Get-CurrentUserStartMenuBinary
 
     if (-not $sourcePath) {
-        Write-Status -Message "ERROR: Could not find Start Menu binary file (start2.bin or start.bin)" -Level 'Error'
-        Write-Status -Message "This may indicate an incompatible Windows version" -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.binary_not_found') -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.incompatible_version') -Level 'Error'
         return $false
     }
 
     if (-not (Test-Path $sourcePath)) {
-        Write-Status -Message "ERROR: Start Menu binary not found at: $sourcePath" -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.binary_not_at_path' -Parameters @{ Path = $sourcePath }) -Level 'Error'
         return $false
     }
 
@@ -185,13 +209,13 @@ function Backup-StartMenuLayout {
         Copy-Item -Path $sourcePath -Destination $backupPath -Force -ErrorAction Stop
 
         $fileSize = (Get-Item $backupPath).Length
-        Write-Status -Message "Layout captured successfully: $backupFileName ($fileSize bytes)" -Level 'Success'
-        Write-Status -Message "Backup location: $backupPath" -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.captured_success' -Parameters @{ FileName = $backupFileName; Size = $fileSize }) -Level 'Success'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.backup_location' -Parameters @{ Path = $backupPath }) -Level 'Info'
 
         return $backupPath
     }
     catch {
-        Write-Status -Message "ERROR: Failed to backup layout: $($_.Exception.Message)" -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.backup_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         return $false
     }
 }
@@ -220,23 +244,23 @@ function Deploy-StartMenuLayoutToDefault {
         [switch]$UseCurrentUser
     )
 
-    Write-Status -Message "Deploying Start Menu layout to Default profile..." -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'startmenu.deploying_default') -Level 'Info'
 
     # Determine source
     if ($UseCurrentUser) {
         $SourcePath = Get-CurrentUserStartMenuBinary
 
         if (-not $SourcePath) {
-            Write-Status -Message "ERROR: Could not find current user's Start Menu binary" -Level 'Error'
+            Write-Status -Message (Get-LocalizedString -Key 'startmenu.current_binary_not_found') -Level 'Error'
             return $false
         }
 
-        Write-Status -Message "Using current user's layout from: $SourcePath" -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.using_current_layout' -Parameters @{ Path = $SourcePath }) -Level 'Info'
     }
 
     # Validate source
     if (-not $SourcePath -or -not (Test-Path $SourcePath)) {
-        Write-Status -Message "ERROR: Source file not found: $SourcePath" -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.source_not_found' -Parameters @{ Path = $SourcePath }) -Level 'Error'
         return $false
     }
 
@@ -244,16 +268,16 @@ function Deploy-StartMenuLayoutToDefault {
     $targetPath = Get-DefaultProfileStartMenuBinary
     $targetDir = Split-Path $targetPath -Parent
 
-    Write-Status -Message "Target location: $targetPath" -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'startmenu.target_location' -Parameters @{ Path = $targetPath }) -Level 'Info'
 
     # Create target directory if needed
     if (-not (Test-Path $targetDir)) {
         try {
             New-Item -Path $targetDir -ItemType Directory -Force -ErrorAction Stop | Out-Null
-            Write-Status -Message "Created target directory: $targetDir" -Level 'Success'
+            Write-Status -Message (Get-LocalizedString -Key 'startmenu.created_target_dir' -Parameters @{ Path = $targetDir }) -Level 'Success'
         }
         catch {
-            Write-Status -Message "ERROR: Failed to create target directory: $($_.Exception.Message)" -Level 'Error'
+            Write-Status -Message (Get-LocalizedString -Key 'startmenu.create_dir_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
             return $false
         }
     }
@@ -269,10 +293,10 @@ function Deploy-StartMenuLayoutToDefault {
             }
 
             Copy-Item -Path $targetPath -Destination $backupPath -Force -ErrorAction Stop
-            Write-Status -Message "Existing Default profile layout backed up to: $backupPath" -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'startmenu.existing_backed_up' -Parameters @{ Path = $backupPath }) -Level 'Info'
         }
         catch {
-            Write-Status -Message "WARNING: Could not backup existing layout: $($_.Exception.Message)" -Level 'Warning'
+            Write-Status -Message (Get-LocalizedString -Key 'startmenu.backup_existing_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning'
         }
     }
 
@@ -281,13 +305,13 @@ function Deploy-StartMenuLayoutToDefault {
         Copy-Item -Path $SourcePath -Destination $targetPath -Force -ErrorAction Stop
 
         $fileSize = (Get-Item $targetPath).Length
-        Write-Status -Message "Layout deployed successfully to Default profile ($fileSize bytes)" -Level 'Success'
-        Write-Status -Message "New user accounts will now use this Start Menu layout" -Level 'Success'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.deployed_success' -Parameters @{ Size = $fileSize }) -Level 'Success'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.new_users_inherit') -Level 'Success'
 
         return $true
     }
     catch {
-        Write-Status -Message "ERROR: Failed to deploy layout: $($_.Exception.Message)" -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.deploy_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         return $false
     }
 }
@@ -305,18 +329,18 @@ function Get-BackedUpLayouts {
     param()
 
     if (-not (Test-Path $script:BackupDirectory)) {
-        Write-Status -Message "No backups found (directory does not exist)" -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.no_backups_dir') -Level 'Info'
         return @()
     }
 
     $backups = Get-ChildItem -Path $script:BackupDirectory -Filter "*.bin" -ErrorAction SilentlyContinue
 
     if (-not $backups -or $backups.Count -eq 0) {
-        Write-Status -Message "No backups found in: $script:BackupDirectory" -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.no_backups_found' -Parameters @{ Path = $script:BackupDirectory }) -Level 'Info'
         return @()
     }
 
-    Write-Status -Message "Found $($backups.Count) backed up layout(s):" -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'startmenu.found_backups' -Parameters @{ Count = $backups.Count }) -Level 'Info'
 
     foreach ($backup in $backups) {
         $size = [math]::Round($backup.Length / 1KB, 2)
@@ -361,18 +385,18 @@ function Invoke-StartMenuPinning {
         [switch]$ApplyToCurrentUser
     )
 
-    Write-Status -Message "=== Start Menu Pinning (start2.bin method) ===" -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'startmenu.bin_method_title') -Level 'Info'
     Write-Host ""
 
     # Step 1: Backup current layout (optional)
     $backupPath = $null
 
     if (-not $SkipBackup) {
-        Write-Status -Message "Step 1: Backing up current layout..." -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.step1_backup') -Level 'Info'
         $backupPath = Backup-StartMenuLayout -BackupName $BackupName
 
         if (-not $backupPath) {
-            Write-Status -Message "ERROR: Backup failed, aborting deployment" -Level 'Error'
+            Write-Status -Message (Get-LocalizedString -Key 'startmenu.backup_abort') -Level 'Error'
             return $false
         }
 
@@ -380,7 +404,7 @@ function Invoke-StartMenuPinning {
     }
 
     # Step 2: Deploy to Default profile
-    Write-Status -Message "Step 2: Deploying to Default profile..." -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'startmenu.step2_deploy') -Level 'Info'
 
     if ($backupPath) {
         $deployed = Deploy-StartMenuLayoutToDefault -SourcePath $backupPath
@@ -393,7 +417,7 @@ function Invoke-StartMenuPinning {
 
     # Step 3: Apply to current user (optional)
     if ($ApplyToCurrentUser -and $deployed) {
-        Write-Status -Message "Step 3: Applying layout to current user..." -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.step3_apply') -Level 'Info'
 
         $sourcePath = if ($backupPath) { $backupPath } else { Get-DefaultProfileStartMenuBinary }
         $targetPath = Get-CurrentUserStartMenuBinary
@@ -403,26 +427,26 @@ function Invoke-StartMenuPinning {
             $currentBackup = Join-Path $script:BackupDirectory "CurrentUser_BeforeApply_$(Get-Date -Format 'yyyyMMdd_HHmmss').bin"
             if (Test-Path $targetPath) {
                 Copy-Item -Path $targetPath -Destination $currentBackup -Force -ErrorAction Stop
-                Write-Status -Message "Current layout backed up to: $currentBackup" -Level 'Info'
+                Write-Status -Message (Get-LocalizedString -Key 'startmenu.current_backed_up' -Parameters @{ Path = $currentBackup }) -Level 'Info'
             }
 
             # Apply new layout
             Copy-Item -Path $sourcePath -Destination $targetPath -Force -ErrorAction Stop
-            Write-Status -Message "Layout applied to current user" -Level 'Success'
+            Write-Status -Message (Get-LocalizedString -Key 'startmenu.applied_current') -Level 'Success'
 
             # Restart Start Menu
-            Write-Status -Message "Restarting Start Menu..." -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'startmenu.restarting') -Level 'Info'
             try {
                 Stop-Process -Name StartMenuExperienceHost -Force -ErrorAction SilentlyContinue
                 Start-Sleep -Milliseconds 500
-                Write-Status -Message "Start Menu restarted - please check your pinned items" -Level 'Success'
+                Write-Status -Message (Get-LocalizedString -Key 'startmenu.restart_success') -Level 'Success'
             }
             catch {
-                Write-Status -Message "Could not restart Start Menu automatically - please log off and log back in" -Level 'Warning'
+                Write-Status -Message (Get-LocalizedString -Key 'startmenu.restart_manual') -Level 'Warning'
             }
         }
         catch {
-            Write-Status -Message "ERROR: Failed to apply layout to current user: $($_.Exception.Message)" -Level 'Error'
+            Write-Status -Message (Get-LocalizedString -Key 'startmenu.apply_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         }
 
         Write-Host ""
@@ -430,30 +454,30 @@ function Invoke-StartMenuPinning {
 
     # Summary
     if ($deployed) {
-        Write-Status -Message "=== Start Menu Pinning Summary ===" -Level 'Success'
-        Write-Status -Message "[OK] Layout captured from current user" -Level 'Success'
-        Write-Status -Message "[OK] Layout deployed to Default profile" -Level 'Success'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.summary_title') -Level 'Success'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.summary_captured') -Level 'Success'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.summary_deployed') -Level 'Success'
 
         if ($ApplyToCurrentUser) {
-            Write-Status -Message "[OK] Layout applied to current user" -Level 'Success'
+            Write-Status -Message (Get-LocalizedString -Key 'startmenu.summary_applied') -Level 'Success'
         }
 
         Write-Host ""
-        Write-Status -Message "New user accounts will now inherit this Start Menu layout" -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.new_users_inherit') -Level 'Info'
 
         if (-not $ApplyToCurrentUser) {
-            Write-Status -Message "Current user layout unchanged (use -ApplyToCurrentUser to apply)" -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'startmenu.current_unchanged') -Level 'Info'
         }
 
         if ($backupPath) {
             Write-Host ""
-            Write-Status -Message "Backup saved at: $backupPath" -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'startmenu.backup_saved' -Parameters @{ Path = $backupPath }) -Level 'Info'
         }
 
         return $true
     }
     else {
-        Write-Status -Message "ERROR: Deployment failed" -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'startmenu.deployment_failed') -Level 'Error'
         return $false
     }
 }

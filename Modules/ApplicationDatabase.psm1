@@ -1,8 +1,49 @@
-# ApplicationDatabase.psm1
-# Module for interacting with the centralized application database
-# Author: Julien Bombled
-# Version: 3.0.0
-# Last Updated: 2025-10-06
+<#
+.SYNOPSIS
+    Win11Forge - Application Database Module v3.0.0
+
+.DESCRIPTION
+    Module for interacting with the centralized application database:
+    - Database loading and caching
+    - Application search and filtering
+    - File watcher for automatic reload
+    - Category and source management
+
+.NOTES
+    Author: Julien Bombled
+    Version: 3.0.0
+    Last Updated: 2025-10-06
+#>
+
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+Set-StrictMode -Version Latest
+
+# === MODULE INITIALIZATION ===
+$script:ModuleRoot = Split-Path -Parent $PSCommandPath
+$script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
+
+# Import Localization module for i18n support
+$script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force
+    }
+}
 
 $Script:DatabasePath = Join-Path $PSScriptRoot "..\Apps\Database\applications.json"
 $Script:DatabaseCache = $null
@@ -147,7 +188,9 @@ function Get-ApplicationDatabase {
         $Script:DatabaseCache = $jsonContent | ConvertFrom-Json
         $Script:DatabaseLastModified = (Get-Item $Script:DatabasePath).LastWriteTime
 
-        Write-Verbose "Database loaded: $($Script:DatabaseCache.Applications.Count) applications"
+        # PS5.1 compatible: PSCustomObject doesn't have .Count, use Measure-Object
+        $appCount = ($Script:DatabaseCache.Applications.PSObject.Properties | Measure-Object).Count
+        Write-Verbose "Database loaded: $appCount applications"
 
         return $Script:DatabaseCache
     }
@@ -372,20 +415,20 @@ function ConvertTo-ProfileApplication {
         EnvironmentRestrictions  = $App.EnvironmentRestrictions
     }
 
-    # Add optional fields if they exist
-    if ($App.InstallMethod) {
+    # Add optional fields if they exist (PS5.1 compatible: check property existence first)
+    if ($null -ne $App.PSObject.Properties['InstallMethod'] -and $App.InstallMethod) {
         $profileApp | Add-Member -NotePropertyName "InstallMethod" -NotePropertyValue $App.InstallMethod
     }
 
-    if ($App.InstallArguments) {
+    if ($null -ne $App.PSObject.Properties['InstallArguments'] -and $App.InstallArguments) {
         $profileApp | Add-Member -NotePropertyName "InstallArguments" -NotePropertyValue $App.InstallArguments
     }
 
-    if ($App.InstallationOptions) {
+    if ($null -ne $App.PSObject.Properties['InstallationOptions'] -and $App.InstallationOptions) {
         $profileApp | Add-Member -NotePropertyName "InstallationOptions" -NotePropertyValue $App.InstallationOptions
     }
 
-    if ($App.Notes) {
+    if ($null -ne $App.PSObject.Properties['Notes'] -and $App.Notes) {
         $profileApp | Add-Member -NotePropertyName "Notes" -NotePropertyValue $App.Notes
     }
 

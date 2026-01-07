@@ -874,8 +874,8 @@
         "DirectUrl": null
       },
       "Detection": {
-        "Method": "Registry",
-        "Path": "HKLM:\\SOFTWARE\\Tracker Software\\PDF-XChange Editor"
+        "Method": "File",
+        "Path": "C:\\Program Files\\Tracker Software\\PDF Editor\\PDFXEdit.exe"
       },
       "DefaultPriority": 33,
       "DefaultRequired": true,
@@ -1167,8 +1167,8 @@
         "DirectUrl": null
       },
       "Detection": {
-        "Method": "Command",
-        "Command": "wsl --status"
+        "Method": "WindowsFeature",
+        "Feature": "Microsoft-Windows-Subsystem-Linux"
       },
       "DefaultPriority": 44,
       "DefaultRequired": false,
@@ -1796,7 +1796,7 @@
       },
       "Detection": {
         "Method": "File",
-        "Path": "C:\\Program Files\\TVRename\\TVRename.exe"
+        "Path": "C:\\Program Files (x86)\\TVRename\\TVRename.exe"
       },
       "DefaultPriority": 68,
       "DefaultRequired": false,
@@ -1822,7 +1822,7 @@
       },
       "Detection": {
         "Method": "File",
-        "Path": "C:\\Program Files\\Creality Print\\Creality Print.exe"
+        "Path": "C:\\Program Files\\Creality Slicer*\\CrealitySlicer.exe"
       },
       "DefaultPriority": 99,
       "DefaultRequired": false,
