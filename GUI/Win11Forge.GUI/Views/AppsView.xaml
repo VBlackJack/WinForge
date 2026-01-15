@@ -197,7 +197,7 @@
                               materialDesign:ElevationAssist.Elevation="Dp2">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" MaxWidth="400"/>
+                    <ColumnDefinition Width="Auto" MinWidth="220"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -211,7 +211,8 @@
                 <controls:SearchBox Grid.Column="0"
                                      Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      SuggestionsSource="{Binding ApplicationNames}"
-                                     MinWidth="200"/>
+                                     Width="220"
+                                     Margin="0,0,16,0"/>
 
                 <!-- Category ComboBox -->
                 <ComboBox Grid.Column="1"
@@ -219,8 +220,8 @@
                           SelectedItem="{Binding SelectedCategory}"
                           Style="{StaticResource MaterialDesignOutlinedComboBox}"
                           MinWidth="140"
-                          MaxWidth="220"
-                          Margin="16,0,0,0"
+                          MaxWidth="200"
+                          Margin="0,0,0,0"
                           AutomationProperties.Name="Filter by category"
                           AutomationProperties.HelpText="Select a category to filter applications"/>
 
