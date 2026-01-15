@@ -212,4 +212,24 @@ public class AppSettings
     /// ISO language code (e.g., "en", "fr").
     /// </summary>
     public string LanguageCode { get; set; } = "en";
+
+    /// <summary>
+    /// Maximum number of parallel installations (1-10, default 5).
+    /// </summary>
+    public int MaxParallelInstalls { get; set; } = 5;
+
+    /// <summary>
+    /// Maximum number of parallel scans (1-20, default 8).
+    /// </summary>
+    public int MaxParallelScans { get; set; } = 8;
+
+    /// <summary>
+    /// Whether this is the first run of the application.
+    /// </summary>
+    public bool IsFirstRun { get; set; } = true;
+
+    /// <summary>
+    /// Last selected navigation index for view state preservation.
+    /// </summary>
+    public int LastNavigationIndex { get; set; } = 0;
 }

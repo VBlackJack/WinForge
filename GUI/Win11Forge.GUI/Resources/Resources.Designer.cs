@@ -56,6 +56,12 @@ public class Resources
 
     // Deployment
     public static string Deploy_Title => ResourceManager.GetString("Deploy_Title", resourceCulture);
+
+    // Breadcrumb Steps
+    public static string Breadcrumb_SelectProfile => ResourceManager.GetString("Breadcrumb_SelectProfile", resourceCulture);
+    public static string Breadcrumb_Configure => ResourceManager.GetString("Breadcrumb_Configure", resourceCulture);
+    public static string Breadcrumb_Deploy => ResourceManager.GetString("Breadcrumb_Deploy", resourceCulture);
+
     public static string Deploy_SelectProfile => ResourceManager.GetString("Deploy_SelectProfile", resourceCulture);
     public static string Deploy_ProfileSummary => ResourceManager.GetString("Deploy_ProfileSummary", resourceCulture);
     public static string Deploy_Applications => ResourceManager.GetString("Deploy_Applications", resourceCulture);
@@ -85,6 +91,7 @@ public class Resources
     // Application Manager
     public static string Apps_Title => ResourceManager.GetString("Apps_Title", resourceCulture);
     public static string Apps_SearchHint => ResourceManager.GetString("Apps_SearchHint", resourceCulture);
+    public static string Search_RecentSearches => ResourceManager.GetString("Search_RecentSearches", resourceCulture);
     public static string Apps_CategoryAll => ResourceManager.GetString("Apps_CategoryAll", resourceCulture);
     public static string Apps_ClearFilters => ResourceManager.GetString("Apps_ClearFilters", resourceCulture);
     public static string Apps_Col_Sources => ResourceManager.GetString("Apps_Col_Sources", resourceCulture);
@@ -137,6 +144,8 @@ public class Resources
     public static string Editor_Error_LoadParent => ResourceManager.GetString("Editor_Error_LoadParent", resourceCulture);
     public static string Editor_Error_InvalidName => ResourceManager.GetString("Editor_Error_InvalidName", resourceCulture);
     public static string Editor_Error_SaveFailed => ResourceManager.GetString("Editor_Error_SaveFailed", resourceCulture);
+    public static string Editor_Hint_ProfileName => ResourceManager.GetString("Editor_Hint_ProfileName", resourceCulture);
+    public static string Editor_Hint_Description => ResourceManager.GetString("Editor_Hint_Description", resourceCulture);
     public static string Btn_Save => ResourceManager.GetString("Btn_Save", resourceCulture);
     public static string Msg_ProfileSaved => ResourceManager.GetString("Msg_ProfileSaved", resourceCulture);
 
@@ -158,6 +167,7 @@ public class Resources
     public static string Dashboard_Sys_Admin => ResourceManager.GetString("Dashboard_Sys_Admin", resourceCulture);
     public static string Dashboard_RecentActivity => ResourceManager.GetString("Dashboard_RecentActivity", resourceCulture);
     public static string Dashboard_NoActivity => ResourceManager.GetString("Dashboard_NoActivity", resourceCulture);
+    public static string Dashboard_NoActivity_Hint => ResourceManager.GetString("Dashboard_NoActivity_Hint", resourceCulture);
 
     // Settings
     public static string Nav_Settings => ResourceManager.GetString("Nav_Settings", resourceCulture);
@@ -183,6 +193,32 @@ public class Resources
 
     // Apps Manager - Extended
     public static string Apps_Installed => ResourceManager.GetString("Apps_Installed", resourceCulture);
+    public static string Apps_Selected => ResourceManager.GetString("Apps_Selected", resourceCulture);
+    public static string Apps_InstallSelected => ResourceManager.GetString("Apps_InstallSelected", resourceCulture);
+    public static string Apps_SelectAll => ResourceManager.GetString("Apps_SelectAll", resourceCulture);
+    public static string Apps_SelectNone => ResourceManager.GetString("Apps_SelectNone", resourceCulture);
+    public static string Apps_SelectNotInstalled => ResourceManager.GetString("Apps_SelectNotInstalled", resourceCulture);
+    public static string Apps_StatusAll => ResourceManager.GetString("Apps_StatusAll", resourceCulture);
+    public static string Apps_StatusInstalled => ResourceManager.GetString("Apps_StatusInstalled", resourceCulture);
+    public static string Apps_StatusNotInstalled => ResourceManager.GetString("Apps_StatusNotInstalled", resourceCulture);
+    public static string Apps_StatusSelected => ResourceManager.GetString("Apps_StatusSelected", resourceCulture);
+    public static string Apps_ManualInstall => ResourceManager.GetString("Apps_ManualInstall", resourceCulture);
+    public static string Apps_ManualInstallTooltip => ResourceManager.GetString("Apps_ManualInstallTooltip", resourceCulture);
+    public static string Apps_OpenWebsite => ResourceManager.GetString("Apps_OpenWebsite", resourceCulture);
+    public static string Status_ManualRequired => ResourceManager.GetString("Status_ManualRequired", resourceCulture);
+
+    // Context Menu
+    public static string Menu_OpenHomepage => ResourceManager.GetString("Menu_OpenHomepage", resourceCulture);
+    public static string Menu_Install => ResourceManager.GetString("Menu_Install", resourceCulture);
+    public static string Menu_ViewLogs => ResourceManager.GetString("Menu_ViewLogs", resourceCulture);
+    public static string Menu_ToggleSelection => ResourceManager.GetString("Menu_ToggleSelection", resourceCulture);
+    public static string Menu_CopyAppId => ResourceManager.GetString("Menu_CopyAppId", resourceCulture);
+    public static string Menu_CopyWingetId => ResourceManager.GetString("Menu_CopyWingetId", resourceCulture);
+    public static string Menu_Uninstall => ResourceManager.GetString("Menu_Uninstall", resourceCulture);
+
+    // Status Messages - Uninstall
+    public static string Status_Uninstalling => ResourceManager.GetString("Status_Uninstalling", resourceCulture);
+    public static string Status_Uninstalled => ResourceManager.GetString("Status_Uninstalled", resourceCulture);
 
     // Error Messages
     public static string Common_ErrorFallback => ResourceManager.GetString("Common_ErrorFallback", resourceCulture);
@@ -200,4 +236,159 @@ public class Resources
     public static string Prerequisites_PowerShell7 => ResourceManager.GetString("Prerequisites_PowerShell7", resourceCulture);
     public static string Prerequisites_Winget => ResourceManager.GetString("Prerequisites_Winget", resourceCulture);
     public static string Prerequisites_Chocolatey => ResourceManager.GetString("Prerequisites_Chocolatey", resourceCulture);
+
+    // Favorites
+    public static string Apps_StatusFavorites => ResourceManager.GetString("Apps_StatusFavorites", resourceCulture);
+    public static string Menu_ToggleFavorite => ResourceManager.GetString("Menu_ToggleFavorite", resourceCulture);
+    public static string Apps_SelectFavorites => ResourceManager.GetString("Apps_SelectFavorites", resourceCulture);
+    public static string Apps_Favorites => ResourceManager.GetString("Apps_Favorites", resourceCulture);
+
+    // Batch Operations
+    public static string Apps_UninstallSelected => ResourceManager.GetString("Apps_UninstallSelected", resourceCulture);
+    public static string Btn_CancelBatch => ResourceManager.GetString("Btn_CancelBatch", resourceCulture);
+    public static string Progress_BatchProgress => ResourceManager.GetString("Progress_BatchProgress", resourceCulture);
+
+    // Export/Import
+    public static string Btn_ExportSelection => ResourceManager.GetString("Btn_ExportSelection", resourceCulture);
+    public static string Btn_ImportSelection => ResourceManager.GetString("Btn_ImportSelection", resourceCulture);
+    public static string Btn_ExportFavorites => ResourceManager.GetString("Btn_ExportFavorites", resourceCulture);
+    public static string Btn_ImportFavorites => ResourceManager.GetString("Btn_ImportFavorites", resourceCulture);
+
+    // Summary Dialog
+    public static string Summary_Title => ResourceManager.GetString("Summary_Title", resourceCulture);
+    public static string Summary_Success => ResourceManager.GetString("Summary_Success", resourceCulture);
+    public static string Summary_PartialSuccess => ResourceManager.GetString("Summary_PartialSuccess", resourceCulture);
+    public static string Summary_Failed => ResourceManager.GetString("Summary_Failed", resourceCulture);
+    public static string Summary_Cancelled => ResourceManager.GetString("Summary_Cancelled", resourceCulture);
+    public static string Summary_Successful => ResourceManager.GetString("Summary_Successful", resourceCulture);
+    public static string Summary_FailedCount => ResourceManager.GetString("Summary_FailedCount", resourceCulture);
+    public static string Summary_SkippedCount => ResourceManager.GetString("Summary_SkippedCount", resourceCulture);
+    public static string Summary_Close => ResourceManager.GetString("Summary_Close", resourceCulture);
+
+    // Statistics
+    public static string Apps_Stats_Total => ResourceManager.GetString("Apps_Stats_Total", resourceCulture);
+    public static string Apps_Stats_Installed => ResourceManager.GetString("Apps_Stats_Installed", resourceCulture);
+    public static string Apps_Stats_Selected => ResourceManager.GetString("Apps_Stats_Selected", resourceCulture);
+    public static string Apps_Stats_Favorites => ResourceManager.GetString("Apps_Stats_Favorites", resourceCulture);
+
+    // Performance Settings
+    public static string Settings_ParallelInstalls => ResourceManager.GetString("Settings_ParallelInstalls", resourceCulture);
+    public static string Settings_ParallelInstalls_Desc => ResourceManager.GetString("Settings_ParallelInstalls_Desc", resourceCulture);
+    public static string Settings_ParallelInstallsApplied => ResourceManager.GetString("Settings_ParallelInstallsApplied", resourceCulture);
+    public static string Settings_ParallelScans => ResourceManager.GetString("Settings_ParallelScans", resourceCulture);
+    public static string Settings_ParallelScans_Desc => ResourceManager.GetString("Settings_ParallelScans_Desc", resourceCulture);
+    public static string Settings_ParallelScansApplied => ResourceManager.GetString("Settings_ParallelScansApplied", resourceCulture);
+    public static string Settings_Section_Performance => ResourceManager.GetString("Settings_Section_Performance", resourceCulture);
+
+    // Dialog System
+    public static string Dialog_Error_Title => ResourceManager.GetString("Dialog_Error_Title", resourceCulture);
+    public static string Dialog_Error_Details => ResourceManager.GetString("Dialog_Error_Details", resourceCulture);
+    public static string Dialog_OK => ResourceManager.GetString("Dialog_OK", resourceCulture);
+    public static string Dialog_Cancel => ResourceManager.GetString("Dialog_Cancel", resourceCulture);
+    public static string Dialog_Retry => ResourceManager.GetString("Dialog_Retry", resourceCulture);
+    public static string Dialog_Help => ResourceManager.GetString("Dialog_Help", resourceCulture);
+    public static string Dialog_Close => ResourceManager.GetString("Dialog_Close", resourceCulture);
+    public static string Dialog_Confirm => ResourceManager.GetString("Dialog_Confirm", resourceCulture);
+
+    // Keyboard Shortcuts Help
+    public static string Help_KeyboardShortcuts => ResourceManager.GetString("Help_KeyboardShortcuts", resourceCulture);
+    public static string Help_Section_General => ResourceManager.GetString("Help_Section_General", resourceCulture);
+    public static string Help_Section_AppManager => ResourceManager.GetString("Help_Section_AppManager", resourceCulture);
+    public static string Help_Section_Navigation => ResourceManager.GetString("Help_Section_Navigation", resourceCulture);
+    public static string Help_Shortcut_Help => ResourceManager.GetString("Help_Shortcut_Help", resourceCulture);
+    public static string Help_Shortcut_Refresh => ResourceManager.GetString("Help_Shortcut_Refresh", resourceCulture);
+    public static string Help_Shortcut_Settings => ResourceManager.GetString("Help_Shortcut_Settings", resourceCulture);
+    public static string Help_Shortcut_SelectAll => ResourceManager.GetString("Help_Shortcut_SelectAll", resourceCulture);
+    public static string Help_Shortcut_ClearSelection => ResourceManager.GetString("Help_Shortcut_ClearSelection", resourceCulture);
+    public static string Help_Shortcut_ToggleFavorite => ResourceManager.GetString("Help_Shortcut_ToggleFavorite", resourceCulture);
+    public static string Help_Shortcut_Uninstall => ResourceManager.GetString("Help_Shortcut_Uninstall", resourceCulture);
+    public static string Help_Shortcut_Install => ResourceManager.GetString("Help_Shortcut_Install", resourceCulture);
+    public static string Help_Shortcut_ToggleSelect => ResourceManager.GetString("Help_Shortcut_ToggleSelect", resourceCulture);
+    public static string Help_Shortcut_Dashboard => ResourceManager.GetString("Help_Shortcut_Dashboard", resourceCulture);
+    public static string Help_Shortcut_Prerequisites => ResourceManager.GetString("Help_Shortcut_Prerequisites", resourceCulture);
+    public static string Help_Shortcut_Apps => ResourceManager.GetString("Help_Shortcut_Apps", resourceCulture);
+    public static string Help_Shortcut_Deployment => ResourceManager.GetString("Help_Shortcut_Deployment", resourceCulture);
+    public static string Help_Shortcut_ProfileEditor => ResourceManager.GetString("Help_Shortcut_ProfileEditor", resourceCulture);
+
+    // Onboarding
+    public static string Onboarding_Welcome => ResourceManager.GetString("Onboarding_Welcome", resourceCulture);
+    public static string Onboarding_Subtitle => ResourceManager.GetString("Onboarding_Subtitle", resourceCulture);
+    public static string Onboarding_Step1_Title => ResourceManager.GetString("Onboarding_Step1_Title", resourceCulture);
+    public static string Onboarding_Step1_Desc => ResourceManager.GetString("Onboarding_Step1_Desc", resourceCulture);
+    public static string Onboarding_Step2_Title => ResourceManager.GetString("Onboarding_Step2_Title", resourceCulture);
+    public static string Onboarding_Step2_Desc => ResourceManager.GetString("Onboarding_Step2_Desc", resourceCulture);
+    public static string Onboarding_Step3_Title => ResourceManager.GetString("Onboarding_Step3_Title", resourceCulture);
+    public static string Onboarding_Step3_Desc => ResourceManager.GetString("Onboarding_Step3_Desc", resourceCulture);
+    public static string Onboarding_Tip => ResourceManager.GetString("Onboarding_Tip", resourceCulture);
+    public static string Onboarding_Tip_Shortcuts => ResourceManager.GetString("Onboarding_Tip_Shortcuts", resourceCulture);
+    public static string Onboarding_DontShowAgain => ResourceManager.GetString("Onboarding_DontShowAgain", resourceCulture);
+    public static string Onboarding_GetStarted => ResourceManager.GetString("Onboarding_GetStarted", resourceCulture);
+
+    // Progress Time Estimates
+    public static string Progress_TimeRemaining => ResourceManager.GetString("Progress_TimeRemaining", resourceCulture);
+    public static string Progress_TimeMinutes => ResourceManager.GetString("Progress_TimeMinutes", resourceCulture);
+    public static string Progress_TimeSeconds => ResourceManager.GetString("Progress_TimeSeconds", resourceCulture);
+    public static string Progress_Calculating => ResourceManager.GetString("Progress_Calculating", resourceCulture);
+
+    // Toast Notifications
+    public static string Toast_InstallComplete => ResourceManager.GetString("Toast_InstallComplete", resourceCulture);
+    public static string Toast_UninstallComplete => ResourceManager.GetString("Toast_UninstallComplete", resourceCulture);
+    public static string Toast_ScanComplete => ResourceManager.GetString("Toast_ScanComplete", resourceCulture);
+    public static string Toast_ProfileSaved => ResourceManager.GetString("Toast_ProfileSaved", resourceCulture);
+    public static string Toast_ExportComplete => ResourceManager.GetString("Toast_ExportComplete", resourceCulture);
+    public static string Toast_ImportComplete => ResourceManager.GetString("Toast_ImportComplete", resourceCulture);
+    public static string Toast_ViewDetails => ResourceManager.GetString("Toast_ViewDetails", resourceCulture);
+
+    // Form Validation
+    public static string Validation_Required => ResourceManager.GetString("Validation_Required", resourceCulture);
+    public static string Validation_InvalidChars => ResourceManager.GetString("Validation_InvalidChars", resourceCulture);
+    public static string Validation_TooLong => ResourceManager.GetString("Validation_TooLong", resourceCulture);
+    public static string Validation_AlreadyExists => ResourceManager.GetString("Validation_AlreadyExists", resourceCulture);
+
+    // Help System Tooltips
+    public static string Help_Tooltip_Scan => ResourceManager.GetString("Help_Tooltip_Scan", resourceCulture);
+    public static string Help_Tooltip_Install => ResourceManager.GetString("Help_Tooltip_Install", resourceCulture);
+    public static string Help_Tooltip_Deploy => ResourceManager.GetString("Help_Tooltip_Deploy", resourceCulture);
+    public static string Help_Tooltip_DryRun => ResourceManager.GetString("Help_Tooltip_DryRun", resourceCulture);
+
+    // Contextual Help
+    public static string Help_SelectProfile => ResourceManager.GetString("Help_SelectProfile", resourceCulture);
+    public static string Help_DryRun => ResourceManager.GetString("Help_DryRun", resourceCulture);
+    public static string Help_Performance => ResourceManager.GetString("Help_Performance", resourceCulture);
+
+    // Confirmation Dialogs
+    public static string Confirm_ClearHistory_Title => ResourceManager.GetString("Confirm_ClearHistory_Title", resourceCulture);
+    public static string Confirm_ClearHistory_Message => ResourceManager.GetString("Confirm_ClearHistory_Message", resourceCulture);
+    public static string Confirm_Uninstall_Title => ResourceManager.GetString("Confirm_Uninstall_Title", resourceCulture);
+    public static string Confirm_Uninstall_Message => ResourceManager.GetString("Confirm_Uninstall_Message", resourceCulture);
+    public static string Confirm_DeleteProfile_Title => ResourceManager.GetString("Confirm_DeleteProfile_Title", resourceCulture);
+    public static string Confirm_DeleteProfile_Message => ResourceManager.GetString("Confirm_DeleteProfile_Message", resourceCulture);
+    public static string Confirm_Yes => ResourceManager.GetString("Confirm_Yes", resourceCulture);
+    public static string Confirm_No => ResourceManager.GetString("Confirm_No", resourceCulture);
+
+    // Profile Export/Import
+    public static string Editor_Btn_Export => ResourceManager.GetString("Editor_Btn_Export", resourceCulture);
+    public static string Editor_Btn_Import => ResourceManager.GetString("Editor_Btn_Import", resourceCulture);
+    public static string Export_FileFilter => ResourceManager.GetString("Export_FileFilter", resourceCulture);
+    public static string Import_FileFilter => ResourceManager.GetString("Import_FileFilter", resourceCulture);
+    public static string Export_Success => ResourceManager.GetString("Export_Success", resourceCulture);
+    public static string Import_Success => ResourceManager.GetString("Import_Success", resourceCulture);
+    public static string Import_Error_Invalid => ResourceManager.GetString("Import_Error_Invalid", resourceCulture);
+    public static string Import_Error_Validation => ResourceManager.GetString("Import_Error_Validation", resourceCulture);
+
+    // Application Updates
+    public static string Btn_ScanUpdates => ResourceManager.GetString("Btn_ScanUpdates", resourceCulture);
+    public static string Btn_Update => ResourceManager.GetString("Btn_Update", resourceCulture);
+    public static string Btn_UpdateSelected => ResourceManager.GetString("Btn_UpdateSelected", resourceCulture);
+    public static string Menu_Update => ResourceManager.GetString("Menu_Update", resourceCulture);
+    public static string Menu_Launch => ResourceManager.GetString("Menu_Launch", resourceCulture);
+    public static string Error_LaunchFailed => ResourceManager.GetString("Error_LaunchFailed", resourceCulture);
+    public static string Status_UpdateAvailable => ResourceManager.GetString("Status_UpdateAvailable", resourceCulture);
+    public static string Status_Updating => ResourceManager.GetString("Status_Updating", resourceCulture);
+    public static string Apps_StatusHasUpdates => ResourceManager.GetString("Apps_StatusHasUpdates", resourceCulture);
+    public static string Apps_SelectWithUpdates => ResourceManager.GetString("Apps_SelectWithUpdates", resourceCulture);
+    public static string Col_AvailableVersion => ResourceManager.GetString("Col_AvailableVersion", resourceCulture);
+    public static string Col_Version => ResourceManager.GetString("Col_Version", resourceCulture);
+    public static string Toast_UpdatesFound => ResourceManager.GetString("Toast_UpdatesFound", resourceCulture);
+    public static string Apps_NoUpdates => ResourceManager.GetString("Apps_NoUpdates", resourceCulture);
 }

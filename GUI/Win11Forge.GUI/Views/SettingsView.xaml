@@ -112,7 +112,8 @@
                                           SelectedItem="{Binding SelectedLanguage}"
                                           DisplayMemberPath="DisplayName"
                                           Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                                          Width="160"
+                                          MinWidth="140"
+                                          MaxWidth="200"
                                           Margin="0,0,12,0"/>
                                 <Button Content="{loc:Loc Settings_Apply}"
                                         Command="{Binding ApplyLanguageCommand}"
@@ -136,6 +137,76 @@
                                            VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <!-- Performance Section -->
+                <materialDesign:Card Padding="16"
+                                      Margin="0,0,0,16"
+                                      materialDesign:ElevationAssist.Elevation="Dp2">
+                    <StackPanel>
+                        <!-- Section Header -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <materialDesign:PackIcon Kind="SpeedometerMedium"
+                                                      Width="24" Height="24"
+                                                      VerticalAlignment="Center"
+                                                      Margin="0,0,12,0"/>
+                            <TextBlock Text="{loc:Loc Settings_Section_Performance}"
+                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                       VerticalAlignment="Center"/>
+                            <materialDesign:PackIcon Kind="HelpCircleOutline"
+                                                      Width="18" Height="18"
+                                                      Opacity="0.6"
+                                                      VerticalAlignment="Center"
+                                                      Margin="8,0,0,0"
+                                                      ToolTip="{loc:Loc Help_Performance}"/>
+                        </StackPanel>
+
+                        <!-- Parallel Installs Setting -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{loc:Loc Settings_ParallelInstalls}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontWeight="Medium"/>
+                                <TextBlock Text="{loc:Loc Settings_ParallelInstalls_Desc}"
+                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                           Opacity="0.7"/>
+                            </StackPanel>
+
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding ParallelInstallOptions}"
+                                      SelectedItem="{Binding MaxParallelInstalls}"
+                                      Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                      Width="80"/>
+                        </Grid>
+
+                        <!-- Parallel Scans Setting -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{loc:Loc Settings_ParallelScans}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontWeight="Medium"/>
+                                <TextBlock Text="{loc:Loc Settings_ParallelScans_Desc}"
+                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                           Opacity="0.7"/>
+                            </StackPanel>
+
+                            <ComboBox Grid.Column="1"
+                                      ItemsSource="{Binding ParallelScanOptions}"
+                                      SelectedItem="{Binding MaxParallelScans}"
+                                      Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                      Width="80"/>
+                        </Grid>
                     </StackPanel>
                 </materialDesign:Card>
 

@@ -16,7 +16,11 @@
 
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using MaterialDesignThemes.Wpf;
+using Win11Forge.GUI.Controls;
 using Win11Forge.GUI.Messages;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
@@ -30,6 +34,9 @@ public partial class MainWindow : Window
 {
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IDeploymentHistoryService _historyService;
+    private readonly IAppSettingsService _settingsService;
+    private readonly IProfileExportService _profileExportService;
+    private readonly ToastService _toastService;
     private readonly DashboardViewModel _dashboardViewModel;
     private readonly DeploymentViewModel _deploymentViewModel;
     private readonly AppsViewModel _appsViewModel;
@@ -43,22 +50,48 @@ public partial class MainWindow : Window
     private bool _settingsInitialized;
     private bool _prerequisitesInitialized;
 
+    /// <summary>
+    /// Command to show keyboard shortcuts dialog.
+    /// </summary>
+    public ICommand ShowKeyboardShortcutsCommand { get; }
+
+    /// <summary>
+    /// Command to navigate to a specific view by index.
+    /// </summary>
+    public ICommand NavigateToCommand { get; }
+
     public MainWindow()
     {
         InitializeComponent();
+
+        // Initialize commands
+        ShowKeyboardShortcutsCommand = new RelayCommand(ShowKeyboardShortcuts);
+        NavigateToCommand = new RelayCommand<string>(index =>
+        {
+            if (int.TryParse(index, out var viewIndex))
+            {
+                NavigateTo(viewIndex);
+            }
+        });
+
+        // Set DataContext for XAML bindings
+        DataContext = this;
 
         try
         {
             // Create shared services
             _powerShellBridge = new PowerShellBridge();
             _historyService = new DeploymentHistoryService();
+            _settingsService = new AppSettingsService();
+            _profileExportService = new ProfileExportService();
+            _toastService = new ToastService();
 
             // Create ViewModels
             _dashboardViewModel = new DashboardViewModel(_powerShellBridge, _historyService);
-            _deploymentViewModel = new DeploymentViewModel(_powerShellBridge, _historyService);
-            _appsViewModel = new AppsViewModel(_powerShellBridge);
-            _profileEditorViewModel = new ProfileEditorViewModel(_powerShellBridge);
-            _settingsViewModel = new SettingsViewModel();
+            _deploymentViewModel = new DeploymentViewModel(_powerShellBridge, _historyService, _settingsService);
+            _appsViewModel = new AppsViewModel(_powerShellBridge, _settingsService);
+            _profileEditorViewModel = new ProfileEditorViewModel(_powerShellBridge, _profileExportService);
+            _settingsViewModel = new SettingsViewModel(_settingsService, _historyService);
             _prerequisitesViewModel = new PrerequisitesViewModel(_powerShellBridge);
 
             // Wire up DataContexts
@@ -90,6 +123,9 @@ public partial class MainWindow : Window
             // Set to null to avoid further issues (fields will be checked before use)
             _powerShellBridge = null!;
             _historyService = null!;
+            _settingsService = null!;
+            _profileExportService = null!;
+            _toastService = null!;
             _dashboardViewModel = null!;
             _deploymentViewModel = null!;
             _appsViewModel = null!;
@@ -104,8 +140,26 @@ public partial class MainWindow : Window
         // Skip if initialization failed
         if (_dashboardViewModel == null) return;
 
-        // Initialize Dashboard (default view)
-        await InitializeDashboardAsync();
+        // Initialize toast service with snackbar
+        _toastService.SetMessageQueue(MainSnackbar.MessageQueue);
+
+        // Check for first run and show onboarding
+        var settings = _settingsService.LoadSettings();
+        if (settings.IsFirstRun)
+        {
+            await ShowOnboardingAsync();
+        }
+
+        // Restore last navigation state
+        if (settings.LastNavigationIndex > 0 && settings.LastNavigationIndex < NavigationListBox.Items.Count)
+        {
+            NavigationListBox.SelectedIndex = settings.LastNavigationIndex;
+        }
+        else
+        {
+            // Initialize Dashboard (default view)
+            await InitializeDashboardAsync();
+        }
 
         // Set window title with dynamic version
         await UpdateWindowTitleAsync();
@@ -121,7 +175,7 @@ public partial class MainWindow : Window
         catch
         {
             // Fallback to static title if version retrieval fails
-            Title = string.Format(Win11Forge.GUI.Resources.Resources.App_Title, "3.0.1");
+            Title = string.Format(Win11Forge.GUI.Resources.Resources.App_Title, "3.1.0");
         }
     }
 
@@ -153,14 +207,14 @@ public partial class MainWindow : Window
                 _ = InitializePrerequisitesAsync();
                 break;
 
-            case 2: // Deployment
-                DeploymentViewControl.Visibility = Visibility.Visible;
-                _ = InitializeDeploymentAsync();
-                break;
-
-            case 3: // Apps
+            case 2: // Apps
                 AppsViewControl.Visibility = Visibility.Visible;
                 _ = InitializeAppsAsync();
+                break;
+
+            case 3: // Deployment
+                DeploymentViewControl.Visibility = Visibility.Visible;
+                _ = InitializeDeploymentAsync();
                 break;
 
             case 4: // Profile Editor
@@ -234,6 +288,65 @@ public partial class MainWindow : Window
         if (viewIndex >= 0 && viewIndex < NavigationListBox.Items.Count)
         {
             NavigationListBox.SelectedIndex = viewIndex;
+
+            // Save navigation state for view preservation
+            try
+            {
+                var settings = _settingsService.LoadSettings();
+                settings.LastNavigationIndex = viewIndex;
+                _settingsService.SaveSettings(settings);
+            }
+            catch
+            {
+                // State saving is non-critical
+            }
+        }
+    }
+
+    /// <summary>
+    /// Shows the keyboard shortcuts help dialog.
+    /// </summary>
+    private async void ShowKeyboardShortcuts()
+    {
+        try
+        {
+            var panel = new KeyboardShortcutsPanel();
+            await DialogHost.Show(panel, "RootDialog");
+        }
+        catch
+        {
+            // Dialog display is non-critical
+        }
+    }
+
+    /// <summary>
+    /// Shows the onboarding dialog for first-run experience.
+    /// </summary>
+    private async Task ShowOnboardingAsync()
+    {
+        try
+        {
+            var dialog = new OnboardingDialog();
+            dialog.Completed += (_, dontShowAgain) =>
+            {
+                if (dontShowAgain)
+                {
+                    var settings = _settingsService.LoadSettings();
+                    settings.IsFirstRun = false;
+                    _settingsService.SaveSettings(settings);
+                }
+            };
+
+            await DialogHost.Show(dialog, "RootDialog");
+
+            // Mark first run complete after dialog closes
+            var currentSettings = _settingsService.LoadSettings();
+            currentSettings.IsFirstRun = false;
+            _settingsService.SaveSettings(currentSettings);
+        }
+        catch
+        {
+            // Onboarding is non-critical
         }
     }
 

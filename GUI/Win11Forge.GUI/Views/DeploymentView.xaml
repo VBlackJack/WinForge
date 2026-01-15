@@ -7,6 +7,7 @@
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              xmlns:models="clr-namespace:Win11Forge.GUI.Models"
+             xmlns:controls="clr-namespace:Win11Forge.GUI.Controls"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewModels:DeploymentViewModel}"
              d:DesignHeight="700" d:DesignWidth="1000">
@@ -33,8 +34,8 @@
                                    Opacity="0.7"
                                    Margin="0,4,0,0"/>
                         <!-- Error message if present -->
-                        <Border Background="#FFEBEE"
-                                BorderBrush="#EF5350"
+                        <Border Background="{DynamicResource ErrorBackgroundBrush}"
+                                BorderBrush="{DynamicResource ErrorBorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="4"
                                 Padding="12,8"
@@ -42,12 +43,12 @@
                                 Visibility="{Binding LogViewerApplication.ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="AlertCircle"
-                                                          Foreground="#D32F2F"
+                                                          Foreground="{DynamicResource ErrorIconBrush}"
                                                           Width="20" Height="20"
                                                           VerticalAlignment="Center"
                                                           Margin="0,0,8,0"/>
                                 <TextBlock Text="{Binding LogViewerApplication.ErrorMessage}"
-                                           Foreground="#D32F2F"
+                                           Foreground="{DynamicResource ErrorTextBrush}"
                                            TextWrapping="Wrap"
                                            VerticalAlignment="Center"/>
                             </StackPanel>
@@ -112,10 +113,14 @@
         </Grid.RowDefinitions>
 
         <!-- Title -->
-        <TextBlock Grid.Row="0"
-                   Text="{loc:Loc Deploy_Title}"
-                   Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                   Margin="0,0,0,24"/>
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <TextBlock Text="{loc:Loc Deploy_Title}"
+                       Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                       Margin="0,0,0,12"/>
+            <!-- Breadcrumb Navigation -->
+            <controls:Breadcrumb x:Name="DeploymentBreadcrumb"
+                                 AutomationProperties.Name="Deployment progress steps"/>
+        </StackPanel>
 
         <!-- Profile Selection Card -->
         <materialDesign:Card Grid.Row="1"
@@ -129,19 +134,27 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Profile Label -->
-                <TextBlock Grid.Column="0"
-                           Text="{loc:Loc Deploy_SelectProfile}"
-                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                           VerticalAlignment="Center"
-                           Margin="0,0,16,0"/>
+                <!-- Profile Label with Help -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <TextBlock Text="{loc:Loc Deploy_SelectProfile}"
+                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                               VerticalAlignment="Center"/>
+                    <materialDesign:PackIcon Kind="HelpCircleOutline"
+                                              Width="16" Height="16"
+                                              Opacity="0.6"
+                                              VerticalAlignment="Center"
+                                              Margin="8,0,0,0"
+                                              ToolTip="{loc:Loc Help_SelectProfile}"/>
+                </StackPanel>
 
                 <!-- Profile ComboBox -->
                 <ComboBox Grid.Column="1"
                           ItemsSource="{Binding AvailableProfiles}"
                           SelectedItem="{Binding SelectedProfile}"
                           Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                          IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"/>
+                          IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
+                          AutomationProperties.Name="Select deployment profile"
+                          AutomationProperties.HelpText="Choose a predefined set of applications to deploy"/>
 
                 <!-- Loading Indicator -->
                 <StackPanel Grid.Column="2"
@@ -234,11 +247,15 @@
                             Content="{loc:Loc Deploy_SelectAll}"
                             Style="{StaticResource MaterialDesignOutlinedButton}"
                             Command="{Binding SelectAllCommand}"
-                            Margin="16,0,8,0"/>
+                            Margin="16,0,8,0"
+                            AutomationProperties.Name="Select all applications"
+                            AutomationProperties.HelpText="Select all optional applications for deployment"/>
                     <Button Grid.Column="7"
                             Content="{loc:Loc Deploy_SelectNone}"
                             Style="{StaticResource MaterialDesignOutlinedButton}"
-                            Command="{Binding SelectNoneCommand}"/>
+                            Command="{Binding SelectNoneCommand}"
+                            AutomationProperties.Name="Select none"
+                            AutomationProperties.HelpText="Deselect all optional applications"/>
                 </Grid>
             </Grid>
         </materialDesign:Card>
@@ -264,12 +281,22 @@
                 <ToggleButton Grid.Column="0"
                               IsChecked="{Binding IsDryRun}"
                               Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                              IsEnabled="{Binding IsDeploying, Converter={StaticResource InverseBoolConverter}}"/>
+                              IsEnabled="{Binding IsDeploying, Converter={StaticResource InverseBoolConverter}}"
+                              AutomationProperties.Name="Dry Run mode"
+                              AutomationProperties.HelpText="When enabled, simulates the deployment without making actual changes"/>
                 <StackPanel Grid.Column="1"
                             Orientation="Vertical"
                             Margin="12,0,0,0">
-                    <TextBlock Text="{loc:Loc Lbl_DryRun}"
-                               Style="{StaticResource MaterialDesignBody1TextBlock}"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{loc:Loc Lbl_DryRun}"
+                                   Style="{StaticResource MaterialDesignBody1TextBlock}"/>
+                        <materialDesign:PackIcon Kind="HelpCircleOutline"
+                                                  Width="14" Height="14"
+                                                  Opacity="0.6"
+                                                  VerticalAlignment="Center"
+                                                  Margin="6,0,0,0"
+                                                  ToolTip="{loc:Loc Help_DryRun}"/>
+                    </StackPanel>
                     <TextBlock Text="{loc:Loc Lbl_DryRun_Hint}"
                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                Opacity="0.7"/>
@@ -327,7 +354,9 @@
                         Content="{loc:Loc Btn_Deploy}"
                         Style="{StaticResource MaterialDesignRaisedButton}"
                         Command="{Binding DeployCommand}"
-                        Margin="0,0,12,0"/>
+                        Margin="0,0,12,0"
+                        AutomationProperties.Name="Start deployment"
+                        AutomationProperties.HelpText="Begin installing the selected applications"/>
 
                 <!-- Pause Button -->
                 <Button Grid.Column="4"
@@ -335,7 +364,9 @@
                         Style="{StaticResource MaterialDesignOutlinedButton}"
                         Command="{Binding PauseDeploymentCommand}"
                         Visibility="{Binding CanPauseDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        Margin="0,0,8,0"/>
+                        Margin="0,0,8,0"
+                        AutomationProperties.Name="Pause deployment"
+                        AutomationProperties.HelpText="Pause the current deployment after the current application completes"/>
 
                 <!-- Resume Button -->
                 <Button Grid.Column="5"
@@ -343,21 +374,25 @@
                         Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
                         Command="{Binding ResumeDeploymentCommand}"
                         Visibility="{Binding CanResumeDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        Margin="0,0,8,0"/>
+                        Margin="0,0,8,0"
+                        AutomationProperties.Name="Resume deployment"
+                        AutomationProperties.HelpText="Continue the paused deployment"/>
 
                 <!-- Cancel Button -->
                 <Button Grid.Column="6"
                         Content="{loc:Loc Btn_Cancel}"
                         Style="{StaticResource MaterialDesignOutlinedButton}"
                         Command="{Binding CancelDeploymentCommand}"
-                        Visibility="{Binding IsDeploying, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        Visibility="{Binding IsDeploying, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        AutomationProperties.Name="Cancel deployment"
+                        AutomationProperties.HelpText="Stop the deployment and cancel remaining installations"/>
             </Grid>
         </materialDesign:Card>
 
         <!-- Dry Run Warning Banner -->
         <Border Grid.Row="4"
-                Background="#FFF3E0"
-                BorderBrush="#FF9800"
+                Background="{DynamicResource WarningBackgroundBrush}"
+                BorderBrush="{DynamicResource WarningBorderBrush}"
                 BorderThickness="2"
                 CornerRadius="4"
                 Padding="16,12"
@@ -367,13 +402,13 @@
                 <materialDesign:PackIcon Kind="AlertCircleOutline"
                                           Width="24"
                                           Height="24"
-                                          Foreground="#E65100"
+                                          Foreground="{DynamicResource WarningIconBrush}"
                                           VerticalAlignment="Center"
                                           Margin="0,0,12,0"/>
                 <TextBlock Text="{loc:Loc Deploy_DryRunBanner}"
                            Style="{StaticResource MaterialDesignBody1TextBlock}"
                            FontWeight="Bold"
-                           Foreground="#E65100"
+                           Foreground="{DynamicResource WarningTextBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
@@ -394,7 +429,9 @@
                       GridLinesVisibility="Horizontal"
                       BorderThickness="0"
                       materialDesign:DataGridAssist.CellPadding="16 8"
-                      materialDesign:DataGridAssist.ColumnHeaderPadding="16 8">
+                      materialDesign:DataGridAssist.ColumnHeaderPadding="16 8"
+                      AutomationProperties.Name="Deployment applications list"
+                      AutomationProperties.HelpText="List of applications in the selected profile. Use checkboxes to select applications for deployment.">
                 <DataGrid.Columns>
                     <!-- Selection Checkbox -->
                     <DataGridTemplateColumn Width="60">

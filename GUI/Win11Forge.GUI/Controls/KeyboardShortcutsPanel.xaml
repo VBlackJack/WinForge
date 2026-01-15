@@ -1,0 +1,139 @@
+<UserControl x:Class="Win11Forge.GUI.Controls.KeyboardShortcutsPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             MinWidth="350" MaxWidth="500">
+    <Border Padding="24">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+                <materialDesign:PackIcon Kind="Keyboard"
+                                          Width="28" Height="28"
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,12,0"/>
+                <TextBlock Text="{loc:Loc Help_KeyboardShortcuts}"
+                           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Shortcuts List -->
+            <ScrollViewer Grid.Row="1" MaxHeight="400" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- General Section -->
+                    <TextBlock Text="{loc:Loc Help_Section_General}"
+                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               Opacity="0.7"
+                               Margin="0,0,0,8"/>
+
+                    <ItemsControl x:Name="GeneralShortcuts">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" MinWidth="100"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0"
+                                            Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                            CornerRadius="4"
+                                            Padding="8,4"
+                                            HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding Key}"
+                                                   FontFamily="Consolas"
+                                                   FontWeight="Medium"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Description}"
+                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                               VerticalAlignment="Center"
+                                               Margin="12,0,0,0"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Application Manager Section -->
+                    <TextBlock Text="{loc:Loc Help_Section_AppManager}"
+                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               Opacity="0.7"
+                               Margin="0,16,0,8"/>
+
+                    <ItemsControl x:Name="AppManagerShortcuts">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" MinWidth="100"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0"
+                                            Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                            CornerRadius="4"
+                                            Padding="8,4"
+                                            HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding Key}"
+                                                   FontFamily="Consolas"
+                                                   FontWeight="Medium"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Description}"
+                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                               VerticalAlignment="Center"
+                                               Margin="12,0,0,0"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Navigation Section -->
+                    <TextBlock Text="{loc:Loc Help_Section_Navigation}"
+                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               Opacity="0.7"
+                               Margin="0,16,0,8"/>
+
+                    <ItemsControl x:Name="NavigationShortcuts">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" MinWidth="100"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0"
+                                            Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                            CornerRadius="4"
+                                            Padding="8,4"
+                                            HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding Key}"
+                                                   FontFamily="Consolas"
+                                                   FontWeight="Medium"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Description}"
+                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                               VerticalAlignment="Center"
+                                               Margin="12,0,0,0"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Close Button -->
+            <Button Grid.Row="2"
+                    Content="{loc:Loc Dialog_Close}"
+                    Style="{StaticResource MaterialDesignRaisedButton}"
+                    HorizontalAlignment="Right"
+                    Margin="0,20,0,0"
+                    Click="CloseButton_Click"/>
+        </Grid>
+    </Border>
+</UserControl>

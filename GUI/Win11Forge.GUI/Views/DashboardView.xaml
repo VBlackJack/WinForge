@@ -13,6 +13,20 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="24">
+            <Grid.Triggers>
+                <EventTrigger RoutedEvent="Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             From="0" To="1" Duration="0:0:0.3">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut"/>
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Grid.Triggers>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -323,15 +337,26 @@
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     Visibility="{Binding RecentDeployments.Count, Converter={StaticResource ZeroToVisibilityConverter}}">
-                            <materialDesign:PackIcon Kind="History"
-                                                      Width="48" Height="48"
-                                                      Opacity="0.3"
-                                                      HorizontalAlignment="Center"/>
+                            <Border Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                    CornerRadius="50"
+                                    Width="80" Height="80"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,0,16">
+                                <materialDesign:PackIcon Kind="History"
+                                                          Width="40" Height="40"
+                                                          Opacity="0.5"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                            </Border>
                             <TextBlock Text="{loc:Loc Dashboard_NoActivity}"
-                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                       Opacity="0.7"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="{loc:Loc Dashboard_NoActivity_Hint}"
+                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                        Opacity="0.5"
                                        HorizontalAlignment="Center"
-                                       Margin="0,8,0,0"/>
+                                       Margin="0,4,0,0"/>
                         </StackPanel>
                     </Grid>
                 </materialDesign:Card>

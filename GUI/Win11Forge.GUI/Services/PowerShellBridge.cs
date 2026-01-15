@@ -520,6 +520,836 @@ try {{
         });
     }
 
+    /// <inheritdoc/>
+    public async Task<InstallResult> UninstallApplicationAsync(
+        ApplicationModel app,
+        Action<string>? progressCallback = null)
+    {
+        await EnsureApplicationsCacheAsync();
+
+        return await Task.Run(async () =>
+        {
+            var logBuilder = new System.Text.StringBuilder();
+
+            try
+            {
+                progressCallback?.Invoke($"Preparing to uninstall {app.Name}...");
+                logBuilder.AppendLine($"Uninstalling: {app.Name}");
+
+                // Get package IDs from cache
+                string? wingetId = null;
+                string? chocoPackage = null;
+
+                if (_applicationsCache != null && _applicationsCache.TryGetValue(app.AppId, out var appData))
+                {
+                    if (appData.TryGetProperty("Sources", out var sources))
+                    {
+                        wingetId = GetJsonString(sources, "Winget");
+                        chocoPackage = GetJsonString(sources, "Chocolatey");
+                    }
+                }
+
+                // Try Winget first
+                if (!string.IsNullOrEmpty(wingetId))
+                {
+                    progressCallback?.Invoke($"Uninstalling via Winget: {wingetId}");
+                    logBuilder.AppendLine($"Uninstalling via Winget: {wingetId}");
+
+                    var wingetResult = await ExecuteUninstallCommandAsync(
+                        "winget",
+                        $"uninstall --id \"{wingetId}\" --silent --accept-source-agreements",
+                        logBuilder);
+
+                    if (wingetResult.Success)
+                    {
+                        progressCallback?.Invoke($"Uninstalled: {app.Name}");
+                        logBuilder.AppendLine("Winget uninstallation succeeded");
+                        return InstallResult.Successful(
+                            $"Successfully uninstalled {app.Name}",
+                            logBuilder.ToString(),
+                            "Winget",
+                            alreadyInstalled: false);
+                    }
+
+                    logBuilder.AppendLine($"Winget uninstallation failed (exit code: {wingetResult.ExitCode})");
+                }
+
+                // Try Chocolatey as fallback
+                if (!string.IsNullOrEmpty(chocoPackage))
+                {
+                    progressCallback?.Invoke($"Uninstalling via Chocolatey: {chocoPackage}");
+                    logBuilder.AppendLine($"Uninstalling via Chocolatey: {chocoPackage}");
+
+                    var chocoResult = await ExecuteUninstallCommandAsync(
+                        "choco",
+                        $"uninstall {chocoPackage} -y --no-progress",
+                        logBuilder);
+
+                    if (chocoResult.Success)
+                    {
+                        progressCallback?.Invoke($"Uninstalled: {app.Name}");
+                        logBuilder.AppendLine("Chocolatey uninstallation succeeded");
+                        return InstallResult.Successful(
+                            $"Successfully uninstalled {app.Name}",
+                            logBuilder.ToString(),
+                            "Chocolatey",
+                            alreadyInstalled: false);
+                    }
+
+                    logBuilder.AppendLine($"Chocolatey uninstallation failed (exit code: {chocoResult.ExitCode})");
+                }
+
+                // Both methods failed or no sources available
+                var errorMsg = string.IsNullOrEmpty(wingetId) && string.IsNullOrEmpty(chocoPackage)
+                    ? "No uninstall sources available for this application"
+                    : "All uninstallation methods failed";
+
+                progressCallback?.Invoke($"Failed: {app.Name}");
+                logBuilder.AppendLine($"Uninstallation failed: {errorMsg}");
+                return InstallResult.Failed(errorMsg, logBuilder.ToString());
+            }
+            catch (Exception ex)
+            {
+                logBuilder.AppendLine($"Exception: {ex.Message}");
+                logBuilder.AppendLine(ex.StackTrace);
+                progressCallback?.Invoke($"Error: {ex.Message}");
+                return InstallResult.Failed(ex.Message, logBuilder.ToString());
+            }
+        });
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// SAFETY: This method uses ONLY read-only commands:
+    /// - winget list: Gets installed version (SAFE)
+    /// - winget show: Gets available version from repository (SAFE)
+    /// NEVER uses 'winget upgrade' which can trigger installations!
+    /// </remarks>
+    public async Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app)
+    {
+        // Only check installed apps
+        if (app.Status != ApplicationStatus.Installed &&
+            app.Status != ApplicationStatus.AlreadyInstalled &&
+            app.Status != ApplicationStatus.UpdateAvailable)
+        {
+            return UpdateCheckResult.UpToDate();
+        }
+
+        await EnsureApplicationsCacheAsync();
+
+        return await Task.Run(async () =>
+        {
+            try
+            {
+                // Get Winget ID from cache
+                string? wingetId = null;
+
+                if (_applicationsCache != null && _applicationsCache.TryGetValue(app.AppId, out var appData))
+                {
+                    if (appData.TryGetProperty("Sources", out var sources))
+                    {
+                        wingetId = GetJsonString(sources, "Winget");
+                    }
+                }
+
+                if (string.IsNullOrEmpty(wingetId))
+                {
+                    return UpdateCheckResult.UpToDate();
+                }
+
+                // SAFE: Get installed version using 'winget list' (read-only)
+                var installedVersion = await GetInstalledVersionAsync(wingetId);
+
+                // SAFE: Get available version using 'winget show' (read-only)
+                var availableVersion = await GetRepositoryVersionAsync(wingetId);
+
+                // If we couldn't get the installed version, return with what we have
+                if (string.IsNullOrEmpty(installedVersion))
+                {
+                    return UpdateCheckResult.UpToDate();
+                }
+
+                // If no available version found, app is up to date (or not in repo)
+                if (string.IsNullOrEmpty(availableVersion))
+                {
+                    return UpdateCheckResult.UpToDate(installedVersion);
+                }
+
+                // Compare versions to determine if update is available
+                var comparison = CompareVersions(installedVersion, availableVersion);
+
+                if (comparison < 0)
+                {
+                    // Installed version is older than available
+                    return UpdateCheckResult.UpdateAvailable(installedVersion, availableVersion);
+                }
+
+                return UpdateCheckResult.UpToDate(installedVersion);
+            }
+            catch (Exception ex)
+            {
+                return UpdateCheckResult.Failed(ex.Message);
+            }
+        });
+    }
+
+    /// <summary>
+    /// Gets the installed version of a package using winget list (SAFE: read-only).
+    /// </summary>
+    private async Task<string> GetInstalledVersionAsync(string wingetId)
+    {
+        try
+        {
+            // SAFE COMMAND: winget list only reads information, never modifies
+            var startInfo = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "winget",
+                Arguments = $"list --id \"{wingetId}\" --exact --disable-interactivity",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            using var process = new System.Diagnostics.Process { StartInfo = startInfo };
+            process.Start();
+
+            var output = await process.StandardOutput.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            // Clean output from progress indicators before parsing
+            var cleanOutput = CleanWingetOutput(output);
+
+            // Parse version from list output using column-based parsing
+            return ParseVersionFromWingetList(cleanOutput);
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Cleans winget output by removing progress spinner characters.
+    /// Winget uses \r to animate progress, resulting in lines with multiple segments.
+    /// This method extracts only the actual content from each line.
+    /// </summary>
+    private static string CleanWingetOutput(string output)
+    {
+        if (string.IsNullOrEmpty(output))
+            return output;
+
+        var cleanLines = new List<string>();
+        var lines = output.Split('\n');
+
+        foreach (var line in lines)
+        {
+            // Split by \r and take the last non-empty segment
+            // This removes progress spinner characters that overwrite earlier content
+            var segments = line.Split('\r');
+            var lastSegment = segments
+                .Select(s => s.Trim())
+                .LastOrDefault(s => !string.IsNullOrEmpty(s) &&
+                                    !s.All(c => c == '-' || c == '\\' || c == '|' || c == '/' || c == ' '));
+
+            if (!string.IsNullOrEmpty(lastSegment))
+            {
+                cleanLines.Add(lastSegment);
+            }
+        }
+
+        return string.Join("\n", cleanLines);
+    }
+
+    /// <summary>
+    /// Gets the available version from repository using winget show (SAFE: read-only).
+    /// </summary>
+    private async Task<string> GetRepositoryVersionAsync(string wingetId)
+    {
+        try
+        {
+            // SAFE COMMAND: winget show only displays info, never modifies
+            var startInfo = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "winget",
+                Arguments = $"show --id \"{wingetId}\" --exact --disable-interactivity",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            using var process = new System.Diagnostics.Process { StartInfo = startInfo };
+            process.Start();
+
+            var output = await process.StandardOutput.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            // Clean output from progress indicators before parsing
+            var cleanOutput = CleanWingetOutput(output);
+
+            // Parse version from show output
+            return ParseVersionFromWingetShow(cleanOutput);
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Parses version from 'winget list' output.
+    /// Output format: Name  Id  Version  Available  Source
+    /// </summary>
+    private static string ParseVersionFromWingetList(string output)
+    {
+        if (string.IsNullOrWhiteSpace(output))
+            return string.Empty;
+
+        var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        // Find the header line to determine the Version column position
+        int versionColumnStart = -1;
+        int sourceColumnStart = -1;
+        string? headerLine = null;
+
+        foreach (var line in lines)
+        {
+            var trimmedLine = line.Trim();
+
+            // Skip empty lines and separator lines
+            if (string.IsNullOrEmpty(trimmedLine) || trimmedLine.StartsWith("-"))
+                continue;
+
+            // Find header line (contains "Version" and either "Source" or "Quelle")
+            if ((trimmedLine.Contains("Version", StringComparison.OrdinalIgnoreCase)) &&
+                (trimmedLine.Contains("Source", StringComparison.OrdinalIgnoreCase) ||
+                 trimmedLine.Contains("Quelle", StringComparison.OrdinalIgnoreCase)))
+            {
+                headerLine = line;
+                versionColumnStart = line.IndexOf("Version", StringComparison.OrdinalIgnoreCase);
+
+                // Find Source column (or Quelle in German)
+                sourceColumnStart = line.IndexOf("Source", StringComparison.OrdinalIgnoreCase);
+                if (sourceColumnStart < 0)
+                    sourceColumnStart = line.IndexOf("Quelle", StringComparison.OrdinalIgnoreCase);
+
+                continue;
+            }
+
+            // Skip if we haven't found header yet
+            if (versionColumnStart < 0 || headerLine == null)
+                continue;
+
+            // Skip the separator line after header
+            if (trimmedLine.Contains("---"))
+                continue;
+
+            // This is a data line - extract version using column positions
+            if (line.Length > versionColumnStart)
+            {
+                int endPos = sourceColumnStart > versionColumnStart
+                    ? Math.Min(sourceColumnStart, line.Length)
+                    : line.Length;
+
+                var versionPart = line.Substring(versionColumnStart, endPos - versionColumnStart).Trim();
+
+                // Extract version number pattern (handles versions like "3.7.7", "1.0.0-beta", etc.)
+                var versionMatch = System.Text.RegularExpressions.Regex.Match(
+                    versionPart, @"^[\d]+[.\d\-a-zA-Z]*");
+
+                if (versionMatch.Success && versionMatch.Value.Contains('.'))
+                {
+                    return versionMatch.Value;
+                }
+
+                // Fallback: return first word if it starts with a digit
+                var firstWord = versionPart.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                if (!string.IsNullOrEmpty(firstWord) && char.IsDigit(firstWord[0]))
+                {
+                    return firstWord;
+                }
+            }
+        }
+
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// Parses version from 'winget show' output.
+    /// Looks for "Version:" line in the output.
+    /// </summary>
+    private static string ParseVersionFromWingetShow(string output)
+    {
+        if (string.IsNullOrWhiteSpace(output))
+            return string.Empty;
+
+        var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var line in lines)
+        {
+            var trimmedLine = line.TrimStart();
+
+            // Look for "Version:" or "Version :" pattern (handles various locales)
+            if (trimmedLine.StartsWith("Version", StringComparison.OrdinalIgnoreCase))
+            {
+                var colonIndex = line.IndexOf(':');
+                if (colonIndex > 0 && colonIndex < line.Length - 1)
+                {
+                    var version = line.Substring(colonIndex + 1).Trim();
+
+                    // Clean up version string - extract version pattern
+                    // Handles: "3.7.7", "1.0.0-beta", "2024.1.0", etc.
+                    var match = System.Text.RegularExpressions.Regex.Match(
+                        version, @"^[\d]+[.\d\-a-zA-Z_]*");
+
+                    if (match.Success && match.Value.Contains('.'))
+                    {
+                        return match.Value;
+                    }
+
+                    // Return trimmed version if no match
+                    if (!string.IsNullOrEmpty(version))
+                    {
+                        return version;
+                    }
+                }
+            }
+        }
+
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// Compares two version strings.
+    /// Returns -1 if v1 &lt; v2, 0 if equal, 1 if v1 &gt; v2.
+    /// </summary>
+    private static int CompareVersions(string v1, string v2)
+    {
+        if (string.IsNullOrEmpty(v1) && string.IsNullOrEmpty(v2)) return 0;
+        if (string.IsNullOrEmpty(v1)) return -1;
+        if (string.IsNullOrEmpty(v2)) return 1;
+
+        // Try to parse as Version objects
+        var parts1 = v1.Split('.', '-').Select(p =>
+        {
+            var numMatch = System.Text.RegularExpressions.Regex.Match(p, @"^\d+");
+            return numMatch.Success ? int.Parse(numMatch.Value) : 0;
+        }).ToArray();
+
+        var parts2 = v2.Split('.', '-').Select(p =>
+        {
+            var numMatch = System.Text.RegularExpressions.Regex.Match(p, @"^\d+");
+            return numMatch.Success ? int.Parse(numMatch.Value) : 0;
+        }).ToArray();
+
+        var maxLength = Math.Max(parts1.Length, parts2.Length);
+
+        for (int i = 0; i < maxLength; i++)
+        {
+            var p1 = i < parts1.Length ? parts1[i] : 0;
+            var p2 = i < parts2.Length ? parts2[i] : 0;
+
+            if (p1 < p2) return -1;
+            if (p1 > p2) return 1;
+        }
+
+        return 0;
+    }
+
+    /// <inheritdoc/>
+    public async Task<InstallResult> UpdateApplicationAsync(
+        ApplicationModel app,
+        Action<string>? progressCallback = null)
+    {
+        await EnsureApplicationsCacheAsync();
+
+        return await Task.Run(async () =>
+        {
+            var logBuilder = new System.Text.StringBuilder();
+
+            try
+            {
+                progressCallback?.Invoke($"Preparing to update {app.Name}...");
+                logBuilder.AppendLine($"Updating: {app.Name}");
+
+                // Get package IDs from cache
+                string? wingetId = null;
+                string? chocoPackage = null;
+
+                if (_applicationsCache != null && _applicationsCache.TryGetValue(app.AppId, out var appData))
+                {
+                    if (appData.TryGetProperty("Sources", out var sources))
+                    {
+                        wingetId = GetJsonString(sources, "Winget");
+                        chocoPackage = GetJsonString(sources, "Chocolatey");
+                    }
+                }
+
+                // Try Winget first
+                if (!string.IsNullOrEmpty(wingetId))
+                {
+                    progressCallback?.Invoke($"Updating via Winget: {wingetId}");
+                    logBuilder.AppendLine($"Updating via Winget: {wingetId}");
+
+                    var wingetResult = await ExecuteUpdateCommandAsync(
+                        "winget",
+                        $"upgrade --id \"{wingetId}\" --silent --accept-package-agreements --accept-source-agreements",
+                        logBuilder);
+
+                    if (wingetResult.Success)
+                    {
+                        progressCallback?.Invoke($"Updated: {app.Name}");
+                        logBuilder.AppendLine("Winget update succeeded");
+                        return InstallResult.Successful(
+                            $"Successfully updated {app.Name}",
+                            logBuilder.ToString(),
+                            "Winget");
+                    }
+
+                    // Exit code -1978335189 means no update available (already up-to-date)
+                    if (wingetResult.ExitCode == -1978335189)
+                    {
+                        progressCallback?.Invoke($"Already up to date: {app.Name}");
+                        logBuilder.AppendLine("Application is already up to date");
+                        return InstallResult.Successful(
+                            $"{app.Name} is already up to date",
+                            logBuilder.ToString(),
+                            "Winget",
+                            alreadyInstalled: true);
+                    }
+
+                    logBuilder.AppendLine($"Winget update failed (exit code: {wingetResult.ExitCode})");
+                }
+
+                // Try Chocolatey as fallback
+                if (!string.IsNullOrEmpty(chocoPackage))
+                {
+                    progressCallback?.Invoke($"Updating via Chocolatey: {chocoPackage}");
+                    logBuilder.AppendLine($"Updating via Chocolatey: {chocoPackage}");
+
+                    var chocoResult = await ExecuteUpdateCommandAsync(
+                        "choco",
+                        $"upgrade {chocoPackage} -y --no-progress",
+                        logBuilder);
+
+                    if (chocoResult.Success)
+                    {
+                        progressCallback?.Invoke($"Updated: {app.Name}");
+                        logBuilder.AppendLine("Chocolatey update succeeded");
+                        return InstallResult.Successful(
+                            $"Successfully updated {app.Name}",
+                            logBuilder.ToString(),
+                            "Chocolatey");
+                    }
+
+                    logBuilder.AppendLine($"Chocolatey update failed (exit code: {chocoResult.ExitCode})");
+                }
+
+                // Both methods failed or no sources available
+                var errorMsg = string.IsNullOrEmpty(wingetId) && string.IsNullOrEmpty(chocoPackage)
+                    ? "No update sources available for this application"
+                    : "All update methods failed";
+
+                progressCallback?.Invoke($"Failed: {app.Name}");
+                logBuilder.AppendLine($"Update failed: {errorMsg}");
+                return InstallResult.Failed(errorMsg, logBuilder.ToString());
+            }
+            catch (Exception ex)
+            {
+                logBuilder.AppendLine($"Exception: {ex.Message}");
+                logBuilder.AppendLine(ex.StackTrace);
+                progressCallback?.Invoke($"Error: {ex.Message}");
+                return InstallResult.Failed(ex.Message, logBuilder.ToString());
+            }
+        });
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> LaunchApplicationAsync(ApplicationModel app)
+    {
+        await EnsureApplicationsCacheAsync();
+
+        return await Task.Run(() =>
+        {
+            try
+            {
+                // Get executable name from cache if available
+                string? executableName = null;
+
+                if (_applicationsCache != null && _applicationsCache.TryGetValue(app.AppId, out var appData))
+                {
+                    // Try to get executable name from app data
+                    executableName = GetJsonString(appData, "Executable");
+                }
+
+                // Strategy 1: Use executable name if available
+                if (!string.IsNullOrEmpty(executableName))
+                {
+                    try
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = executableName,
+                            UseShellExecute = true
+                        });
+                        return true;
+                    }
+                    catch
+                    {
+                        // Continue to next strategy
+                    }
+                }
+
+                // Build list of search terms from app name and ID
+                var searchTerms = new List<string> { app.Name };
+
+                // Add parts from AppId (e.g., "Audacity.Audacity" -> "Audacity")
+                if (!string.IsNullOrEmpty(app.AppId))
+                {
+                    var idParts = app.AppId.Split('.');
+                    searchTerms.AddRange(idParts.Where(p => p.Length > 2));
+                }
+
+                // Strategy 2: Try to find in Start Menu with multiple search terms
+                var startMenuPaths = new[]
+                {
+                    Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
+                    Environment.GetFolderPath(Environment.SpecialFolder.StartMenu)
+                };
+
+                foreach (var startMenuPath in startMenuPaths)
+                {
+                    var programsPath = Path.Combine(startMenuPath, "Programs");
+                    if (!Directory.Exists(programsPath))
+                        continue;
+
+                    try
+                    {
+                        var shortcuts = Directory.GetFiles(programsPath, "*.lnk", SearchOption.AllDirectories);
+
+                        // First pass: exact name match
+                        var exactMatch = shortcuts.FirstOrDefault(s =>
+                            Path.GetFileNameWithoutExtension(s)
+                                .Equals(app.Name, StringComparison.OrdinalIgnoreCase));
+
+                        if (exactMatch != null)
+                        {
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = exactMatch,
+                                UseShellExecute = true
+                            });
+                            return true;
+                        }
+
+                        // Second pass: partial match with any search term
+                        foreach (var term in searchTerms.Distinct())
+                        {
+                            var matchingShortcut = shortcuts.FirstOrDefault(s =>
+                            {
+                                var shortcutName = Path.GetFileNameWithoutExtension(s);
+                                return shortcutName.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                       term.Contains(shortcutName, StringComparison.OrdinalIgnoreCase);
+                            });
+
+                            if (matchingShortcut != null)
+                            {
+                                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                                {
+                                    FileName = matchingShortcut,
+                                    UseShellExecute = true
+                                });
+                                return true;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Continue searching
+                    }
+                }
+
+                // Strategy 3: Search in Program Files for executable
+                var programDirs = new[]
+                {
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs")
+                };
+
+                foreach (var programDir in programDirs.Where(d => Directory.Exists(d)))
+                {
+                    foreach (var term in searchTerms.Distinct())
+                    {
+                        try
+                        {
+                            // Look for app folder
+                            var appFolders = Directory.GetDirectories(programDir, $"*{term}*",
+                                SearchOption.TopDirectoryOnly);
+
+                            foreach (var folder in appFolders)
+                            {
+                                // Look for main executable
+                                var exeFiles = Directory.GetFiles(folder, "*.exe", SearchOption.TopDirectoryOnly);
+                                var mainExe = exeFiles.FirstOrDefault(e =>
+                                {
+                                    var exeName = Path.GetFileNameWithoutExtension(e);
+                                    return searchTerms.Any(t =>
+                                        exeName.Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                                        t.Contains(exeName, StringComparison.OrdinalIgnoreCase));
+                                }) ?? exeFiles.FirstOrDefault();
+
+                                if (mainExe != null)
+                                {
+                                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                                    {
+                                        FileName = mainExe,
+                                        UseShellExecute = true
+                                    });
+                                    return true;
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // Continue searching
+                        }
+                    }
+                }
+
+                // Strategy 4: Try common executable names in PATH
+                var possibleExeNames = searchTerms
+                    .SelectMany(name => new[]
+                    {
+                        $"{name}.exe",
+                        $"{name.Replace(" ", "")}.exe",
+                        $"{name.Replace(" ", "-")}.exe",
+                        $"{name.ToLowerInvariant()}.exe",
+                        $"{name.Replace(" ", "").ToLowerInvariant()}.exe"
+                    })
+                    .Distinct();
+
+                foreach (var exeName in possibleExeNames)
+                {
+                    try
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = exeName,
+                            UseShellExecute = true
+                        });
+                        return true;
+                    }
+                    catch
+                    {
+                        // Continue to next
+                    }
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        });
+    }
+
+    /// <summary>
+    /// Executes an update command and returns the result.
+    /// </summary>
+    private async Task<(bool Success, int ExitCode, string Output)> ExecuteUpdateCommandAsync(
+        string command,
+        string arguments,
+        System.Text.StringBuilder logBuilder)
+    {
+        try
+        {
+            var startInfo = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = command,
+                Arguments = arguments,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            using var process = new System.Diagnostics.Process { StartInfo = startInfo };
+            process.Start();
+
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+            var errorTask = process.StandardError.ReadToEndAsync();
+
+            await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
+
+            var output = await outputTask;
+            var error = await errorTask;
+
+            logBuilder.AppendLine(output);
+            if (!string.IsNullOrEmpty(error))
+            {
+                logBuilder.AppendLine($"[stderr] {error}");
+            }
+
+            // Exit code 0 means success
+            return (process.ExitCode == 0, process.ExitCode, output);
+        }
+        catch (Exception ex)
+        {
+            logBuilder.AppendLine($"Command execution failed: {ex.Message}");
+            return (false, -1, ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Executes an uninstall command and returns the result.
+    /// </summary>
+    private async Task<(bool Success, int ExitCode, string Output)> ExecuteUninstallCommandAsync(
+        string command,
+        string arguments,
+        System.Text.StringBuilder logBuilder)
+    {
+        try
+        {
+            var startInfo = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = command,
+                Arguments = arguments,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            using var process = new System.Diagnostics.Process { StartInfo = startInfo };
+            process.Start();
+
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+            var errorTask = process.StandardError.ReadToEndAsync();
+
+            await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
+
+            var output = await outputTask;
+            var error = await errorTask;
+
+            logBuilder.AppendLine(output);
+            if (!string.IsNullOrEmpty(error))
+            {
+                logBuilder.AppendLine($"[stderr] {error}");
+            }
+
+            // Exit code 0 means success
+            return (process.ExitCode == 0, process.ExitCode, output);
+        }
+        catch (Exception ex)
+        {
+            logBuilder.AppendLine($"Command execution failed: {ex.Message}");
+            return (false, -1, ex.Message);
+        }
+    }
+
     /// <summary>
     /// Converts a PowerShell result (Hashtable/PSObject) to DeploymentProfileModel.
     /// </summary>
@@ -816,6 +1646,19 @@ try {{
             }
 
             app.Sources = string.Join(", ", sourcesList);
+
+            // Get ManualInstallOnly flag
+            if (appData.TryGetProperty("ManualInstallOnly", out var manualProp) &&
+                manualProp.ValueKind == JsonValueKind.True)
+            {
+                app.ManualInstallOnly = true;
+            }
+
+            // Get official URL (Homepage field)
+            app.OfficialUrl = GetJsonString(appData, "Homepage") ?? string.Empty;
+
+            // Get install notes
+            app.InstallNotes = GetJsonString(appData, "InstallNotes") ?? string.Empty;
 
             applications.Add(app);
         }

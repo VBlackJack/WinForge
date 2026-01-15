@@ -20,6 +20,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using MaterialDesignThemes.Wpf;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.ViewModels;
 
 namespace Win11Forge.GUI.Resources;
 
@@ -163,6 +164,10 @@ public class StatusToIconConverter : IValueConverter
             ApplicationStatus.Failed => PackIconKind.AlertCircle,
             ApplicationStatus.Skipped => PackIconKind.SkipNext,
             ApplicationStatus.AlreadyInstalled => PackIconKind.CheckAll,
+            ApplicationStatus.Uninstalling => PackIconKind.ProgressUpload,
+            ApplicationStatus.Uninstalled => PackIconKind.CheckCircleOutline,
+            ApplicationStatus.UpdateAvailable => PackIconKind.Update,
+            ApplicationStatus.Updating => PackIconKind.ProgressClock,
             // DeploymentResult
             DeploymentResult.Success => PackIconKind.CheckCircle,
             DeploymentResult.PartialSuccess => PackIconKind.AlertCircleCheck,
@@ -180,33 +185,34 @@ public class StatusToIconConverter : IValueConverter
 
 /// <summary>
 /// Converts ApplicationStatus or DeploymentResult to color brush.
+/// Uses consolidated color resources from App.xaml for WCAG compliance.
 /// </summary>
 public class StatusToColorConverter : IValueConverter
 {
-    private static readonly SolidColorBrush PendingBrush = new(Color.FromRgb(158, 158, 158)); // Gray
-    private static readonly SolidColorBrush InstallingBrush = new(Color.FromRgb(33, 150, 243)); // Blue
-    private static readonly SolidColorBrush InstalledBrush = new(Color.FromRgb(76, 175, 80)); // Green
-    private static readonly SolidColorBrush FailedBrush = new(Color.FromRgb(244, 67, 54)); // Red
-    private static readonly SolidColorBrush SkippedBrush = new(Color.FromRgb(255, 152, 0)); // Orange
-    private static readonly SolidColorBrush AlreadyInstalledBrush = new(Color.FromRgb(139, 195, 74)); // Light Green
-
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
+        // Try to get brushes from App.xaml resources first, fallback to hardcoded
+        var app = Application.Current;
+
         return value switch
         {
             // ApplicationStatus
-            ApplicationStatus.Pending => PendingBrush,
-            ApplicationStatus.Installing => InstallingBrush,
-            ApplicationStatus.Installed => InstalledBrush,
-            ApplicationStatus.Failed => FailedBrush,
-            ApplicationStatus.Skipped => SkippedBrush,
-            ApplicationStatus.AlreadyInstalled => AlreadyInstalledBrush,
+            ApplicationStatus.Pending => app.TryFindResource("StatusPendingBrush") ?? new SolidColorBrush(Color.FromRgb(158, 158, 158)),
+            ApplicationStatus.Installing => app.TryFindResource("StatusInstallingBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243)),
+            ApplicationStatus.Installed => app.TryFindResource("StatusInstalledBrush") ?? new SolidColorBrush(Color.FromRgb(76, 175, 80)),
+            ApplicationStatus.Failed => app.TryFindResource("StatusFailedBrush") ?? new SolidColorBrush(Color.FromRgb(244, 67, 54)),
+            ApplicationStatus.Skipped => app.TryFindResource("StatusSkippedBrush") ?? new SolidColorBrush(Color.FromRgb(255, 152, 0)),
+            ApplicationStatus.AlreadyInstalled => app.TryFindResource("StatusAlreadyInstalledBrush") ?? new SolidColorBrush(Color.FromRgb(139, 195, 74)),
+            ApplicationStatus.Uninstalling => app.TryFindResource("StatusUninstallingBrush") ?? new SolidColorBrush(Color.FromRgb(156, 39, 176)),
+            ApplicationStatus.Uninstalled => app.TryFindResource("StatusUninstalledBrush") ?? new SolidColorBrush(Color.FromRgb(121, 134, 203)),
+            ApplicationStatus.UpdateAvailable => app.TryFindResource("SecondaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(255, 152, 0)),
+            ApplicationStatus.Updating => app.TryFindResource("StatusInstallingBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243)),
             // DeploymentResult
-            DeploymentResult.Success => InstalledBrush,
-            DeploymentResult.PartialSuccess => SkippedBrush,
-            DeploymentResult.Failed => FailedBrush,
-            DeploymentResult.Cancelled => PendingBrush,
-            _ => PendingBrush
+            DeploymentResult.Success => app.TryFindResource("StatusInstalledBrush") ?? new SolidColorBrush(Color.FromRgb(76, 175, 80)),
+            DeploymentResult.PartialSuccess => app.TryFindResource("StatusSkippedBrush") ?? new SolidColorBrush(Color.FromRgb(255, 152, 0)),
+            DeploymentResult.Failed => app.TryFindResource("StatusFailedBrush") ?? new SolidColorBrush(Color.FromRgb(244, 67, 54)),
+            DeploymentResult.Cancelled => app.TryFindResource("StatusPendingBrush") ?? new SolidColorBrush(Color.FromRgb(158, 158, 158)),
+            _ => app.TryFindResource("StatusPendingBrush") ?? new SolidColorBrush(Color.FromRgb(158, 158, 158))
         };
     }
 
@@ -283,6 +289,123 @@ public class BoolToPauseIconConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return value is true ? PackIconKind.Pause : PackIconKind.Play;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Converts StatusFilterOption enum to localized string.
+/// </summary>
+public class StatusFilterToStringConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value switch
+        {
+            StatusFilterOption.All => Resources.Apps_StatusAll,
+            StatusFilterOption.Installed => Resources.Apps_StatusInstalled,
+            StatusFilterOption.NotInstalled => Resources.Apps_StatusNotInstalled,
+            StatusFilterOption.Selected => Resources.Apps_StatusSelected,
+            StatusFilterOption.Favorites => Resources.Apps_StatusFavorites,
+            StatusFilterOption.HasUpdates => Resources.Apps_StatusHasUpdates,
+            _ => value?.ToString() ?? string.Empty
+        };
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean (IsFavorite) to Material Design icon kind.
+/// True = Star (filled), False = StarOutline.
+/// </summary>
+public class BoolToFavoriteIconConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value is true ? PackIconKind.Star : PackIconKind.StarOutline;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean (IsFavorite) to color brush.
+/// True = Gold, False = Gray.
+/// </summary>
+public class BoolToFavoriteColorConverter : IValueConverter
+{
+    private static readonly SolidColorBrush FavoriteBrush = new(Color.FromRgb(255, 215, 0)); // Gold
+    private static readonly SolidColorBrush NotFavoriteBrush = new(Color.FromRgb(158, 158, 158)); // Gray
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value is true ? FavoriteBrush : NotFavoriteBrush;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Converts ApplicationStatus to row background color brush.
+/// Uses consolidated color resources from App.xaml for consistency.
+/// </summary>
+public class StatusToRowBackgroundConverter : IValueConverter
+{
+    private static readonly SolidColorBrush TransparentBrush = new(Colors.Transparent);
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var app = Application.Current;
+
+        return value switch
+        {
+            ApplicationStatus.Installed => app.TryFindResource("RowInstalledBackground") ?? new SolidColorBrush(Color.FromArgb(30, 76, 175, 80)),
+            ApplicationStatus.AlreadyInstalled => app.TryFindResource("RowInstalledBackground") ?? new SolidColorBrush(Color.FromArgb(30, 76, 175, 80)),
+            ApplicationStatus.UpdateAvailable => app.TryFindResource("RowUpdateAvailableBackground") ?? new SolidColorBrush(Color.FromArgb(40, 255, 152, 0)),
+            ApplicationStatus.Updating => app.TryFindResource("RowInstallingBackground") ?? new SolidColorBrush(Color.FromArgb(30, 33, 150, 243)),
+            ApplicationStatus.Failed => app.TryFindResource("RowFailedBackground") ?? new SolidColorBrush(Color.FromArgb(30, 244, 67, 54)),
+            ApplicationStatus.Installing => app.TryFindResource("RowInstallingBackground") ?? new SolidColorBrush(Color.FromArgb(30, 33, 150, 243)),
+            ApplicationStatus.Uninstalling => app.TryFindResource("RowInstallingBackground") ?? new SolidColorBrush(Color.FromArgb(30, 33, 150, 243)),
+            ApplicationStatus.Uninstalled => app.TryFindResource("RowUninstalledBackground") ?? new SolidColorBrush(Color.FromArgb(30, 121, 134, 203)),
+            _ => TransparentBrush
+        };
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Converts DeploymentResult enum to localized string.
+/// </summary>
+public class DeploymentResultToStringConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value switch
+        {
+            DeploymentResult.Success => Resources.Summary_Success,
+            DeploymentResult.PartialSuccess => Resources.Summary_PartialSuccess,
+            DeploymentResult.Failed => Resources.Summary_Failed,
+            DeploymentResult.Cancelled => Resources.Summary_Cancelled,
+            _ => string.Empty
+        };
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -73,6 +73,28 @@ public partial class SettingsViewModel : ViewModelBase
     private string _appVersion = string.Empty;
 
     /// <summary>
+    /// Maximum number of parallel installations (1-10).
+    /// </summary>
+    [ObservableProperty]
+    private int _maxParallelInstalls = 5;
+
+    /// <summary>
+    /// Maximum number of parallel scans (1-20).
+    /// </summary>
+    [ObservableProperty]
+    private int _maxParallelScans = 8;
+
+    /// <summary>
+    /// Available parallel install options.
+    /// </summary>
+    public int[] ParallelInstallOptions { get; } = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+    /// <summary>
+    /// Available parallel scan options.
+    /// </summary>
+    public int[] ParallelScanOptions { get; } = [1, 2, 4, 6, 8, 10, 12, 16, 20];
+
+    /// <summary>
     /// Initializes a new instance of SettingsViewModel with default services.
     /// </summary>
     public SettingsViewModel()
@@ -96,7 +118,7 @@ public partial class SettingsViewModel : ViewModelBase
         ];
 
         // Initialize version
-        AppVersion = "3.0.1";
+        AppVersion = "3.1.0";
 
         // Load current settings
         LoadCurrentSettings();
@@ -124,8 +146,30 @@ public partial class SettingsViewModel : ViewModelBase
         SelectedLanguage = AvailableLanguages.FirstOrDefault(l => l.Code == settings.LanguageCode)
                           ?? AvailableLanguages.First();
 
+        // Get parallel installs setting
+        MaxParallelInstalls = Math.Clamp(settings.MaxParallelInstalls, 1, 10);
+        MaxParallelScans = Math.Clamp(settings.MaxParallelScans, 1, 20);
+
         // Apply theme immediately
         ApplyThemeInternal(IsDarkTheme);
+    }
+
+    /// <summary>
+    /// Called when MaxParallelInstalls changes.
+    /// </summary>
+    partial void OnMaxParallelInstallsChanged(int value)
+    {
+        SaveSettings();
+        StatusMessage = Resources.Resources.Settings_ParallelInstallsApplied;
+    }
+
+    /// <summary>
+    /// Called when MaxParallelScans changes.
+    /// </summary>
+    partial void OnMaxParallelScansChanged(int value)
+    {
+        SaveSettings();
+        StatusMessage = Resources.Resources.Settings_ParallelScansApplied;
     }
 
     /// <summary>
@@ -207,18 +251,32 @@ public partial class SettingsViewModel : ViewModelBase
         var settings = new AppSettings
         {
             IsDarkTheme = IsDarkTheme,
-            LanguageCode = SelectedLanguage?.Code ?? "en"
+            LanguageCode = SelectedLanguage?.Code ?? "en",
+            MaxParallelInstalls = MaxParallelInstalls,
+            MaxParallelScans = MaxParallelScans
         };
 
         _settingsService.SaveSettings(settings);
     }
 
     /// <summary>
-    /// Clears the deployment history.
+    /// Clears the deployment history with confirmation.
     /// </summary>
     [RelayCommand]
     private async Task ClearHistoryAsync()
     {
+        // Show confirmation dialog
+        var result = System.Windows.MessageBox.Show(
+            Resources.Resources.Confirm_ClearHistory_Message,
+            Resources.Resources.Confirm_ClearHistory_Title,
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Warning);
+
+        if (result != System.Windows.MessageBoxResult.Yes)
+        {
+            return;
+        }
+
         await _historyService.ClearHistoryAsync();
         StatusMessage = Resources.Resources.Settings_HistoryCleared;
     }

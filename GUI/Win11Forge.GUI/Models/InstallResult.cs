@@ -80,4 +80,76 @@ public class InstallResult
             IsDryRun = true
         };
     }
+
+    /// <summary>
+    /// Creates a manual install required result.
+    /// </summary>
+    public static InstallResult ManualInstallRequired(string appName, string officialUrl)
+    {
+        return new InstallResult
+        {
+            Success = false,
+            Message = $"Manual installation required: {appName}",
+            Logs = $"This application requires manual installation.\nPlease download from: {officialUrl}",
+            IsManualInstallRequired = true
+        };
+    }
+
+    /// <summary>Whether manual installation is required for this application.</summary>
+    public bool IsManualInstallRequired { get; init; }
+}
+
+/// <summary>
+/// Result of checking for application updates.
+/// </summary>
+public class UpdateCheckResult
+{
+    /// <summary>Whether an update is available.</summary>
+    public bool HasUpdate { get; init; }
+
+    /// <summary>Current installed version.</summary>
+    public string CurrentVersion { get; init; } = string.Empty;
+
+    /// <summary>Available version for update.</summary>
+    public string AvailableVersion { get; init; } = string.Empty;
+
+    /// <summary>Error message if check failed.</summary>
+    public string? ErrorMessage { get; init; }
+
+    /// <summary>
+    /// Creates a result indicating an update is available.
+    /// </summary>
+    public static UpdateCheckResult UpdateAvailable(string currentVersion, string availableVersion)
+    {
+        return new UpdateCheckResult
+        {
+            HasUpdate = true,
+            CurrentVersion = currentVersion,
+            AvailableVersion = availableVersion
+        };
+    }
+
+    /// <summary>
+    /// Creates a result indicating no update is available.
+    /// </summary>
+    public static UpdateCheckResult UpToDate(string currentVersion = "")
+    {
+        return new UpdateCheckResult
+        {
+            HasUpdate = false,
+            CurrentVersion = currentVersion
+        };
+    }
+
+    /// <summary>
+    /// Creates a result indicating the check failed.
+    /// </summary>
+    public static UpdateCheckResult Failed(string errorMessage)
+    {
+        return new UpdateCheckResult
+        {
+            HasUpdate = false,
+            ErrorMessage = errorMessage
+        };
+    }
 }

@@ -18,6 +18,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
+using Microsoft.Win32;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Views;
@@ -31,6 +32,7 @@ namespace Win11Forge.GUI.ViewModels;
 public partial class ProfileEditorViewModel : ViewModelBase
 {
     private readonly IPowerShellBridge _powerShellBridge;
+    private readonly IProfileExportService _profileExportService;
     private string? _originalProfileName;
 
     /// <summary>
@@ -109,9 +111,10 @@ public partial class ProfileEditorViewModel : ViewModelBase
     /// <summary>
     /// Initializes a new instance of ProfileEditorViewModel.
     /// </summary>
-    public ProfileEditorViewModel(IPowerShellBridge powerShellBridge)
+    public ProfileEditorViewModel(IPowerShellBridge powerShellBridge, IProfileExportService profileExportService)
     {
         _powerShellBridge = powerShellBridge;
+        _profileExportService = profileExportService;
     }
 
     /// <inheritdoc/>
@@ -406,5 +409,153 @@ public partial class ProfileEditorViewModel : ViewModelBase
         SuccessMessage = null;
 
         // Navigation will be handled by the MainWindow
+    }
+
+    /// <summary>
+    /// Exports the current profile to a file.
+    /// </summary>
+    [RelayCommand]
+    private async Task ExportProfileAsync()
+    {
+        ErrorMessage = null;
+        SuccessMessage = null;
+
+        // Validate profile name
+        if (string.IsNullOrWhiteSpace(ProfileName))
+        {
+            ErrorMessage = Resources.Resources.Editor_Error_NameRequired;
+            return;
+        }
+
+        var saveDialog = new SaveFileDialog
+        {
+            Title = Resources.Resources.Editor_Btn_Export,
+            Filter = Resources.Resources.Export_FileFilter,
+            FileName = $"{ProfileName}.w11fp",
+            DefaultExt = ".w11fp"
+        };
+
+        if (saveDialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        IsSaving = true;
+
+        try
+        {
+            // Build the deployment profile from current state
+            var profile = BuildCurrentProfile();
+
+            await _profileExportService.ExportToFileAsync(profile, saveDialog.FileName);
+
+            SuccessMessage = Resources.Resources.Export_Success;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    /// <summary>
+    /// Imports a profile from a file.
+    /// </summary>
+    [RelayCommand]
+    private async Task ImportProfileAsync()
+    {
+        ErrorMessage = null;
+        SuccessMessage = null;
+
+        var openDialog = new OpenFileDialog
+        {
+            Title = Resources.Resources.Editor_Btn_Import,
+            Filter = Resources.Resources.Import_FileFilter,
+            DefaultExt = ".w11fp"
+        };
+
+        if (openDialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        IsLoading = true;
+
+        try
+        {
+            var imported = await _profileExportService.ImportFromFileAsync(openDialog.FileName);
+
+            if (imported == null)
+            {
+                ErrorMessage = Resources.Resources.Import_Error_Invalid;
+                return;
+            }
+
+            var validation = _profileExportService.ValidateImport(imported);
+            if (!validation.IsValid)
+            {
+                ErrorMessage = string.Format(Resources.Resources.Import_Error_Validation, validation.ErrorMessage);
+                return;
+            }
+
+            // Apply imported data to the editor
+            ProfileName = imported.Name;
+            Description = imported.Description ?? string.Empty;
+
+            // Set parent profile if specified
+            if (!string.IsNullOrEmpty(imported.InheritsFrom) &&
+                AvailableParents.Contains(imported.InheritsFrom))
+            {
+                SelectedParent = imported.InheritsFrom;
+            }
+
+            // Convert imported apps to ApplicationModels
+            AddedApplications.Clear();
+            foreach (var importedApp in imported.Applications)
+            {
+                // Try to find matching app in AllApplications
+                var existingApp = AllApplications.FirstOrDefault(a =>
+                    a.AppId == importedApp.WingetId ||
+                    a.Name == importedApp.Name);
+
+                if (existingApp != null)
+                {
+                    AddApplicationInternal(existingApp);
+                }
+            }
+
+            SuccessMessage = Win11Forge.GUI.Resources.Resources.Import_Success;
+
+            OnPropertyChanged(nameof(EditorTitle));
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// Builds a DeploymentProfileModel from the current editor state.
+    /// </summary>
+    private DeploymentProfileModel BuildCurrentProfile()
+    {
+        var parentProfile = SelectedParent == Resources.Resources.Editor_NoParent
+            ? null
+            : SelectedParent;
+
+        return new DeploymentProfileModel
+        {
+            Name = ProfileName,
+            Description = Description,
+            InheritedFrom = parentProfile != null ? [parentProfile] : [],
+            Applications = new System.Collections.ObjectModel.ObservableCollection<ApplicationModel>(AddedApplications)
+        };
     }
 }

@@ -620,8 +620,27 @@ function Install-JavaRuntime {
     }
 
     if ($installed) {
-        # Verify installation
+        # Refresh environment to get JAVA_HOME
         Invoke-EnvironmentRefresh
+
+        # Explicitly add JAVA_HOME\bin to PATH if JAVA_HOME is set
+        $javaHome = [System.Environment]::GetEnvironmentVariable('JAVA_HOME', 'Machine')
+        if (-not $javaHome) {
+            $javaHome = [System.Environment]::GetEnvironmentVariable('JAVA_HOME', 'User')
+        }
+
+        if ($javaHome -and (Test-Path $javaHome)) {
+            $javaBinPath = Join-Path $javaHome 'bin'
+            if ((Test-Path $javaBinPath) -and ($env:PATH -notlike "*$javaBinPath*")) {
+                $env:PATH = "$javaBinPath;$env:PATH"
+                [System.Environment]::SetEnvironmentVariable('PATH', $env:PATH, 'Process')
+                Write-Verbose "Added Java bin to PATH: $javaBinPath"
+            }
+            # Also set JAVA_HOME in process environment
+            $env:JAVA_HOME = $javaHome
+        }
+
+        # Verify installation
         try {
             & java -version 2>&1 | Out-Null
             if ($LASTEXITCODE -eq 0) {

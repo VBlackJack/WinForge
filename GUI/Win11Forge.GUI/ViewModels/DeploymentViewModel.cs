@@ -31,7 +31,8 @@ public partial class DeploymentViewModel : ViewModelBase
 {
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IDeploymentHistoryService _historyService;
-    private readonly SemaphoreSlim _installSemaphore = new(5);
+    private readonly IAppSettingsService _settingsService;
+    private SemaphoreSlim _installSemaphore;
     private readonly ManualResetEventSlim _pauseGate = new(true); // Initially open (not paused)
     private CancellationTokenSource? _cancellationTokenSource;
     private DateTime _deploymentStartTime;
@@ -151,17 +152,26 @@ public partial class DeploymentViewModel : ViewModelBase
     /// <summary>
     /// Initializes a new instance of DeploymentViewModel.
     /// </summary>
-    public DeploymentViewModel(IPowerShellBridge powerShellBridge, IDeploymentHistoryService historyService)
+    public DeploymentViewModel(
+        IPowerShellBridge powerShellBridge,
+        IDeploymentHistoryService historyService,
+        IAppSettingsService settingsService)
     {
         _powerShellBridge = powerShellBridge;
         _historyService = historyService;
+        _settingsService = settingsService;
+
+        // Initialize semaphore with configured max parallel installs
+        var settings = _settingsService.LoadSettings();
+        var maxParallel = Math.Clamp(settings.MaxParallelInstalls, 1, 10);
+        _installSemaphore = new SemaphoreSlim(maxParallel);
     }
 
     /// <summary>
     /// Initializes a new instance with just the PowerShell bridge (for backwards compatibility).
     /// </summary>
     public DeploymentViewModel(IPowerShellBridge powerShellBridge)
-        : this(powerShellBridge, new DeploymentHistoryService())
+        : this(powerShellBridge, new DeploymentHistoryService(), new AppSettingsService())
     {
     }
 

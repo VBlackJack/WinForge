@@ -41,12 +41,36 @@
 
                 <!-- Profile Name -->
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="{loc:Loc Editor_Lbl_Name}"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Margin="0,0,0,8"/>
-                    <TextBox Text="{Binding ProfileName, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                             IsEnabled="{Binding IsEditMode, Converter={StaticResource InverseBoolConverter}}"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="{loc:Loc Editor_Lbl_Name}"
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"/>
+                        <TextBlock Text=" *"
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   Foreground="{DynamicResource ValidationErrorBorderBrush}"
+                                   ToolTip="{loc:Loc Validation_Required}"/>
+                    </StackPanel>
+                    <TextBox x:Name="ProfileNameTextBox"
+                             Text="{Binding ProfileName, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MaterialDesignRequiredOutlinedTextBox}"
+                             IsEnabled="{Binding IsEditMode, Converter={StaticResource InverseBoolConverter}}"
+                             materialDesign:HintAssist.Hint="{loc:Loc Editor_Hint_ProfileName}"
+                             AutomationProperties.Name="Profile name"
+                             AutomationProperties.HelpText="Enter a unique name for the profile, required field"/>
+                    <!-- Real-time validation message -->
+                    <TextBlock Text="{loc:Loc Validation_Required}"
+                               Foreground="{DynamicResource ValidationErrorBorderBrush}"
+                               Margin="0,4,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignCaptionTextBlock}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text.Length, ElementName=ProfileNameTextBox}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
 
                 <!-- Inherits From -->
@@ -65,7 +89,10 @@
                                Style="{StaticResource MaterialDesignBody2TextBlock}"
                                Margin="0,0,0,8"/>
                     <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
-                             Style="{StaticResource MaterialDesignOutlinedTextBox}"/>
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             materialDesign:HintAssist.Hint="{loc:Loc Editor_Hint_Description}"
+                             AutomationProperties.Name="Profile description"
+                             AutomationProperties.HelpText="Enter an optional description for the profile"/>
                 </StackPanel>
             </Grid>
         </materialDesign:Card>
@@ -279,13 +306,44 @@
                               materialDesign:ElevationAssist.Elevation="Dp2">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
+                <!-- Import/Export Buttons -->
+                <Button Grid.Column="0"
+                        Command="{Binding ImportProfileCommand}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}"
+                        Margin="0,0,8,0">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FileImport"
+                                                  Width="18" Height="18"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,8,0"/>
+                        <TextBlock Text="{loc:Loc Editor_Btn_Import}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="1"
+                        Command="{Binding ExportProfileCommand}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}"
+                        Margin="0,0,16,0">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FileExport"
+                                                  Width="18" Height="18"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,8,0"/>
+                        <TextBlock Text="{loc:Loc Editor_Btn_Export}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
                 <!-- Messages -->
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <StackPanel Grid.Column="2" VerticalAlignment="Center">
                     <!-- Error Message -->
                     <TextBlock Text="{Binding ErrorMessage}"
                                Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
@@ -309,7 +367,7 @@
                 </StackPanel>
 
                 <!-- Cancel Button -->
-                <Button Grid.Column="1"
+                <Button Grid.Column="3"
                         Content="{loc:Loc Btn_Cancel}"
                         Command="{Binding CancelCommand}"
                         Style="{StaticResource MaterialDesignOutlinedButton}"
@@ -317,7 +375,7 @@
                         Margin="0,0,12,0"/>
 
                 <!-- Save Button with Progress -->
-                <Button Grid.Column="2"
+                <Button Grid.Column="4"
                         Command="{Binding SaveCommand}"
                         Style="{StaticResource MaterialDesignRaisedButton}"
                         IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}">

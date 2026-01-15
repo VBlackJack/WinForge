@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         Title="{loc:Loc App_Title}"
         Height="900" Width="1440"
-        MinHeight="700" MinWidth="1100"
+        MinHeight="700" MinWidth="1400"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource MaterialDesign.Brush.Background}"
         TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
@@ -17,6 +17,17 @@
         TextElement.FontSize="14"
         FontFamily="{materialDesign:MaterialDesignFont}"
         Icon="Win11Forge.ico">
+
+    <Window.InputBindings>
+        <KeyBinding Key="F1" Command="{Binding ShowKeyboardShortcutsCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+        <KeyBinding Modifiers="Ctrl" Key="D1" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="0"/>
+        <KeyBinding Modifiers="Ctrl" Key="D2" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="1"/>
+        <KeyBinding Modifiers="Ctrl" Key="D3" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="2"/>
+        <KeyBinding Modifiers="Ctrl" Key="D4" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="3"/>
+        <KeyBinding Modifiers="Ctrl" Key="D5" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="4"/>
+        <KeyBinding Modifiers="Ctrl" Key="D6" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="5"/>
+        <KeyBinding Modifiers="Ctrl" Key="OemComma" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="5"/>
+    </Window.InputBindings>
 
     <materialDesign:DialogHost Identifier="RootDialog"
                                 DialogTheme="Inherit"
@@ -57,8 +68,10 @@
                          x:Name="NavigationListBox"
                          SelectionChanged="NavigationListBox_SelectionChanged"
                          SelectedIndex="0"
-                         Style="{StaticResource MaterialDesignNavigationPrimaryListBox}">
-                    <ListBoxItem>
+                         Style="{StaticResource MaterialDesignNavigationPrimaryListBox}"
+                         AutomationProperties.Name="Main Navigation">
+                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_Dashboard}"
+                                 AutomationProperties.HelpText="Navigate to Dashboard view, Ctrl+1">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="ViewDashboard"
                                                       Width="24"
@@ -68,7 +81,8 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
-                    <ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_Prerequisites}"
+                                 AutomationProperties.HelpText="Navigate to Prerequisites view, Ctrl+2">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="CheckboxMarkedCircleOutline"
                                                       Width="24"
@@ -78,17 +92,8 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
-                    <ListBoxItem>
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Rocket"
-                                                      Width="24"
-                                                      Height="24"
-                                                      Margin="0,0,16,0"/>
-                            <TextBlock Text="{loc:Loc Nav_Deployment}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ListBoxItem>
-                    <ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_Apps}"
+                                 AutomationProperties.HelpText="Navigate to Applications view, Ctrl+3">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Apps"
                                                       Width="24"
@@ -98,7 +103,19 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
-                    <ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_Deployment}"
+                                 AutomationProperties.HelpText="Navigate to Deployment view, Ctrl+4">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Rocket"
+                                                      Width="24"
+                                                      Height="24"
+                                                      Margin="0,0,16,0"/>
+                            <TextBlock Text="{loc:Loc Nav_Deployment}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_ProfileEditor}"
+                                 AutomationProperties.HelpText="Navigate to Profile Editor view, Ctrl+5">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="FileDocumentEdit"
                                                       Width="24"
@@ -108,7 +125,8 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
-                    <ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_Settings}"
+                                 AutomationProperties.HelpText="Navigate to Settings view, Ctrl+6">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Cog"
                                                       Width="24"
@@ -148,6 +166,14 @@
             <views:PrerequisitesView x:Name="PrerequisitesViewControl"
                                       Visibility="Collapsed"/>
         </Grid>
+
+        <!-- Toast Notifications Snackbar -->
+        <materialDesign:Snackbar x:Name="MainSnackbar"
+                                  Grid.Column="1"
+                                  MessageQueue="{materialDesign:MessageQueue}"
+                                  VerticalAlignment="Bottom"
+                                  HorizontalAlignment="Stretch"
+                                  Margin="16"/>
     </Grid>
     </materialDesign:DialogHost>
 </Window>

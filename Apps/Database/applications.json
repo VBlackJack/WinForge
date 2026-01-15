@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft-07/schema#",
   "DatabaseVersion": "3.0.0",
   "LastUpdated": "2025-10-06",
-  "TotalApplications": 67,
+  "TotalApplications": 158,
   "PriorityRanges": {
     "Description": "Priority ranges for application installation order",
     "Ranges": {
@@ -1833,43 +1833,2090 @@
       "LastVerified": "2025-10-03",
       "Verified": true,
       "Homepage": null
+    },
+    "OperaBrowser": {
+      "Name": "Opera",
+      "Category": "Browser",
+      "Description": "Fast and secure web browser with built-in VPN and ad blocker",
+      "Sources": {
+        "Winget": "Opera.Opera",
+        "Chocolatey": "opera",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Programs\\Opera\\opera.exe"
+      },
+      "DefaultPriority": 4,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["browser", "privacy", "vpn"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.opera.com/"
+    },
+    "Zoom": {
+      "Name": "Zoom",
+      "Category": "Communication",
+      "Description": "Video conferencing and online meeting platform",
+      "Sources": {
+        "Winget": "Zoom.Zoom",
+        "Chocolatey": "zoom",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Roaming\\Zoom\\bin\\Zoom.exe"
+      },
+      "DefaultPriority": 36,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["communication", "video", "conferencing", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://zoom.us/"
+    },
+    "MicrosoftTeams": {
+      "Name": "Microsoft Teams",
+      "Category": "Communication",
+      "Description": "Business communication and collaboration platform",
+      "Sources": {
+        "Winget": "Microsoft.Teams",
+        "Chocolatey": "microsoft-teams",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Microsoft\\Teams\\current\\Teams.exe"
+      },
+      "DefaultPriority": 37,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["communication", "microsoft", "collaboration", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.microsoft.com/microsoft-teams"
+    },
+    "Thunderbird": {
+      "Name": "Mozilla Thunderbird",
+      "Category": "Communication",
+      "Description": "Free email client by Mozilla",
+      "Sources": {
+        "Winget": "Mozilla.Thunderbird",
+        "Chocolatey": "thunderbird",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Registry",
+        "Path": "HKLM:\\SOFTWARE\\Mozilla\\Mozilla Thunderbird"
+      },
+      "DefaultPriority": 38,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["communication", "email", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.thunderbird.net/"
+    },
+    "Pidgin": {
+      "Name": "Pidgin",
+      "Category": "Communication",
+      "Description": "Universal chat client supporting multiple protocols",
+      "Sources": {
+        "Winget": "Pidgin.Pidgin",
+        "Chocolatey": "pidgin",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\Pidgin\\pidgin.exe"
+      },
+      "DefaultPriority": 82,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["communication", "messaging", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.pidgin.im/"
+    },
+    "Spotify": {
+      "Name": "Spotify",
+      "Category": "Media",
+      "Description": "Music streaming service",
+      "Sources": {
+        "Winget": "Spotify.Spotify",
+        "Chocolatey": "spotify",
+        "Store": "9NCBCSZSJRSB",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Roaming\\Spotify\\Spotify.exe"
+      },
+      "DefaultPriority": 41,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "music", "streaming", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.spotify.com/"
+    },
+    "iTunes": {
+      "Name": "iTunes",
+      "Category": "Media",
+      "Description": "Apple media player and library",
+      "Sources": {
+        "Winget": "Apple.iTunes",
+        "Chocolatey": "itunes",
+        "Store": "9PB2MZ1ZMB1S",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\iTunes\\iTunes.exe"
+      },
+      "DefaultPriority": 42,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "music", "apple"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.apple.com/itunes/"
+    },
+    "Audacity": {
+      "Name": "Audacity",
+      "Category": "Media",
+      "Description": "Free and open source audio editor and recorder",
+      "Sources": {
+        "Winget": "Audacity.Audacity",
+        "Chocolatey": "audacity",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Audacity\\Audacity.exe"
+      },
+      "DefaultPriority": 43,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "audio", "editor", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.audacityteam.org/"
+    },
+    "Foobar2000": {
+      "Name": "foobar2000",
+      "Category": "Media",
+      "Description": "Advanced freeware audio player",
+      "Sources": {
+        "Winget": "PeterPawlowski.foobar2000",
+        "Chocolatey": "foobar2000",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\foobar2000\\foobar2000.exe"
+      },
+      "DefaultPriority": 44,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "audio", "music", "lightweight"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.foobar2000.org/"
+    },
+    "AIMP": {
+      "Name": "AIMP",
+      "Category": "Media",
+      "Description": "Feature-rich audio player",
+      "Sources": {
+        "Winget": "AIMP.AIMP",
+        "Chocolatey": "aimp",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\AIMP\\AIMP.exe"
+      },
+      "DefaultPriority": 45,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "audio", "music"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.aimp.ru/"
+    },
+    "MusicBee": {
+      "Name": "MusicBee",
+      "Category": "Media",
+      "Description": "Music manager and player",
+      "Sources": {
+        "Winget": "MusicBee.MusicBee",
+        "Chocolatey": "musicbee",
+        "Store": "9P4CLT2RJ1RS",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\MusicBee\\MusicBee.exe"
+      },
+      "DefaultPriority": 46,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "music", "manager"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://getmusicbee.com/"
+    },
+    "HandBrake": {
+      "Name": "HandBrake",
+      "Category": "Media",
+      "Description": "Open source video transcoder",
+      "Sources": {
+        "Winget": "HandBrake.HandBrake",
+        "Chocolatey": "handbrake",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\HandBrake\\HandBrake.exe"
+      },
+      "DefaultPriority": 47,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "video", "converter", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://handbrake.fr/"
+    },
+    "KLiteCodecs": {
+      "Name": "K-Lite Codec Pack",
+      "Category": "Media",
+      "Description": "Collection of audio and video codecs",
+      "Sources": {
+        "Winget": "CodecGuide.K-LiteCodecPack.Full",
+        "Chocolatey": "k-litecodecpackfull",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Registry",
+        "Path": "HKLM:\\SOFTWARE\\WOW6432Node\\KLCodecPack"
+      },
+      "DefaultPriority": 48,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "codecs", "video", "audio"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://codecguide.com/"
+    },
+    "GOMPlayer": {
+      "Name": "GOM Player",
+      "Category": "Media",
+      "Description": "Free media player with codec support",
+      "Sources": {
+        "Winget": "GOM.GOMPlayer",
+        "Chocolatey": "gom-player",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\GRETECH\\GomPlayer\\GOM.exe"
+      },
+      "DefaultPriority": 49,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "video", "player"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.gomlab.com/"
+    },
+    "GIMP": {
+      "Name": "GIMP",
+      "Category": "Media",
+      "Description": "GNU Image Manipulation Program - free image editor",
+      "Sources": {
+        "Winget": "GIMP.GIMP",
+        "Chocolatey": "gimp",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\GIMP 2\\bin\\gimp-2.10.exe"
+      },
+      "DefaultPriority": 50,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "image", "editor", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.gimp.org/"
+    },
+    "Blender": {
+      "Name": "Blender",
+      "Category": "Media",
+      "Description": "Free 3D creation suite",
+      "Sources": {
+        "Winget": "BlenderFoundation.Blender",
+        "Chocolatey": "blender",
+        "Store": "9PP3C07GTVRH",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Blender Foundation\\Blender*\\blender.exe"
+      },
+      "DefaultPriority": 52,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "3d", "modeling", "animation", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.blender.org/"
+    },
+    "Inkscape": {
+      "Name": "Inkscape",
+      "Category": "Media",
+      "Description": "Free vector graphics editor",
+      "Sources": {
+        "Winget": "Inkscape.Inkscape",
+        "Chocolatey": "inkscape",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Inkscape\\bin\\inkscape.exe"
+      },
+      "DefaultPriority": 53,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "image", "vector", "editor", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://inkscape.org/"
+    },
+    "IrfanView": {
+      "Name": "IrfanView",
+      "Category": "Media",
+      "Description": "Fast and compact image viewer",
+      "Sources": {
+        "Winget": "IrfanSkiljan.IrfanView",
+        "Chocolatey": "irfanview",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\IrfanView\\i_view64.exe"
+      },
+      "DefaultPriority": 54,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "image", "viewer", "lightweight"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.irfanview.com/"
+    },
+    "XnView": {
+      "Name": "XnView MP",
+      "Category": "Media",
+      "Description": "Image viewer and converter",
+      "Sources": {
+        "Winget": "XnSoft.XnViewMP",
+        "Chocolatey": "xnviewmp",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\XnViewMP\\xnviewmp.exe"
+      },
+      "DefaultPriority": 55,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "image", "viewer", "converter"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.xnview.com/"
+    },
+    "Greenshot": {
+      "Name": "Greenshot",
+      "Category": "Utility",
+      "Description": "Screenshot tool for Windows",
+      "Sources": {
+        "Winget": "Greenshot.Greenshot",
+        "Chocolatey": "greenshot",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Greenshot\\Greenshot.exe"
+      },
+      "DefaultPriority": 56,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "screenshot", "productivity", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://getgreenshot.org/"
+    },
+    "LibreOffice": {
+      "Name": "LibreOffice",
+      "Category": "Productivity",
+      "Description": "Free and powerful office suite",
+      "Sources": {
+        "Winget": "TheDocumentFoundation.LibreOffice.LTS",
+        "Chocolatey": "libreoffice-still",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\LibreOffice\\program\\soffice.exe"
+      },
+      "DefaultPriority": 34,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["productivity", "office", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.libreoffice.org/"
+    },
+    "SumatraPDF": {
+      "Name": "SumatraPDF",
+      "Category": "Productivity",
+      "Description": "Free PDF reader for Windows",
+      "Sources": {
+        "Winget": "SumatraPDF.SumatraPDF",
+        "Chocolatey": "sumatrapdf",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\SumatraPDF\\SumatraPDF.exe"
+      },
+      "DefaultPriority": 35,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["productivity", "pdf", "viewer", "lightweight", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.sumatrapdfreader.org/"
+    },
+    "FoxitReader": {
+      "Name": "Foxit PDF Reader",
+      "Category": "Productivity",
+      "Description": "Fast and secure PDF reader",
+      "Sources": {
+        "Winget": "Foxit.FoxitReader",
+        "Chocolatey": "foxitreader",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\Foxit Software\\Foxit PDF Reader\\FoxitPDFReader.exe"
+      },
+      "DefaultPriority": 36,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["productivity", "pdf", "viewer"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.foxit.com/pdf-reader/"
+    },
+    "CutePDF": {
+      "Name": "CutePDF Writer",
+      "Category": "Productivity",
+      "Description": "Free PDF printer driver",
+      "Sources": {
+        "Winget": null,
+        "Chocolatey": "cutepdf",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Acro Software\\CutePDF Writer\\CPWriter2.exe"
+      },
+      "DefaultPriority": 83,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["productivity", "pdf", "printer"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.cutepdf.com/"
+    },
+    "TeamViewer": {
+      "Name": "TeamViewer",
+      "Category": "Support",
+      "Description": "Remote desktop and online collaboration",
+      "Sources": {
+        "Winget": "TeamViewer.TeamViewer",
+        "Chocolatey": "teamviewer",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\TeamViewer\\TeamViewer.exe"
+      },
+      "DefaultPriority": 19,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["support", "remote", "collaboration", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.teamviewer.com/"
+    },
+    "AnyDesk": {
+      "Name": "AnyDesk",
+      "Category": "Support",
+      "Description": "Fast remote desktop application",
+      "Sources": {
+        "Winget": "AnyDeskSoftwareGmbH.AnyDesk",
+        "Chocolatey": "anydesk",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\AnyDesk\\AnyDesk.exe"
+      },
+      "DefaultPriority": 20,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["support", "remote"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://anydesk.com/"
+    },
+    "qBittorrent": {
+      "Name": "qBittorrent",
+      "Category": "Utility",
+      "Description": "Free and open-source BitTorrent client",
+      "Sources": {
+        "Winget": "qBittorrent.qBittorrent",
+        "Chocolatey": "qbittorrent",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\qBittorrent\\qbittorrent.exe"
+      },
+      "DefaultPriority": 57,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "torrent", "download", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.qbittorrent.org/"
+    },
+    "TeraCopy": {
+      "Name": "TeraCopy",
+      "Category": "Utility",
+      "Description": "Copy files faster and more securely",
+      "Sources": {
+        "Winget": "CodeSector.TeraCopy",
+        "Chocolatey": "teracopy",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\TeraCopy\\TeraCopy.exe"
+      },
+      "DefaultPriority": 58,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "file-management", "copy"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.codesector.com/teracopy"
+    },
+    "RevoUninstaller": {
+      "Name": "Revo Uninstaller",
+      "Category": "Utility",
+      "Description": "Advanced program uninstaller",
+      "Sources": {
+        "Winget": "RevoUninstaller.RevoUninstaller",
+        "Chocolatey": "revo-uninstaller",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\VS Revo Group\\Revo Uninstaller\\Revouninstaller.exe"
+      },
+      "DefaultPriority": 59,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "uninstaller", "cleanup"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.revouninstaller.com/"
+    },
+    "CCleaner": {
+      "Name": "CCleaner",
+      "Category": "Utility",
+      "Description": "System optimization and privacy tool",
+      "Sources": {
+        "Winget": "Piriform.CCleaner",
+        "Chocolatey": "ccleaner",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\CCleaner\\CCleaner64.exe"
+      },
+      "DefaultPriority": 60,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "cleanup", "privacy"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.ccleaner.com/"
+    },
+    "OpenShell": {
+      "Name": "Open-Shell",
+      "Category": "Utility",
+      "Description": "Classic Start Menu for Windows",
+      "Sources": {
+        "Winget": "Open-Shell.Open-Shell-Menu",
+        "Chocolatey": "open-shell",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Open-Shell\\StartMenu.exe"
+      },
+      "DefaultPriority": 61,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "customization", "start-menu", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://open-shell.github.io/Open-Shell-Menu/"
+    },
+    "ImgBurn": {
+      "Name": "ImgBurn",
+      "Category": "Utility",
+      "Description": "Lightweight CD/DVD/Blu-ray burning application",
+      "Sources": {
+        "Winget": "LIGHTNINGUK.ImgBurn",
+        "Chocolatey": "imgburn",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\ImgBurn\\ImgBurn.exe"
+      },
+      "DefaultPriority": 84,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "burning", "disc"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.imgburn.com/"
+    },
+    "RealVNC": {
+      "Name": "RealVNC Viewer",
+      "Category": "Support",
+      "Description": "Remote desktop viewer",
+      "Sources": {
+        "Winget": "RealVNC.VNCViewer",
+        "Chocolatey": "vnc-viewer",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\RealVNC\\VNC Viewer\\vncviewer.exe"
+      },
+      "DefaultPriority": 85,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["support", "remote", "vnc"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.realvnc.com/"
+    },
+    "TightVNC": {
+      "Name": "TightVNC",
+      "Category": "Support",
+      "Description": "Free remote desktop software",
+      "Sources": {
+        "Winget": "GlavSoft.TightVNC",
+        "Chocolatey": "tightvnc",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\TightVNC\\tvnviewer.exe"
+      },
+      "DefaultPriority": 86,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["support", "remote", "vnc", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.tightvnc.com/"
+    },
+    "GlaryUtilities": {
+      "Name": "Glary Utilities",
+      "Category": "Utility",
+      "Description": "System utilities collection",
+      "Sources": {
+        "Winget": "Glarysoft.GlaryUtilities",
+        "Chocolatey": "glaryutilities-free",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\Glary Utilities 5\\Integrator.exe"
+      },
+      "DefaultPriority": 87,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "optimization", "cleanup"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.glarysoft.com/"
+    },
+    "Dropbox": {
+      "Name": "Dropbox",
+      "Category": "CloudStorage",
+      "Description": "Cloud storage and file synchronization",
+      "Sources": {
+        "Winget": "Dropbox.Dropbox",
+        "Chocolatey": "dropbox",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\Dropbox\\Client\\Dropbox.exe"
+      },
+      "DefaultPriority": 56,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["cloud", "storage", "sync", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.dropbox.com/"
+    },
+    "OneDrive": {
+      "Name": "Microsoft OneDrive",
+      "Category": "CloudStorage",
+      "Description": "Microsoft cloud storage service",
+      "Sources": {
+        "Winget": "Microsoft.OneDrive",
+        "Chocolatey": "onedrive",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Microsoft\\OneDrive\\OneDrive.exe"
+      },
+      "DefaultPriority": 57,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["cloud", "storage", "microsoft", "sync"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Notes": "Usually preinstalled on Windows 11",
+      "Homepage": "https://www.microsoft.com/microsoft-365/onedrive"
+    },
+    "FileZilla": {
+      "Name": "FileZilla",
+      "Category": "Network",
+      "Description": "Free FTP solution",
+      "Sources": {
+        "Winget": "TimKosse.FileZilla.Client",
+        "Chocolatey": "filezilla",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\FileZilla FTP Client\\filezilla.exe"
+      },
+      "DefaultPriority": 47,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["network", "ftp", "sftp", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://filezilla-project.org/"
+    },
+    "WinMerge": {
+      "Name": "WinMerge",
+      "Category": "Development",
+      "Description": "Open source differencing and merging tool",
+      "Sources": {
+        "Winget": "WinMerge.WinMerge",
+        "Chocolatey": "winmerge",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\WinMerge\\WinMergeU.exe"
+      },
+      "DefaultPriority": 51,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["development", "diff", "merge", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://winmerge.org/"
+    },
+    "Eclipse": {
+      "Name": "Eclipse IDE",
+      "Category": "Development",
+      "Description": "Integrated development environment for Java",
+      "Sources": {
+        "Winget": "EclipseFoundation.EclipseIDE",
+        "Chocolatey": "eclipse",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\eclipse\\eclipse.exe"
+      },
+      "DefaultPriority": 52,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["development", "ide", "java", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.eclipse.org/"
+    },
+    "Cursor": {
+      "Name": "Cursor",
+      "Category": "Development",
+      "Description": "AI-powered code editor",
+      "Sources": {
+        "Winget": "Anysphere.Cursor",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Programs\\cursor\\Cursor.exe"
+      },
+      "DefaultPriority": 53,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["development", "editor", "ai"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://cursor.sh/"
+    },
+    "VCRedist": {
+      "Name": "Visual C++ Redistributable",
+      "Category": "System",
+      "Description": "Microsoft Visual C++ runtime libraries",
+      "Sources": {
+        "Winget": "Microsoft.VCRedist.2015+.x64",
+        "Chocolatey": "vcredist140",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Registry",
+        "Path": "HKLM:\\SOFTWARE\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\X64"
+      },
+      "DefaultPriority": 2,
+      "DefaultRequired": true,
+      "EnvironmentRestrictions": [],
+      "Tags": ["system", "runtime", "microsoft", "essential"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist"
+    },
+    "AdoptOpenJDK": {
+      "Name": "Eclipse Temurin JDK",
+      "Category": "Development",
+      "Description": "Open source Java Development Kit",
+      "Sources": {
+        "Winget": "EclipseAdoptium.Temurin.21.JDK",
+        "Chocolatey": "temurin",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Command",
+        "Command": "java -version"
+      },
+      "DefaultPriority": 54,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["development", "java", "runtime", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://adoptium.net/"
+    },
+    "DotNetRuntime": {
+      "Name": ".NET Desktop Runtime",
+      "Category": "System",
+      "Description": "Microsoft .NET Desktop Runtime",
+      "Sources": {
+        "Winget": "Microsoft.DotNet.DesktopRuntime.8",
+        "Chocolatey": "dotnet-desktopruntime",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Command",
+        "Command": "dotnet --list-runtimes"
+      },
+      "DefaultPriority": 3,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["system", "runtime", "microsoft", "dotnet"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://dotnet.microsoft.com/"
+    },
+    "Evernote": {
+      "Name": "Evernote",
+      "Category": "Productivity",
+      "Description": "Note-taking and organization app",
+      "Sources": {
+        "Winget": "evernote.evernote",
+        "Chocolatey": "evernote",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Programs\\Evernote\\Evernote.exe"
+      },
+      "DefaultPriority": 88,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["productivity", "notes", "organization"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://evernote.com/"
+    },
+    "GoogleEarth": {
+      "Name": "Google Earth Pro",
+      "Category": "Utility",
+      "Description": "3D representation of Earth based on satellite imagery",
+      "Sources": {
+        "Winget": "Google.EarthPro",
+        "Chocolatey": "googleearthpro",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Google\\Google Earth Pro\\client\\googleearth.exe"
+      },
+      "DefaultPriority": 89,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "maps", "google", "geography"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.google.com/earth/"
+    },
+    "NVDA": {
+      "Name": "NVDA Screen Reader",
+      "Category": "Utility",
+      "Description": "Free screen reader for visually impaired users",
+      "Sources": {
+        "Winget": "NVAccess.NVDA",
+        "Chocolatey": "nvda",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\NVDA\\nvda.exe"
+      },
+      "DefaultPriority": 90,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "accessibility", "screen-reader", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.nvaccess.org/"
+    },
+    "KeePass": {
+      "Name": "KeePass",
+      "Category": "Security",
+      "Description": "Free and open source password manager",
+      "Sources": {
+        "Winget": "DominikReichl.KeePass",
+        "Chocolatey": "keepass",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\KeePass Password Safe 2\\KeePass.exe"
+      },
+      "DefaultPriority": 28,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["security", "password", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://keepass.info/"
+    },
+    "PeaZip": {
+      "Name": "PeaZip",
+      "Category": "Compression",
+      "Description": "Free file archiver utility",
+      "Sources": {
+        "Winget": "Giorgiotani.Peazip",
+        "Chocolatey": "peazip",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\PeaZip\\peazip.exe"
+      },
+      "DefaultPriority": 65,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["compression", "archiver", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://peazip.github.io/"
+    },
+    "WinDirStat": {
+      "Name": "WinDirStat",
+      "Category": "Utility",
+      "Description": "Disk usage statistics viewer and cleanup tool",
+      "Sources": {
+        "Winget": "WinDirStat.WinDirStat",
+        "Chocolatey": "windirstat",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\WinDirStat\\windirstat.exe"
+      },
+      "DefaultPriority": 62,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "disk", "storage", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://windirstat.net/"
+    },
+    "Bitwarden": {
+      "Name": "Bitwarden",
+      "Category": "Security",
+      "Description": "Open source password manager",
+      "Sources": {
+        "Winget": "Bitwarden.Bitwarden",
+        "Chocolatey": "bitwarden",
+        "Store": "9PJSDV0VPK04",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Programs\\Bitwarden\\Bitwarden.exe"
+      },
+      "DefaultPriority": 29,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["security", "password", "open-source", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://bitwarden.com/"
+    },
+    "Slack": {
+      "Name": "Slack",
+      "Category": "Communication",
+      "Description": "Business communication platform",
+      "Sources": {
+        "Winget": "SlackTechnologies.Slack",
+        "Chocolatey": "slack",
+        "Store": "9WZDNCRDK3WP",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\slack\\slack.exe"
+      },
+      "DefaultPriority": 39,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["communication", "collaboration", "messaging", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://slack.com/"
+    },
+    "Telegram": {
+      "Name": "Telegram Desktop",
+      "Category": "Communication",
+      "Description": "Cloud-based messaging app",
+      "Sources": {
+        "Winget": "Telegram.TelegramDesktop",
+        "Chocolatey": "telegram",
+        "Store": "9NZTWSQNTD0S",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Roaming\\Telegram Desktop\\Telegram.exe"
+      },
+      "DefaultPriority": 40,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["communication", "messaging", "privacy", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://telegram.org/"
+    },
+    "Notion": {
+      "Name": "Notion",
+      "Category": "Productivity",
+      "Description": "All-in-one workspace for notes and collaboration",
+      "Sources": {
+        "Winget": "Notion.Notion",
+        "Chocolatey": "notion",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Programs\\Notion\\Notion.exe"
+      },
+      "DefaultPriority": 37,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["productivity", "notes", "collaboration", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.notion.so/"
+    },
+    "Obsidian": {
+      "Name": "Obsidian",
+      "Category": "Productivity",
+      "Description": "Knowledge base and note-taking app",
+      "Sources": {
+        "Winget": "Obsidian.Obsidian",
+        "Chocolatey": "obsidian",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Obsidian\\Obsidian.exe"
+      },
+      "DefaultPriority": 38,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["productivity", "notes", "knowledge-base", "markdown"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://obsidian.md/"
+    },
+    "VirtualBox": {
+      "Name": "Oracle VirtualBox",
+      "Category": "Virtualization",
+      "Description": "Free and open-source hosted hypervisor",
+      "Sources": {
+        "Winget": "Oracle.VirtualBox",
+        "Chocolatey": "virtualbox",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Oracle\\VirtualBox\\VirtualBox.exe"
+      },
+      "DefaultPriority": 54,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": ["WindowsSandbox", "HyperV"],
+      "Tags": ["virtualization", "hypervisor", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.virtualbox.org/"
+    },
+    "DockerDesktop": {
+      "Name": "Docker Desktop",
+      "Category": "Development",
+      "Description": "Container development platform",
+      "Sources": {
+        "Winget": "Docker.DockerDesktop",
+        "Chocolatey": "docker-desktop",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"
+      },
+      "DefaultPriority": 55,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": ["WindowsSandbox"],
+      "Tags": ["development", "containers", "docker", "devops"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.docker.com/products/docker-desktop/"
+    },
+    "Postman": {
+      "Name": "Postman",
+      "Category": "Development",
+      "Description": "API development and testing platform",
+      "Sources": {
+        "Winget": "Postman.Postman",
+        "Chocolatey": "postman",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Postman\\Postman.exe"
+      },
+      "DefaultPriority": 56,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["development", "api", "testing", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.postman.com/"
+    },
+    "DBeaver": {
+      "Name": "DBeaver",
+      "Category": "Development",
+      "Description": "Universal database tool",
+      "Sources": {
+        "Winget": "dbeaver.dbeaver",
+        "Chocolatey": "dbeaver",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\DBeaver\\dbeaver.exe"
+      },
+      "DefaultPriority": 57,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["development", "database", "sql", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://dbeaver.io/"
+    },
+    "HeidiSQL": {
+      "Name": "HeidiSQL",
+      "Category": "Development",
+      "Description": "Lightweight SQL client for MySQL, MariaDB, PostgreSQL",
+      "Sources": {
+        "Winget": "HeidiSQL.HeidiSQL",
+        "Chocolatey": "heidisql",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\HeidiSQL\\heidisql.exe"
+      },
+      "DefaultPriority": 58,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["development", "database", "sql", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.heidisql.com/"
+    },
+    "Insomnia": {
+      "Name": "Insomnia",
+      "Category": "Development",
+      "Description": "API client for REST and GraphQL",
+      "Sources": {
+        "Winget": "Insomnia.Insomnia",
+        "Chocolatey": "insomnia-rest-api-client",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\insomnia\\Insomnia.exe"
+      },
+      "DefaultPriority": 59,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["development", "api", "rest", "graphql"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://insomnia.rest/"
+    },
+    "Rufus": {
+      "Name": "Rufus",
+      "Category": "Utility",
+      "Description": "Create bootable USB drives",
+      "Sources": {
+        "Winget": "Rufus.Rufus",
+        "Chocolatey": "rufus",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Rufus\\rufus.exe"
+      },
+      "DefaultPriority": 63,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": ["WindowsSandbox"],
+      "Tags": ["utility", "usb", "bootable", "essential"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://rufus.ie/"
+    },
+    "Ventoy": {
+      "Name": "Ventoy",
+      "Category": "Utility",
+      "Description": "Bootable USB solution for multiple ISOs",
+      "Sources": {
+        "Winget": "Ventoy.Ventoy",
+        "Chocolatey": "ventoy",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Ventoy\\Ventoy2Disk.exe"
+      },
+      "DefaultPriority": 64,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": ["WindowsSandbox"],
+      "Tags": ["utility", "usb", "bootable", "multiboot", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.ventoy.net/"
+    },
+    "BalenaEtcher": {
+      "Name": "balenaEtcher",
+      "Category": "Utility",
+      "Description": "Flash OS images to SD cards and USB drives",
+      "Sources": {
+        "Winget": "Balena.Etcher",
+        "Chocolatey": "etcher",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\balenaEtcher\\balenaEtcher.exe"
+      },
+      "DefaultPriority": 65,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": ["WindowsSandbox"],
+      "Tags": ["utility", "usb", "flash", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.balena.io/etcher/"
+    },
+    "DoubleCommander": {
+      "Name": "Double Commander",
+      "Category": "Utility",
+      "Description": "Dual-pane file manager",
+      "Sources": {
+        "Winget": "alexx2000.DoubleCommander",
+        "Chocolatey": "doublecmd",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Double Commander\\doublecmd.exe"
+      },
+      "DefaultPriority": 67,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "file-manager", "dual-pane", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://doublecmd.sourceforge.io/"
+    },
+    "Ditto": {
+      "Name": "Ditto",
+      "Category": "Utility",
+      "Description": "Clipboard manager for Windows",
+      "Sources": {
+        "Winget": "Ditto.Ditto",
+        "Chocolatey": "ditto",
+        "Store": "9NBLGGH3ZBJQ",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Ditto\\Ditto.exe"
+      },
+      "DefaultPriority": 68,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "clipboard", "productivity", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://ditto-cp.sourceforge.io/"
+    },
+    "CPUZ": {
+      "Name": "CPU-Z",
+      "Category": "Diagnostic",
+      "Description": "System information software for CPU",
+      "Sources": {
+        "Winget": "CPUID.CPU-Z",
+        "Chocolatey": "cpu-z",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\CPUID\\CPU-Z\\cpuz.exe"
+      },
+      "DefaultPriority": 24,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": ["WindowsSandbox"],
+      "Tags": ["diagnostic", "hardware", "cpu", "system-info"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.cpuid.com/softwares/cpu-z.html"
+    },
+    "GPUZ": {
+      "Name": "GPU-Z",
+      "Category": "Diagnostic",
+      "Description": "Graphics card information utility",
+      "Sources": {
+        "Winget": "TechPowerUp.GPU-Z",
+        "Chocolatey": "gpu-z",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\GPU-Z\\GPU-Z.exe"
+      },
+      "DefaultPriority": 25,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": ["WindowsSandbox"],
+      "Tags": ["diagnostic", "hardware", "gpu", "system-info"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.techpowerup.com/gpuz/"
+    },
+    "HWMonitor": {
+      "Name": "HWMonitor",
+      "Category": "Diagnostic",
+      "Description": "Hardware monitoring program",
+      "Sources": {
+        "Winget": "CPUID.HWMonitor",
+        "Chocolatey": "hwmonitor",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\CPUID\\HWMonitor\\HWMonitor.exe"
+      },
+      "DefaultPriority": 26,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": ["WindowsSandbox"],
+      "Tags": ["diagnostic", "hardware", "monitoring", "temperature"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.cpuid.com/softwares/hwmonitor.html"
+    },
+    "Speccy": {
+      "Name": "Speccy",
+      "Category": "Diagnostic",
+      "Description": "System information tool by Piriform",
+      "Sources": {
+        "Winget": "Piriform.Speccy",
+        "Chocolatey": "speccy",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Speccy\\Speccy64.exe"
+      },
+      "DefaultPriority": 27,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": ["WindowsSandbox"],
+      "Tags": ["diagnostic", "hardware", "system-info"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.ccleaner.com/speccy"
+    },
+    "PotPlayer": {
+      "Name": "PotPlayer",
+      "Category": "Media",
+      "Description": "Versatile multimedia player",
+      "Sources": {
+        "Winget": "Daum.PotPlayer",
+        "Chocolatey": "potplayer",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\DAUM\\PotPlayer\\PotPlayerMini64.exe"
+      },
+      "DefaultPriority": 56,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "video", "player", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://potplayer.daum.net/"
+    },
+    "mpv": {
+      "Name": "mpv",
+      "Category": "Media",
+      "Description": "Free and open-source media player",
+      "Sources": {
+        "Winget": "mpv.net",
+        "Chocolatey": "mpv",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\mpv.net\\mpvnet.exe"
+      },
+      "DefaultPriority": 57,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "video", "player", "open-source", "lightweight"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://mpv.io/"
+    },
+    "Kodi": {
+      "Name": "Kodi",
+      "Category": "Media",
+      "Description": "Open source home theater software",
+      "Sources": {
+        "Winget": "XBMCFoundation.Kodi",
+        "Chocolatey": "kodi",
+        "Store": "9NBLGGH4T892",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Kodi\\kodi.exe"
+      },
+      "DefaultPriority": 58,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "htpc", "streaming", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://kodi.tv/"
+    },
+    "Plex": {
+      "Name": "Plex",
+      "Category": "Media",
+      "Description": "Media server and streaming platform",
+      "Sources": {
+        "Winget": "Plex.Plex",
+        "Chocolatey": "plex",
+        "Store": "9NBLGGH41WLQ",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Plex\\Plex\\Plex.exe"
+      },
+      "DefaultPriority": 59,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "server", "streaming", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.plex.tv/"
+    },
+    "FreeDownloadManager": {
+      "Name": "Free Download Manager",
+      "Category": "Utility",
+      "Description": "Powerful download accelerator and manager",
+      "Sources": {
+        "Winget": "SoftDeluxe.FreeDownloadManager",
+        "Chocolatey": "freedownloadmanager",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\FreeDownloadManager.ORG\\Free Download Manager\\fdm.exe"
+      },
+      "DefaultPriority": 69,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "download", "manager", "torrent"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.freedownloadmanager.org/"
+    },
+    "JDownloader": {
+      "Name": "JDownloader 2",
+      "Category": "Utility",
+      "Description": "Open source download management tool",
+      "Sources": {
+        "Winget": "AppWork.JDownloader",
+        "Chocolatey": "jdownloader",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\JDownloader\\JDownloader2.exe"
+      },
+      "DefaultPriority": 70,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["utility", "download", "manager", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://jdownloader.org/"
+    },
+    "NanaZip": {
+      "Name": "NanaZip",
+      "Category": "Compression",
+      "Description": "Modern 7-Zip derivative with Windows 11 integration",
+      "Sources": {
+        "Winget": "M2Team.NanaZip",
+        "Chocolatey": "nanazip",
+        "Store": "9N8G7TSCL18R",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "StoreApp",
+        "PackageName": "40174MouriNarworleworworworworwo.NanaZip"
+      },
+      "DefaultPriority": 10,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["compression", "archiver", "open-source", "modern"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://github.com/M2Team/NanaZip"
+    },
+    "Bandizip": {
+      "Name": "Bandizip",
+      "Category": "Compression",
+      "Description": "Fast and feature-rich archiver",
+      "Sources": {
+        "Winget": "Bandisoft.Bandizip",
+        "Chocolatey": "bandizip",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Bandizip\\Bandizip.exe"
+      },
+      "DefaultPriority": 66,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["compression", "archiver"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.bandisoft.com/bandizip/"
+    },
+    "GOGGalaxy": {
+      "Name": "GOG Galaxy",
+      "Category": "Gaming",
+      "Description": "Gaming client for GOG.com with library integration",
+      "Sources": {
+        "Winget": "GOG.Galaxy",
+        "Chocolatey": "goggalaxy",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\GOG Galaxy\\GalaxyClient.exe"
+      },
+      "DefaultPriority": 41,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["gaming", "platform", "drm-free"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.gog.com/galaxy"
+    },
+    "EAApp": {
+      "Name": "EA App",
+      "Category": "Gaming",
+      "Description": "Electronic Arts gaming platform",
+      "Sources": {
+        "Winget": "ElectronicArts.EADesktop",
+        "Chocolatey": "ea-app",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Electronic Arts\\EA Desktop\\EA Desktop\\EADesktop.exe"
+      },
+      "DefaultPriority": 42,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["gaming", "platform"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.ea.com/ea-app"
+    },
+    "Playnite": {
+      "Name": "Playnite",
+      "Category": "Gaming",
+      "Description": "Open source video game library manager",
+      "Sources": {
+        "Winget": "Playnite.Playnite",
+        "Chocolatey": "playnite",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Playnite\\Playnite.DesktopApp.exe"
+      },
+      "DefaultPriority": 43,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["gaming", "library", "manager", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://playnite.link/"
+    },
+    "HeroicLauncher": {
+      "Name": "Heroic Games Launcher",
+      "Category": "Gaming",
+      "Description": "Open source Epic Games and GOG launcher",
+      "Sources": {
+        "Winget": "HeroicGamesLauncher.HeroicGamesLauncher",
+        "Chocolatey": "heroic-games-launcher",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Programs\\heroic\\Heroic.exe"
+      },
+      "DefaultPriority": 44,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["gaming", "launcher", "epic", "gog", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://heroicgameslauncher.com/"
+    },
+    "Streamlabs": {
+      "Name": "Streamlabs",
+      "Category": "Recording",
+      "Description": "Streaming and recording software",
+      "Sources": {
+        "Winget": "Streamlabs.Streamlabs",
+        "Chocolatey": "streamlabs-obs",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Streamlabs OBS\\Streamlabs OBS.exe"
+      },
+      "DefaultPriority": 37,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["recording", "streaming", "obs", "popular"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://streamlabs.com/"
+    },
+    "VoiceMeeter": {
+      "Name": "VoiceMeeter Banana",
+      "Category": "Media",
+      "Description": "Virtual audio mixer",
+      "Sources": {
+        "Winget": "VB-Audio.Voicemeeter.Banana",
+        "Chocolatey": "voicemeeter-banana",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files (x86)\\VB\\Voicemeeter\\voicemeeterpro.exe"
+      },
+      "DefaultPriority": 61,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["media", "audio", "mixer", "streaming"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://vb-audio.com/Voicemeeter/banana.htm"
+    },
+    "PDF24": {
+      "Name": "PDF24 Creator",
+      "Category": "Productivity",
+      "Description": "Free PDF creator and converter",
+      "Sources": {
+        "Winget": "geek.software.PDF24",
+        "Chocolatey": "pdf24",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\PDF24\\pdf24-Launcher.exe"
+      },
+      "DefaultPriority": 39,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["productivity", "pdf", "creator", "converter"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.pdf24.org/"
+    },
+    "PDFsam": {
+      "Name": "PDFsam Basic",
+      "Category": "Productivity",
+      "Description": "Split, merge, and rotate PDF files",
+      "Sources": {
+        "Winget": "PDFsam.PDFsam",
+        "Chocolatey": "pdfsam",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\PDFsam Basic\\pdfsam.exe"
+      },
+      "DefaultPriority": 40,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["productivity", "pdf", "split", "merge", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://pdfsam.org/"
+    },
+    "TranslucentTB": {
+      "Name": "TranslucentTB",
+      "Category": "Configuration",
+      "Description": "Make the Windows taskbar translucent",
+      "Sources": {
+        "Winget": "CharlesMilette.TranslucentTB",
+        "Chocolatey": "translucenttb",
+        "Store": "9PF4KZ2VN4W9",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "StoreApp",
+        "PackageName": "28017CharlesMilette.TranslucentTB"
+      },
+      "DefaultPriority": 32,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["configuration", "customization", "taskbar", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://github.com/TranslucentTB/TranslucentTB"
+    },
+    "LivelyWallpaper": {
+      "Name": "Lively Wallpaper",
+      "Category": "Configuration",
+      "Description": "Free and open-source animated wallpaper app",
+      "Sources": {
+        "Winget": "rocksdanister.LivelyWallpaper",
+        "Chocolatey": "lively",
+        "Store": "9NTM2QC6QWS7",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "StoreApp",
+        "PackageName": "12030rocksdanister.LivelyWallpaper"
+      },
+      "DefaultPriority": 33,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["configuration", "customization", "wallpaper", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.rocksdanister.com/lively/"
+    },
+    "Rainmeter": {
+      "Name": "Rainmeter",
+      "Category": "Configuration",
+      "Description": "Desktop customization tool",
+      "Sources": {
+        "Winget": "Rainmeter.Rainmeter",
+        "Chocolatey": "rainmeter",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Rainmeter\\Rainmeter.exe"
+      },
+      "DefaultPriority": 34,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["configuration", "customization", "widgets", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://www.rainmeter.net/"
+    },
+    "Parsec": {
+      "Name": "Parsec",
+      "Category": "Support",
+      "Description": "Low-latency remote desktop for gaming",
+      "Sources": {
+        "Winget": "Parsec.Parsec",
+        "Chocolatey": "parsec",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Parsec\\parsecd.exe"
+      },
+      "DefaultPriority": 21,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["support", "remote", "gaming", "streaming"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://parsec.app/"
+    },
+    "Moonlight": {
+      "Name": "Moonlight",
+      "Category": "Support",
+      "Description": "Open source NVIDIA GameStream client",
+      "Sources": {
+        "Winget": "MoonlightGameStreamingProject.Moonlight",
+        "Chocolatey": "moonlight-qt",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\Moonlight Game Streaming\\Moonlight.exe"
+      },
+      "DefaultPriority": 22,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["support", "remote", "gaming", "streaming", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://moonlight-stream.org/"
+    },
+    "Tabby": {
+      "Name": "Tabby",
+      "Category": "Development",
+      "Description": "Modern terminal for the modern age",
+      "Sources": {
+        "Winget": "Eugeny.Tabby",
+        "Chocolatey": "tabby",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Programs\\Tabby\\Tabby.exe"
+      },
+      "DefaultPriority": 60,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["development", "terminal", "ssh", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://tabby.sh/"
+    },
+    "Hyper": {
+      "Name": "Hyper",
+      "Category": "Development",
+      "Description": "Electron-based terminal",
+      "Sources": {
+        "Winget": "Vercel.Hyper",
+        "Chocolatey": "hyper",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Users\\*\\AppData\\Local\\Programs\\hyper\\Hyper.exe"
+      },
+      "DefaultPriority": 61,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["development", "terminal", "open-source"],
+      "LastVerified": "2026-01-15",
+      "Verified": true,
+      "Homepage": "https://hyper.is/"
     }
   },
   "Categories": {
     "Browser": {
       "Description": "Web browsers",
       "DisplayName": "🌐 Navigateurs",
-      "Count": 3
+      "Count": 4
     },
     "Media": {
       "Description": "Media players and viewers",
       "DisplayName": "🎬 Média",
-      "Count": 4
+      "Count": 26
     },
     "Utility": {
       "Description": "General utilities and tools",
       "DisplayName": "🛠️ Utilitaires",
-      "Count": 8
+      "Count": 27
     },
     "Support": {
       "Description": "Support and system tools",
       "DisplayName": "🆘 Support",
-      "Count": 4
+      "Count": 10
     },
     "Diagnostic": {
       "Description": "Diagnostic and monitoring tools",
       "DisplayName": "🔍 Diagnostic",
-      "Count": 5
+      "Count": 9
     },
     "Security": {
       "Description": "Security and privacy tools",
       "DisplayName": "🔒 Sécurité",
-      "Count": 9
+      "Count": 11
     },
     "Network": {
       "Description": "Network tools and utilities",
       "DisplayName": "🌐 Réseau",
-      "Count": 5
+      "Count": 6
     },
     "Recovery": {
       "Description": "Data recovery tools",
@@ -1879,52 +3926,52 @@
     "Configuration": {
       "Description": "System configuration tools",
       "DisplayName": "⚙️ Configuration",
-      "Count": 1
+      "Count": 4
     },
     "Productivity": {
       "Description": "Productivity and office applications",
       "DisplayName": "📊 Productivité",
-      "Count": 2
+      "Count": 11
     },
     "Communication": {
       "Description": "Communication and messaging applications",
       "DisplayName": "💬 Communication",
-      "Count": 3
+      "Count": 9
     },
     "Recording": {
       "Description": "Screen recording and streaming",
       "DisplayName": "🎥 Enregistrement",
-      "Count": 1
+      "Count": 2
     },
     "Gaming": {
       "Description": "Gaming platforms and launchers",
       "DisplayName": "🎮 Gaming",
-      "Count": 3
+      "Count": 7
     },
     "Development": {
       "Description": "Development tools and environments",
       "DisplayName": "💻 Développement",
-      "Count": 6
+      "Count": 17
     },
     "System": {
       "Description": "System utilities and tools",
       "DisplayName": "⚡ Système",
-      "Count": 1
+      "Count": 3
     },
     "Virtualization": {
       "Description": "Virtualization and sandboxing tools",
       "DisplayName": "📦 Virtualisation",
-      "Count": 2
+      "Count": 3
     },
     "CloudStorage": {
       "Description": "Cloud storage clients",
       "DisplayName": "☁️ Cloud Storage",
-      "Count": 2
+      "Count": 4
     },
     "Compression": {
       "Description": "File compression tools",
       "DisplayName": "📦 Compression",
-      "Count": 1
+      "Count": 4
     },
     "Multimedia": {
       "Description": "Multimedia management tools",
@@ -2029,6 +4076,78 @@
     "virtualization": "Virtualization platforms",
     "voip": "Voice over IP communication",
     "vpn": "VPN clients and services",
-    "wifi": "WiFi analysis and management"
+    "wifi": "WiFi analysis and management",
+    "3d": "3D modeling and rendering",
+    "accessibility": "Accessibility tools for impaired users",
+    "ai": "AI-powered applications",
+    "animation": "Animation and motion graphics",
+    "apple": "Apple ecosystem applications",
+    "burning": "CD/DVD/Blu-ray burning",
+    "cleanup": "System cleanup utilities",
+    "codecs": "Audio and video codecs",
+    "collaboration": "Team collaboration tools",
+    "conferencing": "Video and audio conferencing",
+    "converter": "File format converters",
+    "copy": "File copy utilities",
+    "diff": "File comparison tools",
+    "disc": "Disc management utilities",
+    "geography": "Geography and mapping tools",
+    "ide": "Integrated development environments",
+    "java": "Java programming language",
+    "maps": "Mapping and navigation",
+    "merge": "File merging tools",
+    "modeling": "3D modeling applications",
+    "notes": "Note-taking applications",
+    "optimization": "System optimization tools",
+    "organization": "Organization and planning tools",
+    "painting": "Digital painting applications",
+    "player": "Media player applications",
+    "printer": "Printer drivers and utilities",
+    "screen-reader": "Screen reader for accessibility",
+    "start-menu": "Start menu customization",
+    "torrent": "BitTorrent clients",
+    "uninstaller": "Application uninstaller tools",
+    "vector": "Vector graphics applications",
+    "api": "API development and testing",
+    "bootable": "Bootable media creation",
+    "clipboard": "Clipboard management",
+    "color-grading": "Color grading and correction",
+    "containers": "Container technology",
+    "cpu": "CPU information and monitoring",
+    "creator": "Content creation tools",
+    "database": "Database management tools",
+    "devops": "DevOps and deployment tools",
+    "docker": "Docker container platform",
+    "drm-free": "DRM-free content",
+    "dual-pane": "Dual-pane file managers",
+    "editing": "Media editing applications",
+    "epic": "Epic Games platform",
+    "file-manager": "File management applications",
+    "flash": "Flash and imaging tools",
+    "gog": "GOG.com platform",
+    "gpu": "GPU information and monitoring",
+    "graphql": "GraphQL API tools",
+    "htpc": "Home theater PC software",
+    "hypervisor": "Hypervisor virtualization",
+    "knowledge-base": "Knowledge base and wiki tools",
+    "launcher": "Application launchers",
+    "library": "Library management",
+    "markdown": "Markdown editing support",
+    "mixer": "Audio mixer applications",
+    "modern": "Modern UI applications",
+    "multiboot": "Multi-boot USB tools",
+    "obs": "OBS-based streaming",
+    "professional": "Professional-grade software",
+    "rest": "REST API tools",
+    "server": "Server applications",
+    "split": "File splitting tools",
+    "sql": "SQL database tools",
+    "system-info": "System information tools",
+    "taskbar": "Taskbar customization",
+    "temperature": "Temperature monitoring",
+    "testing": "Testing tools",
+    "usb": "USB tools and utilities",
+    "wallpaper": "Wallpaper customization",
+    "widgets": "Desktop widgets"
   }
 }

@@ -1,0 +1,90 @@
+<UserControl x:Class="Win11Forge.GUI.Controls.ErrorDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             MinWidth="400" MaxWidth="600"
+             AutomationProperties.Name="Error dialog"
+             AutomationProperties.LiveSetting="Assertive"
+             Loaded="UserControl_Loaded">
+    <Border Padding="24">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header with Icon -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                <materialDesign:PackIcon Kind="AlertCircle"
+                                          Width="32" Height="32"
+                                          Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,12,0"/>
+                <TextBlock x:Name="TitleText"
+                           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                           VerticalAlignment="Center"
+                           Text="{loc:Loc Dialog_Error_Title}"/>
+            </StackPanel>
+
+            <!-- Message -->
+            <TextBlock Grid.Row="1"
+                       x:Name="MessageText"
+                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,16"/>
+
+            <!-- Details Expander -->
+            <Expander Grid.Row="2"
+                      x:Name="DetailsExpander"
+                      Header="{loc:Loc Dialog_Error_Details}"
+                      Margin="0,0,0,16"
+                      Visibility="Collapsed">
+                <Border Background="{DynamicResource MaterialDesignCardBackground}"
+                        CornerRadius="4"
+                        Padding="12"
+                        Margin="0,8,0,0">
+                    <ScrollViewer MaxHeight="150" VerticalScrollBarVisibility="Auto">
+                        <TextBox x:Name="DetailsText"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 FontFamily="Consolas"
+                                 FontSize="12"
+                                 BorderThickness="0"
+                                 Background="Transparent"/>
+                    </ScrollViewer>
+                </Border>
+            </Expander>
+
+            <!-- Actions -->
+            <StackPanel Grid.Row="3"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <!-- Help Button -->
+                <Button x:Name="HelpButton"
+                        Content="{loc:Loc Dialog_Help}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Click="HelpButton_Click"
+                        Margin="0,0,8,0"
+                        Visibility="Collapsed"/>
+
+                <!-- Retry Button -->
+                <Button x:Name="RetryButton"
+                        Content="{loc:Loc Dialog_Retry}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Click="RetryButton_Click"
+                        Margin="0,0,8,0"
+                        Visibility="Collapsed"/>
+
+                <!-- OK Button -->
+                <Button x:Name="OkButton"
+                        Content="{loc:Loc Dialog_OK}"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Click="OkButton_Click"
+                        IsDefault="True"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

@@ -63,6 +63,40 @@ public interface IPowerShellBridge
         Action<string>? progressCallback = null);
 
     /// <summary>
+    /// Uninstalls a single application.
+    /// </summary>
+    /// <param name="app">Application model to uninstall</param>
+    /// <param name="progressCallback">Optional callback for progress updates</param>
+    /// <returns>Uninstallation result</returns>
+    Task<InstallResult> UninstallApplicationAsync(
+        ApplicationModel app,
+        Action<string>? progressCallback = null);
+
+    /// <summary>
+    /// Checks if an application has an update available.
+    /// </summary>
+    /// <param name="app">Application model to check</param>
+    /// <returns>Update check result with version info</returns>
+    Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app);
+
+    /// <summary>
+    /// Updates a single application to the latest version.
+    /// </summary>
+    /// <param name="app">Application model to update</param>
+    /// <param name="progressCallback">Optional callback for progress updates</param>
+    /// <returns>Update result</returns>
+    Task<InstallResult> UpdateApplicationAsync(
+        ApplicationModel app,
+        Action<string>? progressCallback = null);
+
+    /// <summary>
+    /// Launches an installed application.
+    /// </summary>
+    /// <param name="app">The application to launch</param>
+    /// <returns>True if launched successfully, false otherwise</returns>
+    Task<bool> LaunchApplicationAsync(ApplicationModel app);
+
+    /// <summary>
     /// Gets all applications from the database.
     /// </summary>
     /// <returns>List of all applications</returns>

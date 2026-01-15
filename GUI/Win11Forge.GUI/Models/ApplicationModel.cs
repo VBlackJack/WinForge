@@ -74,4 +74,28 @@ public partial class ApplicationModel : ObservableObject
     /// <summary>Available installation sources (e.g., "Winget, Chocolatey").</summary>
     [ObservableProperty]
     private string _sources = string.Empty;
+
+    /// <summary>Whether this application requires manual installation.</summary>
+    [ObservableProperty]
+    private bool _manualInstallOnly;
+
+    /// <summary>Official download URL for manual installation.</summary>
+    [ObservableProperty]
+    private string _officialUrl = string.Empty;
+
+    /// <summary>Installation notes or warnings.</summary>
+    [ObservableProperty]
+    private string _installNotes = string.Empty;
+
+    /// <summary>Whether this application is marked as favorite.</summary>
+    [ObservableProperty]
+    private bool _isFavorite;
+
+    /// <summary>Current installed version of the application.</summary>
+    [ObservableProperty]
+    private string _currentVersion = string.Empty;
+
+    /// <summary>Available version for update (when update is available).</summary>
+    [ObservableProperty]
+    private string _availableVersion = string.Empty;
 }

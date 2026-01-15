@@ -37,5 +37,17 @@ public enum ApplicationStatus
     Skipped,
 
     /// <summary>Application was already installed before deployment.</summary>
-    AlreadyInstalled
+    AlreadyInstalled,
+
+    /// <summary>Application is currently being uninstalled.</summary>
+    Uninstalling,
+
+    /// <summary>Application was successfully uninstalled.</summary>
+    Uninstalled,
+
+    /// <summary>An update is available for the installed application.</summary>
+    UpdateAvailable,
+
+    /// <summary>Application is currently being updated.</summary>
+    Updating
 }

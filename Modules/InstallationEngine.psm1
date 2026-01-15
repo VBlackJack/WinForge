@@ -1843,6 +1843,36 @@ function Invoke-InstallationMethodSequence {
     return $result
 }
 
+# === APPLICATION SOURCES ===
+
+function Get-ApplicationSources {
+    <#
+    .SYNOPSIS
+        Gets the installation sources for an application.
+
+    .DESCRIPTION
+        Returns the Sources property of an application object, which contains
+        Winget ID, Chocolatey package name, Store ID, DirectUrl, etc.
+
+    .PARAMETER Application
+        The application object from the database.
+
+    .OUTPUTS
+        PSCustomObject containing Winget, Chocolatey, Store, DirectUrl properties.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject]$Application
+    )
+
+    if ($null -eq $Application) {
+        return $null
+    }
+
+    return $Application.Sources
+}
+
 # === APPLICATION UPGRADE ===
 
 function Invoke-ApplicationUpgrade {
@@ -2700,6 +2730,7 @@ Export-ModuleMember -Function @(
     # Orchestration helpers
     'Invoke-CustomInstallMethod',
     'Invoke-InstallationMethodSequence',
+    'Get-ApplicationSources',
     'Invoke-ApplicationUpgrade',
     # Main installation functions
     'Install-Application',
