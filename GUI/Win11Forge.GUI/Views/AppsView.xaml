@@ -863,21 +863,6 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!-- App ID Column -->
-                        <DataGridTemplateColumn Width="Auto" MinWidth="120" SortMemberPath="AppId">
-                            <DataGridTemplateColumn.Header>
-                                <TextBlock Text="{loc:Loc Apps_Col_Id}"/>
-                            </DataGridTemplateColumn.Header>
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                    <TextBlock Text="{Binding AppId}"
-                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                               FontFamily="Consolas"
-                                               Opacity="0.8"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
-
                         <!-- Logs Column -->
                         <DataGridTemplateColumn Width="Auto" MinWidth="50" SortMemberPath="LogOutput">
                             <DataGridTemplateColumn.Header>
