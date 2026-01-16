@@ -82,29 +82,32 @@ function Get-DownloadSources {
                 $script:DownloadSources = $content | ConvertFrom-Json -ErrorAction Stop
             }
             catch {
-                Write-Warning "Failed to load download sources config: $($_.Exception.Message)"
-                # Fallback to default values
+                Write-Warning "Failed to load download sources config: $($_.Exception.Message). Using fallback URLs."
+                # Fallback to default values - UPDATE THESE VERSIONS PERIODICALLY
                 $script:DownloadSources = @{
                     prerequisites = @{
                         chocolatey = @{
                             downloadUrl = 'https://community.chocolatey.org/api/v2/package/chocolatey'
                         }
                         powershell7 = @{
-                            downloadUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/PowerShell-7.4.6-win-x64.msi'
+                            version = '7.5.0'
+                            downloadUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/PowerShell-7.5.0-win-x64.msi'
                         }
                     }
                 }
             }
         }
         else {
-            # Fallback to default values if config file doesn't exist
+            Write-Warning "Download sources config not found at: $script:DownloadSourcesPath. Using fallback URLs."
+            # Fallback to default values - UPDATE THESE VERSIONS PERIODICALLY
             $script:DownloadSources = @{
                 prerequisites = @{
                     chocolatey = @{
                         downloadUrl = 'https://community.chocolatey.org/api/v2/package/chocolatey'
                     }
                     powershell7 = @{
-                        downloadUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/PowerShell-7.4.6-win-x64.msi'
+                        version = '7.5.0'
+                        downloadUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/PowerShell-7.5.0-win-x64.msi'
                     }
                 }
             }

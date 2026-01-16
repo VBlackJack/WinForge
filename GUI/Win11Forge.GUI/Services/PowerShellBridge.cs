@@ -196,6 +196,41 @@ public class PowerShellBridge : IPowerShellBridge
         return _repositoryRoot;
     }
 
+    /// <summary>
+    /// Validates and sanitizes a profile name to prevent path traversal attacks.
+    /// </summary>
+    /// <param name="profileName">The profile name to validate.</param>
+    /// <returns>The validated profile name.</returns>
+    /// <exception cref="ArgumentException">Thrown if the profile name is invalid.</exception>
+    private static string ValidateProfileName(string profileName)
+    {
+        if (string.IsNullOrWhiteSpace(profileName))
+        {
+            throw new ArgumentException("Profile name cannot be empty.", nameof(profileName));
+        }
+
+        // Check for path traversal attempts
+        if (profileName.Contains("..") || profileName.Contains('/') || profileName.Contains('\\'))
+        {
+            throw new ArgumentException("Profile name contains invalid characters.", nameof(profileName));
+        }
+
+        // Check for other invalid path characters
+        var invalidChars = Path.GetInvalidFileNameChars();
+        if (profileName.IndexOfAny(invalidChars) >= 0)
+        {
+            throw new ArgumentException("Profile name contains invalid characters.", nameof(profileName));
+        }
+
+        // Limit length to prevent buffer issues
+        if (profileName.Length > 100)
+        {
+            throw new ArgumentException("Profile name is too long.", nameof(profileName));
+        }
+
+        return profileName;
+    }
+
     /// <inheritdoc/>
     public async Task<string> GetWin11ForgeVersionAsync()
     {
@@ -250,6 +285,9 @@ public class PowerShellBridge : IPowerShellBridge
     /// <inheritdoc/>
     public async Task<DeploymentProfileModel> LoadProfileAsync(string profileName)
     {
+        // Validate profile name to prevent path traversal
+        profileName = ValidateProfileName(profileName);
+
         // Ensure applications database is loaded
         await EnsureApplicationsCacheAsync();
 
@@ -1740,6 +1778,9 @@ try {{
     /// <inheritdoc/>
     public async Task<DeploymentProfileModel> GetRawProfileAsync(string profileName)
     {
+        // Validate profile name to prevent path traversal
+        profileName = ValidateProfileName(profileName);
+
         await EnsureApplicationsCacheAsync();
 
         var repoRoot = GetSafeRepositoryRoot();
@@ -2014,6 +2055,13 @@ try {{
     /// <inheritdoc/>
     public async Task SaveProfileAsync(string profileName, string description, string? parentProfile, List<string> addedAppIds)
     {
+        // Validate profile names to prevent path traversal
+        profileName = ValidateProfileName(profileName);
+        if (!string.IsNullOrEmpty(parentProfile))
+        {
+            parentProfile = ValidateProfileName(parentProfile);
+        }
+
         var repoRoot = GetSafeRepositoryRoot();
         var profilesDir = Path.Combine(repoRoot, "Profiles");
         var profilePath = Path.Combine(profilesDir, $"{profileName}.json");

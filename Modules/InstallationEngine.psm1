@@ -105,8 +105,13 @@ $script:DefaultInstallTimeoutSeconds = 1800  # 30 minutes (increased for slower 
 $script:OfficeInstallTimeoutSeconds = 2700   # 45 minutes for Office (Click-to-Run is slow)
 
 # === ROLLBACK & RESUME SYSTEM ===
-$script:RollbackStateFile = Join-Path $env:TEMP 'Win11Forge_RollbackState.json'
-$script:DeploymentStateFile = Join-Path $env:TEMP 'Win11Forge_DeploymentState.json'
+# Use LOCALAPPDATA for state files (more secure than TEMP, user-specific)
+$script:Win11ForgeDataDir = Join-Path $env:LOCALAPPDATA 'Win11Forge'
+if (-not (Test-Path $script:Win11ForgeDataDir)) {
+    New-Item -Path $script:Win11ForgeDataDir -ItemType Directory -Force | Out-Null
+}
+$script:RollbackStateFile = Join-Path $script:Win11ForgeDataDir 'RollbackState.json'
+$script:DeploymentStateFile = Join-Path $script:Win11ForgeDataDir 'DeploymentState.json'
 
 $script:RollbackState = @{
     SessionId = $null
@@ -1016,7 +1021,8 @@ function Test-ApplicationInstalled {
             }
             'File' {
                 if ($Application.Detection.PSObject.Properties['Path'] -and $Application.Detection.Path) {
-                    $detected = Test-Path -Path $Application.Detection.Path -PathType Leaf
+                    $expandedPath = Expand-DetectionPath -Path $Application.Detection.Path
+                    $detected = Test-Path -Path $expandedPath -PathType Leaf
                 }
             }
             'Command' {
@@ -1172,6 +1178,32 @@ function Test-RegistryKey {
     )
 
     return Test-Path -Path $Path -ErrorAction SilentlyContinue
+}
+
+function Expand-DetectionPath {
+    <#
+    .SYNOPSIS
+        Expands environment variables in detection paths.
+    .DESCRIPTION
+        Supports both %VAR% and $env:VAR syntax for environment variable expansion.
+        Also handles common path aliases like %PROGRAMFILES%, %LOCALAPPDATA%, etc.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    # Expand %VAR% style environment variables
+    $expanded = [Environment]::ExpandEnvironmentVariables($Path)
+
+    # Also handle $env:VAR style (PowerShell native)
+    if ($expanded -match '\$env:') {
+        $expanded = $ExecutionContext.InvokeCommand.ExpandString($expanded)
+    }
+
+    return $expanded
 }
 
 function Get-InstalledAppVersion {
@@ -1701,12 +1733,12 @@ function Install-ViaDirectDownload {
         Write-Output "[INFO] Downloading from: $Url"
         Write-Status -Message "Downloading from: $Url" -Level 'Info'
 
-        $tempDir = Join-Path -Path $env:TEMP -ChildPath "Win11Forge_$(Get-Random)"
+        $tempDir = Join-Path -Path $env:TEMP -ChildPath "Win11Forge_$([guid]::NewGuid().ToString('N').Substring(0,8))"
         New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
 
         $filename = [System.IO.Path]::GetFileName($Url)
         if ([string]::IsNullOrWhiteSpace($filename) -or $filename -notmatch '\.[a-z]{3,4}$') {
-            $filename = "installer_$(Get-Random).exe"
+            $filename = "installer_$([guid]::NewGuid().ToString('N').Substring(0,8)).exe"
         }
 
         $installerPath = Join-Path -Path $tempDir -ChildPath $filename
@@ -2423,10 +2455,12 @@ function Test-AppInstalledParallel {
         }
         'File' {
             if (-not ($App.Detection.PSObject.Properties['Path'] -and $App.Detection.Path)) { return $false }
-            if ($App.Detection.Path -match '\*') {
-                return (Get-ChildItem -Path $App.Detection.Path -ErrorAction SilentlyContinue).Count -gt 0
+            # Expand environment variables in path
+            $expandedPath = [Environment]::ExpandEnvironmentVariables($App.Detection.Path)
+            if ($expandedPath -match '\*') {
+                return (Get-ChildItem -Path $expandedPath -ErrorAction SilentlyContinue).Count -gt 0
             }
-            return Test-Path -Path $App.Detection.Path -PathType Leaf -ErrorAction SilentlyContinue
+            return Test-Path -Path $expandedPath -PathType Leaf -ErrorAction SilentlyContinue
         }
         'Command' {
             try {
@@ -2544,10 +2578,10 @@ function Test-AppInstalledParallel {
         $validateUrl = $using:validateUrlFunction
         $detectAppFunc = $using:detectAppFunction
 
-        # Recreate helper functions in parallel scope
+        # Recreate helper functions in parallel scope using safe ScriptBlock creation
         ${function:Test-ValidDownloadUrl} = [ScriptBlock]::Create($validateUrl)
-        # PSScriptAnalyzer suppress: Invoke-Expression is safe here - loading our own function definition
-        $null = Invoke-Expression $detectAppFunc  # nosec
+        # Use dot-sourcing with ScriptBlock instead of Invoke-Expression for security
+        . ([ScriptBlock]::Create($detectAppFunc))
 
         # Create app-specific log file
         $appLogFile = Join-Path $parallelLogDir "parallel_${ts}_$($app.Name -replace '[^\w\-]', '_').log"
@@ -2805,10 +2839,10 @@ function Test-AppInstalledParallel {
                     # Detect file type from URL
                     $filename = [System.IO.Path]::GetFileName($sources.DirectUrl)
                     if ([string]::IsNullOrWhiteSpace($filename) -or $filename -notmatch '\.[a-z]{3,4}$') {
-                        $filename = "installer_$(Get-Random).exe"
+                        $filename = "installer_$([guid]::NewGuid().ToString('N').Substring(0,8)).exe"
                     }
 
-                    $tempDir = Join-Path $env:TEMP "Win11Forge_$(Get-Random)"
+                    $tempDir = Join-Path $env:TEMP "Win11Forge_$([guid]::NewGuid().ToString('N').Substring(0,8))"
                     New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
                     $tempFile = Join-Path $tempDir $filename
 
@@ -3225,11 +3259,12 @@ function Test-ApplicationInstalledFast {
             'File' {
                 # Check if file exists (with null-safe property check)
                 if ($Application.Detection.PSObject.Properties['Path'] -and $Application.Detection.Path) {
-                    $detected = Test-Path -Path $Application.Detection.Path -PathType Leaf -ErrorAction SilentlyContinue
+                    $expandedPath = Expand-DetectionPath -Path $Application.Detection.Path
+                    $detected = Test-Path -Path $expandedPath -PathType Leaf -ErrorAction SilentlyContinue
                     # Try to get version from file
                     if ($detected) {
                         try {
-                            $fileInfo = Get-Item -Path $Application.Detection.Path -ErrorAction SilentlyContinue
+                            $fileInfo = Get-Item -Path $expandedPath -ErrorAction SilentlyContinue
                             if ($fileInfo.VersionInfo.FileVersion) {
                                 $version = $fileInfo.VersionInfo.FileVersion
                             }

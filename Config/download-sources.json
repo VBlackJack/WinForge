@@ -1,9 +1,9 @@
 {
   "_meta": {
     "description": "External download sources configuration for Win11Forge",
-    "version": "3.0.0",
+    "version": "3.1.2",
     "author": "Julien Bombled",
-    "lastUpdated": "2026-01-06"
+    "lastUpdated": "2026-01-16"
   },
   "prerequisites": {
     "chocolatey": {
@@ -15,10 +15,10 @@
     },
     "powershell7": {
       "description": "PowerShell 7 MSI installer",
-      "version": "7.4.6",
-      "downloadUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/PowerShell-7.4.6-win-x64.msi",
+      "version": "7.5.0",
+      "downloadUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/PowerShell-7.5.0-win-x64.msi",
       "homepage": "https://github.com/PowerShell/PowerShell",
-      "checksumUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/hashes.sha256",
+      "checksumUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/hashes.sha256",
       "notes": "Update version and URL when new stable release is available"
     }
   },
@@ -104,8 +104,8 @@
       "Steam": {
         "url": "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
         "silentArgs": "/S",
-        "sha256": null,
-        "notes": "Checksum not available - installer auto-updates"
+        "sha256": "SKIP_VALIDATION",
+        "notes": "SHA256 skipped - Steam installer auto-updates frequently. Download is from trusted Valve CDN (akamai.steamstatic.com) over HTTPS."
       },
       "BattleNet": {
         "url": "https://downloader.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP&version=Live",
