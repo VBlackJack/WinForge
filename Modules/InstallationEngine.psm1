@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Engine Module v3.0.0 (Parallel Reliability Enhanced)
+    Win11Forge - Installation Engine Module v3.1.3 (Security Hardening Update)
 
 .DESCRIPTION
     Core installation engine with multi-source support and parallel execution:
@@ -14,7 +14,14 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.0.0
+    Version: 3.1.3
+
+    Changelog v3.1.3 (Security Hardening Update):
+    - SECURITY: Added path traversal protection in Expand-DetectionPath
+    - SECURITY: URL validation now blocks non-whitelisted domains by default
+    - SECURITY: Trusted domains loaded from Config/download-sources.json
+    - SECURITY: Full GUID used for temp directories (32 chars vs 8 chars)
+    - SECURITY: Added -AllowUntrusted parameter for explicit override
 
     Changelog v3.0.0 (Parallel Reliability Update):
     - RELIABILITY: Added retry logic to parallel Winget (3 attempts with exponential backoff)
@@ -498,12 +505,22 @@ function Test-ValidDownloadUrl {
     <#
     .SYNOPSIS
         Validates download URL for security and format
+    .DESCRIPTION
+        Validates URL structure and checks against trusted domain whitelist.
+        Loads trusted domains from Config/download-sources.json if available.
+    .PARAMETER Url
+        The URL to validate.
+    .PARAMETER AllowUntrusted
+        If specified, allows non-whitelisted domains (logs warning but returns true).
     #>
     [CmdletBinding()]
     [OutputType([bool])]
     param(
         [Parameter(Mandatory)]
-        [string]$Url
+        [string]$Url,
+
+        [Parameter()]
+        [switch]$AllowUntrusted
     )
 
     # Check URL format (must be HTTP/HTTPS)
@@ -524,55 +541,64 @@ function Test-ValidDownloadUrl {
         return $false
     }
 
-    # Optional: Warn for untrusted domains (informational only)
-    # Comprehensive whitelist of trusted software vendors and CDNs
-    $trustedDomains = @(
+    # Try to load trusted domains from config file
+    $configPath = Join-Path $script:RepositoryRoot 'Config\download-sources.json'
+    $configTrustedDomains = @()
+
+    if (Test-Path -Path $configPath -ErrorAction SilentlyContinue) {
+        try {
+            $config = Get-Content -Path $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+            if ($config.trustedDomains -and $config.trustedDomains.domains) {
+                $configTrustedDomains = @($config.trustedDomains.domains)
+            }
+        } catch {
+            Write-Status -Message "Could not load trusted domains config: $($_.Exception.Message)" -Level 'Verbose'
+        }
+    }
+
+    # Fallback whitelist if config not available (common trusted CDNs and vendors)
+    $fallbackDomains = @(
         # Microsoft ecosystem
-        '*.microsoft.com', '*.windows.com', '*.windowsupdate.com', '*.msn.com',
-        '*.azure.com', '*.azureedge.net', '*.live.com', '*.office.com',
-
-        # Code hosting & development
-        '*.github.com', '*.githubusercontent.com', '*.githubassets.com',
-        '*.gitlab.com', '*.sourceforge.net', '*.sf.net',
-
-        # Gaming platforms
-        '*.discord.com', '*.discordapp.com', '*.steampowered.com', '*.steamcommunity.com',
-        '*.epicgames.com', '*.unrealengine.com', '*.battle.net', '*.blizzard.com',
-        '*.valve.com', '*.gog.com', '*.ea.com', '*.origin.com', '*.ubisoft.com',
-        '*.parsec.app',
-
-        # Communication apps
-        '*.signal.org', '*.whatsapp.com', '*.telegram.org', '*.zoom.us',
-        '*.slack.com', '*.skype.com',
-
-        # Productivity & utilities
-        '*.obsproject.com', '*.7-zip.org', '*.notepad-plus-plus.org',
-        '*.vlcmediaplayer.org', '*.videolan.org', '*.audacityteam.org',
-        '*.gimp.org', '*.inkscape.org', '*.libreoffice.org',
-        '*.freedownloadmanager.org', '*.abdownloadmanager.com', '*.aimp.ru',
-
-        # Browsers & security
-        '*.mozilla.org', '*.firefox.com', '*.brave.com', '*.opera.com',
-        '*.google.com', '*.googlechrome.com', '*.bitwarden.com', '*.lastpass.com',
-
-        # CDNs & cloud infrastructure
-        '*.akamai.net', '*.akamaized.net', '*.cloudflare.com', '*.cloudfront.net',
-        '*.fastly.net', '*.edgecastcdn.net', '*.jsdelivr.net',
-        '*.amazonaws.com', '*.s3.amazonaws.com',
-
-        # Hardware vendors
-        '*.nvidia.com', '*.amd.com', '*.intel.com', '*.logitech.com',
-        '*.corsair.com', '*.razer.com', '*.steelseries.com',
-
-        # Popular software vendors
-        '*.adobe.com', '*.jetbrains.com', '*.docker.com', '*.nodejs.org',
-        '*.python.org', '*.rust-lang.org', '*.visualstudio.com'
+        'microsoft.com', 'windows.com', 'windowsupdate.com', 'azure.com', 'azureedge.net',
+        'office.com', 'visualstudio.com', 'visualstudio.microsoft.com',
+        # Code hosting
+        'github.com', 'githubusercontent.com', 'githubassets.com', 'gitlab.com',
+        # CDNs
+        'akamai.net', 'akamaized.net', 'cloudflare.com', 'cloudfront.net',
+        'fastly.net', 'jsdelivr.net', 'amazonaws.com', 'steamstatic.com',
+        # Common vendors
+        'chocolatey.org', 'community.chocolatey.org'
     )
 
-    $domainMatched = $trustedDomains | Where-Object { $uri.Host -like $_ }
+    # Merge config and fallback domains
+    $trustedDomains = @()
+    if ($configTrustedDomains.Count -gt 0) {
+        $trustedDomains = $configTrustedDomains
+    }
+    $trustedDomains += $fallbackDomains
+    $trustedDomains = $trustedDomains | Select-Object -Unique
+
+    # Check if domain matches any trusted domain
+    $hostLower = $uri.Host.ToLower()
+    $domainMatched = $false
+
+    foreach ($trusted in $trustedDomains) {
+        $trustedLower = $trusted.ToLower()
+        # Exact match or subdomain match
+        if ($hostLower -eq $trustedLower -or $hostLower.EndsWith(".$trustedLower")) {
+            $domainMatched = $true
+            break
+        }
+    }
 
     if (-not $domainMatched) {
-        Write-Status -Message "Downloading from non-whitelisted domain: $($uri.Host)" -Level 'Verbose'
+        if ($AllowUntrusted) {
+            Write-Status -Message "Downloading from non-whitelisted domain (allowed by caller): $($uri.Host)" -Level 'Warning'
+            return $true
+        } else {
+            Write-Status -Message "Download blocked - untrusted domain: $($uri.Host). Add to Config\download-sources.json trustedDomains to allow." -Level 'Warning'
+            return $false
+        }
     }
 
     return $true
@@ -1183,10 +1209,11 @@ function Test-RegistryKey {
 function Expand-DetectionPath {
     <#
     .SYNOPSIS
-        Expands environment variables in detection paths.
+        Expands environment variables in detection paths with security validation.
     .DESCRIPTION
         Supports both %VAR% and $env:VAR syntax for environment variable expansion.
         Also handles common path aliases like %PROGRAMFILES%, %LOCALAPPDATA%, etc.
+        Validates against path traversal attacks.
     #>
     [CmdletBinding()]
     [OutputType([string])]
@@ -1195,12 +1222,33 @@ function Expand-DetectionPath {
         [string]$Path
     )
 
+    # Security: Block path traversal attempts in input
+    if ($Path -match '\.\.' -or $Path -match '[\\/]\.\.[\\/]?' -or $Path -match '^\.\.') {
+        Write-Status -Message "Path traversal attempt blocked in detection path: $Path" -Level 'Warning'
+        return $null
+    }
+
     # Expand %VAR% style environment variables
     $expanded = [Environment]::ExpandEnvironmentVariables($Path)
 
     # Also handle $env:VAR style (PowerShell native)
     if ($expanded -match '\$env:') {
         $expanded = $ExecutionContext.InvokeCommand.ExpandString($expanded)
+    }
+
+    # Security: Block path traversal attempts after expansion
+    if ($expanded -match '\.\.' -or $expanded -match '[\\/]\.\.[\\/]?' -or $expanded -match '^\.\.') {
+        Write-Status -Message "Path traversal attempt blocked after expansion: $expanded" -Level 'Warning'
+        return $null
+    }
+
+    # Security: Ensure path is absolute (not relative)
+    if (-not [System.IO.Path]::IsPathRooted($expanded)) {
+        # Allow wildcards in detection paths (e.g., "C:\Program Files\*\app.exe")
+        if ($expanded -notmatch '^[A-Za-z]:[\\/]') {
+            Write-Status -Message "Relative path not allowed in detection: $expanded" -Level 'Warning'
+            return $null
+        }
     }
 
     return $expanded
@@ -1733,12 +1781,12 @@ function Install-ViaDirectDownload {
         Write-Output "[INFO] Downloading from: $Url"
         Write-Status -Message "Downloading from: $Url" -Level 'Info'
 
-        $tempDir = Join-Path -Path $env:TEMP -ChildPath "Win11Forge_$([guid]::NewGuid().ToString('N').Substring(0,8))"
+        $tempDir = Join-Path -Path $env:TEMP -ChildPath "Win11Forge_$([guid]::NewGuid().ToString('N'))"
         New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
 
         $filename = [System.IO.Path]::GetFileName($Url)
         if ([string]::IsNullOrWhiteSpace($filename) -or $filename -notmatch '\.[a-z]{3,4}$') {
-            $filename = "installer_$([guid]::NewGuid().ToString('N').Substring(0,8)).exe"
+            $filename = "installer_$([guid]::NewGuid().ToString('N')).exe"
         }
 
         $installerPath = Join-Path -Path $tempDir -ChildPath $filename
@@ -2839,10 +2887,10 @@ function Test-AppInstalledParallel {
                     # Detect file type from URL
                     $filename = [System.IO.Path]::GetFileName($sources.DirectUrl)
                     if ([string]::IsNullOrWhiteSpace($filename) -or $filename -notmatch '\.[a-z]{3,4}$') {
-                        $filename = "installer_$([guid]::NewGuid().ToString('N').Substring(0,8)).exe"
+                        $filename = "installer_$([guid]::NewGuid().ToString('N')).exe"
                     }
 
-                    $tempDir = Join-Path $env:TEMP "Win11Forge_$([guid]::NewGuid().ToString('N').Substring(0,8))"
+                    $tempDir = Join-Path $env:TEMP "Win11Forge_$([guid]::NewGuid().ToString('N'))"
                     New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
                     $tempFile = Join-Path $tempDir $filename
 

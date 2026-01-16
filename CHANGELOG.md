@@ -2,6 +2,30 @@
 
 Note: la source de vérité de la version du framework est `Config/version.json`. Les lanceurs et la GUI lisent dynamiquement cette valeur.
 
+## [3.1.3] - 2026-01-16
+
+### Security Hardening Update
+
+#### Path Traversal Protection
+- **Added**: Expand-DetectionPath now validates paths against traversal attacks (`..`)
+- **Added**: Blocks relative paths and validates absolute path requirements
+- **Added**: Double-check after environment variable expansion
+
+#### URL Validation Improvements
+- **Changed**: Test-ValidDownloadUrl now blocks non-whitelisted domains by default
+- **Added**: Trusted domains loaded from `Config/download-sources.json`
+- **Added**: `-AllowUntrusted` parameter for explicit override when needed
+- **Added**: Fallback whitelist for common CDNs when config unavailable
+
+#### Temp Directory Security
+- **Changed**: Full 32-character GUID for temp directories (was 8 characters)
+- **Improved**: Reduces collision risk from 1/4B to 1/340 undecillion
+
+#### Code Quality
+- **Reviewed**: SilentlyContinue usage - confirmed legitimate for existence checks
+
+---
+
 ## [3.1.2] - 2026-01-16
 
 ### Installation & Detection Improvements
