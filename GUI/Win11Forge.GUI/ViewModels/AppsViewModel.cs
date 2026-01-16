@@ -94,6 +94,22 @@ public partial class AppsViewModel : ViewModelBase
     private StatusFilterOption _selectedStatusFilter = StatusFilterOption.All;
 
     /// <summary>
+    /// Indicates whether a search filter is currently active.
+    /// </summary>
+    public bool HasSearchFilter => !string.IsNullOrWhiteSpace(SearchText);
+
+    /// <summary>
+    /// Indicates whether a category filter is currently active.
+    /// </summary>
+    public bool HasCategoryFilter => !string.IsNullOrEmpty(SelectedCategory) &&
+                                      SelectedCategory != Resources.Resources.Apps_CategoryAll;
+
+    /// <summary>
+    /// Indicates whether a status filter is currently active.
+    /// </summary>
+    public bool HasStatusFilter => SelectedStatusFilter != StatusFilterOption.All;
+
+    /// <summary>
     /// Total number of applications in database.
     /// </summary>
     [ObservableProperty]
@@ -123,6 +139,12 @@ public partial class AppsViewModel : ViewModelBase
     /// </summary>
     [ObservableProperty]
     private int _scannedCount;
+
+    /// <summary>
+    /// Total number of applications being scanned (filtered count when filter active).
+    /// </summary>
+    [ObservableProperty]
+    private int _scanTotalCount;
 
     /// <summary>
     /// Number of installed applications found.
@@ -313,6 +335,7 @@ public partial class AppsViewModel : ViewModelBase
     /// </summary>
     partial void OnSearchTextChanged(string value)
     {
+        OnPropertyChanged(nameof(HasSearchFilter));
         ApplyFilter();
     }
 
@@ -321,6 +344,7 @@ public partial class AppsViewModel : ViewModelBase
     /// </summary>
     partial void OnSelectedCategoryChanged(string value)
     {
+        OnPropertyChanged(nameof(HasCategoryFilter));
         ApplyFilter();
     }
 
@@ -329,6 +353,7 @@ public partial class AppsViewModel : ViewModelBase
     /// </summary>
     partial void OnSelectedStatusFilterChanged(StatusFilterOption value)
     {
+        OnPropertyChanged(nameof(HasStatusFilter));
         ApplyFilter();
     }
 
@@ -424,7 +449,8 @@ public partial class AppsViewModel : ViewModelBase
     private int _scanUpdatesCounter;
 
     /// <summary>
-    /// Scans all applications to check their installation status and available updates.
+    /// Scans applications to check their installation status and available updates.
+    /// When filters are active, only scans filtered applications for better performance.
     /// Uses SemaphoreSlim to limit concurrency to 12 parallel checks.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanScan))]
@@ -432,16 +458,30 @@ public partial class AppsViewModel : ViewModelBase
     {
         if (_allApplications.Count == 0) return;
 
+        // Determine which apps to scan: filtered apps if any filter is active, otherwise all
+        var hasActiveFilter = HasSearchFilter || HasCategoryFilter || HasStatusFilter;
+        var appsToScan = hasActiveFilter
+            ? FilteredApplications.ToList()
+            : _allApplications;
+
+        if (appsToScan.Count == 0) return;
+
         IsScanning = true;
         ScannedCount = 0;
-        InstalledCount = 0;
-        UpdatesAvailableCount = 0;
+        ScanTotalCount = appsToScan.Count;
         _scanInstalledCounter = 0;
         _scanUpdatesCounter = 0;
         _scanCancellationTokenSource = new CancellationTokenSource();
 
-        // Reset all statuses to Checking
-        foreach (var app in _allApplications)
+        // Only reset counters if scanning all apps
+        if (!hasActiveFilter)
+        {
+            InstalledCount = 0;
+            UpdatesAvailableCount = 0;
+        }
+
+        // Reset statuses only for apps being scanned
+        foreach (var app in appsToScan)
         {
             app.Status = ApplicationStatus.Pending;
             app.StatusMessage = Resources.Resources.Status_Checking;
@@ -451,11 +491,23 @@ public partial class AppsViewModel : ViewModelBase
 
         try
         {
-            var tasks = _allApplications.Select(app => ScanApplicationAsync(
-                app,
-                _scanCancellationTokenSource.Token));
+            // Try batch detection first (optimized single-pass detection)
+            var batchResults = await _powerShellBridge.GetBatchApplicationStatusAsync(appsToScan);
 
-            await Task.WhenAll(tasks);
+            if (batchResults != null)
+            {
+                // Batch detection succeeded - apply results and check updates
+                await ScanWithBatchResultsAsync(appsToScan, batchResults, _scanCancellationTokenSource.Token);
+            }
+            else
+            {
+                // Batch detection failed - fallback to per-app detection
+                var tasks = appsToScan.Select(app => ScanApplicationAsync(
+                    app,
+                    _scanCancellationTokenSource.Token));
+
+                await Task.WhenAll(tasks);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -470,10 +522,108 @@ public partial class AppsViewModel : ViewModelBase
             // Set the property values on UI thread to trigger notifications
             System.Windows.Application.Current?.Dispatcher.Invoke(() =>
             {
-                InstalledCount = _scanInstalledCounter;
-                UpdatesAvailableCount = _scanUpdatesCounter;
+                // Recount all installed apps after partial scan
+                if (hasActiveFilter)
+                {
+                    InstalledCount = _allApplications.Count(a =>
+                        a.Status == ApplicationStatus.Installed ||
+                        a.Status == ApplicationStatus.AlreadyInstalled);
+                    UpdatesAvailableCount = _allApplications.Count(a =>
+                        !string.IsNullOrEmpty(a.AvailableVersion) &&
+                        a.AvailableVersion != a.CurrentVersion);
+                }
+                else
+                {
+                    InstalledCount = _scanInstalledCounter;
+                    UpdatesAvailableCount = _scanUpdatesCounter;
+                }
                 CommandManager.InvalidateRequerySuggested();
             });
+        }
+    }
+
+    /// <summary>
+    /// Applies batch detection results and checks for updates on installed apps.
+    /// </summary>
+    private async Task ScanWithBatchResultsAsync(
+        List<ApplicationModel> apps,
+        Dictionary<string, BatchAppStatus> batchResults,
+        CancellationToken cancellationToken)
+    {
+        // First pass: apply batch results with versions (fast)
+        foreach (var app in apps)
+        {
+            if (cancellationToken.IsCancellationRequested) return;
+
+            if (batchResults.TryGetValue(app.AppId, out var batchStatus))
+            {
+                app.Status = batchStatus.Status;
+                if (batchStatus.Status == ApplicationStatus.Installed ||
+                    batchStatus.Status == ApplicationStatus.AlreadyInstalled)
+                {
+                    app.StatusMessage = Resources.Resources.Status_Installed;
+                    // Apply version from batch if available
+                    if (!string.IsNullOrEmpty(batchStatus.Version))
+                    {
+                        app.CurrentVersion = batchStatus.Version;
+                    }
+                    Interlocked.Increment(ref _scanInstalledCounter);
+                }
+                else
+                {
+                    app.StatusMessage = Resources.Resources.Status_Missing;
+                }
+            }
+            else
+            {
+                app.Status = ApplicationStatus.Pending;
+                app.StatusMessage = Resources.Resources.Status_Missing;
+            }
+            ScannedCount++;
+        }
+
+        // Second pass: check for updates only on installed apps without version info
+        var installedAppsNeedingUpdate = apps.Where(a =>
+            (a.Status == ApplicationStatus.Installed ||
+             a.Status == ApplicationStatus.AlreadyInstalled) &&
+            string.IsNullOrEmpty(a.CurrentVersion)).ToList();
+
+        if (installedAppsNeedingUpdate.Count > 0)
+        {
+            var updateTasks = installedAppsNeedingUpdate.Select(app => CheckAppUpdateAsync(app, cancellationToken));
+            await Task.WhenAll(updateTasks);
+        }
+    }
+
+    /// <summary>
+    /// Checks for updates on a single installed application.
+    /// </summary>
+    private async Task CheckAppUpdateAsync(ApplicationModel app, CancellationToken cancellationToken)
+    {
+        await _scanSemaphore.WaitAsync(cancellationToken);
+
+        try
+        {
+            if (cancellationToken.IsCancellationRequested) return;
+
+            var updateResult = await _powerShellBridge.CheckApplicationUpdateAsync(app);
+
+            if (updateResult.HasUpdate)
+            {
+                app.Status = ApplicationStatus.UpdateAvailable;
+                app.CurrentVersion = updateResult.CurrentVersion;
+                app.AvailableVersion = updateResult.AvailableVersion;
+                app.StatusMessage = Resources.Resources.Status_UpdateAvailable;
+                Interlocked.Increment(ref _scanUpdatesCounter);
+            }
+            else
+            {
+                app.CurrentVersion = updateResult.CurrentVersion;
+            }
+        }
+        finally
+        {
+            _scanSemaphore.Release();
         }
     }
 
@@ -526,6 +676,135 @@ public partial class AppsViewModel : ViewModelBase
         {
             _scanSemaphore.Release();
         }
+    }
+
+    /// <summary>
+    /// Scans a single application from context menu.
+    /// </summary>
+    [RelayCommand]
+    private async Task ScanAppAsync(ApplicationModel? app)
+    {
+        if (app == null || IsScanning) return;
+
+        app.Status = ApplicationStatus.Pending;
+        app.StatusMessage = Resources.Resources.Status_Checking;
+        app.CurrentVersion = string.Empty;
+        app.AvailableVersion = string.Empty;
+
+        try
+        {
+            var status = await _powerShellBridge.GetApplicationStatusAsync(app.AppId);
+
+            if (status == ApplicationStatus.Installed || status == ApplicationStatus.AlreadyInstalled)
+            {
+                app.Status = status;
+
+                // Check for updates
+                var updateResult = await _powerShellBridge.CheckApplicationUpdateAsync(app);
+
+                if (updateResult.HasUpdate)
+                {
+                    app.Status = ApplicationStatus.UpdateAvailable;
+                    app.CurrentVersion = updateResult.CurrentVersion;
+                    app.AvailableVersion = updateResult.AvailableVersion;
+                    app.StatusMessage = Resources.Resources.Status_UpdateAvailable;
+                }
+                else
+                {
+                    app.CurrentVersion = updateResult.CurrentVersion;
+                    app.StatusMessage = Resources.Resources.Status_Installed;
+                }
+            }
+            else
+            {
+                app.Status = status;
+                app.StatusMessage = Resources.Resources.Status_Missing;
+            }
+
+            // Update counters
+            UpdateCounters();
+        }
+        catch (Exception ex)
+        {
+            app.Status = ApplicationStatus.Failed;
+            app.StatusMessage = ex.Message;
+        }
+    }
+
+    /// <summary>
+    /// Scans only the selected applications (IsSelected = true).
+    /// </summary>
+    [RelayCommand]
+    private async Task ScanSelectedAsync()
+    {
+        var selectedApps = _allApplications.Where(a => a.IsSelected).ToList();
+
+        if (selectedApps.Count == 0 || IsScanning) return;
+
+        IsScanning = true;
+        ScannedCount = 0;
+        ScanTotalCount = selectedApps.Count;
+        _scanInstalledCounter = 0;
+        _scanUpdatesCounter = 0;
+        _scanCancellationTokenSource = new CancellationTokenSource();
+
+        // Reset statuses for selected apps
+        foreach (var app in selectedApps)
+        {
+            app.Status = ApplicationStatus.Pending;
+            app.StatusMessage = Resources.Resources.Status_Checking;
+            app.CurrentVersion = string.Empty;
+            app.AvailableVersion = string.Empty;
+        }
+
+        try
+        {
+            // Try batch detection first
+            var batchResults = await _powerShellBridge.GetBatchApplicationStatusAsync(selectedApps);
+
+            if (batchResults != null)
+            {
+                await ScanWithBatchResultsAsync(selectedApps, batchResults, _scanCancellationTokenSource.Token);
+            }
+            else
+            {
+                // Fallback to per-app detection
+                var tasks = selectedApps.Select(app => ScanApplicationAsync(
+                    app,
+                    _scanCancellationTokenSource.Token));
+
+                await Task.WhenAll(tasks);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Scan was cancelled
+        }
+        finally
+        {
+            IsScanning = false;
+            _scanCancellationTokenSource?.Dispose();
+            _scanCancellationTokenSource = null;
+
+            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+            {
+                UpdateCounters();
+                CommandManager.InvalidateRequerySuggested();
+            });
+        }
+    }
+
+    /// <summary>
+    /// Updates installed and update counters based on current app states.
+    /// </summary>
+    private void UpdateCounters()
+    {
+        InstalledCount = _allApplications.Count(a =>
+            a.Status == ApplicationStatus.Installed ||
+            a.Status == ApplicationStatus.AlreadyInstalled ||
+            a.Status == ApplicationStatus.UpdateAvailable);
+        UpdatesAvailableCount = _allApplications.Count(a =>
+            a.Status == ApplicationStatus.UpdateAvailable);
     }
 
     /// <summary>

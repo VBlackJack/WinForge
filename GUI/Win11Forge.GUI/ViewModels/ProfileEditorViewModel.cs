@@ -66,6 +66,12 @@ public partial class ProfileEditorViewModel : ViewModelBase
     private string? _selectedParent;
 
     /// <summary>
+    /// Display string showing the full inheritance hierarchy chain.
+    /// </summary>
+    [ObservableProperty]
+    private string? _parentHierarchy;
+
+    /// <summary>
     /// Applications inherited from the parent profile (read-only).
     /// </summary>
     [ObservableProperty]
@@ -230,6 +236,7 @@ public partial class ProfileEditorViewModel : ViewModelBase
             SelectedParent == Resources.Resources.Editor_NoParent)
         {
             InheritedApplications.Clear();
+            ParentHierarchy = null;
             return;
         }
 
@@ -239,11 +246,23 @@ public partial class ProfileEditorViewModel : ViewModelBase
         {
             var parentProfile = await _powerShellBridge.GetResolvedProfileAsync(SelectedParent);
             InheritedApplications = parentProfile.Applications;
+
+            // Build the inheritance hierarchy chain display
+            if (parentProfile.InheritedFrom?.Count > 0)
+            {
+                var chain = new List<string>(parentProfile.InheritedFrom) { SelectedParent };
+                ParentHierarchy = string.Join(" → ", chain);
+            }
+            else
+            {
+                ParentHierarchy = null;
+            }
         }
         catch (Exception ex)
         {
             ErrorMessage = string.Format(Resources.Resources.Editor_Error_LoadParent, ex.Message);
             InheritedApplications.Clear();
+            ParentHierarchy = null;
         }
         finally
         {

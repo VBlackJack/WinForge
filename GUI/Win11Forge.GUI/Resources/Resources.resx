@@ -996,6 +996,14 @@
     <value>Confirm</value>
     <comment>Confirm button text</comment>
   </data>
+  <data name="Dialog_CopyDetails" xml:space="preserve">
+    <value>Copy Details</value>
+    <comment>Button to copy error details to clipboard</comment>
+  </data>
+  <data name="Dialog_Copied" xml:space="preserve">
+    <value>Copied!</value>
+    <comment>Feedback after copying to clipboard</comment>
+  </data>
   <!-- Keyboard Shortcuts Help -->
   <data name="Help_KeyboardShortcuts" xml:space="preserve">
     <value>Keyboard Shortcuts</value>
@@ -1301,6 +1309,14 @@
   <data name="Menu_Launch" xml:space="preserve">
     <value>Launch</value>
     <comment>Context menu item to launch application</comment>
+  </data>
+  <data name="Menu_Scan" xml:space="preserve">
+    <value>Scan</value>
+    <comment>Context menu item to scan single application</comment>
+  </data>
+  <data name="Menu_ScanSelected" xml:space="preserve">
+    <value>Scan Selected</value>
+    <comment>Context menu item to scan only selected applications</comment>
   </data>
   <data name="Error_LaunchFailed" xml:space="preserve">
     <value>Could not launch {0}. The application may not be installed or the executable was not found.</value>

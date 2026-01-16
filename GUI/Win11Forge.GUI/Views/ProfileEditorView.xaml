@@ -81,6 +81,21 @@
                     <ComboBox ItemsSource="{Binding AvailableParents}"
                               SelectedItem="{Binding SelectedParent}"
                               Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
+                    <!-- Parent hierarchy chain display -->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,6,0,0"
+                                Visibility="{Binding ParentHierarchy, Converter={StaticResource NullableToVisibilityConverter}}">
+                        <materialDesign:PackIcon Kind="FamilyTree"
+                                                  Width="14" Height="14"
+                                                  Opacity="0.7"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,6,0"/>
+                        <TextBlock Text="{Binding ParentHierarchy}"
+                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                   Opacity="0.7"
+                                   VerticalAlignment="Center"
+                                   ToolTip="{loc:Loc Editor_Tooltip_Inherited}"/>
+                    </StackPanel>
                 </StackPanel>
 
                 <!-- Description -->
@@ -293,7 +308,16 @@
                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
                                    Opacity="0.5"
                                    HorizontalAlignment="Center"
-                                   Margin="0,8,0,0"/>
+                                   Margin="0,8,0,12"/>
+                        <!-- CTA Button -->
+                        <Button Command="{Binding ShowAddApplicationDialogCommand}"
+                                Style="{StaticResource MaterialDesignFlatSecondaryButton}"
+                                HorizontalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Plus" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Text="{loc:Loc Editor_Tooltip_Add}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                 </Grid>
             </materialDesign:Card>
@@ -316,7 +340,7 @@
                 <!-- Import/Export Buttons -->
                 <Button Grid.Column="0"
                         Command="{Binding ImportProfileCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                         IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}"
                         Margin="0,0,8,0">
                     <StackPanel Orientation="Horizontal">
@@ -330,7 +354,7 @@
 
                 <Button Grid.Column="1"
                         Command="{Binding ExportProfileCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                         IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}"
                         Margin="0,0,16,0">
                     <StackPanel Orientation="Horizontal">
@@ -370,7 +394,7 @@
                 <Button Grid.Column="3"
                         Content="{loc:Loc Btn_Cancel}"
                         Command="{Binding CancelCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                         IsEnabled="{Binding IsSaving, Converter={StaticResource InverseBoolConverter}}"
                         Margin="0,0,12,0"/>
 

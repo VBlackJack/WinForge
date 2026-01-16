@@ -58,6 +58,25 @@
             <SolidColorBrush x:Key="SkeletonBaseBrush" Color="#2A2A2A"/>
             <SolidColorBrush x:Key="SkeletonHighlightBrush" Color="#3A3A3A"/>
 
+            <!-- Focus Visual Style (WCAG compliant high-visibility focus indicator) -->
+            <Style x:Key="HighVisibilityFocusVisual">
+                <Setter Property="Control.Template">
+                    <Setter.Value>
+                        <ControlTemplate>
+                            <Border BorderBrush="{DynamicResource SecondaryHueMidBrush}"
+                                    BorderThickness="2"
+                                    CornerRadius="4"
+                                    Margin="-2"/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Navigation ListBoxItem Style with visible focus -->
+            <Style x:Key="NavigationListBoxItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource MaterialDesignNavigationPrimaryListBoxItem}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+            </Style>
+
             <!-- Validation TextBox Style (shows error when text is empty) -->
             <Style x:Key="MaterialDesignRequiredOutlinedTextBox" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}">
                 <Style.Triggers>

@@ -69,6 +69,7 @@
                          SelectionChanged="NavigationListBox_SelectionChanged"
                          SelectedIndex="0"
                          Style="{StaticResource MaterialDesignNavigationPrimaryListBox}"
+                         ItemContainerStyle="{StaticResource NavigationListBoxItemStyle}"
                          AutomationProperties.Name="Main Navigation">
                     <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_Dashboard}"
                                  AutomationProperties.HelpText="Navigate to Dashboard view, Ctrl+1">

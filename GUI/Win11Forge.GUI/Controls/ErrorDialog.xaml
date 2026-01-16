@@ -41,21 +41,37 @@
                       x:Name="DetailsExpander"
                       Header="{loc:Loc Dialog_Error_Details}"
                       Margin="0,0,0,16"
+                      IsExpanded="True"
                       Visibility="Collapsed">
-                <Border Background="{DynamicResource MaterialDesignCardBackground}"
-                        CornerRadius="4"
-                        Padding="12"
-                        Margin="0,8,0,0">
-                    <ScrollViewer MaxHeight="150" VerticalScrollBarVisibility="Auto">
-                        <TextBox x:Name="DetailsText"
-                                 IsReadOnly="True"
-                                 TextWrapping="Wrap"
-                                 FontFamily="Consolas"
-                                 FontSize="12"
-                                 BorderThickness="0"
-                                 Background="Transparent"/>
-                    </ScrollViewer>
-                </Border>
+                <Grid Margin="0,8,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Border Grid.Row="0"
+                            Background="{DynamicResource MaterialDesignCardBackground}"
+                            CornerRadius="4"
+                            Padding="12">
+                        <ScrollViewer MaxHeight="150" VerticalScrollBarVisibility="Auto">
+                            <TextBox x:Name="DetailsText"
+                                     IsReadOnly="True"
+                                     TextWrapping="Wrap"
+                                     FontFamily="Consolas"
+                                     FontSize="12"
+                                     BorderThickness="0"
+                                     Background="Transparent"/>
+                        </ScrollViewer>
+                    </Border>
+                    <!-- Copy Details Button -->
+                    <Button Grid.Row="1"
+                            x:Name="CopyDetailsButton"
+                            Content="{loc:Loc Dialog_CopyDetails}"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Click="CopyDetailsButton_Click"
+                            HorizontalAlignment="Left"
+                            Margin="0,8,0,0"
+                            AutomationProperties.Name="Copy error details to clipboard"/>
+                </Grid>
             </Expander>
 
             <!-- Actions -->

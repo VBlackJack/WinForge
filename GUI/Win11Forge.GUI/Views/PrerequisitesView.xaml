@@ -39,7 +39,7 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Command="{Binding CheckPrerequisitesCommand}"
-                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                             Margin="0,0,8,0"
                             IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}">
                         <StackPanel Orientation="Horizontal">
@@ -401,7 +401,7 @@
 
                         <Button Grid.Column="1"
                                 Command="{Binding ClearLogCommand}"
-                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                                 Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"/>

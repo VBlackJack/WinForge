@@ -110,6 +110,14 @@ public interface IPowerShellBridge
     Task<ApplicationStatus> GetApplicationStatusAsync(string appId);
 
     /// <summary>
+    /// Checks installation status for multiple applications in a single batch operation.
+    /// Uses optimized caching of Registry, Winget, and AppX data for faster detection.
+    /// </summary>
+    /// <param name="apps">List of applications to check</param>
+    /// <returns>Dictionary mapping AppId to BatchAppStatus (status + version). Returns null if batch detection fails.</returns>
+    Task<Dictionary<string, BatchAppStatus>?> GetBatchApplicationStatusAsync(IReadOnlyList<ApplicationModel> apps);
+
+    /// <summary>
     /// Gets a raw profile without inheritance resolution.
     /// Used for editing to see what's defined in this specific profile.
     /// </summary>
@@ -154,3 +162,8 @@ public interface IPowerShellBridge
     /// <returns>True if installation succeeded</returns>
     Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null);
 }
+
+/// <summary>
+/// Batch detection result for a single application.
+/// </summary>
+public record BatchAppStatus(ApplicationStatus Status, string? Version);

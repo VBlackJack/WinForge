@@ -125,7 +125,7 @@
                     Content="{loc:Loc Btn_Cancel}"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
                     CommandParameter="{x:Null}"
-                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                    Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                     Margin="0,0,12,0"/>
 
             <!-- Add Button -->

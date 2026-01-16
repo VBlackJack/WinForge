@@ -245,7 +245,7 @@
                             <Button Grid.Column="1"
                                     Content="{loc:Loc Settings_ClearBtn}"
                                     Command="{Binding ClearHistoryCommand}"
-                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                                     Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"/>
                         </Grid>
 
@@ -267,7 +267,7 @@
 
                             <Button Grid.Column="1"
                                     Command="{Binding OpenLogFolderCommand}"
-                                    Style="{StaticResource MaterialDesignOutlinedButton}">
+                                    Style="{StaticResource MaterialDesignFlatSecondaryButton}">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="FolderOpen" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <TextBlock Text="{loc:Loc Settings_Btn_OpenLogs}" VerticalAlignment="Center"/>

@@ -150,11 +150,18 @@
                             <TextBlock Text="{loc:Loc Dashboard_SystemInfo_Title}"
                                        Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                        VerticalAlignment="Center"/>
-                            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                         Value="0" IsIndeterminate="True"
-                                         Width="16" Height="16"
-                                         Margin="12,0,0,0"
-                                         Visibility="{Binding IsLoadingSystemInfo, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <StackPanel Orientation="Horizontal"
+                                        Visibility="{Binding IsLoadingSystemInfo, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                             Value="0" IsIndeterminate="True"
+                                             Width="16" Height="16"
+                                             Margin="12,0,0,0"/>
+                                <TextBlock Text="{loc:Loc Common_Loading}"
+                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                           VerticalAlignment="Center"
+                                           Opacity="0.7"
+                                           Margin="8,0,0,0"/>
+                            </StackPanel>
                         </StackPanel>
 
                         <!-- System Info Content -->
@@ -356,7 +363,16 @@
                                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                        Opacity="0.5"
                                        HorizontalAlignment="Center"
-                                       Margin="0,4,0,0"/>
+                                       Margin="0,4,0,16"/>
+                            <!-- CTA Button -->
+                            <Button Command="{Binding StartDeploymentCommand}"
+                                    Style="{StaticResource MaterialDesignFlatSecondaryButton}"
+                                    HorizontalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Play" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="{loc:Loc Dashboard_Btn_StartDeploy}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </Grid>
                 </materialDesign:Card>
@@ -472,7 +488,7 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <!-- Check Button -->
                             <Button Command="{Binding CheckPrerequisitesCommand}"
-                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                                     Margin="0,0,8,0"
                                     IsEnabled="{Binding IsInstallingPrerequisites, Converter={StaticResource InverseBoolConverter}}">
                                 <StackPanel Orientation="Horizontal">

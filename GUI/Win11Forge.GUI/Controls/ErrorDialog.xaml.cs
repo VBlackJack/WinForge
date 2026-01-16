@@ -99,4 +99,40 @@ public partial class ErrorDialog : UserControl
         }
         ActionSelected?.Invoke(this, DialogAction.Help);
     }
+
+    private void CopyDetailsButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var details = $"{TitleText.Text}\n\n{MessageText.Text}";
+            if (!string.IsNullOrEmpty(DetailsText.Text))
+            {
+                details += $"\n\n--- Details ---\n{DetailsText.Text}";
+            }
+            Clipboard.SetText(details);
+
+            // Provide visual feedback
+            if (CopyDetailsButton.Content is string originalContent)
+            {
+                CopyDetailsButton.Content = "✓";
+                CopyDetailsButton.IsEnabled = false;
+
+                var timer = new System.Windows.Threading.DispatcherTimer
+                {
+                    Interval = TimeSpan.FromSeconds(2)
+                };
+                timer.Tick += (s, args) =>
+                {
+                    CopyDetailsButton.Content = originalContent;
+                    CopyDetailsButton.IsEnabled = true;
+                    timer.Stop();
+                };
+                timer.Start();
+            }
+        }
+        catch
+        {
+            // Silently fail
+        }
+    }
 }

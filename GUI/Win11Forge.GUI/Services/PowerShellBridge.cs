@@ -410,6 +410,7 @@ public class PowerShellBridge : IPowerShellBridge
         return await Task.Run(async () =>
         {
             var logBuilder = new System.Text.StringBuilder();
+            var outputLines = new System.Collections.Generic.List<string>();
 
             try
             {
@@ -418,10 +419,14 @@ public class PowerShellBridge : IPowerShellBridge
                 // Build the ForceUpdate switch if needed
                 var forceUpdateSwitch = forceUpdate ? " -ForceUpdate" : "";
 
-                // Build a PowerShell script that outputs JSON result
+                // Build a PowerShell script that outputs status messages and JSON result
+                // Use 6>&1 to redirect Information stream (Write-Host in PS5+) to stdout
                 var script = $@"
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
 $ErrorActionPreference = 'Continue'
+
+# Redirect Write-Host to stdout for streaming capture
+$script:OriginalHost = $host.UI.RawUI
 
 try {{
     Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue
@@ -430,28 +435,93 @@ try {{
 
     $app = Get-ApplicationById -AppId '{app.AppId.Replace("'", "''")}'
     if (-not $app) {{
+        Write-Output '[STATUS] Application not found in database'
         @{{ Success = $false; Message = 'Application not found in database'; Method = ''; AlreadyInstalled = $false }} | ConvertTo-Json -Compress
         exit
     }}
 
+    Write-Output '[STATUS] Starting installation...'
     $result = Install-Application -Application $app{forceUpdateSwitch}
     $result | ConvertTo-Json -Compress
 }} catch {{
+    Write-Output ""[ERROR] $($_.Exception.Message)""
     @{{ Success = $false; Message = $_.Exception.Message; Method = ''; AlreadyInstalled = $false }} | ConvertTo-Json -Compress
 }}
 ";
 
                 progressCallback?.Invoke($"Installing {app.Name}...");
 
-                var output = await ExecutePowerShellScriptAsync(script);
-                logBuilder.AppendLine(output);
+                // Execute with streaming output
+                var psPath = GetPowerShellPath();
+                var encodedScript = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(script));
+
+                var startInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = psPath,
+                    Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encodedScript}",
+                    WorkingDirectory = repoRoot,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                };
+
+                using var process = new System.Diagnostics.Process { StartInfo = startInfo };
+
+                // Handle stdout line by line for real-time streaming
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (e.Data != null)
+                    {
+                        var line = e.Data.Trim();
+                        if (!string.IsNullOrWhiteSpace(line))
+                        {
+                            outputLines.Add(line);
+                            logBuilder.AppendLine(line);
+
+                            // Forward status messages to progress callback
+                            if (line.StartsWith("[STATUS]") || line.StartsWith("[ERROR]") ||
+                                line.StartsWith("[INFO]") || line.StartsWith("[SUCCESS]") ||
+                                line.StartsWith("[WARNING]"))
+                            {
+                                progressCallback?.Invoke($"{app.Name}: {line}");
+                            }
+                            else if (line.Contains("Installing") || line.Contains("Downloading") ||
+                                     line.Contains("Verifying") || line.Contains("Completed") ||
+                                     line.Contains("already installed", StringComparison.OrdinalIgnoreCase) ||
+                                     line.Contains("Successfully", StringComparison.OrdinalIgnoreCase))
+                            {
+                                progressCallback?.Invoke($"{app.Name}: {line}");
+                            }
+                        }
+                    }
+                };
+
+                // Handle stderr
+                process.ErrorDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(e.Data))
+                    {
+                        var cleanLine = ExtractReadableMessage(e.Data);
+                        if (!string.IsNullOrWhiteSpace(cleanLine))
+                        {
+                            logBuilder.AppendLine($"[STDERR] {cleanLine}");
+                            progressCallback?.Invoke($"{app.Name}: [Error] {cleanLine}");
+                        }
+                    }
+                };
+
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                await process.WaitForExitAsync();
 
                 // Find JSON line in output (last non-empty line that starts with {)
-                var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
                 string? jsonLine = null;
-                for (int i = lines.Length - 1; i >= 0; i--)
+                for (int i = outputLines.Count - 1; i >= 0; i--)
                 {
-                    var trimmed = lines[i].Trim();
+                    var trimmed = outputLines[i].Trim();
                     if (trimmed.StartsWith("{") && trimmed.EndsWith("}"))
                     {
                         jsonLine = trimmed;
@@ -498,8 +568,9 @@ try {{
                 }
 
                 // No JSON found, check if there's any output indicating success
-                if (output.Contains("successfully", StringComparison.OrdinalIgnoreCase) ||
-                    output.Contains("installed", StringComparison.OrdinalIgnoreCase))
+                var fullOutput = string.Join("\n", outputLines);
+                if (fullOutput.Contains("successfully", StringComparison.OrdinalIgnoreCase) ||
+                    fullOutput.Contains("installed", StringComparison.OrdinalIgnoreCase))
                 {
                     return InstallResult.Successful(
                         $"Installation completed for {app.Name}",
@@ -1822,6 +1893,121 @@ try {{
         catch
         {
             return ApplicationStatus.Pending;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<Dictionary<string, BatchAppStatus>?> GetBatchApplicationStatusAsync(IReadOnlyList<ApplicationModel> apps)
+    {
+        if (apps == null || apps.Count == 0)
+        {
+            return new Dictionary<string, BatchAppStatus>();
+        }
+
+        var repoRoot = GetSafeRepositoryRoot();
+        var corePath = Path.Combine(repoRoot, "Core", "Core.psm1").Replace("\\", "/");
+        var dbModulePath = Path.Combine(repoRoot, "Modules", "ApplicationDatabase.psm1").Replace("\\", "/");
+        var enginePath = Path.Combine(repoRoot, "Modules", "InstallationEngine.psm1").Replace("\\", "/");
+
+        try
+        {
+            // Build list of AppIds for PowerShell to look up from database
+            var appIds = apps.Select(a => a.AppId).ToList();
+            var appIdsJson = JsonSerializer.Serialize(appIds).Replace("'", "''");
+
+            var script = $@"
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+$ErrorActionPreference = 'SilentlyContinue'
+
+try {{
+    Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue
+    Import-Module '{dbModulePath}' -Force -ErrorAction Stop
+    Import-Module '{enginePath}' -Force -ErrorAction Stop
+
+    # Parse AppIds from JSON and get full app objects from database
+    $appIds = '{appIdsJson}' | ConvertFrom-Json
+    $apps = @()
+    foreach ($appId in $appIds) {{
+        $app = Get-ApplicationById -AppId $appId
+        if ($app) {{
+            $apps += $app
+        }}
+    }}
+
+    # Call batch detection function
+    $results = Get-ApplicationsInstallationStatus -Applications $apps
+
+    # Output results as JSON
+    $results | ConvertTo-Json -Compress
+}} catch {{
+    Write-Output ""___BATCH_ERROR___: $($_.Exception.Message)""
+}}
+";
+
+            var output = await ExecutePowerShellScriptAsync(script);
+            var lines = output.Trim().Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+            // Check for error
+            foreach (var line in lines)
+            {
+                if (line.Contains("___BATCH_ERROR___"))
+                {
+                    // Batch detection failed, return null to trigger fallback
+                    return null;
+                }
+            }
+
+            // Find JSON output (last line that looks like JSON)
+            foreach (var line in lines.Reverse())
+            {
+                var trimmed = line.Trim();
+                if (trimmed.StartsWith("{") && trimmed.EndsWith("}"))
+                {
+                    using var doc = JsonDocument.Parse(trimmed);
+                    var root = doc.RootElement;
+
+                    var result = new Dictionary<string, BatchAppStatus>();
+                    foreach (var prop in root.EnumerateObject())
+                    {
+                        var appId = prop.Name;
+                        var isInstalled = false;
+                        string? version = null;
+
+                        // New format: { AppId: { IsInstalled: bool, Version: string } }
+                        if (prop.Value.ValueKind == JsonValueKind.Object)
+                        {
+                            if (prop.Value.TryGetProperty("IsInstalled", out var installedProp))
+                            {
+                                isInstalled = installedProp.ValueKind == JsonValueKind.True;
+                            }
+                            if (prop.Value.TryGetProperty("Version", out var versionProp) &&
+                                versionProp.ValueKind == JsonValueKind.String)
+                            {
+                                version = versionProp.GetString();
+                            }
+                        }
+                        // Legacy format: { AppId: bool }
+                        else if (prop.Value.ValueKind == JsonValueKind.True ||
+                                 prop.Value.ValueKind == JsonValueKind.False)
+                        {
+                            isInstalled = prop.Value.GetBoolean();
+                        }
+
+                        var status = isInstalled ? ApplicationStatus.Installed : ApplicationStatus.Pending;
+                        result[appId] = new BatchAppStatus(status, version);
+                    }
+
+                    return result;
+                }
+            }
+
+            // No valid JSON found, return null for fallback
+            return null;
+        }
+        catch
+        {
+            // Return null to indicate batch detection failed, caller should fallback
+            return null;
         }
     }
 

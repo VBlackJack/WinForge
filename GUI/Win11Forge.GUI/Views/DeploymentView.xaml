@@ -91,7 +91,7 @@
                                 HorizontalAlignment="Right"
                                 Margin="0,16,0,0">
                         <Button Content="{loc:Loc LogViewer_Copy}"
-                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                                 Click="CopyLogsToClipboard_Click"
                                 Margin="0,0,12,0"/>
                         <Button Content="{loc:Loc LogViewer_Close}"
@@ -122,8 +122,32 @@
                                  AutomationProperties.Name="Deployment progress steps"/>
         </StackPanel>
 
+        <!-- Dry Run Warning Banner (prominent position at top) -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource WarningBackgroundBrush}"
+                BorderBrush="{DynamicResource WarningBorderBrush}"
+                BorderThickness="2"
+                CornerRadius="4"
+                Padding="16,12"
+                Margin="0,0,0,16"
+                Visibility="{Binding IsDryRun, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <materialDesign:PackIcon Kind="AlertCircleOutline"
+                                          Width="24"
+                                          Height="24"
+                                          Foreground="{DynamicResource WarningIconBrush}"
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,12,0"/>
+                <TextBlock Text="{loc:Loc Deploy_DryRunBanner}"
+                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource WarningTextBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
         <!-- Profile Selection Card -->
-        <materialDesign:Card Grid.Row="1"
+        <materialDesign:Card Grid.Row="2"
                               Padding="16"
                               Margin="0,0,0,16"
                               materialDesign:ElevationAssist.Elevation="Dp2">
@@ -175,7 +199,7 @@
         </materialDesign:Card>
 
         <!-- Profile Summary Card -->
-        <materialDesign:Card Grid.Row="2"
+        <materialDesign:Card Grid.Row="3"
                               Padding="16"
                               Margin="0,0,0,16"
                               materialDesign:ElevationAssist.Elevation="Dp2"
@@ -245,14 +269,14 @@
                     <!-- Action Buttons -->
                     <Button Grid.Column="6"
                             Content="{loc:Loc Deploy_SelectAll}"
-                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                             Command="{Binding SelectAllCommand}"
                             Margin="16,0,8,0"
                             AutomationProperties.Name="Select all applications"
                             AutomationProperties.HelpText="Select all optional applications for deployment"/>
                     <Button Grid.Column="7"
                             Content="{loc:Loc Deploy_SelectNone}"
-                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                             Command="{Binding SelectNoneCommand}"
                             AutomationProperties.Name="Select none"
                             AutomationProperties.HelpText="Deselect all optional applications"/>
@@ -261,7 +285,7 @@
         </materialDesign:Card>
 
         <!-- Deployment Controls Card -->
-        <materialDesign:Card Grid.Row="3"
+        <materialDesign:Card Grid.Row="4"
                               Padding="16"
                               Margin="0,0,0,16"
                               materialDesign:ElevationAssist.Elevation="Dp2"
@@ -361,7 +385,7 @@
                 <!-- Pause Button -->
                 <Button Grid.Column="4"
                         Content="{loc:Loc Btn_Pause}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                         Command="{Binding PauseDeploymentCommand}"
                         Visibility="{Binding CanPauseDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
                         Margin="0,0,8,0"
@@ -381,37 +405,13 @@
                 <!-- Cancel Button -->
                 <Button Grid.Column="6"
                         Content="{loc:Loc Btn_Cancel}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                         Command="{Binding CancelDeploymentCommand}"
                         Visibility="{Binding IsDeploying, Converter={StaticResource BooleanToVisibilityConverter}}"
                         AutomationProperties.Name="Cancel deployment"
                         AutomationProperties.HelpText="Stop the deployment and cancel remaining installations"/>
             </Grid>
         </materialDesign:Card>
-
-        <!-- Dry Run Warning Banner -->
-        <Border Grid.Row="4"
-                Background="{DynamicResource WarningBackgroundBrush}"
-                BorderBrush="{DynamicResource WarningBorderBrush}"
-                BorderThickness="2"
-                CornerRadius="4"
-                Padding="16,12"
-                Margin="0,0,0,16"
-                Visibility="{Binding IsDryRun, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <materialDesign:PackIcon Kind="AlertCircleOutline"
-                                          Width="24"
-                                          Height="24"
-                                          Foreground="{DynamicResource WarningIconBrush}"
-                                          VerticalAlignment="Center"
-                                          Margin="0,0,12,0"/>
-                <TextBlock Text="{loc:Loc Deploy_DryRunBanner}"
-                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource WarningTextBrush}"
-                           VerticalAlignment="Center"/>
-            </StackPanel>
-        </Border>
 
         <!-- Applications DataGrid -->
         <materialDesign:Card Grid.Row="5"
@@ -467,6 +467,7 @@
                                                Margin="6,0,0,0"
                                                MaxWidth="100"
                                                TextTrimming="CharacterEllipsis"
+                                               ToolTip="{Binding StatusMessage}"
                                                Visibility="{Binding StatusMessage, Converter={StaticResource NullableToVisibilityConverter}}"/>
                                 </StackPanel>
                             </DataTemplate>
@@ -488,6 +489,7 @@
                                                Style="{StaticResource MaterialDesignBody2TextBlock}"
                                                Opacity="0.7"
                                                TextTrimming="CharacterEllipsis"
+                                               ToolTip="{Binding Description}"
                                                MaxWidth="400"/>
                                 </StackPanel>
                             </DataTemplate>

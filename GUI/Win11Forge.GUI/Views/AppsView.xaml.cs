@@ -206,6 +206,29 @@ public partial class AppsView : UserControl
     }
 
     /// <summary>
+    /// Context menu: Scan single app.
+    /// </summary>
+    private void ContextMenu_Scan_Click(object sender, RoutedEventArgs e)
+    {
+        var app = GetSelectedApp();
+        if (app != null && DataContext is AppsViewModel viewModel)
+        {
+            viewModel.ScanAppCommand.Execute(app);
+        }
+    }
+
+    /// <summary>
+    /// Context menu: Scan selected apps.
+    /// </summary>
+    private void ContextMenu_ScanSelected_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is AppsViewModel viewModel)
+        {
+            viewModel.ScanSelectedCommand.Execute(null);
+        }
+    }
+
+    /// <summary>
     /// Context menu: Toggle Selection.
     /// </summary>
     private void ContextMenu_ToggleSelection_Click(object sender, RoutedEventArgs e)

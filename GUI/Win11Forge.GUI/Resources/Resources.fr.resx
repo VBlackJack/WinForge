@@ -764,6 +764,12 @@
   <data name="Dialog_Close" xml:space="preserve">
     <value>Fermer</value>
   </data>
+  <data name="Dialog_CopyDetails" xml:space="preserve">
+    <value>Copier les details</value>
+  </data>
+  <data name="Dialog_Copied" xml:space="preserve">
+    <value>Copie !</value>
+  </data>
   <data name="Dialog_Confirm" xml:space="preserve">
     <value>Confirmer</value>
   </data>
@@ -994,6 +1000,12 @@
   </data>
   <data name="Menu_Launch" xml:space="preserve">
     <value>Lancer</value>
+  </data>
+  <data name="Menu_Scan" xml:space="preserve">
+    <value>Scanner</value>
+  </data>
+  <data name="Menu_ScanSelected" xml:space="preserve">
+    <value>Scanner la selection</value>
   </data>
   <data name="Error_LaunchFailed" xml:space="preserve">
     <value>Impossible de lancer {0}. L'application n'est peut-etre pas installee ou l'executable n'a pas ete trouve.</value>

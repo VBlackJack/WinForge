@@ -45,8 +45,8 @@ $script:FrameworkVersion = try {
     if (Test-Path $versionPath) {
         $versionData = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
         $versionData.Version
-    } else { '3.0.0' }
-} catch { '3.0.0' }
+    } else { '3.1.2' }
+} catch { '3.1.2' }
 
 # ============================================================================
 # INITIALIZATION

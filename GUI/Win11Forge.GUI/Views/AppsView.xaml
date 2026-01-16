@@ -74,7 +74,7 @@
                                 HorizontalAlignment="Right"
                                 Margin="0,16,0,0">
                         <Button Content="{loc:Loc LogViewer_Copy}"
-                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                                 Click="CopyLogsToClipboard_Click"
                                 Margin="0,0,12,0"/>
                         <Button Content="{loc:Loc LogViewer_Close}"
@@ -245,13 +245,63 @@
                 <!-- Clear Filters Button -->
                 <Button Grid.Column="3"
                         Command="{Binding ClearFiltersCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                         ToolTip="{loc:Loc Apps_ClearFilters}"
                         Margin="8,0,0,0"
                         AutomationProperties.Name="Clear all filters"
                         AutomationProperties.HelpText="Reset search text, category, and status filters">
                     <materialDesign:PackIcon Kind="FilterRemove"/>
                 </Button>
+
+                <!-- Active Filter Indicators -->
+                <StackPanel Grid.Column="4"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="16,0,0,0">
+                    <!-- Search Filter Badge -->
+                    <Border Background="{DynamicResource PrimaryHueLightBrush}"
+                            CornerRadius="12"
+                            Padding="8,4"
+                            Margin="0,0,8,0"
+                            Visibility="{Binding HasSearchFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Magnify" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding SearchText}"
+                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       MaxWidth="80"
+                                       TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center"
+                                       Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <!-- Category Filter Badge -->
+                    <Border Background="{DynamicResource SecondaryHueLightBrush}"
+                            CornerRadius="12"
+                            Padding="8,4"
+                            Margin="0,0,8,0"
+                            Visibility="{Binding HasCategoryFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FolderOutline" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding SelectedCategory}"
+                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       VerticalAlignment="Center"
+                                       Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <!-- Status Filter Badge -->
+                    <Border Background="{DynamicResource MaterialDesignChipBackground}"
+                            CornerRadius="12"
+                            Padding="8,4"
+                            Visibility="{Binding HasStatusFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FilterOutline" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding SelectedStatusFilter, Converter={StaticResource StatusFilterToStringConverter}}"
+                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       VerticalAlignment="Center"
+                                       Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
 
                 <!-- Stats Display -->
                 <StackPanel Grid.Column="5"
@@ -287,7 +337,7 @@
                                    VerticalAlignment="Center">
                             <Run Text="{Binding ScannedCount, Mode=OneWay}"/>
                             <Run Text="/"/>
-                            <Run Text="{Binding TotalApplicationsCount, Mode=OneWay}"/>
+                            <Run Text="{Binding ScanTotalCount, Mode=OneWay}"/>
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
@@ -304,7 +354,7 @@
                         AutomationProperties.HelpText="Check which applications are already installed on this system"/>
                 <Button Grid.Column="6"
                         Command="{Binding CancelScanCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                         Content="{loc:Loc Btn_Cancel}"
                         Margin="16,0,0,0"
                         Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -314,7 +364,7 @@
                 <!-- Scan Updates Button -->
                 <Button Grid.Column="7"
                         Command="{Binding ScanUpdatesCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                         Margin="8,0,0,0"
                         Visibility="{Binding IsScanningUpdates, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                         AutomationProperties.Name="Scan for updates"
@@ -360,7 +410,7 @@
                 <Button Grid.Column="0"
                         Content="{loc:Loc Apps_SelectAll}"
                         Command="{Binding SelectAllCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                         Padding="12,4"
                         Margin="0,0,8,0"
                         AutomationProperties.Name="Select all applications"
@@ -368,7 +418,7 @@
                 <Button Grid.Column="1"
                         Content="{loc:Loc Apps_SelectNone}"
                         Command="{Binding SelectNoneCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                         Padding="12,4"
                         Margin="0,0,8,0"
                         AutomationProperties.Name="Select none"
@@ -376,7 +426,7 @@
                 <Button Grid.Column="2"
                         Content="{loc:Loc Apps_SelectNotInstalled}"
                         Command="{Binding SelectNotInstalledCommand}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                         Padding="12,4"
                         AutomationProperties.Name="Select not installed"
                         AutomationProperties.HelpText="Select only applications that are not yet installed"/>
@@ -387,7 +437,7 @@
                     <!-- Select Favorites Button -->
                     <Button Content="{loc:Loc Apps_SelectFavorites}"
                             Command="{Binding SelectFavoritesCommand}"
-                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                             Padding="12,4"
                             Margin="0,0,8,0"
                             Visibility="{Binding IsUninstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
@@ -395,7 +445,7 @@
                             AutomationProperties.HelpText="Select only applications marked as favorites"/>
                     <!-- Uninstall Selected Button -->
                     <Button Command="{Binding UninstallSelectedCommand}"
-                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            Style="{StaticResource MaterialDesignFlatSecondaryButton}"
                             Margin="0,0,8,0"
                             Visibility="{Binding IsUninstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                             AutomationProperties.Name="Uninstall selected applications"
@@ -438,6 +488,33 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
+                    <!-- Operation Type Icon and Label -->
+                    <materialDesign:PackIcon Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0">
+                        <materialDesign:PackIcon.Style>
+                            <Style TargetType="materialDesign:PackIcon">
+                                <Setter Property="Kind" Value="Download"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsUninstalling}" Value="True">
+                                        <Setter Property="Kind" Value="Delete"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignValidationErrorBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </materialDesign:PackIcon.Style>
+                    </materialDesign:PackIcon>
+                    <TextBlock VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="Medium">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignBody2TextBlock}">
+                                <Setter Property="Text" Value="{loc:Loc Progress_Installing}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsUninstalling}" Value="True">
+                                        <Setter Property="Text" Value="{loc:Loc Status_Uninstalling}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                     <!-- Progress Text -->
                     <TextBlock VerticalAlignment="Center" Margin="0,0,12,0">
                         <Run Text="{Binding BatchProgressCurrent, Mode=OneWay}"/>
@@ -573,6 +650,21 @@
                                       Click="ContextMenu_Update_Click">
                                 <MenuItem.Icon>
                                     <materialDesign:PackIcon Kind="Update"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem x:Name="MenuScan"
+                                      Header="{loc:Loc Menu_Scan}"
+                                      Click="ContextMenu_Scan_Click">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="Magnify"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="MenuScanSelected"
+                                      Header="{loc:Loc Menu_ScanSelected}"
+                                      Click="ContextMenu_ScanSelected_Click">
+                                <MenuItem.Icon>
+                                    <materialDesign:PackIcon Kind="MagnifyPlus"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
@@ -830,7 +922,8 @@
                                                    Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                                    VerticalAlignment="Center"
                                                    Margin="6,0,0,0"
-                                                   TextTrimming="CharacterEllipsis"/>
+                                                   TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding StatusMessage}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
