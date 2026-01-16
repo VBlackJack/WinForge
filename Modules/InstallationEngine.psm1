@@ -1174,6 +1174,51 @@ function Test-RegistryKey {
     return Test-Path -Path $Path -ErrorAction SilentlyContinue
 }
 
+function Get-InstalledAppVersion {
+    <#
+    .SYNOPSIS
+        Gets the installed version of an application via Winget or Chocolatey.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter()]
+        [string]$WingetId,
+
+        [Parameter()]
+        [string]$ChocolateyId
+    )
+
+    # Try Winget first
+    if ($WingetId -and (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)) {
+        try {
+            $output = & winget list --id $WingetId --accept-source-agreements 2>&1 | Out-String
+            # Parse version from winget list output (format: Name  Id  Version  Available  Source)
+            # Version is typically after the ID column
+            $lines = $output -split "`n" | Where-Object { $_ -match [regex]::Escape($WingetId) }
+            if ($lines) {
+                # Extract version using regex - version is usually a pattern like 1.2.3 or 1.2.3.4
+                if ($lines[0] -match '\s(\d+[\.\d]+)\s') {
+                    return $Matches[1]
+                }
+            }
+        } catch { }
+    }
+
+    # Try Chocolatey
+    if ($ChocolateyId -and (Get-Command -Name 'choco' -ErrorAction SilentlyContinue)) {
+        try {
+            $output = & choco list --local-only --exact $ChocolateyId 2>&1 | Out-String
+            # Parse version from choco list output (format: packagename version)
+            if ($output -match "$([regex]::Escape($ChocolateyId))\s+([\d\.]+)") {
+                return $Matches[1]
+            }
+        } catch { }
+    }
+
+    return $null
+}
+
 # === INSTALLATION METHODS ===
 
 function Install-ViaWinget {
@@ -1233,22 +1278,28 @@ function Install-ViaWinget {
                 $wingetOutput -match 'No available upgrade' -or
                 $wingetOutput -match 'No newer package versions' -or
                 $wingetOutput -match 'Successfully installed') {
-                Write-Output "[SUCCESS] Installed successfully via Winget$(if ($attempt -gt 1) { " (attempt $attempt)" })"
-                Write-Status -Message "Installed successfully via Winget$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                $version = Get-InstalledAppVersion -WingetId $PackageId
+                $versionInfo = if ($version) { " v$version" } else { "" }
+                Write-Output "[SUCCESS] Installed successfully via Winget$versionInfo$(if ($attempt -gt 1) { " (attempt $attempt)" })"
+                Write-Status -Message "Installed successfully via Winget$versionInfo$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
                 return $true
             }
 
             # Exit code 0 = success
             if ($exitCode -eq 0) {
-                Write-Output "[SUCCESS] Installed successfully via Winget$(if ($attempt -gt 1) { " (attempt $attempt)" })"
-                Write-Status -Message "Installed successfully via Winget$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                $version = Get-InstalledAppVersion -WingetId $PackageId
+                $versionInfo = if ($version) { " v$version" } else { "" }
+                Write-Output "[SUCCESS] Installed successfully via Winget$versionInfo$(if ($attempt -gt 1) { " (attempt $attempt)" })"
+                Write-Status -Message "Installed successfully via Winget$versionInfo$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
                 return $true
             }
 
             # Exit code -1978334974 = APPINSTALLER_CLI_ERROR_INSTALL_PACKAGE_ALREADY_INSTALLED
             if ($exitCode -eq -1978334974) {
-                Write-Output "[SUCCESS] Already installed (Winget)$(if ($attempt -gt 1) { " (attempt $attempt)" })"
-                Write-Status -Message "Already installed (Winget)$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                $version = Get-InstalledAppVersion -WingetId $PackageId
+                $versionInfo = if ($version) { " v$version" } else { "" }
+                Write-Output "[SUCCESS] Already installed (Winget)$versionInfo$(if ($attempt -gt 1) { " (attempt $attempt)" })"
+                Write-Status -Message "Already installed (Winget)$versionInfo$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
                 return $true
             }
 
@@ -1267,8 +1318,10 @@ function Install-ViaWinget {
             Write-Output "[INFO] Verifying installation..."
             $verifyResult = & winget list --id $PackageId --accept-source-agreements 2>&1 | Out-String
             if ($verifyResult -match [regex]::Escape($PackageId) -and $verifyResult -notmatch "No installed package") {
-                Write-Output "[SUCCESS] Installed successfully via Winget (verified post-install)$(if ($attempt -gt 1) { " (attempt $attempt)" })"
-                Write-Status -Message "Installed successfully via Winget (verified post-install)$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                $version = Get-InstalledAppVersion -WingetId $PackageId
+                $versionInfo = if ($version) { " v$version" } else { "" }
+                Write-Output "[SUCCESS] Installed successfully via Winget$versionInfo (verified post-install)$(if ($attempt -gt 1) { " (attempt $attempt)" })"
+                Write-Status -Message "Installed successfully via Winget$versionInfo (verified post-install)$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
                 return $true
             }
 
@@ -1337,14 +1390,18 @@ function Install-ViaChocolatey {
 
             # Check for "already installed" pattern in output - treat as success
             if ($chocoOutput -match 'already installed' -or $chocoOutput -match 'has been installed') {
-                Write-Output "[SUCCESS] Installed successfully via Chocolatey$(if ($attempt -gt 1) { " (attempt $attempt)" })"
-                Write-Status -Message "Installed successfully via Chocolatey$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                $version = Get-InstalledAppVersion -ChocolateyId $PackageName
+                $versionInfo = if ($version) { " v$version" } else { "" }
+                Write-Output "[SUCCESS] Installed successfully via Chocolatey$versionInfo$(if ($attempt -gt 1) { " (attempt $attempt)" })"
+                Write-Status -Message "Installed successfully via Chocolatey$versionInfo$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
                 return $true
             }
 
             if ($exitCode -eq 0) {
-                Write-Output "[SUCCESS] Installed successfully via Chocolatey$(if ($attempt -gt 1) { " (attempt $attempt)" })"
-                Write-Status -Message "Installed successfully via Chocolatey$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                $version = Get-InstalledAppVersion -ChocolateyId $PackageName
+                $versionInfo = if ($version) { " v$version" } else { "" }
+                Write-Output "[SUCCESS] Installed successfully via Chocolatey$versionInfo$(if ($attempt -gt 1) { " (attempt $attempt)" })"
+                Write-Status -Message "Installed successfully via Chocolatey$versionInfo$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
                 return $true
             }
 
@@ -1355,8 +1412,10 @@ function Install-ViaChocolatey {
                 Write-Output "[INFO] Verifying installation..."
                 $chocoList = & choco list --local-only --exact $PackageName 2>&1 | Out-String
                 if ($chocoList -match $PackageName -and $chocoList -notmatch "0 packages installed") {
-                    Write-Output "[SUCCESS] Installed successfully via Chocolatey (verified)$(if ($attempt -gt 1) { " (attempt $attempt)" })"
-                    Write-Status -Message "Installed successfully via Chocolatey (verified)$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                    $version = Get-InstalledAppVersion -ChocolateyId $PackageName
+                    $versionInfo = if ($version) { " v$version" } else { "" }
+                    Write-Output "[SUCCESS] Installed successfully via Chocolatey$versionInfo (verified)$(if ($attempt -gt 1) { " (attempt $attempt)" })"
+                    Write-Status -Message "Installed successfully via Chocolatey$versionInfo (verified)$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
                     return $true
                 }
 
@@ -1372,8 +1431,10 @@ function Install-ViaChocolatey {
             Write-Output "[INFO] Verifying installation..."
             $chocoList = & choco list --local-only --exact $PackageName 2>&1 | Out-String
             if ($chocoList -match $PackageName -and $chocoList -notmatch "0 packages installed") {
-                Write-Output "[SUCCESS] Installed successfully via Chocolatey (verified post-install)$(if ($attempt -gt 1) { " (attempt $attempt)" })"
-                Write-Status -Message "Installed successfully via Chocolatey (verified post-install)$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
+                $version = Get-InstalledAppVersion -ChocolateyId $PackageName
+                $versionInfo = if ($version) { " v$version" } else { "" }
+                Write-Output "[SUCCESS] Installed successfully via Chocolatey$versionInfo (verified post-install)$(if ($attempt -gt 1) { " (attempt $attempt)" })"
+                Write-Status -Message "Installed successfully via Chocolatey$versionInfo (verified post-install)$(if ($attempt -gt 1) { " (attempt $attempt)" })" -Level 'Success'
                 return $true
             }
 
@@ -1437,14 +1498,18 @@ function Install-ViaStore {
                 $storeOutput -match 'No available upgrade' -or
                 $storeOutput -match 'No newer package versions' -or
                 $storeOutput -match 'Successfully installed') {
-                Write-Output "[SUCCESS] Installed successfully via Microsoft Store"
-                Write-Status -Message "Installed successfully via Microsoft Store" -Level 'Success'
+                $version = Get-InstalledAppVersion -WingetId $ProductId
+                $versionInfo = if ($version) { " v$version" } else { "" }
+                Write-Output "[SUCCESS] Installed successfully via Microsoft Store$versionInfo"
+                Write-Status -Message "Installed successfully via Microsoft Store$versionInfo" -Level 'Success'
                 return $true
             }
 
             if ($exitCode -eq 0) {
-                Write-Output "[SUCCESS] Installed successfully via Microsoft Store"
-                Write-Status -Message "Installed successfully via Microsoft Store" -Level 'Success'
+                $version = Get-InstalledAppVersion -WingetId $ProductId
+                $versionInfo = if ($version) { " v$version" } else { "" }
+                Write-Output "[SUCCESS] Installed successfully via Microsoft Store$versionInfo"
+                Write-Status -Message "Installed successfully via Microsoft Store$versionInfo" -Level 'Success'
                 return $true
             }
         }
