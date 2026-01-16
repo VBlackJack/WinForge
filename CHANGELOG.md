@@ -2,6 +2,38 @@
 
 Note: la source de vérité de la version du framework est `Config/version.json`. Les lanceurs et la GUI lisent dynamiquement cette valeur.
 
+## [3.1.4] - 2026-01-16
+
+### Critical Security Fixes
+
+#### Command Injection Prevention
+- **Fixed**: CRITICAL - Replaced `cmd /c` string interpolation with `Start-Process` argument arrays in `Invoke-Rollback`
+- **Fixed**: Winget/Chocolatey uninstall now use safe argument passing
+
+#### State File Security
+- **Added**: `Test-ValidStateData` function validates deployment state files before loading
+- **Added**: SessionId GUID format validation
+- **Added**: ProfileName path traversal and character validation
+- **Added**: App name shell metacharacter detection
+
+#### Parallel Detection Security
+- **Fixed**: HIGH - Added path traversal protection to parallel `Test-AppInstalledParallel`
+- **Added**: Registry and File detection now validate paths against `..` sequences
+
+#### Command Detection Hardening
+- **Added**: Executable whitelist for Command detection method (java, dotnet, python, node, git, etc.)
+- **Blocked**: Arbitrary executables can no longer be run via applications.json Detection.Command
+
+#### C# PowerShellBridge Security
+- **Added**: `ValidateAppId` method prevents injection via malicious app IDs
+- **Added**: AppId character validation (alphanumeric, dots, hyphens, underscores only)
+
+#### Configuration Consistency
+- **Fixed**: Parallel install timeout now uses configurable `$script:ParallelInstallTimeoutMs`
+- **Standardized**: All timeout values defined in module configuration section
+
+---
+
 ## [3.1.3] - 2026-01-16
 
 ### Security Hardening Update

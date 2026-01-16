@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Engine Module v3.1.3 (Security Hardening Update)
+    Win11Forge - Installation Engine Module v3.1.4 (Critical Security Fixes)
 
 .DESCRIPTION
     Core installation engine with multi-source support and parallel execution:
@@ -14,7 +14,15 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.1.3
+    Version: 3.1.4
+
+    Changelog v3.1.4 (Critical Security Fixes):
+    - SECURITY: CRITICAL - Replaced cmd /c with Start-Process argument arrays in Invoke-Rollback
+    - SECURITY: Added Test-ValidStateData for deployment state file validation
+    - SECURITY: Added path traversal protection to parallel Test-AppInstalledParallel
+    - SECURITY: Added executable whitelist for Command detection method
+    - SECURITY: Added ValidateAppId in C# PowerShellBridge
+    - CONFIG: Standardized parallel timeout to use $script:ParallelInstallTimeoutMs
 
     Changelog v3.1.3 (Security Hardening Update):
     - SECURITY: Added path traversal protection in Expand-DetectionPath
@@ -110,6 +118,27 @@ $script:MaxParallelJobs = 5
 $script:JobCheckInterval = 2
 $script:DefaultInstallTimeoutSeconds = 1800  # 30 minutes (increased for slower VMs/networks)
 $script:OfficeInstallTimeoutSeconds = 2700   # 45 minutes for Office (Click-to-Run is slow)
+$script:ParallelInstallTimeoutMs = 600000    # 10 minutes for parallel installs (consistent with sequential)
+
+# Security: Whitelist of allowed executables for Command detection method
+# Only these executables can be run from applications.json Detection.Command
+$script:AllowedDetectionExecutables = @(
+    'java', 'java.exe',           # Java detection (java -version)
+    'javac', 'javac.exe',         # JDK detection
+    'dotnet', 'dotnet.exe',       # .NET detection
+    'python', 'python.exe',       # Python detection (python --version)
+    'python3', 'python3.exe',
+    'node', 'node.exe',           # Node.js detection (node --version)
+    'npm', 'npm.cmd',             # npm detection
+    'git', 'git.exe',             # Git detection (git --version)
+    'docker', 'docker.exe',       # Docker detection
+    'rustc', 'rustc.exe',         # Rust detection
+    'cargo', 'cargo.exe',
+    'go', 'go.exe',               # Go detection
+    'ruby', 'ruby.exe',           # Ruby detection
+    'php', 'php.exe',             # PHP detection
+    'perl', 'perl.exe'            # Perl detection
+)
 
 # === ROLLBACK & RESUME SYSTEM ===
 # Use LOCALAPPDATA for state files (more secure than TEMP, user-specific)
@@ -240,16 +269,19 @@ function Invoke-Rollback {
         try {
             switch ($app.Method) {
                 'Winget' {
-                    if ($app.Identifier) {
-                        $uninstallCmd = "winget uninstall --id '$($app.Identifier)' --silent --accept-source-agreements"
-                        $null = & cmd /c $uninstallCmd 2>&1
-                        $uninstalled = ($LASTEXITCODE -eq 0)
+                    if ($app.Identifier -and (Get-Command winget -ErrorAction SilentlyContinue)) {
+                        # Security: Use Start-Process with argument array to prevent command injection
+                        $wingetArgs = @('uninstall', '--id', $app.Identifier, '--silent', '--accept-source-agreements')
+                        $process = Start-Process -FilePath 'winget' -ArgumentList $wingetArgs -Wait -PassThru -NoNewWindow -ErrorAction SilentlyContinue
+                        $uninstalled = ($null -ne $process -and $process.ExitCode -eq 0)
                     }
                 }
                 'Chocolatey' {
                     if ($app.Identifier -and (Get-Command choco -ErrorAction SilentlyContinue)) {
-                        $null = & choco uninstall $app.Identifier -y 2>&1
-                        $uninstalled = ($LASTEXITCODE -eq 0)
+                        # Security: Use Start-Process with argument array to prevent command injection
+                        $chocoArgs = @('uninstall', $app.Identifier, '-y')
+                        $process = Start-Process -FilePath 'choco' -ArgumentList $chocoArgs -Wait -PassThru -NoNewWindow -ErrorAction SilentlyContinue
+                        $uninstalled = ($null -ne $process -and $process.ExitCode -eq 0)
                     }
                 }
                 default {
@@ -393,6 +425,67 @@ function Update-DeploymentProgress {
     Save-DeploymentState
 }
 
+function Test-ValidStateData {
+    <#
+    .SYNOPSIS
+        Validates deployment state data for security.
+    .DESCRIPTION
+        Validates SessionId is GUID format, ProfileName has no path traversal,
+        and app names are safe strings.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        $StateData
+    )
+
+    # Validate SessionId is a valid GUID
+    if ($StateData.SessionId) {
+        try {
+            [guid]::Parse($StateData.SessionId) | Out-Null
+        } catch {
+            Write-Status -Message "Invalid SessionId format in state file" -Level 'Warning'
+            return $false
+        }
+    }
+
+    # Validate ProfileName has no path traversal characters
+    if ($StateData.ProfileName) {
+        if ($StateData.ProfileName -match '\.\.|\|[/\\]|[<>:"|?*]') {
+            Write-Status -Message "Invalid ProfileName in state file (contains forbidden characters)" -Level 'Warning'
+            return $false
+        }
+        if ($StateData.ProfileName.Length -gt 100) {
+            Write-Status -Message "ProfileName too long in state file" -Level 'Warning'
+            return $false
+        }
+    }
+
+    # Validate TotalApps is a reasonable number
+    if ($null -ne $StateData.TotalApps) {
+        if ($StateData.TotalApps -lt 0 -or $StateData.TotalApps -gt 1000) {
+            Write-Status -Message "Invalid TotalApps value in state file" -Level 'Warning'
+            return $false
+        }
+    }
+
+    # Validate app arrays contain only safe strings (no shell metacharacters)
+    $dangerousPattern = '[;&|`$<>]'
+    foreach ($appList in @($StateData.CompletedApps, $StateData.FailedApps, $StateData.PendingApps)) {
+        if ($appList) {
+            foreach ($appName in $appList) {
+                if ($appName -match $dangerousPattern) {
+                    Write-Status -Message "Invalid app name in state file: contains shell metacharacters" -Level 'Warning'
+                    return $false
+                }
+            }
+        }
+    }
+
+    return $true
+}
+
 function Get-DeploymentState {
     <#
     .SYNOPSIS
@@ -410,10 +503,18 @@ function Get-DeploymentState {
     if (Test-Path $script:DeploymentStateFile) {
         try {
             $loaded = Get-Content $script:DeploymentStateFile -Raw | ConvertFrom-Json
+
+            # Security: Validate loaded state data
+            if (-not (Test-ValidStateData -StateData $loaded)) {
+                Write-Status -Message "State file validation failed - ignoring corrupted state" -Level 'Warning'
+                Remove-Item $script:DeploymentStateFile -Force -ErrorAction SilentlyContinue
+                return $null
+            }
+
             $script:DeploymentState = @{
                 SessionId = $loaded.SessionId
                 ProfileName = $loaded.ProfileName
-                TotalApps = $loaded.TotalApps
+                TotalApps = [int]$loaded.TotalApps
                 CompletedApps = @($loaded.CompletedApps)
                 FailedApps = @($loaded.FailedApps)
                 PendingApps = @($loaded.PendingApps)
@@ -1058,8 +1159,14 @@ function Test-ApplicationInstalled {
                     $executable = $commandParts[0]
                     $arguments = if ($commandParts.Count -gt 1) { $commandParts[1] } else { $null }
 
+                    # Security: Only allow whitelisted executables for command detection
+                    $exeBaseName = [System.IO.Path]::GetFileName($executable).ToLower()
+                    if ($exeBaseName -notin $script:AllowedDetectionExecutables) {
+                        Write-Status -Message "Command detection blocked: '$executable' not in allowed executables list" -Level 'Verbose'
+                        $detected = $false
+                    }
                     # Validate executable exists
-                    if (Get-Command -Name $executable -ErrorAction SilentlyContinue) {
+                    elseif (Get-Command -Name $executable -ErrorAction SilentlyContinue) {
                         # Check if we need to verify output content (Arguments field contains expected pattern)
                         $expectedPattern = if ($Application.Detection.PSObject.Properties['Arguments']) { $Application.Detection.Arguments } else { $null }
 
@@ -2497,14 +2604,32 @@ function Test-AppInstalledParallel {
     switch ($App.Detection.Method) {
         'Registry' {
             if ($App.Detection.PSObject.Properties['Path'] -and $App.Detection.Path) {
-                return Test-Path -Path $App.Detection.Path -ErrorAction SilentlyContinue
+                $regPath = $App.Detection.Path
+                # Security: Block path traversal in registry paths
+                if ($regPath -match '\.\.') {
+                    return $false
+                }
+                return Test-Path -Path $regPath -ErrorAction SilentlyContinue
             }
             return $false
         }
         'File' {
             if (-not ($App.Detection.PSObject.Properties['Path'] -and $App.Detection.Path)) { return $false }
+            $rawPath = $App.Detection.Path
+            # Security: Block path traversal attempts in input
+            if ($rawPath -match '\.\.' -or $rawPath -match '[\\/]\.\.[\\/]?' -or $rawPath -match '^\.\.') {
+                return $false
+            }
             # Expand environment variables in path
-            $expandedPath = [Environment]::ExpandEnvironmentVariables($App.Detection.Path)
+            $expandedPath = [Environment]::ExpandEnvironmentVariables($rawPath)
+            # Security: Block path traversal after expansion
+            if ($expandedPath -match '\.\.' -or $expandedPath -match '[\\/]\.\.[\\/]?' -or $expandedPath -match '^\.\.') {
+                return $false
+            }
+            # Security: Ensure path is absolute
+            if ($expandedPath -notmatch '^[A-Za-z]:[\\/]') {
+                return $false
+            }
             if ($expandedPath -match '\*') {
                 return (Get-ChildItem -Path $expandedPath -ErrorAction SilentlyContinue).Count -gt 0
             }
@@ -2514,6 +2639,10 @@ function Test-AppInstalledParallel {
             try {
                 $parts = $App.Detection.Command -split '\s+', 2
                 $exe = $parts[0]; $cmdArgs = if ($parts.Count -gt 1) { $parts[1] } else { $null }
+                # Security: Only allow whitelisted executables for command detection
+                $allowedExes = @('java','java.exe','javac','javac.exe','dotnet','dotnet.exe','python','python.exe','python3','python3.exe','node','node.exe','npm','npm.cmd','git','git.exe','docker','docker.exe','rustc','rustc.exe','cargo','cargo.exe','go','go.exe','ruby','ruby.exe','php','php.exe','perl','perl.exe')
+                $exeBaseName = [System.IO.Path]::GetFileName($exe).ToLower()
+                if ($exeBaseName -notin $allowedExes) { return $false }
                 if (-not (Get-Command -Name $exe -ErrorAction SilentlyContinue)) { return $false }
                 # Check if we need to verify output content (Arguments field contains expected pattern)
                 $expectedPattern = if ($App.Detection.PSObject.Properties['Arguments']) { $App.Detection.Arguments } else { $null }
@@ -2616,6 +2745,7 @@ function Test-AppInstalledParallel {
     }
 
     $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+    $parallelTimeoutMs = $script:ParallelInstallTimeoutMs  # Pass timeout to parallel scope
 
     $installResults = $appsToInstall | ForEach-Object -ThrottleLimit $MaxParallel -Parallel {
         $app = $_
@@ -2625,6 +2755,7 @@ function Test-AppInstalledParallel {
         $ts = $using:timestamp
         $validateUrl = $using:validateUrlFunction
         $detectAppFunc = $using:detectAppFunction
+        $installTimeoutMs = $using:parallelTimeoutMs
 
         # Recreate helper functions in parallel scope using safe ScriptBlock creation
         ${function:Test-ValidDownloadUrl} = [ScriptBlock]::Create($validateUrl)
@@ -2752,7 +2883,7 @@ function Test-AppInstalledParallel {
                     }
 
                     $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru
-                    $timeoutMs = 600000  # 10 minutes
+                    $timeoutMs = $installTimeoutMs
 
                     if (-not $process.WaitForExit($timeoutMs)) {
                         Write-ParallelLog "Process timed out after 600 seconds - terminating" 'Warning'
@@ -2807,7 +2938,7 @@ function Test-AppInstalledParallel {
                     }
 
                     $process = Start-Process -FilePath 'choco' -ArgumentList $arguments -NoNewWindow -PassThru
-                    $timeoutMs = 600000  # 10 minutes
+                    $timeoutMs = $installTimeoutMs
 
                     if (-not $process.WaitForExit($timeoutMs)) {
                         Write-ParallelLog "Process timed out after 600 seconds - terminating" 'Warning'
@@ -2854,7 +2985,7 @@ function Test-AppInstalledParallel {
                     )
 
                     $process = Start-Process -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru
-                    $timeoutMs = 600000  # 10 minutes
+                    $timeoutMs = $installTimeoutMs
 
                     if (-not $process.WaitForExit($timeoutMs)) {
                         Write-ParallelLog "Process timed out after 600 seconds - terminating" 'Warning'
@@ -3345,37 +3476,43 @@ function Test-ApplicationInstalledFast {
                     $executable = $commandParts[0]
                     $expectedPattern = if ($Application.Detection.PSObject.Properties['Arguments']) { $Application.Detection.Arguments } else { $null }
 
-                    # Check if this command output is cached
-                    $output = $null
-                    if ($Cache.CommandOutputs -and $Cache.CommandOutputs.ContainsKey($fullCommand)) {
-                        $output = $Cache.CommandOutputs[$fullCommand]
-                    }
-
-                    if ($output) {
-                        # Use cached output
-                        if ($expectedPattern) {
-                            $detected = $output -match [regex]::Escape($expectedPattern)
-                            if ($detected -and $output -match '(\d+\.\d+[\.\d]*)') {
-                                $version = $matches[1]
-                            }
-                        } else {
-                            $detected = $true
+                    # Security: Only allow whitelisted executables for command detection
+                    $exeBaseName = [System.IO.Path]::GetFileName($executable).ToLower()
+                    if ($exeBaseName -notin $script:AllowedDetectionExecutables) {
+                        $detected = $false
+                    } else {
+                        # Check if this command output is cached
+                        $output = $null
+                        if ($Cache.CommandOutputs -and $Cache.CommandOutputs.ContainsKey($fullCommand)) {
+                            $output = $Cache.CommandOutputs[$fullCommand]
                         }
-                    } elseif (Get-Command -Name $executable -ErrorAction SilentlyContinue) {
-                        # Fallback: execute command if not cached
-                        $arguments = if ($commandParts.Count -gt 1) { $commandParts[1] } else { $null }
-                        if ($expectedPattern) {
-                            $output = if ($arguments) {
-                                & $executable $arguments 2>&1 | Out-String
+
+                        if ($output) {
+                            # Use cached output
+                            if ($expectedPattern) {
+                                $detected = $output -match [regex]::Escape($expectedPattern)
+                                if ($detected -and $output -match '(\d+\.\d+[\.\d]*)') {
+                                    $version = $matches[1]
+                                }
                             } else {
-                                & $executable 2>&1 | Out-String
+                                $detected = $true
                             }
-                            $detected = $output -match [regex]::Escape($expectedPattern)
-                            if ($detected -and $output -match '(\d+\.\d+[\.\d]*)') {
-                                $version = $matches[1]
+                        } elseif (Get-Command -Name $executable -ErrorAction SilentlyContinue) {
+                            # Fallback: execute command if not cached
+                            $arguments = if ($commandParts.Count -gt 1) { $commandParts[1] } else { $null }
+                            if ($expectedPattern) {
+                                $output = if ($arguments) {
+                                    & $executable $arguments 2>&1 | Out-String
+                                } else {
+                                    & $executable 2>&1 | Out-String
+                                }
+                                $detected = $output -match [regex]::Escape($expectedPattern)
+                                if ($detected -and $output -match '(\d+\.\d+[\.\d]*)') {
+                                    $version = $matches[1]
+                                }
+                            } else {
+                                $detected = $true
                             }
-                        } else {
-                            $detected = $true
                         }
                     }
                 } catch {

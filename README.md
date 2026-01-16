@@ -1,8 +1,8 @@
-# Win11Forge v3.1.3
+# Win11Forge v3.1.4
 
 **Configurez votre PC Windows 11 en quelques clics**
 
-[![Version](https://img.shields.io/badge/version-3.1.3-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.1.4-blue.svg)](CHANGELOG.md)
 [![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
@@ -20,7 +20,7 @@ Win11Forge installe automatiquement toutes vos applications preferees sur un nou
 
 ### 1. Telecharger
 
-Telechargez la derniere version : [Win11Forge_v3.1.3.zip](https://github.com/VBlackJack/Win11Forge/releases/latest)
+Telechargez la derniere version : [Win11Forge_v3.1.4.zip](https://github.com/VBlackJack/Win11Forge/releases/latest)
 
 ### 2. Extraire et lancer
 

@@ -231,6 +231,38 @@ public class PowerShellBridge : IPowerShellBridge
         return profileName;
     }
 
+    /// <summary>
+    /// Validates an application ID to prevent injection attacks.
+    /// </summary>
+    /// <param name="appId">The application ID to validate.</param>
+    /// <returns>The validated application ID.</returns>
+    /// <exception cref="ArgumentException">Thrown when the ID contains invalid characters.</exception>
+    private static string ValidateAppId(string appId)
+    {
+        if (string.IsNullOrWhiteSpace(appId))
+        {
+            throw new ArgumentException("Application ID cannot be empty.", nameof(appId));
+        }
+
+        // AppIds should only contain alphanumeric, dots, hyphens, underscores, and spaces
+        // Examples: Microsoft.VisualStudioCode, 7zip.7zip, VideoLAN.VLC
+        foreach (char c in appId)
+        {
+            if (!char.IsLetterOrDigit(c) && c != '.' && c != '-' && c != '_' && c != ' ')
+            {
+                throw new ArgumentException($"Application ID contains invalid character: '{c}'", nameof(appId));
+            }
+        }
+
+        // Limit length to prevent buffer issues
+        if (appId.Length > 200)
+        {
+            throw new ArgumentException("Application ID is too long.", nameof(appId));
+        }
+
+        return appId;
+    }
+
     /// <inheritdoc/>
     public async Task<string> GetWin11ForgeVersionAsync()
     {
@@ -457,6 +489,9 @@ public class PowerShellBridge : IPowerShellBridge
                 // Build the ForceUpdate switch if needed
                 var forceUpdateSwitch = forceUpdate ? " -ForceUpdate" : "";
 
+                // Security: Validate AppId before interpolating into PowerShell script
+                var validatedAppId = ValidateAppId(app.AppId);
+
                 // Build a PowerShell script that outputs status messages and JSON result
                 // Use 6>&1 to redirect Information stream (Write-Host in PS5+) to stdout
                 var script = $@"
@@ -471,7 +506,7 @@ try {{
     Import-Module '{dbModulePath}' -Force -ErrorAction Stop
     Import-Module '{enginePath}' -Force -ErrorAction Stop
 
-    $app = Get-ApplicationById -AppId '{app.AppId.Replace("'", "''")}'
+    $app = Get-ApplicationById -AppId '{validatedAppId.Replace("'", "''")}'
     if (-not $app) {{
         Write-Output '[STATUS] Application not found in database'
         @{{ Success = $false; Message = 'Application not found in database'; Method = ''; AlreadyInstalled = $false }} | ConvertTo-Json -Compress
