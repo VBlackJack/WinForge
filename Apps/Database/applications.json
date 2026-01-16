@@ -512,7 +512,7 @@
         "Winget": "REALiX.HWiNFO",
         "Chocolatey": "hwinfo",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://sourceforge.net/projects/hwinfo/files/Windows_Installer/hwi64_834.exe/download"
       },
       "Detection": {
         "Method": "File",
@@ -1351,7 +1351,7 @@
         "Winget": "Microsoft.DotNet.SDK.8",
         "Chocolatey": "dotnet-sdk",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://aka.ms/dotnet/8.0/dotnet-sdk-win-x64.exe"
       },
       "Detection": {
         "Method": "Command",
@@ -1541,7 +1541,7 @@
     "ProtonVPN": {
       "Name": "Proton VPN",
       "Category": "Security",
-      "Description": "Secure VPN service",
+      "Description": "Secure and private VPN service by Proton",
       "Sources": {
         "Winget": "Proton.ProtonVPN",
         "Chocolatey": "protonvpn",
@@ -1559,16 +1559,18 @@
         "security",
         "vpn",
         "privacy",
-        "proton"
+        "proton",
+        "encrypted"
       ],
-      "LastVerified": "2025-10-03",
+      "LastVerified": "2026-01-16",
       "Verified": true,
+      "Notes": "DirectUrl unavailable: Proton uses dynamic signed download URLs. Winget and Chocolatey available.",
       "Homepage": "https://protonvpn.com/"
     },
     "ProtonDrive": {
       "Name": "Proton Drive",
-      "Category": "Security",
-      "Description": "Encrypted cloud storage",
+      "Category": "Storage",
+      "Description": "Encrypted cloud storage by Proton",
       "Sources": {
         "Winget": "Proton.ProtonDrive",
         "Chocolatey": null,
@@ -1583,11 +1585,12 @@
         "cloud",
         "storage",
         "encrypted",
-        "proton"
+        "proton",
+        "privacy"
       ],
-      "LastVerified": "2025-10-03",
+      "LastVerified": "2026-01-16",
       "Verified": true,
-      "Notes": "Winget ID verified: Proton.ProtonDrive",
+      "Notes": "DirectUrl unavailable: Proton uses dynamic signed download URLs. Use Winget for installation.",
       "Homepage": "https://proton.me/drive",
       "Detection": {
         "Value": "DisplayName",
@@ -1597,8 +1600,8 @@
     },
     "ProtonMailBridge": {
       "Name": "Proton Mail Bridge",
-      "Category": "Security",
-      "Description": "Bridge for Proton Mail with email clients",
+      "Category": "Communication",
+      "Description": "Bridge to use Proton Mail with desktop email clients",
       "Sources": {
         "Winget": "Proton.ProtonMailBridge",
         "Chocolatey": null,
@@ -1612,11 +1615,12 @@
         "security",
         "email",
         "encrypted",
-        "proton"
+        "proton",
+        "privacy"
       ],
-      "LastVerified": "2025-10-03",
+      "LastVerified": "2026-01-16",
       "Verified": true,
-      "Notes": "Winget ID verified: Proton.ProtonMailBridge",
+      "Notes": "DirectUrl unavailable: Proton uses dynamic signed download URLs. Use Winget for installation.",
       "Homepage": "https://proton.me/mail/bridge",
       "Detection": {
         "Value": "DisplayName",
@@ -1627,7 +1631,7 @@
     "ProtonPass": {
       "Name": "Proton Pass",
       "Category": "Security",
-      "Description": "Encrypted password manager",
+      "Description": "Encrypted password manager by Proton",
       "Sources": {
         "Winget": "Proton.ProtonPass",
         "Chocolatey": null,
@@ -1641,11 +1645,12 @@
         "security",
         "password",
         "encrypted",
-        "proton"
+        "proton",
+        "privacy"
       ],
-      "LastVerified": "2025-10-03",
+      "LastVerified": "2026-01-16",
       "Verified": true,
-      "Notes": "Winget ID verified: Proton.ProtonPass",
+      "Notes": "DirectUrl unavailable: Proton uses dynamic signed download URLs. Use Winget for installation.",
       "Homepage": "https://proton.me/pass",
       "Detection": {
         "Value": "DisplayName",
@@ -1833,6 +1838,28 @@
       "LastVerified": "2025-10-03",
       "Verified": true,
       "Homepage": null
+    },
+    "UltimakerCura": {
+      "Name": "Ultimaker Cura",
+      "Category": "3DPrint",
+      "Description": "Professional 3D printing slicer software",
+      "Sources": {
+        "Winget": "Ultimaker.Cura",
+        "Chocolatey": "cura-new",
+        "Store": null,
+        "DirectUrl": "https://github.com/Ultimaker/Cura/releases/download/5.11.0/UltiMaker-Cura-5.11.0-win64-X64.exe"
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "C:\\Program Files\\UltiMaker Cura*\\UltiMaker-Cura.exe"
+      },
+      "DefaultPriority": 80,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": ["3d-printing", "slicer", "ultimaker", "open-source"],
+      "LastVerified": "2026-01-16",
+      "Verified": true,
+      "Homepage": "https://ultimaker.com/software/ultimaker-cura/"
     },
     "OperaBrowser": {
       "Name": "Opera",
@@ -2040,7 +2067,7 @@
         "Winget": "AIMP.AIMP",
         "Chocolatey": "aimp",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://www.aimp.ru/files/windows/builds/aimp_5.40.2703_w64.exe"
       },
       "Detection": {
         "Method": "File",
@@ -2745,7 +2772,7 @@
         "Winget": "Microsoft.VCRedist.2015+.x64",
         "Chocolatey": "vcredist140",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://aka.ms/vs/17/release/vc_redist.x64.exe"
       },
       "Detection": {
         "Method": "Registry",
@@ -2758,6 +2785,28 @@
       "LastVerified": "2026-01-15",
       "Verified": true,
       "Homepage": "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist"
+    },
+    "DirectX": {
+      "Name": "DirectX End-User Runtime",
+      "Category": "System",
+      "Description": "DirectX runtime libraries for legacy games",
+      "Sources": {
+        "Winget": "Microsoft.DirectX",
+        "Chocolatey": "directx",
+        "Store": null,
+        "DirectUrl": "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe"
+      },
+      "Detection": {
+        "Method": "Registry",
+        "Path": "HKLM:\\SOFTWARE\\Microsoft\\DirectX"
+      },
+      "DefaultPriority": 1,
+      "DefaultRequired": true,
+      "EnvironmentRestrictions": [],
+      "Tags": ["system", "runtime", "microsoft", "essential", "gaming"],
+      "LastVerified": "2026-01-16",
+      "Verified": true,
+      "Homepage": "https://www.microsoft.com/download/details.aspx?id=35"
     },
     "AdoptOpenJDK": {
       "Name": "Eclipse Temurin JDK",
@@ -2789,7 +2838,7 @@
         "Winget": "Microsoft.DotNet.DesktopRuntime.8",
         "Chocolatey": "dotnet-desktopruntime",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://aka.ms/dotnet/8.0/windowsdesktop-runtime-win-x64.exe"
       },
       "Detection": {
         "Method": "Command",
@@ -3163,7 +3212,7 @@
         "Winget": "Insomnia.Insomnia",
         "Chocolatey": "insomnia-rest-api-client",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://github.com/Kong/insomnia/releases/download/core@12.3.0/Insomnia.Core-12.3.0.exe"
       },
       "Detection": {
         "Method": "File",
@@ -3229,7 +3278,7 @@
         "Winget": "Balena.Etcher",
         "Chocolatey": "etcher",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://github.com/balena-io/etcher/releases/download/v2.1.4/balenaEtcher-2.1.4.Setup.exe"
       },
       "Detection": {
         "Method": "File",
@@ -3466,12 +3515,12 @@
     "FreeDownloadManager": {
       "Name": "Free Download Manager",
       "Category": "Utility",
-      "Description": "Powerful download accelerator and manager",
+      "Description": "Powerful download accelerator and manager with torrent support",
       "Sources": {
         "Winget": "SoftDeluxe.FreeDownloadManager",
         "Chocolatey": "freedownloadmanager",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://dn3.freedownloadmanager.org/6/latest/fdm_x64_setup.exe"
       },
       "Detection": {
         "Method": "File",
@@ -3480,32 +3529,32 @@
       "DefaultPriority": 69,
       "DefaultRequired": false,
       "EnvironmentRestrictions": [],
-      "Tags": ["utility", "download", "manager", "torrent"],
-      "LastVerified": "2026-01-15",
+      "Tags": ["utility", "download", "manager", "torrent", "accelerator"],
+      "LastVerified": "2026-01-16",
       "Verified": true,
       "Homepage": "https://www.freedownloadmanager.org/"
     },
-    "JDownloader": {
-      "Name": "JDownloader 2",
+    "ABDownloadManager": {
+      "Name": "AB Download Manager",
       "Category": "Utility",
-      "Description": "Open source download management tool",
+      "Description": "Modern open-source download manager with browser integration",
       "Sources": {
-        "Winget": "AppWork.JDownloader",
-        "Chocolatey": "jdownloader",
+        "Winget": "amir1376.ABDownloadManager",
+        "Chocolatey": "ab-download-manager",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://github.com/amir1376/ab-download-manager/releases/download/v1.8.4/ABDownloadManager_1.8.4_windows_x64.exe"
       },
       "Detection": {
         "Method": "File",
-        "Path": "C:\\Program Files\\JDownloader\\JDownloader2.exe"
+        "Path": "C:\\Program Files\\ABDownloadManager\\ABDownloadManager.exe"
       },
       "DefaultPriority": 70,
       "DefaultRequired": false,
       "EnvironmentRestrictions": [],
-      "Tags": ["utility", "download", "manager", "open-source"],
-      "LastVerified": "2026-01-15",
+      "Tags": ["utility", "download", "manager", "open-source", "privacy"],
+      "LastVerified": "2026-01-16",
       "Verified": true,
-      "Homepage": "https://jdownloader.org/"
+      "Homepage": "https://abdownloadmanager.com/"
     },
     "NanaZip": {
       "Name": "NanaZip",
@@ -3801,7 +3850,7 @@
         "Winget": "Parsec.Parsec",
         "Chocolatey": "parsec",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://builds.parsec.app/package/parsec-windows.exe"
       },
       "Detection": {
         "Method": "File",
@@ -3845,7 +3894,7 @@
         "Winget": "Eugeny.Tabby",
         "Chocolatey": "tabby",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://github.com/Eugeny/tabby/releases/download/v1.0.230/tabby-1.0.230-setup-x64.exe"
       },
       "Detection": {
         "Method": "File",

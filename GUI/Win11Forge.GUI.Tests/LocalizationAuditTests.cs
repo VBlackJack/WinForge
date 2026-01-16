@@ -73,6 +73,7 @@ public class LocalizationAuditTests
         "•",          // Bullet
         "-",          // Hyphen
         "*",          // Asterisk
+        " *",         // Required field indicator (space + asterisk)
         "×",          // Multiplication sign
         "+"           // Plus sign
     ];
@@ -168,7 +169,8 @@ public class LocalizationAuditTests
             foreach (var attribute in LocalizableAttributes)
             {
                 // Pattern: Attribute="value" where value doesn't start with {
-                var pattern = $@"{attribute}=""([^""]+)""";
+                // Use word boundary \b to avoid matching HelpText when looking for Text
+                var pattern = $@"\b{attribute}=""([^""]+)""";
                 var matches = Regex.Matches(line, pattern);
 
                 foreach (Match match in matches)

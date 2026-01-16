@@ -34,6 +34,22 @@ public class AppsViewModelTests
     }
 
     /// <summary>
+    /// Creates a mock AppSettingsService for testing.
+    /// </summary>
+    private static MockAppSettingsService CreateMockSettingsService()
+    {
+        return new MockAppSettingsService();
+    }
+
+    /// <summary>
+    /// Creates a configured AppsViewModel for testing.
+    /// </summary>
+    private static AppsViewModel CreateViewModel(MockPowerShellBridge? bridge = null, MockAppSettingsService? settings = null)
+    {
+        return new AppsViewModel(bridge ?? CreateMockBridge(), settings ?? CreateMockSettingsService());
+    }
+
+    /// <summary>
     /// Verifies that filtering by name returns only matching applications.
     /// </summary>
     [Fact]
@@ -41,7 +57,7 @@ public class AppsViewModelTests
     {
         // Arrange
         var bridge = CreateMockBridge();
-        var viewModel = new AppsViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
         // Act - Search for "Visual"
@@ -66,7 +82,7 @@ public class AppsViewModelTests
     {
         // Arrange
         var bridge = CreateMockBridge();
-        var viewModel = new AppsViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
         // Act - Select "Development" category
@@ -87,7 +103,7 @@ public class AppsViewModelTests
     {
         // Arrange
         var bridge = CreateMockBridge();
-        var viewModel = new AppsViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
         // Act - Search for "Code" in "Development" category
@@ -114,7 +130,7 @@ public class AppsViewModelTests
     {
         // Arrange
         var bridge = CreateMockBridge();
-        var viewModel = new AppsViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
         var originalCount = viewModel.FilteredApplications.Count;
 
@@ -138,7 +154,7 @@ public class AppsViewModelTests
     {
         // Arrange
         var bridge = CreateMockBridge();
-        var viewModel = new AppsViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
 
         // Act
         await viewModel.InitializeAsync();
@@ -157,7 +173,7 @@ public class AppsViewModelTests
     {
         // Arrange
         var bridge = CreateMockBridge();
-        var viewModel = new AppsViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
         // Act - Search with different cases
@@ -183,7 +199,7 @@ public class AppsViewModelTests
     {
         // Arrange
         var bridge = CreateMockBridge();
-        var viewModel = new AppsViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
         var totalCount = viewModel.FilteredCount;
 
@@ -204,7 +220,7 @@ public class AppsViewModelTests
     {
         // Arrange
         var bridge = CreateMockBridge();
-        var viewModel = new AppsViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
         // Select a category first
@@ -348,5 +364,21 @@ internal class MockPowerShellBridge : IPowerShellBridge
         });
 
     public Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null) =>
+        Task.FromResult(true);
+
+    public Task<InstallResult> UninstallApplicationAsync(
+        ApplicationModel app,
+        Action<string>? progressCallback = null) =>
+        Task.FromResult(new InstallResult { Success = true });
+
+    public Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app) =>
+        Task.FromResult(UpdateCheckResult.UpToDate());
+
+    public Task<InstallResult> UpdateApplicationAsync(
+        ApplicationModel app,
+        Action<string>? progressCallback = null) =>
+        Task.FromResult(new InstallResult { Success = true });
+
+    public Task<bool> LaunchApplicationAsync(ApplicationModel app) =>
         Task.FromResult(true);
 }

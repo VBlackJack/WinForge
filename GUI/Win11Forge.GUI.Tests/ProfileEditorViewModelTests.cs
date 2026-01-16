@@ -28,6 +28,14 @@ namespace Win11Forge.GUI.Tests;
 public class ProfileEditorViewModelTests
 {
     /// <summary>
+    /// Creates a configured ProfileEditorViewModel for testing.
+    /// </summary>
+    private static ProfileEditorViewModel CreateViewModel(ProfileEditorMockBridge? bridge = null, MockProfileExportService? exportService = null)
+    {
+        return new ProfileEditorViewModel(bridge ?? new ProfileEditorMockBridge(), exportService ?? new MockProfileExportService());
+    }
+
+    /// <summary>
     /// Verifies that loading a profile correctly separates inherited and local applications.
     /// This is the most critical test for data integrity.
     /// </summary>
@@ -36,7 +44,7 @@ public class ProfileEditorViewModelTests
     {
         // Arrange
         var bridge = new ProfileEditorMockBridge();
-        var viewModel = new ProfileEditorViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
 
         // Act - Load the "Developer" profile which inherits from "Base"
         await viewModel.InitializeEditProfileAsync("Developer");
@@ -67,7 +75,7 @@ public class ProfileEditorViewModelTests
     {
         // Arrange
         var bridge = new ProfileEditorMockBridge();
-        var viewModel = new ProfileEditorViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeNewProfileAsync();
 
         var newApp = new ApplicationModel
@@ -99,7 +107,7 @@ public class ProfileEditorViewModelTests
     {
         // Arrange
         var bridge = new ProfileEditorMockBridge();
-        var viewModel = new ProfileEditorViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeEditProfileAsync("Developer");
 
         var appToRemove = viewModel.AddedApplications.First();
@@ -122,7 +130,7 @@ public class ProfileEditorViewModelTests
     {
         // Arrange
         var bridge = new ProfileEditorMockBridge();
-        var viewModel = new ProfileEditorViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeEditProfileAsync("Developer");
 
         var inheritedApp = viewModel.InheritedApplications.First();
@@ -148,7 +156,7 @@ public class ProfileEditorViewModelTests
     {
         // Arrange
         var bridge = new ProfileEditorMockBridge();
-        var viewModel = new ProfileEditorViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeEditProfileAsync("Developer");
 
         // Capture what would be saved
@@ -179,7 +187,7 @@ public class ProfileEditorViewModelTests
     {
         // Arrange
         var bridge = new ProfileEditorMockBridge();
-        var viewModel = new ProfileEditorViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeEditProfileAsync("Developer");
 
         // Get an app already in Added list
@@ -204,7 +212,7 @@ public class ProfileEditorViewModelTests
     {
         // Arrange
         var bridge = new ProfileEditorMockBridge();
-        var viewModel = new ProfileEditorViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeEditProfileAsync("Developer");
 
         // Get an inherited app
@@ -230,7 +238,7 @@ public class ProfileEditorViewModelTests
     {
         // Arrange
         var bridge = new ProfileEditorMockBridge();
-        var viewModel = new ProfileEditorViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeNewProfileAsync();
         viewModel.ProfileName = "";
 
@@ -250,7 +258,7 @@ public class ProfileEditorViewModelTests
     {
         // Arrange
         var bridge = new ProfileEditorMockBridge();
-        var viewModel = new ProfileEditorViewModel(bridge);
+        var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeNewProfileAsync();
 
         // Initially no parent selected
@@ -265,6 +273,27 @@ public class ProfileEditorViewModelTests
         // Assert - Should have inherited apps from Base
         Assert.NotEmpty(viewModel.InheritedApplications);
     }
+}
+
+/// <summary>
+/// Mock implementation of IProfileExportService for unit testing.
+/// </summary>
+internal class MockProfileExportService : IProfileExportService
+{
+    public Task<string> ExportToJsonAsync(DeploymentProfileModel profile) =>
+        Task.FromResult("{}");
+
+    public Task ExportToFileAsync(DeploymentProfileModel profile, string filePath) =>
+        Task.CompletedTask;
+
+    public Task<ExportedProfile?> ImportFromJsonAsync(string json) =>
+        Task.FromResult<ExportedProfile?>(null);
+
+    public Task<ExportedProfile?> ImportFromFileAsync(string filePath) =>
+        Task.FromResult<ExportedProfile?>(null);
+
+    public (bool IsValid, string? ErrorMessage) ValidateImport(ExportedProfile profile) =>
+        (true, null);
 }
 
 /// <summary>
@@ -417,5 +446,21 @@ internal class ProfileEditorMockBridge : IPowerShellBridge
         });
 
     public Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null) =>
+        Task.FromResult(true);
+
+    public Task<InstallResult> UninstallApplicationAsync(
+        ApplicationModel app,
+        Action<string>? progressCallback = null) =>
+        Task.FromResult(new InstallResult { Success = true });
+
+    public Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app) =>
+        Task.FromResult(UpdateCheckResult.UpToDate());
+
+    public Task<InstallResult> UpdateApplicationAsync(
+        ApplicationModel app,
+        Action<string>? progressCallback = null) =>
+        Task.FromResult(new InstallResult { Success = true });
+
+    public Task<bool> LaunchApplicationAsync(ApplicationModel app) =>
         Task.FromResult(true);
 }

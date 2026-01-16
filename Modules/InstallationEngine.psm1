@@ -534,6 +534,7 @@ function Test-ValidDownloadUrl {
         '*.discord.com', '*.discordapp.com', '*.steampowered.com', '*.steamcommunity.com',
         '*.epicgames.com', '*.unrealengine.com', '*.battle.net', '*.blizzard.com',
         '*.valve.com', '*.gog.com', '*.ea.com', '*.origin.com', '*.ubisoft.com',
+        '*.parsec.app',
 
         # Communication apps
         '*.signal.org', '*.whatsapp.com', '*.telegram.org', '*.zoom.us',
@@ -543,6 +544,7 @@ function Test-ValidDownloadUrl {
         '*.obsproject.com', '*.7-zip.org', '*.notepad-plus-plus.org',
         '*.vlcmediaplayer.org', '*.videolan.org', '*.audacityteam.org',
         '*.gimp.org', '*.inkscape.org', '*.libreoffice.org',
+        '*.freedownloadmanager.org', '*.abdownloadmanager.com', '*.aimp.ru',
 
         # Browsers & security
         '*.mozilla.org', '*.firefox.com', '*.brave.com', '*.opera.com',
