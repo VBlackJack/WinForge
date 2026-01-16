@@ -1,8 +1,8 @@
-# Win11Forge v3.0.0
+# Win11Forge v3.1.2
 
 **Configurez votre PC Windows 11 en quelques clics**
 
-[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.1.2-blue.svg)](CHANGELOG.md)
 [![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
@@ -20,7 +20,7 @@ Win11Forge installe automatiquement toutes vos applications preferees sur un nou
 
 ### 1. Telecharger
 
-Telechargez la derniere version : [Win11Forge_v3.0.0.zip](https://github.com/VBlackJack/Win11Forge/releases/latest)
+Telechargez la derniere version : [Win11Forge_v3.1.2.zip](https://github.com/VBlackJack/Win11Forge/releases/latest)
 
 ### 2. Extraire et lancer
 
@@ -50,13 +50,15 @@ Telechargez la derniere version : [Win11Forge_v3.0.0.zip](https://github.com/VBl
 
 ### Installation intelligente
 - Detecte les applications deja installees (pas de doublons)
-- Installe jusqu'a 5 applications en parallele (plus rapide)
+- Installe jusqu'a 10 applications en parallele (configurable)
+- Logs d'installation en temps reel
 - Pause et reprise possible a tout moment
 
 ### Gestionnaire d'applications
-- Parcourez les 66 applications disponibles
+- Parcourez les 70+ applications disponibles
 - Recherchez par nom ou categorie
-- Installez individuellement ce que vous voulez
+- Scannez pour detecter les applications installees
+- Installez ou mettez a jour individuellement
 
 ### Editeur de profils
 - Creez vos propres profils personnalises
