@@ -2,6 +2,37 @@
 
 Note: la source de vérité de la version du framework est `Config/version.json`. Les lanceurs et la GUI lisent dynamiquement cette valeur.
 
+## [3.1.2] - 2026-01-16
+
+### Installation & Detection Improvements
+
+#### Real-time Installation Streaming
+- **Added**: Live installation logs in GUI with real-time output streaming
+- **Added**: `Write-Output` statements throughout InstallationEngine for status updates
+
+#### Download Improvements
+- **Added**: curl.exe as fallback download method (built into Windows 10/11)
+- **Added**: Browser-like User-Agent headers to avoid download blocks
+- **Fixed**: Battle.net installation - DirectUrl only with curl fallback
+
+#### Detection Fixes
+- **Fixed**: AnyDesk detection (portable via Chocolatey bin)
+- **Fixed**: CutePDF Writer registry key (`CutePDF Writer Installation`)
+- **Fixed**: Eclipse IDE path (`Eclipse*\eclipse\eclipse.exe`)
+- **Renamed**: Creality Slicer → Creality Print with correct detection path
+
+#### Settings & UI
+- **Added**: Parallel installs configurable up to 10 (was 5)
+- **Added**: Parallel scans configurable up to 20
+- **Added**: Context menu scan options (Scan/Scan Selected/Scan All)
+- **Fixed**: Dark mode toggle button visibility
+
+#### Database
+- **Updated**: 70+ applications (vs 66 in v3.0.0)
+- **Updated**: Multiple detection paths corrected
+
+---
+
 ## [3.0.0] - 2026-01-05
 
 ### Major Release - Modern WPF GUI

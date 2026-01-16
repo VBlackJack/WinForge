@@ -28,7 +28,7 @@ Win11Forge/
 │   ├── Gaming.json         # Gaming profile (inherits Office)
 │   └── Personnel.json      # Personal profile (inherits Gaming)
 ├── Apps/Database/           # Application database
-│   └── applications.json   # 67 application definitions
+│   └── applications.json   # 70+ application definitions
 ├── Config/                  # Configuration files
 │   ├── version.json        # Framework version
 │   ├── global-optimizations.json  # System optimization settings
@@ -191,8 +191,8 @@ ForEach-Object -ThrottleLimit $MaxParallel -Parallel {
 ```json
 {
   "DisplayName": "Win11Forge Framework",
-  "Version": "3.0.0",
-  "ReleaseDate": "2026-01-05"
+  "Version": "3.1.2",
+  "ReleaseDate": "2026-01-16"
 }
 ```
 
@@ -200,7 +200,7 @@ ForEach-Object -ThrottleLimit $MaxParallel -Parallel {
 ```json
 {
   "Name": "ProfileName",
-  "Version": "3.0.0",
+  "Version": "3.1.2",
   "Description": "...",
   "Inherits": ["ParentProfile"],
   "Applications": [
