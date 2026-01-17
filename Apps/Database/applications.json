@@ -664,7 +664,7 @@
                                                             },
                                                 "Detection":  {
                                                                   "Method":  "File",
-                                                                  "Path":  "C:\\Program Files\\NirSoft\\BlueScreenView\\BlueScreenView.exe"
+                                                                  "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.BlueScreenView_Microsoft.Winget.Source_*\\BlueScreenView.exe"
                                                               },
                                                 "DefaultPriority":  19,
                                                 "DefaultRequired":  true,
@@ -1939,7 +1939,7 @@
                                                "Category":  "3DPrint",
                                                "Description":  "Creality 3D printing slicer software",
                                                "Sources":  {
-                                                               "Winget":  null,
+                                                               "Winget":  "Creality.CrealityPrint",
                                                                "Chocolatey":  "creality-print",
                                                                "Store":  null,
                                                                "DirectUrl":  null
@@ -2103,34 +2103,6 @@
                                              "Verified":  true,
                                              "Homepage":  "https://www.thunderbird.net/"
                                          },
-                         "Pidgin":  {
-                                        "Name":  "Pidgin",
-                                        "Category":  "Communication",
-                                        "Description":  "Universal chat client supporting multiple protocols",
-                                        "Sources":  {
-                                                        "Winget":  "Pidgin.Pidgin",
-                                                        "Chocolatey":  "pidgin",
-                                                        "Store":  null,
-                                                        "DirectUrl":  null
-                                                    },
-                                        "Detection":  {
-                                                          "Method":  "File",
-                                                          "Path":  "C:\\Program Files (x86)\\Pidgin\\pidgin.exe"
-                                                      },
-                                        "DefaultPriority":  158,
-                                        "DefaultRequired":  false,
-                                        "EnvironmentRestrictions":  [
-
-                                                                    ],
-                                        "Tags":  [
-                                                     "communication",
-                                                     "messaging",
-                                                     "open-source"
-                                                 ],
-                                        "LastVerified":  "2026-01-15",
-                                        "Verified":  true,
-                                        "Homepage":  "https://www.pidgin.im/"
-                                    },
                          "Spotify":  {
                                          "Name":  "Spotify",
                                          "Category":  "Media",
@@ -2142,8 +2114,9 @@
                                                          "DirectUrl":  null
                                                      },
                                          "Detection":  {
-                                                           "Method":  "File",
-                                                           "Path":  "C:\\Users\\*\\AppData\\Roaming\\Spotify\\Spotify.exe"
+                                                           "Method":  "StoreApp",
+                                                           "Path":  null,
+                                                           "PackageName":  "SpotifyAB.SpotifyMusic"
                                                        },
                                          "DefaultPriority":  81,
                                          "DefaultRequired":  false,
@@ -2217,35 +2190,6 @@
                                           "Verified":  true,
                                           "Homepage":  "https://www.audacityteam.org/"
                                       },
-                         "Foobar2000":  {
-                                            "Name":  "foobar2000",
-                                            "Category":  "Media",
-                                            "Description":  "Advanced freeware audio player",
-                                            "Sources":  {
-                                                            "Winget":  "PeterPawlowski.foobar2000",
-                                                            "Chocolatey":  "foobar2000",
-                                                            "Store":  null,
-                                                            "DirectUrl":  null
-                                                        },
-                                            "Detection":  {
-                                                              "Method":  "File",
-                                                              "Path":  "C:\\Program Files (x86)\\foobar2000\\foobar2000.exe"
-                                                          },
-                                            "DefaultPriority":  88,
-                                            "DefaultRequired":  false,
-                                            "EnvironmentRestrictions":  [
-
-                                                                        ],
-                                            "Tags":  [
-                                                         "media",
-                                                         "audio",
-                                                         "music",
-                                                         "lightweight"
-                                                     ],
-                                            "LastVerified":  "2026-01-15",
-                                            "Verified":  true,
-                                            "Homepage":  "https://www.foobar2000.org/"
-                                        },
                          "AIMP":  {
                                       "Name":  "AIMP",
                                       "Category":  "Media",
@@ -2285,8 +2229,9 @@
                                                           "DirectUrl":  null
                                                       },
                                           "Detection":  {
-                                                            "Method":  "File",
-                                                            "Path":  "C:\\Program Files (x86)\\MusicBee\\MusicBee.exe"
+                                                            "Method":  "StoreApp",
+                                                            "Path":  null,
+                                                            "PackageName":  "MusicBee"
                                                         },
                                           "DefaultPriority":  92,
                                           "DefaultRequired":  false,
@@ -2365,7 +2310,7 @@
                                       "Category":  "Media",
                                       "Description":  "GNU Image Manipulation Program - free image editor",
                                       "Sources":  {
-                                                      "Winget":  "GIMP.GIMP",
+                                                      "Winget":  "GIMP.GIMP.3",
                                                       "Chocolatey":  "gimp",
                                                       "Store":  null,
                                                       "DirectUrl":  null
@@ -2449,35 +2394,6 @@
                                           "Verified":  true,
                                           "Homepage":  "https://inkscape.org/"
                                       },
-                         "IrfanView":  {
-                                           "Name":  "IrfanView",
-                                           "Category":  "Media",
-                                           "Description":  "Fast and compact image viewer",
-                                           "Sources":  {
-                                                           "Winget":  "IrfanSkiljan.IrfanView",
-                                                           "Chocolatey":  "irfanview",
-                                                           "Store":  null,
-                                                           "DirectUrl":  null
-                                                       },
-                                           "Detection":  {
-                                                             "Method":  "File",
-                                                             "Path":  "C:\\Program Files\\IrfanView\\i_view64.exe"
-                                                         },
-                                           "DefaultPriority":  112,
-                                           "DefaultRequired":  false,
-                                           "EnvironmentRestrictions":  [
-
-                                                                       ],
-                                           "Tags":  [
-                                                        "media",
-                                                        "image",
-                                                        "viewer",
-                                                        "lightweight"
-                                                    ],
-                                           "LastVerified":  "2026-01-15",
-                                           "Verified":  true,
-                                           "Homepage":  "https://www.irfanview.com/"
-                                       },
                          "XnView":  {
                                         "Name":  "XnView MP",
                                         "Category":  "Media",
@@ -2541,7 +2457,7 @@
                                              "Category":  "Productivity",
                                              "Description":  "Free and powerful office suite",
                                              "Sources":  {
-                                                             "Winget":  "TheDocumentFoundation.LibreOffice.LTS",
+                                                             "Winget":  "TheDocumentFoundation.LibreOffice",
                                                              "Chocolatey":  "libreoffice-still",
                                                              "Store":  null,
                                                              "DirectUrl":  null
@@ -2627,7 +2543,7 @@
                                          "Category":  "Productivity",
                                          "Description":  "Free PDF printer driver",
                                          "Sources":  {
-                                                         "Winget":  null,
+                                                         "Winget":  "AcroSoftware.CutePDFWriter",
                                                          "Chocolatey":  "cutepdf",
                                                          "Store":  null,
                                                          "DirectUrl":  null
@@ -2684,7 +2600,7 @@
                                          "Category":  "Support",
                                          "Description":  "Fast remote desktop application",
                                          "Sources":  {
-                                                         "Winget":  "AnyDeskSoftwareGmbH.AnyDesk",
+                                                         "Winget":  "AnyDesk.AnyDesk",
                                                          "Chocolatey":  "anydesk",
                                                          "Store":  null,
                                                          "DirectUrl":  null
@@ -3025,10 +2941,10 @@
                                            "Category":  "Network",
                                            "Description":  "Free FTP solution",
                                            "Sources":  {
-                                                           "Winget":  "TimKosse.FileZilla.Client",
+                                                           "Winget":  null,
                                                            "Chocolatey":  "filezilla",
                                                            "Store":  null,
-                                                           "DirectUrl":  null
+                                                           "DirectUrl":  "https://download.filezilla-project.org/client/FileZilla_3.69.5_win64_sponsored2-setup.exe"
                                                        },
                                            "Detection":  {
                                                              "Method":  "File",
@@ -3078,35 +2994,6 @@
                                           "Verified":  true,
                                           "Homepage":  "https://winmerge.org/"
                                       },
-                         "Eclipse":  {
-                                         "Name":  "Eclipse IDE",
-                                         "Category":  "Development",
-                                         "Description":  "Integrated development environment for Java",
-                                         "Sources":  {
-                                                         "Winget":  "EclipseFoundation.EclipseIDE",
-                                                         "Chocolatey":  "eclipse",
-                                                         "Store":  null,
-                                                         "DirectUrl":  null
-                                                     },
-                                         "Detection":  {
-                                                           "Method":  "File",
-                                                           "Path":  "C:\\Program Files\\Eclipse*\\eclipse\\eclipse.exe"
-                                                       },
-                                         "DefaultPriority":  104,
-                                         "DefaultRequired":  false,
-                                         "EnvironmentRestrictions":  [
-
-                                                                     ],
-                                         "Tags":  [
-                                                      "development",
-                                                      "ide",
-                                                      "java",
-                                                      "open-source"
-                                                  ],
-                                         "LastVerified":  "2026-01-15",
-                                         "Verified":  true,
-                                         "Homepage":  "https://www.eclipse.org/"
-                                     },
                          "Cursor":  {
                                         "Name":  "Cursor",
                                         "Category":  "Development",
@@ -3367,34 +3254,6 @@
                                          "Verified":  true,
                                          "Homepage":  "https://keepass.info/"
                                      },
-                         "PeaZip":  {
-                                        "Name":  "PeaZip",
-                                        "Category":  "Compression",
-                                        "Description":  "Free file archiver utility",
-                                        "Sources":  {
-                                                        "Winget":  "Giorgiotani.Peazip",
-                                                        "Chocolatey":  "peazip",
-                                                        "Store":  null,
-                                                        "DirectUrl":  null
-                                                    },
-                                        "Detection":  {
-                                                          "Method":  "File",
-                                                          "Path":  "C:\\Program Files\\PeaZip\\peazip.exe"
-                                                      },
-                                        "DefaultPriority":  146,
-                                        "DefaultRequired":  false,
-                                        "EnvironmentRestrictions":  [
-
-                                                                    ],
-                                        "Tags":  [
-                                                     "compression",
-                                                     "archiver",
-                                                     "open-source"
-                                                 ],
-                                        "LastVerified":  "2026-01-15",
-                                        "Verified":  true,
-                                        "Homepage":  "https://peazip.github.io/"
-                                    },
                          "WinDirStat":  {
                                             "Name":  "WinDirStat",
                                             "Category":  "Utility",
@@ -3661,7 +3520,7 @@
                                          "Category":  "Development",
                                          "Description":  "Universal database tool",
                                          "Sources":  {
-                                                         "Winget":  "dbeaver.dbeaver",
+                                                         "Winget":  "DBeaver.DBeaver.Community",
                                                          "Chocolatey":  "dbeaver",
                                                          "Store":  null,
                                                          "DirectUrl":  null
@@ -4004,35 +3863,6 @@
                                         "Verified":  true,
                                         "Homepage":  "https://www.ccleaner.com/speccy"
                                     },
-                         "PotPlayer":  {
-                                           "Name":  "PotPlayer",
-                                           "Category":  "Media",
-                                           "Description":  "Versatile multimedia player",
-                                           "Sources":  {
-                                                           "Winget":  "Daum.PotPlayer",
-                                                           "Chocolatey":  "potplayer",
-                                                           "Store":  null,
-                                                           "DirectUrl":  null
-                                                       },
-                                           "Detection":  {
-                                                             "Method":  "File",
-                                                             "Path":  "C:\\Program Files\\DAUM\\PotPlayer\\PotPlayerMini64.exe"
-                                                         },
-                                           "DefaultPriority":  119,
-                                           "DefaultRequired":  false,
-                                           "EnvironmentRestrictions":  [
-
-                                                                       ],
-                                           "Tags":  [
-                                                        "media",
-                                                        "video",
-                                                        "player",
-                                                        "popular"
-                                                    ],
-                                           "LastVerified":  "2026-01-15",
-                                           "Verified":  true,
-                                           "Homepage":  "https://potplayer.daum.net/"
-                                       },
                          "mpv":  {
                                      "Name":  "mpv",
                                      "Category":  "Media",
@@ -4210,33 +4040,6 @@
                                          "Verified":  true,
                                          "Homepage":  "https://github.com/M2Team/NanaZip"
                                      },
-                         "Bandizip":  {
-                                          "Name":  "Bandizip",
-                                          "Category":  "Compression",
-                                          "Description":  "Fast and feature-rich archiver",
-                                          "Sources":  {
-                                                          "Winget":  "Bandisoft.Bandizip",
-                                                          "Chocolatey":  "bandizip",
-                                                          "Store":  null,
-                                                          "DirectUrl":  null
-                                                      },
-                                          "Detection":  {
-                                                            "Method":  "File",
-                                                            "Path":  "C:\\Program Files\\Bandizip\\Bandizip.exe"
-                                                        },
-                                          "DefaultPriority":  149,
-                                          "DefaultRequired":  false,
-                                          "EnvironmentRestrictions":  [
-
-                                                                      ],
-                                          "Tags":  [
-                                                       "compression",
-                                                       "archiver"
-                                                   ],
-                                          "LastVerified":  "2026-01-15",
-                                          "Verified":  true,
-                                          "Homepage":  "https://www.bandisoft.com/bandizip/"
-                                      },
                          "GOGGalaxy":  {
                                            "Name":  "GOG Galaxy",
                                            "Category":  "Gaming",
@@ -4380,41 +4183,12 @@
                                             "Verified":  true,
                                             "Homepage":  "https://streamlabs.com/"
                                         },
-                         "VoiceMeeter":  {
-                                             "Name":  "VoiceMeeter Banana",
-                                             "Category":  "Media",
-                                             "Description":  "Virtual audio mixer",
-                                             "Sources":  {
-                                                             "Winget":  "VB-Audio.Voicemeeter.Banana",
-                                                             "Chocolatey":  "voicemeeter-banana",
-                                                             "Store":  null,
-                                                             "DirectUrl":  null
-                                                         },
-                                             "Detection":  {
-                                                               "Method":  "File",
-                                                               "Path":  "C:\\Program Files (x86)\\VB\\Voicemeeter\\voicemeeterpro.exe"
-                                                           },
-                                             "DefaultPriority":  138,
-                                             "DefaultRequired":  false,
-                                             "EnvironmentRestrictions":  [
-
-                                                                         ],
-                                             "Tags":  [
-                                                          "media",
-                                                          "audio",
-                                                          "mixer",
-                                                          "streaming"
-                                                      ],
-                                             "LastVerified":  "2026-01-15",
-                                             "Verified":  true,
-                                             "Homepage":  "https://vb-audio.com/Voicemeeter/banana.htm"
-                                         },
                          "PDF24":  {
                                        "Name":  "PDF24 Creator",
                                        "Category":  "Productivity",
                                        "Description":  "Free PDF creator and converter",
                                        "Sources":  {
-                                                       "Winget":  "geek.software.PDF24",
+                                                       "Winget":  "geeksoftwareGmbH.PDF24Creator",
                                                        "Chocolatey":  "pdf24",
                                                        "Store":  null,
                                                        "DirectUrl":  null
@@ -4825,7 +4599,355 @@
                                                    "LastVerified":  "2026-01-16",
                                                    "Verified":  true,
                                                    "Homepage":  "https://dotnet.microsoft.com/download/dotnet-framework"
-                                               }
+                                               },
+                         "FullEventLogView":  {
+                                                  "Name":  "FullEventLogView",
+                                                  "Category":  "Diagnostic",
+                                                  "Description":  "Advanced Windows event log viewer",
+                                                  "Sources":  {
+                                                                  "Winget":  "NirSoft.FullEventLogView",
+                                                                  "Chocolatey":  null,
+                                                                  "Store":  null,
+                                                                  "DirectUrl":  null
+                                                              },
+                                                  "Detection":  {
+                                                                    "Method":  "File",
+                                                                    "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.FullEventLogView_Microsoft.Winget.Source_*\\FullEventLogView.exe"
+                                                                },
+                                                  "DefaultPriority":  201,
+                                                  "DefaultRequired":  false,
+                                                  "EnvironmentRestrictions":  [
+
+                                                                              ],
+                                                  "Tags":  [
+                                                               "diagnostic",
+                                                               "logs",
+                                                               "events",
+                                                               "nirsoft"
+                                                           ],
+                                                  "LastVerified":  "2026-01-17",
+                                                  "Verified":  true,
+                                                  "Homepage":  "https://www.nirsoft.net/"
+                                              },
+                         "LastActivityView":  {
+                                                  "Name":  "LastActivityView",
+                                                  "Category":  "Diagnostic",
+                                                  "Description":  "Shows system activity history from various sources",
+                                                  "Sources":  {
+                                                                  "Winget":  "NirSoft.LastActivityView",
+                                                                  "Chocolatey":  null,
+                                                                  "Store":  null,
+                                                                  "DirectUrl":  null
+                                                              },
+                                                  "Detection":  {
+                                                                    "Method":  "File",
+                                                                    "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.LastActivityView_Microsoft.Winget.Source_*\\LastActivityView.exe"
+                                                                },
+                                                  "DefaultPriority":  202,
+                                                  "DefaultRequired":  false,
+                                                  "EnvironmentRestrictions":  [
+
+                                                                              ],
+                                                  "Tags":  [
+                                                               "diagnostic",
+                                                               "activity",
+                                                               "history",
+                                                               "nirsoft"
+                                                           ],
+                                                  "LastVerified":  "2026-01-17",
+                                                  "Verified":  true,
+                                                  "Homepage":  "https://www.nirsoft.net/"
+                                              },
+                         "TurnedOnTimesView":  {
+                                                   "Name":  "TurnedOnTimesView",
+                                                   "Category":  "Diagnostic",
+                                                   "Description":  "Displays computer startup and shutdown history",
+                                                   "Sources":  {
+                                                                   "Winget":  "NirSoft.TurnedOnTimesView",
+                                                                   "Chocolatey":  null,
+                                                                   "Store":  null,
+                                                                   "DirectUrl":  null
+                                                               },
+                                                   "Detection":  {
+                                                                     "Method":  "File",
+                                                                     "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.TurnedOnTimesView_Microsoft.Winget.Source_*\\TurnedOnTimesView.exe"
+                                                                 },
+                                                   "DefaultPriority":  203,
+                                                   "DefaultRequired":  false,
+                                                   "EnvironmentRestrictions":  [
+
+                                                                               ],
+                                                   "Tags":  [
+                                                                "diagnostic",
+                                                                "uptime",
+                                                                "boot",
+                                                                "nirsoft"
+                                                            ],
+                                                   "LastVerified":  "2026-01-17",
+                                                   "Verified":  true,
+                                                   "Homepage":  "https://www.nirsoft.net/"
+                                               },
+                         "WhatIsHang":  {
+                                            "Name":  "WhatIsHang",
+                                            "Category":  "Diagnostic",
+                                            "Description":  "Detects software that stopped responding and displays hang information",
+                                            "Sources":  {
+                                                            "Winget":  "NirSoft.WhatIsHang",
+                                                            "Chocolatey":  null,
+                                                            "Store":  null,
+                                                            "DirectUrl":  null
+                                                        },
+                                            "Detection":  {
+                                                              "Method":  "File",
+                                                              "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.WhatIsHang_Microsoft.Winget.Source_*\\WhatIsHang.exe"
+                                                          },
+                                            "DefaultPriority":  204,
+                                            "DefaultRequired":  false,
+                                            "EnvironmentRestrictions":  [
+
+                                                                        ],
+                                            "Tags":  [
+                                                         "diagnostic",
+                                                         "hang",
+                                                         "freeze",
+                                                         "nirsoft"
+                                                     ],
+                                            "LastVerified":  "2026-01-17",
+                                            "Verified":  true,
+                                            "Homepage":  "https://www.nirsoft.net/"
+                                        },
+                         "WirelessNetworkWatcher":  {
+                                                        "Name":  "Wireless Network Watcher",
+                                                        "Category":  "Network",
+                                                        "Description":  "Scans wireless network and displays connected devices",
+                                                        "Sources":  {
+                                                                        "Winget":  "NirSoft.WirelessNetworkWatcher",
+                                                                        "Chocolatey":  null,
+                                                                        "Store":  null,
+                                                                        "DirectUrl":  null
+                                                                    },
+                                                        "Detection":  {
+                                                                          "Method":  "File",
+                                                                          "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.WirelessNetworkWatcher_Microsoft.Winget.Source_*\\WNetWatcher.exe"
+                                                                      },
+                                                        "DefaultPriority":  205,
+                                                        "DefaultRequired":  false,
+                                                        "EnvironmentRestrictions":  [
+
+                                                                                    ],
+                                                        "Tags":  [
+                                                                     "network",
+                                                                     "wifi",
+                                                                     "security",
+                                                                     "nirsoft"
+                                                                 ],
+                                                        "LastVerified":  "2026-01-17",
+                                                        "Verified":  true,
+                                                        "Homepage":  "https://www.nirsoft.net/"
+                                                    },
+                         "WifiInfoView":  {
+                                              "Name":  "WifiInfoView",
+                                              "Category":  "Network",
+                                              "Description":  "Displays detailed information about nearby wireless networks",
+                                              "Sources":  {
+                                                              "Winget":  "NirSoft.WifiInfoView",
+                                                              "Chocolatey":  null,
+                                                              "Store":  null,
+                                                              "DirectUrl":  null
+                                                          },
+                                              "Detection":  {
+                                                                "Method":  "File",
+                                                                "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.WifiInfoView_Microsoft.Winget.Source_*\\WifiInfoView.exe"
+                                                            },
+                                              "DefaultPriority":  206,
+                                              "DefaultRequired":  false,
+                                              "EnvironmentRestrictions":  [
+
+                                                                          ],
+                                              "Tags":  [
+                                                           "network",
+                                                           "wifi",
+                                                           "scanner",
+                                                           "nirsoft"
+                                                       ],
+                                              "LastVerified":  "2026-01-17",
+                                              "Verified":  true,
+                                              "Homepage":  "https://www.nirsoft.net/"
+                                          },
+                         "NetworkInterfacesView":  {
+                                                       "Name":  "NetworkInterfacesView",
+                                                       "Category":  "Network",
+                                                       "Description":  "Displays detailed information about all network adapters",
+                                                       "Sources":  {
+                                                                       "Winget":  "NirSoft.NetworkInterfacesView",
+                                                                       "Chocolatey":  null,
+                                                                       "Store":  null,
+                                                                       "DirectUrl":  null
+                                                                   },
+                                                       "Detection":  {
+                                                                         "Method":  "File",
+                                                                         "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.NetworkInterfacesView_Microsoft.Winget.Source_*\\NetworkInterfacesView.exe"
+                                                                     },
+                                                       "DefaultPriority":  207,
+                                                       "DefaultRequired":  false,
+                                                       "EnvironmentRestrictions":  [
+
+                                                                                   ],
+                                                       "Tags":  [
+                                                                    "network",
+                                                                    "adapters",
+                                                                    "info",
+                                                                    "nirsoft"
+                                                                ],
+                                                       "LastVerified":  "2026-01-17",
+                                                       "Verified":  true,
+                                                       "Homepage":  "https://www.nirsoft.net/"
+                                                   },
+                         "HashMyFiles":  {
+                                             "Name":  "HashMyFiles",
+                                             "Category":  "Utility",
+                                             "Description":  "Calculates MD5, SHA1, SHA256 hashes of files",
+                                             "Sources":  {
+                                                             "Winget":  "NirSoft.HashMyFiles",
+                                                             "Chocolatey":  null,
+                                                             "Store":  null,
+                                                             "DirectUrl":  null
+                                                         },
+                                             "Detection":  {
+                                                               "Method":  "File",
+                                                               "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.HashMyFiles_Microsoft.Winget.Source_*\\HashMyFiles.exe"
+                                                           },
+                                             "DefaultPriority":  208,
+                                             "DefaultRequired":  false,
+                                             "EnvironmentRestrictions":  [
+
+                                                                         ],
+                                             "Tags":  [
+                                                          "utility",
+                                                          "hash",
+                                                          "checksum",
+                                                          "nirsoft"
+                                                      ],
+                                             "LastVerified":  "2026-01-17",
+                                             "Verified":  true,
+                                             "Homepage":  "https://www.nirsoft.net/"
+                                         },
+                         "USBDeview":  {
+                                           "Name":  "USBDeview",
+                                           "Category":  "Utility",
+                                           "Description":  "Lists all USB devices connected to the computer",
+                                           "Sources":  {
+                                                           "Winget":  "NirSoft.USBDeview",
+                                                           "Chocolatey":  null,
+                                                           "Store":  null,
+                                                           "DirectUrl":  null
+                                                       },
+                                           "Detection":  {
+                                                             "Method":  "File",
+                                                             "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.USBDeview_Microsoft.Winget.Source_*\\USBDeview.exe"
+                                                         },
+                                           "DefaultPriority":  209,
+                                           "DefaultRequired":  false,
+                                           "EnvironmentRestrictions":  [
+
+                                                                       ],
+                                           "Tags":  [
+                                                        "utility",
+                                                        "usb",
+                                                        "devices",
+                                                        "nirsoft"
+                                                    ],
+                                           "LastVerified":  "2026-01-17",
+                                           "Verified":  true,
+                                           "Homepage":  "https://www.nirsoft.net/"
+                                       },
+                         "SearchMyFiles":  {
+                                               "Name":  "SearchMyFiles",
+                                               "Category":  "Utility",
+                                               "Description":  "Advanced file search utility with many options",
+                                               "Sources":  {
+                                                               "Winget":  "NirSoft.SearchMyFiles",
+                                                               "Chocolatey":  null,
+                                                               "Store":  null,
+                                                               "DirectUrl":  null
+                                                           },
+                                               "Detection":  {
+                                                                 "Method":  "File",
+                                                                 "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.SearchMyFiles_Microsoft.Winget.Source_*\\SearchMyFiles.exe"
+                                                             },
+                                               "DefaultPriority":  210,
+                                               "DefaultRequired":  false,
+                                               "EnvironmentRestrictions":  [
+
+                                                                           ],
+                                               "Tags":  [
+                                                            "utility",
+                                                            "search",
+                                                            "files",
+                                                            "nirsoft"
+                                                        ],
+                                               "LastVerified":  "2026-01-17",
+                                               "Verified":  true,
+                                               "Homepage":  "https://www.nirsoft.net/"
+                                           },
+                         "UninstallView":  {
+                                               "Name":  "UninstallView",
+                                               "Category":  "Utility",
+                                               "Description":  "Displays detailed information about installed programs",
+                                               "Sources":  {
+                                                               "Winget":  "NirSoft.UninstallView",
+                                                               "Chocolatey":  null,
+                                                               "Store":  null,
+                                                               "DirectUrl":  null
+                                                           },
+                                               "Detection":  {
+                                                                 "Method":  "File",
+                                                                 "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.UninstallView_Microsoft.Winget.Source_*\\UninstallView.exe"
+                                                             },
+                                               "DefaultPriority":  211,
+                                               "DefaultRequired":  false,
+                                               "EnvironmentRestrictions":  [
+
+                                                                           ],
+                                               "Tags":  [
+                                                            "utility",
+                                                            "uninstall",
+                                                            "programs",
+                                                            "nirsoft"
+                                                        ],
+                                               "LastVerified":  "2026-01-17",
+                                               "Verified":  true,
+                                               "Homepage":  "https://www.nirsoft.net/"
+                                           },
+                         "ShellExView":  {
+                                             "Name":  "ShellExView",
+                                             "Category":  "Utility",
+                                             "Description":  "Displays and manages shell extensions installed on the computer",
+                                             "Sources":  {
+                                                             "Winget":  "NirSoft.ShellExView",
+                                                             "Chocolatey":  null,
+                                                             "Store":  null,
+                                                             "DirectUrl":  null
+                                                         },
+                                             "Detection":  {
+                                                               "Method":  "File",
+                                                               "Path":  "C:\\Users\\*\\AppData\\Local\\Microsoft\\WinGet\\Packages\\NirSoft.ShellExView_Microsoft.Winget.Source_*\\shexview.exe"
+                                                           },
+                                             "DefaultPriority":  212,
+                                             "DefaultRequired":  false,
+                                             "EnvironmentRestrictions":  [
+
+                                                                         ],
+                                             "Tags":  [
+                                                          "utility",
+                                                          "shell",
+                                                          "extensions",
+                                                          "nirsoft"
+                                                      ],
+                                             "LastVerified":  "2026-01-17",
+                                             "Verified":  true,
+                                             "Homepage":  "https://www.nirsoft.net/"
+                                         }
                      },
     "Categories":  {
                        "System":  {

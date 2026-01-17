@@ -90,7 +90,12 @@
       "voidtools.com",
       "autohotkey.com",
       "wireshark.org",
-      "sysinternals.com"
+      "sysinternals.com",
+      "vb-audio.com",
+      "download.vb-audio.com",
+      "aimp.ru",
+      "ultimaker.com",
+      "creality.com"
     ]
   },
   "directDownloads": {
@@ -144,6 +149,16 @@
     "microsoftStore": {
       "source": "msstore",
       "notes": "Use winget with --source msstore for Store apps"
+    }
+  },
+  "cache": {
+    "description": "Cache settings for package manager operations",
+    "winget": {
+      "listTTLMinutes": 30,
+      "searchTTLMinutes": 60,
+      "maxEntries": 500,
+      "enabled": true,
+      "persistToDisk": true
     }
   }
 }

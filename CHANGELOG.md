@@ -2,6 +2,63 @@
 
 Note: la source de vérité de la version du framework est `Config/version.json`. Les lanceurs et la GUI lisent dynamiquement cette valeur.
 
+## [3.2.0] - 2026-01-17
+
+### GUI Improvements
+
+#### Navigation Simplification
+- **Removed**: Profile Editor view (redundant - functionality available in Apps view)
+- **Updated**: Navigation indices and keyboard shortcuts (Ctrl+1-5)
+- **Fixed**: Back navigation and navigation service integration
+
+### Application Catalog
+
+#### Catalog Cleanup (-9 apps)
+- **Removed**: GOM Player, Bandizip, PeaZip, PotPlayer, Pidgin, foobar2000, IrfanView (redundant alternatives exist)
+- **Removed**: Eclipse IDE (niche, VS Code covers most use cases)
+- **Removed**: VoiceMeeter Banana (niche streaming tool, installation issues)
+
+#### NirSoft Tools (+12 apps)
+- **Added**: BlueScreenView, FullEventLogView, LastActivityView, TurnedOnTimesView, WhatIsHang
+- **Added**: WirelessNetworkWatcher, WifiInfoView, NetworkInterfacesView
+- **Added**: HashMyFiles, USBDeview, SearchMyFiles, UninstallView, ShellExView
+- **Fixed**: Detection paths for NirSoft tools (WinGet packages location)
+
+#### Winget ID Fixes
+- **Fixed**: LibreOffice (`TheDocumentFoundation.LibreOffice` - LTS variant removed)
+- **Fixed**: AnyDesk (`AnyDesk.AnyDesk`)
+- **Fixed**: Creality Print (`Creality.CrealityPrint` - was null)
+- **Fixed**: CutePDF Writer (`AcroSoftware.CutePDFWriter` - was null)
+- **Fixed**: DBeaver (`DBeaver.DBeaver.Community`)
+- **Fixed**: GIMP (`GIMP.GIMP.3`)
+- **Fixed**: PDF24 Creator (`geeksoftwareGmbH.PDF24Creator`)
+- **Removed**: FileZilla Winget ID (no longer available, Chocolatey only)
+
+#### Detection & Categories
+- **Fixed**: Spotify and MusicBee detection (StoreApp method for Store installs)
+- **Fixed**: 7-Zip category (Utility → Compression)
+- **Fixed**: Proton Drive category (Storage → CloudStorage)
+- **Merged**: Multimedia category into Media
+
+#### Fallback Sources
+- **Added**: DirectUrl for FileZilla
+
+### Installation Engine
+
+#### Bug Fixes
+- **Fixed**: Transient error handling - fails immediately on last retry attempt instead of false positive verification
+- **Fixed**: Install-Via* return value extraction - added `$getInstallResult` helper to handle output pollution
+
+### Configuration
+
+#### Trusted Domains
+- **Added**: vb-audio.com, download.vb-audio.com, aimp.ru, ultimaker.com, creality.com
+
+### Statistics
+- **Total Applications**: 170 (was 166 in v3.1.4)
+
+---
+
 ## [3.1.4] - 2026-01-16
 
 ### Critical Security Fixes
