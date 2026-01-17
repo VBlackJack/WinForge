@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         Title="{loc:Loc App_Title}"
         Height="900" Width="1440"
-        MinHeight="700" MinWidth="1400"
+        MinHeight="650" MinWidth="1200"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource MaterialDesign.Brush.Background}"
         TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
@@ -48,19 +48,47 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- App Header -->
+                <!-- App Header with Back Navigation -->
                 <materialDesign:ColorZone Grid.Row="0"
                                            Mode="PrimaryMid"
                                            Padding="16"
                                            materialDesign:ElevationAssist.Elevation="Dp2">
-                    <StackPanel>
-                        <TextBlock Text="Win11Forge"
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Back Button -->
+                        <Button x:Name="BackButton"
+                                Grid.Row="0" Grid.Column="0"
+                                Style="{StaticResource MaterialDesignIconButton}"
+                                Command="{Binding GoBackCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                Visibility="{Binding CanGoBack, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                ToolTip="{loc:Loc Nav_Back}"
+                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                Width="32" Height="32"
+                                Margin="0,0,8,0"
+                                AutomationProperties.Name="Go back"
+                                AutomationProperties.HelpText="Navigate to the previous view">
+                            <materialDesign:PackIcon Kind="ArrowLeft" Width="20" Height="20"/>
+                        </Button>
+
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   Text="Win11Forge"
                                    Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                   FontWeight="Bold"/>
-                        <TextBlock Text="{loc:Loc MainWindow_Welcome}"
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                   Text="{loc:Loc MainWindow_Welcome}"
                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                   Opacity="0.7"/>
-                    </StackPanel>
+                                   Opacity="0.7"
+                                   Margin="0,4,0,0"/>
+                    </Grid>
                 </materialDesign:ColorZone>
 
                 <!-- Navigation Items -->
@@ -115,19 +143,8 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
-                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_ProfileEditor}"
-                                 AutomationProperties.HelpText="Navigate to Profile Editor view, Ctrl+5">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="FileDocumentEdit"
-                                                      Width="24"
-                                                      Height="24"
-                                                      Margin="0,0,16,0"/>
-                            <TextBlock Text="{loc:Loc Nav_ProfileEditor}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ListBoxItem>
                     <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_Settings}"
-                                 AutomationProperties.HelpText="Navigate to Settings view, Ctrl+6">
+                                 AutomationProperties.HelpText="Navigate to Settings view, Ctrl+5">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Cog"
                                                       Width="24"
@@ -154,10 +171,6 @@
             <!-- Apps View -->
             <views:AppsView x:Name="AppsViewControl"
                              Visibility="Collapsed"/>
-
-            <!-- Profile Editor View -->
-            <views:ProfileEditorView x:Name="ProfileEditorViewControl"
-                                       Visibility="Collapsed"/>
 
             <!-- Settings View -->
             <views:SettingsView x:Name="SettingsViewControl"

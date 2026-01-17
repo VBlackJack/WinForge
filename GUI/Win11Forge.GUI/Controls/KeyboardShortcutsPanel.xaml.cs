@@ -66,8 +66,7 @@ public partial class KeyboardShortcutsPanel : UserControl
             new KeyboardShortcut { Key = "Ctrl+2", Description = Res.Help_Shortcut_Prerequisites },
             new KeyboardShortcut { Key = "Ctrl+3", Description = Res.Help_Shortcut_Apps },
             new KeyboardShortcut { Key = "Ctrl+4", Description = Res.Help_Shortcut_Deployment },
-            new KeyboardShortcut { Key = "Ctrl+5", Description = Res.Help_Shortcut_ProfileEditor },
-            new KeyboardShortcut { Key = "Ctrl+6", Description = Res.Help_Shortcut_Settings }
+            new KeyboardShortcut { Key = "Ctrl+5", Description = Res.Help_Shortcut_Settings }
         };
     }
 

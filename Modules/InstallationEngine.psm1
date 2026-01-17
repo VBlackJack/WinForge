@@ -1,9 +1,15 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Engine Module v3.1.4 (Critical Security Fixes)
+    Win11Forge - Installation Engine Module v3.1.5 (Modular Architecture)
 
 .DESCRIPTION
-    Core installation engine with multi-source support and parallel execution:
+    Core installation engine orchestration with multi-source support and parallel execution.
+
+    This module has been split into submodules for maintainability:
+    - ApplicationDetection.psm1: Detection and verification functions
+    - InstallationMethods.psm1: Individual installation method implementations
+
+    Features:
     - Winget (primary) with retry logic (sequential AND parallel)
     - Chocolatey (fallback) with retry logic (sequential AND parallel)
     - Microsoft Store (UWP apps)
@@ -11,10 +17,18 @@
     - Application detection with special cases (PowerToys, Quick Assist)
     - Windows Features/Capabilities
     - Parallel installation (up to 5 apps simultaneously)
+    - Rollback and deployment state management
+    - Environment restriction checking
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.1.4
+    Version: 3.1.5
+
+    Changelog v3.1.5 (Modular Architecture):
+    - ARCHITECTURE: Split into 3 modules for maintainability (InstallationEngine, ApplicationDetection, InstallationMethods)
+    - ARCHITECTURE: ApplicationDetection.psm1 contains all detection and verification functions
+    - ARCHITECTURE: InstallationMethods.psm1 contains individual install method implementations
+    - ARCHITECTURE: InstallationEngine.psm1 retains orchestration logic and state management
 
     Changelog v3.1.4 (Critical Security Fixes):
     - SECURITY: CRITICAL - Replaced cmd /c with Start-Process argument arrays in Invoke-Rollback
@@ -92,10 +106,27 @@ $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
 $script:EnvironmentDetectionPath = Join-Path $script:ModuleRoot 'EnvironmentDetection.psm1'
+$script:FeatureFlagsPath = Join-Path $script:RepositoryRoot 'Core\FeatureFlags.psm1'
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+$script:ExceptionsPath = Join-Path $script:RepositoryRoot 'Core\Win11ForgeExceptions.psm1'
 
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
+    }
+}
+
+# Import Feature Flags module
+if (-not (Get-Command -Name Test-FeatureEnabled -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:FeatureFlagsPath) {
+        Import-Module -Name $script:FeatureFlagsPath -Force
+    }
+}
+
+# Import Directory Constants module
+if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
     }
 }
 
@@ -113,6 +144,30 @@ if (-not (Get-Command -Name Test-IsWindowsSandbox -ErrorAction SilentlyContinue)
     }
 }
 
+# Import WingetCache for optimized winget list caching
+$script:WingetCachePath = Join-Path $script:ModuleRoot 'WingetCache.psm1'
+if (-not (Get-Command -Name Get-CachedWingetList -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:WingetCachePath) {
+        Import-Module -Name $script:WingetCachePath -Force
+    }
+}
+
+# Import ApplicationDetection module (extracted from InstallationEngine v3.1.4)
+$script:ApplicationDetectionPath = Join-Path $script:ModuleRoot 'ApplicationDetection.psm1'
+if (-not (Get-Command -Name Test-ApplicationInstalled -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:ApplicationDetectionPath) {
+        Import-Module -Name $script:ApplicationDetectionPath -Force
+    }
+}
+
+# Import InstallationMethods module (extracted from InstallationEngine v3.1.4)
+$script:InstallationMethodsPath = Join-Path $script:ModuleRoot 'InstallationMethods.psm1'
+if (-not (Get-Command -Name Install-ViaWinget -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:InstallationMethodsPath) {
+        Import-Module -Name $script:InstallationMethodsPath -Force
+    }
+}
+
 # === CONFIGURATION ===
 $script:MaxParallelJobs = 5
 $script:JobCheckInterval = 2
@@ -120,25 +175,7 @@ $script:DefaultInstallTimeoutSeconds = 1800  # 30 minutes (increased for slower 
 $script:OfficeInstallTimeoutSeconds = 2700   # 45 minutes for Office (Click-to-Run is slow)
 $script:ParallelInstallTimeoutMs = 600000    # 10 minutes for parallel installs (consistent with sequential)
 
-# Security: Whitelist of allowed executables for Command detection method
-# Only these executables can be run from applications.json Detection.Command
-$script:AllowedDetectionExecutables = @(
-    'java', 'java.exe',           # Java detection (java -version)
-    'javac', 'javac.exe',         # JDK detection
-    'dotnet', 'dotnet.exe',       # .NET detection
-    'python', 'python.exe',       # Python detection (python --version)
-    'python3', 'python3.exe',
-    'node', 'node.exe',           # Node.js detection (node --version)
-    'npm', 'npm.cmd',             # npm detection
-    'git', 'git.exe',             # Git detection (git --version)
-    'docker', 'docker.exe',       # Docker detection
-    'rustc', 'rustc.exe',         # Rust detection
-    'cargo', 'cargo.exe',
-    'go', 'go.exe',               # Go detection
-    'ruby', 'ruby.exe',           # Ruby detection
-    'php', 'php.exe',             # PHP detection
-    'perl', 'perl.exe'            # Perl detection
-)
+# Note: AllowedDetectionExecutables moved to ApplicationDetection.psm1
 
 # === ROLLBACK & RESUME SYSTEM ===
 # Use LOCALAPPDATA for state files (more secure than TEMP, user-specific)
@@ -1127,7 +1164,7 @@ function Test-ApplicationInstalled {
     # Special case: Quick Assist - Store App (use winget to avoid Appx module conflicts)
     if ($appName -eq 'Microsoft Quick Assist') {
         if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
-            $wingetList = & winget list --accept-source-agreements 2>&1 | Out-String
+            $wingetList = Get-CachedWingetList
             if ($wingetList -match 'MicrosoftCorporationII') {
                 return $true
             }
@@ -1201,10 +1238,10 @@ function Test-ApplicationInstalled {
                 $detected = $capability -and $capability.State -eq 'Installed'
             }
             'StoreApp' {
-                # Use winget list instead of Get-AppxPackage to avoid Appx module conflicts in PowerShell 7
+                # Use cached winget list instead of Get-AppxPackage to avoid Appx module conflicts in PowerShell 7
                 if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
                     try {
-                        $wingetList = & winget list --accept-source-agreements 2>&1 | Out-String
+                        $wingetList = Get-CachedWingetList
 
                         # Try 1: Match by Store ID (most specific)
                         if ($Application.Sources.Store) {
@@ -1267,7 +1304,8 @@ function Test-ApplicationByName {
 
     try {
         if (Test-CommandExists -Name 'winget') {
-            $wingetList = & winget list --name $Name --accept-source-agreements 2>&1 | Out-String
+            # Use cached winget list for performance
+            $wingetList = Get-CachedWingetList
             if ($wingetList -match [regex]::Escape($Name)) {
                 return $true
             }
@@ -1492,12 +1530,18 @@ function Install-ViaWinget {
 
             # Check for transient network errors (exit codes that might benefit from retry)
             $transientErrors = @(-1978335189, -1978335212)  # Common Winget network errors
-            if ($transientErrors -contains $exitCode -and $attempt -lt $MaxRetries) {
-                $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
-                Write-Output "[WARNING] Transient error detected (exit code: $exitCode), retrying in $delay seconds..."
-                Write-Status -Message "Transient error detected (exit code: $exitCode), retrying in $delay seconds..." -Level 'Warning'
-                Start-Sleep -Seconds $delay
-                continue
+            if ($transientErrors -contains $exitCode) {
+                if ($attempt -lt $MaxRetries) {
+                    $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
+                    Write-Output "[WARNING] Transient error detected (exit code: $exitCode), retrying in $delay seconds..."
+                    Write-Status -Message "Transient error detected (exit code: $exitCode), retrying in $delay seconds..." -Level 'Warning'
+                    Start-Sleep -Seconds $delay
+                    continue
+                }
+                # Last attempt with transient error - don't verify (could detect old install), just fail
+                Write-Output "[WARNING] Winget installation failed after $MaxRetries attempts (exit code: $exitCode)"
+                Write-Status -Message "Winget installation failed after $MaxRetries attempts (exit code: $exitCode)" -Level 'Warning'
+                return $false
             }
 
             # Post-install verification: Check if package is actually installed despite non-zero exit code
@@ -2156,12 +2200,22 @@ function Invoke-InstallationMethodSequence {
                    $sources.Chocolatey -eq 'microsoft-office-deployment' -or
                    $Application.Name -match 'Office\s*(365|2019|2021|2024)'
 
+    # Helper to extract boolean result from Install-Via* functions
+    # These functions use Write-Output for logging, which pollutes the return value
+    # We extract just the last element (the boolean) from the output array
+    $getInstallResult = {
+        param([object[]]$Output)
+        if ($null -eq $Output -or $Output.Count -eq 0) { return $false }
+        return $Output[-1] -eq $true
+    }
+
     # 1. Try Winget
     if ($sources.Winget) {
         $result.AttemptedMethods += 'Winget'
         & $writeLog "Attempting Winget: $($sources.Winget)" 'Verbose'
 
-        if (Install-ViaWinget -PackageId $sources.Winget) {
+        $wingetOutput = @(Install-ViaWinget -PackageId $sources.Winget)
+        if (& $getInstallResult $wingetOutput) {
             # Special handling for Office - wait for Click-to-Run to complete
             if ($isOfficeApp) {
                 & $writeLog "Office installation initiated, waiting for Click-to-Run to complete..." 'Info'
@@ -2193,7 +2247,8 @@ function Invoke-InstallationMethodSequence {
         $result.AttemptedMethods += 'Chocolatey'
         & $writeLog "Attempting Chocolatey: $($sources.Chocolatey)" 'Verbose'
 
-        if (Install-ViaChocolatey -PackageName $sources.Chocolatey) {
+        $chocoOutput = @(Install-ViaChocolatey -PackageName $sources.Chocolatey)
+        if (& $getInstallResult $chocoOutput) {
             # Special handling for Office - wait for Click-to-Run to complete
             if ($isOfficeApp) {
                 & $writeLog "Office installation initiated, waiting for Click-to-Run to complete..." 'Info'
@@ -2224,7 +2279,8 @@ function Invoke-InstallationMethodSequence {
         $result.AttemptedMethods += 'Store'
         & $writeLog "Attempting Microsoft Store: $($sources.Store)" 'Verbose'
 
-        if (Install-ViaStore -ProductId $sources.Store) {
+        $storeOutput = @(Install-ViaStore -ProductId $sources.Store)
+        if (& $getInstallResult $storeOutput) {
             $result.Success = $true
             $result.Method = 'Store'
             $result.Message = 'Installed via Microsoft Store'
@@ -2259,7 +2315,8 @@ function Invoke-InstallationMethodSequence {
             $installParams['ExpectedSHA256'] = $sources.SHA256
         }
 
-        if (Install-ViaDirectDownload @installParams) {
+        $downloadOutput = @(Install-ViaDirectDownload @installParams)
+        if (& $getInstallResult $downloadOutput) {
             $result.Success = $true
             $result.Method = 'DirectDownload'
             $result.Message = 'Installed via direct download'
@@ -2593,9 +2650,9 @@ function Test-AppInstalledParallel {
     }
 
     if (-not $App.Detection) {
-        # Fallback: check winget list
+        # Fallback: check winget list (using cache for performance)
         if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
-            $list = & winget list --name $appName --accept-source-agreements 2>&1 | Out-String
+            $list = Get-CachedWingetList
             if ($list -match [regex]::Escape($appName)) { return $true }
         }
         return $false
@@ -2667,7 +2724,8 @@ function Test-AppInstalledParallel {
         'StoreApp' {
             if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
                 try {
-                    $list = & winget list --accept-source-agreements 2>&1 | Out-String
+                    # Use cached winget list for performance
+                    $list = Get-CachedWingetList
                     if ($App.Sources.Store -and $list -match [regex]::Escape($App.Sources.Store) -and $list -notmatch "No installed package") { return $true }
                     if ($App.Detection.PackageName -and $list -match [regex]::Escape($App.Detection.PackageName)) { return $true }
                 } catch { }
@@ -2676,7 +2734,8 @@ function Test-AppInstalledParallel {
         }
         default {
             if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
-                $list = & winget list --name $appName --accept-source-agreements 2>&1 | Out-String
+                # Use cached winget list for performance
+                $list = Get-CachedWingetList
                 if ($list -match [regex]::Escape($appName)) { return $true }
             }
             return $false
@@ -3297,17 +3356,17 @@ function Get-InstalledApplicationsCache {
 
     Write-Verbose "Registry: Found $($registryApps.Count) apps"
 
-    # 2. Winget: Get list output once (cached)
+    # 2. Winget: Get list output once (using WingetCache module)
     $wingetOutput = ""
     if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
         try {
-            $wingetOutput = & winget list --accept-source-agreements 2>&1 | Out-String
+            $wingetOutput = Get-CachedWingetList
         } catch {
             Write-Verbose "Error running winget list: $_"
         }
     }
 
-    Write-Verbose "Winget: Output cached ($($wingetOutput.Length) chars)"
+    Write-Verbose "Winget: Output from cache ($($wingetOutput.Length) chars)"
 
     # 3. AppX: Get all Store/MSIX packages (one query)
     $appxPackages = @{}
@@ -3621,30 +3680,48 @@ function Get-ApplicationsInstallationStatus {
 }
 
 # === MODULE EXPORTS ===
+# Note: Many functions are imported from submodules (ApplicationDetection.psm1, InstallationMethods.psm1)
+# but are also defined locally for backward compatibility with parallel installation runspaces.
+# The module re-exports all functions to maintain the original public API.
 
 Export-ModuleMember -Function @(
-    # Detection functions
+    # Rollback & Deployment State (local)
+    'Initialize-RollbackSession',
+    'Save-RollbackState',
+    'Add-RollbackEntry',
+    'Invoke-Rollback',
+    'Clear-RollbackState',
+    'Get-RollbackState',
+    'Initialize-DeploymentSession',
+    'Save-DeploymentState',
+    'Update-DeploymentProgress',
+    'Test-ValidStateData',
+    'Get-DeploymentState',
+    'Test-IncompleteDeployment',
+    'Resume-Deployment',
+    'Clear-DeploymentState',
+    # Detection functions (from ApplicationDetection.psm1 + local)
     'Test-ApplicationInstalled',
     'Get-InstalledApplicationsCache',
     'Test-ApplicationInstalledFast',
     'Get-ApplicationsInstallationStatus',
     'Test-ApplicationByName',
     'Wait-ForOfficeInstallation',
-    # Environment helper
+    # Environment helper (local)
     'Test-EnvironmentRestriction',
-    # Individual installation methods
+    # Individual installation methods (from InstallationMethods.psm1 + local)
     'Install-ViaWinget',
     'Install-ViaChocolatey',
     'Install-ViaStore',
     'Install-ViaDirectDownload',
     'Install-WindowsFeature',
     'Install-WindowsCapability',
-    # Orchestration helpers
+    # Orchestration helpers (local + from InstallationMethods.psm1)
     'Invoke-CustomInstallMethod',
     'Invoke-InstallationMethodSequence',
     'Get-ApplicationSources',
     'Invoke-ApplicationUpgrade',
-    # Main installation functions
+    # Main installation functions (local)
     'Install-Application',
     'Install-ApplicationsParallel'
 )

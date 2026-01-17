@@ -248,7 +248,7 @@
                                     },
                          "7Zip":  {
                                       "Name":  "7-Zip",
-                                      "Category":  "Utility",
+                                      "Category":  "Compression",
                                       "Description":  "Free and open-source file archiver",
                                       "Sources":  {
                                                       "Winget":  "7zip.7zip",
@@ -1670,7 +1670,7 @@
                                        },
                          "ProtonDrive":  {
                                              "Name":  "Proton Drive",
-                                             "Category":  "Storage",
+                                             "Category":  "CloudStorage",
                                              "Description":  "Encrypted cloud storage by Proton",
                                              "Sources":  {
                                                              "Winget":  "Proton.ProtonDrive",
@@ -1823,7 +1823,7 @@
                                     },
                          "Mp3tag":  {
                                         "Name":  "Mp3tag",
-                                        "Category":  "Multimedia",
+                                        "Category":  "Media",
                                         "Description":  "Universal tag editor for audio files",
                                         "Sources":  {
                                                         "Winget":  "FlorianHeidenreich.Mp3tag",
@@ -1852,7 +1852,7 @@
                                     },
                          "CUESplitter":  {
                                              "Name":  "CUE Splitter",
-                                             "Category":  "Multimedia",
+                                             "Category":  "Media",
                                              "Description":  "Split audio files using CUE sheets",
                                              "Sources":  {
                                                              "Winget":  "9NBLGGH43MH5",
@@ -1880,7 +1880,7 @@
                                          },
                          "MediaMonkey":  {
                                              "Name":  "MediaMonkey",
-                                             "Category":  "Multimedia",
+                                             "Category":  "Media",
                                              "Description":  "Music manager and media jukebox",
                                              "Sources":  {
                                                              "Winget":  "Ventis.MediaMonkey",
@@ -1908,7 +1908,7 @@
                                          },
                          "TVRename":  {
                                           "Name":  "TV Rename",
-                                          "Category":  "Multimedia",
+                                          "Category":  "Media",
                                           "Description":  "TV series renaming and organizing tool",
                                           "Sources":  {
                                                           "Winget":  null,
@@ -2360,34 +2360,6 @@
                                              "Verified":  true,
                                              "Homepage":  "https://codecguide.com/"
                                          },
-                         "GOMPlayer":  {
-                                           "Name":  "GOM Player",
-                                           "Category":  "Media",
-                                           "Description":  "Free media player with codec support",
-                                           "Sources":  {
-                                                           "Winget":  "GOM.GOMPlayer",
-                                                           "Chocolatey":  "gom-player",
-                                                           "Store":  null,
-                                                           "DirectUrl":  null
-                                                       },
-                                           "Detection":  {
-                                                             "Method":  "Registry",
-                                                             "Path":  "HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\GOM Player"
-                                                         },
-                                           "DefaultPriority":  99,
-                                           "DefaultRequired":  false,
-                                           "EnvironmentRestrictions":  [
-
-                                                                       ],
-                                           "Tags":  [
-                                                        "media",
-                                                        "video",
-                                                        "player"
-                                                    ],
-                                           "LastVerified":  "2026-01-15",
-                                           "Verified":  true,
-                                           "Homepage":  "https://www.gomlab.com/"
-                                       },
                          "GIMP":  {
                                       "Name":  "GIMP",
                                       "Category":  "Media",
@@ -5124,4 +5096,3 @@
                  "widgets":  "Desktop widgets"
              }
 }
-

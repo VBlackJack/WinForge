@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -30,17 +32,17 @@ namespace Win11Forge.GUI;
 /// <summary>
 /// Main application window with navigation.
 /// </summary>
-public partial class MainWindow : Window
+public partial class MainWindow : Window, INotifyPropertyChanged
 {
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IDeploymentHistoryService _historyService;
     private readonly IAppSettingsService _settingsService;
     private readonly IProfileExportService _profileExportService;
     private readonly ToastService _toastService;
+    private readonly INavigationService _navigationService;
     private readonly DashboardViewModel _dashboardViewModel;
     private readonly DeploymentViewModel _deploymentViewModel;
     private readonly AppsViewModel _appsViewModel;
-    private readonly ProfileEditorViewModel _profileEditorViewModel;
     private readonly SettingsViewModel _settingsViewModel;
     private readonly PrerequisitesViewModel _prerequisitesViewModel;
 
@@ -49,6 +51,12 @@ public partial class MainWindow : Window
     private bool _appsInitialized;
     private bool _settingsInitialized;
     private bool _prerequisitesInitialized;
+    private bool _isNavigatingFromService;
+
+    /// <summary>
+    /// Event for property change notification.
+    /// </summary>
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     /// <summary>
     /// Command to show keyboard shortcuts dialog.
@@ -59,6 +67,16 @@ public partial class MainWindow : Window
     /// Command to navigate to a specific view by index.
     /// </summary>
     public ICommand NavigateToCommand { get; }
+
+    /// <summary>
+    /// Command to navigate back to the previous view.
+    /// </summary>
+    public ICommand GoBackCommand { get; }
+
+    /// <summary>
+    /// Whether back navigation is available.
+    /// </summary>
+    public bool CanGoBack => _navigationService?.CanGoBack ?? false;
 
     public MainWindow()
     {
@@ -73,32 +91,47 @@ public partial class MainWindow : Window
                 NavigateTo(viewIndex);
             }
         });
+        GoBackCommand = new RelayCommand(GoBack, () => CanGoBack);
 
         // Set DataContext for XAML bindings
         DataContext = this;
 
         try
         {
-            // Create shared services
-            _powerShellBridge = new PowerShellBridge();
-            _historyService = new DeploymentHistoryService();
-            _settingsService = new AppSettingsService();
-            _profileExportService = new ProfileExportService();
-            _toastService = new ToastService();
+            // Get services from DI container
+            _powerShellBridge = App.GetService<IPowerShellBridge>();
+            _historyService = App.GetService<IDeploymentHistoryService>();
+            _settingsService = App.GetService<IAppSettingsService>();
+            _profileExportService = App.GetService<IProfileExportService>();
+            _toastService = App.GetService<ToastService>();
+            _navigationService = App.GetService<INavigationService>();
 
-            // Create ViewModels
-            _dashboardViewModel = new DashboardViewModel(_powerShellBridge, _historyService);
-            _deploymentViewModel = new DeploymentViewModel(_powerShellBridge, _historyService, _settingsService);
-            _appsViewModel = new AppsViewModel(_powerShellBridge, _settingsService);
-            _profileEditorViewModel = new ProfileEditorViewModel(_powerShellBridge, _profileExportService);
-            _settingsViewModel = new SettingsViewModel(_settingsService, _historyService);
-            _prerequisitesViewModel = new PrerequisitesViewModel(_powerShellBridge);
+            // Subscribe to navigation service changes
+            _navigationService.NavigationChanged += (s, e) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    OnPropertyChanged(nameof(CanGoBack));
+                    if (!_isNavigatingFromService)
+                    {
+                        _isNavigatingFromService = true;
+                        NavigationListBox.SelectedIndex = _navigationService.CurrentIndex;
+                        _isNavigatingFromService = false;
+                    }
+                });
+            };
+
+            // Create ViewModels using DI
+            _dashboardViewModel = App.GetService<DashboardViewModel>();
+            _deploymentViewModel = App.GetService<DeploymentViewModel>();
+            _appsViewModel = App.GetService<AppsViewModel>();
+            _settingsViewModel = App.GetService<SettingsViewModel>();
+            _prerequisitesViewModel = App.GetService<PrerequisitesViewModel>();
 
             // Wire up DataContexts
             DashboardViewControl.DataContext = _dashboardViewModel;
             DeploymentViewControl.DataContext = _deploymentViewModel;
             AppsViewControl.DataContext = _appsViewModel;
-            ProfileEditorViewControl.DataContext = _profileEditorViewModel;
             SettingsViewControl.DataContext = _settingsViewModel;
             PrerequisitesViewControl.DataContext = _prerequisitesViewModel;
 
@@ -126,12 +159,33 @@ public partial class MainWindow : Window
             _settingsService = null!;
             _profileExportService = null!;
             _toastService = null!;
+            _navigationService = null!;
             _dashboardViewModel = null!;
             _deploymentViewModel = null!;
             _appsViewModel = null!;
-            _profileEditorViewModel = null!;
             _settingsViewModel = null!;
             _prerequisitesViewModel = null!;
+        }
+    }
+
+    /// <summary>
+    /// Raises PropertyChanged event.
+    /// </summary>
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    /// <summary>
+    /// Navigates back to the previous view.
+    /// </summary>
+    private void GoBack()
+    {
+        if (_navigationService?.CanGoBack == true)
+        {
+            _isNavigatingFromService = true;
+            _navigationService.GoBack();
+            _isNavigatingFromService = false;
         }
     }
 
@@ -190,7 +244,6 @@ public partial class MainWindow : Window
         DashboardViewControl.Visibility = Visibility.Collapsed;
         DeploymentViewControl.Visibility = Visibility.Collapsed;
         AppsViewControl.Visibility = Visibility.Collapsed;
-        ProfileEditorViewControl.Visibility = Visibility.Collapsed;
         SettingsViewControl.Visibility = Visibility.Collapsed;
         PrerequisitesViewControl.Visibility = Visibility.Collapsed;
 
@@ -217,12 +270,7 @@ public partial class MainWindow : Window
                 _ = InitializeDeploymentAsync();
                 break;
 
-            case 4: // Profile Editor
-                ProfileEditorViewControl.Visibility = Visibility.Visible;
-                _ = InitializeProfileEditorNewAsync();
-                break;
-
-            case 5: // Settings
+            case 4: // Settings
                 SettingsViewControl.Visibility = Visibility.Visible;
                 _ = InitializeSettingsAsync();
                 break;
@@ -253,16 +301,6 @@ public partial class MainWindow : Window
         _appsInitialized = true;
     }
 
-    private async Task InitializeProfileEditorNewAsync()
-    {
-        await _profileEditorViewModel.InitializeNewProfileAsync();
-    }
-
-    private async Task InitializeProfileEditorEditAsync(string profileName)
-    {
-        await _profileEditorViewModel.InitializeEditProfileAsync(profileName);
-    }
-
     private async Task InitializeSettingsAsync()
     {
         if (_settingsInitialized) return;
@@ -287,6 +325,12 @@ public partial class MainWindow : Window
     {
         if (viewIndex >= 0 && viewIndex < NavigationListBox.Items.Count)
         {
+            // Update navigation service (which will trigger navigation)
+            if (!_isNavigatingFromService && _navigationService != null)
+            {
+                _navigationService.NavigateTo(viewIndex);
+            }
+
             NavigationListBox.SelectedIndex = viewIndex;
 
             // Save navigation state for view preservation
@@ -347,32 +391,6 @@ public partial class MainWindow : Window
         catch
         {
             // Onboarding is non-critical
-        }
-    }
-
-    /// <summary>
-    /// Navigates to Profile Editor in Edit mode.
-    /// </summary>
-    public void NavigateToProfileEditor(string? profileName = null)
-    {
-        // Hide all views
-        DashboardViewControl.Visibility = Visibility.Collapsed;
-        PrerequisitesViewControl.Visibility = Visibility.Collapsed;
-        DeploymentViewControl.Visibility = Visibility.Collapsed;
-        AppsViewControl.Visibility = Visibility.Collapsed;
-        SettingsViewControl.Visibility = Visibility.Collapsed;
-        ProfileEditorViewControl.Visibility = Visibility.Visible;
-
-        // Deselect navigation (since this might be triggered from a button, not nav)
-        NavigationListBox.SelectedIndex = 4;
-
-        if (string.IsNullOrEmpty(profileName))
-        {
-            _ = InitializeProfileEditorNewAsync();
-        }
-        else
-        {
-            _ = InitializeProfileEditorEditAsync(profileName);
         }
     }
 }
