@@ -359,17 +359,34 @@ public partial class AppsViewModel : ViewModelBase
         // Register for scan trigger messages from Dashboard
         WeakReferenceMessenger.Default.Register<TriggerScanMessage>(this, async (r, m) =>
         {
-            if (!CanScan) return;
-
             // Store callbacks for progress reporting
             _externalProgressCallback = m.ProgressCallback;
             _externalCompletionCallback = m.CompletionCallback;
 
-            await ScanAsync();
+            try
+            {
+                // Initialize applications if not yet loaded
+                if (_allApplications.Count == 0)
+                {
+                    await InitializeAsync();
+                }
 
-            // Clear callbacks after scan
-            _externalProgressCallback = null;
-            _externalCompletionCallback = null;
+                if (CanScan)
+                {
+                    await ScanAsync();
+                }
+                else
+                {
+                    // Cannot scan - notify completion with 0
+                    _externalCompletionCallback?.Invoke(0);
+                }
+            }
+            finally
+            {
+                // Clear callbacks after scan
+                _externalProgressCallback = null;
+                _externalCompletionCallback = null;
+            }
         });
     }
 
@@ -980,7 +997,12 @@ public partial class AppsViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanScan))]
     private async Task ScanAsync()
     {
-        if (_allApplications.Count == 0) return;
+        if (_allApplications.Count == 0)
+        {
+            // Notify external callback that scan completed (with 0 results)
+            _externalCompletionCallback?.Invoke(0);
+            return;
+        }
 
         // Determine which apps to scan: filtered apps if any filter is active, otherwise all
         var hasActiveFilter = HasSearchFilter || HasCategoryFilter || HasStatusFilter;
@@ -988,7 +1010,12 @@ public partial class AppsViewModel : ViewModelBase
             ? FilteredApplications.ToList()
             : _allApplications;
 
-        if (appsToScan.Count == 0) return;
+        if (appsToScan.Count == 0)
+        {
+            // Notify external callback that scan completed (with current count)
+            _externalCompletionCallback?.Invoke(UpdatesAvailableCount);
+            return;
+        }
 
         IsScanning = true;
         ScannedCount = 0;
