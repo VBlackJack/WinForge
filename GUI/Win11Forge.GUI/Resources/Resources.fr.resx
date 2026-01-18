@@ -189,7 +189,7 @@
     <value>Tableau de bord</value>
   </data>
   <data name="Nav_Deployment" xml:space="preserve">
-    <value>Deploiement</value>
+    <value>Suivi</value>
   </data>
   <data name="Nav_Apps" xml:space="preserve">
     <value>Applications</value>
@@ -1033,5 +1033,165 @@
   </data>
   <data name="Apps_NoUpdates" xml:space="preserve">
     <value>Toutes les applications sont a jour</value>
+  </data>
+  <!-- Monitoring -->
+  <data name="Monitoring_Title" xml:space="preserve">
+    <value>Suivi</value>
+  </data>
+  <data name="Monitoring_Subtitle" xml:space="preserve">
+    <value>Suivez la progression de votre deploiement en cours</value>
+  </data>
+  <data name="Monitoring_NoDeployment" xml:space="preserve">
+    <value>Aucun deploiement en cours</value>
+  </data>
+  <data name="Monitoring_NoDeploymentHint" xml:space="preserve">
+    <value>Lancez un deploiement depuis la section Applications pour le suivre ici</value>
+  </data>
+  <!-- Profile Selection -->
+  <data name="Apps_ProfileLabel" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="Apps_SelectProfile" xml:space="preserve">
+    <value>Selectionnez un profil...</value>
+  </data>
+  <data name="Apps_ClearProfile" xml:space="preserve">
+    <value>Effacer le profil</value>
+  </data>
+  <data name="Apps_AppsSelected" xml:space="preserve">
+    <value>applications selectionnees</value>
+  </data>
+  <!-- Save Profile Dialog -->
+  <data name="Apps_SaveProfile" xml:space="preserve">
+    <value>Sauvegarder le profil</value>
+  </data>
+  <data name="Dialog_SaveProfile_Title" xml:space="preserve">
+    <value>Sauvegarder le profil</value>
+  </data>
+  <data name="Dialog_SaveProfile_AppsSelected" xml:space="preserve">
+    <value>applications selectionnees</value>
+  </data>
+  <data name="Dialog_SaveProfile_Overwrite" xml:space="preserve">
+    <value>Mettre a jour le profil existant :</value>
+  </data>
+  <data name="Dialog_SaveProfile_CreateNew" xml:space="preserve">
+    <value>Creer un nouveau profil</value>
+  </data>
+  <data name="Dialog_SaveProfile_Success" xml:space="preserve">
+    <value>Profil sauvegarde avec succes</value>
+  </data>
+  <data name="Dialog_SaveProfile_Error" xml:space="preserve">
+    <value>Echec de la sauvegarde du profil : {0}</value>
+  </data>
+  <data name="Dialog_SaveProfile_NoApps" xml:space="preserve">
+    <value>Veuillez selectionner au moins une application</value>
+  </data>
+  <!-- Dashboard Hero Section -->
+  <data name="Dashboard_Hero_Checking" xml:space="preserve">
+    <value>Verification du systeme...</value>
+  </data>
+  <data name="Dashboard_Hero_Ready" xml:space="preserve">
+    <value>Pret a deployer</value>
+  </data>
+  <data name="Dashboard_Hero_NeedPrereqs" xml:space="preserve">
+    <value>{0} prerequis manquant(s)</value>
+  </data>
+  <data name="Dashboard_Hero_HasUpdates" xml:space="preserve">
+    <value>Pret - {0} mise(s) a jour disponible(s)</value>
+  </data>
+  <data name="Dashboard_Btn_StartDeployment" xml:space="preserve">
+    <value>DEMARRER LE DEPLOIEMENT</value>
+  </data>
+  <data name="Dashboard_Btn_FixPrereqs" xml:space="preserve">
+    <value>Corriger les prerequis</value>
+  </data>
+  <data name="Dashboard_Btn_ViewUpdates" xml:space="preserve">
+    <value>Voir les mises a jour</value>
+  </data>
+  <data name="Dashboard_Stats_Profiles" xml:space="preserve">
+    <value>profils</value>
+  </data>
+  <data name="Dashboard_Stats_Apps" xml:space="preserve">
+    <value>applications</value>
+  </data>
+  <data name="Dashboard_Stats_Updates" xml:space="preserve">
+    <value>mises a jour</value>
+  </data>
+  <data name="Dashboard_History_Title" xml:space="preserve">
+    <value>Deploiements recents</value>
+  </data>
+  <data name="Dashboard_History_Empty" xml:space="preserve">
+    <value>Aucun deploiement</value>
+  </data>
+  <data name="Dashboard_History_ViewAll" xml:space="preserve">
+    <value>Voir tout l'historique</value>
+  </data>
+  <data name="Dashboard_Phase_LoadingInfo" xml:space="preserve">
+    <value>Chargement des informations...</value>
+  </data>
+  <data name="Dashboard_Phase_CheckingPrereqs" xml:space="preserve">
+    <value>Verification des prerequis...</value>
+  </data>
+  <data name="Dashboard_Phase_ScanningUpdates" xml:space="preserve">
+    <value>Recherche de mises a jour...</value>
+  </data>
+  <data name="Dashboard_LastCheck_JustNow" xml:space="preserve">
+    <value>Verifie a l'instant</value>
+  </data>
+  <data name="Dashboard_LastCheck_MinutesAgo" xml:space="preserve">
+    <value>Verifie il y a {0} min</value>
+  </data>
+  <data name="Dashboard_LastCheck_HoursAgo" xml:space="preserve">
+    <value>Verifie il y a {0}h</value>
+  </data>
+  <data name="Dashboard_Stats_ProfilesHint" xml:space="preserve">
+    <value>Cliquez pour selectionner un profil</value>
+  </data>
+  <data name="Dashboard_Stats_AppsHint" xml:space="preserve">
+    <value>Cliquez pour gerer les applications</value>
+  </data>
+  <data name="Dashboard_Stats_UpdatesHint" xml:space="preserve">
+    <value>Cliquez pour voir les mises a jour</value>
+  </data>
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Tableau de bord</value>
+  </data>
+  <data name="Dashboard_SystemInfo_Title" xml:space="preserve">
+    <value>Informations systeme</value>
+  </data>
+  <data name="Dashboard_Sys_Hostname" xml:space="preserve">
+    <value>Nom d'hote</value>
+  </data>
+  <data name="Dashboard_Sys_OS" xml:space="preserve">
+    <value>Systeme d'exploitation</value>
+  </data>
+  <data name="Dashboard_Sys_Build" xml:space="preserve">
+    <value>Build</value>
+  </data>
+  <data name="Dashboard_Sys_Admin" xml:space="preserve">
+    <value>Administrateur</value>
+  </data>
+  <data name="Dashboard_Sys_Winget" xml:space="preserve">
+    <value>Winget</value>
+  </data>
+  <data name="Dashboard_Sys_Chocolatey" xml:space="preserve">
+    <value>Chocolatey</value>
+  </data>
+  <data name="Dashboard_Updates_Title" xml:space="preserve">
+    <value>Mises a jour</value>
+  </data>
+  <data name="Dashboard_Updates_Available" xml:space="preserve">
+    <value>mises a jour disponibles</value>
+  </data>
+  <data name="Dashboard_Scan_Button" xml:space="preserve">
+    <value>Rechercher les mises a jour</value>
+  </data>
+  <data name="Dashboard_Scan_Scanning" xml:space="preserve">
+    <value>Recherche en cours...</value>
+  </data>
+  <data name="Dashboard_QuickNav_Title" xml:space="preserve">
+    <value>Navigation rapide</value>
+  </data>
+  <data name="Status_Missing" xml:space="preserve">
+    <value>Non installe</value>
   </data>
 </root>

@@ -391,4 +391,115 @@ public class Resources
     public static string Col_Version => ResourceManager.GetString("Col_Version", resourceCulture);
     public static string Toast_UpdatesFound => ResourceManager.GetString("Toast_UpdatesFound", resourceCulture);
     public static string Apps_NoUpdates => ResourceManager.GetString("Apps_NoUpdates", resourceCulture);
+
+    // Navigation - Extended
+    public static string Nav_Back => ResourceManager.GetString("Nav_Back", resourceCulture);
+
+    // Settings Tabs
+    public static string Settings_Tab_Appearance => ResourceManager.GetString("Settings_Tab_Appearance", resourceCulture);
+    public static string Settings_Tab_Performance => ResourceManager.GetString("Settings_Tab_Performance", resourceCulture);
+    public static string Settings_Tab_Data => ResourceManager.GetString("Settings_Tab_Data", resourceCulture);
+    public static string Settings_Tab_About => ResourceManager.GetString("Settings_Tab_About", resourceCulture);
+    public static string Settings_Section_About => ResourceManager.GetString("Settings_Section_About", resourceCulture);
+
+    // Accessibility
+    public static string Settings_ReducedMotion => ResourceManager.GetString("Settings_ReducedMotion", resourceCulture);
+    public static string Settings_ReducedMotion_Desc => ResourceManager.GetString("Settings_ReducedMotion_Desc", resourceCulture);
+
+    // Settings Export/Import
+    public static string Settings_Export => ResourceManager.GetString("Settings_Export", resourceCulture);
+    public static string Settings_Export_Desc => ResourceManager.GetString("Settings_Export_Desc", resourceCulture);
+    public static string Settings_ExportSuccess => ResourceManager.GetString("Settings_ExportSuccess", resourceCulture);
+    public static string Settings_ExportFailed => ResourceManager.GetString("Settings_ExportFailed", resourceCulture);
+    public static string Settings_Import => ResourceManager.GetString("Settings_Import", resourceCulture);
+    public static string Settings_Import_Desc => ResourceManager.GetString("Settings_Import_Desc", resourceCulture);
+    public static string Settings_ImportSuccess => ResourceManager.GetString("Settings_ImportSuccess", resourceCulture);
+    public static string Settings_ImportFailed => ResourceManager.GetString("Settings_ImportFailed", resourceCulture);
+
+    // Settings Reset
+    public static string Settings_Reset => ResourceManager.GetString("Settings_Reset", resourceCulture);
+    public static string Settings_Reset_Desc => ResourceManager.GetString("Settings_Reset_Desc", resourceCulture);
+    public static string Confirm_ResetSettings_Title => ResourceManager.GetString("Confirm_ResetSettings_Title", resourceCulture);
+    public static string Confirm_ResetSettings_Message => ResourceManager.GetString("Confirm_ResetSettings_Message", resourceCulture);
+    public static string Settings_ResetSuccess => ResourceManager.GetString("Settings_ResetSuccess", resourceCulture);
+    public static string Settings_ResetFailed => ResourceManager.GetString("Settings_ResetFailed", resourceCulture);
+
+    // Logs
+    public static string Settings_OpenLogs => ResourceManager.GetString("Settings_OpenLogs", resourceCulture);
+    public static string Settings_OpenLogs_Desc => ResourceManager.GetString("Settings_OpenLogs_Desc", resourceCulture);
+    public static string Logs_Loading => ResourceManager.GetString("Logs_Loading", resourceCulture);
+    public static string Confirm_ClearOldLogs_Title => ResourceManager.GetString("Confirm_ClearOldLogs_Title", resourceCulture);
+    public static string Confirm_ClearOldLogs_Message => ResourceManager.GetString("Confirm_ClearOldLogs_Message", resourceCulture);
+
+    // GitHub
+    public static string Settings_OpenGitHub => ResourceManager.GetString("Settings_OpenGitHub", resourceCulture);
+    public static string Settings_OpenGitHub_Desc => ResourceManager.GetString("Settings_OpenGitHub_Desc", resourceCulture);
+
+    // Profile Selection
+    public static string Apps_ProfileLabel => ResourceManager.GetString("Apps_ProfileLabel", resourceCulture);
+    public static string Apps_SelectProfile => ResourceManager.GetString("Apps_SelectProfile", resourceCulture);
+    public static string Apps_ClearProfile => ResourceManager.GetString("Apps_ClearProfile", resourceCulture);
+    public static string Apps_AppsSelected => ResourceManager.GetString("Apps_AppsSelected", resourceCulture);
+
+    // Save Profile Dialog
+    public static string Apps_SaveProfile => ResourceManager.GetString("Apps_SaveProfile", resourceCulture);
+
+    // Monitoring
+    public static string Monitoring_Title => ResourceManager.GetString("Monitoring_Title", resourceCulture);
+    public static string Monitoring_Subtitle => ResourceManager.GetString("Monitoring_Subtitle", resourceCulture);
+    public static string Monitoring_NoDeployment => ResourceManager.GetString("Monitoring_NoDeployment", resourceCulture);
+    public static string Monitoring_NoDeploymentHint => ResourceManager.GetString("Monitoring_NoDeploymentHint", resourceCulture);
+    public static string Dialog_SaveProfile_Title => ResourceManager.GetString("Dialog_SaveProfile_Title", resourceCulture);
+    public static string Dialog_SaveProfile_AppsSelected => ResourceManager.GetString("Dialog_SaveProfile_AppsSelected", resourceCulture);
+    public static string Dialog_SaveProfile_Overwrite => ResourceManager.GetString("Dialog_SaveProfile_Overwrite", resourceCulture);
+    public static string Dialog_SaveProfile_CreateNew => ResourceManager.GetString("Dialog_SaveProfile_CreateNew", resourceCulture);
+    public static string Dialog_SaveProfile_Success => ResourceManager.GetString("Dialog_SaveProfile_Success", resourceCulture);
+    public static string Dialog_SaveProfile_Error => ResourceManager.GetString("Dialog_SaveProfile_Error", resourceCulture);
+    public static string Dialog_SaveProfile_NoApps => ResourceManager.GetString("Dialog_SaveProfile_NoApps", resourceCulture);
+
+    // Dashboard - Hero Section (Action-First Design)
+    public static string Dashboard_Hero_Checking => ResourceManager.GetString("Dashboard_Hero_Checking", resourceCulture);
+    public static string Dashboard_Hero_Ready => ResourceManager.GetString("Dashboard_Hero_Ready", resourceCulture);
+    public static string Dashboard_Hero_NeedPrereqs => ResourceManager.GetString("Dashboard_Hero_NeedPrereqs", resourceCulture);
+    public static string Dashboard_Hero_HasUpdates => ResourceManager.GetString("Dashboard_Hero_HasUpdates", resourceCulture);
+    public static string Dashboard_Btn_StartDeployment => ResourceManager.GetString("Dashboard_Btn_StartDeployment", resourceCulture);
+    public static string Dashboard_Btn_FixPrereqs => ResourceManager.GetString("Dashboard_Btn_FixPrereqs", resourceCulture);
+    public static string Dashboard_Btn_ViewUpdates => ResourceManager.GetString("Dashboard_Btn_ViewUpdates", resourceCulture);
+    public static string Dashboard_Stats_Profiles => ResourceManager.GetString("Dashboard_Stats_Profiles", resourceCulture);
+    public static string Dashboard_Stats_Apps => ResourceManager.GetString("Dashboard_Stats_Apps", resourceCulture);
+    public static string Dashboard_Stats_Updates => ResourceManager.GetString("Dashboard_Stats_Updates", resourceCulture);
+    public static string Dashboard_History_Title => ResourceManager.GetString("Dashboard_History_Title", resourceCulture);
+    public static string Dashboard_History_Empty => ResourceManager.GetString("Dashboard_History_Empty", resourceCulture);
+
+    // Dashboard - Phase Indicators
+    public static string Dashboard_Phase_LoadingInfo => ResourceManager.GetString("Dashboard_Phase_LoadingInfo", resourceCulture);
+    public static string Dashboard_Phase_CheckingPrereqs => ResourceManager.GetString("Dashboard_Phase_CheckingPrereqs", resourceCulture);
+    public static string Dashboard_Phase_ScanningUpdates => ResourceManager.GetString("Dashboard_Phase_ScanningUpdates", resourceCulture);
+
+    // Dashboard - Last Check Timestamps
+    public static string Dashboard_LastCheck_JustNow => ResourceManager.GetString("Dashboard_LastCheck_JustNow", resourceCulture);
+    public static string Dashboard_LastCheck_MinutesAgo => ResourceManager.GetString("Dashboard_LastCheck_MinutesAgo", resourceCulture);
+    public static string Dashboard_LastCheck_HoursAgo => ResourceManager.GetString("Dashboard_LastCheck_HoursAgo", resourceCulture);
+
+    // Dashboard - Stat Card Hints
+    public static string Dashboard_Stats_ProfilesHint => ResourceManager.GetString("Dashboard_Stats_ProfilesHint", resourceCulture);
+    public static string Dashboard_Stats_AppsHint => ResourceManager.GetString("Dashboard_Stats_AppsHint", resourceCulture);
+    public static string Dashboard_Stats_UpdatesHint => ResourceManager.GetString("Dashboard_Stats_UpdatesHint", resourceCulture);
+
+    // Error Recovery Suggestions
+    public static string Recovery_CheckInternet => ResourceManager.GetString("Recovery_CheckInternet", resourceCulture);
+    public static string Recovery_CheckFirewall => ResourceManager.GetString("Recovery_CheckFirewall", resourceCulture);
+    public static string Recovery_TryAgainLater => ResourceManager.GetString("Recovery_TryAgainLater", resourceCulture);
+    public static string Recovery_RunAsAdmin => ResourceManager.GetString("Recovery_RunAsAdmin", resourceCulture);
+    public static string Recovery_CheckPermissions => ResourceManager.GetString("Recovery_CheckPermissions", resourceCulture);
+    public static string Recovery_CheckPath => ResourceManager.GetString("Recovery_CheckPath", resourceCulture);
+    public static string Recovery_ReinstallApp => ResourceManager.GetString("Recovery_ReinstallApp", resourceCulture);
+    public static string Recovery_CheckPrerequisites => ResourceManager.GetString("Recovery_CheckPrerequisites", resourceCulture);
+    public static string Recovery_RetryInstall => ResourceManager.GetString("Recovery_RetryInstall", resourceCulture);
+    public static string Recovery_ManualInstall => ResourceManager.GetString("Recovery_ManualInstall", resourceCulture);
+    public static string Recovery_CheckPowerShell => ResourceManager.GetString("Recovery_CheckPowerShell", resourceCulture);
+    public static string Recovery_UpdatePowerShell => ResourceManager.GetString("Recovery_UpdatePowerShell", resourceCulture);
+    public static string Recovery_Generic_Retry => ResourceManager.GetString("Recovery_Generic_Retry", resourceCulture);
+    public static string Recovery_Generic_Restart => ResourceManager.GetString("Recovery_Generic_Restart", resourceCulture);
+    public static string Recovery_Generic_CheckLogs => ResourceManager.GetString("Recovery_Generic_CheckLogs", resourceCulture);
 }

@@ -89,10 +89,26 @@
     <value>System Information</value>
     <comment>System information card title</comment>
   </data>
-  <!-- Deployment -->
+  <!-- Deployment / Monitoring -->
   <data name="Deploy_Title" xml:space="preserve">
     <value>Deployment</value>
     <comment>Deployment view title</comment>
+  </data>
+  <data name="Monitoring_Title" xml:space="preserve">
+    <value>Monitoring</value>
+    <comment>Monitoring view title</comment>
+  </data>
+  <data name="Monitoring_Subtitle" xml:space="preserve">
+    <value>Track the progress of your current deployment</value>
+    <comment>Monitoring view subtitle</comment>
+  </data>
+  <data name="Monitoring_NoDeployment" xml:space="preserve">
+    <value>No deployment in progress</value>
+    <comment>Empty state title when no deployment</comment>
+  </data>
+  <data name="Monitoring_NoDeploymentHint" xml:space="preserve">
+    <value>Start a deployment from the Applications section to monitor it here</value>
+    <comment>Empty state hint when no deployment</comment>
   </data>
   <!-- Breadcrumb Steps -->
   <data name="Breadcrumb_SelectProfile" xml:space="preserve">
@@ -179,8 +195,8 @@
     <comment>Dashboard navigation item</comment>
   </data>
   <data name="Nav_Deployment" xml:space="preserve">
-    <value>Deployment</value>
-    <comment>Deployment navigation item</comment>
+    <value>Monitoring</value>
+    <comment>Monitoring navigation item</comment>
   </data>
   <data name="Nav_Apps" xml:space="preserve">
     <value>Applications</value>
@@ -1353,5 +1369,505 @@
   <data name="Apps_NoUpdates" xml:space="preserve">
     <value>All applications are up to date</value>
     <comment>Message when no updates are available</comment>
+  </data>
+  <!-- UX Improvements - Error Recovery -->
+  <data name="Recovery_CheckInternet" xml:space="preserve">
+    <value>Check your internet connection and try again</value>
+    <comment>Recovery suggestion for network errors</comment>
+  </data>
+  <data name="Recovery_CheckFirewall" xml:space="preserve">
+    <value>Ensure firewall or antivirus is not blocking the connection</value>
+    <comment>Recovery suggestion for firewall issues</comment>
+  </data>
+  <data name="Recovery_TryAgainLater" xml:space="preserve">
+    <value>The server may be temporarily unavailable - try again later</value>
+    <comment>Recovery suggestion for server issues</comment>
+  </data>
+  <data name="Recovery_RunAsAdmin" xml:space="preserve">
+    <value>Run Win11Forge as Administrator</value>
+    <comment>Recovery suggestion for permission errors</comment>
+  </data>
+  <data name="Recovery_CheckPermissions" xml:space="preserve">
+    <value>Check that you have permission to access the required files or folders</value>
+    <comment>Recovery suggestion for access denied errors</comment>
+  </data>
+  <data name="Recovery_CheckPath" xml:space="preserve">
+    <value>Verify the file or folder path exists</value>
+    <comment>Recovery suggestion for path errors</comment>
+  </data>
+  <data name="Recovery_ReinstallApp" xml:space="preserve">
+    <value>Try reinstalling the application</value>
+    <comment>Recovery suggestion for corrupted installations</comment>
+  </data>
+  <data name="Recovery_CheckPrerequisites" xml:space="preserve">
+    <value>Make sure all prerequisites are installed (Winget, Chocolatey, PowerShell 7)</value>
+    <comment>Recovery suggestion for missing prerequisites</comment>
+  </data>
+  <data name="Recovery_RetryInstall" xml:space="preserve">
+    <value>Try installing the application again</value>
+    <comment>Recovery suggestion to retry installation</comment>
+  </data>
+  <data name="Recovery_ManualInstall" xml:space="preserve">
+    <value>Consider installing the application manually from its official website</value>
+    <comment>Recovery suggestion for manual installation</comment>
+  </data>
+  <data name="Recovery_CheckPowerShell" xml:space="preserve">
+    <value>Check your PowerShell execution policy (Set-ExecutionPolicy RemoteSigned)</value>
+    <comment>Recovery suggestion for PowerShell policy issues</comment>
+  </data>
+  <data name="Recovery_UpdatePowerShell" xml:space="preserve">
+    <value>Update PowerShell to the latest version</value>
+    <comment>Recovery suggestion for PowerShell update</comment>
+  </data>
+  <data name="Recovery_Generic_Retry" xml:space="preserve">
+    <value>Try the operation again</value>
+    <comment>Generic recovery suggestion to retry</comment>
+  </data>
+  <data name="Recovery_Generic_Restart" xml:space="preserve">
+    <value>Restart Win11Forge and try again</value>
+    <comment>Generic recovery suggestion to restart</comment>
+  </data>
+  <data name="Recovery_Generic_CheckLogs" xml:space="preserve">
+    <value>Check the logs folder for more details</value>
+    <comment>Generic recovery suggestion to check logs</comment>
+  </data>
+  <!-- UX Improvements - Error Dialog -->
+  <data name="Dialog_Error_TryThis" xml:space="preserve">
+    <value>Try this:</value>
+    <comment>Header for recovery suggestions section</comment>
+  </data>
+  <data name="Dialog_ReportIssue" xml:space="preserve">
+    <value>Report Issue</value>
+    <comment>Button to report issue on GitHub</comment>
+  </data>
+  <!-- UX Improvements - Deployment Time -->
+  <data name="Deploy_TimeElapsed" xml:space="preserve">
+    <value>Time elapsed</value>
+    <comment>Tooltip for elapsed time display</comment>
+  </data>
+  <data name="Deploy_TimeRemaining" xml:space="preserve">
+    <value>Estimated time remaining</value>
+    <comment>Tooltip for time remaining display</comment>
+  </data>
+  <!-- UX Improvements - Settings Export/Import -->
+  <data name="Settings_ExportImport" xml:space="preserve">
+    <value>Export/Import Settings</value>
+    <comment>Settings export/import section title</comment>
+  </data>
+  <data name="Settings_ExportImport_Desc" xml:space="preserve">
+    <value>Save or load your settings configuration</value>
+    <comment>Settings export/import description</comment>
+  </data>
+  <data name="Settings_Export" xml:space="preserve">
+    <value>Export</value>
+    <comment>Export settings button</comment>
+  </data>
+  <data name="Settings_Import" xml:space="preserve">
+    <value>Import</value>
+    <comment>Import settings button</comment>
+  </data>
+  <data name="Settings_ExportSuccess" xml:space="preserve">
+    <value>Settings exported successfully</value>
+    <comment>Success message after settings export</comment>
+  </data>
+  <data name="Settings_ExportFailed" xml:space="preserve">
+    <value>Failed to export settings</value>
+    <comment>Error message for settings export failure</comment>
+  </data>
+  <data name="Settings_ImportSuccess" xml:space="preserve">
+    <value>Settings imported successfully - restart required</value>
+    <comment>Success message after settings import</comment>
+  </data>
+  <data name="Settings_ImportFailed" xml:space="preserve">
+    <value>Failed to import settings</value>
+    <comment>Error message for settings import failure</comment>
+  </data>
+  <data name="Settings_ResetDefaults" xml:space="preserve">
+    <value>Reset to Defaults</value>
+    <comment>Reset settings title</comment>
+  </data>
+  <data name="Settings_ResetDefaults_Desc" xml:space="preserve">
+    <value>Reset all settings to their default values</value>
+    <comment>Reset settings description</comment>
+  </data>
+  <data name="Settings_ResetBtn" xml:space="preserve">
+    <value>Reset</value>
+    <comment>Reset button text</comment>
+  </data>
+  <data name="Settings_ResetSuccess" xml:space="preserve">
+    <value>Settings reset to defaults</value>
+    <comment>Success message after settings reset</comment>
+  </data>
+  <data name="Settings_ResetFailed" xml:space="preserve">
+    <value>Failed to reset settings</value>
+    <comment>Error message for settings reset failure</comment>
+  </data>
+  <!-- UX Improvements - Confirmation Dialogs -->
+  <data name="Confirm_ResetSettings_Title" xml:space="preserve">
+    <value>Reset Settings</value>
+    <comment>Reset settings confirmation title</comment>
+  </data>
+  <data name="Confirm_ResetSettings_Message" xml:space="preserve">
+    <value>Are you sure you want to reset all settings to their default values? This action cannot be undone.</value>
+    <comment>Reset settings confirmation message</comment>
+  </data>
+  <!-- Logs View -->
+  <data name="Logs_Title" xml:space="preserve">
+    <value>Logs</value>
+    <comment>Logs page title</comment>
+  </data>
+  <data name="Logs_Subtitle" xml:space="preserve">
+    <value>View and manage application logs</value>
+    <comment>Logs page subtitle</comment>
+  </data>
+  <data name="Logs_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>Refresh logs button</comment>
+  </data>
+  <data name="Logs_OpenFolder" xml:space="preserve">
+    <value>Open Folder</value>
+    <comment>Open logs folder button</comment>
+  </data>
+  <data name="Logs_Export" xml:space="preserve">
+    <value>Export</value>
+    <comment>Export logs button</comment>
+  </data>
+  <data name="Logs_SearchPlaceholder" xml:space="preserve">
+    <value>Search logs...</value>
+    <comment>Search logs placeholder</comment>
+  </data>
+  <data name="Logs_Level" xml:space="preserve">
+    <value>Log Type</value>
+    <comment>Log level filter label</comment>
+  </data>
+  <data name="Logs_Date" xml:space="preserve">
+    <value>Date</value>
+    <comment>Date filter label</comment>
+  </data>
+  <data name="Logs_ClearFilters" xml:space="preserve">
+    <value>Clear Filters</value>
+    <comment>Clear filters button tooltip</comment>
+  </data>
+  <data name="Logs_ClearOld" xml:space="preserve">
+    <value>Clear Old Logs</value>
+    <comment>Clear old logs button tooltip</comment>
+  </data>
+  <data name="Logs_Files" xml:space="preserve">
+    <value>Log Files</value>
+    <comment>Log files section header</comment>
+  </data>
+  <data name="Logs_FilesCount" xml:space="preserve">
+    <value>files</value>
+    <comment>Files count suffix</comment>
+  </data>
+  <data name="Logs_FileName" xml:space="preserve">
+    <value>File Name</value>
+    <comment>File name column header</comment>
+  </data>
+  <data name="Logs_Size" xml:space="preserve">
+    <value>Size</value>
+    <comment>Size column header</comment>
+  </data>
+  <data name="Logs_View" xml:space="preserve">
+    <value>View Log</value>
+    <comment>View log button tooltip</comment>
+  </data>
+  <data name="Logs_CopyPath" xml:space="preserve">
+    <value>Copy Path</value>
+    <comment>Copy path button tooltip</comment>
+  </data>
+  <data name="Logs_Delete" xml:space="preserve">
+    <value>Delete Log</value>
+    <comment>Delete log button tooltip</comment>
+  </data>
+  <data name="Logs_NoLogs" xml:space="preserve">
+    <value>No log files found</value>
+    <comment>Empty state title</comment>
+  </data>
+  <data name="Logs_NoLogs_Hint" xml:space="preserve">
+    <value>Log files will appear here after deployments</value>
+    <comment>Empty state hint</comment>
+  </data>
+  <data name="Logs_TotalSize" xml:space="preserve">
+    <value>Total size:</value>
+    <comment>Total size label</comment>
+  </data>
+  <data name="Logs_Loading" xml:space="preserve">
+    <value>Loading logs...</value>
+    <comment>Loading logs message</comment>
+  </data>
+  <data name="Confirm_ClearOldLogs_Title" xml:space="preserve">
+    <value>Clear Old Logs</value>
+    <comment>Clear old logs confirmation title</comment>
+  </data>
+  <data name="Confirm_ClearOldLogs_Message" xml:space="preserve">
+    <value>Delete log files older than 7 days? This action cannot be undone.</value>
+    <comment>Clear old logs confirmation message</comment>
+  </data>
+  <!-- Error Recovery Suggestions -->
+  <data name="Recovery_CheckInternet" xml:space="preserve">
+    <value>Check your internet connection and try again</value>
+  </data>
+  <data name="Recovery_CheckFirewall" xml:space="preserve">
+    <value>Ensure firewall or antivirus is not blocking the connection</value>
+  </data>
+  <data name="Recovery_TryAgainLater" xml:space="preserve">
+    <value>The server may be temporarily unavailable - try again later</value>
+  </data>
+  <data name="Recovery_RunAsAdmin" xml:space="preserve">
+    <value>Run Win11Forge as Administrator</value>
+  </data>
+  <data name="Recovery_CheckPermissions" xml:space="preserve">
+    <value>Check that you have permission to access the required files or folders</value>
+  </data>
+  <data name="Recovery_CheckPath" xml:space="preserve">
+    <value>Verify the file or folder path exists</value>
+  </data>
+  <data name="Recovery_ReinstallApp" xml:space="preserve">
+    <value>Try reinstalling the application</value>
+  </data>
+  <data name="Recovery_CheckPrerequisites" xml:space="preserve">
+    <value>Make sure all prerequisites are installed (Winget, Chocolatey, PowerShell 7)</value>
+  </data>
+  <data name="Recovery_RetryInstall" xml:space="preserve">
+    <value>Try installing the application again</value>
+  </data>
+  <data name="Recovery_ManualInstall" xml:space="preserve">
+    <value>Consider installing the application manually from its official website</value>
+  </data>
+  <data name="Recovery_CheckPowerShell" xml:space="preserve">
+    <value>Check your PowerShell execution policy (Set-ExecutionPolicy RemoteSigned)</value>
+  </data>
+  <data name="Recovery_UpdatePowerShell" xml:space="preserve">
+    <value>Update PowerShell to the latest version</value>
+  </data>
+  <data name="Recovery_Generic_Retry" xml:space="preserve">
+    <value>Try the operation again</value>
+  </data>
+  <data name="Recovery_Generic_Restart" xml:space="preserve">
+    <value>Restart Win11Forge and try again</value>
+  </data>
+  <data name="Recovery_Generic_CheckLogs" xml:space="preserve">
+    <value>Check the logs folder for more details</value>
+  </data>
+  <!-- Navigation -->
+  <data name="Nav_Back" xml:space="preserve">
+    <value>Back</value>
+    <comment>Back navigation button tooltip</comment>
+  </data>
+  <!-- Settings Tabs -->
+  <data name="Settings_Tab_Appearance" xml:space="preserve">
+    <value>Appearance</value>
+    <comment>Settings appearance tab</comment>
+  </data>
+  <data name="Settings_Tab_Performance" xml:space="preserve">
+    <value>Performance</value>
+    <comment>Settings performance tab</comment>
+  </data>
+  <data name="Settings_Tab_Data" xml:space="preserve">
+    <value>Data</value>
+    <comment>Settings data tab</comment>
+  </data>
+  <data name="Settings_Tab_About" xml:space="preserve">
+    <value>About</value>
+    <comment>Settings about tab</comment>
+  </data>
+  <!-- Accessibility -->
+  <data name="Settings_ReducedMotion" xml:space="preserve">
+    <value>Reduce Motion</value>
+    <comment>Reduce motion setting label</comment>
+  </data>
+  <data name="Settings_ReducedMotion_Desc" xml:space="preserve">
+    <value>Minimize animations for accessibility</value>
+    <comment>Reduce motion setting description</comment>
+  </data>
+  <!-- Profile Selection -->
+  <data name="Apps_ProfileLabel" xml:space="preserve">
+    <value>Profile</value>
+    <comment>Profile selector label</comment>
+  </data>
+  <data name="Apps_SelectProfile" xml:space="preserve">
+    <value>Select a profile...</value>
+    <comment>Profile selector placeholder</comment>
+  </data>
+  <data name="Apps_ClearProfile" xml:space="preserve">
+    <value>Clear profile</value>
+    <comment>Clear profile button tooltip</comment>
+  </data>
+  <data name="Apps_AppsSelected" xml:space="preserve">
+    <value>apps selected</value>
+    <comment>Apps selected count suffix</comment>
+  </data>
+  <!-- Save Profile Dialog -->
+  <data name="Apps_SaveProfile" xml:space="preserve">
+    <value>Save Profile</value>
+    <comment>Save profile button tooltip</comment>
+  </data>
+  <data name="Dialog_SaveProfile_Title" xml:space="preserve">
+    <value>Save Profile</value>
+    <comment>Save profile dialog title</comment>
+  </data>
+  <data name="Dialog_SaveProfile_AppsSelected" xml:space="preserve">
+    <value>applications selected</value>
+    <comment>Number of apps selected in save dialog</comment>
+  </data>
+  <data name="Dialog_SaveProfile_Overwrite" xml:space="preserve">
+    <value>Update existing profile:</value>
+    <comment>Option to overwrite existing profile</comment>
+  </data>
+  <data name="Dialog_SaveProfile_CreateNew" xml:space="preserve">
+    <value>Create new profile</value>
+    <comment>Option to create a new profile</comment>
+  </data>
+  <data name="Dialog_SaveProfile_Success" xml:space="preserve">
+    <value>Profile saved successfully</value>
+    <comment>Success message after saving profile</comment>
+  </data>
+  <data name="Dialog_SaveProfile_Error" xml:space="preserve">
+    <value>Failed to save profile: {0}</value>
+    <comment>Error message when save fails</comment>
+  </data>
+  <data name="Dialog_SaveProfile_NoApps" xml:space="preserve">
+    <value>Please select at least one application</value>
+    <comment>Error when no apps selected</comment>
+  </data>
+  <!-- Dashboard Hero Section -->
+  <data name="Dashboard_Hero_Checking" xml:space="preserve">
+    <value>Checking system status...</value>
+    <comment>Hero status while checking prerequisites</comment>
+  </data>
+  <data name="Dashboard_Hero_Ready" xml:space="preserve">
+    <value>Ready to deploy</value>
+    <comment>Hero status when system is ready</comment>
+  </data>
+  <data name="Dashboard_Hero_NeedPrereqs" xml:space="preserve">
+    <value>{0} prerequisite(s) missing</value>
+    <comment>Hero status when prerequisites are missing</comment>
+  </data>
+  <data name="Dashboard_Hero_HasUpdates" xml:space="preserve">
+    <value>Ready - {0} update(s) available</value>
+    <comment>Hero status when updates are available</comment>
+  </data>
+  <data name="Dashboard_Btn_StartDeployment" xml:space="preserve">
+    <value>START DEPLOYMENT</value>
+    <comment>Primary CTA button on dashboard</comment>
+  </data>
+  <data name="Dashboard_Btn_FixPrereqs" xml:space="preserve">
+    <value>Fix Prerequisites</value>
+    <comment>Button to navigate to prerequisites</comment>
+  </data>
+  <data name="Dashboard_Btn_ViewUpdates" xml:space="preserve">
+    <value>View Updates</value>
+    <comment>Button to view available updates</comment>
+  </data>
+  <data name="Dashboard_Stats_Profiles" xml:space="preserve">
+    <value>profiles</value>
+    <comment>Stat label for profiles count</comment>
+  </data>
+  <data name="Dashboard_Stats_Apps" xml:space="preserve">
+    <value>applications</value>
+    <comment>Stat label for apps count</comment>
+  </data>
+  <data name="Dashboard_Stats_Updates" xml:space="preserve">
+    <value>updates available</value>
+    <comment>Stat label for updates count</comment>
+  </data>
+  <data name="Dashboard_History_Title" xml:space="preserve">
+    <value>Recent Deployments</value>
+    <comment>Recent deployments section title</comment>
+  </data>
+  <data name="Dashboard_History_Empty" xml:space="preserve">
+    <value>No deployments yet</value>
+    <comment>Empty state for deployment history</comment>
+  </data>
+  <data name="Dashboard_History_ViewAll" xml:space="preserve">
+    <value>View all history</value>
+    <comment>Link to view full deployment history</comment>
+  </data>
+  <data name="Dashboard_Phase_LoadingInfo" xml:space="preserve">
+    <value>Loading information...</value>
+    <comment>Phase 1 of dashboard check</comment>
+  </data>
+  <data name="Dashboard_Phase_CheckingPrereqs" xml:space="preserve">
+    <value>Checking prerequisites...</value>
+    <comment>Phase 2 of dashboard check</comment>
+  </data>
+  <data name="Dashboard_Phase_ScanningUpdates" xml:space="preserve">
+    <value>Scanning for updates...</value>
+    <comment>Phase 3 of dashboard check</comment>
+  </data>
+  <data name="Dashboard_LastCheck_JustNow" xml:space="preserve">
+    <value>Checked just now</value>
+    <comment>Last check timestamp - less than 1 minute</comment>
+  </data>
+  <data name="Dashboard_LastCheck_MinutesAgo" xml:space="preserve">
+    <value>Checked {0} min ago</value>
+    <comment>Last check timestamp - minutes ago</comment>
+  </data>
+  <data name="Dashboard_LastCheck_HoursAgo" xml:space="preserve">
+    <value>Checked {0}h ago</value>
+    <comment>Last check timestamp - hours ago</comment>
+  </data>
+  <data name="Dashboard_Stats_ProfilesHint" xml:space="preserve">
+    <value>Click to select a deployment profile</value>
+    <comment>Tooltip for profiles stat card</comment>
+  </data>
+  <data name="Dashboard_Stats_AppsHint" xml:space="preserve">
+    <value>Click to manage applications</value>
+    <comment>Tooltip for apps stat card</comment>
+  </data>
+  <data name="Dashboard_Stats_UpdatesHint" xml:space="preserve">
+    <value>Click to view available updates</value>
+    <comment>Tooltip for updates stat card</comment>
+  </data>
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Dashboard</value>
+    <comment>Dashboard page title</comment>
+  </data>
+  <data name="Dashboard_SystemInfo_Title" xml:space="preserve">
+    <value>System Information</value>
+    <comment>System info card title</comment>
+  </data>
+  <data name="Dashboard_Sys_Hostname" xml:space="preserve">
+    <value>Hostname</value>
+  </data>
+  <data name="Dashboard_Sys_OS" xml:space="preserve">
+    <value>Operating System</value>
+  </data>
+  <data name="Dashboard_Sys_Build" xml:space="preserve">
+    <value>Build</value>
+  </data>
+  <data name="Dashboard_Sys_Admin" xml:space="preserve">
+    <value>Administrator</value>
+  </data>
+  <data name="Dashboard_Sys_Winget" xml:space="preserve">
+    <value>Winget</value>
+  </data>
+  <data name="Dashboard_Sys_Chocolatey" xml:space="preserve">
+    <value>Chocolatey</value>
+  </data>
+  <data name="Dashboard_Updates_Title" xml:space="preserve">
+    <value>Updates</value>
+    <comment>Updates card title</comment>
+  </data>
+  <data name="Dashboard_Updates_Available" xml:space="preserve">
+    <value>updates available</value>
+    <comment>Label under update count</comment>
+  </data>
+  <data name="Dashboard_Scan_Button" xml:space="preserve">
+    <value>Scan for Updates</value>
+    <comment>Scan button text</comment>
+  </data>
+  <data name="Dashboard_Scan_Scanning" xml:space="preserve">
+    <value>Scanning...</value>
+    <comment>Scan button text while scanning</comment>
+  </data>
+  <data name="Dashboard_QuickNav_Title" xml:space="preserve">
+    <value>Quick Navigation</value>
+    <comment>Quick nav card title</comment>
+  </data>
+  <data name="Status_Missing" xml:space="preserve">
+    <value>Not installed</value>
+    <comment>Status for missing prerequisite</comment>
   </data>
 </root>

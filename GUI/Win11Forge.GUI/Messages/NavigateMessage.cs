@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using Win11Forge.GUI.ViewModels;
+
 namespace Win11Forge.GUI.Messages;
 
 /// <summary>
@@ -44,5 +46,55 @@ public class NavigateMessage
     public NavigateMessage(int targetViewIndex)
     {
         TargetViewIndex = targetViewIndex;
+    }
+}
+
+/// <summary>
+/// Message to request applying a status filter in the Apps view.
+/// </summary>
+public class ApplyFilterMessage
+{
+    /// <summary>
+    /// The status filter to apply.
+    /// </summary>
+    public StatusFilterOption Filter { get; }
+
+    /// <summary>
+    /// Whether to trigger a scan after applying the filter.
+    /// </summary>
+    public bool TriggerScan { get; }
+
+    /// <summary>
+    /// Initializes a new instance of ApplyFilterMessage.
+    /// </summary>
+    public ApplyFilterMessage(StatusFilterOption filter, bool triggerScan = false)
+    {
+        Filter = filter;
+        TriggerScan = triggerScan;
+    }
+}
+
+/// <summary>
+/// Message to request a scan in the Apps view from another view (e.g., Dashboard).
+/// </summary>
+public class TriggerScanMessage
+{
+    /// <summary>
+    /// Callback to report scan progress.
+    /// </summary>
+    public Action<int, int>? ProgressCallback { get; }
+
+    /// <summary>
+    /// Callback to report scan completion with update count.
+    /// </summary>
+    public Action<int>? CompletionCallback { get; }
+
+    /// <summary>
+    /// Initializes a new instance of TriggerScanMessage.
+    /// </summary>
+    public TriggerScanMessage(Action<int, int>? progressCallback = null, Action<int>? completionCallback = null)
+    {
+        ProgressCallback = progressCallback;
+        CompletionCallback = completionCallback;
     }
 }

@@ -20,25 +20,12 @@ namespace Win11Forge.GUI.Views;
 
 /// <summary>
 /// Dashboard view displaying system information and version.
+/// Acts as a navigation hub for deployment, maintenance, and monitoring.
 /// </summary>
 public partial class DashboardView : UserControl
 {
     public DashboardView()
     {
         InitializeComponent();
-    }
-
-    /// <summary>
-    /// Auto-scrolls to the bottom when new log text is added.
-    /// </summary>
-    private void PrerequisitesLog_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        if (sender is TextBox textBox)
-        {
-            textBox.ScrollToEnd();
-        }
-
-        // Also scroll the parent ScrollViewer
-        PrerequisitesLogScroller?.ScrollToEnd();
     }
 }

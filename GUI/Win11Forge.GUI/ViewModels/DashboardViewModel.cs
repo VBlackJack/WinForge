@@ -26,22 +26,16 @@ namespace Win11Forge.GUI.ViewModels;
 
 /// <summary>
 /// ViewModel for the Dashboard view.
-/// Displays Win11Forge version, system status, and recent activity.
+/// Displays system information, update scanner, and quick navigation.
 /// </summary>
 public partial class DashboardViewModel : ViewModelBase
 {
-    /// <summary>
-    /// Maximum number of recent deployment entries to display.
-    /// </summary>
     private const int MaxRecentHistory = 5;
-
-    /// <summary>
-    /// Maximum number of history entries to load for total count.
-    /// </summary>
-    private const int MaxTotalHistory = 100;
 
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IDeploymentHistoryService _historyService;
+
+    #region System Info Properties
 
     /// <summary>
     /// Win11Forge version.
@@ -50,28 +44,74 @@ public partial class DashboardViewModel : ViewModelBase
     private string _appVersion = string.Empty;
 
     /// <summary>
-    /// Repository path.
+    /// Computer hostname.
     /// </summary>
     [ObservableProperty]
-    private string _repositoryPath = string.Empty;
+    private string _hostname = string.Empty;
 
     /// <summary>
-    /// System information.
+    /// Operating system name.
     /// </summary>
     [ObservableProperty]
-    private SystemInfoModel? _systemInfo;
+    private string _oSName = string.Empty;
 
     /// <summary>
-    /// Recent deployment history entries.
+    /// Operating system build number.
     /// </summary>
     [ObservableProperty]
-    private ObservableCollection<DeploymentHistoryEntry> _recentDeployments = [];
+    private string _oSBuild = string.Empty;
 
     /// <summary>
-    /// Total number of deployments.
+    /// Whether running as administrator.
     /// </summary>
     [ObservableProperty]
-    private int _totalDeployments;
+    private bool _isAdmin;
+
+    /// <summary>
+    /// Admin status display text.
+    /// </summary>
+    [ObservableProperty]
+    private string _adminStatus = string.Empty;
+
+    /// <summary>
+    /// Whether Winget is installed.
+    /// </summary>
+    [ObservableProperty]
+    private bool _wingetInstalled;
+
+    /// <summary>
+    /// Winget version or "Not installed".
+    /// </summary>
+    [ObservableProperty]
+    private string _wingetVersion = string.Empty;
+
+    /// <summary>
+    /// Whether Chocolatey is installed.
+    /// </summary>
+    [ObservableProperty]
+    private bool _chocolateyInstalled;
+
+    /// <summary>
+    /// Chocolatey version or "Not installed".
+    /// </summary>
+    [ObservableProperty]
+    private string _chocolateyVersion = string.Empty;
+
+    /// <summary>
+    /// Whether PowerShell 7+ is installed.
+    /// </summary>
+    [ObservableProperty]
+    private bool _powerShellInstalled;
+
+    /// <summary>
+    /// PowerShell version or "Not installed".
+    /// </summary>
+    [ObservableProperty]
+    private string _powerShellVersion = string.Empty;
+
+    #endregion
+
+    #region Stats Properties
 
     /// <summary>
     /// Number of available profiles.
@@ -83,43 +123,91 @@ public partial class DashboardViewModel : ViewModelBase
     /// Number of available applications.
     /// </summary>
     [ObservableProperty]
-    private int _applicationCount;
+    private int _appCount;
 
     /// <summary>
-    /// Whether system info is being loaded.
+    /// Number of available updates.
     /// </summary>
     [ObservableProperty]
-    private bool _isLoadingSystemInfo;
+    private int _updateCount;
+
+    #endregion
+
+    #region Scan Properties
 
     /// <summary>
-    /// Prerequisites status.
+    /// Whether currently scanning for updates.
     /// </summary>
     [ObservableProperty]
-    private PrerequisitesStatus? _prerequisitesStatus;
+    [NotifyPropertyChangedFor(nameof(IsNotScanning))]
+    [NotifyPropertyChangedFor(nameof(ScanButtonText))]
+    private bool _isScanning;
 
     /// <summary>
-    /// Whether prerequisites are being checked.
+    /// Current scan progress (number of apps scanned).
     /// </summary>
     [ObservableProperty]
-    private bool _isCheckingPrerequisites;
+    [NotifyPropertyChangedFor(nameof(ScanButtonText))]
+    private int _scanProgress;
 
     /// <summary>
-    /// Whether prerequisites are being installed.
+    /// Total number of apps to scan.
     /// </summary>
     [ObservableProperty]
-    private bool _isInstallingPrerequisites;
+    [NotifyPropertyChangedFor(nameof(ScanButtonText))]
+    private int _scanTotal;
 
     /// <summary>
-    /// Prerequisites installation progress message.
+    /// Inverse of IsScanning for button enabling.
     /// </summary>
-    [ObservableProperty]
-    private string? _prerequisitesProgressMessage;
+    public bool IsNotScanning => !IsScanning;
 
     /// <summary>
-    /// Prerequisites installation log output.
+    /// Text for the scan button.
+    /// </summary>
+    public string ScanButtonText => IsScanning
+        ? $"Scanning... ({ScanProgress}/{ScanTotal})"
+        : "Scan for Updates";
+
+    /// <summary>
+    /// Timestamp of the last scan.
     /// </summary>
     [ObservableProperty]
-    private string _prerequisitesLogOutput = string.Empty;
+    private DateTime? _lastScanTime;
+
+    /// <summary>
+    /// Formatted string for last scan time.
+    /// </summary>
+    public string LastScanDisplay
+    {
+        get
+        {
+            if (!LastScanTime.HasValue) return string.Empty;
+            var elapsed = DateTime.Now - LastScanTime.Value;
+            if (elapsed.TotalSeconds < 60)
+                return Resources.Resources.Dashboard_LastCheck_JustNow;
+            if (elapsed.TotalMinutes < 60)
+                return string.Format(Resources.Resources.Dashboard_LastCheck_MinutesAgo, (int)elapsed.TotalMinutes);
+            return string.Format(Resources.Resources.Dashboard_LastCheck_HoursAgo, (int)elapsed.TotalHours);
+        }
+    }
+
+    #endregion
+
+    #region History Properties
+
+    /// <summary>
+    /// Recent deployment history entries.
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<DeploymentHistoryEntry> _recentDeployments = [];
+
+    /// <summary>
+    /// Whether there are any recent deployments.
+    /// </summary>
+    public bool HasRecentDeployments => RecentDeployments.Count > 0;
+
+    #endregion
 
     /// <summary>
     /// Initializes a new instance of DashboardViewModel.
@@ -131,7 +219,7 @@ public partial class DashboardViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Initializes a new instance with just the PowerShell bridge (for backwards compatibility).
+    /// Initializes a new instance with just the PowerShell bridge.
     /// </summary>
     public DashboardViewModel(IPowerShellBridge powerShellBridge)
         : this(powerShellBridge, new DeploymentHistoryService())
@@ -146,28 +234,30 @@ public partial class DashboardViewModel : ViewModelBase
 
         try
         {
-            // Load basic info first
+            // Load version
             AppVersion = await _powerShellBridge.GetWin11ForgeVersionAsync();
-            RepositoryPath = _powerShellBridge.RepositoryRoot;
 
-            // Load profile and app counts
+            // Load system info
+            await LoadSystemInfoAsync();
+
+            // Load prerequisites status
+            await LoadPrerequisitesStatusAsync();
+
+            // Load stats
             var profiles = await _powerShellBridge.GetAvailableProfilesAsync();
             ProfileCount = profiles.Count;
 
             var apps = await _powerShellBridge.GetAllApplicationsAsync();
-            ApplicationCount = apps.Count;
+            AppCount = apps.Count;
 
             // Load recent deployments
-            await LoadRecentDeploymentsAsync();
-
-            // Load system info and prerequisites in background
-            _ = LoadSystemInfoAsync();
-            _ = CheckPrerequisitesAsync();
+            var history = await _historyService.GetRecentHistoryAsync(MaxRecentHistory);
+            RecentDeployments = new ObservableCollection<DeploymentHistoryEntry>(history);
+            OnPropertyChanged(nameof(HasRecentDeployments));
         }
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
-            AppVersion = Resources.Resources.Common_ErrorFallback;
         }
         finally
         {
@@ -176,112 +266,144 @@ public partial class DashboardViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Loads recent deployment history.
-    /// </summary>
-    private async Task LoadRecentDeploymentsAsync()
-    {
-        var history = await _historyService.GetRecentHistoryAsync(MaxRecentHistory);
-        RecentDeployments = new ObservableCollection<DeploymentHistoryEntry>(history);
-
-        var allHistory = await _historyService.GetHistoryAsync(MaxTotalHistory);
-        TotalDeployments = allHistory.Count;
-    }
-
-    /// <summary>
-    /// Loads system information asynchronously.
+    /// Loads system information.
     /// </summary>
     private async Task LoadSystemInfoAsync()
     {
-        IsLoadingSystemInfo = true;
         try
         {
-            SystemInfo = await _powerShellBridge.GetSystemInfoAsync();
+            var systemInfo = await _powerShellBridge.GetSystemInfoAsync();
+            if (systemInfo != null)
+            {
+                Hostname = !string.IsNullOrEmpty(systemInfo.Hostname) ? systemInfo.Hostname : Environment.MachineName;
+                OSName = !string.IsNullOrEmpty(systemInfo.WindowsVersion) ? systemInfo.WindowsVersion : "Windows";
+                OSBuild = !string.IsNullOrEmpty(systemInfo.WindowsBuild) ? systemInfo.WindowsBuild : "Unknown";
+                IsAdmin = systemInfo.IsAdministrator;
+                AdminStatus = IsAdmin ? "Yes" : "No";
+            }
+            else
+            {
+                SetSystemInfoDefaults();
+            }
         }
         catch
         {
-            // System info is optional, don't fail dashboard
-        }
-        finally
-        {
-            IsLoadingSystemInfo = false;
+            SetSystemInfoDefaults();
         }
     }
 
-    /// <summary>
-    /// Refreshes the dashboard data.
-    /// </summary>
-    [RelayCommand]
-    private async Task RefreshAsync()
+    private void SetSystemInfoDefaults()
     {
-        await InitializeAsync();
+        Hostname = Environment.MachineName;
+        OSName = "Windows";
+        OSBuild = Environment.OSVersion.Version.Build.ToString();
+        IsAdmin = false;
+        AdminStatus = "No";
     }
 
     /// <summary>
-    /// Checks the status of prerequisites.
+    /// Loads prerequisites status.
     /// </summary>
-    [RelayCommand]
-    private async Task CheckPrerequisitesAsync()
+    private async Task LoadPrerequisitesStatusAsync()
     {
-        IsCheckingPrerequisites = true;
         try
         {
-            PrerequisitesStatus = await _powerShellBridge.CheckPrerequisitesAsync();
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = ex.Message;
-        }
-        finally
-        {
-            IsCheckingPrerequisites = false;
-        }
-    }
-
-    /// <summary>
-    /// Navigates to the Deployment view to start a new deployment.
-    /// </summary>
-    [RelayCommand]
-    private void StartDeployment()
-    {
-        WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Deployment));
-    }
-
-    /// <summary>
-    /// Installs missing prerequisites.
-    /// </summary>
-    [RelayCommand]
-    private async Task InstallPrerequisitesAsync()
-    {
-        IsInstallingPrerequisites = true;
-        PrerequisitesProgressMessage = Resources.Resources.Prerequisites_Starting;
-        PrerequisitesLogOutput = string.Empty;
-
-        try
-        {
-            var success = await _powerShellBridge.InstallPrerequisitesAsync(msg =>
+            var prereqStatus = await _powerShellBridge.CheckPrerequisitesAsync();
+            if (prereqStatus != null)
             {
-                // Update on UI thread
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    PrerequisitesProgressMessage = msg;
-                    PrerequisitesLogOutput += msg + Environment.NewLine;
-                });
-            });
+                PowerShellInstalled = prereqStatus.PowerShell7Installed;
+                PowerShellVersion = prereqStatus.PowerShell7Installed
+                    ? (!string.IsNullOrEmpty(prereqStatus.PowerShellVersion) ? prereqStatus.PowerShellVersion : "7+")
+                    : "Not installed";
 
-            if (success)
+                WingetInstalled = prereqStatus.WingetInstalled;
+                WingetVersion = prereqStatus.WingetInstalled
+                    ? (!string.IsNullOrEmpty(prereqStatus.WingetVersion) ? prereqStatus.WingetVersion : "Installed")
+                    : "Not installed";
+
+                ChocolateyInstalled = prereqStatus.ChocolateyInstalled;
+                ChocolateyVersion = prereqStatus.ChocolateyInstalled
+                    ? (!string.IsNullOrEmpty(prereqStatus.ChocolateyVersion) ? prereqStatus.ChocolateyVersion : "Installed")
+                    : "Not installed";
+            }
+            else
             {
-                // Refresh status after installation
-                await CheckPrerequisitesAsync();
+                SetPrerequisitesUnknown();
             }
         }
-        catch (Exception ex)
+        catch
         {
-            ErrorMessage = ex.Message;
-            PrerequisitesLogOutput += $"Exception: {ex.Message}" + Environment.NewLine;
+            SetPrerequisitesUnknown();
         }
-        finally
-        {
-            IsInstallingPrerequisites = false;
-        }
+    }
+
+    private void SetPrerequisitesUnknown()
+    {
+        PowerShellInstalled = false;
+        PowerShellVersion = "Unknown";
+        WingetInstalled = false;
+        WingetVersion = "Unknown";
+        ChocolateyInstalled = false;
+        ChocolateyVersion = "Unknown";
+    }
+
+    /// <summary>
+    /// Scans for available updates by triggering the scan in AppsViewModel.
+    /// This ensures the Applications view has the scan results available.
+    /// </summary>
+    [RelayCommand]
+    private void ScanUpdates()
+    {
+        if (IsScanning) return;
+
+        IsScanning = true;
+        UpdateCount = 0;
+        ScanProgress = 0;
+        ScanTotal = 0;
+
+        // Send message to AppsViewModel to trigger its scan
+        // with callbacks for progress and completion
+        WeakReferenceMessenger.Default.Send(new TriggerScanMessage(
+            progressCallback: (current, total) =>
+            {
+                ScanProgress = current;
+                ScanTotal = total;
+            },
+            completionCallback: (updateCount) =>
+            {
+                UpdateCount = updateCount;
+                LastScanTime = DateTime.Now;
+                OnPropertyChanged(nameof(LastScanDisplay));
+                IsScanning = false;
+            }
+        ));
+    }
+
+    /// <summary>
+    /// Navigates to the Prerequisites view.
+    /// </summary>
+    [RelayCommand]
+    private void NavigateToPrerequisites()
+    {
+        WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Prerequisites));
+    }
+
+    /// <summary>
+    /// Navigates to the Apps view.
+    /// </summary>
+    [RelayCommand]
+    private void NavigateToApps()
+    {
+        WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Apps));
+    }
+
+    /// <summary>
+    /// Navigates to the Apps view with updates filter.
+    /// </summary>
+    [RelayCommand]
+    private void ViewUpdates()
+    {
+        WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Apps));
+        WeakReferenceMessenger.Default.Send(new ApplyFilterMessage(StatusFilterOption.HasUpdates, triggerScan: true));
     }
 }

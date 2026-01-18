@@ -21,7 +21,9 @@ using System.Text.Json;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
+using Win11Forge.GUI.Messages;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Resources;
@@ -49,6 +51,7 @@ public partial class AppsViewModel : ViewModelBase
 {
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IAppSettingsService _settingsService;
+    private readonly IDeploymentStateService _deploymentStateService;
     private readonly ProgressEstimator _progressEstimator = new();
     private SemaphoreSlim _scanSemaphore;
     private SemaphoreSlim _installSemaphore;
@@ -56,6 +59,10 @@ public partial class AppsViewModel : ViewModelBase
     private CancellationTokenSource? _scanCancellationTokenSource;
     private CancellationTokenSource? _batchCancellationTokenSource;
     private readonly ManualResetEventSlim _pauseEvent = new(true);
+
+    // External callbacks for Dashboard scan integration
+    private Action<int, int>? _externalProgressCallback;
+    private Action<int>? _externalCompletionCallback;
 
     /// <summary>
     /// Filtered applications displayed in the view.
@@ -108,6 +115,40 @@ public partial class AppsViewModel : ViewModelBase
     /// Indicates whether a status filter is currently active.
     /// </summary>
     public bool HasStatusFilter => SelectedStatusFilter != StatusFilterOption.All;
+
+    /// <summary>
+    /// Available deployment profiles.
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<string> _availableProfiles = [];
+
+    /// <summary>
+    /// Currently selected profile (null = no profile, manual selection).
+    /// </summary>
+    [ObservableProperty]
+    private string? _selectedProfile;
+
+    /// <summary>
+    /// Indicates whether a profile is currently applied.
+    /// </summary>
+    public bool HasProfileApplied => !string.IsNullOrEmpty(SelectedProfile);
+
+    /// <summary>
+    /// Cache of resolved profile app IDs with their tier.
+    /// </summary>
+    private Dictionary<string, string> _profileAppTiers = [];
+
+    /// <summary>
+    /// Cache of resolved profile app IDs (with inheritance).
+    /// Key = profile name, Value = set of AppIds included in that profile.
+    /// </summary>
+    private Dictionary<string, HashSet<string>> _resolvedProfileAppIdsCache = [];
+
+    /// <summary>
+    /// Cache of raw profile app IDs (without inheritance, for tier mapping).
+    /// Key = profile name, Value = list of AppIds defined directly in that profile.
+    /// </summary>
+    private Dictionary<string, List<string>> _rawProfileAppIdsCache = [];
 
     /// <summary>
     /// Total number of applications in database.
@@ -181,9 +222,15 @@ public partial class AppsViewModel : ViewModelBase
     private bool _isInstalling;
 
     /// <summary>
+    /// Debug: Service hash code to verify singleton.
+    /// </summary>
+    public int DebugServiceHashCode => _deploymentStateService.GetHashCode();
+
+    /// <summary>
     /// Whether the log viewer dialog is open.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDialogOpen))]
     private bool _isLogViewerOpen;
 
     /// <summary>
@@ -235,7 +282,13 @@ public partial class AppsViewModel : ViewModelBase
     /// Whether summary dialog is open.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDialogOpen))]
     private bool _isSummaryDialogOpen;
+
+    /// <summary>
+    /// Whether any dialog is currently open (for DialogHost.IsOpen binding).
+    /// </summary>
+    public bool IsDialogOpen => IsLogViewerOpen || IsSummaryDialogOpen;
 
     /// <summary>
     /// Result of the last deployment operation.
@@ -270,10 +323,19 @@ public partial class AppsViewModel : ViewModelBase
     /// <summary>
     /// Initializes a new instance of AppsViewModel.
     /// </summary>
-    public AppsViewModel(IPowerShellBridge powerShellBridge, IAppSettingsService settingsService)
+    public AppsViewModel(
+        IPowerShellBridge powerShellBridge,
+        IAppSettingsService settingsService,
+        IDeploymentStateService deploymentStateService)
     {
         _powerShellBridge = powerShellBridge;
         _settingsService = settingsService;
+        _deploymentStateService = deploymentStateService;
+
+        // Subscribe to pause/resume/cancel requests from the monitoring view
+        _deploymentStateService.PauseRequested += OnPauseRequested;
+        _deploymentStateService.ResumeRequested += OnResumeRequested;
+        _deploymentStateService.CancelRequested += OnCancelRequested;
 
         // Initialize semaphores with configured settings
         var settings = _settingsService.LoadSettings();
@@ -281,6 +343,55 @@ public partial class AppsViewModel : ViewModelBase
         var maxParallelScans = Math.Clamp(settings.MaxParallelScans, 1, 20);
         _installSemaphore = new SemaphoreSlim(maxParallelInstalls);
         _scanSemaphore = new SemaphoreSlim(maxParallelScans);
+
+        // Register for filter messages from Dashboard
+        WeakReferenceMessenger.Default.Register<ApplyFilterMessage>(this, async (r, m) =>
+        {
+            SelectedStatusFilter = m.Filter;
+
+            // Trigger scan if requested (e.g., when coming from Dashboard "View Updates")
+            if (m.TriggerScan && CanScan)
+            {
+                await ScanAsync();
+            }
+        });
+
+        // Register for scan trigger messages from Dashboard
+        WeakReferenceMessenger.Default.Register<TriggerScanMessage>(this, async (r, m) =>
+        {
+            if (!CanScan) return;
+
+            // Store callbacks for progress reporting
+            _externalProgressCallback = m.ProgressCallback;
+            _externalCompletionCallback = m.CompletionCallback;
+
+            await ScanAsync();
+
+            // Clear callbacks after scan
+            _externalProgressCallback = null;
+            _externalCompletionCallback = null;
+        });
+    }
+
+    private void OnPauseRequested(object? sender, EventArgs e)
+    {
+        if (CanPause)
+        {
+            Pause();
+        }
+    }
+
+    private void OnResumeRequested(object? sender, EventArgs e)
+    {
+        if (CanResume)
+        {
+            Resume();
+        }
+    }
+
+    private void OnCancelRequested(object? sender, EventArgs e)
+    {
+        CancelBatch();
     }
 
     /// <inheritdoc/>
@@ -313,6 +424,11 @@ public partial class AppsViewModel : ViewModelBase
             StatusFilters = new ObservableCollection<StatusFilterOption>(
                 Enum.GetValues<StatusFilterOption>());
             SelectedStatusFilter = StatusFilterOption.All;
+
+            // Load available profiles and pre-cache them
+            var profiles = await _powerShellBridge.GetAvailableProfilesAsync();
+            AvailableProfiles = new ObservableCollection<string>(profiles);
+            await PreloadProfilesCacheAsync(profiles);
 
             // Apply initial filter
             ApplyFilter();
@@ -355,6 +471,414 @@ public partial class AppsViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(HasStatusFilter));
         ApplyFilter();
+    }
+
+    /// <summary>
+    /// Called when SelectedProfile changes.
+    /// </summary>
+    partial void OnSelectedProfileChanged(string? value)
+    {
+        OnPropertyChanged(nameof(HasProfileApplied));
+        _ = ApplyProfileSelectionAsync();
+    }
+
+    /// <summary>
+    /// Called when ScannedCount changes - reports progress to external callbacks.
+    /// </summary>
+    partial void OnScannedCountChanged(int value)
+    {
+        _externalProgressCallback?.Invoke(value, ScanTotalCount);
+    }
+
+    /// <summary>
+    /// Pre-loads all profiles into cache by reading JSON files directly.
+    /// </summary>
+    private async Task PreloadProfilesCacheAsync(IEnumerable<string> profileNames)
+    {
+        _resolvedProfileAppIdsCache.Clear();
+        _rawProfileAppIdsCache.Clear();
+
+        // Get profiles directory path
+        var profilesDir = GetProfilesDirectory();
+        if (string.IsNullOrEmpty(profilesDir) || !Directory.Exists(profilesDir))
+        {
+            return;
+        }
+
+        // Load all profiles from JSON files
+        foreach (var profileName in profileNames)
+        {
+            try
+            {
+                var rawAppIds = await ReadProfileAppIdsFromJsonAsync(profilesDir, profileName);
+                _rawProfileAppIdsCache[profileName] = rawAppIds;
+
+                // Resolve inheritance to get all app IDs
+                var resolvedAppIds = await ResolveProfileInheritanceAsync(profilesDir, profileName);
+                _resolvedProfileAppIdsCache[profileName] = resolvedAppIds;
+            }
+            catch
+            {
+                _rawProfileAppIdsCache[profileName] = [];
+                _resolvedProfileAppIdsCache[profileName] = [];
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the Profiles directory path.
+    /// </summary>
+    private static string? GetProfilesDirectory()
+    {
+        // Try multiple locations relative to executable
+        var exePath = AppDomain.CurrentDomain.BaseDirectory;
+
+        // GUI\bin\Release\net8.0-windows → go up to repo root
+        var current = new DirectoryInfo(exePath);
+
+        for (int i = 0; i < 6 && current != null; i++)
+        {
+            var profilesPath = Path.Combine(current.FullName, "Profiles");
+            if (Directory.Exists(profilesPath))
+            {
+                return profilesPath;
+            }
+            current = current.Parent;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Reads app IDs directly from a profile JSON file (no inheritance).
+    /// </summary>
+    private static async Task<List<string>> ReadProfileAppIdsFromJsonAsync(string profilesDir, string profileName)
+    {
+        var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
+        if (!File.Exists(profilePath))
+        {
+            return [];
+        }
+
+        var jsonContent = await File.ReadAllTextAsync(profilePath);
+        using var document = JsonDocument.Parse(jsonContent);
+        var root = document.RootElement;
+
+        var appIds = new List<string>();
+
+        if (root.TryGetProperty("Applications", out var appsElement) &&
+            appsElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var appElement in appsElement.EnumerateArray())
+            {
+                if (appElement.ValueKind == JsonValueKind.String)
+                {
+                    var appId = appElement.GetString();
+                    if (!string.IsNullOrEmpty(appId))
+                    {
+                        appIds.Add(appId);
+                    }
+                }
+            }
+        }
+
+        return appIds;
+    }
+
+    /// <summary>
+    /// Resolves profile inheritance and returns all app IDs.
+    /// </summary>
+    private async Task<HashSet<string>> ResolveProfileInheritanceAsync(string profilesDir, string profileName)
+    {
+        var allAppIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        await ResolveProfileRecursiveAsync(profilesDir, profileName, allAppIds, visited);
+
+        return allAppIds;
+    }
+
+    /// <summary>
+    /// Recursively resolves profile inheritance.
+    /// </summary>
+    private async Task ResolveProfileRecursiveAsync(
+        string profilesDir,
+        string profileName,
+        HashSet<string> allAppIds,
+        HashSet<string> visited)
+    {
+        if (visited.Contains(profileName))
+        {
+            return; // Avoid circular inheritance
+        }
+        visited.Add(profileName);
+
+        var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
+        if (!File.Exists(profilePath))
+        {
+            return;
+        }
+
+        var jsonContent = await File.ReadAllTextAsync(profilePath);
+        using var document = JsonDocument.Parse(jsonContent);
+        var root = document.RootElement;
+
+        // First, resolve parent profiles
+        if (root.TryGetProperty("Inherits", out var inheritsElement) &&
+            inheritsElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var parentElement in inheritsElement.EnumerateArray())
+            {
+                var parentName = parentElement.GetString();
+                if (!string.IsNullOrEmpty(parentName))
+                {
+                    await ResolveProfileRecursiveAsync(profilesDir, parentName, allAppIds, visited);
+                }
+            }
+        }
+
+        // Then add this profile's applications
+        if (root.TryGetProperty("Applications", out var appsElement) &&
+            appsElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var appElement in appsElement.EnumerateArray())
+            {
+                if (appElement.ValueKind == JsonValueKind.String)
+                {
+                    var appId = appElement.GetString();
+                    if (!string.IsNullOrEmpty(appId))
+                    {
+                        allAppIds.Add(appId);
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Applies the selected profile by checking apps in the list.
+    /// </summary>
+    private async Task ApplyProfileSelectionAsync()
+    {
+        // Clear all profile tiers first
+        foreach (var app in _allApplications)
+        {
+            app.ProfileTier = string.Empty;
+        }
+        _profileAppTiers.Clear();
+
+        if (string.IsNullOrEmpty(SelectedProfile))
+        {
+            ApplyFilter();
+            return;
+        }
+
+        try
+        {
+            HashSet<string> profileAppIds;
+
+            // Try cache first
+            if (_resolvedProfileAppIdsCache.TryGetValue(SelectedProfile, out var cachedIds) && cachedIds.Count > 0)
+            {
+                profileAppIds = cachedIds;
+            }
+            else
+            {
+                // Load on-demand from JSON
+                var profilesDir = GetProfilesDirectory();
+                if (string.IsNullOrEmpty(profilesDir))
+                {
+                    ErrorMessage = "Could not find Profiles directory";
+                    return;
+                }
+
+                profileAppIds = await ResolveProfileInheritanceAsync(profilesDir, SelectedProfile);
+                _resolvedProfileAppIdsCache[SelectedProfile] = profileAppIds;
+
+                var rawAppIds = await ReadProfileAppIdsFromJsonAsync(profilesDir, SelectedProfile);
+                _rawProfileAppIdsCache[SelectedProfile] = rawAppIds;
+            }
+
+            // Build tier mapping using cached raw profiles
+            BuildProfileTierMapping(SelectedProfile);
+
+            // Select apps from the profile
+            foreach (var app in _allApplications)
+            {
+                if (profileAppIds.Contains(app.AppId))
+                {
+                    app.IsSelected = true;
+
+                    // Assign tier badge
+                    if (_profileAppTiers.TryGetValue(app.AppId, out var tier))
+                    {
+                        app.ProfileTier = tier;
+                    }
+                }
+                else
+                {
+                    app.IsSelected = false;
+                }
+            }
+
+            ApplyFilter();
+            UpdateSelectedCount();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load profile: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Builds a mapping of app IDs to their originating profile tier.
+    /// Uses the raw profile cache (apps defined directly in each profile).
+    /// </summary>
+    private void BuildProfileTierMapping(string profileName)
+    {
+        // Define the profile hierarchy (from base to most specific)
+        var profileHierarchy = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Personnel", ["Base", "Office", "Gaming", "Personnel"] },
+            { "Gaming", ["Base", "Office", "Gaming"] },
+            { "Office", ["Base", "Office"] },
+            { "Base", ["Base"] }
+        };
+
+        if (!profileHierarchy.TryGetValue(profileName, out var hierarchy))
+        {
+            hierarchy = [profileName];
+        }
+
+        // Build tier mapping (most specific wins, so iterate from base to specific)
+        foreach (var tier in hierarchy)
+        {
+            if (_rawProfileAppIdsCache.TryGetValue(tier, out var appIds))
+            {
+                foreach (var appId in appIds)
+                {
+                    // Overwrite so most specific tier wins
+                    _profileAppTiers[appId] = tier;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Clears the current profile selection.
+    /// </summary>
+    [RelayCommand]
+    private void ClearProfile()
+    {
+        SelectedProfile = null;
+    }
+
+    /// <summary>
+    /// Shows the save profile dialog and saves the current selection.
+    /// </summary>
+    [RelayCommand]
+    private async Task ShowSaveProfileDialogAsync()
+    {
+        var selectedApps = _allApplications.Where(a => a.IsSelected).ToList();
+
+        if (selectedApps.Count == 0)
+        {
+            ErrorMessage = Resources.Resources.Dialog_SaveProfile_NoApps;
+            return;
+        }
+
+        // Create dialog viewmodel
+        var dialogViewModel = new SaveProfileDialogViewModel(
+            SelectedProfile,
+            AvailableProfiles,
+            selectedApps.Count);
+
+        var dialog = new Views.SaveProfileDialog
+        {
+            DataContext = dialogViewModel
+        };
+
+        // Show dialog and wait for result
+        var result = await MaterialDesignThemes.Wpf.DialogHost.Show(dialog, "RootDialog");
+
+        if (result is SaveProfileDialogViewModel vm)
+        {
+            await SaveProfileAsync(vm.GetResult(), selectedApps);
+        }
+    }
+
+    /// <summary>
+    /// Saves the current selection as a profile.
+    /// </summary>
+    private async Task SaveProfileAsync(SaveProfileResult saveResult, List<Models.ApplicationModel> selectedApps)
+    {
+        try
+        {
+            var profilesDir = GetProfilesDirectory();
+            if (string.IsNullOrEmpty(profilesDir))
+            {
+                ErrorMessage = "Could not find Profiles directory";
+                return;
+            }
+
+            var profilePath = Path.Combine(profilesDir, $"{saveResult.ProfileName}.json");
+
+            // Build profile JSON
+            var profile = new Dictionary<string, object>
+            {
+                ["Name"] = saveResult.ProfileName,
+                ["Description"] = saveResult.Description,
+                ["Version"] = "3.2.0",
+                ["Inherits"] = saveResult.ParentProfile != null
+                    ? new[] { saveResult.ParentProfile }
+                    : Array.Empty<string>(),
+                ["Applications"] = selectedApps.Select(a => a.AppId).ToArray()
+            };
+
+            // If inheriting, remove apps that are already in the parent
+            if (!string.IsNullOrEmpty(saveResult.ParentProfile) &&
+                _resolvedProfileAppIdsCache.TryGetValue(saveResult.ParentProfile, out var parentAppIds))
+            {
+                var ownApps = selectedApps
+                    .Where(a => !parentAppIds.Contains(a.AppId))
+                    .Select(a => a.AppId)
+                    .ToArray();
+                profile["Applications"] = ownApps;
+            }
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+
+            var jsonContent = JsonSerializer.Serialize(profile, jsonOptions);
+            await File.WriteAllTextAsync(profilePath, jsonContent);
+
+            // Update cache
+            var appIds = selectedApps.Select(a => a.AppId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            _resolvedProfileAppIdsCache[saveResult.ProfileName] = appIds;
+
+            if (profile["Applications"] is string[] ownAppIds)
+            {
+                _rawProfileAppIdsCache[saveResult.ProfileName] = ownAppIds.ToList();
+            }
+
+            // Add to available profiles if new
+            if (!AvailableProfiles.Contains(saveResult.ProfileName))
+            {
+                AvailableProfiles.Add(saveResult.ProfileName);
+            }
+
+            // Select the saved profile
+            SelectedProfile = saveResult.ProfileName;
+
+            // Clear any error message to indicate success
+            ErrorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = string.Format(Resources.Resources.Dialog_SaveProfile_Error, ex.Message);
+        }
     }
 
     /// <summary>
@@ -538,6 +1062,9 @@ public partial class AppsViewModel : ViewModelBase
                     UpdatesAvailableCount = _scanUpdatesCounter;
                 }
                 CommandManager.InvalidateRequerySuggested();
+
+                // Notify external callback (Dashboard) of completion
+                _externalCompletionCallback?.Invoke(UpdatesAvailableCount);
             });
         }
     }
@@ -817,10 +1344,15 @@ public partial class AppsViewModel : ViewModelBase
 
         await _installSemaphore.WaitAsync();
 
+        // Notify deployment state service for monitoring
+        _deploymentStateService.StartDeployment([app]);
+
         try
         {
             app.Status = ApplicationStatus.Installing;
             app.StatusMessage = Resources.Resources.Status_Installing;
+
+            _deploymentStateService.UpdateProgress(app.Name, 0, 1, Resources.Resources.Status_Installing);
 
             var result = await _powerShellBridge.InstallApplicationAsync(
                 app,
@@ -850,6 +1382,8 @@ public partial class AppsViewModel : ViewModelBase
                 app.StatusMessage = Resources.Resources.Status_Failed;
                 app.ErrorMessage = result.Message;
             }
+
+            _deploymentStateService.UpdateProgress(app.Name, 1, 1, app.StatusMessage);
         }
         catch (Exception ex)
         {
@@ -860,6 +1394,7 @@ public partial class AppsViewModel : ViewModelBase
         finally
         {
             _installSemaphore.Release();
+            _deploymentStateService.EndDeployment();
         }
     }
 
@@ -1153,6 +1688,9 @@ public partial class AppsViewModel : ViewModelBase
         // Start progress estimator
         _progressEstimator.Start(selectedApps.Count);
 
+        // Notify deployment state service
+        _deploymentStateService.StartDeployment(selectedApps);
+
         try
         {
             // Create tasks for all apps to run in parallel (limited by semaphore)
@@ -1187,6 +1725,9 @@ public partial class AppsViewModel : ViewModelBase
             IsPaused = false;
             _batchCancellationTokenSource?.Dispose();
             _batchCancellationTokenSource = null;
+
+            // Notify deployment state service
+            _deploymentStateService.EndDeployment();
         }
     }
 
@@ -1234,6 +1775,13 @@ public partial class AppsViewModel : ViewModelBase
 
             app.Status = ApplicationStatus.Installing;
             app.StatusMessage = Resources.Resources.Status_Installing;
+
+            // Update shared deployment state
+            _deploymentStateService.UpdateProgress(
+                app.Name,
+                _batchProgressCurrent,
+                BatchProgressTotal,
+                Resources.Resources.Status_Installing);
 
             var result = await _powerShellBridge.InstallApplicationAsync(
                 app,
@@ -1295,6 +1843,16 @@ public partial class AppsViewModel : ViewModelBase
             // Update time estimate
             _progressEstimator.UpdateProgress(_batchProgressCurrent);
             EstimatedTimeRemaining = _progressEstimator.GetFormattedTimeRemaining();
+
+            // Update shared deployment state with progress and time
+            _deploymentStateService.UpdateProgress(
+                null,
+                _batchProgressCurrent,
+                BatchProgressTotal,
+                Resources.Resources.Progress_Deploying);
+            _deploymentStateService.UpdateTime(
+                _progressEstimator.GetFormattedElapsedTime(),
+                EstimatedTimeRemaining);
         }
     }
 
@@ -1662,6 +2220,7 @@ public partial class AppsViewModel : ViewModelBase
     {
         IsPaused = true;
         _pauseEvent.Reset();
+        _deploymentStateService.SetPaused(true);
     }
 
     /// <summary>
@@ -1677,6 +2236,7 @@ public partial class AppsViewModel : ViewModelBase
     {
         IsPaused = false;
         _pauseEvent.Set();
+        _deploymentStateService.SetPaused(false);
     }
 
     /// <summary>
