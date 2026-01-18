@@ -1,0 +1,894 @@
+<#
+.SYNOPSIS
+    Win11Forge - Application Detection Module v3.1.4
+
+.DESCRIPTION
+    Application detection and installation verification functions:
+    - Test-ApplicationInstalled: Main detection function with multiple methods
+    - Test-ApplicationInstalledFast: Cache-based fast detection
+    - Get-InstalledApplicationsCache: Build detection cache
+    - Get-ApplicationsInstallationStatus: Batch detection
+
+.NOTES
+    Author: Julien Bombled
+    Version: 3.1.4
+
+    Changelog v3.1.4:
+    - Extracted from InstallationEngine.psm1 for modularity
+    - Shared detection logic for sequential and parallel installations
+#>
+
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+Set-StrictMode -Version Latest
+
+# === MODULE INITIALIZATION ===
+$script:ModuleRoot = Split-Path -Parent $PSCommandPath
+$script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
+$script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
+$script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
+$script:EnvironmentDetectionPath = Join-Path $script:ModuleRoot 'EnvironmentDetection.psm1'
+
+if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:CoreModulePath) {
+        Import-Module -Name $script:CoreModulePath -Force
+    }
+}
+
+# Import Localization module for i18n support
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force
+    }
+}
+
+# Import EnvironmentDetection for sandbox detection
+if (-not (Get-Command -Name Test-IsWindowsSandbox -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:EnvironmentDetectionPath) {
+        Import-Module -Name $script:EnvironmentDetectionPath -Force
+    }
+}
+
+# Import WingetCache for optimized winget list caching
+$script:WingetCachePath = Join-Path $script:ModuleRoot 'WingetCache.psm1'
+if (-not (Get-Command -Name Get-CachedWingetList -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:WingetCachePath) {
+        Import-Module -Name $script:WingetCachePath -Force
+    }
+}
+
+# === CONFIGURATION ===
+
+# Security: Whitelist of allowed executables for Command detection method
+# Only these executables can be run from applications.json Detection.Command
+$script:AllowedDetectionExecutables = @(
+    'java', 'java.exe',           # Java detection (java -version)
+    'javac', 'javac.exe',         # JDK detection
+    'dotnet', 'dotnet.exe',       # .NET detection
+    'python', 'python.exe',       # Python detection (python --version)
+    'python3', 'python3.exe',
+    'node', 'node.exe',           # Node.js detection (node --version)
+    'npm', 'npm.cmd',             # npm detection
+    'git', 'git.exe',             # Git detection (git --version)
+    'docker', 'docker.exe',       # Docker detection
+    'rustc', 'rustc.exe',         # Rust detection
+    'cargo', 'cargo.exe',
+    'go', 'go.exe',               # Go detection
+    'ruby', 'ruby.exe',           # Ruby detection
+    'php', 'php.exe',             # PHP detection
+    'perl', 'perl.exe'            # Perl detection
+)
+
+# === HELPER FUNCTIONS ===
+
+function Test-RegistryKey {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    return Test-Path -Path $Path -ErrorAction SilentlyContinue
+}
+
+function Expand-DetectionPath {
+    <#
+    .SYNOPSIS
+        Expands environment variables in detection paths with security validation.
+    .DESCRIPTION
+        Supports both %VAR% and $env:VAR syntax for environment variable expansion.
+        Also handles common path aliases like %PROGRAMFILES%, %LOCALAPPDATA%, etc.
+        Validates against path traversal attacks.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    # Security: Block path traversal attempts in input
+    if ($Path -match '\.\.' -or $Path -match '[\\/]\.\.[\\/]?' -or $Path -match '^\.\.') {
+        Write-Status -Message "Path traversal attempt blocked in detection path: $Path" -Level 'Warning'
+        return $null
+    }
+
+    # Expand %VAR% style environment variables
+    $expanded = [Environment]::ExpandEnvironmentVariables($Path)
+
+    # Also handle $env:VAR style (PowerShell native)
+    if ($expanded -match '\$env:') {
+        $expanded = $ExecutionContext.InvokeCommand.ExpandString($expanded)
+    }
+
+    # Security: Block path traversal attempts after expansion
+    if ($expanded -match '\.\.' -or $expanded -match '[\\/]\.\.[\\/]?' -or $expanded -match '^\.\.') {
+        Write-Status -Message "Path traversal attempt blocked after expansion: $expanded" -Level 'Warning'
+        return $null
+    }
+
+    # Security: Ensure path is absolute (not relative)
+    if (-not [System.IO.Path]::IsPathRooted($expanded)) {
+        # Allow wildcards in detection paths (e.g., "C:\Program Files\*\app.exe")
+        if ($expanded -notmatch '^[A-Za-z]:[\\/]') {
+            Write-Status -Message "Relative path not allowed in detection: $expanded" -Level 'Warning'
+            return $null
+        }
+    }
+
+    return $expanded
+}
+
+function Get-InstalledAppVersion {
+    <#
+    .SYNOPSIS
+        Gets the installed version of an application via Winget or Chocolatey.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter()]
+        [string]$WingetId,
+
+        [Parameter()]
+        [string]$ChocolateyId
+    )
+
+    # Try Winget first
+    if ($WingetId -and (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)) {
+        try {
+            $output = & winget list --id $WingetId --accept-source-agreements 2>&1 | Out-String
+            # Parse version from winget list output (format: Name  Id  Version  Available  Source)
+            # Version is typically after the ID column
+            $lines = $output -split "`n" | Where-Object { $_ -match [regex]::Escape($WingetId) }
+            if ($lines) {
+                # Extract version using regex - version is usually a pattern like 1.2.3 or 1.2.3.4
+                if ($lines[0] -match '\s(\d+[\.\d]+)\s') {
+                    return $Matches[1]
+                }
+            }
+        } catch { }
+    }
+
+    # Try Chocolatey
+    if ($ChocolateyId -and (Get-Command -Name 'choco' -ErrorAction SilentlyContinue)) {
+        try {
+            $output = & choco list --local-only --exact $ChocolateyId 2>&1 | Out-String
+            if ($output -match "$ChocolateyId\s+([\d\.]+)") {
+                return $Matches[1]
+            }
+        } catch { }
+    }
+
+    return $null
+}
+
+function Wait-ForOfficeInstallation {
+    <#
+    .SYNOPSIS
+        Waits for Office Click-to-Run installation to complete.
+    .DESCRIPTION
+        Office installations via winget can take a long time due to Click-to-Run
+        streaming technology. This function monitors the installation progress
+        and waits until completion or timeout.
+    .PARAMETER TimeoutMinutes
+        Maximum time to wait for installation (default: 45 minutes for Office).
+    .PARAMETER CheckIntervalSeconds
+        How often to check installation status (default: 30 seconds).
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter()]
+        [int]$TimeoutMinutes = 45,
+
+        [Parameter()]
+        [int]$CheckIntervalSeconds = 30
+    )
+
+    Write-Status -Message "Monitoring Office installation progress..." -Level 'Info'
+
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    $timeoutMs = $TimeoutMinutes * 60 * 1000
+
+    $officeProcesses = @('OfficeClickToRun', 'OfficeC2RClient', 'setup', 'officeclicktorun')
+
+    while ($stopwatch.ElapsedMilliseconds -lt $timeoutMs) {
+        # Check if Office setup processes are running
+        $runningProcesses = Get-Process -Name $officeProcesses -ErrorAction SilentlyContinue
+
+        if ($runningProcesses) {
+            $processNames = ($runningProcesses | Select-Object -ExpandProperty Name -Unique) -join ', '
+            Write-Status -Message "Office installation in progress ($processNames)... Elapsed: $([math]::Round($stopwatch.Elapsed.TotalMinutes, 1)) min" -Level 'Verbose'
+        } else {
+            # No Office processes - check if Office is now installed
+            $officeRegistryPaths = @(
+                'HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration',
+                'HKLM:\SOFTWARE\Microsoft\Office\16.0\Common\InstallRoot'
+            )
+
+            foreach ($regPath in $officeRegistryPaths) {
+                if (Test-Path $regPath -ErrorAction SilentlyContinue) {
+                    $elapsed = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1)
+                    Write-Status -Message "Office installation completed after $elapsed minutes" -Level 'Success'
+                    return $true
+                }
+            }
+
+            # Check for Office executable
+            $officePaths = @(
+                "${env:ProgramFiles}\Microsoft Office\root\Office16\WINWORD.EXE",
+                "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\WINWORD.EXE"
+            )
+
+            foreach ($officePath in $officePaths) {
+                if (Test-Path $officePath -ErrorAction SilentlyContinue) {
+                    $elapsed = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1)
+                    Write-Status -Message "Office installation completed after $elapsed minutes" -Level 'Success'
+                    return $true
+                }
+            }
+
+            # No processes and no Office detected - might have failed or not started yet
+            if ($stopwatch.ElapsedMilliseconds -gt 120000) {  # After 2 minutes
+                Write-Status -Message "No Office installation processes detected" -Level 'Warning'
+                return $false
+            }
+        }
+
+        Start-Sleep -Seconds $CheckIntervalSeconds
+    }
+
+    Write-Status -Message "Office installation timed out after $TimeoutMinutes minutes" -Level 'Warning'
+    return $false
+}
+
+# === MAIN DETECTION FUNCTIONS ===
+
+function Test-ApplicationByName {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Name
+    )
+
+    try {
+        if (Test-CommandExists -Name 'winget') {
+            # Use cached winget list for performance
+            $wingetList = Get-CachedWingetList
+            if ($wingetList -match [regex]::Escape($Name)) {
+                return $true
+            }
+        }
+    } catch {
+        Write-Status -Message "Winget detection failed: $($_.Exception.Message)" -Level 'Verbose'
+    }
+
+    try {
+        if (Test-CommandExists -Name 'choco') {
+            $chocoList = & choco list --local-only --exact $Name 2>&1 | Out-String
+            if ($chocoList -match $Name -and $chocoList -notmatch '0 packages installed') {
+                return $true
+            }
+        }
+    } catch {
+        Write-Status -Message "Chocolatey detection failed: $($_.Exception.Message)" -Level 'Verbose'
+    }
+
+    $programFiles = @(
+        $env:ProgramFiles,
+        ${env:ProgramFiles(x86)},
+        "$env:LOCALAPPDATA\Programs"
+    )
+
+    foreach ($baseDir in $programFiles) {
+        if (Test-Path -Path "$baseDir\$Name") {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Test-ApplicationInstalled {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject]$Application
+    )
+
+    $appName = $Application.Name
+
+    # Special case: PowerToys - Check multiple paths
+    if ($appName -eq 'Microsoft PowerToys') {
+        $powerToysPaths = @(
+            "${env:ProgramFiles}\PowerToys\PowerToys.exe",
+            "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe",
+            "${env:ProgramFiles(x86)}\PowerToys\PowerToys.exe"
+        )
+
+        foreach ($path in $powerToysPaths) {
+            if (Test-Path $path -ErrorAction SilentlyContinue) {
+                return $true
+            }
+        }
+
+        if (Get-Process -Name "PowerToys" -ErrorAction SilentlyContinue) {
+            return $true
+        }
+    }
+
+    # Special case: Quick Assist - Store App (use winget to avoid Appx module conflicts)
+    if ($appName -eq 'Microsoft Quick Assist') {
+        if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
+            $wingetList = Get-CachedWingetList
+            if ($wingetList -match 'MicrosoftCorporationII') {
+                return $true
+            }
+        }
+    }
+
+    if (-not $Application.Detection) {
+        $detected = Test-ApplicationByName -Name $appName
+    } else {
+        $method = $Application.Detection.Method
+        $detected = $false
+
+        switch ($method) {
+            'Registry' {
+                if ($Application.Detection.PSObject.Properties['Path'] -and $Application.Detection.Path) {
+                    $detected = Test-RegistryKey -Path $Application.Detection.Path
+                }
+            }
+            'File' {
+                if ($Application.Detection.PSObject.Properties['Path'] -and $Application.Detection.Path) {
+                    $expandedPath = Expand-DetectionPath -Path $Application.Detection.Path
+                    $detected = Test-Path -Path $expandedPath -PathType Leaf
+                }
+            }
+            'Command' {
+                try {
+                    # Secure command execution - parse command into executable and arguments
+                    $commandParts = $Application.Detection.Command -split '\s+', 2
+                    $executable = $commandParts[0]
+                    $arguments = if ($commandParts.Count -gt 1) { $commandParts[1] } else { $null }
+
+                    # Security: Only allow whitelisted executables for command detection
+                    $exeBaseName = [System.IO.Path]::GetFileName($executable).ToLower()
+                    if ($exeBaseName -notin $script:AllowedDetectionExecutables) {
+                        Write-Status -Message "Command detection blocked: '$executable' not in allowed executables list" -Level 'Verbose'
+                        $detected = $false
+                    }
+                    # Validate executable exists
+                    elseif (Get-Command -Name $executable -ErrorAction SilentlyContinue) {
+                        # Check if we need to verify output content (Arguments field contains expected pattern)
+                        $expectedPattern = if ($Application.Detection.PSObject.Properties['Arguments']) { $Application.Detection.Arguments } else { $null }
+
+                        if ($expectedPattern) {
+                            # Run command and capture output for pattern matching
+                            $output = if ($arguments) {
+                                & $executable $arguments 2>&1 | Out-String
+                            } else {
+                                & $executable 2>&1 | Out-String
+                            }
+                            $detected = $output -match [regex]::Escape($expectedPattern)
+                        } else {
+                            # Execute securely with Start-Process for simple exit code check
+                            $process = if ($arguments) {
+                                Start-Process -FilePath $executable -ArgumentList $arguments -Wait -NoNewWindow -PassThru -ErrorAction Stop
+                            } else {
+                                Start-Process -FilePath $executable -Wait -NoNewWindow -PassThru -ErrorAction Stop
+                            }
+                            $detected = $process.ExitCode -eq 0
+                        }
+                    }
+                } catch {
+                    $detected = $false
+                }
+            }
+            'WindowsFeature' {
+                $feature = Get-WindowsOptionalFeature -Online -FeatureName $Application.Detection.Feature -ErrorAction SilentlyContinue
+                $detected = $feature -and $feature.State -eq 'Enabled'
+            }
+            'WindowsCapability' {
+                $capability = Get-WindowsCapability -Online -Name "*$($Application.Detection.Capability)*" -ErrorAction SilentlyContinue
+                $detected = $capability -and $capability.State -eq 'Installed'
+            }
+            'StoreApp' {
+                # Use cached winget list instead of Get-AppxPackage to avoid Appx module conflicts in PowerShell 7
+                if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
+                    try {
+                        $wingetList = Get-CachedWingetList
+
+                        # Try 1: Match by Store ID (most specific)
+                        if ($Application.Sources.Store) {
+                            if ($wingetList -match [regex]::Escape($Application.Sources.Store) -and $wingetList -notmatch "No installed package") {
+                                $detected = $true
+                            }
+                        }
+
+                        # Try 2: Match by full PackageName (specific, avoids false positives from vendor prefix)
+                        if (-not $detected -and $Application.Detection.PackageName) {
+                            if ($wingetList -match [regex]::Escape($Application.Detection.PackageName)) {
+                                $detected = $true
+                            }
+                        }
+                    } catch {
+                        $detected = $false
+                    }
+                } else {
+                    # Fallback to Get-AppxPackage if winget not available (PowerShell 5.1)
+                    try {
+                        $package = Get-AppxPackage -Name "*$($Application.Detection.PackageName)*" -ErrorAction SilentlyContinue
+                        $detected = $null -ne $package
+                    } catch {
+                        $detected = $false
+                    }
+                }
+            }
+            default {
+                $detected = Test-ApplicationByName -Name $appName
+            }
+        }
+    }
+
+    # Winget-based fallback detection if primary method failed
+    if (-not $detected -and $Application.Sources -and $Application.Sources.Winget) {
+        if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
+            try {
+                $wingetId = $Application.Sources.Winget
+                $wingetResult = & winget list --id $wingetId --accept-source-agreements 2>&1 | Out-String
+                if ($wingetResult -match [regex]::Escape($wingetId) -and $wingetResult -notmatch "No installed package") {
+                    $detected = $true
+                }
+            } catch {
+                # Winget fallback detection failed silently - keep original detection result
+                Write-Verbose "Winget fallback detection failed for $($Application.Name): $_"
+            }
+        }
+    }
+
+    return $detected
+}
+
+# === CACHE-BASED FAST DETECTION ===
+
+<#
+.SYNOPSIS
+    Builds a cache of installed applications for fast batch detection.
+
+.DESCRIPTION
+    Queries registry, winget, and AppX packages once and returns a cache object
+    that can be used with Test-ApplicationInstalledFast for rapid detection.
+
+.OUTPUTS
+    PSCustomObject containing:
+    - RegistryApps: Hashtable of DisplayName -> PSObject (Version, Publisher, InstallLocation)
+    - WingetOutput: Raw winget list output string
+    - AppxPackages: Hashtable of PackageName prefix -> PSObject (Version, PackageFullName)
+
+.EXAMPLE
+    $cache = Get-InstalledApplicationsCache
+    # Then use Test-ApplicationInstalledFast -Application $app -Cache $cache
+#>
+function Get-InstalledApplicationsCache {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param()
+
+    Write-Verbose "Building installed applications cache..."
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
+    # 1. Registry: Get all Win32 uninstall entries (one query)
+    $registryApps = @{}
+    $uninstallPaths = @(
+        'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
+
+    foreach ($path in $uninstallPaths) {
+        try {
+            $entries = Get-ItemProperty -Path $path -ErrorAction SilentlyContinue
+            foreach ($entry in $entries) {
+                if ($entry.DisplayName) {
+                    $key = $entry.DisplayName.ToLowerInvariant()
+                    if (-not $registryApps.ContainsKey($key)) {
+                        $registryApps[$key] = [PSCustomObject]@{
+                            DisplayName     = $entry.DisplayName
+                            Version         = $entry.DisplayVersion
+                            Publisher       = $entry.Publisher
+                            InstallLocation = $entry.InstallLocation
+                            UninstallString = $entry.UninstallString
+                        }
+                    }
+                }
+            }
+        } catch {
+            Write-Verbose "Error reading registry path $path : $_"
+        }
+    }
+
+    Write-Verbose "Registry: Found $($registryApps.Count) apps"
+
+    # 2. Winget: Get list output once (using WingetCache module)
+    $wingetOutput = ""
+    if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
+        try {
+            $wingetOutput = Get-CachedWingetList
+        } catch {
+            Write-Verbose "Error running winget list: $_"
+        }
+    }
+
+    Write-Verbose "Winget: Output from cache ($($wingetOutput.Length) chars)"
+
+    # 3. AppX: Get all Store/MSIX packages (one query)
+    $appxPackages = @{}
+    try {
+        $packages = Get-AppxPackage -ErrorAction SilentlyContinue
+        foreach ($pkg in $packages) {
+            # Use package name prefix for matching (e.g., "Microsoft.PowerToys" matches "Microsoft.PowerToys.SparseApp")
+            $prefix = $pkg.Name -replace '\..*$', ''
+            if (-not $appxPackages.ContainsKey($pkg.Name)) {
+                $appxPackages[$pkg.Name] = [PSCustomObject]@{
+                    Name            = $pkg.Name
+                    Version         = $pkg.Version
+                    PackageFullName = $pkg.PackageFullName
+                    Publisher       = $pkg.Publisher
+                }
+            }
+        }
+    } catch {
+        Write-Verbose "Error getting AppX packages: $_"
+    }
+
+    Write-Verbose "AppX: Found $($appxPackages.Count) packages"
+
+    # 4. Pre-cache common command outputs (for Command detection method)
+    $commandOutputs = @{}
+
+    # Cache dotnet runtimes (used by .NET Runtime detections)
+    if (Get-Command -Name 'dotnet' -ErrorAction SilentlyContinue) {
+        try {
+            $commandOutputs['dotnet --list-runtimes'] = & dotnet --list-runtimes 2>&1 | Out-String
+            $commandOutputs['dotnet --version'] = & dotnet --version 2>&1 | Out-String
+        } catch { }
+    }
+
+    # Cache java version (used by Java/JRE/JDK detections)
+    if (Get-Command -Name 'java' -ErrorAction SilentlyContinue) {
+        try {
+            $commandOutputs['java -version'] = & java -version 2>&1 | Out-String
+        } catch { }
+    }
+
+    # Cache python version
+    if (Get-Command -Name 'python' -ErrorAction SilentlyContinue) {
+        try {
+            $commandOutputs['python --version'] = & python --version 2>&1 | Out-String
+        } catch { }
+    }
+
+    # Cache node version
+    if (Get-Command -Name 'node' -ErrorAction SilentlyContinue) {
+        try {
+            $commandOutputs['node --version'] = & node --version 2>&1 | Out-String
+        } catch { }
+    }
+
+    # Cache git version
+    if (Get-Command -Name 'git' -ErrorAction SilentlyContinue) {
+        try {
+            $commandOutputs['git --version'] = & git --version 2>&1 | Out-String
+        } catch { }
+    }
+
+    Write-Verbose "Commands: Cached $($commandOutputs.Count) command outputs"
+
+    $stopwatch.Stop()
+    Write-Verbose "Cache built in $($stopwatch.ElapsedMilliseconds)ms"
+
+    return [PSCustomObject]@{
+        RegistryApps    = $registryApps
+        WingetOutput    = $wingetOutput
+        AppxPackages    = $appxPackages
+        CommandOutputs  = $commandOutputs
+        CacheBuiltAt    = [DateTime]::Now
+    }
+}
+
+<#
+.SYNOPSIS
+    Fast application detection using pre-built cache.
+
+.DESCRIPTION
+    Checks if an application is installed using the cached data from Get-InstalledApplicationsCache.
+    This is much faster than Test-ApplicationInstalled for batch operations.
+
+.PARAMETER Application
+    The application object from the database.
+
+.PARAMETER Cache
+    The cache object from Get-InstalledApplicationsCache.
+
+.OUTPUTS
+    Boolean indicating if the application is installed.
+#>
+function Test-ApplicationInstalledFast {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject]$Application,
+
+        [Parameter(Mandatory)]
+        [PSCustomObject]$Cache
+    )
+
+    $appName = $Application.Name
+    $detected = $false
+    $version = $null
+
+    # Method 1: Check by detection configuration
+    if ($Application.Detection) {
+        $method = $Application.Detection.Method
+
+        switch ($method) {
+            'Registry' {
+                # Check if registry path exists (with null-safe property check)
+                if ($Application.Detection.PSObject.Properties['Path'] -and $Application.Detection.Path) {
+                    $detected = Test-Path -Path $Application.Detection.Path -ErrorAction SilentlyContinue
+                    # Try to get version from registry
+                    if ($detected) {
+                        try {
+                            $regEntry = Get-ItemProperty -Path $Application.Detection.Path -ErrorAction SilentlyContinue
+                            if ($regEntry.DisplayVersion) { $version = $regEntry.DisplayVersion }
+                            elseif ($regEntry.Version) { $version = $regEntry.Version }
+                        } catch {}
+                    }
+                }
+            }
+            'File' {
+                # Check if file exists (with null-safe property check)
+                if ($Application.Detection.PSObject.Properties['Path'] -and $Application.Detection.Path) {
+                    $expandedPath = Expand-DetectionPath -Path $Application.Detection.Path
+                    $detected = Test-Path -Path $expandedPath -PathType Leaf -ErrorAction SilentlyContinue
+                    # Try to get version from file
+                    if ($detected) {
+                        try {
+                            $fileInfo = Get-Item -Path $expandedPath -ErrorAction SilentlyContinue
+                            if ($fileInfo.VersionInfo.FileVersion) {
+                                $version = $fileInfo.VersionInfo.FileVersion
+                            }
+                        } catch {}
+                    }
+                }
+            }
+            'StoreApp' {
+                # Check in AppX cache by package name prefix
+                $packageName = $Application.Detection.PackageName
+                if ($packageName) {
+                    foreach ($key in $Cache.AppxPackages.Keys) {
+                        if ($key -like "$packageName*" -or $key -eq $packageName) {
+                            $detected = $true
+                            $version = $Cache.AppxPackages[$key].Version
+                            break
+                        }
+                    }
+                }
+                # Also check winget output for Store ID
+                if (-not $detected -and $Application.Sources.Store -and $Cache.WingetOutput) {
+                    $detected = $Cache.WingetOutput -match [regex]::Escape($Application.Sources.Store)
+                }
+            }
+            'Command' {
+                # Try to use cached command output first (much faster)
+                try {
+                    $fullCommand = $Application.Detection.Command
+                    $commandParts = $fullCommand -split '\s+', 2
+                    $executable = $commandParts[0]
+                    $expectedPattern = if ($Application.Detection.PSObject.Properties['Arguments']) { $Application.Detection.Arguments } else { $null }
+
+                    # Security: Only allow whitelisted executables for command detection
+                    $exeBaseName = [System.IO.Path]::GetFileName($executable).ToLower()
+                    if ($exeBaseName -notin $script:AllowedDetectionExecutables) {
+                        $detected = $false
+                    } else {
+                        # Check if this command output is cached
+                        $output = $null
+                        if ($Cache.CommandOutputs -and $Cache.CommandOutputs.ContainsKey($fullCommand)) {
+                            $output = $Cache.CommandOutputs[$fullCommand]
+                        }
+
+                        if ($output) {
+                            # Use cached output
+                            if ($expectedPattern) {
+                                $detected = $output -match [regex]::Escape($expectedPattern)
+                                if ($detected -and $output -match '(\d+\.\d+[\.\d]*)') {
+                                    $version = $matches[1]
+                                }
+                            } else {
+                                $detected = $true
+                            }
+                        } elseif (Get-Command -Name $executable -ErrorAction SilentlyContinue) {
+                            # Fallback: execute command if not cached
+                            $arguments = if ($commandParts.Count -gt 1) { $commandParts[1] } else { $null }
+                            if ($expectedPattern) {
+                                $output = if ($arguments) {
+                                    & $executable $arguments 2>&1 | Out-String
+                                } else {
+                                    & $executable 2>&1 | Out-String
+                                }
+                                $detected = $output -match [regex]::Escape($expectedPattern)
+                                if ($detected -and $output -match '(\d+\.\d+[\.\d]*)') {
+                                    $version = $matches[1]
+                                }
+                            } else {
+                                $detected = $true
+                            }
+                        }
+                    }
+                } catch {
+                    $detected = $false
+                }
+            }
+            'WindowsFeature' {
+                $feature = Get-WindowsOptionalFeature -Online -FeatureName $Application.Detection.Feature -ErrorAction SilentlyContinue
+                $detected = $feature -and $feature.State -eq 'Enabled'
+            }
+            'WindowsCapability' {
+                $capability = Get-WindowsCapability -Online -Name "*$($Application.Detection.Capability)*" -ErrorAction SilentlyContinue
+                $detected = $capability -and $capability.State -eq 'Installed'
+            }
+        }
+    }
+
+    # Method 2: Check by Winget ID in cached output (also extract version)
+    if (-not $detected -and $Application.Sources.Winget -and $Cache.WingetOutput) {
+        $wingetId = $Application.Sources.Winget
+        if ($Cache.WingetOutput -match [regex]::Escape($wingetId)) {
+            $detected = $true
+            # Try to extract version from winget output line
+            $lines = $Cache.WingetOutput -split "`n"
+            foreach ($line in $lines) {
+                if ($line -match [regex]::Escape($wingetId)) {
+                    # Parse version from the line (typically format: Name  Id  Version  Available  Source)
+                    if ($line -match '(\d+\.[\d.]+)') {
+                        $version = $matches[1]
+                    }
+                    break
+                }
+            }
+        }
+    }
+
+    # Method 3: Check by app name in Registry cache
+    if (-not $detected -and $Cache.RegistryApps) {
+        $nameLower = $appName.ToLowerInvariant()
+        # Exact match
+        if ($Cache.RegistryApps.ContainsKey($nameLower)) {
+            $detected = $true
+            $version = $Cache.RegistryApps[$nameLower].Version
+        }
+        # Partial match
+        if (-not $detected) {
+            foreach ($key in $Cache.RegistryApps.Keys) {
+                if ($key -like "*$nameLower*" -or $nameLower -like "*$key*") {
+                    $detected = $true
+                    $version = $Cache.RegistryApps[$key].Version
+                    break
+                }
+            }
+        }
+    }
+
+    return [PSCustomObject]@{
+        IsInstalled = $detected
+        Version     = $version
+    }
+}
+
+<#
+.SYNOPSIS
+    Batch detection of multiple applications using optimized cache.
+
+.DESCRIPTION
+    Detects installation status and version for multiple applications in a single optimized operation.
+    Returns a hashtable mapping AppId to status object with IsInstalled and Version.
+
+.PARAMETER Applications
+    Array of application objects from the database.
+
+.OUTPUTS
+    Hashtable mapping AppId -> PSCustomObject with IsInstalled (bool) and Version (string)
+#>
+function Get-ApplicationsInstallationStatus {
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject[]]$Applications
+    )
+
+    Write-Host "Scanning $($Applications.Count) applications..." -ForegroundColor Cyan
+
+    # Build cache once
+    $cache = Get-InstalledApplicationsCache
+
+    # Check all apps using cache
+    $results = @{}
+    $installedCount = 0
+
+    foreach ($app in $Applications) {
+        $status = Test-ApplicationInstalledFast -Application $app -Cache $cache
+        $results[$app.AppId] = @{
+            IsInstalled = $status.IsInstalled
+            Version     = $status.Version
+        }
+        if ($status.IsInstalled) { $installedCount++ }
+    }
+
+    Write-Host "Scan complete: $installedCount/$($Applications.Count) installed" -ForegroundColor Green
+
+    return $results
+}
+
+# === MODULE EXPORTS ===
+
+Export-ModuleMember -Function @(
+    # Helper functions
+    'Test-RegistryKey',
+    'Expand-DetectionPath',
+    'Get-InstalledAppVersion',
+    'Wait-ForOfficeInstallation',
+    # Main detection functions
+    'Test-ApplicationByName',
+    'Test-ApplicationInstalled',
+    # Cache-based fast detection
+    'Get-InstalledApplicationsCache',
+    'Test-ApplicationInstalledFast',
+    'Get-ApplicationsInstallationStatus'
+)
+
+# Export script variable for parallel detection
+Export-ModuleMember -Variable @(
+    'AllowedDetectionExecutables'
+)

@@ -12,7 +12,7 @@
              d:DesignHeight="700" d:DesignWidth="900">
 
     <UserControl.Resources>
-        <Style x:Key="QuickActionButtonStyle" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
+        <Style x:Key="QuickActionButtonStyle" TargetType="Button" BasedOn="{StaticResource ThemeAdaptiveOutlinedButton}">
             <Setter Property="Height" Value="Auto"/>
             <Setter Property="Padding" Value="24,16"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
@@ -161,7 +161,7 @@
 
                             <!-- PowerShell -->
                             <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,16,16">
-                                <TextBlock Text="PowerShell"
+                                <TextBlock Text="{loc:Loc Dashboard_Sys_PowerShell}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                            Opacity="0.6"/>
                                 <StackPanel Orientation="Horizontal">
@@ -179,30 +179,32 @@
                             <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
                                         Orientation="Horizontal"
                                         Margin="0,8,0,0">
-                                <Border Background="{DynamicResource PrimaryHueLightBrush}"
+                                <Border Background="{DynamicResource PrimaryHueMidBrush}"
                                         CornerRadius="4"
                                         Padding="12,6"
                                         Margin="0,0,12,0">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding ProfileCount}"
                                                    Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
-                                                   Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                   Foreground="White"
                                                    Margin="0,0,6,0"/>
                                         <TextBlock Text="{loc:Loc Dashboard_Stats_Profiles}"
                                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                                   Foreground="White"
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
-                                <Border Background="{DynamicResource SecondaryHueLightBrush}"
+                                <Border Background="{DynamicResource SecondaryHueMidBrush}"
                                         CornerRadius="4"
                                         Padding="12,6">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding AppCount}"
                                                    Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
-                                                   Foreground="{DynamicResource SecondaryHueMidBrush}"
+                                                   Foreground="Black"
                                                    Margin="0,0,6,0"/>
                                         <TextBlock Text="{loc:Loc Dashboard_Stats_Apps}"
                                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                                   Foreground="Black"
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
@@ -222,14 +224,16 @@
                                 <materialDesign:PackIcon Kind="Update"
                                                           Width="24" Height="24"
                                                           VerticalAlignment="Center"
-                                                          Foreground="{DynamicResource SecondaryHueMidBrush}"
+                                                          Foreground="{DynamicResource AccentGreenTextBrush}"
                                                           Margin="0,0,12,0"/>
                                 <TextBlock Text="{loc:Loc Dashboard_Updates_Title}"
                                            Style="{StaticResource MaterialDesignHeadline6TextBlock}"/>
                             </StackPanel>
 
                             <!-- Update Count Display -->
-                            <Border Background="{DynamicResource MaterialDesignDivider}"
+                            <Border Background="{DynamicResource MaterialDesignCardBackground}"
+                                    BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                    BorderThickness="1"
                                     CornerRadius="8"
                                     Padding="16"
                                     Margin="0,0,0,16">
@@ -238,10 +242,10 @@
                                                HorizontalAlignment="Center">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignHeadline3TextBlock}">
-                                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding UpdateCount, Converter={StaticResource NonZeroToBoolConverter}}" Value="True">
-                                                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignValidationErrorBrush}"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource AccentGreenTextBrush}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -346,7 +350,8 @@
                             <Button Command="{Binding ViewUpdatesCommand}"
                                     Visibility="{Binding UpdateCount, Converter={StaticResource NonZeroToVisibilityConverter}}"
                                     Style="{StaticResource MaterialDesignRaisedButton}"
-                                    Background="{DynamicResource MaterialDesignValidationErrorBrush}"
+                                    Background="{DynamicResource SecondaryHueMidBrush}"
+                                    Foreground="{DynamicResource SecondaryHueMidForegroundBrush}"
                                     materialDesign:ButtonAssist.CornerRadius="8"
                                     Padding="24,12"
                                     Margin="0,4,0,0">
@@ -432,14 +437,14 @@
 
                                         <!-- Dry Run Badge -->
                                         <Border Grid.Column="3"
-                                                Background="{DynamicResource SecondaryHueLightBrush}"
+                                                Background="{DynamicResource SecondaryHueMidBrush}"
                                                 CornerRadius="4"
                                                 Padding="8,4"
                                                 VerticalAlignment="Center"
                                                 Visibility="{Binding IsDryRun, Converter={StaticResource BooleanToVisibilityConverter}}">
                                             <TextBlock Text="DRY RUN"
                                                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                                       Foreground="{DynamicResource SecondaryHueMidBrush}"/>
+                                                       Foreground="Black"/>
                                         </Border>
                                     </Grid>
                                 </Border>

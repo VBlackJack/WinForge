@@ -1,0 +1,39 @@
+{
+  "_meta": {
+    "description": "Logging system configuration for Win11Forge",
+    "version": "3.1.4",
+    "author": "Julien Bombled",
+    "lastUpdated": "2026-01-17"
+  },
+  "textLogging": {
+    "enabled": true,
+    "retentionDays": 7
+  },
+  "jsonLogging": {
+    "enabled": true,
+    "retentionDays": 30,
+    "directory": "%LOCALAPPDATA%\\Win11Forge\\Logs\\json",
+    "bufferSize": 10,
+    "prettyPrint": false
+  },
+  "categories": [
+    "Installation",
+    "Rollback",
+    "Cache",
+    "Configuration",
+    "Detection",
+    "System",
+    "Plugin",
+    "Api",
+    "Update",
+    "General"
+  ],
+  "levelColors": {
+    "Info": "White",
+    "Success": "Green",
+    "Warning": "Yellow",
+    "Error": "Red",
+    "Debug": "Gray",
+    "Verbose": "DarkGray"
+  }
+}

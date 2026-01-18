@@ -884,5 +884,221 @@
     "files_skipped": "Files skipped: {Count}",
     "archive_location": "Archive location: {Path}",
     "completed": "Cleanup completed"
+  },
+  "cache": {
+    "winget": {
+      "initialized": "Winget cache initialized",
+      "hit": "Cache hit for winget list (age: {Age} min)",
+      "miss": "Cache miss - refreshing...",
+      "refreshed": "Winget list cache updated",
+      "cleared": "Winget cache cleared",
+      "saved": "Cache saved to disk",
+      "loaded": "Loaded cache from disk",
+      "prewarm": "Pre-warming winget list cache...",
+      "stats_title": "Cache Statistics",
+      "list_hits": "List cache hits: {Count}",
+      "list_misses": "List cache misses: {Count}",
+      "search_entries": "Search cache entries: {Count}"
+    }
+  },
+  "rollbackManager": {
+    "enabled": "Auto-rollback enabled (threshold: {Threshold} failures)",
+    "disabled": "Auto-rollback disabled",
+    "threshold_reached": "Auto-rollback threshold reached: {Count} failures",
+    "critical_detected": "Critical failure detected for {AppName}",
+    "handler_registered": "Registered critical failure handler: {Name}",
+    "confirmation_prompt": "Do you want to proceed with rollback? (Y/N)",
+    "confirmation_timeout": "Timeout: {Seconds}s",
+    "executing": "Executing rollback...",
+    "cancelled": "Rollback cancelled by user",
+    "summary_title": "Rollback Summary",
+    "apps_to_rollback": "Applications to rollback: {Count}",
+    "report_exported": "Rollback report exported to: {Path}",
+    "test_capability": "Testing rollback capability for {AppName}"
+  },
+  "structuredLogging": {
+    "initialized": "Structured logging initialized",
+    "session_started": "Logging session started: {SessionId}",
+    "session_closed": "Logging session closed",
+    "buffer_flushed": "Log buffer flushed ({Count} entries)",
+    "exported": "Logs exported to: {Path}",
+    "retention_cleanup": "Removed {Count} old log files",
+    "stats_title": "Logging Statistics",
+    "total_files": "Total log files: {Count}",
+    "total_size": "Total size: {Size}"
+  },
+  "api": {
+    "server_started": "API server started on {Url}",
+    "server_stopped": "API server stopped",
+    "server_already_running": "API server is already running",
+    "server_not_running": "API server is not running",
+    "request_received": "API Request: {Method} {Path}",
+    "endpoint_registered": "Registered endpoint: {Method} {Path}",
+    "endpoint_not_found": "Endpoint not found: {Method} {Path}",
+    "request_error": "Request processing error: {Error}",
+    "status_running": "Server Status: Running",
+    "status_stopped": "Server Status: Stopped",
+    "uptime": "Uptime: {Duration}",
+    "request_count": "Total requests: {Count}"
+  },
+  "update": {
+    "checking": "Checking for updates...",
+    "available": "Update available: v{Version}",
+    "current": "Current version: v{Version}",
+    "latest": "Latest version: v{Version}",
+    "no_update": "You are running the latest version",
+    "downloading": "Downloading update: {FileName}",
+    "download_complete": "Download completed",
+    "backup_creating": "Creating backup: {Name}",
+    "backup_created": "Backup created: {Path}",
+    "backup_failed": "Backup failed: {Error}",
+    "installing": "Installing update...",
+    "install_success": "Update installed successfully",
+    "install_failed": "Update failed: {Error}",
+    "restoring": "Restoring from backup: {Path}",
+    "restore_complete": "Restore completed",
+    "available_backups": "Available backups: {Count}",
+    "release_notes": "Release Notes:",
+    "prerelease_warning": "This is a pre-release version"
+  },
+  "telemetry": {
+    "initialized": "Telemetry collector initialized",
+    "deployment_started": "Deployment session started: {SessionId}",
+    "deployment_ended": "Deployment session ended: {Status}",
+    "app_installed": "Recorded installation: {AppName}",
+    "app_failed": "Recorded failure: {AppName}",
+    "summary_title": "Telemetry Summary",
+    "total_deployments": "Total deployments: {Count}",
+    "success_rate": "Success rate: {Rate}",
+    "apps_installed": "Applications installed: {Count}",
+    "avg_deployment_time": "Average deployment time: {Time}",
+    "report_exported": "Telemetry report exported: {Path}",
+    "data_cleared": "Telemetry data cleared",
+    "dashboard_opened": "Opening telemetry dashboard..."
+  },
+  "userProfiles": {
+    "saved": "Profile saved: {Name}",
+    "loaded": "Profile loaded: {Name}",
+    "removed": "Profile removed: {Name}",
+    "not_found": "Profile not found: {Name}",
+    "already_exists": "Profile already exists: {Name}",
+    "exported": "Profile exported: {Path}",
+    "imported": "Profile imported: {Name}",
+    "copied": "Profile copied: {Source} -> {Destination}",
+    "merged": "Profiles merged: {Names} -> {Output}",
+    "stats_title": "User Profile Statistics",
+    "total_profiles": "Total profiles: {Count}",
+    "unique_apps": "Unique applications: {Count}",
+    "directory": "Profiles directory: {Path}"
+  },
+  "plugins": {
+    "initialized": "Plugin manager initialized",
+    "loading": "Loading plugin: {Name}",
+    "loaded": "Plugin loaded: {Name} v{Version}",
+    "unloaded": "Plugin unloaded: {Name}",
+    "not_found": "Plugin not found: {Name}",
+    "invalid_manifest": "Invalid plugin manifest: {Name}",
+    "hook_registered": "Registered hook '{Hook}' for plugin '{Name}'",
+    "hook_invoked": "Invoking hook '{Hook}' from plugin '{Name}'",
+    "hook_failed": "Hook '{Hook}' failed for plugin '{Name}': {Error}",
+    "method_registered": "Registered custom install method '{Method}' from plugin '{Name}'",
+    "available_plugins": "Available plugins: {Count}",
+    "loaded_plugins": "Loaded plugins: {Count}",
+    "disabled": "Plugin system is disabled",
+    "template_info": "Plugin template available at: Plugins/_template"
+  },
+  "ux": {
+    "recovery": {
+      "CheckInternet": "Check your internet connection and try again",
+      "CheckFirewall": "Ensure firewall or antivirus is not blocking the connection",
+      "TryAgainLater": "The server may be temporarily unavailable - try again later",
+      "RunAsAdmin": "Run Win11Forge as Administrator",
+      "CheckPermissions": "Check that you have permission to access the required files or folders",
+      "CheckPath": "Verify the file or folder path exists",
+      "ReinstallApp": "Try reinstalling the application",
+      "CheckPrerequisites": "Make sure all prerequisites are installed (Winget, Chocolatey, PowerShell 7)",
+      "RetryInstall": "Try installing the application again",
+      "ManualInstall": "Consider installing the application manually from its official website",
+      "CheckPowerShell": "Check your PowerShell execution policy (Set-ExecutionPolicy RemoteSigned)",
+      "UpdatePowerShell": "Update PowerShell to the latest version",
+      "Generic_Retry": "Try the operation again",
+      "Generic_Restart": "Restart Win11Forge and try again",
+      "Generic_CheckLogs": "Check the logs folder for more details"
+    },
+    "dialog": {
+      "Error_TryThis": "Try this:",
+      "ReportIssue": "Report Issue"
+    },
+    "deploy": {
+      "TimeElapsed": "Time elapsed",
+      "TimeRemaining": "Estimated time remaining"
+    },
+    "settings": {
+      "ExportImport": "Export/Import Settings",
+      "ExportImport_Desc": "Save or load your settings configuration",
+      "Export": "Export",
+      "Import": "Import",
+      "ExportSuccess": "Settings exported successfully",
+      "ExportFailed": "Failed to export settings",
+      "ImportSuccess": "Settings imported successfully - restart required",
+      "ImportFailed": "Failed to import settings",
+      "ResetDefaults": "Reset to Defaults",
+      "ResetDefaults_Desc": "Reset all settings to their default values",
+      "ResetBtn": "Reset",
+      "ResetSuccess": "Settings reset to defaults",
+      "ResetFailed": "Failed to reset settings"
+    },
+    "confirm": {
+      "ResetSettings_Title": "Reset Settings",
+      "ResetSettings_Message": "Are you sure you want to reset all settings to their default values? This action cannot be undone."
+    },
+    "notifications": {
+      "Title": "Notifications",
+      "NoNotifications": "No notifications",
+      "ClearAll": "Clear All",
+      "MarkAllRead": "Mark All as Read"
+    },
+    "profileComparison": {
+      "Title": "Compare Profiles",
+      "SelectProfiles": "Select two profiles to compare",
+      "Profile1": "Profile 1",
+      "Profile2": "Profile 2",
+      "Compare": "Compare",
+      "OnlyIn": "Only in {Profile}",
+      "InBoth": "In both profiles",
+      "Differences": "Differences"
+    },
+    "searchFilters": {
+      "FilterByCategory": "Filter by category",
+      "FilterByTag": "Filter by tag",
+      "FilterBySource": "Filter by source",
+      "ShowInstalled": "Show installed",
+      "ShowNotInstalled": "Show not installed",
+      "ClearFilters": "Clear filters",
+      "ApplyFilters": "Apply filters"
+    },
+    "accessibility": {
+      "HighContrast": "High Contrast Mode",
+      "HighContrast_Desc": "Enable high contrast colors for better visibility",
+      "ReducedMotion": "Reduce Motion",
+      "ReducedMotion_Desc": "Minimize animations for accessibility"
+    },
+    "navigation": {
+      "Back": "Back",
+      "Forward": "Forward",
+      "Home": "Home"
+    },
+    "tabs": {
+      "Appearance": "Appearance",
+      "Performance": "Performance",
+      "Data": "Data",
+      "About": "About"
+    },
+    "profile": {
+      "Label": "Profile",
+      "Select": "Select a profile...",
+      "Clear": "Clear profile",
+      "AppsSelected": "apps selected"
+    }
   }
 }

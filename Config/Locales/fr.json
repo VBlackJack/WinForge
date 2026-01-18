@@ -884,5 +884,221 @@
     "files_skipped": "Fichiers ignorés : {Count}",
     "archive_location": "Emplacement de l'archive : {Path}",
     "completed": "Nettoyage terminé"
+  },
+  "cache": {
+    "winget": {
+      "initialized": "Cache Winget initialisé",
+      "hit": "Cache hit pour winget list (âge: {Age} min)",
+      "miss": "Cache miss - actualisation...",
+      "refreshed": "Cache winget list mis à jour",
+      "cleared": "Cache Winget vidé",
+      "saved": "Cache sauvegardé sur disque",
+      "loaded": "Cache chargé depuis le disque",
+      "prewarm": "Préchauffage du cache winget list...",
+      "stats_title": "Statistiques du cache",
+      "list_hits": "Hits du cache list : {Count}",
+      "list_misses": "Misses du cache list : {Count}",
+      "search_entries": "Entrées du cache de recherche : {Count}"
+    }
+  },
+  "rollbackManager": {
+    "enabled": "Rollback automatique activé (seuil : {Threshold} échecs)",
+    "disabled": "Rollback automatique désactivé",
+    "threshold_reached": "Seuil de rollback automatique atteint : {Count} échecs",
+    "critical_detected": "Échec critique détecté pour {AppName}",
+    "handler_registered": "Handler d'échec critique enregistré : {Name}",
+    "confirmation_prompt": "Voulez-vous procéder au rollback ? (O/N)",
+    "confirmation_timeout": "Délai : {Seconds}s",
+    "executing": "Exécution du rollback...",
+    "cancelled": "Rollback annulé par l'utilisateur",
+    "summary_title": "Résumé du rollback",
+    "apps_to_rollback": "Applications à restaurer : {Count}",
+    "report_exported": "Rapport de rollback exporté : {Path}",
+    "test_capability": "Test de la capacité de rollback pour {AppName}"
+  },
+  "structuredLogging": {
+    "initialized": "Logging structuré initialisé",
+    "session_started": "Session de logging démarrée : {SessionId}",
+    "session_closed": "Session de logging fermée",
+    "buffer_flushed": "Buffer de logs vidé ({Count} entrées)",
+    "exported": "Logs exportés vers : {Path}",
+    "retention_cleanup": "{Count} anciens fichiers de logs supprimés",
+    "stats_title": "Statistiques de logging",
+    "total_files": "Total des fichiers de logs : {Count}",
+    "total_size": "Taille totale : {Size}"
+  },
+  "api": {
+    "server_started": "Serveur API démarré sur {Url}",
+    "server_stopped": "Serveur API arrêté",
+    "server_already_running": "Le serveur API est déjà en cours d'exécution",
+    "server_not_running": "Le serveur API n'est pas en cours d'exécution",
+    "request_received": "Requête API : {Method} {Path}",
+    "endpoint_registered": "Endpoint enregistré : {Method} {Path}",
+    "endpoint_not_found": "Endpoint non trouvé : {Method} {Path}",
+    "request_error": "Erreur de traitement de la requête : {Error}",
+    "status_running": "Statut du serveur : En cours",
+    "status_stopped": "Statut du serveur : Arrêté",
+    "uptime": "Temps de fonctionnement : {Duration}",
+    "request_count": "Total des requêtes : {Count}"
+  },
+  "update": {
+    "checking": "Vérification des mises à jour...",
+    "available": "Mise à jour disponible : v{Version}",
+    "current": "Version actuelle : v{Version}",
+    "latest": "Dernière version : v{Version}",
+    "no_update": "Vous utilisez la dernière version",
+    "downloading": "Téléchargement de la mise à jour : {FileName}",
+    "download_complete": "Téléchargement terminé",
+    "backup_creating": "Création de la sauvegarde : {Name}",
+    "backup_created": "Sauvegarde créée : {Path}",
+    "backup_failed": "Échec de la sauvegarde : {Error}",
+    "installing": "Installation de la mise à jour...",
+    "install_success": "Mise à jour installée avec succès",
+    "install_failed": "Échec de la mise à jour : {Error}",
+    "restoring": "Restauration depuis la sauvegarde : {Path}",
+    "restore_complete": "Restauration terminée",
+    "available_backups": "Sauvegardes disponibles : {Count}",
+    "release_notes": "Notes de version :",
+    "prerelease_warning": "Ceci est une version préliminaire"
+  },
+  "telemetry": {
+    "initialized": "Collecteur de télémétrie initialisé",
+    "deployment_started": "Session de déploiement démarrée : {SessionId}",
+    "deployment_ended": "Session de déploiement terminée : {Status}",
+    "app_installed": "Installation enregistrée : {AppName}",
+    "app_failed": "Échec enregistré : {AppName}",
+    "summary_title": "Résumé de la télémétrie",
+    "total_deployments": "Total des déploiements : {Count}",
+    "success_rate": "Taux de réussite : {Rate}",
+    "apps_installed": "Applications installées : {Count}",
+    "avg_deployment_time": "Temps moyen de déploiement : {Time}",
+    "report_exported": "Rapport de télémétrie exporté : {Path}",
+    "data_cleared": "Données de télémétrie effacées",
+    "dashboard_opened": "Ouverture du tableau de bord de télémétrie..."
+  },
+  "userProfiles": {
+    "saved": "Profil sauvegardé : {Name}",
+    "loaded": "Profil chargé : {Name}",
+    "removed": "Profil supprimé : {Name}",
+    "not_found": "Profil non trouvé : {Name}",
+    "already_exists": "Le profil existe déjà : {Name}",
+    "exported": "Profil exporté : {Path}",
+    "imported": "Profil importé : {Name}",
+    "copied": "Profil copié : {Source} -> {Destination}",
+    "merged": "Profils fusionnés : {Names} -> {Output}",
+    "stats_title": "Statistiques des profils utilisateur",
+    "total_profiles": "Total des profils : {Count}",
+    "unique_apps": "Applications uniques : {Count}",
+    "directory": "Répertoire des profils : {Path}"
+  },
+  "plugins": {
+    "initialized": "Gestionnaire de plugins initialisé",
+    "loading": "Chargement du plugin : {Name}",
+    "loaded": "Plugin chargé : {Name} v{Version}",
+    "unloaded": "Plugin déchargé : {Name}",
+    "not_found": "Plugin non trouvé : {Name}",
+    "invalid_manifest": "Manifeste de plugin invalide : {Name}",
+    "hook_registered": "Hook '{Hook}' enregistré pour le plugin '{Name}'",
+    "hook_invoked": "Invocation du hook '{Hook}' depuis le plugin '{Name}'",
+    "hook_failed": "Hook '{Hook}' échoué pour le plugin '{Name}' : {Error}",
+    "method_registered": "Méthode d'installation personnalisée '{Method}' enregistrée depuis le plugin '{Name}'",
+    "available_plugins": "Plugins disponibles : {Count}",
+    "loaded_plugins": "Plugins chargés : {Count}",
+    "disabled": "Le système de plugins est désactivé",
+    "template_info": "Modèle de plugin disponible dans : Plugins/_template"
+  },
+  "ux": {
+    "recovery": {
+      "CheckInternet": "Vérifiez votre connexion Internet et réessayez",
+      "CheckFirewall": "Assurez-vous que le pare-feu ou l'antivirus ne bloque pas la connexion",
+      "TryAgainLater": "Le serveur peut être temporairement indisponible - réessayez plus tard",
+      "RunAsAdmin": "Exécutez Win11Forge en tant qu'administrateur",
+      "CheckPermissions": "Vérifiez que vous avez la permission d'accéder aux fichiers ou dossiers requis",
+      "CheckPath": "Vérifiez que le chemin du fichier ou du dossier existe",
+      "ReinstallApp": "Essayez de réinstaller l'application",
+      "CheckPrerequisites": "Assurez-vous que tous les prérequis sont installés (Winget, Chocolatey, PowerShell 7)",
+      "RetryInstall": "Essayez d'installer l'application à nouveau",
+      "ManualInstall": "Envisagez d'installer l'application manuellement depuis son site officiel",
+      "CheckPowerShell": "Vérifiez votre politique d'exécution PowerShell (Set-ExecutionPolicy RemoteSigned)",
+      "UpdatePowerShell": "Mettez à jour PowerShell vers la dernière version",
+      "Generic_Retry": "Réessayez l'opération",
+      "Generic_Restart": "Redémarrez Win11Forge et réessayez",
+      "Generic_CheckLogs": "Consultez le dossier des logs pour plus de détails"
+    },
+    "dialog": {
+      "Error_TryThis": "Essayez ceci :",
+      "ReportIssue": "Signaler un problème"
+    },
+    "deploy": {
+      "TimeElapsed": "Temps écoulé",
+      "TimeRemaining": "Temps restant estimé"
+    },
+    "settings": {
+      "ExportImport": "Exporter/Importer les paramètres",
+      "ExportImport_Desc": "Sauvegarder ou charger votre configuration",
+      "Export": "Exporter",
+      "Import": "Importer",
+      "ExportSuccess": "Paramètres exportés avec succès",
+      "ExportFailed": "Échec de l'exportation des paramètres",
+      "ImportSuccess": "Paramètres importés avec succès - redémarrage requis",
+      "ImportFailed": "Échec de l'importation des paramètres",
+      "ResetDefaults": "Réinitialiser par défaut",
+      "ResetDefaults_Desc": "Réinitialiser tous les paramètres à leurs valeurs par défaut",
+      "ResetBtn": "Réinitialiser",
+      "ResetSuccess": "Paramètres réinitialisés par défaut",
+      "ResetFailed": "Échec de la réinitialisation des paramètres"
+    },
+    "confirm": {
+      "ResetSettings_Title": "Réinitialiser les paramètres",
+      "ResetSettings_Message": "Êtes-vous sûr de vouloir réinitialiser tous les paramètres à leurs valeurs par défaut ? Cette action est irréversible."
+    },
+    "notifications": {
+      "Title": "Notifications",
+      "NoNotifications": "Aucune notification",
+      "ClearAll": "Tout effacer",
+      "MarkAllRead": "Tout marquer comme lu"
+    },
+    "profileComparison": {
+      "Title": "Comparer les profils",
+      "SelectProfiles": "Sélectionnez deux profils à comparer",
+      "Profile1": "Profil 1",
+      "Profile2": "Profil 2",
+      "Compare": "Comparer",
+      "OnlyIn": "Uniquement dans {Profile}",
+      "InBoth": "Dans les deux profils",
+      "Differences": "Différences"
+    },
+    "searchFilters": {
+      "FilterByCategory": "Filtrer par catégorie",
+      "FilterByTag": "Filtrer par tag",
+      "FilterBySource": "Filtrer par source",
+      "ShowInstalled": "Afficher installées",
+      "ShowNotInstalled": "Afficher non installées",
+      "ClearFilters": "Effacer les filtres",
+      "ApplyFilters": "Appliquer les filtres"
+    },
+    "accessibility": {
+      "HighContrast": "Mode contraste élevé",
+      "HighContrast_Desc": "Activer les couleurs à contraste élevé pour une meilleure visibilité",
+      "ReducedMotion": "Réduire les animations",
+      "ReducedMotion_Desc": "Minimiser les animations pour l'accessibilité"
+    },
+    "navigation": {
+      "Back": "Retour",
+      "Forward": "Suivant",
+      "Home": "Accueil"
+    },
+    "tabs": {
+      "Appearance": "Apparence",
+      "Performance": "Performance",
+      "Data": "Données",
+      "About": "À propos"
+    },
+    "profile": {
+      "Label": "Profil",
+      "Select": "Sélectionner un profil...",
+      "Clear": "Effacer le profil",
+      "AppsSelected": "apps sélectionnées"
+    }
   }
 }

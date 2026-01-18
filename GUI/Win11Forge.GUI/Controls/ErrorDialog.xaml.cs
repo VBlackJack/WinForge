@@ -14,20 +14,25 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using MaterialDesignThemes.Wpf;
 using Win11Forge.GUI.Services;
+using Res = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Controls;
 
 /// <summary>
-/// Error dialog control with actionable options.
+/// Error dialog control with actionable options and recovery guidance.
 /// </summary>
 public partial class ErrorDialog : UserControl
 {
     private string? _helpUrl;
+    private string? _errorCode;
+    private const string GitHubIssuesUrl = "https://github.com/VBlackJack/Win11Forge/issues/new";
 
     public event EventHandler<DialogAction>? ActionSelected;
 
@@ -47,14 +52,67 @@ public partial class ErrorDialog : UserControl
     /// </summary>
     public void Configure(string title, string message, string? details = null, bool showRetry = false, string? helpUrl = null)
     {
+        ConfigureAdvanced(title, message, details, showRetry, helpUrl, null, null, null);
+    }
+
+    /// <summary>
+    /// Configures the dialog with full error information including recovery suggestions.
+    /// </summary>
+    public void ConfigureAdvanced(
+        string title,
+        string message,
+        string? details = null,
+        bool showRetry = false,
+        string? helpUrl = null,
+        string? errorCode = null,
+        IEnumerable<string>? recoverySuggestions = null,
+        string? offlineHelpText = null)
+    {
         TitleText.Text = title;
         MessageText.Text = message;
         _helpUrl = helpUrl;
+        _errorCode = errorCode;
+
+        // Show error code badge if provided
+        if (!string.IsNullOrEmpty(errorCode))
+        {
+            ErrorCodeBadge.Visibility = Visibility.Visible;
+            ErrorCodeText.Text = errorCode;
+        }
+
+        // Show recovery suggestions if provided
+        if (recoverySuggestions != null)
+        {
+            var suggestions = recoverySuggestions.ToList();
+            if (suggestions.Count > 0)
+            {
+                RecoverySuggestionsPanel.Visibility = Visibility.Visible;
+                RecoverySuggestionsList.ItemsSource = suggestions;
+            }
+        }
+        else
+        {
+            // Auto-generate recovery suggestions based on error type
+            var autoSuggestions = GenerateRecoverySuggestions(title, message, details);
+            if (autoSuggestions.Count > 0)
+            {
+                RecoverySuggestionsPanel.Visibility = Visibility.Visible;
+                RecoverySuggestionsList.ItemsSource = autoSuggestions;
+            }
+        }
+
+        // Show offline help text if provided
+        if (!string.IsNullOrEmpty(offlineHelpText))
+        {
+            OfflineHelpPanel.Visibility = Visibility.Visible;
+            OfflineHelpText.Text = offlineHelpText;
+        }
 
         if (!string.IsNullOrEmpty(details))
         {
             DetailsExpander.Visibility = Visibility.Visible;
             DetailsText.Text = details;
+            ReportIssueButton.Visibility = Visibility.Visible;
         }
 
         if (showRetry)
@@ -66,6 +124,70 @@ public partial class ErrorDialog : UserControl
         {
             HelpButton.Visibility = Visibility.Visible;
         }
+    }
+
+    /// <summary>
+    /// Generates automatic recovery suggestions based on error content.
+    /// </summary>
+    private List<string> GenerateRecoverySuggestions(string title, string message, string? details)
+    {
+        var suggestions = new List<string>();
+        var lowerMessage = (message + " " + (details ?? "")).ToLowerInvariant();
+        var lowerTitle = title.ToLowerInvariant();
+
+        // Network-related errors
+        if (lowerMessage.Contains("network") || lowerMessage.Contains("internet") ||
+            lowerMessage.Contains("connection") || lowerMessage.Contains("timeout") ||
+            lowerMessage.Contains("download") || lowerMessage.Contains("fetch"))
+        {
+            suggestions.Add(Res.Recovery_CheckInternet);
+            suggestions.Add(Res.Recovery_CheckFirewall);
+            suggestions.Add(Res.Recovery_TryAgainLater);
+        }
+
+        // Permission/Admin errors
+        if (lowerMessage.Contains("access denied") || lowerMessage.Contains("permission") ||
+            lowerMessage.Contains("administrator") || lowerMessage.Contains("elevated") ||
+            lowerMessage.Contains("unauthorized"))
+        {
+            suggestions.Add(Res.Recovery_RunAsAdmin);
+            suggestions.Add(Res.Recovery_CheckPermissions);
+        }
+
+        // File/Path errors
+        if (lowerMessage.Contains("file not found") || lowerMessage.Contains("path") ||
+            lowerMessage.Contains("directory") || lowerMessage.Contains("does not exist"))
+        {
+            suggestions.Add(Res.Recovery_CheckPath);
+            suggestions.Add(Res.Recovery_ReinstallApp);
+        }
+
+        // Installation errors
+        if (lowerTitle.Contains("install") || lowerMessage.Contains("install") ||
+            lowerMessage.Contains("winget") || lowerMessage.Contains("chocolatey"))
+        {
+            suggestions.Add(Res.Recovery_CheckPrerequisites);
+            suggestions.Add(Res.Recovery_RetryInstall);
+            suggestions.Add(Res.Recovery_ManualInstall);
+        }
+
+        // PowerShell errors
+        if (lowerMessage.Contains("powershell") || lowerMessage.Contains("script") ||
+            lowerMessage.Contains("execution policy"))
+        {
+            suggestions.Add(Res.Recovery_CheckPowerShell);
+            suggestions.Add(Res.Recovery_UpdatePowerShell);
+        }
+
+        // If no specific suggestions, add generic ones
+        if (suggestions.Count == 0)
+        {
+            suggestions.Add(Res.Recovery_Generic_Retry);
+            suggestions.Add(Res.Recovery_Generic_Restart);
+            suggestions.Add(Res.Recovery_Generic_CheckLogs);
+        }
+
+        return suggestions;
     }
 
     private void OkButton_Click(object sender, RoutedEventArgs e)
@@ -105,6 +227,10 @@ public partial class ErrorDialog : UserControl
         try
         {
             var details = $"{TitleText.Text}\n\n{MessageText.Text}";
+            if (!string.IsNullOrEmpty(_errorCode))
+            {
+                details += $"\n\nError Code: {_errorCode}";
+            }
             if (!string.IsNullOrEmpty(DetailsText.Text))
             {
                 details += $"\n\n--- Details ---\n{DetailsText.Text}";
@@ -133,6 +259,50 @@ public partial class ErrorDialog : UserControl
         catch
         {
             // Silently fail
+        }
+    }
+
+    private void ReportIssueButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            // Build issue body with error details
+            var issueTitle = WebUtility.UrlEncode($"Error: {TitleText.Text}");
+            var issueBody = WebUtility.UrlEncode(
+                $"## Error Details\n\n" +
+                $"**Title:** {TitleText.Text}\n" +
+                $"**Message:** {MessageText.Text}\n" +
+                (!string.IsNullOrEmpty(_errorCode) ? $"**Error Code:** {_errorCode}\n" : "") +
+                $"\n## Technical Details\n\n```\n{DetailsText.Text}\n```\n\n" +
+                $"## Environment\n\n" +
+                $"- OS: Windows {Environment.OSVersion.Version}\n" +
+                $"- .NET: {Environment.Version}\n" +
+                $"- Win11Forge Version: 3.1.5\n"
+            );
+
+            var url = $"{GitHubIssuesUrl}?title={issueTitle}&body={issueBody}";
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        catch
+        {
+            // Silently fail - fallback to just opening issues page
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://github.com/VBlackJack/Win11Forge/issues",
+                    UseShellExecute = true
+                });
+            }
+            catch
+            {
+                // Silently fail
+            }
         }
     }
 }

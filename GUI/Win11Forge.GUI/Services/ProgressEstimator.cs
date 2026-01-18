@@ -127,4 +127,19 @@ public class ProgressEstimator
     /// Gets the elapsed time.
     /// </summary>
     public TimeSpan Elapsed => _stopwatch.Elapsed;
+
+    /// <summary>
+    /// Gets a formatted string for the elapsed time.
+    /// </summary>
+    public string GetFormattedElapsedTime()
+    {
+        var elapsed = _stopwatch.Elapsed;
+
+        if (elapsed.TotalHours >= 1)
+        {
+            return $"{(int)elapsed.TotalHours}:{elapsed.Minutes:D2}:{elapsed.Seconds:D2}";
+        }
+
+        return $"{elapsed.Minutes:D2}:{elapsed.Seconds:D2}";
+    }
 }

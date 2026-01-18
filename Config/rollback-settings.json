@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "description": "Rollback system configuration for Win11Forge",
+    "version": "3.1.4",
+    "author": "Julien Bombled",
+    "lastUpdated": "2026-01-17"
+  },
+  "autoRollbackEnabled": true,
+  "autoRollbackThreshold": 3,
+  "requireConfirmation": true,
+  "confirmationTimeoutSeconds": 30,
+  "criticalFailurePatterns": [
+    "system32",
+    "registry corruption",
+    "boot",
+    "driver",
+    "kernel",
+    "access denied.*system",
+    "permission denied.*windows"
+  ],
+  "rollbackMethods": {
+    "supported": [
+      "Winget",
+      "Chocolatey",
+      "Choco",
+      "StoreApp",
+      "MsStore"
+    ],
+    "unsupported": [
+      "DirectDownload",
+      "Custom",
+      "WindowsFeature",
+      "WindowsCapability",
+      "Manual"
+    ]
+  },
+  "reporting": {
+    "autoExportOnFailure": false,
+    "reportDirectory": "%LOCALAPPDATA%\\Win11Forge\\Reports",
+    "defaultFormat": "Json"
+  }
+}

@@ -22,198 +22,190 @@
                    Style="{StaticResource MaterialDesignHeadline4TextBlock}"
                    Margin="0,0,0,24"/>
 
-        <!-- Settings Content -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <!-- Appearance Section -->
-                <materialDesign:Card Padding="16"
-                                      Margin="0,0,0,16"
-                                      materialDesign:ElevationAssist.Elevation="Dp2">
+        <!-- Settings Content with Tabs -->
+        <TabControl Grid.Row="1"
+                    Style="{StaticResource MaterialDesignNavigationRailTabControl}"
+                    materialDesign:ColorZoneAssist.Mode="PrimaryMid"
+                    TabStripPlacement="Left">
+
+            <!-- Appearance & Language Tab -->
+            <TabItem>
+                <TabItem.Header>
                     <StackPanel>
-                        <!-- Section Header -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                            <materialDesign:PackIcon Kind="Palette"
-                                                      Width="24" Height="24"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,12,0"/>
-                            <TextBlock Text="{loc:Loc Settings_Section_Appearance}"
-                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                        <!-- Theme Toggle -->
-                        <Grid Margin="0,0,0,16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="{loc:Loc Settings_Theme}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           FontWeight="Medium"/>
-                                <TextBlock Text="{loc:Loc Settings_Theme_Desc}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.7"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="WeatherSunny"
-                                                          Width="20" Height="20"
-                                                          VerticalAlignment="Center"
-                                                          Opacity="0.7"
-                                                          Margin="0,0,8,0"/>
-                                <ToggleButton IsChecked="{Binding IsDarkTheme}"
-                                              Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                <materialDesign:PackIcon Kind="WeatherNight"
-                                                          Width="20" Height="20"
-                                                          VerticalAlignment="Center"
-                                                          Opacity="0.7"
-                                                          Margin="8,0,0,0"/>
-                            </StackPanel>
-                        </Grid>
+                        <materialDesign:PackIcon Kind="Palette" Width="24" Height="24" HorizontalAlignment="Center"
+                                                  Foreground="White"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_Appearance}" Style="{StaticResource MaterialDesignCaptionTextBlock}" HorizontalAlignment="Center"
+                                   Foreground="White"/>
                     </StackPanel>
-                </materialDesign:Card>
-
-                <!-- Language Section -->
-                <materialDesign:Card Padding="16"
-                                      Margin="0,0,0,16"
-                                      materialDesign:ElevationAssist.Elevation="Dp2">
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
-                        <!-- Section Header -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                            <materialDesign:PackIcon Kind="Translate"
-                                                      Width="24" Height="24"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,12,0"/>
-                            <TextBlock Text="{loc:Loc Settings_Section_Language}"
-                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <!-- Theme Section -->
+                        <materialDesign:Card Padding="16" Margin="0,0,0,16" materialDesign:ElevationAssist.Elevation="Dp2">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                    <materialDesign:PackIcon Kind="Palette" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBlock Text="{loc:Loc Settings_Section_Appearance}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" VerticalAlignment="Center"/>
+                                </StackPanel>
 
-                        <!-- Language Selector -->
-                        <Grid Margin="0,0,0,16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                                <!-- Theme Toggle -->
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="{loc:Loc Settings_Language}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           FontWeight="Medium"/>
-                                <TextBlock Text="{loc:Loc Settings_Language_Desc}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.7"/>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{loc:Loc Settings_Theme}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_Theme_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Opacity="0.7"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="WeatherSunny" Width="20" Height="20" VerticalAlignment="Center" Opacity="0.7" Margin="0,0,8,0"/>
+                                        <ToggleButton IsChecked="{Binding IsDarkTheme}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                        <materialDesign:PackIcon Kind="WeatherNight" Width="20" Height="20" VerticalAlignment="Center" Opacity="0.7" Margin="8,0,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Reduced Motion -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{loc:Loc Settings_ReducedMotion}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_ReducedMotion_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Opacity="0.7"/>
+                                    </StackPanel>
+
+                                    <ToggleButton Grid.Column="1"
+                                                  IsChecked="{Binding ReducedMotion}"
+                                                  Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                </Grid>
                             </StackPanel>
+                        </materialDesign:Card>
 
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <ComboBox ItemsSource="{Binding AvailableLanguages}"
-                                          SelectedItem="{Binding SelectedLanguage}"
-                                          DisplayMemberPath="DisplayName"
-                                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                                          MinWidth="140"
-                                          MaxWidth="200"
-                                          Margin="0,0,12,0"/>
-                                <Button Content="{loc:Loc Settings_Apply}"
-                                        Command="{Binding ApplyLanguageCommand}"
-                                        Style="{StaticResource MaterialDesignRaisedButton}"/>
-                            </StackPanel>
-                        </Grid>
+                        <!-- Language Section -->
+                        <materialDesign:Card Padding="16" Margin="0,0,0,16" materialDesign:ElevationAssist.Elevation="Dp2">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                    <materialDesign:PackIcon Kind="Translate" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBlock Text="{loc:Loc Settings_Section_Language}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" VerticalAlignment="Center"/>
+                                </StackPanel>
 
-                        <!-- Restart Warning -->
-                        <Border Background="{DynamicResource MaterialDesignToolBarBackground}"
-                                CornerRadius="4"
-                                Padding="12"
-                                Visibility="{Binding RestartRequired, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="AlertCircle"
-                                                          Width="20" Height="20"
-                                                          VerticalAlignment="Center"
-                                                          Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
-                                                          Margin="0,0,8,0"/>
-                                <TextBlock Text="{loc:Loc Settings_RestartRequired}"
-                                           Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                           VerticalAlignment="Center"/>
+                                <!-- Language Selector -->
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{loc:Loc Settings_Language}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_Language_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Opacity="0.7"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <ComboBox ItemsSource="{Binding AvailableLanguages}"
+                                                  SelectedItem="{Binding SelectedLanguage}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                                  MinWidth="140" MaxWidth="200" Margin="0,0,12,0"/>
+                                        <Button Content="{loc:Loc Settings_Apply}"
+                                                Command="{Binding ApplyLanguageCommand}"
+                                                Style="{StaticResource MaterialDesignRaisedButton}"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Restart Warning -->
+                                <Border Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                        CornerRadius="4" Padding="12"
+                                        Visibility="{Binding RestartRequired, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="AlertCircle" Width="20" Height="20" VerticalAlignment="Center"
+                                                                  Foreground="{DynamicResource MaterialDesignValidationErrorBrush}" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{loc:Loc Settings_RestartRequired}" Style="{StaticResource MaterialDesignBody2TextBlock}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
-                        </Border>
+                        </materialDesign:Card>
                     </StackPanel>
-                </materialDesign:Card>
+                </ScrollViewer>
+            </TabItem>
 
-                <!-- Performance Section -->
-                <materialDesign:Card Padding="16"
-                                      Margin="0,0,0,16"
-                                      materialDesign:ElevationAssist.Elevation="Dp2">
+            <!-- Performance Tab -->
+            <TabItem>
+                <TabItem.Header>
                     <StackPanel>
-                        <!-- Section Header -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                            <materialDesign:PackIcon Kind="SpeedometerMedium"
-                                                      Width="24" Height="24"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,12,0"/>
-                            <TextBlock Text="{loc:Loc Settings_Section_Performance}"
-                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                       VerticalAlignment="Center"/>
-                            <materialDesign:PackIcon Kind="HelpCircleOutline"
-                                                      Width="18" Height="18"
-                                                      Opacity="0.6"
-                                                      VerticalAlignment="Center"
-                                                      Margin="8,0,0,0"
-                                                      ToolTip="{loc:Loc Help_Performance}"/>
-                        </StackPanel>
-
-                        <!-- Parallel Installs Setting -->
-                        <Grid Margin="0,0,0,16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="{loc:Loc Settings_ParallelInstalls}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           FontWeight="Medium"/>
-                                <TextBlock Text="{loc:Loc Settings_ParallelInstalls_Desc}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.7"/>
-                            </StackPanel>
-
-                            <ComboBox Grid.Column="1"
-                                      ItemsSource="{Binding ParallelInstallOptions}"
-                                      SelectedItem="{Binding MaxParallelInstalls}"
-                                      Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                                      Width="80"/>
-                        </Grid>
-
-                        <!-- Parallel Scans Setting -->
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="{loc:Loc Settings_ParallelScans}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           FontWeight="Medium"/>
-                                <TextBlock Text="{loc:Loc Settings_ParallelScans_Desc}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.7"/>
-                            </StackPanel>
-
-                            <ComboBox Grid.Column="1"
-                                      ItemsSource="{Binding ParallelScanOptions}"
-                                      SelectedItem="{Binding MaxParallelScans}"
-                                      Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                                      Width="80"/>
-                        </Grid>
+                        <materialDesign:PackIcon Kind="SpeedometerMedium" Width="24" Height="24" HorizontalAlignment="Center"
+                                                  Foreground="White"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_Performance}" Style="{StaticResource MaterialDesignCaptionTextBlock}" HorizontalAlignment="Center"
+                                   Foreground="White"/>
                     </StackPanel>
-                </materialDesign:Card>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
+                    <materialDesign:Card Padding="16" materialDesign:ElevationAssist.Elevation="Dp2">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <materialDesign:PackIcon Kind="SpeedometerMedium" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                <TextBlock Text="{loc:Loc Settings_Section_Performance}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" VerticalAlignment="Center"/>
+                                <materialDesign:PackIcon Kind="HelpCircleOutline" Width="18" Height="18" Opacity="0.6"
+                                                          VerticalAlignment="Center" Margin="8,0,0,0" ToolTip="{loc:Loc Help_Performance}"/>
+                            </StackPanel>
 
-                <!-- Data Section -->
-                <materialDesign:Card Padding="16"
-                                      Margin="0,0,0,16"
-                                      materialDesign:ElevationAssist.Elevation="Dp2">
+                            <!-- Parallel Installs Setting -->
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{loc:Loc Settings_ParallelInstalls}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
+                                    <TextBlock Text="{loc:Loc Settings_ParallelInstalls_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Opacity="0.7"/>
+                                </StackPanel>
+
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding ParallelInstallOptions}"
+                                          SelectedItem="{Binding MaxParallelInstalls}"
+                                          Style="{StaticResource MaterialDesignOutlinedComboBox}" Width="80"/>
+                            </Grid>
+
+                            <!-- Parallel Scans Setting -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{loc:Loc Settings_ParallelScans}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
+                                    <TextBlock Text="{loc:Loc Settings_ParallelScans_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Opacity="0.7"/>
+                                </StackPanel>
+
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding ParallelScanOptions}"
+                                          SelectedItem="{Binding MaxParallelScans}"
+                                          Style="{StaticResource MaterialDesignOutlinedComboBox}" Width="80"/>
+                            </Grid>
+                        </StackPanel>
+                    </materialDesign:Card>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Data Tab -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel>
+                        <materialDesign:PackIcon Kind="Database" Width="24" Height="24" HorizontalAlignment="Center"
+                                                  Foreground="White"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_Data}" Style="{StaticResource MaterialDesignCaptionTextBlock}" HorizontalAlignment="Center"
+                                   Foreground="White"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
+                    <materialDesign:Card Padding="16" materialDesign:ElevationAssist.Elevation="Dp2">
                     <StackPanel>
                         <!-- Section Header -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
@@ -225,6 +217,67 @@
                                        Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
+
+                        <!-- Export/Import Settings -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{loc:Loc Settings_ExportImport}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontWeight="Medium"/>
+                                <TextBlock Text="{loc:Loc Settings_ExportImport_Desc}"
+                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                           Opacity="0.7"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button Command="{Binding ExportSettingsCommand}"
+                                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
+                                        Margin="0,0,8,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Export" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="{loc:Loc Settings_Export}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding ImportSettingsCommand}"
+                                        Style="{StaticResource ThemeAdaptiveOutlinedButton}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Import" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="{loc:Loc Settings_Import}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Reset to Defaults -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{loc:Loc Settings_ResetDefaults}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontWeight="Medium"/>
+                                <TextBlock Text="{loc:Loc Settings_ResetDefaults_Desc}"
+                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                           Opacity="0.7"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="1"
+                                    Command="{Binding ResetToDefaultsCommand}"
+                                    Style="{StaticResource ThemeAdaptiveOutlinedButton}">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Restore" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="{loc:Loc Settings_ResetBtn}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
 
                         <!-- Clear History -->
                         <Grid Margin="0,0,0,16">
@@ -245,7 +298,7 @@
                             <Button Grid.Column="1"
                                     Content="{loc:Loc Settings_ClearBtn}"
                                     Command="{Binding ClearHistoryCommand}"
-                                    Style="{StaticResource MaterialDesignFlatSecondaryButton}"
+                                    Style="{StaticResource ThemeAdaptiveOutlinedButton}"
                                     Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"/>
                         </Grid>
 
@@ -267,7 +320,7 @@
 
                             <Button Grid.Column="1"
                                     Command="{Binding OpenLogFolderCommand}"
-                                    Style="{StaticResource MaterialDesignFlatSecondaryButton}">
+                                    Style="{StaticResource ThemeAdaptiveOutlinedButton}">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="FolderOpen" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <TextBlock Text="{loc:Loc Settings_Btn_OpenLogs}" VerticalAlignment="Center"/>
@@ -275,112 +328,125 @@
                             </Button>
                         </Grid>
                     </StackPanel>
-                </materialDesign:Card>
+                    </materialDesign:Card>
+                </ScrollViewer>
+            </TabItem>
 
-                <!-- About Section -->
-                <materialDesign:Card Padding="16"
-                                      Margin="0,0,0,16"
-                                      materialDesign:ElevationAssist.Elevation="Dp2">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!-- App Info (Left) -->
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock Text="{loc:Loc App_Name}"
-                                       Style="{StaticResource MaterialDesignHeadline5TextBlock}"
-                                       FontWeight="Bold"
-                                       Margin="0,0,0,16"/>
-
+            <!-- About Tab -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel>
+                        <materialDesign:PackIcon Kind="InformationOutline" Width="24" Height="24" HorizontalAlignment="Center"
+                                                  Foreground="White"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_About}" Style="{StaticResource MaterialDesignCaptionTextBlock}" HorizontalAlignment="Center"
+                                   Foreground="White"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
+                    <StackPanel>
+                        <materialDesign:Card Padding="16" materialDesign:ElevationAssist.Elevation="Dp2">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
 
-                                <!-- Version -->
-                                <TextBlock Grid.Row="0" Grid.Column="0"
-                                           Text="{loc:Loc About_Version}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           FontWeight="Medium"
-                                           Margin="0,0,24,8"/>
-                                <TextBlock Grid.Row="0" Grid.Column="1"
-                                           Text="{Binding AppVersion}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           Margin="0,0,0,8"/>
+                                <!-- App Info (Left) -->
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="{loc:Loc App_Name}"
+                                               Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                                               FontWeight="Bold"
+                                               Margin="0,0,0,16"/>
 
-                                <!-- Author -->
-                                <TextBlock Grid.Row="1" Grid.Column="0"
-                                           Text="{loc:Loc About_Author}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           FontWeight="Medium"
-                                           Margin="0,0,24,8"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1"
-                                           Text="{loc:Loc About_AuthorName}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           Margin="0,0,0,8"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
 
-                                <!-- License -->
-                                <TextBlock Grid.Row="2" Grid.Column="0"
-                                           Text="{loc:Loc About_License}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           FontWeight="Medium"
-                                           Margin="0,0,24,8"/>
-                                <TextBlock Grid.Row="2" Grid.Column="1"
-                                           Text="{loc:Loc About_LicenseValue}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           Margin="0,0,0,8"/>
+                                        <!-- Version -->
+                                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                                   Text="{loc:Loc About_Version}"
+                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontWeight="Medium"
+                                                   Margin="0,0,24,8"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                                   Text="{Binding AppVersion}"
+                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   Margin="0,0,0,8"/>
 
-                                <!-- GitHub -->
-                                <TextBlock Grid.Row="3" Grid.Column="0"
-                                           Text="{loc:Loc About_Repository}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           FontWeight="Medium"
-                                           Margin="0,0,24,0"/>
-                                <Button Grid.Row="3" Grid.Column="1"
-                                        Content="{loc:Loc About_RepoUrl}"
-                                        Command="{Binding OpenGitHubCommand}"
-                                        Style="{StaticResource MaterialDesignFlatButton}"
-                                        HorizontalAlignment="Left"
-                                        Padding="0"
-                                        Margin="0"/>
+                                        <!-- Author -->
+                                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                                   Text="{loc:Loc About_Author}"
+                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontWeight="Medium"
+                                                   Margin="0,0,24,8"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                                   Text="{loc:Loc About_AuthorName}"
+                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   Margin="0,0,0,8"/>
+
+                                        <!-- License -->
+                                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                                   Text="{loc:Loc About_License}"
+                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontWeight="Medium"
+                                                   Margin="0,0,24,8"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                                   Text="{loc:Loc About_LicenseValue}"
+                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   Margin="0,0,0,8"/>
+
+                                        <!-- GitHub -->
+                                        <TextBlock Grid.Row="3" Grid.Column="0"
+                                                   Text="{loc:Loc About_Repository}"
+                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontWeight="Medium"
+                                                   Margin="0,0,24,0"/>
+                                        <Button Grid.Row="3" Grid.Column="1"
+                                                Content="{loc:Loc About_RepoUrl}"
+                                                Command="{Binding OpenGitHubCommand}"
+                                                Style="{StaticResource ThemeAdaptiveOutlinedButton}"
+                                                HorizontalAlignment="Left"
+                                                Padding="0"
+                                                Margin="0"/>
+                                    </Grid>
+                                </StackPanel>
+
+                                <!-- Logo (Right) -->
+                                <Image Grid.Column="1"
+                                       Source="/icon_cropped.png"
+                                       Width="120" Height="120"
+                                       RenderOptions.BitmapScalingMode="HighQuality"
+                                       VerticalAlignment="Center"
+                                       Margin="24,0,0,0"/>
                             </Grid>
-                        </StackPanel>
+                        </materialDesign:Card>
 
-                        <!-- Logo (Right) -->
-                        <Image Grid.Column="1"
-                               Source="/icon_cropped.png"
-                               Width="120" Height="120"
-                               RenderOptions.BitmapScalingMode="HighQuality"
-                               VerticalAlignment="Center"
-                               Margin="24,0,0,0"/>
-                    </Grid>
-                </materialDesign:Card>
-
-                <!-- Status Message -->
-                <materialDesign:Card Padding="12"
-                                      materialDesign:ElevationAssist.Elevation="Dp1"
-                                      Visibility="{Binding StatusMessage, Converter={StaticResource NullableToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="CheckCircle"
-                                                  Width="20" Height="20"
-                                                  VerticalAlignment="Center"
-                                                  Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                                  Margin="0,0,8,0"/>
-                        <TextBlock Text="{Binding StatusMessage}"
-                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                   VerticalAlignment="Center"/>
+                        <!-- Status Message -->
+                        <materialDesign:Card Padding="12" Margin="0,16,0,0"
+                                              materialDesign:ElevationAssist.Elevation="Dp1"
+                                              Visibility="{Binding StatusMessage, Converter={StaticResource NullableToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="CheckCircle"
+                                                          Width="20" Height="20"
+                                                          VerticalAlignment="Center"
+                                                          Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                          Margin="0,0,8,0"/>
+                                <TextBlock Text="{Binding StatusMessage}"
+                                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </materialDesign:Card>
                     </StackPanel>
-                </materialDesign:Card>
-            </StackPanel>
-        </ScrollViewer>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

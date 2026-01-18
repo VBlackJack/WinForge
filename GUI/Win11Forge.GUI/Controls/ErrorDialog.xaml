@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
-             MinWidth="400" MaxWidth="600"
+             MinWidth="450" MaxWidth="650"
              AutomationProperties.Name="Error dialog"
              AutomationProperties.LiveSetting="Assertive"
              Loaded="UserControl_Loaded">
@@ -14,20 +14,42 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Header with Icon -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                <materialDesign:PackIcon Kind="AlertCircle"
+            <!-- Header with Icon and Error Code -->
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <materialDesign:PackIcon Grid.Column="0"
+                                          Kind="AlertCircle"
                                           Width="32" Height="32"
                                           Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
                                           VerticalAlignment="Center"
                                           Margin="0,0,12,0"/>
-                <TextBlock x:Name="TitleText"
+                <TextBlock Grid.Column="1"
+                           x:Name="TitleText"
                            Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                            VerticalAlignment="Center"
                            Text="{loc:Loc Dialog_Error_Title}"/>
-            </StackPanel>
+                <!-- Error Code Badge -->
+                <Border Grid.Column="2"
+                        x:Name="ErrorCodeBadge"
+                        Background="{DynamicResource MaterialDesignToolBarBackground}"
+                        CornerRadius="4"
+                        Padding="8,4"
+                        VerticalAlignment="Center"
+                        Visibility="Collapsed">
+                    <TextBlock x:Name="ErrorCodeText"
+                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               FontFamily="Consolas"
+                               Foreground="{DynamicResource MaterialDesignBody}"/>
+                </Border>
+            </Grid>
 
             <!-- Message -->
             <TextBlock Grid.Row="1"
@@ -36,12 +58,46 @@
                        TextWrapping="Wrap"
                        Margin="0,0,0,16"/>
 
+            <!-- Recovery Suggestions Panel -->
+            <Border Grid.Row="2"
+                    x:Name="RecoverySuggestionsPanel"
+                    Background="{DynamicResource MaterialDesignToolBarBackground}"
+                    CornerRadius="4"
+                    Padding="12"
+                    Margin="0,0,0,16"
+                    Visibility="Collapsed">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <materialDesign:PackIcon Kind="Lightbulb"
+                                                  Width="20" Height="20"
+                                                  Foreground="{DynamicResource SecondaryHueMidBrush}"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,8,0"/>
+                        <TextBlock Text="{loc:Loc Dialog_Error_TryThis}"
+                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                   FontWeight="Medium"/>
+                    </StackPanel>
+                    <ItemsControl x:Name="RecoverySuggestionsList">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <TextBlock Text="•" Margin="0,0,8,0" VerticalAlignment="Top"/>
+                                    <TextBlock Text="{Binding}"
+                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
             <!-- Details Expander -->
-            <Expander Grid.Row="2"
+            <Expander Grid.Row="3"
                       x:Name="DetailsExpander"
                       Header="{loc:Loc Dialog_Error_Details}"
                       Margin="0,0,0,16"
-                      IsExpanded="True"
+                      IsExpanded="False"
                       Visibility="Collapsed">
                 <Grid Margin="0,8,0,0">
                     <Grid.RowDefinitions>
@@ -63,19 +119,46 @@
                         </ScrollViewer>
                     </Border>
                     <!-- Copy Details Button -->
-                    <Button Grid.Row="1"
-                            x:Name="CopyDetailsButton"
-                            Content="{loc:Loc Dialog_CopyDetails}"
-                            Style="{StaticResource MaterialDesignOutlinedButton}"
-                            Click="CopyDetailsButton_Click"
-                            HorizontalAlignment="Left"
-                            Margin="0,8,0,0"
-                            AutomationProperties.Name="Copy error details to clipboard"/>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button x:Name="CopyDetailsButton"
+                                Content="{loc:Loc Dialog_CopyDetails}"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Click="CopyDetailsButton_Click"
+                                Margin="0,0,8,0"
+                                AutomationProperties.Name="Copy error details to clipboard"/>
+                        <Button x:Name="ReportIssueButton"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Click="ReportIssueButton_Click"
+                                Visibility="Collapsed"
+                                AutomationProperties.Name="Report this issue on GitHub">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Github" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Text="{loc:Loc Dialog_ReportIssue}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
                 </Grid>
             </Expander>
 
+            <!-- Offline Help Link -->
+            <Border Grid.Row="4"
+                    x:Name="OfflineHelpPanel"
+                    Visibility="Collapsed"
+                    Margin="0,0,0,16">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="HelpCircleOutline"
+                                              Width="18" Height="18"
+                                              VerticalAlignment="Center"
+                                              Opacity="0.7"
+                                              Margin="0,0,8,0"/>
+                    <TextBlock x:Name="OfflineHelpText"
+                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Opacity="0.7"/>
+                </StackPanel>
+            </Border>
+
             <!-- Actions -->
-            <StackPanel Grid.Row="3"
+            <StackPanel Grid.Row="5"
                         Orientation="Horizontal"
                         HorizontalAlignment="Right">
                 <!-- Help Button -->

@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "description": "REST API server configuration for Win11Forge",
+    "version": "3.1.4",
+    "author": "Julien Bombled",
+    "lastUpdated": "2026-01-17"
+  },
+  "port": 5170,
+  "host": "localhost",
+  "requestTimeoutMs": 30000,
+  "maxConcurrentRequests": 10,
+  "enableCors": false,
+  "logRequests": true,
+  "endpoints": {
+    "enabled": [
+      "/api/version",
+      "/api/profiles",
+      "/api/applications",
+      "/api/status",
+      "/api/deploy",
+      "/api/rollback",
+      "/api/cache/stats"
+    ]
+  },
+  "security": {
+    "localhostOnly": true,
+    "requireAuthentication": true,
+    "authenticationMethod": "apiKey",
+    "apiKeyHeader": "X-API-Key",
+    "rateLimiting": {
+      "enabled": true,
+      "maxRequestsPerMinute": 60,
+      "maxRequestsPerHour": 1000
+    },
+    "notes": "API requires authentication via X-API-Key header. Rate limiting is enabled by default."
+  },
+  "apiKeys": {
+    "description": "API keys for authentication. Keys should be 32+ characters.",
+    "keys": [
+      {
+        "id": "default",
+        "key": "win11forge-default-api-key-change-in-production",
+        "description": "Default API key - CHANGE IN PRODUCTION",
+        "permissions": ["read", "write", "deploy"],
+        "enabled": true,
+        "createdAt": "2026-01-17",
+        "expiresAt": null
+      }
+    ],
+    "publicEndpoints": [
+      "/api/version"
+    ]
+  }
+}

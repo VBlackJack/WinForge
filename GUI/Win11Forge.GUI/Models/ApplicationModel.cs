@@ -98,4 +98,8 @@ public partial class ApplicationModel : ObservableObject
     /// <summary>Available version for update (when update is available).</summary>
     [ObservableProperty]
     private string _availableVersion = string.Empty;
+
+    /// <summary>Profile tier this app belongs to (e.g., "Base", "Office", "Gaming").</summary>
+    [ObservableProperty]
+    private string _profileTier = string.Empty;
 }

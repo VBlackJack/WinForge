@@ -45,13 +45,21 @@ public partial class AppsView : UserControl
     }
 
     /// <summary>
-    /// Handles log viewer dialog closing event.
+    /// Handles unified dialog closing event for all dialogs.
     /// </summary>
-    private void LogViewerDialog_Closing(object sender, DialogClosingEventArgs e)
+    private void DialogHost_DialogClosing(object sender, DialogClosingEventArgs e)
     {
         if (DataContext is AppsViewModel viewModel)
         {
-            viewModel.CloseLogViewerCommand.Execute(null);
+            // Close whichever dialog is currently open
+            if (viewModel.IsLogViewerOpen)
+            {
+                viewModel.CloseLogViewerCommand.Execute(null);
+            }
+            else if (viewModel.IsSummaryDialogOpen)
+            {
+                viewModel.CloseSummaryDialogCommand.Execute(null);
+            }
         }
     }
 
@@ -123,17 +131,6 @@ public partial class AppsView : UserControl
                 viewModel.InstallAppCommand.Execute(app);
                 e.Handled = true;
             }
-        }
-    }
-
-    /// <summary>
-    /// Handles summary dialog closing event.
-    /// </summary>
-    private void SummaryDialog_Closing(object sender, DialogClosingEventArgs e)
-    {
-        if (DataContext is AppsViewModel viewModel)
-        {
-            viewModel.CloseSummaryDialogCommand.Execute(null);
         }
     }
 

@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "description": "Plugin system configuration for Win11Forge",
+    "version": "3.1.4",
+    "author": "Julien Bombled",
+    "lastUpdated": "2026-01-17"
+  },
+  "enabled": true,
+  "autoLoad": true,
+  "allowedHooks": [
+    "pre-install",
+    "post-install",
+    "pre-uninstall",
+    "post-uninstall",
+    "pre-deployment",
+    "post-deployment",
+    "on-error"
+  ],
+  "disabledPlugins": [
+    "_template"
+  ],
+  "pluginTimeout": 30,
+  "sandboxing": {
+    "enabled": false,
+    "notes": "Plugin sandboxing is planned for future versions"
+  },
+  "trustedPublishers": [],
+  "pluginRegistry": {
+    "enabled": false,
+    "url": null,
+    "notes": "Online plugin registry is planned for future versions"
+  }
+}

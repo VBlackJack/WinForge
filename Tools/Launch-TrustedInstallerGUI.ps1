@@ -1,10 +1,38 @@
-# ==============================================================================
-# Launch Windows Program with TrustedInstaller Privileges and GUI Display
-# PowerShell Script for Windows 11 24H2
-# Uses built-in Windows tools only
-# Author: Julien Bombled (based on Perplexity Pro research)
-# Version: 1.0.0
-# ==============================================================================
+<#
+.SYNOPSIS
+    Launch Windows Program with TrustedInstaller Privileges and GUI Display
+
+.DESCRIPTION
+    PowerShell Script for Windows 11 24H2 that launches programs
+    with TrustedInstaller privileges while maintaining GUI display.
+    Uses built-in Windows tools only.
+
+.PARAMETER Program
+    The program to launch (default: cmd.exe)
+
+.PARAMETER Arguments
+    Arguments to pass to the program
+
+.NOTES
+    Author: Julien Bombled
+    Version: 1.0.0
+#>
+
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 param(
     [Parameter(Position=0)]

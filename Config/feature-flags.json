@@ -1,0 +1,137 @@
+{
+  "$schema": "Win11Forge-FeatureFlags-v1.0",
+  "description": "Feature flags for Win11Forge framework",
+  "version": "3.1.4",
+  "lastUpdated": "2026-01-17",
+  "features": {
+    "parallelInstallation": {
+      "enabled": true,
+      "description": "Enable parallel application installation",
+      "defaultValue": true,
+      "minVersion": "2.4.0"
+    },
+    "structuredLogging": {
+      "enabled": true,
+      "description": "Enable JSON structured logging",
+      "defaultValue": true,
+      "minVersion": "3.1.0"
+    },
+    "restApi": {
+      "enabled": true,
+      "description": "Enable REST API server",
+      "defaultValue": false,
+      "minVersion": "3.1.0"
+    },
+    "apiAuthentication": {
+      "enabled": true,
+      "description": "Enable API key authentication for REST API",
+      "defaultValue": true,
+      "minVersion": "3.1.4"
+    },
+    "pluginSystem": {
+      "enabled": true,
+      "description": "Enable plugin loading and execution",
+      "defaultValue": false,
+      "minVersion": "3.1.0"
+    },
+    "pluginSandboxing": {
+      "enabled": false,
+      "description": "Enable plugin sandboxing (experimental)",
+      "defaultValue": false,
+      "minVersion": "3.2.0"
+    },
+    "wingetCache": {
+      "enabled": true,
+      "description": "Enable winget list caching for performance",
+      "defaultValue": true,
+      "minVersion": "3.1.0"
+    },
+    "autoRollback": {
+      "enabled": true,
+      "description": "Enable automatic rollback on failure threshold",
+      "defaultValue": true,
+      "minVersion": "3.1.0"
+    },
+    "telemetryCollection": {
+      "enabled": true,
+      "description": "Enable local telemetry collection",
+      "defaultValue": false,
+      "minVersion": "3.1.0"
+    },
+    "telemetryDashboard": {
+      "enabled": true,
+      "description": "Enable HTML telemetry dashboard",
+      "defaultValue": false,
+      "minVersion": "3.1.0"
+    },
+    "userProfiles": {
+      "enabled": true,
+      "description": "Enable persistent user profiles",
+      "defaultValue": true,
+      "minVersion": "3.1.0"
+    },
+    "autoUpdate": {
+      "enabled": true,
+      "description": "Enable automatic update checking",
+      "defaultValue": false,
+      "minVersion": "3.1.0"
+    },
+    "dryRunMode": {
+      "enabled": true,
+      "description": "Enable dry-run deployment mode",
+      "defaultValue": true,
+      "minVersion": "2.0.0"
+    },
+    "checksumValidation": {
+      "enabled": true,
+      "description": "Enable SHA256 checksum validation for downloads",
+      "defaultValue": true,
+      "minVersion": "3.0.0"
+    },
+    "urlWhitelisting": {
+      "enabled": true,
+      "description": "Enable download URL domain whitelisting",
+      "defaultValue": true,
+      "minVersion": "3.1.3"
+    },
+    "environmentRestrictions": {
+      "enabled": true,
+      "description": "Enable per-app environment restrictions",
+      "defaultValue": true,
+      "minVersion": "3.0.0"
+    },
+    "retryLogic": {
+      "enabled": true,
+      "description": "Enable retry logic for failed installations",
+      "defaultValue": true,
+      "minVersion": "3.0.0"
+    },
+    "officeSpecialHandling": {
+      "enabled": true,
+      "description": "Enable special timeout handling for Office installation",
+      "defaultValue": true,
+      "minVersion": "2.5.0"
+    }
+  },
+  "experimental": {
+    "description": "Experimental features - use with caution",
+    "distributedDeployment": {
+      "enabled": false,
+      "description": "Enable multi-machine distributed deployment",
+      "defaultValue": false,
+      "minVersion": "4.0.0"
+    },
+    "cloudProfiles": {
+      "enabled": false,
+      "description": "Enable cloud-stored profiles",
+      "defaultValue": false,
+      "minVersion": "4.0.0"
+    },
+    "aiRecommendations": {
+      "enabled": false,
+      "description": "Enable AI-powered app recommendations",
+      "defaultValue": false,
+      "minVersion": "4.0.0"
+    }
+  }
+}

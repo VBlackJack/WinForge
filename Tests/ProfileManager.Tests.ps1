@@ -12,6 +12,22 @@
     Requires: Pester v5+
 #>
 
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 BeforeAll {
     # Import modules under test
     $script:ModuleRoot = Join-Path $PSScriptRoot '..\Modules'
@@ -416,7 +432,7 @@ Describe 'ProfileManager Module' {
             $chain = Resolve-ProfileInheritance -InputProfile $childProfile -ProfilesDirectory $script:TestDataDirectory
 
             $merged = Merge-ProfileApplications -Profiles $chain
-            $chromeApps = $merged | Where-Object { $_.Name -eq 'Google Chrome' }
+            $chromeApps = @($merged | Where-Object { $_.Name -eq 'Google Chrome' })
 
             # Should only have one Chrome entry
             $chromeApps.Count | Should -Be 1
@@ -669,10 +685,10 @@ Describe 'ProfileManager Module' {
                 [PSCustomObject]@{ Name = 'App2'; Required = $true }
             )
 
-            $required = Get-RequiredApplications -Applications $apps
+            $required = @(Get-RequiredApplications -Applications $apps)
 
             $required.Count | Should -Be 1
-            $required.Name | Should -Contain 'App2'
+            $required[0].Name | Should -Be 'App2'
         }
     }
 

@@ -30,33 +30,38 @@
             <!-- Accent Colors -->
             <SolidColorBrush x:Key="FavoriteActiveBrush" Color="#FFD700"/>
             <SolidColorBrush x:Key="FavoriteInactiveBrush" Color="#9E9E9E"/>
+            <SolidColorBrush x:Key="FavoriteTextBrush" Color="#FF8F00"/>
             <SolidColorBrush x:Key="RequiredBrush" Color="#FFC107"/>
             <SolidColorBrush x:Key="OptionalBrush" Color="#9E9E9E"/>
+            <SolidColorBrush x:Key="AccentGreenTextBrush" Color="#2E7D32"/>
 
-            <!-- High Contrast Text (WCAG AA compliant) -->
-            <SolidColorBrush x:Key="HighContrastTextBrush" Color="#FFFFFF"/>
-            <SolidColorBrush x:Key="MediumContrastTextBrush" Color="#E0E0E0"/>
-            <SolidColorBrush x:Key="LowContrastTextBrush" Color="#BDBDBD"/>
+            <!-- NOTE: For text colors, prefer using MaterialDesign theme brushes directly:
+                 - MaterialDesignBody (primary text)
+                 - MaterialDesignBodyLight (secondary text)
+                 - MaterialDesignCheckBoxDisabled (disabled/hint text)
+                 These custom brushes are kept for legacy compatibility only -->
 
             <!-- Error Display Colors (for error banners and validation) -->
-            <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="#FFEBEE"/>
+            <!-- Using semi-transparent colors for theme compatibility -->
+            <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="#33F44336"/>
             <SolidColorBrush x:Key="ErrorBorderBrush" Color="#EF5350"/>
-            <SolidColorBrush x:Key="ErrorTextBrush" Color="#D32F2F"/>
-            <SolidColorBrush x:Key="ErrorIconBrush" Color="#D32F2F"/>
+            <SolidColorBrush x:Key="ErrorTextBrush" Color="#EF5350"/>
+            <SolidColorBrush x:Key="ErrorIconBrush" Color="#EF5350"/>
 
             <!-- Validation Colors -->
             <SolidColorBrush x:Key="ValidationErrorBorderBrush" Color="#F44336"/>
             <SolidColorBrush x:Key="ValidationSuccessBorderBrush" Color="#4CAF50"/>
 
             <!-- Warning Display Colors (for dry run, caution banners) -->
-            <SolidColorBrush x:Key="WarningBackgroundBrush" Color="#FFF3E0"/>
+            <!-- Using semi-transparent colors for theme compatibility -->
+            <SolidColorBrush x:Key="WarningBackgroundBrush" Color="#33FF9800"/>
             <SolidColorBrush x:Key="WarningBorderBrush" Color="#FF9800"/>
-            <SolidColorBrush x:Key="WarningTextBrush" Color="#E65100"/>
-            <SolidColorBrush x:Key="WarningIconBrush" Color="#E65100"/>
+            <SolidColorBrush x:Key="WarningTextBrush" Color="#FFB74D"/>
+            <SolidColorBrush x:Key="WarningIconBrush" Color="#FFB74D"/>
 
-            <!-- Skeleton Loader Colors -->
-            <SolidColorBrush x:Key="SkeletonBaseBrush" Color="#2A2A2A"/>
-            <SolidColorBrush x:Key="SkeletonHighlightBrush" Color="#3A3A3A"/>
+            <!-- Skeleton Loader Colors (theme-aware with transparency) -->
+            <SolidColorBrush x:Key="SkeletonBaseBrush" Color="#1AFFFFFF"/>
+            <SolidColorBrush x:Key="SkeletonHighlightBrush" Color="#33FFFFFF"/>
 
             <!-- Focus Visual Style (WCAG compliant high-visibility focus indicator) -->
             <Style x:Key="HighVisibilityFocusVisual">
@@ -161,6 +166,17 @@
                                     AutoReverse="True" RepeatBehavior="3x"/>
             </Storyboard>
 
+            <!-- Theme-Adaptive Accent Brush -->
+            <!-- Updated dynamically: Secondary (lime) in dark theme, Primary (purple) in light theme -->
+            <SolidColorBrush x:Key="ThemeAdaptiveAccentBrush" Color="#CDDC39"/>
+
+            <!-- Theme-Adaptive Outlined Button Style -->
+            <!-- Uses ThemeAdaptiveAccentBrush which changes with theme -->
+            <Style x:Key="ThemeAdaptiveOutlinedButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
+                <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+            </Style>
+
             <!-- Converters -->
             <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
@@ -180,6 +196,11 @@
             <converters:BoolToFavoriteColorConverter x:Key="BoolToFavoriteColorConverter"/>
             <converters:StatusToRowBackgroundConverter x:Key="StatusToRowBackgroundConverter"/>
             <converters:DeploymentResultToStringConverter x:Key="DeploymentResultToStringConverter"/>
+            <converters:NonZeroToVisibilityConverter x:Key="NonZeroToVisibilityConverter"/>
+            <converters:NonZeroToBoolConverter x:Key="NonZeroToBoolConverter"/>
+            <converters:BooleanToCheckIconConverter x:Key="BooleanToCheckIconConverter"/>
+            <converters:BooleanToPhaseColorConverter x:Key="BooleanToPhaseColorConverter"/>
+            <converters:BooleanToPhaseOpacityConverter x:Key="BooleanToPhaseOpacityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

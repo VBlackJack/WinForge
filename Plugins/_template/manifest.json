@@ -1,0 +1,20 @@
+{
+  "$schema": "Win11Forge-Plugin-v1.0",
+  "name": "plugin-template",
+  "version": "1.0.0",
+  "description": "Template plugin for Win11Forge - copy this directory to create a new plugin",
+  "author": "Your Name",
+  "entryPoint": "Main.psm1",
+  "hooks": [
+    "pre-install",
+    "post-install"
+  ],
+  "installationMethods": [],
+  "dependencies": [],
+  "minFrameworkVersion": "3.1.0",
+  "license": "Apache-2.0",
+  "repository": "",
+  "tags": [
+    "template"
+  ]
+}

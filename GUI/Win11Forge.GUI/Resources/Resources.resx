@@ -851,8 +851,12 @@
     <comment>Clear log button</comment>
   </data>
   <data name="Prerequisites_InstallAll" xml:space="preserve">
-    <value>Install All Missing</value>
-    <comment>Install all missing prerequisites button</comment>
+    <value>Install / Reinstall</value>
+    <comment>Install or reinstall all prerequisites button</comment>
+  </data>
+  <data name="Prerequisites_ReinstallTooltip" xml:space="preserve">
+    <value>Install missing prerequisites or reinstall existing ones</value>
+    <comment>Tooltip for install/reinstall button</comment>
   </data>
   <data name="Prerequisites_ComponentsInstalled" xml:space="preserve">
     <value>components installed</value>
@@ -1845,6 +1849,9 @@
   </data>
   <data name="Dashboard_Sys_Chocolatey" xml:space="preserve">
     <value>Chocolatey</value>
+  </data>
+  <data name="Dashboard_Sys_PowerShell" xml:space="preserve">
+    <value>PowerShell</value>
   </data>
   <data name="Dashboard_Updates_Title" xml:space="preserve">
     <value>Updates</value>

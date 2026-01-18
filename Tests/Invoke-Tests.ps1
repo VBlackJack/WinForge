@@ -21,10 +21,26 @@
     .\Invoke-Tests.ps1 -OutputFormat NUnitXml
 
 .NOTES
-    Author: Win11Forge Team
+    Author: Julien Bombled
     Version: 2.5.0
     Requires: Pester v5+
 #>
+
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 [CmdletBinding()]
 param(
@@ -56,7 +72,7 @@ $pesterModules = @(Get-Module -Name Pester -ListAvailable -ErrorAction SilentlyC
 $pesterV5 = $pesterModules | Where-Object { $_.Version.Major -ge 5 } | Select-Object -First 1
 
 if (-not $pesterV5) {
-    Write-Host "❌ Pester v5+ not found!" -ForegroundColor Red
+    Write-Host "[ERROR] Pester v5+ not found!" -ForegroundColor Red
     Write-Host ""
     Write-Host "Install Pester v5+ with:" -ForegroundColor Yellow
     Write-Host "  Install-Module -Name Pester -Force -SkipPublisherCheck" -ForegroundColor Yellow
@@ -66,7 +82,7 @@ if (-not $pesterV5) {
 # Import Pester v5+ explicitly
 Import-Module Pester -RequiredVersion $pesterV5.Version -Force -ErrorAction Stop
 
-Write-Host "✅ Pester v$($pesterV5.Version) loaded" -ForegroundColor Green
+Write-Host "[OK] Pester v$($pesterV5.Version) loaded" -ForegroundColor Green
 Write-Host ""
 
 # === CONFIGURATION ===
@@ -106,7 +122,7 @@ if ($OutputFormat -ne 'None') {
 
 # Code coverage
 if ($Coverage) {
-    Write-Host "📊 Code coverage enabled" -ForegroundColor Yellow
+    Write-Host "[INFO] Code coverage enabled" -ForegroundColor Yellow
     Write-Host ""
 
     $config.CodeCoverage.Enabled = $true
@@ -152,23 +168,23 @@ if ($Coverage -and $result.CodeCoverage) {
     Write-Host "══════════════════════════════════════════════════" -ForegroundColor Cyan
     Write-Host ""
 
-    Write-Host "Coverage         : $coveragePercent%" -ForegroundColor $(if ($coveragePercent -ge 50) { 'Green' } else { 'Yellow' })
+    Write-Host "Coverage         : $($coveragePercent) percent" -ForegroundColor $(if ($coveragePercent -ge 50) { 'Green' } else { 'Yellow' })
     Write-Host "Commands Covered : $($coverage.CoveredCommands) / $($coverage.CommandsAnalyzed)" -ForegroundColor White
     Write-Host ""
 
     if ($coveragePercent -ge 50) {
-        Write-Host "✅ Coverage target (50%) achieved!" -ForegroundColor Green
+        Write-Host "[OK] Coverage target (50 percent) achieved!" -ForegroundColor Green
     } else {
-        Write-Host "⚠️  Coverage below target (50%)" -ForegroundColor Yellow
+        Write-Host "[WARN] Coverage below target (50 percent)" -ForegroundColor Yellow
     }
     Write-Host ""
 }
 
 # === EXIT CODE ===
 if ($result.FailedCount -gt 0) {
-    Write-Host "❌ Tests FAILED" -ForegroundColor Red
+    Write-Host "[FAILED] Tests FAILED" -ForegroundColor Red
     exit 1
 } else {
-    Write-Host "✅ All tests PASSED" -ForegroundColor Green
+    Write-Host "[OK] All tests PASSED" -ForegroundColor Green
     exit 0
 }

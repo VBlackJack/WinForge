@@ -52,6 +52,8 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
 # === CIM CACHE ===
 # Caches expensive CIM queries to avoid repeated WMI calls
 $script:CimCache = @{}
+$script:CimCacheMetadata = @{}
+$script:CimCacheDefaultTTLMinutes = 30
 
 function Get-CachedCimInstance {
     <#
@@ -61,22 +63,40 @@ function Get-CachedCimInstance {
         The WMI class name to query.
     .PARAMETER Force
         Bypass cache and force a fresh query.
+    .PARAMETER TTLMinutes
+        Optional time-to-live for this cache entry in minutes.
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [string]$ClassName,
-        [switch]$Force
+        [switch]$Force,
+        [int]$TTLMinutes = $script:CimCacheDefaultTTLMinutes
     )
 
+    $now = Get-Date
+
+    # Check if we have a valid cached entry
     if (-not $Force -and $script:CimCache.ContainsKey($ClassName)) {
-        Write-Verbose "CIM cache hit: $ClassName"
-        return $script:CimCache[$ClassName]
+        $metadata = $script:CimCacheMetadata[$ClassName]
+        if ($metadata) {
+            $age = ($now - $metadata.CachedAt).TotalMinutes
+            if ($age -lt $metadata.TTLMinutes) {
+                Write-Verbose "CIM cache hit: $ClassName (age: $([math]::Round($age, 1)) min)"
+                return $script:CimCache[$ClassName]
+            }
+            Write-Verbose "CIM cache expired: $ClassName (age: $([math]::Round($age, 1)) min, TTL: $($metadata.TTLMinutes) min)"
+        }
     }
 
     Write-Verbose "CIM cache miss: $ClassName - querying WMI"
     $instance = Get-CimInstance -ClassName $ClassName -ErrorAction SilentlyContinue
     $script:CimCache[$ClassName] = $instance
+    $script:CimCacheMetadata[$ClassName] = @{
+        CachedAt = $now
+        TTLMinutes = $TTLMinutes
+        QueryCount = 1
+    }
     return $instance
 }
 
@@ -84,11 +104,117 @@ function Clear-CimCache {
     <#
     .SYNOPSIS
         Clears the CIM instance cache.
+    .PARAMETER ClassName
+        Optional specific class name to clear. If not specified, clears all.
     #>
     [CmdletBinding()]
+    param(
+        [Parameter()]
+        [string]$ClassName
+    )
+
+    if ($ClassName) {
+        if ($script:CimCache.ContainsKey($ClassName)) {
+            $script:CimCache.Remove($ClassName)
+            $script:CimCacheMetadata.Remove($ClassName)
+            Write-Verbose "CIM cache cleared: $ClassName"
+        }
+    }
+    else {
+        $script:CimCache.Clear()
+        $script:CimCacheMetadata.Clear()
+        Write-Verbose "CIM cache cleared completely"
+    }
+}
+
+function Clear-ExpiredCimCache {
+    <#
+    .SYNOPSIS
+        Clears only expired entries from the CIM cache.
+    .OUTPUTS
+        Number of entries cleared.
+    #>
+    [CmdletBinding()]
+    [OutputType([int])]
     param()
-    $script:CimCache.Clear()
-    Write-Verbose "CIM cache cleared"
+
+    $now = Get-Date
+    $keysToRemove = @()
+
+    foreach ($className in $script:CimCacheMetadata.Keys) {
+        $metadata = $script:CimCacheMetadata[$className]
+        $age = ($now - $metadata.CachedAt).TotalMinutes
+        if ($age -ge $metadata.TTLMinutes) {
+            $keysToRemove += $className
+        }
+    }
+
+    foreach ($key in $keysToRemove) {
+        $script:CimCache.Remove($key)
+        $script:CimCacheMetadata.Remove($key)
+        Write-Verbose "Removed expired CIM cache entry: $key"
+    }
+
+    if ($keysToRemove.Count -gt 0) {
+        Write-Verbose "Cleared $($keysToRemove.Count) expired CIM cache entries"
+    }
+
+    return $keysToRemove.Count
+}
+
+function Get-CimCacheStatistics {
+    <#
+    .SYNOPSIS
+        Returns statistics about the CIM cache.
+    .OUTPUTS
+        Hashtable with cache statistics.
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param()
+
+    $now = Get-Date
+    $entries = @()
+
+    foreach ($className in $script:CimCache.Keys) {
+        $metadata = $script:CimCacheMetadata[$className]
+        $age = if ($metadata) { ($now - $metadata.CachedAt).TotalMinutes } else { 0 }
+        $ttl = if ($metadata) { $metadata.TTLMinutes } else { $script:CimCacheDefaultTTLMinutes }
+        $expired = $age -ge $ttl
+
+        $entries += [PSCustomObject]@{
+            ClassName = $className
+            AgeMinutes = [math]::Round($age, 2)
+            TTLMinutes = $ttl
+            Expired = $expired
+            CachedAt = if ($metadata) { $metadata.CachedAt } else { $null }
+        }
+    }
+
+    return @{
+        TotalEntries = $script:CimCache.Count
+        ExpiredEntries = ($entries | Where-Object { $_.Expired }).Count
+        DefaultTTLMinutes = $script:CimCacheDefaultTTLMinutes
+        Entries = $entries
+    }
+}
+
+function Set-CimCacheDefaultTTL {
+    <#
+    .SYNOPSIS
+        Sets the default TTL for CIM cache entries.
+    .PARAMETER Minutes
+        Default TTL in minutes.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateRange(1, 1440)]
+        [int]$Minutes
+    )
+
+    $script:CimCacheDefaultTTLMinutes = $Minutes
+    Write-Verbose "CIM cache default TTL set to $Minutes minutes"
 }
 
 # === ENVIRONMENT TYPES ===
@@ -472,11 +598,18 @@ function Get-EnvironmentReport {
 
 # === EXPORT FUNCTIONS ===
 Export-ModuleMember -Function @(
+    # Environment Detection
     'Get-SystemEnvironmentType',
     'Test-WindowsSandbox',
     'Test-IsVirtualMachine',
     'Test-IsWindowsSandbox',
     'Get-EnvironmentCapabilities',
     'Test-ApplicationCompatibleWithEnvironment',
-    'Get-EnvironmentReport'
+    'Get-EnvironmentReport',
+    # CIM Cache Management
+    'Get-CachedCimInstance',
+    'Clear-CimCache',
+    'Clear-ExpiredCimCache',
+    'Get-CimCacheStatistics',
+    'Set-CimCacheDefaultTTL'
 )

@@ -7,7 +7,6 @@
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              xmlns:models="clr-namespace:Win11Forge.GUI.Models"
-             xmlns:controls="clr-namespace:Win11Forge.GUI.Controls"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewModels:DeploymentViewModel}"
              d:DesignHeight="700" d:DesignWidth="1000">
@@ -91,7 +90,7 @@
                                 HorizontalAlignment="Right"
                                 Margin="0,16,0,0">
                         <Button Content="{loc:Loc LogViewer_Copy}"
-                                Style="{StaticResource MaterialDesignFlatSecondaryButton}"
+                                Style="{StaticResource ThemeAdaptiveOutlinedButton}"
                                 Click="CopyLogsToClipboard_Click"
                                 Margin="0,0,12,0"/>
                         <Button Content="{loc:Loc LogViewer_Close}"
@@ -106,453 +105,248 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Title -->
         <StackPanel Grid.Row="0" Margin="0,0,0,24">
-            <TextBlock Text="{loc:Loc Deploy_Title}"
-                       Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                       Margin="0,0,0,12"/>
-            <!-- Breadcrumb Navigation -->
-            <controls:Breadcrumb x:Name="DeploymentBreadcrumb"
-                                 AutomationProperties.Name="Deployment progress steps"/>
+            <TextBlock Text="{loc:Loc Monitoring_Title}"
+                       Style="{StaticResource MaterialDesignHeadline4TextBlock}"/>
+            <TextBlock Text="{loc:Loc Monitoring_Subtitle}"
+                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                       Opacity="0.7"
+                       Margin="0,8,0,0"/>
         </StackPanel>
 
-        <!-- Dry Run Warning Banner (prominent position at top) -->
-        <Border Grid.Row="1"
-                Background="{DynamicResource WarningBackgroundBrush}"
-                BorderBrush="{DynamicResource WarningBorderBrush}"
-                BorderThickness="2"
-                CornerRadius="4"
-                Padding="16,12"
-                Margin="0,0,0,16"
-                Visibility="{Binding IsDryRun, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <materialDesign:PackIcon Kind="AlertCircleOutline"
-                                          Width="24"
-                                          Height="24"
-                                          Foreground="{DynamicResource WarningIconBrush}"
-                                          VerticalAlignment="Center"
-                                          Margin="0,0,12,0"/>
-                <TextBlock Text="{loc:Loc Deploy_DryRunBanner}"
-                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource WarningTextBrush}"
-                           VerticalAlignment="Center"/>
-            </StackPanel>
-        </Border>
-
-        <!-- Profile Selection Card -->
-        <materialDesign:Card Grid.Row="2"
-                              Padding="16"
-                              Margin="0,0,0,16"
-                              materialDesign:ElevationAssist.Elevation="Dp2">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="250"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Profile Label with Help -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
-                    <TextBlock Text="{loc:Loc Deploy_SelectProfile}"
-                               Style="{StaticResource MaterialDesignBody1TextBlock}"
-                               VerticalAlignment="Center"/>
-                    <materialDesign:PackIcon Kind="HelpCircleOutline"
-                                              Width="16" Height="16"
-                                              Opacity="0.6"
-                                              VerticalAlignment="Center"
-                                              Margin="8,0,0,0"
-                                              ToolTip="{loc:Loc Help_SelectProfile}"/>
-                </StackPanel>
-
-                <!-- Profile ComboBox -->
-                <ComboBox Grid.Column="1"
-                          ItemsSource="{Binding AvailableProfiles}"
-                          SelectedItem="{Binding SelectedProfile}"
-                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                          IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolConverter}}"
-                          AutomationProperties.Name="Select deployment profile"
-                          AutomationProperties.HelpText="Choose a predefined set of applications to deploy"/>
-
-                <!-- Loading Indicator -->
-                <StackPanel Grid.Column="2"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Right"
-                            Visibility="{Binding IsLoadingProfile, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                 Value="0"
-                                 IsIndeterminate="True"
-                                 Width="20"
-                                 Height="20"
-                                 Margin="0,0,8,0"/>
-                    <TextBlock Text="{loc:Loc Common_Loading}"
-                               VerticalAlignment="Center"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"/>
-                </StackPanel>
-            </Grid>
-        </materialDesign:Card>
-
-        <!-- Profile Summary Card -->
-        <materialDesign:Card Grid.Row="3"
-                              Padding="16"
+        <!-- Deployment Progress Card -->
+        <materialDesign:Card Grid.Row="1"
+                              Padding="24"
                               Margin="0,0,0,16"
                               materialDesign:ElevationAssist.Elevation="Dp2"
-                              Visibility="{Binding CurrentProfile, Converter={StaticResource NullableToVisibilityConverter}}">
+                              Visibility="{Binding IsDeploying, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Summary Title -->
-                <TextBlock Grid.Row="0"
-                           Text="{loc:Loc Deploy_ProfileSummary}"
-                           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                           Margin="0,0,0,12"/>
-
-                <!-- Summary Content -->
-                <Grid Grid.Row="1">
+                <!-- Status Header -->
+                <Grid Grid.Row="0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="80"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="80"/>
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Total -->
-                    <TextBlock Grid.Column="0"
-                               Text="{loc:Loc Deploy_TotalApps}"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               VerticalAlignment="Center"/>
-                    <TextBlock Grid.Column="1"
-                               Text="{Binding CurrentProfile.TotalApplications}"
-                               Style="{StaticResource MaterialDesignBody1TextBlock}"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource PrimaryHueMidBrush}"
-                               VerticalAlignment="Center"/>
-
-                    <!-- Required -->
-                    <TextBlock Grid.Column="2"
-                               Text="{loc:Loc Deploy_RequiredApps}"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               VerticalAlignment="Center"
-                               Margin="24,0,0,0"/>
-                    <TextBlock Grid.Column="3"
-                               Text="{Binding CurrentProfile.RequiredApplications}"
-                               Style="{StaticResource MaterialDesignBody1TextBlock}"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource SecondaryHueMidBrush}"
-                               VerticalAlignment="Center"/>
-
-                    <!-- Selected -->
-                    <TextBlock Grid.Column="4"
-                               Text="{loc:Loc Deploy_Selected}"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               VerticalAlignment="Center"
-                               Margin="24,0,0,0"/>
-                    <TextBlock Grid.Column="5"
-                               Text="{Binding SelectedApplicationsCount}"
-                               Style="{StaticResource MaterialDesignBody1TextBlock}"
-                               FontWeight="Bold"
-                               VerticalAlignment="Center"/>
-
-                    <!-- Action Buttons -->
-                    <Button Grid.Column="6"
-                            Content="{loc:Loc Deploy_SelectAll}"
-                            Style="{StaticResource MaterialDesignFlatSecondaryButton}"
-                            Command="{Binding SelectAllCommand}"
-                            Margin="16,0,8,0"
-                            AutomationProperties.Name="Select all applications"
-                            AutomationProperties.HelpText="Select all optional applications for deployment"/>
-                    <Button Grid.Column="7"
-                            Content="{loc:Loc Deploy_SelectNone}"
-                            Style="{StaticResource MaterialDesignFlatSecondaryButton}"
-                            Command="{Binding SelectNoneCommand}"
-                            AutomationProperties.Name="Select none"
-                            AutomationProperties.HelpText="Deselect all optional applications"/>
-                </Grid>
-            </Grid>
-        </materialDesign:Card>
-
-        <!-- Deployment Controls Card -->
-        <materialDesign:Card Grid.Row="4"
-                              Padding="16"
-                              Margin="0,0,0,16"
-                              materialDesign:ElevationAssist.Elevation="Dp2"
-                              Visibility="{Binding CurrentProfile, Converter={StaticResource NullableToVisibilityConverter}}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- Dry Run Toggle -->
-                <ToggleButton Grid.Column="0"
-                              IsChecked="{Binding IsDryRun}"
-                              Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                              IsEnabled="{Binding IsDeploying, Converter={StaticResource InverseBoolConverter}}"
-                              AutomationProperties.Name="Dry Run mode"
-                              AutomationProperties.HelpText="When enabled, simulates the deployment without making actual changes"/>
-                <StackPanel Grid.Column="1"
-                            Orientation="Vertical"
-                            Margin="12,0,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{loc:Loc Lbl_DryRun}"
-                                   Style="{StaticResource MaterialDesignBody1TextBlock}"/>
-                        <materialDesign:PackIcon Kind="HelpCircleOutline"
-                                                  Width="14" Height="14"
-                                                  Opacity="0.6"
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="{Binding IsPaused, Converter={StaticResource BoolToPauseIconConverter}}"
+                                                  Width="28" Height="28"
+                                                  Foreground="{DynamicResource PrimaryHueMidBrush}"
                                                   VerticalAlignment="Center"
-                                                  Margin="6,0,0,0"
-                                                  ToolTip="{loc:Loc Help_DryRun}"/>
+                                                  Margin="0,0,12,0"/>
+                        <StackPanel>
+                            <TextBlock Text="{Binding DeploymentStatusMessage}"
+                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"/>
+                            <TextBlock Text="{Binding CurrentAppName}"
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       Opacity="0.7"
+                                       Visibility="{Binding CurrentAppName, Converter={StaticResource NullableToVisibilityConverter}}"/>
+                        </StackPanel>
                     </StackPanel>
-                    <TextBlock Text="{loc:Loc Lbl_DryRun_Hint}"
-                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                               Opacity="0.7"/>
+
+                    <!-- Counter Badge -->
+                    <Border Grid.Column="1"
+                            Background="{DynamicResource PrimaryHueLightBrush}"
+                            CornerRadius="16"
+                            Padding="16,8">
+                        <TextBlock Foreground="{DynamicResource PrimaryHueLightForegroundBrush}"
+                                   FontWeight="Bold"
+                                   FontSize="16">
+                            <Run Text="{Binding CompletedCount, Mode=OneWay}"/>
+                            <Run Text="/"/>
+                            <Run Text="{Binding TotalToInstall, Mode=OneWay}"/>
+                        </TextBlock>
+                    </Border>
+                </Grid>
+
+                <!-- Progress Bar -->
+                <ProgressBar Grid.Row="1"
+                             Value="{Binding ProgressPercentage, Mode=OneWay}"
+                             Minimum="0"
+                             Maximum="100"
+                             Height="8"
+                             Margin="0,20,0,8"
+                             Style="{StaticResource MaterialDesignLinearProgressBar}"/>
+
+                <!-- Time Info -->
+                <StackPanel Grid.Row="2"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,16">
+                    <materialDesign:PackIcon Kind="ClockOutline"
+                                              Width="16" Height="16"
+                                              VerticalAlignment="Center"
+                                              Opacity="0.7"
+                                              Margin="0,0,6,0"/>
+                    <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Opacity="0.7"
+                               VerticalAlignment="Center">
+                        <Run Text="{Binding ElapsedTime, Mode=OneWay}"/>
+                        <Run Text=" / ~"/>
+                        <Run Text="{Binding EstimatedTimeRemaining, Mode=OneWay}"/>
+                    </TextBlock>
+                    <TextBlock Text=" - "
+                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Opacity="0.5"
+                               Margin="8,0"/>
+                    <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               FontWeight="Bold">
+                        <Run Text="{Binding ProgressPercentage, Mode=OneWay, StringFormat={}{0:F0}}"/>
+                        <Run Text="%"/>
+                    </TextBlock>
                 </StackPanel>
 
-                <!-- Progress/Status Display -->
-                <Grid Grid.Column="2"
-                      Margin="24,0"
-                      Visibility="{Binding IsDeploying, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                <!-- Control Buttons -->
+                <StackPanel Grid.Row="3"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center">
+                    <!-- Pause Button -->
+                    <Button Content="{loc:Loc Btn_Pause}"
+                            Style="{StaticResource ThemeAdaptiveOutlinedButton}"
+                            Command="{Binding PauseDeploymentCommand}"
+                            Visibility="{Binding CanPauseDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Margin="0,0,12,0">
+                        <Button.ContentTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Pause" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{loc:Loc Btn_Pause}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </Button.ContentTemplate>
+                    </Button>
 
-                    <!-- Status Icon -->
-                    <materialDesign:PackIcon Grid.Row="0" Grid.Column="0"
-                                              Kind="{Binding IsPaused, Converter={StaticResource BoolToPauseIconConverter}}"
-                                              Width="20" Height="20"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,8,0"
-                                              Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                    <!-- Resume Button -->
+                    <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                            Command="{Binding ResumeDeploymentCommand}"
+                            Visibility="{Binding CanResumeDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
+                            Margin="0,0,12,0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Play" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Btn_Resume}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
 
-                    <!-- Status Text -->
-                    <TextBlock Grid.Row="0" Grid.Column="1"
-                               Text="{Binding DeploymentStatusMessage}"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               VerticalAlignment="Center"/>
-
-                    <!-- Counter -->
-                    <TextBlock Grid.Row="0" Grid.Column="2"
-                               VerticalAlignment="Center"
-                               Margin="12,0,0,0">
-                        <Run Text="{Binding CompletedCount, Mode=OneWay}"/>
-                        <Run Text="/"/>
-                        <Run Text="{Binding TotalToInstall, Mode=OneWay}"/>
-                    </TextBlock>
-
-                    <!-- Progress Bar -->
-                    <ProgressBar Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
-                                 Value="{Binding ProgressPercentage, Mode=OneWay}"
-                                 Minimum="0"
-                                 Maximum="100"
-                                 Height="6"
-                                 Margin="0,8,0,0"
-                                 Style="{StaticResource MaterialDesignLinearProgressBar}"/>
-                </Grid>
-
-                <!-- Deploy Button -->
-                <Button Grid.Column="3"
-                        Content="{loc:Loc Btn_Deploy}"
-                        Style="{StaticResource MaterialDesignRaisedButton}"
-                        Command="{Binding DeployCommand}"
-                        Margin="0,0,12,0"
-                        AutomationProperties.Name="Start deployment"
-                        AutomationProperties.HelpText="Begin installing the selected applications"/>
-
-                <!-- Pause Button -->
-                <Button Grid.Column="4"
-                        Content="{loc:Loc Btn_Pause}"
-                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
-                        Command="{Binding PauseDeploymentCommand}"
-                        Visibility="{Binding CanPauseDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        Margin="0,0,8,0"
-                        AutomationProperties.Name="Pause deployment"
-                        AutomationProperties.HelpText="Pause the current deployment after the current application completes"/>
-
-                <!-- Resume Button -->
-                <Button Grid.Column="5"
-                        Content="{loc:Loc Btn_Resume}"
-                        Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
-                        Command="{Binding ResumeDeploymentCommand}"
-                        Visibility="{Binding CanResumeDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        Margin="0,0,8,0"
-                        AutomationProperties.Name="Resume deployment"
-                        AutomationProperties.HelpText="Continue the paused deployment"/>
-
-                <!-- Cancel Button -->
-                <Button Grid.Column="6"
-                        Content="{loc:Loc Btn_Cancel}"
-                        Style="{StaticResource MaterialDesignFlatSecondaryButton}"
-                        Command="{Binding CancelDeploymentCommand}"
-                        Visibility="{Binding IsDeploying, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        AutomationProperties.Name="Cancel deployment"
-                        AutomationProperties.HelpText="Stop the deployment and cancel remaining installations"/>
+                    <!-- Cancel Button -->
+                    <Button Style="{StaticResource MaterialDesignOutlinedSecondaryButton}"
+                            Command="{Binding CancelDeploymentCommand}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Close" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Btn_Cancel}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </Grid>
         </materialDesign:Card>
 
-        <!-- Applications DataGrid -->
-        <materialDesign:Card Grid.Row="5"
+        <!-- Empty State (no deployment in progress) -->
+        <materialDesign:Card Grid.Row="1"
+                              Padding="48"
+                              Margin="0,0,0,16"
+                              materialDesign:ElevationAssist.Elevation="Dp2"
+                              Visibility="{Binding IsDeploying, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center">
+                <materialDesign:PackIcon Kind="MonitorDashboard"
+                                          Width="64" Height="64"
+                                          HorizontalAlignment="Center"
+                                          Opacity="0.3"/>
+                <TextBlock Text="{loc:Loc Monitoring_NoDeployment}"
+                           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                           HorizontalAlignment="Center"
+                           Margin="0,16,0,8"/>
+                <TextBlock Text="{loc:Loc Monitoring_NoDeploymentHint}"
+                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           Opacity="0.7"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </materialDesign:Card>
+
+        <!-- Applications List (status only) -->
+        <materialDesign:Card Grid.Row="2"
                               Padding="0"
                               materialDesign:ElevationAssist.Elevation="Dp2"
-                              Visibility="{Binding CurrentProfile, Converter={StaticResource NullableToVisibilityConverter}}">
-            <DataGrid ItemsSource="{Binding CurrentProfile.Applications}"
+                              Visibility="{Binding IsDeploying, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <DataGrid ItemsSource="{Binding DeploymentApplications}"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
                       CanUserDeleteRows="False"
                       CanUserReorderColumns="False"
+                      IsReadOnly="True"
                       SelectionMode="Single"
                       SelectionUnit="FullRow"
                       HeadersVisibility="Column"
                       GridLinesVisibility="Horizontal"
                       BorderThickness="0"
-                      materialDesign:DataGridAssist.CellPadding="16 8"
-                      materialDesign:DataGridAssist.ColumnHeaderPadding="16 8"
-                      AutomationProperties.Name="Deployment applications list"
-                      AutomationProperties.HelpText="List of applications in the selected profile. Use checkboxes to select applications for deployment.">
+                      VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      VirtualizingPanel.ScrollUnit="Pixel"
+                      EnableRowVirtualization="True"
+                      materialDesign:DataGridAssist.CellPadding="12 8"
+                      materialDesign:DataGridAssist.ColumnHeaderPadding="12 10">
                 <DataGrid.Columns>
-                    <!-- Selection Checkbox -->
-                    <DataGridTemplateColumn Width="60">
-                        <DataGridTemplateColumn.Header>
-                            <CheckBox IsChecked="{Binding DataContext.AllSelected, RelativeSource={RelativeSource AncestorType=DataGrid}, Mode=OneWay}"
-                                      Style="{StaticResource MaterialDesignCheckBox}"/>
-                        </DataGridTemplateColumn.Header>
+                    <!-- Status Icon -->
+                    <DataGridTemplateColumn Width="50">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                <CheckBox IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}"
-                                          Style="{StaticResource MaterialDesignCheckBox}"
-                                          IsEnabled="{Binding IsRequired, Converter={StaticResource InverseBoolConverter}}"/>
+                                <materialDesign:PackIcon Kind="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
+                                                          Width="20" Height="20"
+                                                          HorizontalAlignment="Center"
+                                                          Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Status Column - Localized Header -->
-                    <DataGridTemplateColumn Width="100">
-                        <DataGridTemplateColumn.Header>
-                            <TextBlock Text="{loc:Loc Col_Status}"/>
-                        </DataGridTemplateColumn.Header>
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
-                                                              Width="20"
-                                                              Height="20"
-                                                              Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
-                                                              ToolTip="{Binding StatusMessage}"/>
-                                    <TextBlock Text="{Binding StatusMessage}"
-                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                               VerticalAlignment="Center"
-                                               Margin="6,0,0,0"
-                                               MaxWidth="100"
-                                               TextTrimming="CharacterEllipsis"
-                                               ToolTip="{Binding StatusMessage}"
-                                               Visibility="{Binding StatusMessage, Converter={StaticResource NullableToVisibilityConverter}}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-
-                    <!-- Application Column - Localized Header -->
-                    <DataGridTemplateColumn Width="*" MinWidth="200">
+                    <!-- Application Name -->
+                    <DataGridTemplateColumn Width="*" MinWidth="250">
                         <DataGridTemplateColumn.Header>
                             <TextBlock Text="{loc:Loc Col_Application}"/>
                         </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock Text="{Binding Name}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                               FontWeight="Medium"/>
-                                    <TextBlock Text="{Binding Description}"
-                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                               Opacity="0.7"
-                                               TextTrimming="CharacterEllipsis"
-                                               ToolTip="{Binding Description}"
-                                               MaxWidth="400"/>
-                                </StackPanel>
+                                <TextBlock Text="{Binding Name}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           VerticalAlignment="Center"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Category Column - Localized Header -->
-                    <DataGridTemplateColumn Width="120">
+                    <!-- Status Message -->
+                    <DataGridTemplateColumn Width="200">
                         <DataGridTemplateColumn.Header>
-                            <TextBlock Text="{loc:Loc Col_Category}"/>
+                            <TextBlock Text="{loc:Loc Col_Status}"/>
                         </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                <materialDesign:Chip Content="{Binding Category}"
-                                                      IconBackground="{DynamicResource PrimaryHueLightBrush}"
-                                                      IconForeground="{DynamicResource PrimaryHueLightForegroundBrush}"/>
+                                <TextBlock Text="{Binding StatusMessage}"
+                                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                           TextTrimming="CharacterEllipsis"
+                                           ToolTip="{Binding StatusMessage}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- Priority Column - Localized Header -->
-                    <DataGridTemplateColumn Width="80">
-                        <DataGridTemplateColumn.Header>
-                            <TextBlock Text="{loc:Loc Col_Priority}"/>
-                        </DataGridTemplateColumn.Header>
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                <TextBlock Text="{Binding Priority}"
-                                           HorizontalAlignment="Center"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-
-                    <!-- Required Column - Localized Header -->
-                    <DataGridTemplateColumn Width="80">
-                        <DataGridTemplateColumn.Header>
-                            <TextBlock Text="{loc:Loc Col_Required}"/>
-                        </DataGridTemplateColumn.Header>
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                <materialDesign:PackIcon Kind="{Binding IsRequired, Converter={StaticResource BoolToRequiredIconConverter}}"
-                                                          Width="20"
-                                                          Height="20"
-                                                          HorizontalAlignment="Center"
-                                                          Foreground="{Binding IsRequired, Converter={StaticResource BoolToRequiredColorConverter}}"/>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-
-                    <!-- Logs Column -->
-                    <DataGridTemplateColumn Width="70">
-                        <DataGridTemplateColumn.Header>
-                            <TextBlock Text="{loc:Loc Col_Logs}"/>
-                        </DataGridTemplateColumn.Header>
+                    <!-- Logs Button -->
+                    <DataGridTemplateColumn Width="50">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                 <Button Style="{StaticResource MaterialDesignIconButton}"
-                                        Width="32" Height="32"
+                                        Width="28" Height="28"
                                         ToolTip="{loc:Loc Btn_ViewLogs}"
                                         Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
                                         Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
-                                    <materialDesign:PackIcon Kind="FileDocumentOutline" Width="18" Height="18"/>
+                                    <materialDesign:PackIcon Kind="FileDocumentOutline" Width="16" Height="16"/>
                                 </Button>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -562,13 +356,14 @@
         </materialDesign:Card>
 
         <!-- Error Message -->
-        <TextBlock Grid.Row="5"
+        <TextBlock Grid.Row="2"
                    Text="{Binding ErrorMessage}"
                    Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
                    Style="{StaticResource MaterialDesignBody1TextBlock}"
                    Visibility="{Binding ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}"
                    HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+                   VerticalAlignment="Top"
+                   Margin="0,16,0,0"/>
     </Grid>
     </materialDesign:DialogHost>
 </UserControl>

@@ -262,16 +262,22 @@ public class BoolToInstalledIconConverter : IValueConverter
 
 /// <summary>
 /// Converts boolean (IsInstalled) to color brush.
-/// True = Green, False = Orange.
+/// True = Green (Installed), False = Orange (Not Installed).
+/// Uses theme-aware resources from App.xaml for proper dark/light theme support.
 /// </summary>
 public class BoolToInstalledColorConverter : IValueConverter
 {
-    private static readonly SolidColorBrush InstalledBrush = new(Color.FromRgb(76, 175, 80)); // Green
-    private static readonly SolidColorBrush NotInstalledBrush = new(Color.FromRgb(255, 152, 0)); // Orange
+    private static readonly SolidColorBrush FallbackInstalledBrush = new(Color.FromRgb(76, 175, 80));
+    private static readonly SolidColorBrush FallbackNotInstalledBrush = new(Color.FromRgb(255, 152, 0));
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is true ? InstalledBrush : NotInstalledBrush;
+        var app = Application.Current;
+        if (value is true)
+        {
+            return app?.TryFindResource("StatusInstalledBrush") ?? FallbackInstalledBrush;
+        }
+        return app?.TryFindResource("StatusSkippedBrush") ?? FallbackNotInstalledBrush;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -406,6 +412,133 @@ public class DeploymentResultToStringConverter : IValueConverter
             DeploymentResult.Cancelled => Resources.Summary_Cancelled,
             _ => string.Empty
         };
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Converts non-zero count to Visibility (non-zero = Visible, 0 = Collapsed).
+/// Used for showing elements when there are items needing attention.
+/// </summary>
+public class NonZeroToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is int count)
+        {
+            return count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        return Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Converts non-zero count to boolean (non-zero = true, 0 = false).
+/// Used for conditional styling based on count.
+/// </summary>
+public class NonZeroToBoolConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is int count)
+        {
+            return count > 0;
+        }
+        return false;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean (is current phase) to check icon.
+/// True (current) = Loading, False (past/future) = Check/Circle based on phase.
+/// </summary>
+public class BooleanToCheckIconConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        // If it's the current active phase, show loading spinner style
+        // Otherwise show checkmark for completed phases
+        return value is true ? PackIconKind.CircleOutline : PackIconKind.CheckCircle;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean (is current phase) to color.
+/// True (current) = Primary color, False = Success or Gray.
+/// </summary>
+public class BooleanToPhaseColorConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var app = Application.Current;
+        if (value is true)
+        {
+            return app.TryFindResource("PrimaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243));
+        }
+        return app.TryFindResource("StatusSuccessBrush") ?? new SolidColorBrush(Color.FromRgb(76, 175, 80));
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Converts boolean (is current phase) to opacity.
+/// True (current) = 1.0, False (completed) = 0.6.
+/// </summary>
+public class BooleanToPhaseOpacityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value is true ? 1.0 : 0.6;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
+/// Returns the appropriate accent brush based on current theme.
+/// Dark theme = Secondary (lime), Light theme = Primary (purple).
+/// Used for theme-adaptive button styling.
+/// </summary>
+public class ThemeAdaptiveBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var paletteHelper = new PaletteHelper();
+        var theme = paletteHelper.GetTheme();
+        var isDark = theme.GetBaseTheme() == BaseTheme.Dark;
+
+        var app = Application.Current;
+        if (isDark)
+        {
+            return app.TryFindResource("SecondaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(205, 220, 57));
+        }
+        return app.TryFindResource("PrimaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(103, 58, 183));
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

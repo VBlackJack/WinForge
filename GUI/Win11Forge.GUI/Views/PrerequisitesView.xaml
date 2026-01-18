@@ -39,7 +39,7 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Command="{Binding CheckPrerequisitesCommand}"
-                            Style="{StaticResource MaterialDesignFlatSecondaryButton}"
+                            Style="{StaticResource ThemeAdaptiveOutlinedButton}"
                             Margin="0,0,8,0"
                             IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}">
                         <StackPanel Orientation="Horizontal">
@@ -94,9 +94,9 @@
 
                     <Button Grid.Column="1"
                             Command="{Binding InstallPrerequisitesCommand}"
-                            Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
-                            Visibility="{Binding Status.AllInstalled, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                            IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}">
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}"
+                            ToolTip="{loc:Loc Prerequisites_ReinstallTooltip}">
                         <StackPanel Orientation="Horizontal">
                             <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
                                          Value="0" IsIndeterminate="True"
@@ -132,14 +132,14 @@
                         <TextBlock Text="{loc:Loc Prerequisites_CategoryPackageManagers}"
                                    Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                    VerticalAlignment="Center"/>
-                        <Border Background="{DynamicResource PrimaryHueLightBrush}"
+                        <Border Background="{DynamicResource PrimaryHueMidBrush}"
                                 CornerRadius="4"
                                 Padding="8,2"
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center">
                             <TextBlock Text="{loc:Loc Prerequisites_Required}"
                                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                       Foreground="{DynamicResource PrimaryHueLightForegroundBrush}"/>
+                                       Foreground="White"/>
                         </Border>
                     </StackPanel>
 
@@ -245,14 +245,13 @@
                         <TextBlock Text="{loc:Loc Prerequisites_CategoryRuntimes}"
                                    Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                    VerticalAlignment="Center"/>
-                        <Border Background="{DynamicResource MaterialDesignDivider}"
+                        <Border Background="{DynamicResource MaterialDesignChipBackground}"
                                 CornerRadius="4"
                                 Padding="8,2"
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center">
                             <TextBlock Text="{loc:Loc Prerequisites_Optional}"
-                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                       Opacity="0.7"/>
+                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"/>
                         </Border>
                     </StackPanel>
 
@@ -401,7 +400,7 @@
 
                         <Button Grid.Column="1"
                                 Command="{Binding ClearLogCommand}"
-                                Style="{StaticResource MaterialDesignFlatSecondaryButton}"
+                                Style="{StaticResource ThemeAdaptiveOutlinedButton}"
                                 Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"/>

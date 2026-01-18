@@ -561,7 +561,7 @@ function Get-DeploymentProfile {
 
         # Merge applications
         Write-Status -Message "Merging applications..." -Level 'Info'
-        $mergedApplications = Merge-ProfileApplications -Profiles $profileChain
+        $mergedApplications = @(Merge-ProfileApplications -Profiles $profileChain)
 
         # Merge system configuration
         Write-Status -Message "Merging system configuration..." -Level 'Info'
@@ -580,7 +580,7 @@ function Get-DeploymentProfile {
 
         Write-Status -Message "Profile loaded successfully" -Level 'Success'
         Write-Status -Message "  Total applications: $($mergedApplications.Count)" -Level 'Info'
-        Write-Status -Message "  Configuration sections: $($mergedConfig.Keys.Count)" -Level 'Info'
+        Write-Status -Message "  Configuration sections: $(if ($mergedConfig) { $mergedConfig.Keys.Count } else { 0 })" -Level 'Info'
 
         return $finalProfile
 

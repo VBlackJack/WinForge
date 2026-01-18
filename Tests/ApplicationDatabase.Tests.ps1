@@ -7,10 +7,26 @@
     Tests all database operations, caching, and validation
 
 .NOTES
-    Author: Win11Forge Team
+    Author: Julien Bombled
     Version: 2.5.0
     Requires: Pester v5+
 #>
+
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 BeforeAll {
     # Import module under test
@@ -159,8 +175,8 @@ Describe 'ApplicationDatabase Module' {
         }
 
         It 'Should be case-insensitive' {
-            $lower = Search-Applications -SearchTerm 'chrome'
-            $upper = Search-Applications -SearchTerm 'CHROME'
+            $lower = @(Search-Applications -SearchTerm 'chrome')
+            $upper = @(Search-Applications -SearchTerm 'CHROME')
             $lower.Count | Should -Be $upper.Count
         }
 
@@ -234,9 +250,9 @@ Describe 'ApplicationDatabase Module' {
             $tags[0].Tag | Should -Not -BeNullOrEmpty
         }
 
-        It 'Should have Count property' {
+        It 'Should have Description property' {
             $tags = Get-ApplicationTags
-            $tags[0].Count | Should -BeGreaterThan 0
+            $tags[0].Description | Should -Not -BeNullOrEmpty
         }
 
         It 'Should include essential tag' {

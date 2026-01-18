@@ -1,0 +1,695 @@
+<#
+.SYNOPSIS
+    Win11Forge - Structured Logging Module v3.1.4
+
+.DESCRIPTION
+    Provides JSON-based structured logging for Win11Forge:
+    - Parallel JSON logs alongside text logs
+    - Configurable retention and rotation
+    - Session-based log grouping
+    - Structured data capture for machine parsing
+    - Export and query capabilities
+
+.NOTES
+    Author: Julien Bombled
+    Version: 3.1.4
+#>
+
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+Set-StrictMode -Version Latest
+
+# === MODULE INITIALIZATION ===
+$script:ModuleRoot = Split-Path -Parent $PSCommandPath
+$script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
+$script:ConfigPath = Join-Path $script:RepositoryRoot 'Config\logging-settings.json'
+
+# === LOGGING STATE ===
+$script:LoggingState = @{
+    Initialized = $false
+    SessionId = $null
+    StartTime = $null
+    JsonLogPath = $null
+    LogBuffer = @()
+    BufferSize = 10
+    Config = $null
+}
+
+# === DEFAULT CONFIGURATION ===
+$script:DefaultConfig = @{
+    TextLogging = @{
+        Enabled = $true
+        RetentionDays = 7
+    }
+    JsonLogging = @{
+        Enabled = $true
+        RetentionDays = 30
+        Directory = Join-Path $env:LOCALAPPDATA 'Win11Forge\Logs\json'
+        BufferSize = 10
+        PrettyPrint = $false
+    }
+    Categories = @(
+        'Installation',
+        'Rollback',
+        'Cache',
+        'Configuration',
+        'Detection',
+        'System',
+        'Plugin',
+        'Api',
+        'Update',
+        'General'
+    )
+}
+
+# === INITIALIZATION FUNCTIONS ===
+
+function Initialize-StructuredLogging {
+    <#
+    .SYNOPSIS
+        Initializes the structured logging system.
+
+    .DESCRIPTION
+        Sets up JSON logging with a new session ID, creates log directories,
+        and performs retention cleanup of old logs.
+
+    .PARAMETER SessionId
+        Optional custom session ID. If not provided, a new GUID is generated.
+
+    .PARAMETER ConfigOverride
+        Optional hashtable to override default configuration.
+
+    .EXAMPLE
+        Initialize-StructuredLogging
+        Initialize-StructuredLogging -SessionId "Deploy-2026-01-17"
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter()]
+        [string]$SessionId,
+
+        [Parameter()]
+        [hashtable]$ConfigOverride
+    )
+
+    # Load configuration
+    $script:LoggingState.Config = Get-LoggingConfig
+
+    # Apply overrides
+    if ($ConfigOverride) {
+        foreach ($key in $ConfigOverride.Keys) {
+            if ($script:LoggingState.Config.ContainsKey($key)) {
+                $script:LoggingState.Config[$key] = $ConfigOverride[$key]
+            }
+        }
+    }
+
+    # Set session ID
+    $script:LoggingState.SessionId = if ($PSBoundParameters.ContainsKey('SessionId')) {
+        $SessionId
+    } else {
+        [guid]::NewGuid().ToString()
+    }
+
+    $script:LoggingState.StartTime = Get-Date
+
+    # Create JSON log directory
+    $jsonDir = $script:LoggingState.Config.JsonLogging.Directory
+    if (-not (Test-Path -Path $jsonDir)) {
+        try {
+            New-Item -Path $jsonDir -ItemType Directory -Force | Out-Null
+        } catch {
+            Write-Warning "Failed to create JSON log directory: $($_.Exception.Message)"
+        }
+    }
+
+    # Set JSON log file path
+    $timestamp = $script:LoggingState.StartTime.ToString('yyyy-MM-dd_HH-mm-ss')
+    $script:LoggingState.JsonLogPath = Join-Path $jsonDir "$timestamp`_$($script:LoggingState.SessionId).jsonl"
+
+    # Initialize buffer
+    $script:LoggingState.LogBuffer = @()
+    $script:LoggingState.BufferSize = $script:LoggingState.Config.JsonLogging.BufferSize
+
+    # Perform retention cleanup
+    Invoke-LogRetentionCleanup
+
+    # Mark as initialized
+    $script:LoggingState.Initialized = $true
+
+    # Write initialization log entry
+    Write-StructuredLog -Level 'Info' -Category 'System' -Message 'Structured logging initialized' -Data @{
+        SessionId = $script:LoggingState.SessionId
+        JsonLogPath = $script:LoggingState.JsonLogPath
+        ComputerName = $env:COMPUTERNAME
+        UserName = $env:USERNAME
+        PowerShellVersion = $PSVersionTable.PSVersion.ToString()
+    }
+
+    Write-Verbose "Structured logging initialized: $($script:LoggingState.JsonLogPath)"
+}
+
+function Get-LoggingConfig {
+    <#
+    .SYNOPSIS
+        Loads and returns the logging configuration.
+
+    .OUTPUTS
+        Hashtable containing logging configuration.
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param()
+
+    if (Test-Path -Path $script:ConfigPath) {
+        try {
+            $json = Get-Content -Path $script:ConfigPath -Raw | ConvertFrom-Json
+
+            return @{
+                TextLogging = @{
+                    Enabled = if ($null -ne $json.textLogging.enabled) { $json.textLogging.enabled } else { $script:DefaultConfig.TextLogging.Enabled }
+                    RetentionDays = if ($null -ne $json.textLogging.retentionDays) { $json.textLogging.retentionDays } else { $script:DefaultConfig.TextLogging.RetentionDays }
+                }
+                JsonLogging = @{
+                    Enabled = if ($null -ne $json.jsonLogging.enabled) { $json.jsonLogging.enabled } else { $script:DefaultConfig.JsonLogging.Enabled }
+                    RetentionDays = if ($null -ne $json.jsonLogging.retentionDays) { $json.jsonLogging.retentionDays } else { $script:DefaultConfig.JsonLogging.RetentionDays }
+                    Directory = if ($null -ne $json.jsonLogging.directory) { [Environment]::ExpandEnvironmentVariables($json.jsonLogging.directory) } else { $script:DefaultConfig.JsonLogging.Directory }
+                    BufferSize = if ($null -ne $json.jsonLogging.bufferSize) { $json.jsonLogging.bufferSize } else { $script:DefaultConfig.JsonLogging.BufferSize }
+                    PrettyPrint = if ($null -ne $json.jsonLogging.prettyPrint) { $json.jsonLogging.prettyPrint } else { $script:DefaultConfig.JsonLogging.PrettyPrint }
+                }
+                Categories = if ($null -ne $json.categories) { @($json.categories) } else { $script:DefaultConfig.Categories }
+            }
+        } catch {
+            Write-Verbose "Failed to load logging config, using defaults: $($_.Exception.Message)"
+            return $script:DefaultConfig
+        }
+    }
+
+    return $script:DefaultConfig
+}
+
+# === LOGGING FUNCTIONS ===
+
+function Write-StructuredLog {
+    <#
+    .SYNOPSIS
+        Writes a structured log entry to JSON log file.
+
+    .DESCRIPTION
+        Creates a JSON log entry with timestamp, session ID, level, category,
+        message, and optional structured data. Entries are buffered and flushed
+        periodically for performance.
+
+    .PARAMETER Level
+        Log level: Info, Success, Warning, Error, Debug, Verbose
+
+    .PARAMETER Category
+        Log category for filtering/grouping.
+
+    .PARAMETER Message
+        The log message.
+
+    .PARAMETER Data
+        Optional hashtable of structured data to include.
+
+    .PARAMETER Exception
+        Optional exception object to include.
+
+    .EXAMPLE
+        Write-StructuredLog -Level 'Info' -Category 'Installation' -Message 'Installing VSCode'
+        Write-StructuredLog -Level 'Error' -Category 'Installation' -Message 'Install failed' -Data @{AppName='VSCode'; ErrorCode=1603}
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateSet('Info', 'Success', 'Warning', 'Error', 'Debug', 'Verbose')]
+        [string]$Level,
+
+        [Parameter()]
+        [string]$Category = 'General',
+
+        [Parameter(Mandatory)]
+        [string]$Message,
+
+        [Parameter()]
+        [hashtable]$Data,
+
+        [Parameter()]
+        [System.Exception]$Exception
+    )
+
+    # Check if logging is enabled and initialized
+    if (-not $script:LoggingState.Initialized) {
+        # Auto-initialize if needed
+        Initialize-StructuredLogging
+    }
+
+    if (-not $script:LoggingState.Config.JsonLogging.Enabled) {
+        return
+    }
+
+    # Build log entry
+    $logEntry = [ordered]@{
+        timestamp = (Get-Date).ToString('o')
+        sessionId = $script:LoggingState.SessionId
+        level = $Level
+        category = $Category
+        message = $Message
+    }
+
+    # Add structured data
+    if ($Data) {
+        $logEntry.data = $Data
+    }
+
+    # Add exception details
+    if ($Exception) {
+        $logEntry.exception = @{
+            type = $Exception.GetType().FullName
+            message = $Exception.Message
+            stackTrace = $Exception.StackTrace
+        }
+
+        if ($Exception.InnerException) {
+            $logEntry.exception.innerException = @{
+                type = $Exception.InnerException.GetType().FullName
+                message = $Exception.InnerException.Message
+            }
+        }
+    }
+
+    # Add to buffer
+    $script:LoggingState.LogBuffer += $logEntry
+
+    # Flush buffer if full
+    if ($script:LoggingState.LogBuffer.Count -ge $script:LoggingState.BufferSize) {
+        Flush-LogBuffer
+    }
+}
+
+function Flush-LogBuffer {
+    <#
+    .SYNOPSIS
+        Flushes the log buffer to disk.
+
+    .DESCRIPTION
+        Writes all buffered log entries to the JSON log file.
+    #>
+    [CmdletBinding()]
+    param()
+
+    if ($script:LoggingState.LogBuffer.Count -eq 0) {
+        return
+    }
+
+    if (-not $script:LoggingState.JsonLogPath) {
+        return
+    }
+
+    try {
+        $lines = @()
+        foreach ($entry in $script:LoggingState.LogBuffer) {
+            if ($script:LoggingState.Config.JsonLogging.PrettyPrint) {
+                $lines += ($entry | ConvertTo-Json -Depth 10 -Compress:$false)
+            } else {
+                $lines += ($entry | ConvertTo-Json -Depth 10 -Compress)
+            }
+        }
+
+        $lines | Add-Content -Path $script:LoggingState.JsonLogPath -Encoding UTF8
+
+        # Clear buffer
+        $script:LoggingState.LogBuffer = @()
+    } catch {
+        Write-Verbose "Failed to flush log buffer: $($_.Exception.Message)"
+    }
+}
+
+# === EXPORT FUNCTIONS ===
+
+function Export-LogsToJson {
+    <#
+    .SYNOPSIS
+        Exports log entries to a single JSON file.
+
+    .DESCRIPTION
+        Reads JSONL log files and exports them as a properly formatted
+        JSON array for external tools.
+
+    .PARAMETER OutputPath
+        Path for the output JSON file.
+
+    .PARAMETER StartDate
+        Optional filter for log entries after this date.
+
+    .PARAMETER EndDate
+        Optional filter for log entries before this date.
+
+    .PARAMETER Categories
+        Optional array of categories to include.
+
+    .PARAMETER Levels
+        Optional array of levels to include.
+
+    .EXAMPLE
+        Export-LogsToJson -OutputPath "C:\Logs\export.json"
+        Export-LogsToJson -OutputPath "C:\Logs\errors.json" -Levels @('Error', 'Warning')
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$OutputPath,
+
+        [Parameter()]
+        [datetime]$StartDate,
+
+        [Parameter()]
+        [datetime]$EndDate,
+
+        [Parameter()]
+        [string[]]$Categories,
+
+        [Parameter()]
+        [string[]]$Levels
+    )
+
+    # Ensure buffer is flushed
+    Flush-LogBuffer
+
+    $jsonDir = $script:LoggingState.Config.JsonLogging.Directory
+    if (-not (Test-Path -Path $jsonDir)) {
+        Write-Warning "JSON log directory not found: $jsonDir"
+        return
+    }
+
+    $allEntries = @()
+    $jsonlFiles = Get-ChildItem -Path $jsonDir -Filter '*.jsonl' -ErrorAction SilentlyContinue
+
+    foreach ($file in $jsonlFiles) {
+        $lines = Get-Content -Path $file.FullName -ErrorAction SilentlyContinue
+        foreach ($line in $lines) {
+            if ([string]::IsNullOrWhiteSpace($line)) { continue }
+
+            try {
+                $entry = $line | ConvertFrom-Json
+                $include = $true
+
+                # Apply filters
+                if ($StartDate -and $entry.timestamp) {
+                    $entryTime = [datetime]::Parse($entry.timestamp)
+                    if ($entryTime -lt $StartDate) { $include = $false }
+                }
+
+                if ($EndDate -and $entry.timestamp) {
+                    $entryTime = [datetime]::Parse($entry.timestamp)
+                    if ($entryTime -gt $EndDate) { $include = $false }
+                }
+
+                if ($Categories -and $entry.category) {
+                    if ($entry.category -notin $Categories) { $include = $false }
+                }
+
+                if ($Levels -and $entry.level) {
+                    if ($entry.level -notin $Levels) { $include = $false }
+                }
+
+                if ($include) {
+                    $allEntries += $entry
+                }
+            } catch {
+                Write-Verbose "Failed to parse log line: $line"
+            }
+        }
+    }
+
+    # Sort by timestamp
+    $allEntries = $allEntries | Sort-Object { [datetime]::Parse($_.timestamp) }
+
+    # Export
+    $directory = Split-Path -Path $OutputPath -Parent
+    if (-not (Test-Path -Path $directory)) {
+        New-Item -Path $directory -ItemType Directory -Force | Out-Null
+    }
+
+    $allEntries | ConvertTo-Json -Depth 10 | Set-Content -Path $OutputPath -Encoding UTF8
+
+    Write-Verbose "Exported $($allEntries.Count) log entries to $OutputPath"
+    return $allEntries.Count
+}
+
+function Get-StructuredLogs {
+    <#
+    .SYNOPSIS
+        Retrieves structured log entries.
+
+    .DESCRIPTION
+        Reads and returns log entries from the current session or all sessions.
+
+    .PARAMETER CurrentSessionOnly
+        Only return entries from the current session.
+
+    .PARAMETER Category
+        Filter by category.
+
+    .PARAMETER Level
+        Filter by level.
+
+    .PARAMETER Last
+        Return only the last N entries.
+
+    .OUTPUTS
+        Array of log entry objects.
+
+    .EXAMPLE
+        Get-StructuredLogs -CurrentSessionOnly
+        Get-StructuredLogs -Category 'Error' -Last 10
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter()]
+        [switch]$CurrentSessionOnly,
+
+        [Parameter()]
+        [string]$Category,
+
+        [Parameter()]
+        [string]$Level,
+
+        [Parameter()]
+        [int]$Last
+    )
+
+    # Flush buffer first
+    Flush-LogBuffer
+
+    $entries = @()
+
+    if ($CurrentSessionOnly -and $script:LoggingState.JsonLogPath -and (Test-Path $script:LoggingState.JsonLogPath)) {
+        $lines = Get-Content -Path $script:LoggingState.JsonLogPath -ErrorAction SilentlyContinue
+        foreach ($line in $lines) {
+            if ([string]::IsNullOrWhiteSpace($line)) { continue }
+            try {
+                $entries += ($line | ConvertFrom-Json)
+            } catch { }
+        }
+    } else {
+        $jsonDir = $script:LoggingState.Config.JsonLogging.Directory
+        if (Test-Path -Path $jsonDir) {
+            $jsonlFiles = Get-ChildItem -Path $jsonDir -Filter '*.jsonl' | Sort-Object LastWriteTime -Descending
+            foreach ($file in $jsonlFiles) {
+                $lines = Get-Content -Path $file.FullName -ErrorAction SilentlyContinue
+                foreach ($line in $lines) {
+                    if ([string]::IsNullOrWhiteSpace($line)) { continue }
+                    try {
+                        $entries += ($line | ConvertFrom-Json)
+                    } catch { }
+                }
+            }
+        }
+    }
+
+    # Apply filters
+    if ($Category) {
+        $entries = $entries | Where-Object { $_.category -eq $Category }
+    }
+
+    if ($Level) {
+        $entries = $entries | Where-Object { $_.level -eq $Level }
+    }
+
+    # Sort and limit
+    $entries = $entries | Sort-Object { [datetime]::Parse($_.timestamp) } -Descending
+
+    if ($Last -gt 0) {
+        $entries = $entries | Select-Object -First $Last
+    }
+
+    return $entries
+}
+
+# === MAINTENANCE FUNCTIONS ===
+
+function Invoke-LogRetentionCleanup {
+    <#
+    .SYNOPSIS
+        Removes old log files based on retention settings.
+
+    .DESCRIPTION
+        Deletes JSON log files older than the configured retention period.
+
+    .EXAMPLE
+        Invoke-LogRetentionCleanup
+    #>
+    [CmdletBinding()]
+    param()
+
+    $config = $script:LoggingState.Config
+    if (-not $config) {
+        $config = Get-LoggingConfig
+    }
+
+    $jsonDir = $config.JsonLogging.Directory
+    $retentionDays = $config.JsonLogging.RetentionDays
+
+    if (-not (Test-Path -Path $jsonDir)) {
+        return
+    }
+
+    $cutoffDate = (Get-Date).AddDays(-$retentionDays)
+    $oldFiles = Get-ChildItem -Path $jsonDir -Filter '*.jsonl' |
+        Where-Object { $_.LastWriteTime -lt $cutoffDate }
+
+    $removedCount = 0
+    foreach ($file in $oldFiles) {
+        try {
+            Remove-Item -Path $file.FullName -Force
+            $removedCount++
+        } catch {
+            Write-Verbose "Failed to remove old log file: $($file.Name)"
+        }
+    }
+
+    if ($removedCount -gt 0) {
+        Write-Verbose "Removed $removedCount old log files"
+    }
+}
+
+function Close-StructuredLogging {
+    <#
+    .SYNOPSIS
+        Closes the structured logging session.
+
+    .DESCRIPTION
+        Flushes all buffered entries and writes a session close entry.
+
+    .EXAMPLE
+        Close-StructuredLogging
+    #>
+    [CmdletBinding()]
+    param()
+
+    if (-not $script:LoggingState.Initialized) {
+        return
+    }
+
+    # Write close entry
+    Write-StructuredLog -Level 'Info' -Category 'System' -Message 'Structured logging session closed' -Data @{
+        SessionId = $script:LoggingState.SessionId
+        Duration = ((Get-Date) - $script:LoggingState.StartTime).ToString()
+    }
+
+    # Final flush
+    Flush-LogBuffer
+
+    # Reset state
+    $script:LoggingState.Initialized = $false
+    $script:LoggingState.SessionId = $null
+
+    Write-Verbose "Structured logging session closed"
+}
+
+function Get-LoggingStatistics {
+    <#
+    .SYNOPSIS
+        Returns statistics about the logging system.
+
+    .OUTPUTS
+        PSCustomObject with logging statistics.
+
+    .EXAMPLE
+        Get-LoggingStatistics
+    #>
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param()
+
+    $config = $script:LoggingState.Config
+    if (-not $config) {
+        $config = Get-LoggingConfig
+    }
+
+    $jsonDir = $config.JsonLogging.Directory
+    $totalSize = 0
+    $fileCount = 0
+    $oldestLog = $null
+    $newestLog = $null
+
+    if (Test-Path -Path $jsonDir) {
+        $files = Get-ChildItem -Path $jsonDir -Filter '*.jsonl'
+        $fileCount = $files.Count
+
+        foreach ($file in $files) {
+            $totalSize += $file.Length
+        }
+
+        if ($files.Count -gt 0) {
+            $sortedFiles = $files | Sort-Object LastWriteTime
+            $oldestLog = $sortedFiles[0].LastWriteTime
+            $newestLog = $sortedFiles[-1].LastWriteTime
+        }
+    }
+
+    return [PSCustomObject]@{
+        Initialized = $script:LoggingState.Initialized
+        CurrentSessionId = $script:LoggingState.SessionId
+        SessionStartTime = $script:LoggingState.StartTime
+        CurrentLogFile = $script:LoggingState.JsonLogPath
+        BufferedEntries = $script:LoggingState.LogBuffer.Count
+        BufferSize = $script:LoggingState.BufferSize
+        JsonLoggingEnabled = $config.JsonLogging.Enabled
+        RetentionDays = $config.JsonLogging.RetentionDays
+        LogDirectory = $jsonDir
+        TotalLogFiles = $fileCount
+        TotalSizeBytes = $totalSize
+        TotalSizeMB = [math]::Round($totalSize / 1MB, 2)
+        OldestLogDate = $oldestLog
+        NewestLogDate = $newestLog
+    }
+}
+
+# === MODULE EXPORTS ===
+Export-ModuleMember -Function @(
+    'Initialize-StructuredLogging',
+    'Get-LoggingConfig',
+    'Write-StructuredLog',
+    'Flush-LogBuffer',
+    'Export-LogsToJson',
+    'Get-StructuredLogs',
+    'Invoke-LogRetentionCleanup',
+    'Close-StructuredLogging',
+    'Get-LoggingStatistics'
+)

@@ -85,6 +85,12 @@ public partial class SettingsViewModel : ViewModelBase
     private int _maxParallelScans = 8;
 
     /// <summary>
+    /// Whether reduced motion is enabled for accessibility.
+    /// </summary>
+    [ObservableProperty]
+    private bool _reducedMotion;
+
+    /// <summary>
     /// Available parallel install options.
     /// </summary>
     public int[] ParallelInstallOptions { get; } = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -118,7 +124,7 @@ public partial class SettingsViewModel : ViewModelBase
         ];
 
         // Initialize version
-        AppVersion = "3.1.2";
+        AppVersion = "3.2.0";
 
         // Load current settings
         LoadCurrentSettings();
@@ -192,11 +198,33 @@ public partial class SettingsViewModel : ViewModelBase
             var theme = _paletteHelper.GetTheme();
             theme.SetBaseTheme(isDark ? BaseTheme.Dark : BaseTheme.Light);
             _paletteHelper.SetTheme(theme);
+
+            // Update theme-adaptive accent brush
+            UpdateThemeAdaptiveResources(isDark);
         }
         catch
         {
             // Theme application is non-critical
         }
+    }
+
+    /// <summary>
+    /// Updates theme-adaptive resources based on current theme.
+    /// Dark theme uses Secondary (lime), Light theme uses Primary (purple).
+    /// </summary>
+    private static void UpdateThemeAdaptiveResources(bool isDark)
+    {
+        var app = System.Windows.Application.Current;
+        if (app?.Resources == null) return;
+
+        // Use direct colors to ensure correct contrast in each theme
+        // Dark theme: lime (#CDDC39) - visible on dark background
+        // Light theme: purple (#673AB7) - visible on light background
+        var accentBrush = isDark
+            ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(205, 220, 57))   // Lime
+            : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(103, 58, 183)); // DeepPurple
+
+        app.Resources["ThemeAdaptiveAccentBrush"] = accentBrush;
     }
 
     /// <summary>
@@ -329,6 +357,105 @@ public partial class SettingsViewModel : ViewModelBase
         catch
         {
             // Browser launch is non-critical
+        }
+    }
+
+    /// <summary>
+    /// Exports settings to a JSON file.
+    /// </summary>
+    [RelayCommand]
+    private void ExportSettings()
+    {
+        try
+        {
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                DefaultExt = ".json",
+                FileName = $"Win11Forge_Settings_{DateTime.Now:yyyyMMdd}"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                var settings = _settingsService.LoadSettings();
+                var json = System.Text.Json.JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+                File.WriteAllText(dialog.FileName, json);
+                StatusMessage = Resources.Resources.Settings_ExportSuccess;
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"{Resources.Resources.Settings_ExportFailed}: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Imports settings from a JSON file.
+    /// </summary>
+    [RelayCommand]
+    private void ImportSettings()
+    {
+        try
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                DefaultExt = ".json"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                var json = File.ReadAllText(dialog.FileName);
+                var importedSettings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json);
+
+                if (importedSettings != null)
+                {
+                    _settingsService.SaveSettings(importedSettings);
+
+                    // Reload settings into UI
+                    LoadCurrentSettings();
+                    StatusMessage = Resources.Resources.Settings_ImportSuccess;
+                    RestartRequired = true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"{Resources.Resources.Settings_ImportFailed}: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Resets all settings to default values.
+    /// </summary>
+    [RelayCommand]
+    private void ResetToDefaults()
+    {
+        var result = System.Windows.MessageBox.Show(
+            Resources.Resources.Confirm_ResetSettings_Message,
+            Resources.Resources.Confirm_ResetSettings_Title,
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Warning);
+
+        if (result != System.Windows.MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        try
+        {
+            var defaultSettings = new AppSettings();
+            _settingsService.SaveSettings(defaultSettings);
+            LoadCurrentSettings();
+            StatusMessage = Resources.Resources.Settings_ResetSuccess;
+            RestartRequired = true;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"{Resources.Resources.Settings_ResetFailed}: {ex.Message}";
         }
     }
 }

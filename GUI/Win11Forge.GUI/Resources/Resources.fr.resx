@@ -641,7 +641,10 @@
     <value>Effacer le journal</value>
   </data>
   <data name="Prerequisites_InstallAll" xml:space="preserve">
-    <value>Installer les manquants</value>
+    <value>Installer / Reinstaller</value>
+  </data>
+  <data name="Prerequisites_ReinstallTooltip" xml:space="preserve">
+    <value>Installer les prerequis manquants ou reinstaller les existants</value>
   </data>
   <data name="Prerequisites_ComponentsInstalled" xml:space="preserve">
     <value>composants installes</value>
@@ -1175,6 +1178,9 @@
   </data>
   <data name="Dashboard_Sys_Chocolatey" xml:space="preserve">
     <value>Chocolatey</value>
+  </data>
+  <data name="Dashboard_Sys_PowerShell" xml:space="preserve">
+    <value>PowerShell</value>
   </data>
   <data name="Dashboard_Updates_Title" xml:space="preserve">
     <value>Mises a jour</value>

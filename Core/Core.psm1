@@ -37,6 +37,18 @@ Set-StrictMode -Version Latest
 $script:LogFile = $null
 $script:VerboseLogging = $false
 $script:LoggingEnabled = $true
+$script:StructuredLoggingEnabled = $false
+
+# === STRUCTURED LOGGING IMPORT ===
+$script:StructuredLoggingPath = Join-Path (Split-Path -Parent $PSCommandPath) 'StructuredLogging.psm1'
+if (Test-Path -Path $script:StructuredLoggingPath) {
+    try {
+        Import-Module -Name $script:StructuredLoggingPath -Force -ErrorAction SilentlyContinue
+        $script:StructuredLoggingEnabled = $true
+    } catch {
+        $script:StructuredLoggingEnabled = $false
+    }
+}
 
 # === LOGGING FUNCTIONS ===
 
@@ -96,7 +108,13 @@ function Write-Status {
         The message to display
 
     .PARAMETER Level
-        Message level: Info, Success, Warning, Error
+        Message level: Info, Success, Warning, Error, Verbose
+
+    .PARAMETER Category
+        Log category for structured logging (e.g., Installation, Cache, System)
+
+    .PARAMETER StructuredData
+        Optional hashtable of structured data for JSON logging
 
     .PARAMETER NoNewline
         Don't add newline after message
@@ -109,6 +127,12 @@ function Write-Status {
         [Parameter()]
         [ValidateSet('Info', 'Success', 'Warning', 'Error', 'Verbose')]
         [string]$Level = 'Info',
+
+        [Parameter()]
+        [string]$Category = 'General',
+
+        [Parameter()]
+        [hashtable]$StructuredData,
 
         [Parameter()]
         [switch]$NoNewline
@@ -126,6 +150,12 @@ function Write-Status {
     # Write to log file
     if ($script:LoggingEnabled -and $script:LogFile) {
         $logEntry | Out-File -FilePath $script:LogFile -Append -Encoding UTF8
+    }
+
+    # Write to structured log (JSON) if enabled
+    if ($script:StructuredLoggingEnabled -and (Get-Command -Name 'Write-StructuredLog' -ErrorAction SilentlyContinue)) {
+        $structuredLevel = if ($Level -eq 'Verbose') { 'Debug' } else { $Level }
+        Write-StructuredLog -Level $structuredLevel -Category $Category -Message $Message -Data $StructuredData
     }
 
     # Determine console color
