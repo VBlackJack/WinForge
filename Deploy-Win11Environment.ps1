@@ -183,7 +183,7 @@ $modeText = if ($Parallel) {
     Get-LocalizedString -Key 'gui.deploy.mode_name_sequential'
 }
 Write-Log -Message (Get-LocalizedString -Key 'gui.deploy.mode_label' -Params @{ Mode = $modeText }) -Level 'Info'
-Write-Log -Message "Log file: $LogFile" -Level 'Info'
+Write-Log -Message (Get-LocalizedString -Key 'launcher.log_file_path' -Params @{ Path = $LogFile }) -Level 'Info'
 Write-Host ""
 
 try {
@@ -191,58 +191,58 @@ try {
     $coreModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Core\Core.psm1'
     if (Test-Path -Path $coreModule) {
         Import-Module -Name $coreModule -Force -Global
-        Write-Log -Message "Core module loaded" -Level 'Success'
+        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = 'Core' }) -Level 'Success'
     } else {
-        throw "Core module not found: $coreModule"
+        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $coreModule })
     }
 
     # Load Environment Detection module
     $envModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Modules\EnvironmentDetection.psm1'
     if (Test-Path -Path $envModule) {
         Import-Module -Name $envModule -Force -Global
-        Write-Log -Message "Environment Detection module loaded" -Level 'Success'
+        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = 'EnvironmentDetection' }) -Level 'Success'
     } else {
-        throw "Environment Detection module not found: $envModule"
+        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $envModule })
     }
 
     # Load Prerequisites module
     $prereqModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Modules\Prerequisites.psm1'
     if (Test-Path -Path $prereqModule) {
         Import-Module -Name $prereqModule -Force -Global
-        Write-Log -Message "Prerequisites module loaded" -Level 'Success'
+        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = 'Prerequisites' }) -Level 'Success'
     } else {
-        throw "Prerequisites module not found: $prereqModule"
+        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $prereqModule })
     }
 
     # Load Profile Manager module
     $profileModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Modules\ProfileManager.psm1'
     if (Test-Path -Path $profileModule) {
         Import-Module -Name $profileModule -Force -Global
-        Write-Log -Message "Profile Manager module loaded" -Level 'Success'
+        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = 'ProfileManager' }) -Level 'Success'
     } else {
-        throw "Profile Manager module not found: $profileModule"
+        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $profileModule })
     }
 
     # Load Installation Engine module
     $installModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Modules\InstallationEngine.psm1'
     if (Test-Path -Path $installModule) {
         Import-Module -Name $installModule -Force -Global
-        Write-Log -Message "Installation Engine module loaded (v2.1 - Parallel Support)" -Level 'Success'
+        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = 'InstallationEngine' }) -Level 'Success'
     } else {
-        throw "Installation Engine module not found: $installModule"
+        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $installModule })
     }
 
     # Load System Configuration module
     $sysconfigModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Modules\SystemConfig.psm1'
     if (Test-Path -Path $sysconfigModule) {
         Import-Module -Name $sysconfigModule -Force -Global
-        Write-Log -Message "System Configuration module loaded" -Level 'Success'
+        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = 'SystemConfig' }) -Level 'Success'
     } else {
-        throw "System Configuration module not found: $sysconfigModule"
+        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $sysconfigModule })
     }
 
 } catch {
-    Write-Log -Message "Failed to load required modules: $($_.Exception.Message)" -Level 'Error'
+    Write-Log -Message (Get-LocalizedString -Key 'launcher.load_failed' -Params @{ Error = $_.Exception.Message }) -Level 'Error'
     return 1
 }
 
@@ -278,8 +278,8 @@ try {
     }
 
 } catch {
-    Write-Log -Message "Environment detection failed: $($_.Exception.Message)" -Level 'Warning'
-    Write-Log -Message "Continuing with default settings..." -Level 'Warning'
+    Write-Log -Message (Get-LocalizedString -Key 'launcher.env_detection_failed' -Params @{ Error = $_.Exception.Message }) -Level 'Warning'
+    Write-Log -Message (Get-LocalizedString -Key 'launcher.continuing_defaults') -Level 'Warning'
 
     # Create fallback environment report to prevent null reference errors
     $environmentReport = [PSCustomObject]@{
@@ -649,7 +649,7 @@ if (-not $TestMode) {
 }
 
 Write-Host ""
-Write-Log -Message "Log file: $LogFile" -Level 'Info'
+Write-Log -Message (Get-LocalizedString -Key 'launcher.log_file_path' -Params @{ Path = $LogFile }) -Level 'Info'
 
 # Determine overall deployment status and set exit code
 if ($script:DeploymentStats.Failed -gt 0) {
