@@ -927,6 +927,16 @@
     "archive_location": "Emplacement de l'archive : {Path}",
     "completed": "Nettoyage terminé"
   },
+  "optimization": {
+    "registry_cache_built": "Cache registre construit : {Count} applications indexées",
+    "registry_cache_cleared": "Cache registre vidé",
+    "registry_hit": "Détection rapide (registre) : {AppName} v{Version}",
+    "batch_cache_building": "Construction du cache des mises à jour winget...",
+    "batch_cache_built": "Cache des mises à jour construit : {Count} mises à jour disponibles",
+    "batch_cache_hit": "Cache des mises à jour utilisé ({Count} entrées)",
+    "batch_cache_cleared": "Cache des mises à jour vidé",
+    "version_compare_fallback": "Comparaison de version en mode dégradé : {Current} vs {Available}"
+  },
   "cache": {
     "winget": {
       "initialized": "Cache Winget initialisé",

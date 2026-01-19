@@ -927,6 +927,16 @@
     "archive_location": "Archive location: {Path}",
     "completed": "Cleanup completed"
   },
+  "optimization": {
+    "registry_cache_built": "Registry cache built: {Count} applications indexed",
+    "registry_cache_cleared": "Registry cache cleared",
+    "registry_hit": "Fast detection (registry): {AppName} v{Version}",
+    "batch_cache_building": "Building winget updates cache...",
+    "batch_cache_built": "Updates cache built: {Count} updates available",
+    "batch_cache_hit": "Updates cache used ({Count} entries)",
+    "batch_cache_cleared": "Updates cache cleared",
+    "version_compare_fallback": "Version comparison fallback mode: {Current} vs {Available}"
+  },
   "cache": {
     "winget": {
       "initialized": "Winget cache initialized",

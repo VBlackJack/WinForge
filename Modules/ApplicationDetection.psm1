@@ -93,6 +93,112 @@ $script:AllowedDetectionExecutables = @(
     'perl', 'perl.exe'            # Perl detection
 )
 
+# === REGISTRY-FIRST OPTIMIZATION ===
+
+# Script-level cache for registry apps (populated once per session)
+$script:RegistryAppsCache = $null
+$script:RegistryAppsCacheTime = $null
+$script:RegistryAppsCacheMaxAgeMinutes = 5
+
+function Get-RegistryInstalledApp {
+    <#
+    .SYNOPSIS
+        Fast registry-based application detection.
+    .DESCRIPTION
+        Scans Windows uninstall registry keys to find an application by DisplayName.
+        This is much faster than calling winget or choco (~20ms vs ~2s).
+    .PARAMETER AppName
+        The application name to search for (partial match supported).
+    .PARAMETER ExactMatch
+        If true, requires exact DisplayName match instead of partial.
+    .OUTPUTS
+        PSCustomObject with DisplayName, Version, Publisher, InstallLocation or $null if not found.
+    #>
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$AppName,
+
+        [Parameter()]
+        [switch]$ExactMatch
+    )
+
+    # Refresh cache if expired or not populated
+    $cacheExpired = $script:RegistryAppsCacheTime -and `
+        ((Get-Date) - $script:RegistryAppsCacheTime).TotalMinutes -gt $script:RegistryAppsCacheMaxAgeMinutes
+
+    if (-not $script:RegistryAppsCache -or $cacheExpired) {
+        $script:RegistryAppsCache = @{}
+        $script:RegistryAppsCacheTime = Get-Date
+
+        $uninstallPaths = @(
+            'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+            'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
+            'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+        )
+
+        foreach ($path in $uninstallPaths) {
+            try {
+                $entries = Get-ItemProperty -Path $path -ErrorAction SilentlyContinue
+                foreach ($entry in $entries) {
+                    if ($entry.DisplayName) {
+                        $key = $entry.DisplayName.ToLowerInvariant()
+                        if (-not $script:RegistryAppsCache.ContainsKey($key)) {
+                            $script:RegistryAppsCache[$key] = [PSCustomObject]@{
+                                DisplayName     = $entry.DisplayName
+                                Version         = $entry.DisplayVersion
+                                Publisher       = $entry.Publisher
+                                InstallLocation = $entry.InstallLocation
+                            }
+                        }
+                    }
+                }
+            } catch {
+                # Permission denied or path not accessible - silently continue
+            }
+        }
+
+        if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
+            Write-Verbose (Get-LocalizedString -Key 'optimization.registry_cache_built' -Parameters @{ Count = $script:RegistryAppsCache.Count })
+        }
+    }
+
+    # Search in cache
+    $nameLower = $AppName.ToLowerInvariant()
+
+    if ($ExactMatch) {
+        if ($script:RegistryAppsCache.ContainsKey($nameLower)) {
+            return $script:RegistryAppsCache[$nameLower]
+        }
+    } else {
+        # Partial match - check if any key contains the search term
+        foreach ($key in $script:RegistryAppsCache.Keys) {
+            if ($key -like "*$nameLower*" -or $nameLower -like "*$key*") {
+                return $script:RegistryAppsCache[$key]
+            }
+        }
+    }
+
+    return $null
+}
+
+function Clear-RegistryAppsCache {
+    <#
+    .SYNOPSIS
+        Clears the registry applications cache to force a refresh.
+    #>
+    [CmdletBinding()]
+    param()
+
+    $script:RegistryAppsCache = $null
+    $script:RegistryAppsCacheTime = $null
+
+    if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
+        Write-Verbose (Get-LocalizedString -Key 'optimization.registry_cache_cleared')
+    }
+}
+
 # === HELPER FUNCTIONS ===
 
 function Test-RegistryKey {
@@ -335,6 +441,17 @@ function Test-ApplicationInstalled {
     )
 
     $appName = $Application.Name
+
+    # === REGISTRY-FIRST OPTIMIZATION ===
+    # Check registry first - this is ~100x faster than winget/choco CLI calls (~20ms vs ~2s)
+    $registryApp = Get-RegistryInstalledApp -AppName $appName
+    if ($registryApp) {
+        # App found in registry - return immediately
+        if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
+            Write-Verbose (Get-LocalizedString -Key 'optimization.registry_hit' -Parameters @{ AppName = $appName; Version = $registryApp.Version })
+        }
+        return $true
+    }
 
     # Special case: PowerToys - Check multiple paths
     if ($appName -eq 'Microsoft PowerToys') {
@@ -874,6 +991,9 @@ function Get-ApplicationsInstallationStatus {
 # === MODULE EXPORTS ===
 
 Export-ModuleMember -Function @(
+    # Registry-first optimization
+    'Get-RegistryInstalledApp',
+    'Clear-RegistryAppsCache',
     # Helper functions
     'Test-RegistryKey',
     'Expand-DetectionPath',

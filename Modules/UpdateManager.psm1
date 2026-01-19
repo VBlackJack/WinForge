@@ -46,6 +46,20 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     }
 }
 
+# Import Localization module for i18n support
+$script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force
+    }
+}
+
+# === BATCH UPDATE CACHE ===
+# Caches winget upgrade results to avoid multiple CLI calls
+$script:BatchUpdateCache = @{}
+$script:BatchUpdateCacheTime = $null
+$script:BatchUpdateCacheMaxAgeMinutes = 10
+
 # === CONFIGURATION ===
 $script:UpdateConfig = @{
     GitHubOwner = 'owner'
@@ -155,6 +169,272 @@ function Compare-SemanticVersions {
     }
 
     return 0
+}
+
+function Test-IsNewerVersion {
+    <#
+    .SYNOPSIS
+        Compares two version strings and returns true if $Available is newer than $Current.
+    .DESCRIPTION
+        Uses [System.Version]::Parse() for proper semantic version comparison.
+        Handles common edge cases like "v1.0" vs "1.0", missing patch versions, etc.
+    .PARAMETER Current
+        The currently installed version string.
+    .PARAMETER Available
+        The available/new version string to compare against.
+    .OUTPUTS
+        Boolean - true if Available > Current, false otherwise.
+    .EXAMPLE
+        Test-IsNewerVersion -Current "1.0" -Available "1.0.1"  # Returns $true
+        Test-IsNewerVersion -Current "v2.0.0" -Available "1.9.9"  # Returns $false
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$Current,
+
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$Available
+    )
+
+    # Handle null/empty cases
+    if ([string]::IsNullOrWhiteSpace($Current)) { return $true }
+    if ([string]::IsNullOrWhiteSpace($Available)) { return $false }
+
+    # Clean version strings - remove common prefixes
+    $cleanCurrent = $Current -replace '^[vV]', '' -replace '^version\s*', '' -replace '[^\d\.].*$', ''
+    $cleanAvailable = $Available -replace '^[vV]', '' -replace '^version\s*', '' -replace '[^\d\.].*$', ''
+
+    # Ensure we have at least major.minor.patch format
+    $currentParts = $cleanCurrent -split '\.'
+    $availableParts = $cleanAvailable -split '\.'
+
+    # Pad to 4 parts (major.minor.patch.build) for System.Version compatibility
+    while ($currentParts.Count -lt 2) { $currentParts += '0' }
+    while ($availableParts.Count -lt 2) { $availableParts += '0' }
+
+    # Limit to 4 parts max (System.Version constraint)
+    if ($currentParts.Count -gt 4) { $currentParts = $currentParts[0..3] }
+    if ($availableParts.Count -gt 4) { $availableParts = $availableParts[0..3] }
+
+    $normalizedCurrent = $currentParts -join '.'
+    $normalizedAvailable = $availableParts -join '.'
+
+    try {
+        $versionCurrent = [System.Version]::Parse($normalizedCurrent)
+        $versionAvailable = [System.Version]::Parse($normalizedAvailable)
+
+        return $versionAvailable -gt $versionCurrent
+    } catch {
+        # Fallback to string comparison if parsing fails
+        Write-Verbose "Version parse failed, using string comparison: Current='$Current', Available='$Available'"
+        return (Compare-SemanticVersions -Version1 $Available -Version2 $Current) -gt 0
+    }
+}
+
+function Get-WingetUpdatesBatch {
+    <#
+    .SYNOPSIS
+        Fetches all available winget updates in a single CLI call and caches the results.
+    .DESCRIPTION
+        Runs 'winget upgrade --include-unknown' once and parses the output to build
+        a cache of all available updates. This is much more efficient than checking
+        each application individually (~3s total vs ~2s per app).
+    .PARAMETER Force
+        Force cache refresh even if not expired.
+    .OUTPUTS
+        Hashtable mapping PackageId -> PSCustomObject with Name, CurrentVersion, AvailableVersion.
+    .EXAMPLE
+        $updates = Get-WingetUpdatesBatch
+        if ($updates.ContainsKey('Microsoft.VisualStudioCode')) {
+            Write-Host "VS Code update available: $($updates['Microsoft.VisualStudioCode'].AvailableVersion)"
+        }
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter()]
+        [switch]$Force
+    )
+
+    # Check cache validity
+    $cacheExpired = $script:BatchUpdateCacheTime -and `
+        ((Get-Date) - $script:BatchUpdateCacheTime).TotalMinutes -gt $script:BatchUpdateCacheMaxAgeMinutes
+
+    if (-not $Force -and $script:BatchUpdateCache.Count -gt 0 -and -not $cacheExpired) {
+        if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
+            Write-Verbose (Get-LocalizedString -Key 'optimization.batch_cache_hit' -Parameters @{ Count = $script:BatchUpdateCache.Count })
+        }
+        return $script:BatchUpdateCache
+    }
+
+    # Clear and rebuild cache
+    $script:BatchUpdateCache = @{}
+    $script:BatchUpdateCacheTime = Get-Date
+
+    if (-not (Get-Command -Name 'winget' -ErrorAction SilentlyContinue)) {
+        Write-Verbose "Winget not available, returning empty cache"
+        return $script:BatchUpdateCache
+    }
+
+    if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
+        Write-Status -Message (Get-LocalizedString -Key 'optimization.batch_cache_building') -Level 'Info'
+    }
+
+    try {
+        # Run winget upgrade once to get all available updates
+        $output = & winget upgrade --include-unknown --accept-source-agreements 2>&1 | Out-String
+
+        # Parse the output - format is typically:
+        # Name                            Id                           Version      Available      Source
+        # ----------------------------------------------------------------------------------------------------------
+        # Application Name                Publisher.AppName            1.0.0        1.1.0          winget
+
+        $lines = $output -split "`n"
+        $headerFound = $false
+        $columnPositions = @{}
+
+        foreach ($line in $lines) {
+            # Skip empty lines
+            if ([string]::IsNullOrWhiteSpace($line)) { continue }
+
+            # Detect header line (contains "Name", "Id", "Version", "Available")
+            if (-not $headerFound -and $line -match 'Name\s+Id\s+Version\s+Available') {
+                $headerFound = $true
+                # Parse column positions from header
+                $columnPositions['Name'] = $line.IndexOf('Name')
+                $columnPositions['Id'] = $line.IndexOf('Id')
+                $columnPositions['Version'] = $line.IndexOf('Version')
+                $columnPositions['Available'] = $line.IndexOf('Available')
+                $columnPositions['Source'] = $line.IndexOf('Source')
+                continue
+            }
+
+            # Skip separator line
+            if ($line -match '^-+$' -or $line -match '^[-\s]+$') { continue }
+
+            # Skip footer lines
+            if ($line -match 'upgrades? available' -or $line -match 'winget upgrade') { continue }
+
+            # Parse data lines (only if header was found and line is long enough)
+            if ($headerFound -and $line.Length -gt 20) {
+                try {
+                    # Use column positions to extract data
+                    $idStart = $columnPositions['Id']
+                    $versionStart = $columnPositions['Version']
+                    $availableStart = $columnPositions['Available']
+                    $sourceStart = if ($columnPositions['Source'] -gt 0) { $columnPositions['Source'] } else { $line.Length }
+
+                    if ($idStart -ge 0 -and $versionStart -gt $idStart -and $availableStart -gt $versionStart) {
+                        $name = $line.Substring(0, $idStart).Trim()
+                        $id = $line.Substring($idStart, $versionStart - $idStart).Trim()
+                        $currentVersion = $line.Substring($versionStart, $availableStart - $versionStart).Trim()
+                        $availableVersion = $line.Substring($availableStart, [Math]::Min($sourceStart - $availableStart, $line.Length - $availableStart)).Trim()
+
+                        # Validate we have an ID and versions
+                        if ($id -match '\.' -and $availableVersion -match '[\d\.]') {
+                            $script:BatchUpdateCache[$id] = [PSCustomObject]@{
+                                Name             = $name
+                                PackageId        = $id
+                                CurrentVersion   = $currentVersion
+                                AvailableVersion = $availableVersion
+                            }
+                        }
+                    }
+                } catch {
+                    # Line parsing failed - skip this line
+                    Write-Verbose "Failed to parse line: $line"
+                }
+            }
+        }
+
+        if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
+            Write-Status -Message (Get-LocalizedString -Key 'optimization.batch_cache_built' -Parameters @{ Count = $script:BatchUpdateCache.Count }) -Level 'Success'
+        }
+    } catch {
+        Write-Status -Message "Failed to build batch update cache: $($_.Exception.Message)" -Level 'Warning'
+    }
+
+    return $script:BatchUpdateCache
+}
+
+function Get-ApplicationUpdateStatus {
+    <#
+    .SYNOPSIS
+        Checks if an application has an update available using the batch cache.
+    .DESCRIPTION
+        Uses the batch update cache to efficiently check update status without
+        making additional CLI calls. Falls back to direct winget query if needed.
+    .PARAMETER WingetId
+        The Winget package ID to check.
+    .PARAMETER CurrentVersion
+        Optional current version for comparison (uses cache version if not provided).
+    .OUTPUTS
+        PSCustomObject with HasUpdate, CurrentVersion, AvailableVersion, or $null if not found.
+    .EXAMPLE
+        $status = Get-ApplicationUpdateStatus -WingetId 'Microsoft.VisualStudioCode'
+        if ($status.HasUpdate) {
+            Write-Host "Update available: $($status.AvailableVersion)"
+        }
+    #>
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$WingetId,
+
+        [Parameter()]
+        [string]$CurrentVersion
+    )
+
+    # Ensure batch cache is populated
+    $cache = Get-WingetUpdatesBatch
+
+    # Check if app is in the update cache
+    if ($cache.ContainsKey($WingetId)) {
+        $cacheEntry = $cache[$WingetId]
+
+        # Use provided current version or cache version
+        $installedVersion = if ($CurrentVersion) { $CurrentVersion } else { $cacheEntry.CurrentVersion }
+
+        return [PSCustomObject]@{
+            HasUpdate        = Test-IsNewerVersion -Current $installedVersion -Available $cacheEntry.AvailableVersion
+            PackageId        = $WingetId
+            Name             = $cacheEntry.Name
+            CurrentVersion   = $installedVersion
+            AvailableVersion = $cacheEntry.AvailableVersion
+            Source           = 'BatchCache'
+        }
+    }
+
+    # App not in update cache - no update available (or not installed via winget)
+    return [PSCustomObject]@{
+        HasUpdate        = $false
+        PackageId        = $WingetId
+        Name             = $null
+        CurrentVersion   = $CurrentVersion
+        AvailableVersion = $null
+        Source           = 'BatchCache'
+    }
+}
+
+function Clear-BatchUpdateCache {
+    <#
+    .SYNOPSIS
+        Clears the batch update cache to force a refresh.
+    #>
+    [CmdletBinding()]
+    param()
+
+    $script:BatchUpdateCache = @{}
+    $script:BatchUpdateCacheTime = $null
+
+    if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
+        Write-Verbose (Get-LocalizedString -Key 'optimization.batch_cache_cleared')
+    }
 }
 
 # === UPDATE CHECK FUNCTIONS ===
@@ -683,16 +963,25 @@ function Get-UpdateConfiguration {
 
 # === MODULE EXPORTS ===
 Export-ModuleMember -Function @(
+    # Version functions
     'Get-CurrentVersion',
     'Compare-SemanticVersions',
+    'Test-IsNewerVersion',
+    # Batch update cache (optimization)
+    'Get-WingetUpdatesBatch',
+    'Get-ApplicationUpdateStatus',
+    'Clear-BatchUpdateCache',
+    # Update check functions
     'Get-LatestReleaseInfo',
     'Test-UpdateAvailable',
     'Test-ShouldCheckForUpdates',
+    # Download and install
     'Invoke-DownloadUpdate',
     'Backup-CurrentVersion',
     'Restore-PreviousVersion',
     'Get-AvailableBackups',
     'Install-Update',
+    # Configuration
     'Set-UpdateConfiguration',
     'Get-UpdateConfiguration'
 )
