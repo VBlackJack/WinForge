@@ -69,6 +69,26 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# === LOCALIZATION ===
+
+$script:ScriptRoot = $PSScriptRoot
+
+# Import Localization module
+$localizationModule = Join-Path $script:ScriptRoot 'Core\Localization.psm1'
+if (Test-Path $localizationModule) {
+    Import-Module $localizationModule -Force
+    Initialize-Localization
+}
+
+# Helper function for localization (fallback if module not loaded)
+function Get-Text {
+    param([string]$Key, [hashtable]$Parameters = @{}, [string]$Default = $Key)
+    if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
+        return Get-LocalizedString -Key $Key -Parameters $Parameters -DefaultValue $Default
+    }
+    return $Default
+}
+
 # Paths
 $ScriptRoot = $PSScriptRoot
 $GuiProjectPath = Join-Path $ScriptRoot "GUI\Win11Forge.GUI\Win11Forge.GUI.csproj"
@@ -94,10 +114,10 @@ $ZipPath = Join-Path $DistRoot "$ReleaseName.zip"
 # Header
 Write-Host ""
 Write-Host "======================================================" -ForegroundColor Cyan
-Write-Host "  Win11Forge v$Version - Release Builder" -ForegroundColor Cyan
+Write-Host "  $(Get-Text -Key 'build.banner_title' -Parameters @{ Version = $Version } -Default "Win11Forge v$Version - Release Builder")" -ForegroundColor Cyan
 Write-Host "======================================================" -ForegroundColor Cyan
-Write-Host "  Configuration: $Configuration" -ForegroundColor Gray
-Write-Host "  Output: $ReleasePath" -ForegroundColor Gray
+Write-Host "  $(Get-Text -Key 'build.configuration' -Parameters @{ Config = $Configuration } -Default "Configuration: $Configuration")" -ForegroundColor Gray
+Write-Host "  $(Get-Text -Key 'build.output_path' -Parameters @{ Path = $ReleasePath } -Default "Output: $ReleasePath")" -ForegroundColor Gray
 Write-Host ""
 
 $stepCount = if ($SkipTests) { 6 } else { 7 }
@@ -108,48 +128,48 @@ $currentStep = 0
 # ============================================
 if (-not $SkipTests) {
     $currentStep++
-    Write-Host "[$currentStep/$stepCount] Running tests..." -ForegroundColor Yellow
+    Write-Host "[$currentStep/$stepCount] $(Get-Text -Key 'build.step_running_tests' -Default 'Running tests...')" -ForegroundColor Yellow
 
     $testResult = & dotnet test $TestProjectPath --configuration $Configuration --verbosity minimal 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Host ""
-        Write-Host "ERROR: Tests failed! Aborting release." -ForegroundColor Red
+        Write-Host (Get-Text -Key 'build.tests_failed' -Default 'ERROR: Tests failed! Aborting release.') -ForegroundColor Red
         Write-Host ""
         Write-Host $testResult -ForegroundColor Red
         Write-Host ""
-        Write-Host "Fix the failing tests before creating a release." -ForegroundColor Yellow
+        Write-Host (Get-Text -Key 'build.tests_fix_hint' -Default 'Fix the failing tests before creating a release.') -ForegroundColor Yellow
         exit 1
     }
 
     # Extract test count from output
     $testSummary = $testResult | Select-String -Pattern "Total tests:|Passed:" | Select-Object -Last 1
-    Write-Host "  Tests passed!" -ForegroundColor Green
+    Write-Host "  $(Get-Text -Key 'build.tests_passed' -Default 'Tests passed!')" -ForegroundColor Green
 }
 
 # ============================================
 # Step 2: Clean previous builds
 # ============================================
 $currentStep++
-Write-Host "[$currentStep/$stepCount] Cleaning previous builds..." -ForegroundColor Yellow
+Write-Host "[$currentStep/$stepCount] $(Get-Text -Key 'build.step_cleaning' -Default 'Cleaning previous builds...')" -ForegroundColor Yellow
 
 if (Test-Path $PublishPath) {
     Remove-Item $PublishPath -Recurse -Force
-    Write-Host "  Removed: $PublishPath" -ForegroundColor Gray
+    Write-Host "  $(Get-Text -Key 'build.removed_path' -Parameters @{ Path = $PublishPath } -Default "Removed: $PublishPath")" -ForegroundColor Gray
 }
 if (Test-Path $ReleasePath) {
     Remove-Item $ReleasePath -Recurse -Force
-    Write-Host "  Removed: $ReleasePath" -ForegroundColor Gray
+    Write-Host "  $(Get-Text -Key 'build.removed_path' -Parameters @{ Path = $ReleasePath } -Default "Removed: $ReleasePath")" -ForegroundColor Gray
 }
 if (Test-Path $ZipPath) {
     Remove-Item $ZipPath -Force
-    Write-Host "  Removed: $ZipPath" -ForegroundColor Gray
+    Write-Host "  $(Get-Text -Key 'build.removed_path' -Parameters @{ Path = $ZipPath } -Default "Removed: $ZipPath")" -ForegroundColor Gray
 }
 
 # ============================================
 # Step 3: Publish the GUI project
 # ============================================
 $currentStep++
-Write-Host "[$currentStep/$stepCount] Publishing Win11Forge.GUI (self-contained, single-file)..." -ForegroundColor Yellow
+Write-Host "[$currentStep/$stepCount] $(Get-Text -Key 'build.step_publishing' -Default 'Publishing Win11Forge.GUI (self-contained, single-file)...')" -ForegroundColor Yellow
 
 $publishArgs = @(
     "publish"
@@ -169,18 +189,18 @@ $publishArgs = @(
 $result = & dotnet @publishArgs 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
-    Write-Host "ERROR: Build failed!" -ForegroundColor Red
+    Write-Host (Get-Text -Key 'build.build_failed' -Default 'ERROR: Build failed!') -ForegroundColor Red
     Write-Host $result -ForegroundColor Red
     exit 1
 }
 
-Write-Host "  Build successful!" -ForegroundColor Green
+Write-Host "  $(Get-Text -Key 'build.build_success' -Default 'Build successful!')" -ForegroundColor Green
 
 # ============================================
 # Step 4: Create Release folder structure
 # ============================================
 $currentStep++
-Write-Host "[$currentStep/$stepCount] Creating distribution folder..." -ForegroundColor Yellow
+Write-Host "[$currentStep/$stepCount] $(Get-Text -Key 'build.step_creating_dist' -Default 'Creating distribution folder...')" -ForegroundColor Yellow
 
 # Create Dist root if needed
 if (-not (Test-Path $DistRoot)) {
@@ -199,9 +219,9 @@ if (Test-Path $exePath) {
     Copy-Item "$PublishPath\*" -Destination $guiDestPath -Recurse
     $fileCount = (Get-ChildItem $PublishPath -File).Count
     $totalSize = [math]::Round((Get-ChildItem $PublishPath -Recurse -File | Measure-Object -Property Length -Sum).Sum / 1MB, 2)
-    Write-Host "  Copied: GUI/ ($fileCount files, $totalSize MB)" -ForegroundColor Gray
+    Write-Host "  $(Get-Text -Key 'build.copied_gui' -Parameters @{ Count = $fileCount; Size = $totalSize } -Default "Copied: GUI/ ($fileCount files, $totalSize MB)")" -ForegroundColor Gray
 } else {
-    Write-Host "ERROR: Win11Forge.GUI.exe not found at $exePath" -ForegroundColor Red
+    Write-Host (Get-Text -Key 'build.exe_not_found' -Parameters @{ Path = $exePath } -Default "ERROR: Win11Forge.GUI.exe not found at $exePath") -ForegroundColor Red
     exit 1
 }
 
@@ -209,7 +229,7 @@ if (Test-Path $exePath) {
 # Step 5: Copy PowerShell infrastructure
 # ============================================
 $currentStep++
-Write-Host "[$currentStep/$stepCount] Copying PowerShell infrastructure..." -ForegroundColor Yellow
+Write-Host "[$currentStep/$stepCount] $(Get-Text -Key 'build.step_copying_infra' -Default 'Copying PowerShell infrastructure...')" -ForegroundColor Yellow
 
 $foldersToCopy = @("Modules", "Core", "Apps", "Profiles", "Config", "Docs")
 foreach ($folder in $foldersToCopy) {
@@ -218,9 +238,9 @@ foreach ($folder in $foldersToCopy) {
     if (Test-Path $sourcePath) {
         Copy-Item $sourcePath -Destination $destPath -Recurse
         $itemCount = (Get-ChildItem $sourcePath -Recurse -File).Count
-        Write-Host "  Copied: $folder/ ($itemCount files)" -ForegroundColor Gray
+        Write-Host "  $(Get-Text -Key 'build.copied_folder' -Parameters @{ Folder = $folder; Count = $itemCount } -Default "Copied: $folder/ ($itemCount files)")" -ForegroundColor Gray
     } else {
-        Write-Host "  WARNING: $folder not found, skipping..." -ForegroundColor Yellow
+        Write-Host "  $(Get-Text -Key 'build.folder_not_found' -Parameters @{ Folder = $folder } -Default "WARNING: $folder not found, skipping...")" -ForegroundColor Yellow
     }
 }
 
@@ -236,7 +256,7 @@ foreach ($file in $rootFiles) {
     $sourcePath = Join-Path $ScriptRoot $file
     if (Test-Path $sourcePath) {
         Copy-Item $sourcePath -Destination $ReleasePath
-        Write-Host "  Copied: $file" -ForegroundColor Gray
+        Write-Host "  $(Get-Text -Key 'build.copied_file' -Parameters @{ File = $file } -Default "Copied: $file")" -ForegroundColor Gray
     }
 }
 
@@ -251,13 +271,13 @@ start "" "Win11Forge.GUI.exe"
 
 $launcherPath = Join-Path $ReleasePath "Win11Forge.cmd"
 Set-Content -Path $launcherPath -Value $launcherContent -Encoding ASCII
-Write-Host "  Created: Win11Forge.cmd" -ForegroundColor Gray
+Write-Host "  $(Get-Text -Key 'build.created_launcher' -Parameters @{ File = 'Win11Forge.cmd' } -Default 'Created: Win11Forge.cmd')" -ForegroundColor Gray
 
 # ============================================
 # Step 6: Clean unnecessary files
 # ============================================
 $currentStep++
-Write-Host "[$currentStep/$stepCount] Cleaning unnecessary files..." -ForegroundColor Yellow
+Write-Host "[$currentStep/$stepCount] $(Get-Text -Key 'build.step_cleaning_files' -Default 'Cleaning unnecessary files...')" -ForegroundColor Yellow
 
 # Patterns to remove
 $patternsToRemove = @(
@@ -285,14 +305,14 @@ Get-ChildItem $ReleasePath -Recurse -Directory |
     Where-Object { (Get-ChildItem $_.FullName -Recurse -File).Count -eq 0 } |
     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 
-Write-Host "  Removed $removedCount unnecessary files" -ForegroundColor Gray
+Write-Host "  $(Get-Text -Key 'build.removed_files_count' -Parameters @{ Count = $removedCount } -Default "Removed $removedCount unnecessary files")" -ForegroundColor Gray
 
 # ============================================
 # Step 7: Create ZIP archive
 # ============================================
 if (-not $NoZip) {
     $currentStep++
-    Write-Host "[$currentStep/$stepCount] Creating ZIP archive..." -ForegroundColor Yellow
+    Write-Host "[$currentStep/$stepCount] $(Get-Text -Key 'build.step_creating_zip' -Default 'Creating ZIP archive...')" -ForegroundColor Yellow
 
     if (Test-Path $ZipPath) {
         Remove-Item $ZipPath -Force
@@ -301,7 +321,7 @@ if (-not $NoZip) {
     Compress-Archive -Path "$ReleasePath\*" -DestinationPath $ZipPath -CompressionLevel Optimal
 
     $zipSize = [math]::Round((Get-Item $ZipPath).Length / 1MB, 2)
-    Write-Host "  Created: $ReleaseName.zip ($zipSize MB)" -ForegroundColor Green
+    Write-Host "  $(Get-Text -Key 'build.created_zip' -Parameters @{ Name = "$ReleaseName.zip"; Size = $zipSize } -Default "Created: $ReleaseName.zip ($zipSize MB)")" -ForegroundColor Green
 }
 
 # ============================================
@@ -309,7 +329,7 @@ if (-not $NoZip) {
 # ============================================
 Write-Host ""
 Write-Host "======================================================" -ForegroundColor Green
-Write-Host "  Build Complete!" -ForegroundColor Green
+Write-Host "  $(Get-Text -Key 'build.complete_title' -Default 'Build Complete!')" -ForegroundColor Green
 Write-Host "======================================================" -ForegroundColor Green
 Write-Host ""
 
@@ -317,24 +337,24 @@ Write-Host ""
 $releaseSize = (Get-ChildItem $ReleasePath -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB
 $fileCount = (Get-ChildItem $ReleasePath -Recurse -File).Count
 
-Write-Host "Package Statistics:" -ForegroundColor White
-Write-Host "  Files:    $fileCount" -ForegroundColor Gray
-Write-Host "  Size:     $([math]::Round($releaseSize, 2)) MB (uncompressed)" -ForegroundColor Gray
+Write-Host (Get-Text -Key 'build.stats_title' -Default 'Package Statistics:') -ForegroundColor White
+Write-Host "  $(Get-Text -Key 'build.stats_files' -Parameters @{ Count = $fileCount } -Default "Files: $fileCount")" -ForegroundColor Gray
+Write-Host "  $(Get-Text -Key 'build.stats_size' -Parameters @{ Size = [math]::Round($releaseSize, 2) } -Default "Size: $([math]::Round($releaseSize, 2)) MB (uncompressed)")" -ForegroundColor Gray
 if (-not $NoZip) {
-    Write-Host "  ZIP Size: $zipSize MB" -ForegroundColor Gray
+    Write-Host "  $(Get-Text -Key 'build.stats_zip_size' -Parameters @{ Size = $zipSize } -Default "ZIP Size: $zipSize MB")" -ForegroundColor Gray
 }
 Write-Host ""
 
 # Output locations
-Write-Host "Output Locations:" -ForegroundColor White
-Write-Host "  Folder: $ReleasePath" -ForegroundColor Cyan
+Write-Host (Get-Text -Key 'build.output_title' -Default 'Output Locations:') -ForegroundColor White
+Write-Host "  $(Get-Text -Key 'build.output_folder' -Parameters @{ Path = $ReleasePath } -Default "Folder: $ReleasePath")" -ForegroundColor Cyan
 if (-not $NoZip) {
-    Write-Host "  ZIP:    $ZipPath" -ForegroundColor Cyan
+    Write-Host "  $(Get-Text -Key 'build.output_zip' -Parameters @{ Path = $ZipPath } -Default "ZIP: $ZipPath")" -ForegroundColor Cyan
 }
 Write-Host ""
 
 # Contents summary
-Write-Host "Main Contents:" -ForegroundColor White
+Write-Host (Get-Text -Key 'build.contents_title' -Default 'Main Contents:') -ForegroundColor White
 Get-ChildItem $ReleasePath -File | ForEach-Object {
     $size = [math]::Round($_.Length / 1KB, 1)
     Write-Host "  $($_.Name) ($size KB)" -ForegroundColor Gray
@@ -345,7 +365,7 @@ Get-ChildItem $ReleasePath -Directory | ForEach-Object {
 }
 
 Write-Host ""
-Write-Host "To test the release:" -ForegroundColor Yellow
+Write-Host (Get-Text -Key 'build.test_hint' -Default 'To test the release:') -ForegroundColor Yellow
 Write-Host "  cd `"$ReleasePath`"" -ForegroundColor Cyan
 Write-Host "  .\Start-Win11Forge.ps1" -ForegroundColor Cyan
 Write-Host ""
