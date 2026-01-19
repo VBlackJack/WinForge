@@ -277,7 +277,7 @@ public partial class ErrorDialog : UserControl
                 $"## Environment\n\n" +
                 $"- OS: Windows {Environment.OSVersion.Version}\n" +
                 $"- .NET: {Environment.Version}\n" +
-                $"- Win11Forge Version: 3.2.2\n"
+                $"- Win11Forge Version: 3.2.3\n"
             );
 
             var url = $"{GitHubIssuesUrl}?title={issueTitle}&body={issueBody}";

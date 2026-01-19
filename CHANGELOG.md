@@ -2,6 +2,41 @@
 
 Note: la source de vérité de la version du framework est `Config/version.json`. Les lanceurs et la GUI lisent dynamiquement cette valeur.
 
+## [3.2.3] - 2026-01-19
+
+### Performance Optimizations
+
+#### Registry-First Detection (ApplicationDetection.psm1)
+- **Added**: `Get-RegistryInstalledApp` function for fast registry-based detection (~20ms vs ~2s)
+- **Added**: Script-level `RegistryAppsCache` with 5-minute TTL
+- **Modified**: `Test-ApplicationInstalled` checks registry FIRST before CLI calls
+- **Added**: `Clear-RegistryAppsCache` for manual cache invalidation
+- **Impact**: App detection ~100x faster (2s → 20ms per app)
+
+#### Batch Update Cache (UpdateManager.psm1)
+- **Added**: `$script:BatchUpdateCache` hashtable with 10-minute TTL
+- **Added**: `Get-WingetUpdatesBatch` - single `winget upgrade` call to cache all updates
+- **Added**: `Get-ApplicationUpdateStatus` - lookup update status from cache
+- **Added**: `Clear-BatchUpdateCache` for manual cache invalidation
+- **Impact**: Update check reduced from ~2s/app to ~3s total
+
+#### Semantic Versioning (UpdateManager.psm1)
+- **Added**: `Test-IsNewerVersion` helper using `[System.Version]::Parse()`
+- **Handles**: "v1.0" vs "1.0" format differences, missing patch/build versions
+- **Fallback**: Uses `Compare-SemanticVersions` if parsing fails
+
+### Zero Hardcoding
+
+#### Build-Release.ps1
+- **Added**: Localization module import and `Get-Text` helper function
+- **Added**: New "build" section to `fr.json` and `en.json` (28 keys)
+- **Replaced**: All hardcoded strings with `Get-LocalizedString` calls
+
+#### Localization
+- **Added**: "optimization" section to locale files (8 keys)
+
+---
+
 ## [3.2.2] - 2026-01-19
 
 ### GUI
