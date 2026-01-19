@@ -229,7 +229,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         catch
         {
             // Fallback to static title if version retrieval fails
-            Title = string.Format(Win11Forge.GUI.Resources.Resources.App_Title, "3.2.1");
+            Title = string.Format(Win11Forge.GUI.Resources.Resources.App_Title, "3.2.2");
         }
     }
 
