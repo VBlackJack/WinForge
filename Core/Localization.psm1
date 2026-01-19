@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.0.0
+    Version: 3.5.0
 
 .EXAMPLE
     # Initialize with auto-detected locale

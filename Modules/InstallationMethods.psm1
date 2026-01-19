@@ -13,7 +13,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.1.4
+    Version: 3.5.0
 
     Changelog v3.1.4:
     - Extracted from InstallationEngine.psm1 for modularity
@@ -73,9 +73,278 @@ if (-not (Get-Command -Name Get-InstalledAppVersion -ErrorAction SilentlyContinu
     }
 }
 
-# === CONFIGURATION ===
-$script:DefaultInstallTimeoutSeconds = 1800  # 30 minutes (increased for slower VMs/networks)
-$script:OfficeInstallTimeoutSeconds = 2700   # 45 minutes for Office (Click-to-Run is slow)
+# === TIMEOUT CONFIGURATION ===
+# Import TimeoutSettings module for centralized timeout configuration
+$script:TimeoutSettingsPath = Join-Path $script:RepositoryRoot 'Core\TimeoutSettings.psm1'
+if (Test-Path -Path $script:TimeoutSettingsPath) {
+    Import-Module -Name $script:TimeoutSettingsPath -Force -ErrorAction SilentlyContinue
+}
+
+# Helper function to get installation timeout (uses config or defaults)
+function script:Get-ConfiguredInstallTimeout {
+    param([string]$AppName = '')
+
+    if (Get-Command -Name Get-InstallationTimeout -ErrorAction SilentlyContinue) {
+        return Get-InstallationTimeout -AppName $AppName
+    }
+
+    # Fallback defaults if TimeoutSettings module not available
+    if ($AppName -match 'Office|Microsoft 365|Word|Excel|PowerPoint|Outlook') {
+        return 2700  # 45 minutes for Office
+    }
+    return 1800  # 30 minutes default
+}
+
+# === PERFORMANCE OPTIMIZATION: CACHED CONFIGURATION ===
+
+# Cached download sources configuration (session-scoped)
+$script:DownloadSourcesCache = $null
+$script:DownloadSourcesCacheTime = $null
+
+# Cached trusted domains as HashSet for O(1) lookup
+$script:TrustedDomainsHashSet = $null
+
+function script:Get-CachedDownloadSources {
+    <#
+    .SYNOPSIS
+        Gets cached download sources configuration.
+    .DESCRIPTION
+        Loads Config/download-sources.json once and caches for session.
+    #>
+    [CmdletBinding()]
+    param()
+
+    if ($null -ne $script:DownloadSourcesCache) {
+        return $script:DownloadSourcesCache
+    }
+
+    $configPath = Join-Path $script:RepositoryRoot 'Config\download-sources.json'
+    if (Test-Path -Path $configPath -ErrorAction SilentlyContinue) {
+        try {
+            $script:DownloadSourcesCache = Get-Content -Path $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+            $script:DownloadSourcesCacheTime = Get-Date
+            Write-Verbose "Cached download-sources.json configuration"
+        } catch {
+            Write-Verbose "Could not load download sources config: $($_.Exception.Message)"
+            $script:DownloadSourcesCache = $null
+        }
+    }
+
+    return $script:DownloadSourcesCache
+}
+
+function script:Get-TrustedDomainsHashSet {
+    <#
+    .SYNOPSIS
+        Gets trusted domains as HashSet for O(1) lookup performance.
+    .DESCRIPTION
+        Builds and caches a HashSet of trusted domains for fast validation.
+    #>
+    [CmdletBinding()]
+    param()
+
+    if ($null -ne $script:TrustedDomainsHashSet) {
+        return $script:TrustedDomainsHashSet
+    }
+
+    # Load from config
+    $config = Get-CachedDownloadSources
+    $configTrustedDomains = @()
+    if ($config -and $config.trustedDomains -and $config.trustedDomains.domains) {
+        $configTrustedDomains = @($config.trustedDomains.domains)
+    }
+
+    # Fallback whitelist (common trusted CDNs and vendors)
+    $fallbackDomains = @(
+        # Microsoft ecosystem
+        'microsoft.com', 'windows.com', 'windowsupdate.com', 'azure.com', 'azureedge.net',
+        'office.com', 'visualstudio.com', 'visualstudio.microsoft.com',
+        # Code hosting
+        'github.com', 'githubusercontent.com', 'githubassets.com', 'gitlab.com',
+        # CDNs
+        'akamai.net', 'akamaized.net', 'cloudflare.com', 'cloudfront.net',
+        'fastly.net', 'jsdelivr.net', 'amazonaws.com', 'steamstatic.com',
+        # Common vendors
+        'chocolatey.org', 'community.chocolatey.org'
+    )
+
+    # Merge and deduplicate
+    $allDomains = @()
+    if ($configTrustedDomains.Count -gt 0) {
+        $allDomains += $configTrustedDomains
+    }
+    $allDomains += $fallbackDomains
+
+    # Build HashSet with case-insensitive comparison for O(1) lookup
+    $script:TrustedDomainsHashSet = [System.Collections.Generic.HashSet[string]]::new(
+        [System.StringComparer]::OrdinalIgnoreCase
+    )
+
+    foreach ($domain in $allDomains) {
+        $null = $script:TrustedDomainsHashSet.Add($domain.ToLowerInvariant())
+    }
+
+    Write-Verbose "Built trusted domains HashSet with $($script:TrustedDomainsHashSet.Count) entries"
+    return $script:TrustedDomainsHashSet
+}
+
+function script:Test-TrustedDomain {
+    <#
+    .SYNOPSIS
+        Fast O(1) trusted domain validation using HashSet.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Host
+    )
+
+    $trustedDomains = Get-TrustedDomainsHashSet
+    $hostLower = $Host.ToLowerInvariant()
+
+    # Exact match
+    if ($trustedDomains.Contains($hostLower)) {
+        return $true
+    }
+
+    # Subdomain match - check parent domains
+    $parts = $hostLower.Split('.')
+    for ($i = 1; $i -lt $parts.Count; $i++) {
+        $parentDomain = ($parts[$i..($parts.Count - 1)]) -join '.'
+        if ($trustedDomains.Contains($parentDomain)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+# === SECURITY FUNCTIONS ===
+
+function Test-SafeExtractPath {
+    <#
+    .SYNOPSIS
+        Validates extracted file paths to prevent Zip Slip attacks.
+    .DESCRIPTION
+        Ensures that extracted file paths don't escape the target directory
+        through path traversal attacks (e.g., ../../../etc/passwd).
+    .PARAMETER ExtractedPath
+        The full path of an extracted file.
+    .PARAMETER TargetDirectory
+        The intended extraction directory.
+    .OUTPUTS
+        Boolean indicating if the path is safe.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ExtractedPath,
+
+        [Parameter(Mandatory)]
+        [string]$TargetDirectory
+    )
+
+    try {
+        # Resolve both paths to their absolute canonical forms
+        $canonicalTarget = [System.IO.Path]::GetFullPath($TargetDirectory).TrimEnd([System.IO.Path]::DirectorySeparatorChar)
+        $canonicalExtracted = [System.IO.Path]::GetFullPath($ExtractedPath)
+
+        # Verify the extracted path starts with the target directory
+        if (-not $canonicalExtracted.StartsWith($canonicalTarget + [System.IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+            Write-Status -Message "Security: Blocked path traversal attempt: $ExtractedPath" -Level 'Warning'
+            return $false
+        }
+
+        # Additional check for symbolic links (Windows)
+        if ([System.IO.File]::Exists($ExtractedPath)) {
+            $fileInfo = [System.IO.FileInfo]::new($ExtractedPath)
+            if ($fileInfo.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+                Write-Status -Message "Security: Blocked symbolic link in archive: $ExtractedPath" -Level 'Warning'
+                return $false
+            }
+        }
+
+        return $true
+    } catch {
+        Write-Status -Message "Security: Path validation error: $($_.Exception.Message)" -Level 'Error'
+        return $false
+    }
+}
+
+function Expand-ArchiveSafe {
+    <#
+    .SYNOPSIS
+        Safely extracts a ZIP archive with Zip Slip protection.
+    .DESCRIPTION
+        Extracts files while validating each extracted path to prevent
+        path traversal attacks. Rejects archives containing malicious entries.
+    .PARAMETER Path
+        Path to the ZIP archive.
+    .PARAMETER DestinationPath
+        Target extraction directory.
+    .OUTPUTS
+        Boolean indicating successful extraction.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+
+        [Parameter(Mandatory)]
+        [string]$DestinationPath
+    )
+
+    try {
+        # Create destination if not exists
+        if (-not (Test-Path $DestinationPath)) {
+            New-Item -Path $DestinationPath -ItemType Directory -Force | Out-Null
+        }
+
+        $canonicalDest = [System.IO.Path]::GetFullPath($DestinationPath)
+
+        # Use .NET ZipFile for entry-by-entry validation
+        Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction Stop
+
+        $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
+        try {
+            foreach ($entry in $archive.Entries) {
+                # Skip directories
+                if ($entry.FullName.EndsWith('/') -or $entry.FullName.EndsWith('\')) {
+                    continue
+                }
+
+                # Calculate intended extraction path
+                $entryPath = Join-Path $canonicalDest $entry.FullName
+                $entryFullPath = [System.IO.Path]::GetFullPath($entryPath)
+
+                # Validate path doesn't escape destination
+                if (-not $entryFullPath.StartsWith($canonicalDest + [System.IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+                    Write-Status -Message "Security: Zip Slip attack detected in entry: $($entry.FullName)" -Level 'Error'
+                    return $false
+                }
+
+                # Check for dangerous file extensions
+                $dangerousExtensions = @('.ps1', '.psm1', '.psd1', '.bat', '.cmd', '.vbs', '.js', '.dll')
+                $extension = [System.IO.Path]::GetExtension($entry.FullName).ToLower()
+                if ($extension -in $dangerousExtensions) {
+                    Write-Status -Message "Security: Potentially dangerous file type in archive: $($entry.FullName)" -Level 'Warning'
+                }
+            }
+
+            # All entries validated - proceed with extraction
+            [System.IO.Compression.ZipFile]::ExtractToDirectory($Path, $canonicalDest)
+            return $true
+        } finally {
+            $archive.Dispose()
+        }
+    } catch {
+        Write-Status -Message "Archive extraction failed: $($_.Exception.Message)" -Level 'Error'
+        return $false
+    }
+}
 
 # === HELPER FUNCTIONS ===
 
@@ -119,55 +388,8 @@ function Test-ValidDownloadUrl {
         return $false
     }
 
-    # Try to load trusted domains from config file
-    $configPath = Join-Path $script:RepositoryRoot 'Config\download-sources.json'
-    $configTrustedDomains = @()
-
-    if (Test-Path -Path $configPath -ErrorAction SilentlyContinue) {
-        try {
-            $config = Get-Content -Path $configPath -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
-            if ($config.trustedDomains -and $config.trustedDomains.domains) {
-                $configTrustedDomains = @($config.trustedDomains.domains)
-            }
-        } catch {
-            Write-Status -Message "Could not load trusted domains config: $($_.Exception.Message)" -Level 'Verbose'
-        }
-    }
-
-    # Fallback whitelist if config not available (common trusted CDNs and vendors)
-    $fallbackDomains = @(
-        # Microsoft ecosystem
-        'microsoft.com', 'windows.com', 'windowsupdate.com', 'azure.com', 'azureedge.net',
-        'office.com', 'visualstudio.com', 'visualstudio.microsoft.com',
-        # Code hosting
-        'github.com', 'githubusercontent.com', 'githubassets.com', 'gitlab.com',
-        # CDNs
-        'akamai.net', 'akamaized.net', 'cloudflare.com', 'cloudfront.net',
-        'fastly.net', 'jsdelivr.net', 'amazonaws.com', 'steamstatic.com',
-        # Common vendors
-        'chocolatey.org', 'community.chocolatey.org'
-    )
-
-    # Merge config and fallback domains
-    $trustedDomains = @()
-    if ($configTrustedDomains.Count -gt 0) {
-        $trustedDomains = $configTrustedDomains
-    }
-    $trustedDomains += $fallbackDomains
-    $trustedDomains = $trustedDomains | Select-Object -Unique
-
-    # Check if domain matches any trusted domain
-    $hostLower = $uri.Host.ToLower()
-    $domainMatched = $false
-
-    foreach ($trusted in $trustedDomains) {
-        $trustedLower = $trusted.ToLower()
-        # Exact match or subdomain match
-        if ($hostLower -eq $trustedLower -or $hostLower.EndsWith(".$trustedLower")) {
-            $domainMatched = $true
-            break
-        }
-    }
+    # Use cached HashSet for O(1) domain validation
+    $domainMatched = Test-TrustedDomain -Host $uri.Host
 
     if (-not $domainMatched) {
         if ($AllowUntrusted) {
@@ -221,8 +443,45 @@ function Start-ProcessWithTimeout {
 
         # Wait for process with timeout
         if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
-            Write-Status -Message "Process timed out after $TimeoutSeconds seconds - terminating" -Level 'Warning'
-            $process.Kill()
+            Write-Status -Message "Process timed out after $TimeoutSeconds seconds - attempting graceful termination" -Level 'Warning'
+
+            # Graceful termination: Try CloseMainWindow first
+            $gracefulClosed = $false
+            try {
+                if ($process.CloseMainWindow()) {
+                    # Wait up to 5 seconds for graceful close
+                    $gracefulClosed = $process.WaitForExit(5000)
+                    if ($gracefulClosed) {
+                        Write-Status -Message "Process terminated gracefully via CloseMainWindow" -Level 'Info'
+                    }
+                }
+            } catch {
+                Write-Status -Message "CloseMainWindow failed: $($_.Exception.Message)" -Level 'Verbose'
+            }
+
+            # Forceful termination if graceful failed
+            if (-not $gracefulClosed -and -not $process.HasExited) {
+                Write-Status -Message "Graceful termination failed - forcing process kill" -Level 'Warning'
+                try {
+                    $process.Kill()
+                    # Wait for process to actually terminate
+                    $process.WaitForExit(3000)
+                } catch {
+                    Write-Status -Message "Process kill failed: $($_.Exception.Message)" -Level 'Error'
+                }
+
+                # Kill child processes to prevent orphans
+                try {
+                    Get-CimInstance -ClassName Win32_Process |
+                        Where-Object { $_.ParentProcessId -eq $process.Id } |
+                        ForEach-Object {
+                            Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+                        }
+                } catch {
+                    Write-Status -Message "Child process cleanup failed: $($_.Exception.Message)" -Level 'Verbose'
+                }
+            }
+
             throw "Process execution timed out after $TimeoutSeconds seconds"
         }
 
@@ -865,9 +1124,15 @@ function Install-ZipPackage {
         [string]$DetectionPath = $null
     )
 
-    Write-Status -Message "Extracting ZIP archive" -Level 'Info'
+    Write-Status -Message "Extracting ZIP archive (with Zip Slip protection)" -Level 'Info'
     $extractPath = Join-Path $TempDir "extracted"
-    Expand-Archive -Path $InstallerPath -DestinationPath $extractPath -Force
+
+    # Use safe extraction with path traversal validation
+    $extractResult = Expand-ArchiveSafe -Path $InstallerPath -DestinationPath $extractPath
+    if (-not $extractResult) {
+        Write-Status -Message "ZIP extraction failed security validation" -Level 'Error'
+        return $false
+    }
 
     # Check if ZIP contains an installer (setup.exe/install.exe)
     $setupExe = Get-ChildItem -Path $extractPath -Filter *.exe -Recurse |

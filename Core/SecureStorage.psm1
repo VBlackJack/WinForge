@@ -1,0 +1,567 @@
+<#
+.SYNOPSIS
+    Win11Forge - Secure Storage Module v1.0.0
+
+.DESCRIPTION
+    Provides secure storage capabilities using Windows DPAPI:
+    - Encryption/decryption of sensitive data
+    - Secure API key storage
+    - Protection scope: CurrentUser (machine-bound)
+
+.NOTES
+    Author: Julien Bombled
+    Version: 1.0.0
+    Uses Windows Data Protection API (DPAPI) for encryption
+#>
+
+#
+# Copyright 2026 Julien Bombled
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+Set-StrictMode -Version Latest
+
+# === MODULE INITIALIZATION ===
+$script:ModuleRoot = Split-Path -Parent $PSCommandPath
+$script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
+$script:SecureStoragePath = Join-Path $env:LOCALAPPDATA 'Win11Forge\secure-storage.dat'
+$script:SecureApiKeysPath = Join-Path $env:LOCALAPPDATA 'Win11Forge\api-keys.secure'
+
+# Ensure directory exists
+$secureDir = Split-Path $script:SecureStoragePath -Parent
+if (-not (Test-Path $secureDir)) {
+    New-Item -Path $secureDir -ItemType Directory -Force | Out-Null
+}
+
+# === DPAPI FUNCTIONS ===
+
+function Protect-Data {
+    <#
+    .SYNOPSIS
+        Encrypts data using Windows DPAPI.
+
+    .DESCRIPTION
+        Uses Windows Data Protection API to encrypt sensitive data.
+        The encrypted data can only be decrypted by the same user on the same machine.
+
+    .PARAMETER PlainText
+        The text to encrypt.
+
+    .PARAMETER Scope
+        Protection scope: CurrentUser (default) or LocalMachine.
+
+    .OUTPUTS
+        [string] Base64-encoded encrypted data.
+
+    .EXAMPLE
+        $encrypted = Protect-Data -PlainText "my-secret-api-key"
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [string]$PlainText,
+
+        [Parameter()]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [string]$Scope = 'CurrentUser'
+    )
+
+    process {
+        try {
+            $bytes = [System.Text.Encoding]::UTF8.GetBytes($PlainText)
+            $entropy = [System.Text.Encoding]::UTF8.GetBytes('Win11Forge-v1')
+
+            $protectionScope = switch ($Scope) {
+                'LocalMachine' { [System.Security.Cryptography.DataProtectionScope]::LocalMachine }
+                default { [System.Security.Cryptography.DataProtectionScope]::CurrentUser }
+            }
+
+            $encryptedBytes = [System.Security.Cryptography.ProtectedData]::Protect(
+                $bytes,
+                $entropy,
+                $protectionScope
+            )
+
+            return [Convert]::ToBase64String($encryptedBytes)
+        } catch {
+            throw "Failed to encrypt data: $($_.Exception.Message)"
+        }
+    }
+}
+
+function Unprotect-Data {
+    <#
+    .SYNOPSIS
+        Decrypts data that was encrypted using Windows DPAPI.
+
+    .DESCRIPTION
+        Uses Windows Data Protection API to decrypt data.
+        The data must have been encrypted by the same user on the same machine.
+
+    .PARAMETER EncryptedData
+        Base64-encoded encrypted data from Protect-Data.
+
+    .PARAMETER Scope
+        Protection scope: CurrentUser (default) or LocalMachine.
+
+    .OUTPUTS
+        [string] The decrypted plain text.
+
+    .EXAMPLE
+        $plainText = Unprotect-Data -EncryptedData $encryptedString
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [string]$EncryptedData,
+
+        [Parameter()]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [string]$Scope = 'CurrentUser'
+    )
+
+    process {
+        try {
+            $encryptedBytes = [Convert]::FromBase64String($EncryptedData)
+            $entropy = [System.Text.Encoding]::UTF8.GetBytes('Win11Forge-v1')
+
+            $protectionScope = switch ($Scope) {
+                'LocalMachine' { [System.Security.Cryptography.DataProtectionScope]::LocalMachine }
+                default { [System.Security.Cryptography.DataProtectionScope]::CurrentUser }
+            }
+
+            $decryptedBytes = [System.Security.Cryptography.ProtectedData]::Unprotect(
+                $encryptedBytes,
+                $entropy,
+                $protectionScope
+            )
+
+            return [System.Text.Encoding]::UTF8.GetString($decryptedBytes)
+        } catch {
+            throw "Failed to decrypt data: $($_.Exception.Message)"
+        }
+    }
+}
+
+# === SECURE API KEY STORAGE ===
+
+function Save-SecureApiKey {
+    <#
+    .SYNOPSIS
+        Saves an API key securely using DPAPI encryption.
+
+    .DESCRIPTION
+        Encrypts and stores an API key with its metadata.
+        Keys are stored in %LOCALAPPDATA%\Win11Forge\api-keys.secure
+
+    .PARAMETER KeyId
+        Unique identifier for the key.
+
+    .PARAMETER ApiKey
+        The API key to encrypt and store.
+
+    .PARAMETER Description
+        Optional description for the key.
+
+    .PARAMETER Permissions
+        Array of permissions for the key.
+
+    .PARAMETER ExpiresAt
+        Optional expiration date (ISO format).
+
+    .EXAMPLE
+        Save-SecureApiKey -KeyId 'automation' -ApiKey 'w11f_abc123' -Permissions @('read', 'deploy')
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$KeyId,
+
+        [Parameter(Mandatory)]
+        [string]$ApiKey,
+
+        [Parameter()]
+        [string]$Description = '',
+
+        [Parameter()]
+        [string[]]$Permissions = @('read'),
+
+        [Parameter()]
+        [string]$ExpiresAt = $null
+    )
+
+    try {
+        # Load existing keys
+        $keys = Get-SecureApiKeys -IncludeDecrypted
+
+        # Encrypt the API key
+        $encryptedKey = Protect-Data -PlainText $ApiKey
+
+        # Add or update key
+        $keyEntry = @{
+            Id = $KeyId
+            EncryptedKey = $encryptedKey
+            Description = $Description
+            Permissions = $Permissions
+            CreatedAt = (Get-Date).ToString('yyyy-MM-dd')
+            ExpiresAt = $ExpiresAt
+            Enabled = $true
+        }
+
+        $keys[$KeyId] = $keyEntry
+
+        # Save to secure storage
+        $json = $keys | ConvertTo-Json -Depth 5
+        $encryptedStorage = Protect-Data -PlainText $json
+        Set-Content -Path $script:SecureApiKeysPath -Value $encryptedStorage -Force
+
+        Write-Verbose "API key '$KeyId' saved securely"
+        return $true
+    } catch {
+        Write-Error "Failed to save API key: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Get-SecureApiKeys {
+    <#
+    .SYNOPSIS
+        Retrieves securely stored API keys.
+
+    .DESCRIPTION
+        Loads API keys from secure storage and optionally decrypts them.
+
+    .PARAMETER IncludeDecrypted
+        If specified, includes decrypted API keys in the output.
+        Use with caution - only when keys are needed for authentication.
+
+    .PARAMETER KeyId
+        Optional filter to get a specific key by ID.
+
+    .OUTPUTS
+        [hashtable] API keys (with or without decrypted values).
+
+    .EXAMPLE
+        $keys = Get-SecureApiKeys
+        $allKeys = Get-SecureApiKeys -IncludeDecrypted
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter()]
+        [switch]$IncludeDecrypted,
+
+        [Parameter()]
+        [string]$KeyId
+    )
+
+    try {
+        if (-not (Test-Path $script:SecureApiKeysPath)) {
+            return @{}
+        }
+
+        $encryptedStorage = Get-Content -Path $script:SecureApiKeysPath -Raw
+        $json = Unprotect-Data -EncryptedData $encryptedStorage
+        $keys = $json | ConvertFrom-Json -AsHashtable
+
+        if ($KeyId -and $keys.ContainsKey($KeyId)) {
+            $keys = @{ $KeyId = $keys[$KeyId] }
+        }
+
+        if ($IncludeDecrypted) {
+            foreach ($id in $keys.Keys) {
+                $keyEntry = $keys[$id]
+                if ($keyEntry.EncryptedKey) {
+                    $keyEntry['DecryptedKey'] = Unprotect-Data -EncryptedData $keyEntry.EncryptedKey
+                }
+            }
+        }
+
+        return $keys
+    } catch {
+        Write-Verbose "Could not load secure API keys: $($_.Exception.Message)"
+        return @{}
+    }
+}
+
+function Remove-SecureApiKey {
+    <#
+    .SYNOPSIS
+        Removes an API key from secure storage.
+
+    .PARAMETER KeyId
+        The ID of the key to remove.
+
+    .EXAMPLE
+        Remove-SecureApiKey -KeyId 'automation'
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$KeyId
+    )
+
+    try {
+        $keys = Get-SecureApiKeys -IncludeDecrypted
+
+        if ($keys.ContainsKey($KeyId)) {
+            $keys.Remove($KeyId)
+
+            if ($keys.Count -eq 0) {
+                Remove-Item -Path $script:SecureApiKeysPath -Force -ErrorAction SilentlyContinue
+            } else {
+                $json = $keys | ConvertTo-Json -Depth 5
+                $encryptedStorage = Protect-Data -PlainText $json
+                Set-Content -Path $script:SecureApiKeysPath -Value $encryptedStorage -Force
+            }
+
+            Write-Verbose "API key '$KeyId' removed"
+            return $true
+        }
+
+        return $false
+    } catch {
+        Write-Error "Failed to remove API key: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Get-SecureApiKeysForAuth {
+    <#
+    .SYNOPSIS
+        Gets API keys in the format expected by RestApiServer authentication.
+
+    .DESCRIPTION
+        Returns a hashtable keyed by the actual API key value for fast lookup.
+        This is used internally by the REST API server for authentication.
+
+    .OUTPUTS
+        [hashtable] Keys indexed by decrypted API key value.
+
+    .EXAMPLE
+        $authKeys = Get-SecureApiKeysForAuth
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param()
+
+    $authKeys = @{}
+
+    try {
+        $keys = Get-SecureApiKeys -IncludeDecrypted
+
+        foreach ($id in $keys.Keys) {
+            $keyEntry = $keys[$id]
+            if ($keyEntry.Enabled -and $keyEntry.DecryptedKey) {
+                $authKeys[$keyEntry.DecryptedKey] = @{
+                    Id = $keyEntry.Id
+                    Description = $keyEntry.Description
+                    Permissions = $keyEntry.Permissions
+                    CreatedAt = $keyEntry.CreatedAt
+                    ExpiresAt = $keyEntry.ExpiresAt
+                }
+            }
+        }
+    } catch {
+        Write-Verbose "Could not load API keys for auth: $($_.Exception.Message)"
+    }
+
+    return $authKeys
+}
+
+# === GENERIC SECURE STORAGE ===
+
+function Save-SecureData {
+    <#
+    .SYNOPSIS
+        Saves arbitrary data securely using DPAPI encryption.
+
+    .PARAMETER Key
+        Unique key name for the data.
+
+    .PARAMETER Value
+        The value to encrypt and store.
+
+    .EXAMPLE
+        Save-SecureData -Key 'database-password' -Value 'secret123'
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Key,
+
+        [Parameter(Mandatory)]
+        [string]$Value
+    )
+
+    try {
+        # Load existing storage
+        $storage = @{}
+        if (Test-Path $script:SecureStoragePath) {
+            try {
+                $encryptedStorage = Get-Content -Path $script:SecureStoragePath -Raw
+                $json = Unprotect-Data -EncryptedData $encryptedStorage
+                $storage = $json | ConvertFrom-Json -AsHashtable
+            } catch { }
+        }
+
+        # Encrypt and store value
+        $storage[$Key] = Protect-Data -PlainText $Value
+
+        # Save storage
+        $json = $storage | ConvertTo-Json -Depth 5
+        $encryptedStorage = Protect-Data -PlainText $json
+        Set-Content -Path $script:SecureStoragePath -Value $encryptedStorage -Force
+
+        Write-Verbose "Secure data '$Key' saved"
+        return $true
+    } catch {
+        Write-Error "Failed to save secure data: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Get-SecureData {
+    <#
+    .SYNOPSIS
+        Retrieves securely stored data.
+
+    .PARAMETER Key
+        The key name of the data to retrieve.
+
+    .OUTPUTS
+        [string] The decrypted value, or $null if not found.
+
+    .EXAMPLE
+        $password = Get-SecureData -Key 'database-password'
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Key
+    )
+
+    try {
+        if (-not (Test-Path $script:SecureStoragePath)) {
+            return $null
+        }
+
+        $encryptedStorage = Get-Content -Path $script:SecureStoragePath -Raw
+        $json = Unprotect-Data -EncryptedData $encryptedStorage
+        $storage = $json | ConvertFrom-Json -AsHashtable
+
+        if ($storage.ContainsKey($Key)) {
+            return Unprotect-Data -EncryptedData $storage[$Key]
+        }
+
+        return $null
+    } catch {
+        Write-Verbose "Could not retrieve secure data: $($_.Exception.Message)"
+        return $null
+    }
+}
+
+function Remove-SecureData {
+    <#
+    .SYNOPSIS
+        Removes data from secure storage.
+
+    .PARAMETER Key
+        The key name of the data to remove.
+
+    .EXAMPLE
+        Remove-SecureData -Key 'database-password'
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Key
+    )
+
+    try {
+        if (-not (Test-Path $script:SecureStoragePath)) {
+            return $false
+        }
+
+        $encryptedStorage = Get-Content -Path $script:SecureStoragePath -Raw
+        $json = Unprotect-Data -EncryptedData $encryptedStorage
+        $storage = $json | ConvertFrom-Json -AsHashtable
+
+        if ($storage.ContainsKey($Key)) {
+            $storage.Remove($Key)
+
+            if ($storage.Count -eq 0) {
+                Remove-Item -Path $script:SecureStoragePath -Force -ErrorAction SilentlyContinue
+            } else {
+                $json = $storage | ConvertTo-Json -Depth 5
+                $encryptedStorage = Protect-Data -PlainText $json
+                Set-Content -Path $script:SecureStoragePath -Value $encryptedStorage -Force
+            }
+
+            Write-Verbose "Secure data '$Key' removed"
+            return $true
+        }
+
+        return $false
+    } catch {
+        Write-Error "Failed to remove secure data: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Test-SecureStorageAvailable {
+    <#
+    .SYNOPSIS
+        Tests if secure storage (DPAPI) is available on this system.
+
+    .OUTPUTS
+        [bool] True if DPAPI is available and working.
+
+    .EXAMPLE
+        if (Test-SecureStorageAvailable) { Save-SecureApiKey ... }
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    try {
+        $testData = 'Win11Forge-DPAPI-Test'
+        $encrypted = Protect-Data -PlainText $testData
+        $decrypted = Unprotect-Data -EncryptedData $encrypted
+        return $decrypted -eq $testData
+    } catch {
+        return $false
+    }
+}
+
+# === MODULE EXPORTS ===
+Export-ModuleMember -Function @(
+    # Core DPAPI
+    'Protect-Data',
+    'Unprotect-Data',
+    # API Key Storage
+    'Save-SecureApiKey',
+    'Get-SecureApiKeys',
+    'Remove-SecureApiKey',
+    'Get-SecureApiKeysForAuth',
+    # Generic Secure Storage
+    'Save-SecureData',
+    'Get-SecureData',
+    'Remove-SecureData',
+    # Utility
+    'Test-SecureStorageAvailable'
+)

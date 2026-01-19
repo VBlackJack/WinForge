@@ -57,13 +57,13 @@
 
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="{loc:Loc Settings_Theme}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
-                                        <TextBlock Text="{loc:Loc Settings_Theme_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Opacity="0.7"/>
+                                        <TextBlock Text="{loc:Loc Settings_Theme_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="WeatherSunny" Width="20" Height="20" VerticalAlignment="Center" Opacity="0.7" Margin="0,0,8,0"/>
+                                        <materialDesign:PackIcon Kind="WeatherSunny" Width="20" Height="20" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" Margin="0,0,8,0"/>
                                         <ToggleButton IsChecked="{Binding IsDarkTheme}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                        <materialDesign:PackIcon Kind="WeatherNight" Width="20" Height="20" VerticalAlignment="Center" Opacity="0.7" Margin="8,0,0,0"/>
+                                        <materialDesign:PackIcon Kind="WeatherNight" Width="20" Height="20" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" Margin="8,0,0,0"/>
                                     </StackPanel>
                                 </Grid>
 
@@ -76,7 +76,7 @@
 
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="{loc:Loc Settings_ReducedMotion}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
-                                        <TextBlock Text="{loc:Loc Settings_ReducedMotion_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Opacity="0.7"/>
+                                        <TextBlock Text="{loc:Loc Settings_ReducedMotion_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                     </StackPanel>
 
                                     <ToggleButton Grid.Column="1"
@@ -103,7 +103,7 @@
 
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="{loc:Loc Settings_Language}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
-                                        <TextBlock Text="{loc:Loc Settings_Language_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Opacity="0.7"/>
+                                        <TextBlock Text="{loc:Loc Settings_Language_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -150,7 +150,7 @@
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                                 <materialDesign:PackIcon Kind="SpeedometerMedium" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                 <TextBlock Text="{loc:Loc Settings_Section_Performance}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" VerticalAlignment="Center"/>
-                                <materialDesign:PackIcon Kind="HelpCircleOutline" Width="18" Height="18" Opacity="0.6"
+                                <materialDesign:PackIcon Kind="HelpCircleOutline" Width="18" Height="18" Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                           VerticalAlignment="Center" Margin="8,0,0,0" ToolTip="{loc:Loc Help_Performance}"/>
                             </StackPanel>
 
@@ -163,7 +163,7 @@
 
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="{loc:Loc Settings_ParallelInstalls}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
-                                    <TextBlock Text="{loc:Loc Settings_ParallelInstalls_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Opacity="0.7"/>
+                                    <TextBlock Text="{loc:Loc Settings_ParallelInstalls_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 </StackPanel>
 
                                 <ComboBox Grid.Column="1"
@@ -181,7 +181,7 @@
 
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="{loc:Loc Settings_ParallelScans}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
-                                    <TextBlock Text="{loc:Loc Settings_ParallelScans_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Opacity="0.7"/>
+                                    <TextBlock Text="{loc:Loc Settings_ParallelScans_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 </StackPanel>
 
                                 <ComboBox Grid.Column="1"
@@ -231,7 +231,7 @@
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{loc:Loc Settings_ExportImport_Desc}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.7"/>
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -266,7 +266,7 @@
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{loc:Loc Settings_ResetDefaults_Desc}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.7"/>
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                             </StackPanel>
 
                             <Button Grid.Column="1"
@@ -292,7 +292,7 @@
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{loc:Loc Settings_ClearHistory_Desc}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.7"/>
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                             </StackPanel>
 
                             <Button Grid.Column="1"
@@ -315,7 +315,7 @@
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{loc:Loc Settings_OpenLogs_Desc}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.7"/>
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                             </StackPanel>
 
                             <Button Grid.Column="1"

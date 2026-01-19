@@ -1,8 +1,8 @@
 {
   "$schema": "Win11Forge-FeatureFlags-v1.0",
   "description": "Feature flags for Win11Forge framework",
-  "version": "3.1.4",
-  "lastUpdated": "2026-01-17",
+  "version": "3.5.0",
+  "lastUpdated": "2026-01-19",
   "features": {
     "parallelInstallation": {
       "enabled": true,
@@ -35,10 +35,10 @@
       "minVersion": "3.1.0"
     },
     "pluginSandboxing": {
-      "enabled": false,
-      "description": "Enable plugin sandboxing (experimental)",
-      "defaultValue": false,
-      "minVersion": "3.2.0"
+      "enabled": true,
+      "description": "Enable plugin sandboxing for timeout enforcement and isolation",
+      "defaultValue": true,
+      "minVersion": "3.3.0"
     },
     "wingetCache": {
       "enabled": true,

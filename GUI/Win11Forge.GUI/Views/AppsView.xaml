@@ -68,7 +68,7 @@
                         <TextBlock Grid.Row="1"
                                    Text="{loc:Loc LogViewer_NoLogs}"
                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                   Opacity="0.5"
+                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    Visibility="{Binding LogViewerApplication.LogOutput, Converter={StaticResource InverseNullableToVisibilityConverter}}"/>
@@ -162,7 +162,7 @@
                                 <TextBlock Grid.Row="2" Grid.Column="1"
                                            Text="{Binding SkippedCount}"
                                            Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           Opacity="0.7"
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
                                            FontWeight="Bold"/>
                             </Grid>
                         </StackPanel>
@@ -631,7 +631,7 @@
                     <!-- Estimated Time Remaining -->
                     <TextBlock Text="{Binding EstimatedTimeRemaining}"
                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                               Opacity="0.7"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
                                VerticalAlignment="Center"
                                Margin="0,0,12,0"
                                Visibility="{Binding EstimatedTimeRemaining, Converter={StaticResource NullableToVisibilityConverter}}"/>
@@ -813,7 +813,9 @@
                                               Style="{StaticResource MaterialDesignCheckBox}"
                                               HorizontalAlignment="Center"
                                               Checked="SelectionCheckBox_Changed"
-                                              Unchecked="SelectionCheckBox_Changed"/>
+                                              Unchecked="SelectionCheckBox_Changed"
+                                              AutomationProperties.Name="{Binding Name, StringFormat='Select {0}'}"
+                                              AutomationProperties.HelpText="Toggle selection for this application"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -823,13 +825,15 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                     <Button Style="{StaticResource MaterialDesignIconButton}"
-                                            Width="28" Height="28"
+                                            Width="44" Height="44"
                                             Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}"
-                                            ToolTip="{loc:Loc Menu_ToggleFavorite}">
+                                            ToolTip="{loc:Loc Menu_ToggleFavorite}"
+                                            AutomationProperties.Name="{Binding Name, StringFormat='Toggle favorite for {0}'}"
+                                            AutomationProperties.HelpText="Add or remove from favorites">
                                         <materialDesign:PackIcon Kind="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteIconConverter}}"
                                                                   Foreground="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteColorConverter}}"
-                                                                  Width="18" Height="18"/>
+                                                                  Width="20" Height="20"/>
                                     </Button>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -875,7 +879,7 @@
                                         </StackPanel>
                                         <TextBlock Text="{Binding Description}"
                                                    Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                                   Opacity="0.7"
+                                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                    TextTrimming="CharacterEllipsis"
                                                    MaxWidth="350"/>
                                         <!-- Install Notes -->
@@ -992,12 +996,14 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                     <Button Style="{StaticResource MaterialDesignIconButton}"
-                                            Width="32" Height="32"
+                                            Width="44" Height="44"
                                             ToolTip="{loc:Loc Btn_ViewLogs}"
                                             Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}"
-                                            Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
-                                        <materialDesign:PackIcon Kind="FileDocumentOutline" Width="18" Height="18"/>
+                                            Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}"
+                                            AutomationProperties.Name="{Binding Name, StringFormat='View logs for {0}'}"
+                                            AutomationProperties.HelpText="Opens the installation logs for this application">
+                                        <materialDesign:PackIcon Kind="FileDocumentOutline" Width="20" Height="20"/>
                                     </Button>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

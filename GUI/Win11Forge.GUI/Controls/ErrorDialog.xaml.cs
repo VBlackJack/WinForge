@@ -19,6 +19,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using MaterialDesignThemes.Wpf;
 using Win11Forge.GUI.Services;
 using Res = Win11Forge.GUI.Resources.Resources;
@@ -303,6 +304,16 @@ public partial class ErrorDialog : UserControl
             {
                 // Silently fail
             }
+        }
+    }
+
+    private void UserControl_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            ActionSelected?.Invoke(this, DialogAction.Ok);
+            DialogHost.CloseDialogCommand.Execute(null, null);
+            e.Handled = true;
         }
     }
 }

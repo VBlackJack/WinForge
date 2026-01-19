@@ -17,7 +17,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.2.2
+    Version: 3.5.0
 
     Changelog v3.2.2:
     - ARCHITECTURE: Extracted from InstallationEngine.psm1 for improved maintainability
@@ -92,12 +92,44 @@ if (-not (Get-Command -Name Get-CachedWingetList -ErrorAction SilentlyContinue))
     }
 }
 
-# === CONFIGURATION ===
-$script:MaxParallelJobs = 5
-$script:JobCheckInterval = 2
-$script:DefaultInstallTimeoutSeconds = 1800
-$script:OfficeInstallTimeoutSeconds = 2700
-$script:ParallelInstallTimeoutMs = 600000
+# === TIMEOUT CONFIGURATION ===
+# Import TimeoutSettings and StateManager modules for centralized configuration
+$script:TimeoutSettingsPath = Join-Path $script:RepositoryRoot 'Core\TimeoutSettings.psm1'
+$script:StateManagerPath = Join-Path $script:ModuleRoot 'StateManager.psm1'
+
+if (Test-Path -Path $script:TimeoutSettingsPath) {
+    Import-Module -Name $script:TimeoutSettingsPath -Force -ErrorAction SilentlyContinue
+}
+
+if (Test-Path -Path $script:StateManagerPath) {
+    Import-Module -Name $script:StateManagerPath -Force -ErrorAction SilentlyContinue
+}
+
+# Helper functions to get configured timeouts (with fallbacks)
+function script:Get-ConfiguredMaxParallelJobs {
+    if (Get-Command -Name Get-MaxParallelJobs -ErrorAction SilentlyContinue) {
+        return Get-MaxParallelJobs
+    }
+    return 5  # Fallback default
+}
+
+function script:Get-ConfiguredParallelTimeout {
+    if (Get-Command -Name Get-ParallelTimeout -ErrorAction SilentlyContinue) {
+        return Get-ParallelTimeout
+    }
+    return 600000  # 10 minutes fallback
+}
+
+function script:Get-ConfiguredJobCheckInterval {
+    $config = $null
+    if (Get-Command -Name Get-TimeoutSettings -ErrorAction SilentlyContinue) {
+        $config = Get-TimeoutSettings
+    }
+    if ($config -and $config.Parallel.JobCheckIntervalSeconds) {
+        return $config.Parallel.JobCheckIntervalSeconds
+    }
+    return 2  # Fallback default
+}
 
 # === ROLLBACK & RESUME SYSTEM ===
 $script:Win11ForgeDataDir = Join-Path $env:LOCALAPPDATA 'Win11Forge'

@@ -19,6 +19,7 @@ using System.IO;
 using System.Windows;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.DependencyInjection;
+using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI;
@@ -36,6 +37,11 @@ public partial class App : Application
     /// Gets the service provider for dependency injection.
     /// </summary>
     public static IServiceProvider Services { get; private set; } = null!;
+
+    /// <summary>
+    /// Gets whether the user prefers reduced motion (accessibility setting).
+    /// </summary>
+    public static bool ReducedMotion => AnimationHelper.ReducedMotion;
 
     /// <summary>
     /// Gets a service from the DI container.
@@ -115,10 +121,14 @@ public partial class App : Application
                 Log($"Theme application failed: {ex.Message}");
             }
 
-            // Step 4: Call base AFTER settings are applied
+            // Step 4: Detect reduced motion preference for accessibility
+            Log($"Reduced motion preference: {ReducedMotion}");
+            InitializeAnimationResources();
+
+            // Step 5: Call base AFTER settings are applied
             base.OnStartup(e);
 
-            // Step 5: NOW create and show MainWindow (after culture is set)
+            // Step 6: NOW create and show MainWindow (after culture is set)
             Log("Creating MainWindow...");
             var mainWindow = new MainWindow();
             mainWindow.Show();
@@ -164,8 +174,32 @@ public partial class App : Application
     }
 
     /// <summary>
+    /// Initializes animation resources based on reduced motion preference.
+    /// Sets animation durations to zero if user prefers reduced motion.
+    /// </summary>
+    private void InitializeAnimationResources()
+    {
+        try
+        {
+            if (ReducedMotion)
+            {
+                // Override animation durations with instant durations
+                Resources["AnimationFast"] = new Duration(TimeSpan.Zero);
+                Resources["AnimationNormal"] = new Duration(TimeSpan.Zero);
+                Resources["AnimationSlow"] = new Duration(TimeSpan.Zero);
+                Log("Animation durations set to zero (reduced motion enabled)");
+            }
+        }
+        catch (Exception ex)
+        {
+            Log($"Failed to initialize animation resources: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// Initializes theme-adaptive resources based on current theme.
     /// Dark theme uses Secondary (lime), Light theme uses Primary (purple).
+    /// Applies enhanced contrast colors for light theme to meet WCAG AA standards.
     /// </summary>
     private void InitializeThemeAdaptiveResources(bool isDark)
     {
@@ -179,10 +213,71 @@ public partial class App : Application
                 : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(103, 58, 183)); // DeepPurple
 
             Resources["ThemeAdaptiveAccentBrush"] = accentBrush;
+
+            // Apply light theme contrast enhancements
+            if (!isDark)
+            {
+                ApplyLightThemeContrastEnhancements();
+            }
         }
         catch (Exception ex)
         {
             Log($"Failed to initialize theme-adaptive resources: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Applies enhanced contrast colors for light theme to improve readability.
+    /// Updates status colors to use darker variants that meet WCAG AA contrast ratios.
+    /// </summary>
+    private void ApplyLightThemeContrastEnhancements()
+    {
+        try
+        {
+            // Update status colors with higher contrast versions for light theme
+            Resources["StatusInstalledBrush"] = Resources["StatusInstalledLightBrush"];
+            Resources["StatusFailedBrush"] = Resources["StatusFailedLightBrush"];
+            Resources["StatusInstallingBrush"] = Resources["StatusInstallingLightBrush"];
+            Resources["StatusSkippedBrush"] = Resources["StatusSkippedLightBrush"];
+            Resources["StatusPendingBrush"] = Resources["StatusPendingLightBrush"];
+
+            // Update skeleton colors for light theme visibility
+            Resources["SkeletonBaseBrush"] = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromArgb(26, 0, 0, 0)); // 10% black
+            Resources["SkeletonHighlightBrush"] = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromArgb(51, 0, 0, 0)); // 20% black
+
+            Log("Light theme contrast enhancements applied");
+        }
+        catch (Exception ex)
+        {
+            Log($"Failed to apply light theme contrast enhancements: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Called on application exit.
+    /// Disposes all services that implement IDisposable.
+    /// </summary>
+    protected override void OnExit(ExitEventArgs e)
+    {
+        try
+        {
+            Log("Application exiting, disposing services...");
+
+            // Dispose the service provider which will dispose all IDisposable services
+            if (Services is IDisposable disposableServices)
+            {
+                disposableServices.Dispose();
+            }
+
+            Log("Services disposed successfully.");
+        }
+        catch (Exception ex)
+        {
+            LogError("OnExit", ex);
+        }
+
+        base.OnExit(e);
     }
 }

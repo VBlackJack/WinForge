@@ -30,7 +30,7 @@
                                    Style="{StaticResource MaterialDesignHeadline6TextBlock}"/>
                         <TextBlock Text="{Binding LogViewerApplication.Name}"
                                    Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                   Opacity="0.7"
+                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
                                    Margin="0,4,0,0"/>
                         <!-- Error message if present -->
                         <Border Background="{DynamicResource ErrorBackgroundBrush}"
@@ -79,7 +79,7 @@
                     <TextBlock Grid.Row="1"
                                Text="{loc:Loc LogViewer_NoLogs}"
                                Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Opacity="0.5"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                Visibility="{Binding LogViewerApplication.LogOutput, Converter={StaticResource InverseNullableToVisibilityConverter}}"/>
@@ -114,7 +114,7 @@
                        Style="{StaticResource MaterialDesignHeadline4TextBlock}"/>
             <TextBlock Text="{loc:Loc Monitoring_Subtitle}"
                        Style="{StaticResource MaterialDesignBody2TextBlock}"
-                       Opacity="0.7"
+                       Foreground="{DynamicResource MaterialDesignBodyLight}"
                        Margin="0,8,0,0"/>
         </StackPanel>
 
@@ -150,7 +150,7 @@
                                        Style="{StaticResource MaterialDesignHeadline6TextBlock}"/>
                             <TextBlock Text="{Binding CurrentAppName}"
                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                       Opacity="0.7"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
                                        Visibility="{Binding CurrentAppName, Converter={StaticResource NullableToVisibilityConverter}}"/>
                         </StackPanel>
                     </StackPanel>
@@ -187,10 +187,10 @@
                     <materialDesign:PackIcon Kind="ClockOutline"
                                               Width="16" Height="16"
                                               VerticalAlignment="Center"
-                                              Opacity="0.7"
+                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
                                               Margin="0,0,6,0"/>
                     <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Opacity="0.7"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
                                VerticalAlignment="Center">
                         <Run Text="{Binding ElapsedTime, Mode=OneWay}"/>
                         <Run Text=" / ~"/>
@@ -198,7 +198,7 @@
                     </TextBlock>
                     <TextBlock Text=" - "
                                Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Opacity="0.5"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
                                Margin="8,0"/>
                     <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
                                FontWeight="Bold">
@@ -260,14 +260,14 @@
                 <materialDesign:PackIcon Kind="MonitorDashboard"
                                           Width="64" Height="64"
                                           HorizontalAlignment="Center"
-                                          Opacity="0.3"/>
+                                          Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                 <TextBlock Text="{loc:Loc Monitoring_NoDeployment}"
                            Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                            HorizontalAlignment="Center"
                            Margin="0,16,0,8"/>
                 <TextBlock Text="{loc:Loc Monitoring_NoDeploymentHint}"
                            Style="{StaticResource MaterialDesignBody2TextBlock}"
-                           Opacity="0.7"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}"
                            HorizontalAlignment="Center"/>
             </StackPanel>
         </materialDesign:Card>

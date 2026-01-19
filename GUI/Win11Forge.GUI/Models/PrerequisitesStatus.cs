@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.ComponentModel.DataAnnotations;
+
 namespace Win11Forge.GUI.Models;
 
 /// <summary>
@@ -24,6 +26,8 @@ public class PrerequisiteItem
     /// <summary>
     /// Prerequisite name.
     /// </summary>
+    [Required(ErrorMessage = "Prerequisite name is required")]
+    [StringLength(128, MinimumLength = 1, ErrorMessage = "Name must be between 1 and 128 characters")]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
@@ -34,16 +38,19 @@ public class PrerequisiteItem
     /// <summary>
     /// Version string or status message.
     /// </summary>
+    [StringLength(64, ErrorMessage = "Version must not exceed 64 characters")]
     public string Version { get; set; } = string.Empty;
 
     /// <summary>
     /// Category of prerequisite (PackageManager, Runtime, etc.)
     /// </summary>
+    [StringLength(64, ErrorMessage = "Category must not exceed 64 characters")]
     public string Category { get; set; } = string.Empty;
 
     /// <summary>
     /// Description of what this prerequisite provides.
     /// </summary>
+    [StringLength(512, ErrorMessage = "Description must not exceed 512 characters")]
     public string Description { get; set; } = string.Empty;
 
     /// <summary>

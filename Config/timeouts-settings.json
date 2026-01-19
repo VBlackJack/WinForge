@@ -1,0 +1,41 @@
+{
+  "_meta": {
+    "description": "Timeout configuration for Win11Forge installation operations",
+    "version": "3.5.0",
+    "author": "Julien Bombled",
+    "lastUpdated": "2026-01-19"
+  },
+  "installation": {
+    "defaultTimeoutSeconds": 1800,
+    "officeTimeoutSeconds": 2700,
+    "description": "1800 = 30 min default, 2700 = 45 min for Office (Click-to-Run is slow)"
+  },
+  "parallel": {
+    "timeoutMilliseconds": 600000,
+    "maxParallelJobs": 5,
+    "jobCheckIntervalSeconds": 2,
+    "description": "600000ms = 10 minutes for parallel job cleanup"
+  },
+  "download": {
+    "timeoutSeconds": 300,
+    "retryDelaySeconds": 5,
+    "maxRetries": 3,
+    "description": "Download timeout and retry settings"
+  },
+  "detection": {
+    "registryCacheTtlMinutes": 5,
+    "wingetCacheTtlMinutes": 30,
+    "searchCacheTtlMinutes": 60,
+    "description": "Cache TTL settings for detection operations"
+  },
+  "api": {
+    "requestTimeoutMs": 30000,
+    "shutdownTimeoutMs": 5000,
+    "description": "REST API timeout settings"
+  },
+  "plugin": {
+    "executionTimeoutSeconds": 30,
+    "loadTimeoutSeconds": 10,
+    "description": "Plugin execution timeout settings"
+  }
+}

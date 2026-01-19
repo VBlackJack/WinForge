@@ -172,6 +172,13 @@ public class Resources
     public static string Dashboard_NoActivity => ResourceManager.GetString("Dashboard_NoActivity", resourceCulture);
     public static string Dashboard_NoActivity_Hint => ResourceManager.GetString("Dashboard_NoActivity_Hint", resourceCulture);
 
+    // Navigation
+    public static string Nav_Prerequisites => ResourceManager.GetString("Nav_Prerequisites", resourceCulture);
+
+    // Undo/Redo
+    public static string Undo_ActionUndone => ResourceManager.GetString("Undo_ActionUndone", resourceCulture);
+    public static string Undo_ActionRedone => ResourceManager.GetString("Undo_ActionRedone", resourceCulture);
+
     // Settings
     public static string Nav_Settings => ResourceManager.GetString("Nav_Settings", resourceCulture);
     public static string Settings_Title => ResourceManager.GetString("Settings_Title", resourceCulture);

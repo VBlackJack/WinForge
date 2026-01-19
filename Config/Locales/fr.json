@@ -2,7 +2,7 @@
   "_meta": {
     "locale": "fr",
     "name": "Français",
-    "version": "3.0.0",
+    "version": "3.5.0",
     "author": "Julien Bombled"
   },
   "common": {
@@ -27,7 +27,7 @@
     "next": "Suivant",
     "exit": "Quitter",
     "retry": "Réessayer",
-    "version": "Version"
+    "version": "3.5.0"
   },
   "core": {
     "admin_required": "Privilèges administrateur requis",
@@ -408,7 +408,7 @@
     },
     "info": {
       "title": "Informations du framework",
-      "version": "Version Win11Forge :",
+      "version": "3.5.0",
       "ps_version": "Version PowerShell :",
       "repo_path": "Chemin du dépôt :",
       "db_loaded": "Base de données chargée :"
@@ -1057,7 +1057,59 @@
     "available_plugins": "Plugins disponibles : {Count}",
     "loaded_plugins": "Plugins chargés : {Count}",
     "disabled": "Le système de plugins est désactivé",
-    "template_info": "Modèle de plugin disponible dans : Plugins/_template"
+    "template_info": "Modèle de plugin disponible dans : Plugins/_template",
+    "sandbox": {
+      "executing": "Exécution du plugin '{Name}' en sandbox (timeout : {Timeout}s)",
+      "timed_out": "Le plugin '{Name}' a expiré après {Timeout}s",
+      "failed": "Erreur sandbox pour le plugin '{Name}' : {Error}",
+      "hook_sandboxed": "Invocation du hook '{Hook}' avec sandbox ({Count} gestionnaire(s))",
+      "load_validation": "Validation du chargement du plugin : {Name}",
+      "load_timed_out": "Validation du chargement expirée après {Timeout}s",
+      "available": "Le sandboxing des plugins est disponible",
+      "not_available": "Le sandboxing des plugins n'est pas disponible"
+    }
+  },
+  "state": {
+    "validation": {
+      "invalid_session_id": "Format de SessionId invalide dans le fichier d'état",
+      "invalid_profile_name": "ProfileName invalide dans le fichier d'état (contient des caractères interdits)",
+      "profile_name_too_long": "ProfileName trop long dans le fichier d'état",
+      "invalid_total_apps": "Valeur TotalApps invalide dans le fichier d'état",
+      "dangerous_app_name": "Nom d'application invalide dans le fichier d'état : contient des métacaractères shell"
+    },
+    "rollback": {
+      "session_initialized": "Session de rollback initialisée : {SessionId}",
+      "save_failed": "Impossible de sauvegarder l'état de rollback : {Error}",
+      "entry_added": "Entrée de rollback ajoutée : {AppName} ({Method})",
+      "invalid_entry": "Entrée de rollback invalide - validation échouée",
+      "cleared": "État de rollback effacé",
+      "restored": "État de rollback restauré depuis le disque",
+      "restore_failed": "Échec de la restauration de l'état de rollback : {Error}"
+    },
+    "deployment": {
+      "session_initialized": "Session de déploiement initialisée : {ProfileName} ({Count} apps)",
+      "save_failed": "Impossible de sauvegarder l'état de déploiement : {Error}",
+      "cleared": "État de déploiement effacé",
+      "load_failed": "Échec du chargement de l'état de déploiement : {Error}",
+      "resumable": "Déploiement repris trouvé : {ProfileName} ({PendingCount} apps en attente)",
+      "progress": "Progression du déploiement : {Completed}/{Total} ({Percent}%)"
+    }
+  },
+  "timeout": {
+    "config_loaded": "Configuration des timeouts chargée",
+    "config_load_failed": "Échec du chargement des paramètres de timeout : {Error}. Utilisation des valeurs par défaut.",
+    "installation_default": "Utilisation du timeout d'installation par défaut : {Timeout}s",
+    "installation_office": "Utilisation du timeout d'installation Office : {Timeout}s",
+    "parallel_timeout": "Timeout d'installation parallèle : {Timeout}ms",
+    "download_timeout": "Timeout de téléchargement : {Timeout}s"
+  },
+  "error": {
+    "standardized": {
+      "created": "Erreur créée : [{Category}] {Message}",
+      "logged": "Erreur journalisée avec le code : {ErrorCode}",
+      "timeout": "L'opération '{Operation}' a expiré après {Timeout}s",
+      "validation": "Validation échouée pour '{Parameter}' : {Message}"
+    }
   },
   "ux": {
     "recovery": {
@@ -1151,6 +1203,69 @@
       "Select": "Sélectionner un profil...",
       "Clear": "Effacer le profil",
       "AppsSelected": "apps sélectionnées"
+    },
+    "onboarding": {
+      "Welcome": "Bienvenue dans Win11Forge",
+      "Subtitle": "Votre assistant de déploiement Windows 11",
+      "Step1_Title": "Vérifier les prérequis",
+      "Step1_Desc": "Vérifiez que votre système répond aux exigences et installez les gestionnaires de paquets nécessaires",
+      "Step2_Title": "Sélectionner les applications",
+      "Step2_Desc": "Parcourez le catalogue et choisissez les applications à installer",
+      "Step3_Title": "Déployer",
+      "Step3_Desc": "Lancez le déploiement automatisé et suivez la progression en temps réel",
+      "Tip": "Astuce : Appuyez sur",
+      "Tip_Shortcuts": "pour afficher tous les raccourcis clavier",
+      "DontShowAgain": "Ne plus afficher",
+      "GetStarted": "Commencer"
+    },
+    "undo": {
+      "Title": "Annuler",
+      "Redo": "Rétablir",
+      "NothingToUndo": "Rien à annuler",
+      "NothingToRedo": "Rien à rétablir",
+      "ActionUndone": "Action annulée : {Action}",
+      "ActionRedone": "Action rétablie : {Action}",
+      "UndoFailed": "Échec de l'annulation",
+      "RedoFailed": "Échec du rétablissement",
+      "ClearHistory": "Effacer l'historique",
+      "HistoryCleared": "Historique d'annulation effacé",
+      "SelectionChanged": "Sélection modifiée",
+      "SettingsChanged": "Paramètres modifiés",
+      "ProfileLoaded": "Profil chargé",
+      "FavoriteToggled": "Favori modifié"
+    },
+    "breadcrumb": {
+      "Home": "Accueil",
+      "Apps": "Applications",
+      "Prerequisites": "Prérequis",
+      "Deployment": "Déploiement",
+      "Settings": "Paramètres",
+      "Logs": "Journaux"
+    },
+    "tooltips": {
+      "Dashboard_Stats": "Voir les statistiques de déploiement et l'état du système en temps réel",
+      "Apps_Search": "Rechercher des applications par nom, ID ou description",
+      "Apps_Filter": "Filtrer les applications par catégorie, statut ou source",
+      "Apps_SelectAll": "Sélectionner toutes les applications visibles",
+      "Apps_DeselectAll": "Désélectionner toutes les applications",
+      "Deploy_Start": "Démarrer le déploiement avec les applications sélectionnées",
+      "Deploy_Pause": "Mettre en pause le déploiement en cours",
+      "Deploy_Resume": "Reprendre le déploiement en pause",
+      "Deploy_Cancel": "Annuler le déploiement en cours",
+      "Settings_Theme": "Basculer entre le thème clair et sombre",
+      "Settings_Language": "Changer la langue de l'application",
+      "Settings_HighContrast": "Activer le mode contraste élevé pour une meilleure visibilité (WCAG AAA)",
+      "Settings_Parallel": "Nombre d'applications à installer simultanément",
+      "Logs_Export": "Exporter les journaux vers un fichier",
+      "Logs_Clear": "Effacer la vue des journaux",
+      "Nav_Keyboard": "Appuyez sur F1 pour voir les raccourcis clavier"
+    },
+    "severity": {
+      "Info": "Information",
+      "Success": "Succès",
+      "Warning": "Avertissement",
+      "Error": "Erreur",
+      "Critical": "Critique"
     }
   }
 }

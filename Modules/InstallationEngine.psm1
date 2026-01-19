@@ -23,7 +23,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.2.2
+    Version: 3.5.0
 
     Changelog v3.2.2 (Complete Modular Architecture):
     - ARCHITECTURE: InstallationOrchestrator.psm1 contains high-level coordination logic

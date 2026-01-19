@@ -33,7 +33,7 @@
                                Style="{StaticResource MaterialDesignHeadline4TextBlock}"/>
                     <TextBlock Text="{loc:Loc Prerequisites_PageDescription}"
                                Style="{StaticResource MaterialDesignBody1TextBlock}"
-                               Opacity="0.7"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
                                Margin="0,8,0,0"/>
                 </StackPanel>
 
@@ -83,7 +83,7 @@
                                 <Run Text="{loc:Loc Prerequisites_ComponentsInstalled}"/>
                             </TextBlock>
                             <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                       Opacity="0.7"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
                                        Visibility="{Binding Status.AllInstalled, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                                 <Run Text="{Binding Status.TotalMissingCount, Mode=OneWay}"/>
                                 <Run Text=" "/>
@@ -167,7 +167,7 @@
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.PowerShellVersion}"
                                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                               Opacity="0.7"/>
+                                               Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -194,7 +194,7 @@
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.WingetVersion}"
                                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                               Opacity="0.7"/>
+                                               Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -217,7 +217,7 @@
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{Binding Status.ChocolateyVersion}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.7"/>
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                             </StackPanel>
                         </Grid>
                     </UniformGrid>
@@ -279,7 +279,7 @@
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.DotNetVersion}"
                                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                               Opacity="0.7"
+                                               Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Grid>
@@ -307,7 +307,7 @@
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.DotNetFrameworkVersion}"
                                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                               Opacity="0.7"/>
+                                               Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -334,7 +334,7 @@
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.VCRedistVersion}"
                                                Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                               Opacity="0.7"/>
+                                               Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -357,7 +357,7 @@
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{Binding Status.JavaVersion}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.7"
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
                                            TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Grid>

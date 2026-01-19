@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.1.4
+    Version: 3.5.0
 #>
 
 #
@@ -45,6 +45,24 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
     }
+}
+
+# Import PluginSandbox module for sandboxed execution
+$script:PluginSandboxPath = Join-Path $script:ModuleRoot 'PluginSandbox.psm1'
+$script:SandboxingEnabled = $false
+if (Test-Path -Path $script:PluginSandboxPath) {
+    try {
+        Import-Module -Name $script:PluginSandboxPath -Force -ErrorAction Stop
+        $script:SandboxingEnabled = $true
+    } catch {
+        Write-Verbose "Plugin sandboxing not available: $($_.Exception.Message)"
+    }
+}
+
+# Import FeatureFlags module
+$script:FeatureFlagsPath = Join-Path $script:ModuleRoot 'FeatureFlags.psm1'
+if (Test-Path -Path $script:FeatureFlagsPath) {
+    Import-Module -Name $script:FeatureFlagsPath -Force -ErrorAction SilentlyContinue
 }
 
 # === PLUGIN STATE ===
@@ -294,8 +312,16 @@ function Import-Plugin {
         throw "Invalid plugin manifest: $Name"
     }
 
-    # Load entry point module
+    # Load entry point module with path traversal protection
     $entryPointPath = Join-Path $plugin.Path $plugin.EntryPoint
+
+    # Security: Validate resolved path stays within plugin directory
+    $canonicalPluginPath = [System.IO.Path]::GetFullPath($plugin.Path).TrimEnd([System.IO.Path]::DirectorySeparatorChar)
+    $canonicalEntryPath = [System.IO.Path]::GetFullPath($entryPointPath)
+
+    if (-not $canonicalEntryPath.StartsWith($canonicalPluginPath + [System.IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Security: Plugin entry point escapes plugin directory: $($plugin.EntryPoint)"
+    }
 
     if (-not (Test-Path $entryPointPath)) {
         throw "Plugin entry point not found: $entryPointPath"
@@ -439,12 +465,17 @@ function Invoke-PluginHook {
 
     .DESCRIPTION
         Executes all registered handlers for the specified hook in order.
+        When sandboxing is enabled (via feature flag), handlers run in
+        isolated jobs with timeout enforcement.
 
     .PARAMETER HookName
         Name of the hook to invoke.
 
     .PARAMETER Context
         Context data to pass to handlers.
+
+    .PARAMETER ForceSandbox
+        Force sandboxed execution even if feature flag is disabled.
 
     .OUTPUTS
         Array of handler results.
@@ -456,10 +487,14 @@ function Invoke-PluginHook {
     [OutputType([array])]
     param(
         [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
         [string]$HookName,
 
         [Parameter()]
-        [hashtable]$Context = @{}
+        [hashtable]$Context = @{},
+
+        [Parameter()]
+        [switch]$ForceSandbox
     )
 
     $config = Get-PluginConfig
@@ -471,6 +506,26 @@ function Invoke-PluginHook {
 
     $handlers = $script:PluginState.RegisteredHooks[$HookName]
 
+    if ($handlers.Count -eq 0) {
+        return $results
+    }
+
+    # Check if sandboxing should be used
+    $useSandbox = $ForceSandbox.IsPresent
+    if (-not $useSandbox -and $script:SandboxingEnabled) {
+        # Check feature flag
+        if (Get-Command -Name Test-FeatureEnabled -ErrorAction SilentlyContinue) {
+            $useSandbox = Test-FeatureEnabled -FeatureName 'pluginSandboxing'
+        }
+    }
+
+    if ($useSandbox -and (Get-Command -Name Invoke-PluginHookSandboxed -ErrorAction SilentlyContinue)) {
+        # Use sandboxed execution
+        Write-Status -Message "Invoking hook '$HookName' with sandboxing ($($handlers.Count) handler(s))" -Level 'Verbose' -Category 'Plugin'
+        return Invoke-PluginHookSandboxed -HookName $HookName -Context $Context -Handlers $handlers
+    }
+
+    # Standard (non-sandboxed) execution
     foreach ($handler in $handlers) {
         try {
             Write-Verbose "Invoking hook '$HookName' from plugin '$($handler.PluginName)'"
@@ -627,6 +682,24 @@ function Test-PluginManifest {
         # Validate version format
         if ($manifest.version -notmatch '^\d+\.\d+\.\d+') {
             Write-Verbose "Invalid version format"
+            return $false
+        }
+
+        # Security: Validate entryPoint for path traversal
+        if ($manifest.entryPoint -match '\.\.') {
+            Write-Verbose "Security: Path traversal detected in entryPoint"
+            return $false
+        }
+
+        # Security: entryPoint must be a simple filename or relative path within plugin
+        if ($manifest.entryPoint -match '^[/\\]' -or $manifest.entryPoint -match '^[a-zA-Z]:') {
+            Write-Verbose "Security: Absolute paths not allowed in entryPoint"
+            return $false
+        }
+
+        # Security: Validate entryPoint characters (only allow safe characters)
+        if ($manifest.entryPoint -notmatch '^[a-zA-Z0-9_\-./\\]+\.psm1$') {
+            Write-Verbose "Security: Invalid entryPoint format (must be .psm1 file)"
             return $false
         }
 

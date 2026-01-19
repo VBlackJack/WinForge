@@ -16,6 +16,7 @@
 
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using MaterialDesignThemes.Wpf;
 
@@ -101,5 +102,15 @@ public partial class ConfirmDialog : UserControl
     {
         ResultSelected?.Invoke(this, false);
         DialogHost.CloseDialogCommand.Execute(null, null);
+    }
+
+    private void UserControl_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            ResultSelected?.Invoke(this, false);
+            DialogHost.CloseDialogCommand.Execute(null, null);
+            e.Handled = true;
+        }
     }
 }

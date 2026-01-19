@@ -13,7 +13,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.1.4
+    Version: 3.5.0
 #>
 
 #
@@ -58,6 +58,7 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
 $script:CacheConfig = @{
     ListTTLMinutes = 30
     SearchTTLMinutes = 60
+    ChocoListTTLMinutes = 60
     MaxEntries = 500
     CacheDirectory = Join-Path $env:LOCALAPPDATA 'Win11Forge'
     CacheFileName = 'WingetCache.json'
@@ -75,6 +76,16 @@ $script:WingetCache = @{
         SearchHits = 0
         SearchMisses = 0
         LastWarmup = $null
+    }
+}
+
+# === CHOCOLATEY CACHE STATE ===
+$script:ChocoCache = @{
+    ListCache = $null
+    ListCacheTime = $null
+    Statistics = @{
+        ListHits = 0
+        ListMisses = 0
     }
 }
 
@@ -478,6 +489,106 @@ function Get-WingetCacheStatistics {
     }
 }
 
+# === CHOCOLATEY CACHE FUNCTIONS ===
+
+function Get-CachedChocoList {
+    <#
+    .SYNOPSIS
+        Gets cached Chocolatey list output with TTL-based refresh.
+
+    .DESCRIPTION
+        Returns cached `choco list --local-only` output if available and within TTL.
+        Otherwise, executes the command and caches the result.
+        Default TTL is 60 minutes (configurable).
+
+    .PARAMETER Force
+        If specified, refreshes the cache regardless of TTL.
+
+    .OUTPUTS
+        String containing the Chocolatey list output.
+
+    .EXAMPLE
+        $chocoList = Get-CachedChocoList
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [switch]$Force
+    )
+
+    # Check if choco is available
+    if (-not (Get-Command -Name 'choco' -ErrorAction SilentlyContinue)) {
+        Write-Verbose "Chocolatey is not installed or not in PATH"
+        return ""
+    }
+
+    # Check cache validity
+    if (-not $Force -and $script:ChocoCache.ListCache -and $script:ChocoCache.ListCacheTime) {
+        $age = (Get-Date) - $script:ChocoCache.ListCacheTime
+        if ($age.TotalMinutes -lt $script:CacheConfig.ChocoListTTLMinutes) {
+            $script:ChocoCache.Statistics.ListHits++
+            Write-Verbose "Chocolatey cache hit (age: $([math]::Round($age.TotalMinutes, 1)) min)"
+            return $script:ChocoCache.ListCache
+        }
+    }
+
+    # Cache miss - refresh
+    $script:ChocoCache.Statistics.ListMisses++
+    Write-Verbose "Chocolatey cache miss - refreshing..."
+
+    try {
+        $output = & choco list --local-only 2>&1 | Out-String
+        $script:ChocoCache.ListCache = $output
+        $script:ChocoCache.ListCacheTime = Get-Date
+        Write-Verbose "Cached Chocolatey list ($($output.Length) chars)"
+        return $output
+    } catch {
+        Write-Verbose "Error running choco list: $_"
+        return ""
+    }
+}
+
+function Clear-ChocoCache {
+    <#
+    .SYNOPSIS
+        Clears the Chocolatey list cache.
+    #>
+    [CmdletBinding()]
+    param()
+
+    $script:ChocoCache.ListCache = $null
+    $script:ChocoCache.ListCacheTime = $null
+    Write-Verbose "Cleared Chocolatey cache"
+}
+
+function Get-ChocoStatistics {
+    <#
+    .SYNOPSIS
+        Returns Chocolatey cache statistics.
+    #>
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param()
+
+    $stats = $script:ChocoCache.Statistics
+    $total = $stats.ListHits + $stats.ListMisses
+    $hitRate = if ($total -gt 0) { [math]::Round(($stats.ListHits / $total) * 100, 1) } else { 0 }
+
+    $cacheAge = if ($script:ChocoCache.ListCacheTime) {
+        $age = (Get-Date) - $script:ChocoCache.ListCacheTime
+        [math]::Round($age.TotalMinutes, 1)
+    } else { $null }
+
+    [PSCustomObject]@{
+        CacheValid = ($null -ne $script:ChocoCache.ListCache)
+        CacheAgeMinutes = $cacheAge
+        Hits = $stats.ListHits
+        Misses = $stats.ListMisses
+        HitRate = "$hitRate%"
+        TTLMinutes = $script:CacheConfig.ChocoListTTLMinutes
+    }
+}
+
 # === MODULE EXPORTS ===
 Export-ModuleMember -Function @(
     'Initialize-WingetCache',
@@ -486,5 +597,8 @@ Export-ModuleMember -Function @(
     'Update-WingetListCache',
     'Clear-WingetCache',
     'Save-WingetCache',
-    'Get-WingetCacheStatistics'
+    'Get-WingetCacheStatistics',
+    'Get-CachedChocoList',
+    'Clear-ChocoCache',
+    'Get-ChocoStatistics'
 )

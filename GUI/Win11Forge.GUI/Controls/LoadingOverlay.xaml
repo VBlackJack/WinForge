@@ -1,0 +1,79 @@
+<UserControl x:Class="Win11Forge.GUI.Controls.LoadingOverlay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             xmlns:local="clr-namespace:Win11Forge.GUI.Controls"
+             AutomationProperties.Name="Loading overlay"
+             AutomationProperties.LiveSetting="Assertive"
+             Visibility="Collapsed"
+             IsHitTestVisible="True">
+    <Grid Background="#80000000">
+        <!-- Semi-transparent background to block interaction -->
+
+        <!-- Centered loading content -->
+        <Border HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="{DynamicResource MaterialDesignCardBackground}"
+                CornerRadius="12"
+                Padding="32"
+                MinWidth="200"
+                materialDesign:ElevationAssist.Elevation="Dp8">
+            <StackPanel HorizontalAlignment="Center">
+                <!-- Progress Indicator -->
+                <Grid x:Name="ProgressContainer" Margin="0,0,0,16">
+                    <!-- Indeterminate Progress -->
+                    <ProgressBar x:Name="IndeterminateProgress"
+                                 Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                 IsIndeterminate="True"
+                                 Width="48" Height="48"
+                                 HorizontalAlignment="Center"/>
+
+                    <!-- Determinate Progress (hidden by default) -->
+                    <ProgressBar x:Name="DeterminateProgress"
+                                 Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                 Width="64" Height="64"
+                                 HorizontalAlignment="Center"
+                                 Visibility="Collapsed"/>
+                </Grid>
+
+                <!-- Loading Message -->
+                <TextBlock x:Name="MessageText"
+                           Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           TextWrapping="Wrap"
+                           MaxWidth="300"
+                           AutomationProperties.LiveSetting="Assertive"/>
+
+                <!-- Sub-message (e.g., "This may take a moment") -->
+                <TextBlock x:Name="SubMessageText"
+                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           Margin="0,8,0,0"
+                           Visibility="Collapsed"/>
+
+                <!-- Progress Text (e.g., "3 of 10") -->
+                <TextBlock x:Name="ProgressText"
+                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           Margin="0,8,0,0"
+                           Visibility="Collapsed"
+                           AutomationProperties.LiveSetting="Polite"/>
+
+                <!-- Cancel Button (optional) -->
+                <Button x:Name="CancelButton"
+                        Content="{loc:Loc Dialog_Cancel}"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Margin="0,16,0,0"
+                        Visibility="Collapsed"
+                        Click="CancelButton_Click"
+                        AutomationProperties.Name="Cancel operation"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - System Configuration Version: 3.0.0 (Zero Hardcoding)
+    Win11Forge - System Configuration Version: 3.5.0 (Zero Hardcoding)
 
 .DESCRIPTION
     Applies system configuration from profile JSON:
@@ -16,7 +16,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.0.0
+    Version: 3.5.0
     Requires administrator privileges
 #>
 

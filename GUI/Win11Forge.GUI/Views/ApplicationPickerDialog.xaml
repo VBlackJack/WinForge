@@ -94,11 +94,11 @@
             <materialDesign:PackIcon Kind="PackageVariantRemove"
                                       Width="48"
                                       Height="48"
-                                      Opacity="0.3"
+                                      Foreground="{DynamicResource MaterialDesignBodyLight}"
                                       HorizontalAlignment="Center"/>
             <TextBlock Text="{loc:Loc Dialog_NoAppsAvailable}"
                        Style="{StaticResource MaterialDesignBody2TextBlock}"
-                       Opacity="0.5"
+                       Foreground="{DynamicResource MaterialDesignBodyLight}"
                        HorizontalAlignment="Center"
                        Margin="0,8,0,0"/>
         </StackPanel>
@@ -114,7 +114,7 @@
             <!-- Selected Count -->
             <TextBlock Grid.Column="0"
                        VerticalAlignment="Center"
-                       Opacity="0.7">
+                       Foreground="{DynamicResource MaterialDesignBodyLight}">
                 <Run Text="{Binding FilteredApplications.Count, Mode=OneWay}"/>
                 <Run Text=" "/>
                 <Run Text="{loc:Loc Dialog_AppsAvailable}"/>

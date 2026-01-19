@@ -15,6 +15,7 @@
  */
 
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,6 +27,7 @@ using Win11Forge.GUI.Controls;
 using Win11Forge.GUI.Messages;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
+using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI;
 
@@ -40,6 +42,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private readonly IProfileExportService _profileExportService;
     private readonly ToastService _toastService;
     private readonly INavigationService _navigationService;
+    private readonly IUndoService _undoService;
     private readonly DashboardViewModel _dashboardViewModel;
     private readonly DeploymentViewModel _deploymentViewModel;
     private readonly AppsViewModel _appsViewModel;
@@ -52,6 +55,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private bool _settingsInitialized;
     private bool _prerequisitesInitialized;
     private bool _isNavigatingFromService;
+    private bool _showBreadcrumb = true;
 
     /// <summary>
     /// Event for property change notification.
@@ -74,9 +78,45 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     public ICommand GoBackCommand { get; }
 
     /// <summary>
+    /// Command to undo the last action.
+    /// </summary>
+    public ICommand UndoCommand { get; }
+
+    /// <summary>
+    /// Command to redo the last undone action.
+    /// </summary>
+    public ICommand RedoCommand { get; }
+
+    /// <summary>
     /// Whether back navigation is available.
     /// </summary>
     public bool CanGoBack => _navigationService?.CanGoBack ?? false;
+
+    /// <summary>
+    /// Whether undo is available.
+    /// </summary>
+    public bool CanUndo => _undoService?.CanUndo ?? false;
+
+    /// <summary>
+    /// Whether redo is available.
+    /// </summary>
+    public bool CanRedo => _undoService?.CanRedo ?? false;
+
+    /// <summary>
+    /// Whether to show the breadcrumb navigation bar.
+    /// </summary>
+    public bool ShowBreadcrumb
+    {
+        get => _showBreadcrumb;
+        set
+        {
+            if (_showBreadcrumb != value)
+            {
+                _showBreadcrumb = value;
+                OnPropertyChanged();
+            }
+        }
+    }
 
     public MainWindow()
     {
@@ -92,6 +132,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             }
         });
         GoBackCommand = new RelayCommand(GoBack, () => CanGoBack);
+        UndoCommand = new AsyncRelayCommand(UndoAsync, () => CanUndo);
+        RedoCommand = new AsyncRelayCommand(RedoAsync, () => CanRedo);
 
         // Set DataContext for XAML bindings
         DataContext = this;
@@ -105,6 +147,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             _profileExportService = App.GetService<IProfileExportService>();
             _toastService = App.GetService<ToastService>();
             _navigationService = App.GetService<INavigationService>();
+            _undoService = App.GetService<IUndoService>();
+
+            // Subscribe to undo service state changes
+            _undoService.StateChanged += (s, e) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    OnPropertyChanged(nameof(CanUndo));
+                    OnPropertyChanged(nameof(CanRedo));
+                });
+            };
 
             // Subscribe to navigation service changes
             _navigationService.NavigationChanged += (s, e) =>
@@ -160,6 +213,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             _profileExportService = null!;
             _toastService = null!;
             _navigationService = null!;
+            _undoService = null!;
             _dashboardViewModel = null!;
             _deploymentViewModel = null!;
             _appsViewModel = null!;
@@ -187,6 +241,63 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             _navigationService.GoBack();
             _isNavigatingFromService = false;
         }
+    }
+
+    /// <summary>
+    /// Undoes the last action.
+    /// </summary>
+    private async Task UndoAsync()
+    {
+        if (_undoService == null) return;
+
+        var description = _undoService.NextUndoDescription;
+        var success = await _undoService.UndoAsync();
+
+        if (success && _toastService != null)
+        {
+            var message = string.Format(Loc.Undo_ActionUndone, description ?? "");
+            _toastService.ShowInfo(message);
+        }
+    }
+
+    /// <summary>
+    /// Redoes the last undone action.
+    /// </summary>
+    private async Task RedoAsync()
+    {
+        if (_undoService == null) return;
+
+        var description = _undoService.NextRedoDescription;
+        var success = await _undoService.RedoAsync();
+
+        if (success && _toastService != null)
+        {
+            var message = string.Format(Loc.Undo_ActionRedone, description ?? "");
+            _toastService.ShowInfo(message);
+        }
+    }
+
+    /// <summary>
+    /// Updates the breadcrumb navigation based on current view.
+    /// </summary>
+    private void UpdateBreadcrumb(int viewIndex)
+    {
+        if (BreadcrumbControl == null) return;
+
+        var labels = new[]
+        {
+            Loc.Nav_Dashboard,
+            Loc.Nav_Prerequisites,
+            Loc.Nav_Apps,
+            Loc.Nav_Deployment,
+            Loc.Nav_Settings
+        };
+
+        // Current view is always the last item, previous views are clickable
+        BreadcrumbControl.SetItems(
+            labels.Take(viewIndex + 1).ToArray(),
+            viewIndex,
+            NavigateTo);
     }
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -224,12 +335,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         try
         {
             var version = await _powerShellBridge.GetWin11ForgeVersionAsync();
-            Title = string.Format(Win11Forge.GUI.Resources.Resources.App_Title, version);
+            Title = string.Format(Loc.App_Title, version);
         }
         catch
         {
             // Fallback to static title if version retrieval fails
-            Title = string.Format(Win11Forge.GUI.Resources.Resources.App_Title, "3.2.3");
+            Title = string.Format(Loc.App_Title, "3.2.3");
         }
     }
 
@@ -239,6 +350,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (DashboardViewControl == null) return;
 
         var selectedIndex = NavigationListBox.SelectedIndex;
+
+        // Update breadcrumb
+        UpdateBreadcrumb(selectedIndex);
 
         // Hide all views
         DashboardViewControl.Visibility = Visibility.Collapsed;

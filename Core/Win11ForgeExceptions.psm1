@@ -9,7 +9,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.1.4
+    Version: 3.5.0
 #>
 
 #
@@ -528,12 +528,302 @@ function Get-ExceptionCategory {
     return 'Unknown'
 }
 
+# === STANDARDIZED ERROR CREATION ===
+
+function New-Win11ForgeError {
+    <#
+    .SYNOPSIS
+        Creates a standardized Win11Forge error with logging integration.
+    .DESCRIPTION
+        Central function for creating and logging errors across the framework.
+        Automatically logs to structured logging if available and returns
+        a properly formatted error record.
+    .PARAMETER Message
+        The error message.
+    .PARAMETER Category
+        Error category (Installation, Detection, Configuration, Network, Security, Plugin, API, Rollback, General).
+    .PARAMETER ErrorCode
+        Unique error code for programmatic handling.
+    .PARAMETER Context
+        Hashtable of additional context data.
+    .PARAMETER InnerException
+        The original exception that caused this error.
+    .PARAMETER DoNotThrow
+        If specified, returns the error object instead of throwing.
+    .EXAMPLE
+        New-Win11ForgeError -Message "Failed to install" -Category "Installation" -Context @{ AppName = "Firefox" }
+    .EXAMPLE
+        $err = New-Win11ForgeError -Message "Network timeout" -Category "Network" -ErrorCode "NET001" -DoNotThrow
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Message,
+
+        [Parameter()]
+        [ValidateSet('Installation', 'Detection', 'Configuration', 'Network', 'Security', 'Plugin', 'API', 'Rollback', 'General', 'Timeout', 'Validation')]
+        [string]$Category = 'General',
+
+        [Parameter()]
+        [string]$ErrorCode,
+
+        [Parameter()]
+        [hashtable]$Context = @{},
+
+        [Parameter()]
+        [System.Exception]$InnerException,
+
+        [Parameter()]
+        [switch]$DoNotThrow
+    )
+
+    # Build error context
+    $errorContext = @{
+        Category = $Category
+        ErrorCode = $ErrorCode
+        Timestamp = Get-Date -Format 'o'
+        Context = $Context
+    }
+
+    # Create appropriate exception type based on category
+    $exception = switch ($Category) {
+        'Installation' {
+            $appName = if ($Context.AppName) { $Context.AppName } else { 'Unknown' }
+            $method = if ($Context.Method) { $Context.Method } else { $null }
+            if ($method) {
+                [InstallationException]::new($Message, $appName, $method)
+            } else {
+                [InstallationException]::new($Message, $appName)
+            }
+        }
+        'Detection' {
+            $appName = if ($Context.AppName) { $Context.AppName } else { 'Unknown' }
+            [DetectionException]::new($Message, $appName)
+        }
+        'Configuration' {
+            $configFile = if ($Context.ConfigFile) { $Context.ConfigFile } else { $null }
+            if ($configFile) {
+                [ConfigurationException]::new($Message, $configFile)
+            } else {
+                [ConfigurationException]::new($Message)
+            }
+        }
+        'Network' {
+            $url = if ($Context.Url) { $Context.Url } else { $null }
+            if ($url) {
+                [NetworkException]::new($Message, $url)
+            } else {
+                [NetworkException]::new($Message)
+            }
+        }
+        'Security' {
+            $secContext = if ($Context.SecurityContext) { $Context.SecurityContext } else { $null }
+            $action = if ($Context.Action) { $Context.Action } else { $null }
+            if ($secContext -and $action) {
+                [SecurityException]::new($Message, $secContext, $action)
+            } else {
+                [SecurityException]::new($Message)
+            }
+        }
+        'Plugin' {
+            $pluginName = if ($Context.PluginName) { $Context.PluginName } else { 'Unknown' }
+            [PluginException]::new($Message, $pluginName)
+        }
+        'API' {
+            $endpoint = if ($Context.Endpoint) { $Context.Endpoint } else { $null }
+            $httpMethod = if ($Context.HttpMethod) { $Context.HttpMethod } else { $null }
+            if ($endpoint -and $httpMethod) {
+                [ApiException]::new($Message, $endpoint, $httpMethod)
+            } else {
+                [ApiException]::new($Message)
+            }
+        }
+        'Rollback' {
+            $sessionId = if ($Context.SessionId) { $Context.SessionId } else { $null }
+            if ($sessionId) {
+                [RollbackException]::new($Message, $sessionId)
+            } else {
+                [RollbackException]::new($Message)
+            }
+        }
+        default {
+            if ($InnerException) {
+                [Win11ForgeException]::new($Message, $InnerException)
+            } else {
+                [Win11ForgeException]::new($Message)
+            }
+        }
+    }
+
+    # Add error code to context
+    if ($ErrorCode) {
+        $exception.Context['ErrorCode'] = $ErrorCode
+    }
+
+    # Log the error using Write-Status if available
+    if (Get-Command -Name Write-Status -ErrorAction SilentlyContinue) {
+        $logMessage = if ($ErrorCode) { "[$ErrorCode] $Message" } else { $Message }
+        $structuredData = @{
+            ErrorCode = $ErrorCode
+            Category = $Category
+            Context = $Context
+        }
+        Write-Status -Message $logMessage -Level 'Error' -Category $Category -StructuredData $structuredData
+    }
+
+    # Return or throw
+    if ($DoNotThrow) {
+        return $exception
+    } else {
+        throw $exception
+    }
+}
+
+function Format-Win11ForgeError {
+    <#
+    .SYNOPSIS
+        Formats a Win11Forge exception for display or logging.
+    .PARAMETER Exception
+        The exception to format.
+    .PARAMETER IncludeStackTrace
+        Include stack trace in output.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Exception]$Exception,
+
+        [Parameter()]
+        [switch]$IncludeStackTrace
+    )
+
+    $output = New-Object System.Text.StringBuilder
+
+    if ($Exception -is [Win11ForgeException]) {
+        [void]$output.AppendLine("[$($Exception.Category)] $($Exception.Message)")
+        [void]$output.AppendLine("Timestamp: $($Exception.Timestamp.ToString('o'))")
+
+        if ($Exception.Context.Count -gt 0) {
+            [void]$output.AppendLine("Context:")
+            foreach ($key in $Exception.Context.Keys) {
+                [void]$output.AppendLine("  $key : $($Exception.Context[$key])")
+            }
+        }
+    } else {
+        [void]$output.AppendLine("[General] $($Exception.Message)")
+    }
+
+    if ($IncludeStackTrace -and $Exception.StackTrace) {
+        [void]$output.AppendLine("")
+        [void]$output.AppendLine("Stack Trace:")
+        [void]$output.AppendLine($Exception.StackTrace)
+    }
+
+    if ($Exception.InnerException) {
+        [void]$output.AppendLine("")
+        [void]$output.AppendLine("Inner Exception: $($Exception.InnerException.Message)")
+    }
+
+    return $output.ToString()
+}
+
+# === TIMEOUT EXCEPTION ===
+
+class TimeoutException : Win11ForgeException {
+    [string]$Operation
+    [int]$TimeoutSeconds
+    [int]$ElapsedSeconds
+
+    TimeoutException([string]$message, [string]$operation, [int]$timeoutSeconds) : base($message) {
+        $this.Category = 'Timeout'
+        $this.Operation = $operation
+        $this.TimeoutSeconds = $timeoutSeconds
+        $this.ElapsedSeconds = $timeoutSeconds
+    }
+
+    [string] ToLogString() {
+        return "[{0}] [Timeout] Operation={1} Timeout={2}s: {3}" -f `
+            $this.Timestamp.ToString('o'), $this.Operation, $this.TimeoutSeconds, $this.Message
+    }
+}
+
+class ValidationException : Win11ForgeException {
+    [string]$ParameterName
+    [string]$ProvidedValue
+    [string]$ExpectedFormat
+
+    ValidationException([string]$message, [string]$parameterName) : base($message) {
+        $this.Category = 'Validation'
+        $this.ParameterName = $parameterName
+        $this.ProvidedValue = $null
+        $this.ExpectedFormat = $null
+    }
+
+    ValidationException([string]$message, [string]$parameterName, [string]$providedValue, [string]$expectedFormat) : base($message) {
+        $this.Category = 'Validation'
+        $this.ParameterName = $parameterName
+        $this.ProvidedValue = $providedValue
+        $this.ExpectedFormat = $expectedFormat
+    }
+}
+
+function New-TimeoutException {
+    <#
+    .SYNOPSIS
+        Creates a new TimeoutException.
+    #>
+    [CmdletBinding()]
+    [OutputType([TimeoutException])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Message,
+
+        [Parameter(Mandatory)]
+        [string]$Operation,
+
+        [Parameter(Mandatory)]
+        [int]$TimeoutSeconds
+    )
+
+    return [TimeoutException]::new($Message, $Operation, $TimeoutSeconds)
+}
+
+function New-ValidationException {
+    <#
+    .SYNOPSIS
+        Creates a new ValidationException.
+    #>
+    [CmdletBinding()]
+    [OutputType([ValidationException])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Message,
+
+        [Parameter(Mandatory)]
+        [string]$ParameterName,
+
+        [string]$ProvidedValue,
+
+        [string]$ExpectedFormat
+    )
+
+    if ($ProvidedValue -and $ExpectedFormat) {
+        return [ValidationException]::new($Message, $ParameterName, $ProvidedValue, $ExpectedFormat)
+    }
+    return [ValidationException]::new($Message, $ParameterName)
+}
+
 # === MODULE EXPORTS ===
 Export-ModuleMember -Function @(
     'New-InstallationException',
     'New-WingetException',
     'New-SecurityException',
     'New-ApiException',
+    'New-TimeoutException',
+    'New-ValidationException',
+    'New-Win11ForgeError',
+    'Format-Win11ForgeError',
     'Test-Win11ForgeException',
     'Get-ExceptionCategory'
 )

@@ -85,7 +85,7 @@
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
                                        Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       Opacity="0.7"/>
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                         </StackPanel>
 
                         <!-- State: NeedPrereqs -->
@@ -102,7 +102,7 @@
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
                                        Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       Opacity="0.7"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
                                        Margin="0,0,0,16"/>
                             <Button Command="{Binding NavigateToPrerequisitesCommand}"
                                     Style="{StaticResource MaterialDesignRaisedButton}"
@@ -142,7 +142,7 @@
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
                                        Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       Opacity="0.7"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
                                        Margin="0,0,0,16"/>
                             <StackPanel Orientation="Horizontal">
                                 <Button Command="{Binding StartDeploymentCommand}"
@@ -185,7 +185,7 @@
                         <StackPanel>
                             <TextBlock Text="Win11Forge"
                                        Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
-                                       Opacity="0.7"/>
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                             <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}">
                                 <Run Text="v"/>
                                 <Run Text="{Binding AppVersion, Mode=OneWay}"/>
@@ -201,7 +201,9 @@
                 <Button Command="{Binding NavigateToProfilesCommand}"
                         Style="{StaticResource ClickableStatsCard}"
                         ToolTip="{loc:Loc Dashboard_Stats_ProfilesHint}"
-                        MinWidth="160">
+                        MinWidth="160"
+                        AutomationProperties.Name="{Binding ProfileCount, StringFormat='{}{0} profiles - Click to manage'}"
+                        AutomationProperties.HelpText="Navigate to profiles management page">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -213,12 +215,12 @@
                                        Foreground="{DynamicResource PrimaryHueMidBrush}"/>
                             <TextBlock Text="{loc:Loc Dashboard_Stats_Profiles}"
                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                       Opacity="0.7"/>
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                         </StackPanel>
                         <materialDesign:PackIcon Grid.Column="1"
                                                   Kind="ChevronRight"
                                                   Width="24" Height="24"
-                                                  Opacity="0.5"
+                                                  Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                   VerticalAlignment="Center"/>
                     </Grid>
                 </Button>
@@ -227,7 +229,9 @@
                 <Button Command="{Binding NavigateToAppsCommand}"
                         Style="{StaticResource ClickableStatsCard}"
                         ToolTip="{loc:Loc Dashboard_Stats_AppsHint}"
-                        MinWidth="160">
+                        MinWidth="160"
+                        AutomationProperties.Name="{Binding AppCount, StringFormat='{}{0} applications - Click to manage'}"
+                        AutomationProperties.HelpText="Navigate to applications management page">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -239,12 +243,12 @@
                                        Foreground="{DynamicResource SecondaryHueMidBrush}"/>
                             <TextBlock Text="{loc:Loc Dashboard_Stats_Apps}"
                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                       Opacity="0.7"/>
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                         </StackPanel>
                         <materialDesign:PackIcon Grid.Column="1"
                                                   Kind="ChevronRight"
                                                   Width="24" Height="24"
-                                                  Opacity="0.5"
+                                                  Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                   VerticalAlignment="Center"/>
                     </Grid>
                 </Button>
@@ -254,7 +258,9 @@
                         Style="{StaticResource ClickableStatsCard}"
                         ToolTip="{loc:Loc Dashboard_Stats_UpdatesHint}"
                         MinWidth="160"
-                        Margin="0">
+                        Margin="0"
+                        AutomationProperties.Name="{Binding UpdateCount, StringFormat='{}{0} updates available - Click to view'}"
+                        AutomationProperties.HelpText="Navigate to updates page">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -275,12 +281,12 @@
                             </TextBlock>
                             <TextBlock Text="{loc:Loc Dashboard_Stats_Updates}"
                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                       Opacity="0.7"/>
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                         </StackPanel>
                         <materialDesign:PackIcon Grid.Column="1"
                                                   Kind="ChevronRight"
                                                   Width="24" Height="24"
-                                                  Opacity="0.5"
+                                                  Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                   VerticalAlignment="Center"/>
                     </Grid>
                 </Button>
@@ -332,7 +338,7 @@
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,16,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Hostname}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.6"/>
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 <TextBlock Text="{Binding Hostname}"
                                            Style="{StaticResource MaterialDesignBody1TextBlock}"/>
                             </StackPanel>
@@ -341,7 +347,7 @@
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_OS}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.6"/>
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 <TextBlock Text="{Binding OSName}"
                                            Style="{StaticResource MaterialDesignBody1TextBlock}"/>
                             </StackPanel>
@@ -350,7 +356,7 @@
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,16,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Build}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.6"/>
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 <TextBlock Text="{Binding OSBuild}"
                                            Style="{StaticResource MaterialDesignBody1TextBlock}"/>
                             </StackPanel>
@@ -359,7 +365,7 @@
                             <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Admin}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.6"/>
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="{Binding IsAdmin, Converter={StaticResource BoolToInstalledIconConverter}}"
                                                               Width="16" Height="16"
@@ -375,7 +381,7 @@
                             <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,16,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Winget}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.6"/>
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="{Binding WingetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
                                                               Width="16" Height="16"
@@ -391,7 +397,7 @@
                             <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Chocolatey}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.6"/>
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="{Binding ChocolateyInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
                                                               Width="16" Height="16"
@@ -407,7 +413,7 @@
                             <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,16,0">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_PowerShell}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Opacity="0.6"/>
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="{Binding PowerShellInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
                                                               Width="16" Height="16"
@@ -464,7 +470,7 @@
                             <TextBlock Text="{Binding LastScanDisplay}"
                                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                        HorizontalAlignment="Center"
-                                       Opacity="0.5"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
                                        Margin="0,8,0,0"/>
                         </StackPanel>
                     </materialDesign:Card>
@@ -497,7 +503,7 @@
                                     <materialDesign:PackIcon Grid.Column="2"
                                                               Kind="ChevronRight"
                                                               Width="20" Height="20"
-                                                              Opacity="0.5"
+                                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                               VerticalAlignment="Center"/>
                                 </Grid>
                             </Button>
@@ -523,7 +529,7 @@
                                     <materialDesign:PackIcon Grid.Column="2"
                                                               Kind="ChevronRight"
                                                               Width="20" Height="20"
-                                                              Opacity="0.5"
+                                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                               VerticalAlignment="Center"/>
                                 </Grid>
                             </Button>
@@ -584,7 +590,7 @@
                                             <TextBlock Text="{Binding ProfileName}"
                                                        Style="{StaticResource MaterialDesignBody1TextBlock}"/>
                                             <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                                       Opacity="0.6">
+                                                       Foreground="{DynamicResource MaterialDesignBodyLight}">
                                                 <Run Text="{Binding Summary, Mode=OneWay}"/>
                                                 <Run Text=" - "/>
                                                 <Run Text="{Binding FormattedDuration, Mode=OneWay}"/>
@@ -595,7 +601,7 @@
                                         <TextBlock Grid.Column="2"
                                                    Text="{Binding FormattedDate}"
                                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                                   Opacity="0.6"
+                                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                    VerticalAlignment="Center"
                                                    Margin="16,0"/>
 
@@ -624,12 +630,12 @@
                                 Visibility="{Binding HasRecentDeployments, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                         <materialDesign:PackIcon Kind="ClipboardTextClockOutline"
                                                   Width="48" Height="48"
-                                                  Opacity="0.3"
+                                                  Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                   HorizontalAlignment="Center"
                                                   Margin="0,0,0,12"/>
                         <TextBlock Text="{loc:Loc Dashboard_History_Empty}"
                                    Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                   Opacity="0.5"
+                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
                                    HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
@@ -638,7 +644,7 @@
             <!-- FOOTER -->
             <TextBlock Grid.Row="4"
                        HorizontalAlignment="Center"
-                       Opacity="0.4"
+                       Foreground="{DynamicResource MaterialDesignBodyLight}"
                        Style="{StaticResource MaterialDesignCaptionTextBlock}">
                 <Run Text="Win11Forge v"/>
                 <Run Text="{Binding AppVersion, Mode=OneWay}"/>

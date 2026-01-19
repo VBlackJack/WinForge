@@ -3,10 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             xmlns:helpers="clr-namespace:Win11Forge.GUI.Helpers"
              MinWidth="450" MaxWidth="650"
              AutomationProperties.Name="Error dialog"
              AutomationProperties.LiveSetting="Assertive"
-             Loaded="UserControl_Loaded">
+             Loaded="UserControl_Loaded"
+             helpers:FocusTrapBehavior.IsEnabled="True"
+             helpers:FocusTrapBehavior.InitialFocusElement="{Binding ElementName=OkButton}"
+             KeyDown="UserControl_KeyDown">
     <Border Padding="24">
         <Grid>
             <Grid.RowDefinitions>

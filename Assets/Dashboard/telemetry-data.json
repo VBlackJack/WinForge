@@ -1,33 +1,18 @@
 {
-  "summary": {
-    "DataVersion": "1.0",
-    "CreatedAt": "2026-01-19T09:52:20.2827512+01:00",
-    "LastUpdated": "2026-01-19T09:52:20.2827927+01:00",
-    "Deployments": {
-      "RolledBack": 0,
-      "SuccessRate": "0%",
-      "Failed": 0,
-      "Successful": 0,
-      "Total": 0
-    },
-    "Applications": {
-      "ByMethod": {},
-      "TopInstalled": [],
-      "TotalInstalled": 0,
-      "TotalFailed": 0.0,
-      "ByCategory": {}
-    },
-    "Performance": {
-      "AverageDeploymentMinutes": 0.0,
-      "TotalDeploymentHours": 0.0,
-      "AverageDeploymentSeconds": 0
-    },
-    "Profiles": {
-      "UsageStats": {},
-      "MostUsed": "N/A"
-    }
-  },
+  "generatedAt": "2026-01-19T22:54:13.7108232+01:00",
   "charts": {
+    "topAppsBar": {
+      "labels": [],
+      "data": []
+    },
+    "categoryBar": {
+      "labels": [],
+      "data": []
+    },
+    "methodBar": {
+      "labels": [],
+      "data": []
+    },
     "deploymentPie": {
       "labels": [
         "Successful",
@@ -39,19 +24,34 @@
         0,
         0
       ]
-    },
-    "categoryBar": {
-      "labels": [],
-      "data": []
-    },
-    "topAppsBar": {
-      "labels": [],
-      "data": []
-    },
-    "methodBar": {
-      "labels": [],
-      "data": []
     }
   },
-  "generatedAt": "2026-01-19T09:52:20.2983944+01:00"
+  "summary": {
+    "DataVersion": "1.0",
+    "CreatedAt": "2026-01-19T22:54:13.6726185+01:00",
+    "LastUpdated": "2026-01-19T22:54:13.672668+01:00",
+    "Deployments": {
+      "Failed": 0,
+      "Successful": 0,
+      "SuccessRate": "0%",
+      "RolledBack": 0,
+      "Total": 0
+    },
+    "Applications": {
+      "TotalFailed": 0.0,
+      "ByMethod": {},
+      "TotalInstalled": 0,
+      "TopInstalled": [],
+      "ByCategory": {}
+    },
+    "Performance": {
+      "AverageDeploymentMinutes": 0.0,
+      "AverageDeploymentSeconds": 0,
+      "TotalDeploymentHours": 0.0
+    },
+    "Profiles": {
+      "UsageStats": {},
+      "MostUsed": "N/A"
+    }
+  }
 }

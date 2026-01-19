@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - REST API Server Module v3.1.4
+    Win11Forge - REST API Server Module v3.5.0
 
 .DESCRIPTION
     Provides a local REST API server for Win11Forge:
@@ -8,10 +8,11 @@
     - localhost only for security
     - JSON request/response handling
     - Endpoint registration and routing
+    - Explicit resource cleanup for HttpContext and jobs
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.1.4
+    Version: 3.5.0
 #>
 
 #
@@ -36,12 +37,26 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:ModuleRoot 'Core.psm1'
+$script:SecureStoragePath = Join-Path $script:ModuleRoot 'SecureStorage.psm1'
 $script:ConfigPath = Join-Path $script:RepositoryRoot 'Config\api-settings.json'
 
 # Import Core module for logging
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
+    }
+}
+
+# Import SecureStorage module for DPAPI encryption
+$script:UseSecureStorage = $false
+if (Test-Path -Path $script:SecureStoragePath) {
+    try {
+        Import-Module -Name $script:SecureStoragePath -Force
+        if (Get-Command -Name Test-SecureStorageAvailable -ErrorAction SilentlyContinue) {
+            $script:UseSecureStorage = Test-SecureStorageAvailable
+        }
+    } catch {
+        Write-Verbose "SecureStorage module not available: $($_.Exception.Message)"
     }
 }
 
@@ -55,8 +70,11 @@ $script:ServerState = @{
     RequestCount = 0
     StartTime = $null
     Config = $null
-    RateLimitState = @{}  # IP -> { Count, WindowStart }
-    ApiKeys = @{}         # key -> keyConfig
+    RateLimitState = @{}       # IP -> { MinuteCount, MinuteWindowStart, HourCount, HourWindowStart, LastAccess }
+    ApiKeyRateLimitState = @{} # ApiKeyId -> { RequestCount, WindowStart, LastAccess }
+    FailedAuthState = @{}      # IP -> { FailCount, FirstFailTime, BlockedUntil }
+    ApiKeys = @{}              # key -> keyConfig
+    LastCleanupTime = $null    # For periodic memory cleanup
 }
 
 # === DEFAULT CONFIGURATION ===
@@ -72,6 +90,57 @@ $script:DefaultConfig = @{
     RateLimitEnabled = $true
     MaxRequestsPerMinute = 60
     MaxRequestsPerHour = 1000
+    MaxFailedAuthPerHour = 10
+    BlockDurationMinutes = 60
+}
+
+# === SECURITY FUNCTIONS ===
+
+function Get-SanitizedErrorMessage {
+    <#
+    .SYNOPSIS
+        Sanitizes error messages before sending to API clients.
+    .DESCRIPTION
+        Removes sensitive information from exception messages to prevent
+        information disclosure attacks. Internal details are logged server-side.
+    .PARAMETER Exception
+        The exception object to sanitize.
+    .PARAMETER ErrorCode
+        Optional error code for categorization.
+    .OUTPUTS
+        Hashtable with sanitized error response.
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)]
+        [System.Exception]$Exception,
+
+        [Parameter()]
+        [string]$ErrorCode = 'INTERNAL_ERROR'
+    )
+
+    # Log full exception server-side for debugging
+    if (Get-Command -Name Write-Status -ErrorAction SilentlyContinue) {
+        Write-Status -Message "API Error [$ErrorCode]: $($Exception.Message)" -Level 'Error' -Category 'Api'
+    }
+
+    # Map exception types to safe messages
+    $safeMessage = switch -Regex ($Exception.GetType().Name) {
+        'ArgumentException|ArgumentNullException' { 'Invalid request parameters' }
+        'UnauthorizedAccessException' { 'Access denied' }
+        'FileNotFoundException|DirectoryNotFoundException' { 'Resource not found' }
+        'TimeoutException' { 'Operation timed out' }
+        'InvalidOperationException' { 'Invalid operation' }
+        'JsonException|JsonReaderException' { 'Invalid JSON format' }
+        default { 'An internal error occurred' }
+    }
+
+    return @{
+        error = $safeMessage
+        code = $ErrorCode
+        timestamp = (Get-Date).ToString('o')
+    }
 }
 
 # === CONFIGURATION FUNCTIONS ===
@@ -106,17 +175,62 @@ function Get-ApiConfig {
                     MaxRequestsPerHour = if ($null -ne $json.security.rateLimiting.maxRequestsPerHour) { $json.security.rateLimiting.maxRequestsPerHour } else { $script:DefaultConfig.MaxRequestsPerHour }
                 }
 
-                # Load API keys
-                if ($json.apiKeys.keys) {
-                    foreach ($keyConfig in $json.apiKeys.keys) {
-                        if ($keyConfig.enabled) {
-                            $script:ServerState.ApiKeys[$keyConfig.key] = @{
-                                Id = $keyConfig.id
-                                Description = $keyConfig.description
-                                Permissions = $keyConfig.permissions
-                                CreatedAt = $keyConfig.createdAt
-                                ExpiresAt = $keyConfig.expiresAt
+                # Load API keys - prefer secure storage over plain config
+                if ($script:UseSecureStorage) {
+                    try {
+                        $secureKeys = Get-SecureApiKeysForAuth
+                        if ($secureKeys -and $secureKeys.Count -gt 0) {
+                            $script:ServerState.ApiKeys = $secureKeys
+                            Write-Verbose "Loaded $($secureKeys.Count) API keys from secure storage (DPAPI)"
+                        } else {
+                            # Fall back to config file if no secure keys exist
+                            if ($json.apiKeys.keys) {
+                                foreach ($keyConfig in $json.apiKeys.keys) {
+                                    if ($keyConfig.enabled) {
+                                        $script:ServerState.ApiKeys[$keyConfig.key] = @{
+                                            Id = $keyConfig.id
+                                            Description = $keyConfig.description
+                                            Permissions = $keyConfig.permissions
+                                            CreatedAt = $keyConfig.createdAt
+                                            ExpiresAt = $keyConfig.expiresAt
+                                        }
+                                        Write-Verbose "Warning: Using unencrypted API key from config. Consider using Save-SecureApiKey for encryption."
+                                    }
+                                }
                             }
+                        }
+                    } catch {
+                        Write-Verbose "Failed to load secure keys, falling back to config: $($_.Exception.Message)"
+                        if ($json.apiKeys.keys) {
+                            foreach ($keyConfig in $json.apiKeys.keys) {
+                                if ($keyConfig.enabled) {
+                                    $script:ServerState.ApiKeys[$keyConfig.key] = @{
+                                        Id = $keyConfig.id
+                                        Description = $keyConfig.description
+                                        Permissions = $keyConfig.permissions
+                                        CreatedAt = $keyConfig.createdAt
+                                        ExpiresAt = $keyConfig.expiresAt
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    # Secure storage not available - use config file with warning
+                    if ($json.apiKeys.keys) {
+                        foreach ($keyConfig in $json.apiKeys.keys) {
+                            if ($keyConfig.enabled) {
+                                $script:ServerState.ApiKeys[$keyConfig.key] = @{
+                                    Id = $keyConfig.id
+                                    Description = $keyConfig.description
+                                    Permissions = $keyConfig.permissions
+                                    CreatedAt = $keyConfig.createdAt
+                                    ExpiresAt = $keyConfig.expiresAt
+                                }
+                            }
+                        }
+                        if ($script:ServerState.ApiKeys.Count -gt 0) {
+                            Write-Verbose "Warning: DPAPI secure storage not available. API keys stored in plain text."
                         }
                     }
                 }
@@ -265,6 +379,9 @@ function Test-RateLimit {
 
     $now = Get-Date
 
+    # Periodic cleanup of stale entries (every 10 minutes)
+    Invoke-RateLimitCleanup
+
     # Initialize state for new client
     if (-not $script:ServerState.RateLimitState.ContainsKey($ClientIp)) {
         $script:ServerState.RateLimitState[$ClientIp] = @{
@@ -272,10 +389,12 @@ function Test-RateLimit {
             MinuteCount = 0
             HourWindowStart = $now
             HourCount = 0
+            LastAccess = $now
         }
     }
 
     $state = $script:ServerState.RateLimitState[$ClientIp]
+    $state.LastAccess = $now
 
     # Reset minute window if needed
     if (($now - $state.MinuteWindowStart).TotalSeconds -ge 60) {
@@ -317,6 +436,221 @@ function Test-RateLimit {
     $result.RequestsInHour = $state.HourCount
 
     return $result
+}
+
+function Test-ApiKeyRateLimit {
+    <#
+    .SYNOPSIS
+        Tests rate limit for a specific API key.
+    .PARAMETER ApiKeyId
+        The API key identifier.
+    .OUTPUTS
+        Hashtable with rate limit status.
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ApiKeyId
+    )
+
+    $config = Get-ApiConfig
+    $result = @{
+        Allowed = $true
+        RequestCount = 0
+        Message = ''
+    }
+
+    if (-not $config.RateLimitEnabled) {
+        return $result
+    }
+
+    $now = Get-Date
+
+    # Initialize state for new API key
+    if (-not $script:ServerState.ApiKeyRateLimitState.ContainsKey($ApiKeyId)) {
+        $script:ServerState.ApiKeyRateLimitState[$ApiKeyId] = @{
+            RequestCount = 0
+            WindowStart = $now
+            LastAccess = $now
+        }
+    }
+
+    $state = $script:ServerState.ApiKeyRateLimitState[$ApiKeyId]
+    $state.LastAccess = $now
+
+    # Reset window if hour passed
+    if (($now - $state.WindowStart).TotalSeconds -ge 3600) {
+        $state.WindowStart = $now
+        $state.RequestCount = 0
+    }
+
+    # Check limit (use MaxRequestsPerHour as default for API keys)
+    if ($state.RequestCount -ge $config.MaxRequestsPerHour) {
+        $result.Allowed = $false
+        $result.Message = "API key rate limit exceeded"
+        $result.RequestCount = $state.RequestCount
+        return $result
+    }
+
+    $state.RequestCount++
+    $result.RequestCount = $state.RequestCount
+
+    return $result
+}
+
+function Test-FailedAuthBlock {
+    <#
+    .SYNOPSIS
+        Tests if a client IP is blocked due to failed authentications.
+    .PARAMETER ClientIp
+        The client IP address.
+    .OUTPUTS
+        Hashtable with block status.
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ClientIp
+    )
+
+    $config = Get-ApiConfig
+    $result = @{
+        Blocked = $false
+        RetryAfterSeconds = 0
+        FailCount = 0
+    }
+
+    $now = Get-Date
+
+    if (-not $script:ServerState.FailedAuthState.ContainsKey($ClientIp)) {
+        return $result
+    }
+
+    $state = $script:ServerState.FailedAuthState[$ClientIp]
+
+    # Check if currently blocked
+    if ($state.BlockedUntil -and $now -lt $state.BlockedUntil) {
+        $result.Blocked = $true
+        $result.RetryAfterSeconds = [int]($state.BlockedUntil - $now).TotalSeconds
+        $result.FailCount = $state.FailCount
+        return $result
+    }
+
+    # Reset if block expired
+    if ($state.BlockedUntil -and $now -ge $state.BlockedUntil) {
+        $script:ServerState.FailedAuthState.Remove($ClientIp)
+    }
+
+    return $result
+}
+
+function Add-FailedAuthAttempt {
+    <#
+    .SYNOPSIS
+        Records a failed authentication attempt.
+    .PARAMETER ClientIp
+        The client IP address.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ClientIp
+    )
+
+    $config = Get-ApiConfig
+    $now = Get-Date
+    $maxFailed = if ($config.MaxFailedAuthPerHour) { $config.MaxFailedAuthPerHour } else { 10 }
+    $blockMinutes = if ($config.BlockDurationMinutes) { $config.BlockDurationMinutes } else { 60 }
+
+    if (-not $script:ServerState.FailedAuthState.ContainsKey($ClientIp)) {
+        $script:ServerState.FailedAuthState[$ClientIp] = @{
+            FailCount = 0
+            FirstFailTime = $now
+            BlockedUntil = $null
+            LastAccess = $now
+        }
+    }
+
+    $state = $script:ServerState.FailedAuthState[$ClientIp]
+    $state.LastAccess = $now
+
+    # Reset if hour passed since first fail
+    if (($now - $state.FirstFailTime).TotalSeconds -ge 3600) {
+        $state.FirstFailTime = $now
+        $state.FailCount = 0
+    }
+
+    $state.FailCount++
+
+    # Block if exceeded limit
+    if ($state.FailCount -ge $maxFailed) {
+        $state.BlockedUntil = $now.AddMinutes($blockMinutes)
+        Write-Status -Message "IP $ClientIp blocked for $blockMinutes minutes due to $($state.FailCount) failed auth attempts" -Level 'Warning' -Category 'Api'
+    }
+}
+
+function Invoke-RateLimitCleanup {
+    <#
+    .SYNOPSIS
+        Cleans up stale rate limit entries to prevent memory leaks.
+    .DESCRIPTION
+        Removes entries that haven't been accessed in the last hour.
+        Called periodically (every 10 minutes).
+    #>
+    [CmdletBinding()]
+    param()
+
+    $now = Get-Date
+    $staleThresholdMinutes = 60
+
+    # Only run cleanup every 10 minutes
+    if ($script:ServerState.LastCleanupTime -and
+        ($now - $script:ServerState.LastCleanupTime).TotalMinutes -lt 10) {
+        return
+    }
+
+    $script:ServerState.LastCleanupTime = $now
+    $cleanedCount = 0
+
+    # Clean IP rate limit state
+    $staleIps = @($script:ServerState.RateLimitState.Keys | Where-Object {
+        $state = $script:ServerState.RateLimitState[$_]
+        $state.LastAccess -and ($now - $state.LastAccess).TotalMinutes -gt $staleThresholdMinutes
+    })
+
+    foreach ($ip in $staleIps) {
+        $script:ServerState.RateLimitState.Remove($ip)
+        $cleanedCount++
+    }
+
+    # Clean API key rate limit state
+    $staleKeys = @($script:ServerState.ApiKeyRateLimitState.Keys | Where-Object {
+        $state = $script:ServerState.ApiKeyRateLimitState[$_]
+        $state.LastAccess -and ($now - $state.LastAccess).TotalMinutes -gt $staleThresholdMinutes
+    })
+
+    foreach ($key in $staleKeys) {
+        $script:ServerState.ApiKeyRateLimitState.Remove($key)
+        $cleanedCount++
+    }
+
+    # Clean expired failed auth blocks
+    $expiredBlocks = @($script:ServerState.FailedAuthState.Keys | Where-Object {
+        $state = $script:ServerState.FailedAuthState[$_]
+        ($state.BlockedUntil -and $now -ge $state.BlockedUntil) -or
+        ($state.LastAccess -and ($now - $state.LastAccess).TotalMinutes -gt $staleThresholdMinutes)
+    })
+
+    foreach ($ip in $expiredBlocks) {
+        $script:ServerState.FailedAuthState.Remove($ip)
+        $cleanedCount++
+    }
+
+    if ($cleanedCount -gt 0) {
+        Write-Status -Message "Rate limit cleanup: removed $cleanedCount stale entries" -Level 'Verbose' -Category 'Api'
+    }
 }
 
 function Get-RequiredPermission {
@@ -528,22 +862,133 @@ function Start-ApiServer {
         }
 
         if ($Async) {
-            # Run in background
-            $serverScript = {
-                param($Listener, $Endpoints, $Config)
-                while ($Listener.IsListening) {
+            # Run in background with concurrent request handling
+            $serverJob = Start-Job -ScriptBlock {
+                param($Port, $Host, $EndpointsJson, $ConfigJson, $ApiKeysJson, $PublicEndpointsJson)
+
+                # Recreate server state in job
+                $listener = [System.Net.HttpListener]::new()
+                $prefix = "http://${Host}:${Port}/"
+                $listener.Prefixes.Add($prefix)
+                $listener.Start()
+
+                $endpoints = $EndpointsJson | ConvertFrom-Json -AsHashtable
+                $config = $ConfigJson | ConvertFrom-Json -AsHashtable
+                $apiKeys = $ApiKeysJson | ConvertFrom-Json -AsHashtable
+                $publicEndpoints = $PublicEndpointsJson | ConvertFrom-Json
+
+                $rateLimitState = @{}
+
+                while ($listener.IsListening) {
                     try {
-                        $context = $Listener.GetContext()
-                        # Handle request (simplified for async)
+                        $context = $listener.GetContext()
+                        $request = $context.Request
                         $response = $context.Response
-                        $response.StatusCode = 200
+
+                        $method = $request.HttpMethod
+                        $path = $request.Url.LocalPath
+                        $clientIp = $request.RemoteEndPoint.Address.ToString()
+
+                        # Rate limiting
+                        $now = Get-Date
+                        if (-not $rateLimitState.ContainsKey($clientIp)) {
+                            $rateLimitState[$clientIp] = @{ MinuteStart = $now; MinuteCount = 0; HourStart = $now; HourCount = 0 }
+                        }
+                        $state = $rateLimitState[$clientIp]
+                        if (($now - $state.MinuteStart).TotalSeconds -ge 60) { $state.MinuteStart = $now; $state.MinuteCount = 0 }
+                        if (($now - $state.HourStart).TotalSeconds -ge 3600) { $state.HourStart = $now; $state.HourCount = 0 }
+
+                        if ($state.MinuteCount -ge $config.MaxRequestsPerMinute -or $state.HourCount -ge $config.MaxRequestsPerHour) {
+                            $response.StatusCode = 429
+                            $response.Headers.Add('Retry-After', '60')
+                            $buffer = [System.Text.Encoding]::UTF8.GetBytes('{"error":"Rate limit exceeded"}')
+                            $response.ContentLength64 = $buffer.Length
+                            $response.OutputStream.Write($buffer, 0, $buffer.Length)
+                            $response.Close()
+                            continue
+                        }
+                        $state.MinuteCount++
+                        $state.HourCount++
+
+                        # Authentication (skip for public endpoints)
+                        if ($config.RequireAuthentication -and $path -notin $publicEndpoints) {
+                            $apiKey = $request.Headers[$config.ApiKeyHeader]
+                            if (-not $apiKey -or -not $apiKeys.ContainsKey($apiKey)) {
+                                $response.StatusCode = 401
+                                $buffer = [System.Text.Encoding]::UTF8.GetBytes('{"error":"Unauthorized"}')
+                                $response.ContentLength64 = $buffer.Length
+                                $response.OutputStream.Write($buffer, 0, $buffer.Length)
+                                $response.Close()
+                                continue
+                            }
+                        }
+
+                        # Find handler
+                        $key = "${method}:${path}"
+                        $reader = $null
+                        if ($endpoints.ContainsKey($key)) {
+                            $handler = [scriptblock]::Create($endpoints[$key].Handler)
+                            try {
+                                $requestBody = $null
+                                if ($request.HasEntityBody) {
+                                    $reader = [System.IO.StreamReader]::new($request.InputStream)
+                                    $requestBody = $reader.ReadToEnd() | ConvertFrom-Json -ErrorAction SilentlyContinue
+                                }
+                                $requestContext = @{ Method = $method; Path = $path; Query = $request.QueryString; Body = $requestBody }
+                                $result = & $handler $requestContext
+                                $jsonResponse = $result | ConvertTo-Json -Depth 10 -Compress
+                                $response.StatusCode = 200
+                            } catch {
+                                # Sanitize error message - do not expose internal details
+                                $jsonResponse = @{
+                                    error = 'An internal error occurred'
+                                    code = 'INTERNAL_ERROR'
+                                    timestamp = (Get-Date).ToString('o')
+                                } | ConvertTo-Json
+                                $response.StatusCode = 500
+                            } finally {
+                                # Explicit StreamReader cleanup
+                                if ($reader) { $reader.Dispose(); $reader = $null }
+                            }
+                        } else {
+                            # Do not expose method/path details
+                            $jsonResponse = @{
+                                error = 'Endpoint not found'
+                                code = 'NOT_FOUND'
+                                timestamp = (Get-Date).ToString('o')
+                            } | ConvertTo-Json
+                            $response.StatusCode = 404
+                        }
+
+                        $response.ContentType = 'application/json'
+                        $buffer = [System.Text.Encoding]::UTF8.GetBytes($jsonResponse)
+                        $response.ContentLength64 = $buffer.Length
+                        $response.OutputStream.Write($buffer, 0, $buffer.Length)
+                        # Explicit response cleanup
+                        try { $response.OutputStream.Flush(); $response.OutputStream.Close() } catch { }
                         $response.Close()
-                    } catch {
+                    } catch [System.Net.HttpListenerException] {
                         break
+                    } catch {
+                        # Log error but continue
                     }
                 }
-            }
-            Start-Job -ScriptBlock $serverScript -ArgumentList $script:ServerState.Listener, $script:ServerState.Endpoints, $config
+
+                $listener.Stop()
+                $listener.Close()
+            } -ArgumentList @(
+                $config.Port,
+                $config.Host,
+                ($script:ServerState.Endpoints | ConvertTo-Json -Depth 10 -Compress),
+                ($config | ConvertTo-Json -Depth 5 -Compress),
+                ($script:ServerState.ApiKeys | ConvertTo-Json -Depth 5 -Compress),
+                ($script:ServerState.PublicEndpoints | ConvertTo-Json -Compress)
+            )
+
+            # Store job reference for later management
+            $script:ServerState.BackgroundJob = $serverJob
+            Write-Status -Message "API server started in background (Job ID: $($serverJob.Id))" -Level 'Info' -Category 'Api'
+            return $serverJob
         } else {
             # Run synchronously (blocking)
             Invoke-ApiServerLoop
@@ -560,6 +1005,10 @@ function Stop-ApiServer {
     .SYNOPSIS
         Stops the REST API server.
 
+    .DESCRIPTION
+        Stops the HTTP listener and cleans up all resources including
+        background jobs and rate limit state.
+
     .EXAMPLE
         Stop-ApiServer
     #>
@@ -572,9 +1021,27 @@ function Stop-ApiServer {
     }
 
     try {
-        $script:ServerState.Listener.Stop()
-        $script:ServerState.Listener.Close()
+        # Stop and clean up background job if running
+        if ($script:ServerState.BackgroundJob) {
+            $job = $script:ServerState.BackgroundJob
+            if ($job.State -eq 'Running') {
+                Stop-Job -Job $job -ErrorAction SilentlyContinue
+            }
+            Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
+            $script:ServerState.BackgroundJob = $null
+        }
+
+        # Stop and dispose listener
+        if ($script:ServerState.Listener) {
+            $script:ServerState.Listener.Stop()
+            $script:ServerState.Listener.Close()
+            $script:ServerState.Listener = $null
+        }
+
         $script:ServerState.Running = $false
+
+        # Clear rate limit state to free memory
+        $script:ServerState.RateLimitState = @{}
 
         $uptime = if ($script:ServerState.StartTime) {
             ((Get-Date) - $script:ServerState.StartTime).ToString()
@@ -669,13 +1136,13 @@ function Invoke-ApiServerLoop {
             }
 
             if ($handler) {
+                $reader = $null
                 try {
                     # Build request context
                     $requestBody = $null
                     if ($request.HasEntityBody) {
                         $reader = [System.IO.StreamReader]::new($request.InputStream)
                         $requestBody = $reader.ReadToEnd()
-                        $reader.Close()
 
                         if ($request.ContentType -match 'application/json') {
                             $requestBody = $requestBody | ConvertFrom-Json
@@ -703,20 +1170,37 @@ function Invoke-ApiServerLoop {
                     $response.OutputStream.Write($buffer, 0, $buffer.Length)
                 } catch {
                     $response.StatusCode = 500
-                    $errorResponse = @{ error = $_.Exception.Message } | ConvertTo-Json
+                    # Sanitize error message to prevent information disclosure
+                    $sanitizedError = Get-SanitizedErrorMessage -Exception $_.Exception -ErrorCode 'HANDLER_ERROR'
+                    $errorResponse = $sanitizedError | ConvertTo-Json
                     $buffer = [System.Text.Encoding]::UTF8.GetBytes($errorResponse)
                     $response.ContentLength64 = $buffer.Length
                     $response.OutputStream.Write($buffer, 0, $buffer.Length)
+                } finally {
+                    # Explicit resource cleanup
+                    if ($reader) {
+                        $reader.Dispose()
+                        $reader = $null
+                    }
                 }
             } else {
-                # 404 Not Found
+                # 404 Not Found - Do not expose method/path details
                 $response.StatusCode = 404
-                $notFoundResponse = @{ error = "Endpoint not found: $method $path" } | ConvertTo-Json
+                $notFoundResponse = @{
+                    error = 'Endpoint not found'
+                    code = 'NOT_FOUND'
+                    timestamp = (Get-Date).ToString('o')
+                } | ConvertTo-Json
                 $buffer = [System.Text.Encoding]::UTF8.GetBytes($notFoundResponse)
                 $response.ContentLength64 = $buffer.Length
                 $response.OutputStream.Write($buffer, 0, $buffer.Length)
             }
 
+            # Explicit HttpContext response cleanup
+            try {
+                $response.OutputStream.Flush()
+                $response.OutputStream.Close()
+            } catch { }
             $response.Close()
         } catch [System.Net.HttpListenerException] {
             # Listener was closed
@@ -996,6 +1480,12 @@ Export-ModuleMember -Function @(
     'Get-ApiKeys',
     # Rate Limiting
     'Test-RateLimit',
+    'Test-ApiKeyRateLimit',
+    'Test-FailedAuthBlock',
+    'Add-FailedAuthAttempt',
+    'Invoke-RateLimitCleanup',
     'Get-RateLimitStatus',
-    'Clear-RateLimitState'
+    'Clear-RateLimitState',
+    # Security
+    'Get-SanitizedErrorMessage'
 )

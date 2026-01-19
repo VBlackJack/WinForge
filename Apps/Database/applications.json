@@ -19,6 +19,20 @@
                                                 "69-98":  "Reserved for future optional categories"
                                             }
                        },
+    "DependencySchema": {
+                           "Description": "Schema for application dependencies",
+                           "DependencyTypes": {
+                                                "Required": "Must be installed for the app to function",
+                                                "Optional": "Enhances functionality but not required",
+                                                "Recommended": "Strongly suggested for best experience"
+                                              },
+                           "Fields": {
+                                        "AppId": "ID of the dependency application",
+                                        "Type": "required|optional|recommended",
+                                        "MinVersion": "Minimum required version (optional)",
+                                        "Reason": "Why this dependency is needed"
+                                     }
+                       },
     "Applications":  {
                          "GoogleChrome":  {
                                               "Name":  "Google Chrome",
@@ -1163,6 +1177,13 @@
                                         "EnvironmentRestrictions":  [
 
                                                                     ],
+                                        "Dependencies": [
+                                                           {
+                                                              "AppId": "Git",
+                                                              "Type": "recommended",
+                                                              "Reason": "Required for source control integration"
+                                                           }
+                                                        ],
                                         "Tags":  [
                                                      "development",
                                                      "editor",

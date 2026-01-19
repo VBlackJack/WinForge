@@ -45,7 +45,7 @@
                            Style="{StaticResource MaterialDesignHeadline4TextBlock}"/>
                 <TextBlock Text="{loc:Loc Logs_Subtitle}"
                            Style="{StaticResource MaterialDesignBody2TextBlock}"
-                           Opacity="0.7"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}"
                            Margin="0,4,0,0"/>
             </StackPanel>
 
@@ -159,7 +159,7 @@
                                    Style="{StaticResource MaterialDesignSubtitle1TextBlock}"/>
                         <TextBlock Grid.Column="1"
                                    Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                   Opacity="0.7">
+                                   Foreground="{DynamicResource MaterialDesignBodyLight}">
                             <Run Text="{Binding FilteredLogFiles.Count, Mode=OneWay}"/>
                             <Run Text="{loc:Loc Logs_FilesCount}"/>
                         </TextBlock>
@@ -243,16 +243,16 @@
                     <materialDesign:PackIcon Kind="FileDocumentAlertOutline"
                                               Width="64" Height="64"
                                               HorizontalAlignment="Center"
-                                              Opacity="0.5"/>
+                                              Foreground="{DynamicResource MaterialDesignBodyLight}"/>
                     <TextBlock Text="{loc:Loc Logs_NoLogs}"
                                Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                HorizontalAlignment="Center"
-                               Opacity="0.7"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
                                Margin="0,16,0,0"/>
                     <TextBlock Text="{loc:Loc Logs_NoLogs_Hint}"
                                Style="{StaticResource MaterialDesignBody2TextBlock}"
                                HorizontalAlignment="Center"
-                               Opacity="0.5"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
                                Margin="0,8,0,0"/>
                 </StackPanel>
 
@@ -275,12 +275,12 @@
                 <TextBlock Grid.Column="0"
                            Text="{Binding StatusMessage}"
                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                           Opacity="0.7"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}"
                            VerticalAlignment="Center"/>
 
                 <TextBlock Grid.Column="1"
                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                           Opacity="0.7"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}"
                            VerticalAlignment="Center">
                     <Run Text="{loc:Loc Logs_TotalSize}"/>
                     <Run Text="{Binding TotalSizeFormatted, Mode=OneWay}"/>

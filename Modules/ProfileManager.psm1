@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Profile Manager Version: 3.0.0
+    Win11Forge - Profile Manager Version: 3.5.0
 
 .DESCRIPTION
     Manages deployment profiles with JSON inheritance:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.0.0
+    Version: 3.5.0
     Supports multi-level inheritance (e.g., Personnel → Gaming → Office → Base)
     NEW: Supports Application Database references (AppId strings or objects)
 #>
@@ -63,6 +63,106 @@ if (Test-Path -Path $script:AppDatabaseModulePath) {
 } else {
     $script:UseAppDatabase = $false
     Write-Verbose "Application Database module not found - using legacy mode"
+}
+
+# === PERFORMANCE OPTIMIZATION: PROFILE CACHING ===
+
+# Profile cache (keyed by absolute file path)
+$script:ProfileCache = @{}
+$script:ProfileCacheLastModified = @{}
+
+function script:Get-CachedProfile {
+    <#
+    .SYNOPSIS
+        Gets a profile from cache if available and not modified.
+    .DESCRIPTION
+        Returns cached profile if file hasn't been modified since last load.
+        Returns $null if cache miss or file modified.
+    #>
+    [CmdletBinding()]
+    param([string]$Path)
+
+    $absPath = [System.IO.Path]::GetFullPath($Path)
+
+    if (-not $script:ProfileCache.ContainsKey($absPath)) {
+        return $null
+    }
+
+    # Check if file was modified
+    try {
+        $currentModified = (Get-Item $absPath -ErrorAction Stop).LastWriteTime
+        $cachedModified = $script:ProfileCacheLastModified[$absPath]
+
+        if ($currentModified -gt $cachedModified) {
+            # File modified - invalidate cache
+            $script:ProfileCache.Remove($absPath)
+            $script:ProfileCacheLastModified.Remove($absPath)
+            return $null
+        }
+
+        return $script:ProfileCache[$absPath]
+    } catch {
+        return $null
+    }
+}
+
+function script:Set-CachedProfile {
+    <#
+    .SYNOPSIS
+        Stores a profile in cache.
+    #>
+    [CmdletBinding()]
+    param(
+        [string]$Path,
+        [DeploymentProfile]$Profile
+    )
+
+    $absPath = [System.IO.Path]::GetFullPath($Path)
+
+    try {
+        $script:ProfileCache[$absPath] = $Profile
+        $script:ProfileCacheLastModified[$absPath] = (Get-Item $absPath -ErrorAction Stop).LastWriteTime
+    } catch {
+        # Silently fail if file not accessible
+    }
+}
+
+function Clear-ProfileCache {
+    <#
+    .SYNOPSIS
+        Clears the profile cache.
+    #>
+    [CmdletBinding()]
+    param()
+
+    $script:ProfileCache = @{}
+    $script:ProfileCacheLastModified = @{}
+    Write-Verbose "Profile cache cleared"
+}
+
+# === VERSION CACHING ===
+
+$script:CachedFrameworkVersion = $null
+
+function script:Get-CachedFrameworkVersion {
+    <#
+    .SYNOPSIS
+        Gets cached framework version from version.json.
+    #>
+    if ($script:CachedFrameworkVersion) {
+        return $script:CachedFrameworkVersion
+    }
+
+    $versionPath = Join-Path $script:RepositoryRoot 'Config\version.json'
+    if (Test-Path $versionPath) {
+        try {
+            $versionData = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
+            $script:CachedFrameworkVersion = $versionData.Version
+            return $script:CachedFrameworkVersion
+        } catch { }
+    }
+
+    return 'Unknown'
 }
 
 # === PROFILE CLASSES ===
@@ -137,10 +237,13 @@ function Get-ProfilePath {
 function Import-ProfileJson {
     <#
     .SYNOPSIS
-        Loads a profile from JSON file.
+        Loads a profile from JSON file with caching.
 
     .PARAMETER Path
         Path to the profile JSON file
+
+    .PARAMETER NoCache
+        If specified, bypasses cache and forces reload from disk.
 
     .OUTPUTS
         [DeploymentProfile] Loaded profile object
@@ -149,11 +252,23 @@ function Import-ProfileJson {
     [OutputType([DeploymentProfile])]
     param(
         [Parameter(Mandatory)]
-        [string]$Path
+        [string]$Path,
+
+        [Parameter()]
+        [switch]$NoCache
     )
 
     if (-not (Test-Path -Path $Path)) {
         throw "Profile file not found: $Path"
+    }
+
+    # Check cache first (unless NoCache specified)
+    if (-not $NoCache) {
+        $cached = Get-CachedProfile -Path $Path
+        if ($cached) {
+            Write-Verbose "Profile loaded from cache: $Path"
+            return $cached
+        }
     }
 
     try {
@@ -166,19 +281,11 @@ function Import-ProfileJson {
         $deploymentProfile.Name = $jsonObject.Name
         $deploymentProfile.Description = $jsonObject.Description
 
-        # Use profile version if specified, otherwise use framework version
+        # Use profile version if specified, otherwise use cached framework version
         if ($jsonObject.Version) {
             $deploymentProfile.Version = $jsonObject.Version
         } else {
-            # Load framework version dynamically
-            $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-            $versionPath = Join-Path $repoRoot 'Config\version.json'
-            if (Test-Path $versionPath) {
-                $versionData = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
-                $deploymentProfile.Version = $versionData.Version
-            } else {
-                $deploymentProfile.Version = 'Unknown'
-            }
+            $deploymentProfile.Version = Get-CachedFrameworkVersion
         }
 
         $deploymentProfile.ProfilePath = $Path
@@ -207,6 +314,9 @@ function Import-ProfileJson {
 
         Write-Status -Message "Profile loaded: $($deploymentProfile.Name) v$($deploymentProfile.Version)" -Level 'Success'
 
+        # Store in cache
+        Set-CachedProfile -Path $Path -Profile $deploymentProfile
+
         return $deploymentProfile
 
     } catch {
@@ -217,10 +327,127 @@ function Import-ProfileJson {
 
 # === INHERITANCE RESOLUTION ===
 
+function Test-ProfileCycles {
+    <#
+    .SYNOPSIS
+        Validates a profile for circular inheritance dependencies.
+
+    .DESCRIPTION
+        Performs a depth-first traversal of the inheritance graph to detect cycles.
+        Returns detailed information about any cycles found.
+
+    .PARAMETER ProfileName
+        Name or path of the profile to validate
+
+    .PARAMETER ProfilesDirectory
+        Directory containing profile JSON files
+
+    .OUTPUTS
+        [hashtable] Validation result with:
+          - HasCycles: [bool] Whether cycles were detected
+          - Cycles: [string[]] Array of detected cycle paths (e.g., "A -> B -> A")
+          - InheritanceGraph: [hashtable] Full inheritance relationships
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ProfileName,
+
+        [Parameter()]
+        [string]$ProfilesDirectory
+    )
+
+    $result = @{
+        HasCycles = $false
+        Cycles = @()
+        InheritanceGraph = @{}
+    }
+
+    # Build inheritance graph
+    $visited = [System.Collections.Generic.HashSet[string]]::new()
+    $recursionStack = [System.Collections.Generic.Stack[string]]::new()
+
+    function Build-InheritanceGraph {
+        param([string]$Name, [string]$Dir)
+
+        if ($result.InheritanceGraph.ContainsKey($Name)) {
+            return
+        }
+
+        try {
+            $path = Get-ProfilePath -ProfileName $Name -ProfilesDirectory $Dir -ErrorAction Stop
+            $profile = Import-ProfileJson -Path $path -NoCache -ErrorAction Stop
+
+            $result.InheritanceGraph[$Name] = @{
+                Inherits = if ($profile.Inherits) { @($profile.Inherits) } else { @() }
+                Path = $path
+            }
+
+            foreach ($parent in $result.InheritanceGraph[$Name].Inherits) {
+                Build-InheritanceGraph -Name $parent -Dir $Dir
+            }
+        } catch {
+            $result.InheritanceGraph[$Name] = @{
+                Inherits = @()
+                Path = $null
+                Error = $_.Exception.Message
+            }
+        }
+    }
+
+    function Detect-Cycles {
+        param([string]$Name, [System.Collections.Generic.List[string]]$Path)
+
+        if ($recursionStack.Contains($Name)) {
+            # Cycle detected - build cycle path
+            $cycleStart = $Path.IndexOf($Name)
+            $cyclePath = $Path.GetRange($cycleStart, $Path.Count - $cycleStart)
+            $cyclePath.Add($Name)
+            $result.HasCycles = $true
+            $result.Cycles += ($cyclePath -join ' -> ')
+            return
+        }
+
+        if ($visited.Contains($Name)) {
+            return
+        }
+
+        [void]$visited.Add($Name)
+        [void]$recursionStack.Push($Name)
+        [void]$Path.Add($Name)
+
+        if ($result.InheritanceGraph.ContainsKey($Name)) {
+            foreach ($parent in $result.InheritanceGraph[$Name].Inherits) {
+                Detect-Cycles -Name $parent -Path $Path
+            }
+        }
+
+        [void]$recursionStack.Pop()
+        [void]$Path.RemoveAt($Path.Count - 1)
+    }
+
+    # Build graph starting from target profile
+    Build-InheritanceGraph -Name $ProfileName -Dir $ProfilesDirectory
+
+    # Detect cycles for all profiles in graph
+    foreach ($name in $result.InheritanceGraph.Keys) {
+        $visited.Clear()
+        $recursionStack.Clear()
+        $path = [System.Collections.Generic.List[string]]::new()
+        Detect-Cycles -Name $name -Path $path
+    }
+
+    # Remove duplicate cycles
+    $result.Cycles = $result.Cycles | Select-Object -Unique
+
+    return $result
+}
+
 function Resolve-ProfileInheritance {
     <#
     .SYNOPSIS
-        Resolves profile inheritance recursively.
+        Resolves profile inheritance recursively with cycle detection.
 
     .PARAMETER Profile
         Base profile to resolve
@@ -228,11 +455,14 @@ function Resolve-ProfileInheritance {
     .PARAMETER ProfilesDirectory
         Directory containing profile JSON files
 
-    .PARAMETER Visited
-        Internal: tracks visited profiles to prevent circular references
+    .PARAMETER AncestorPath
+        Internal: tracks the full path of ancestors to detect and report cycles
 
     .OUTPUTS
         [DeploymentProfile[]] Array of profiles in inheritance order (base first)
+
+    .NOTES
+        Throws an exception if circular inheritance is detected.
     #>
     [CmdletBinding()]
     [OutputType([DeploymentProfile[]])]
@@ -244,16 +474,38 @@ function Resolve-ProfileInheritance {
         [string]$ProfilesDirectory,
 
         [Parameter()]
-        [System.Collections.Generic.HashSet[string]]$Visited
+        [System.Collections.Generic.HashSet[string]]$Visited,
+
+        [Parameter()]
+        [System.Collections.Generic.List[string]]$AncestorPath
     )
 
     if (-not $Visited) {
         $Visited = [System.Collections.Generic.HashSet[string]]::new()
     }
 
-    # Check for circular reference
+    if (-not $AncestorPath) {
+        $AncestorPath = [System.Collections.Generic.List[string]]::new()
+    }
+
+    # Check for circular reference with full path reporting
+    if ($AncestorPath.Contains($InputProfile.Name)) {
+        $cycleStart = $AncestorPath.IndexOf($InputProfile.Name)
+        $cyclePath = @($AncestorPath.GetRange($cycleStart, $AncestorPath.Count - $cycleStart))
+        $cyclePath += $InputProfile.Name
+        $cycleString = $cyclePath -join ' -> '
+
+        $errorMsg = "Circular inheritance detected: $cycleString"
+        Write-Status -Message $errorMsg -Level 'Error'
+        throw [System.InvalidOperationException]::new($errorMsg)
+    }
+
+    # Add to ancestor path for this branch
+    [void]$AncestorPath.Add($InputProfile.Name)
+
+    # Check if already fully processed (for diamond inheritance)
     if ($Visited.Contains($InputProfile.Name)) {
-        Write-Status -Message "Circular inheritance detected: $($InputProfile.Name)" -Level 'Warning'
+        [void]$AncestorPath.RemoveAt($AncestorPath.Count - 1)
         return @()
     }
 
@@ -269,15 +521,22 @@ function Resolve-ProfileInheritance {
                 $parentProfile = Import-ProfileJson -Path $parentPath
 
                 # Recursively resolve parent's inheritance
-                $parentChain = Resolve-ProfileInheritance -InputProfile $parentProfile -ProfilesDirectory $ProfilesDirectory -Visited $Visited
+                $parentChain = Resolve-ProfileInheritance -InputProfile $parentProfile -ProfilesDirectory $ProfilesDirectory -Visited $Visited -AncestorPath $AncestorPath
 
                 $result += $parentChain
 
             } catch {
+                # Re-throw cycle detection errors
+                if ($_.Exception -is [System.InvalidOperationException] -and $_.Exception.Message -like "*Circular inheritance*") {
+                    throw
+                }
                 Write-Status -Message "Warning: Could not load parent profile '$parentName': $($_.Exception.Message)" -Level 'Warning'
             }
         }
     }
+
+    # Remove from ancestor path after processing children
+    [void]$AncestorPath.RemoveAt($AncestorPath.Count - 1)
 
     # Add current profile
     $result += $InputProfile
@@ -780,8 +1039,10 @@ Export-ModuleMember -Function @(
     'Merge-ProfileSystemConfig',
     'Get-DeploymentProfile',
     'Test-ProfileValid',
+    'Test-ProfileCycles',
     'Get-ApplicationsByCategory',
     'Get-RequiredApplications',
-    'ConvertTo-Hashtable'
+    'ConvertTo-Hashtable',
+    'Clear-ProfileCache'
 )
 

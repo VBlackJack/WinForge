@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.1.4
+    Version: 3.5.0
 #>
 
 #
@@ -550,12 +550,22 @@ function Invoke-LogRetentionCleanup {
 
     .DESCRIPTION
         Deletes JSON log files older than the configured retention period.
+        Optionally compresses logs before deletion based on age.
+
+    .PARAMETER CompressOlderThanDays
+        Compress logs older than this many days (default: 7).
+        Set to 0 to disable compression.
 
     .EXAMPLE
         Invoke-LogRetentionCleanup
+        Invoke-LogRetentionCleanup -CompressOlderThanDays 3
     #>
     [CmdletBinding()]
-    param()
+    param(
+        [Parameter()]
+        [ValidateRange(0, 365)]
+        [int]$CompressOlderThanDays = 7
+    )
 
     $config = $script:LoggingState.Config
     if (-not $config) {
@@ -569,22 +579,147 @@ function Invoke-LogRetentionCleanup {
         return
     }
 
-    $cutoffDate = (Get-Date).AddDays(-$retentionDays)
-    $oldFiles = Get-ChildItem -Path $jsonDir -Filter '*.jsonl' |
-        Where-Object { $_.LastWriteTime -lt $cutoffDate }
+    $now = Get-Date
+    $cutoffDate = $now.AddDays(-$retentionDays)
+    $compressCutoff = $now.AddDays(-$CompressOlderThanDays)
 
     $removedCount = 0
-    foreach ($file in $oldFiles) {
+    $compressedCount = 0
+
+    # Get all log files (both .jsonl and .jsonl.zip)
+    $logFiles = Get-ChildItem -Path $jsonDir -Filter '*.jsonl' -ErrorAction SilentlyContinue
+
+    foreach ($file in $logFiles) {
         try {
-            Remove-Item -Path $file.FullName -Force
-            $removedCount++
+            # Delete files older than retention period
+            if ($file.LastWriteTime -lt $cutoffDate) {
+                Remove-Item -Path $file.FullName -Force
+                $removedCount++
+                # Also remove associated zip if exists
+                $zipPath = "$($file.FullName).zip"
+                if (Test-Path $zipPath) {
+                    Remove-Item -Path $zipPath -Force
+                }
+                continue
+            }
+
+            # Compress files older than compression threshold
+            if ($CompressOlderThanDays -gt 0 -and $file.LastWriteTime -lt $compressCutoff) {
+                $zipPath = "$($file.FullName).zip"
+                if (-not (Test-Path $zipPath)) {
+                    try {
+                        Compress-Archive -Path $file.FullName -DestinationPath $zipPath -CompressionLevel Optimal -Force
+                        # Remove original after successful compression
+                        Remove-Item -Path $file.FullName -Force
+                        $compressedCount++
+                    } catch {
+                        Write-Verbose "Failed to compress log file: $($file.Name) - $($_.Exception.Message)"
+                    }
+                }
+            }
         } catch {
-            Write-Verbose "Failed to remove old log file: $($file.Name)"
+            Write-Verbose "Failed to process log file: $($file.Name)"
         }
     }
 
-    if ($removedCount -gt 0) {
-        Write-Verbose "Removed $removedCount old log files"
+    # Also cleanup old zip files beyond retention
+    $zipFiles = Get-ChildItem -Path $jsonDir -Filter '*.jsonl.zip' -ErrorAction SilentlyContinue
+    foreach ($zipFile in $zipFiles) {
+        if ($zipFile.LastWriteTime -lt $cutoffDate) {
+            try {
+                Remove-Item -Path $zipFile.FullName -Force
+                $removedCount++
+            } catch {
+                Write-Verbose "Failed to remove old zip file: $($zipFile.Name)"
+            }
+        }
+    }
+
+    if ($removedCount -gt 0 -or $compressedCount -gt 0) {
+        Write-Verbose "Log cleanup: removed $removedCount files, compressed $compressedCount files"
+    }
+}
+
+function Get-ArchivedLogs {
+    <#
+    .SYNOPSIS
+        Lists archived (compressed) log files.
+
+    .OUTPUTS
+        Array of archived log file information.
+
+    .EXAMPLE
+        Get-ArchivedLogs
+    #>
+    [CmdletBinding()]
+    [OutputType([array])]
+    param()
+
+    $config = $script:LoggingState.Config
+    if (-not $config) {
+        $config = Get-LoggingConfig
+    }
+
+    $jsonDir = $config.JsonLogging.Directory
+
+    if (-not (Test-Path -Path $jsonDir)) {
+        return @()
+    }
+
+    $archives = Get-ChildItem -Path $jsonDir -Filter '*.jsonl.zip' -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        ForEach-Object {
+            [PSCustomObject]@{
+                Name = $_.Name
+                Path = $_.FullName
+                SizeKB = [math]::Round($_.Length / 1KB, 2)
+                CreatedAt = $_.CreationTime
+                ModifiedAt = $_.LastWriteTime
+            }
+        }
+
+    return @($archives)
+}
+
+function Expand-ArchivedLog {
+    <#
+    .SYNOPSIS
+        Extracts an archived log file for viewing.
+
+    .PARAMETER ArchivePath
+        Path to the .zip archive.
+
+    .PARAMETER OutputPath
+        Optional output path. Defaults to same directory.
+
+    .OUTPUTS
+        Path to the extracted file.
+
+    .EXAMPLE
+        Expand-ArchivedLog -ArchivePath "C:\Logs\2026-01-15.jsonl.zip"
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [ValidateScript({ Test-Path $_ -PathType Leaf })]
+        [string]$ArchivePath,
+
+        [Parameter()]
+        [string]$OutputPath
+    )
+
+    if (-not $OutputPath) {
+        $OutputPath = Split-Path -Parent $ArchivePath
+    }
+
+    try {
+        Expand-Archive -Path $ArchivePath -DestinationPath $OutputPath -Force
+        $extractedFile = Join-Path $OutputPath ([System.IO.Path]::GetFileNameWithoutExtension($ArchivePath))
+        return $extractedFile
+    } catch {
+        Write-Error "Failed to expand archive: $($_.Exception.Message)"
+        return $null
     }
 }
 
@@ -690,6 +825,8 @@ Export-ModuleMember -Function @(
     'Export-LogsToJson',
     'Get-StructuredLogs',
     'Invoke-LogRetentionCleanup',
+    'Get-ArchivedLogs',
+    'Expand-ArchivedLog',
     'Close-StructuredLogging',
     'Get-LoggingStatistics'
 )

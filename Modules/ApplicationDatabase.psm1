@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.0.0
+    Version: 3.5.0
     Last Updated: 2025-10-06
 #>
 
@@ -626,6 +626,170 @@ function Get-DatabaseStatistics {
     return $stats
 }
 
+<#
+.SYNOPSIS
+    Gets dependencies for an application
+.DESCRIPTION
+    Returns the list of application dependencies with their metadata
+.PARAMETER AppId
+    The application ID to get dependencies for
+.PARAMETER DependencyType
+    Filter by dependency type: Required, Optional, Recommended, or All (default)
+.EXAMPLE
+    $deps = Get-ApplicationDependencies -AppId 'VSCode'
+    $reqDeps = Get-ApplicationDependencies -AppId 'VSCode' -DependencyType 'Required'
+#>
+function Get-ApplicationDependencies {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject[]])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$AppId,
+
+        [Parameter()]
+        [ValidateSet('Required', 'Optional', 'Recommended', 'All')]
+        [string]$DependencyType = 'All'
+    )
+
+    $app = Get-ApplicationById -AppId $AppId
+    if ($null -eq $app) {
+        Write-Warning "Application not found: $AppId"
+        return @()
+    }
+
+    # Check if Dependencies property exists
+    if ($null -eq $app.PSObject.Properties['Dependencies'] -or $null -eq $app.Dependencies) {
+        return @()
+    }
+
+    $dependencies = @($app.Dependencies)
+
+    # Filter by type if specified
+    if ($DependencyType -ne 'All') {
+        $dependencies = @($dependencies | Where-Object { $_.Type -eq $DependencyType.ToLower() })
+    }
+
+    # Resolve dependency details
+    $resolvedDeps = foreach ($dep in $dependencies) {
+        $depApp = Get-ApplicationById -AppId $dep.AppId
+        [PSCustomObject]@{
+            AppId       = $dep.AppId
+            Name        = if ($depApp) { $depApp.Name } else { $dep.AppId }
+            Type        = $dep.Type
+            MinVersion  = $dep.MinVersion
+            Reason      = $dep.Reason
+            Resolved    = ($null -ne $depApp)
+            Category    = if ($depApp) { $depApp.Category } else { $null }
+        }
+    }
+
+    return $resolvedDeps
+}
+
+<#
+.SYNOPSIS
+    Resolves all dependencies for a list of applications
+.DESCRIPTION
+    Returns a sorted list of applications with dependencies resolved in correct installation order
+.PARAMETER AppIds
+    Array of application IDs to resolve
+.PARAMETER IncludeOptional
+    If specified, includes optional dependencies
+.EXAMPLE
+    $orderedApps = Resolve-ApplicationDependencies -AppIds @('VSCode', 'Docker')
+#>
+function Resolve-ApplicationDependencies {
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$AppIds,
+
+        [Parameter()]
+        [switch]$IncludeOptional
+    )
+
+    $resolved = [System.Collections.Generic.HashSet[string]]::new()
+    $result = [System.Collections.Generic.List[string]]::new()
+    $visiting = [System.Collections.Generic.HashSet[string]]::new()
+
+    function Resolve-Single {
+        param([string]$Id)
+
+        if ($resolved.Contains($Id)) {
+            return
+        }
+
+        if ($visiting.Contains($Id)) {
+            Write-Warning "Circular dependency detected involving: $Id"
+            return
+        }
+
+        [void]$visiting.Add($Id)
+
+        # Get dependencies
+        $depTypes = @('Required', 'Recommended')
+        if ($IncludeOptional) {
+            $depTypes += 'Optional'
+        }
+
+        $deps = Get-ApplicationDependencies -AppId $Id -DependencyType 'All' |
+            Where-Object { $_.Type -in $depTypes.ToLower() }
+
+        foreach ($dep in $deps) {
+            if ($dep.Resolved) {
+                Resolve-Single -Id $dep.AppId
+            }
+        }
+
+        [void]$visiting.Remove($Id)
+        [void]$resolved.Add($Id)
+        [void]$result.Add($Id)
+    }
+
+    foreach ($appId in $AppIds) {
+        Resolve-Single -Id $appId
+    }
+
+    return $result.ToArray()
+}
+
+<#
+.SYNOPSIS
+    Checks if dependencies are satisfied for an application
+.DESCRIPTION
+    Verifies that all required dependencies for an application are present in a given list
+.PARAMETER AppId
+    The application ID to check
+.PARAMETER InstalledAppIds
+    List of AppIds that are already installed or selected
+.EXAMPLE
+    $satisfied = Test-DependenciesSatisfied -AppId 'VSCode' -InstalledAppIds @('Git', 'NodeJS')
+#>
+function Test-DependenciesSatisfied {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$AppId,
+
+        [Parameter(Mandatory)]
+        [string[]]$InstalledAppIds
+    )
+
+    $deps = Get-ApplicationDependencies -AppId $AppId -DependencyType 'Required'
+
+    $missing = @($deps | Where-Object { $_.AppId -notin $InstalledAppIds })
+
+    return [PSCustomObject]@{
+        AppId           = $AppId
+        Satisfied       = ($missing.Count -eq 0)
+        TotalRequired   = $deps.Count
+        MissingCount    = $missing.Count
+        MissingDeps     = $missing
+    }
+}
+
 # Export module members
 Export-ModuleMember -Function @(
     'Get-ApplicationDatabase',
@@ -637,6 +801,10 @@ Export-ModuleMember -Function @(
     'Get-ApplicationTags',
     'Test-ApplicationSources',
     'Reset-DatabaseCache',
-    'Get-DatabaseStatistics'
+    'Get-DatabaseStatistics',
+    # Dependency management
+    'Get-ApplicationDependencies',
+    'Resolve-ApplicationDependencies',
+    'Test-DependenciesSatisfied'
 )
 

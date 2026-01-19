@@ -2,7 +2,7 @@
   "_meta": {
     "locale": "en",
     "name": "English",
-    "version": "3.0.0",
+    "version": "3.5.0",
     "author": "Julien Bombled"
   },
   "common": {
@@ -27,7 +27,7 @@
     "next": "Next",
     "exit": "Exit",
     "retry": "Retry",
-    "version": "Version"
+    "version": "3.5.0"
   },
   "core": {
     "admin_required": "Administrator privileges required",
@@ -408,7 +408,7 @@
     },
     "info": {
       "title": "Framework Information",
-      "version": "Win11Forge Version:",
+      "version": "3.5.0",
       "ps_version": "PowerShell Version:",
       "repo_path": "Repository Path:",
       "db_loaded": "Database Loaded:"
@@ -1057,7 +1057,59 @@
     "available_plugins": "Available plugins: {Count}",
     "loaded_plugins": "Loaded plugins: {Count}",
     "disabled": "Plugin system is disabled",
-    "template_info": "Plugin template available at: Plugins/_template"
+    "template_info": "Plugin template available at: Plugins/_template",
+    "sandbox": {
+      "executing": "Executing plugin '{Name}' in sandbox (timeout: {Timeout}s)",
+      "timed_out": "Plugin '{Name}' timed out after {Timeout}s",
+      "failed": "Plugin sandbox error for '{Name}': {Error}",
+      "hook_sandboxed": "Invoking hook '{Hook}' with sandboxing ({Count} handler(s))",
+      "load_validation": "Validating plugin load: {Name}",
+      "load_timed_out": "Plugin load validation timed out after {Timeout}s",
+      "available": "Plugin sandboxing is available",
+      "not_available": "Plugin sandboxing is not available"
+    }
+  },
+  "state": {
+    "validation": {
+      "invalid_session_id": "Invalid SessionId format in state file",
+      "invalid_profile_name": "Invalid ProfileName in state file (contains forbidden characters)",
+      "profile_name_too_long": "ProfileName too long in state file",
+      "invalid_total_apps": "Invalid TotalApps value in state file",
+      "dangerous_app_name": "Invalid app name in state file: contains shell metacharacters"
+    },
+    "rollback": {
+      "session_initialized": "Rollback session initialized: {SessionId}",
+      "save_failed": "Could not save rollback state: {Error}",
+      "entry_added": "Rollback entry added: {AppName} ({Method})",
+      "invalid_entry": "Invalid rollback entry - validation failed",
+      "cleared": "Rollback state cleared",
+      "restored": "Rollback state restored from disk",
+      "restore_failed": "Failed to restore rollback state: {Error}"
+    },
+    "deployment": {
+      "session_initialized": "Deployment session initialized: {ProfileName} ({Count} apps)",
+      "save_failed": "Could not save deployment state: {Error}",
+      "cleared": "Deployment state cleared",
+      "load_failed": "Failed to load deployment state: {Error}",
+      "resumable": "Found resumable deployment: {ProfileName} ({PendingCount} apps pending)",
+      "progress": "Deployment progress: {Completed}/{Total} ({Percent}%)"
+    }
+  },
+  "timeout": {
+    "config_loaded": "Timeout configuration loaded",
+    "config_load_failed": "Failed to load timeout settings: {Error}. Using defaults.",
+    "installation_default": "Using default installation timeout: {Timeout}s",
+    "installation_office": "Using Office installation timeout: {Timeout}s",
+    "parallel_timeout": "Parallel installation timeout: {Timeout}ms",
+    "download_timeout": "Download timeout: {Timeout}s"
+  },
+  "error": {
+    "standardized": {
+      "created": "Error created: [{Category}] {Message}",
+      "logged": "Error logged with code: {ErrorCode}",
+      "timeout": "Operation '{Operation}' timed out after {Timeout}s",
+      "validation": "Validation failed for '{Parameter}': {Message}"
+    }
   },
   "ux": {
     "recovery": {
@@ -1151,6 +1203,69 @@
       "Select": "Select a profile...",
       "Clear": "Clear profile",
       "AppsSelected": "apps selected"
+    },
+    "onboarding": {
+      "Welcome": "Welcome to Win11Forge",
+      "Subtitle": "Your Windows 11 deployment assistant",
+      "Step1_Title": "Check Prerequisites",
+      "Step1_Desc": "Verify your system meets requirements and install necessary package managers",
+      "Step2_Title": "Select Applications",
+      "Step2_Desc": "Browse the catalog and choose applications to install",
+      "Step3_Title": "Deploy",
+      "Step3_Desc": "Start the automated deployment and monitor progress in real-time",
+      "Tip": "Pro tip: Press",
+      "Tip_Shortcuts": "to view all keyboard shortcuts",
+      "DontShowAgain": "Don't show this again",
+      "GetStarted": "Get Started"
+    },
+    "undo": {
+      "Title": "Undo",
+      "Redo": "Redo",
+      "NothingToUndo": "Nothing to undo",
+      "NothingToRedo": "Nothing to redo",
+      "ActionUndone": "Action undone: {Action}",
+      "ActionRedone": "Action redone: {Action}",
+      "UndoFailed": "Failed to undo action",
+      "RedoFailed": "Failed to redo action",
+      "ClearHistory": "Clear history",
+      "HistoryCleared": "Undo history cleared",
+      "SelectionChanged": "Selection changed",
+      "SettingsChanged": "Settings changed",
+      "ProfileLoaded": "Profile loaded",
+      "FavoriteToggled": "Favorite toggled"
+    },
+    "breadcrumb": {
+      "Home": "Home",
+      "Apps": "Applications",
+      "Prerequisites": "Prerequisites",
+      "Deployment": "Deployment",
+      "Settings": "Settings",
+      "Logs": "Logs"
+    },
+    "tooltips": {
+      "Dashboard_Stats": "View real-time deployment statistics and system status",
+      "Apps_Search": "Search applications by name, ID, or description",
+      "Apps_Filter": "Filter applications by category, status, or source",
+      "Apps_SelectAll": "Select all visible applications",
+      "Apps_DeselectAll": "Deselect all applications",
+      "Deploy_Start": "Start deployment with selected applications",
+      "Deploy_Pause": "Pause the current deployment",
+      "Deploy_Resume": "Resume the paused deployment",
+      "Deploy_Cancel": "Cancel the current deployment",
+      "Settings_Theme": "Toggle between light and dark theme",
+      "Settings_Language": "Change the application language",
+      "Settings_HighContrast": "Enable high contrast mode for better visibility (WCAG AAA)",
+      "Settings_Parallel": "Number of applications to install simultaneously",
+      "Logs_Export": "Export logs to a file",
+      "Logs_Clear": "Clear the current log view",
+      "Nav_Keyboard": "Press F1 to view keyboard shortcuts"
+    },
+    "severity": {
+      "Info": "Information",
+      "Success": "Success",
+      "Warning": "Warning",
+      "Error": "Error",
+      "Critical": "Critical"
     }
   }
 }

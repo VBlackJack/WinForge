@@ -43,9 +43,9 @@
                 <materialDesign:PackIcon Kind="Apps"
                                           Width="20" Height="20"
                                           VerticalAlignment="Center"
-                                          Opacity="0.7"
+                                          Foreground="{DynamicResource MaterialDesignBodyLight}"
                                           Margin="0,0,8,0"/>
-                <TextBlock VerticalAlignment="Center" Opacity="0.7">
+                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}">
                     <Run Text="{Binding SelectedAppsCount, Mode=OneWay}"/>
                     <Run Text=" "/>
                     <Run Text="{loc:Loc Dialog_SaveProfile_AppsSelected}"/>

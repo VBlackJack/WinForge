@@ -23,7 +23,7 @@ namespace Win11Forge.GUI.Services;
 /// <summary>
 /// Shared service for deployment state that can be observed by multiple ViewModels.
 /// </summary>
-public interface IDeploymentStateService
+public interface IDeploymentStateService : IDisposable
 {
     /// <summary>
     /// Whether a deployment is currently in progress.
@@ -290,5 +290,35 @@ public partial class DeploymentStateService : ObservableObject, IDeploymentState
     private void RaiseStateChanged()
     {
         StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private bool _disposed;
+
+    /// <summary>
+    /// Releases all resources used by the DeploymentStateService.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases the unmanaged resources and optionally releases managed resources.
+    /// </summary>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing)
+        {
+            Applications.Clear();
+            StateChanged = null;
+            PauseRequested = null;
+            ResumeRequested = null;
+            CancelRequested = null;
+        }
+
+        _disposed = true;
     }
 }

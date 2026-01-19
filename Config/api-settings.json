@@ -1,9 +1,9 @@
 {
   "_meta": {
     "description": "REST API server configuration for Win11Forge",
-    "version": "3.1.4",
+    "version": "3.5.0",
     "author": "Julien Bombled",
-    "lastUpdated": "2026-01-17"
+    "lastUpdated": "2026-01-19"
   },
   "port": 5170,
   "host": "localhost",
@@ -30,20 +30,23 @@
     "rateLimiting": {
       "enabled": true,
       "maxRequestsPerMinute": 60,
-      "maxRequestsPerHour": 1000
+      "maxRequestsPerHour": 1000,
+      "maxFailedAuthPerHour": 10,
+      "blockDurationMinutes": 60
     },
     "notes": "API requires authentication via X-API-Key header. Rate limiting is enabled by default."
   },
   "apiKeys": {
-    "description": "API keys for authentication. Keys should be 32+ characters.",
+    "description": "API keys for authentication. Keys should be 32+ characters. Generate new keys using New-ApiKey cmdlet.",
+    "securityWarning": "NEVER commit real API keys to version control. Use New-ApiKey to generate secure keys at runtime.",
     "keys": [
       {
-        "id": "default",
-        "key": "win11forge-default-api-key-change-in-production",
-        "description": "Default API key - CHANGE IN PRODUCTION",
-        "permissions": ["read", "write", "deploy"],
-        "enabled": true,
-        "createdAt": "2026-01-17",
+        "id": "example-disabled",
+        "key": "EXAMPLE-ONLY-GENERATE-NEW-KEY-WITH-New-ApiKey",
+        "description": "Example key template - DISABLED by default. Use New-ApiKey to create secure keys.",
+        "permissions": ["read"],
+        "enabled": false,
+        "createdAt": "2026-01-19",
         "expiresAt": null
       }
     ],

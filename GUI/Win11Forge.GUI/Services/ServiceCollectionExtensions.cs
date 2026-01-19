@@ -35,6 +35,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppSettingsService, AppSettingsService>();
         services.AddSingleton<IProfileExportService, ProfileExportService>();
         services.AddSingleton<IDeploymentStateService, DeploymentStateService>();
+        services.AddSingleton<IUndoService, UndoService>();
+        services.AddSingleton<IValidationService, ValidationService>();
         services.AddSingleton<ToastService>();
         services.AddSingleton<INavigationService, NavigationService>();
 

@@ -6,10 +6,11 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
         xmlns:views="clr-namespace:Win11Forge.GUI.Views"
+        xmlns:controls="clr-namespace:Win11Forge.GUI.Controls"
         mc:Ignorable="d"
         Title="{loc:Loc App_Title}"
         Height="900" Width="1440"
-        MinHeight="650" MinWidth="1200"
+        MinHeight="600" MinWidth="960"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource MaterialDesign.Brush.Background}"
         TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
@@ -27,6 +28,9 @@
         <KeyBinding Modifiers="Ctrl" Key="D5" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="4"/>
         <KeyBinding Modifiers="Ctrl" Key="D6" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="5"/>
         <KeyBinding Modifiers="Ctrl" Key="OemComma" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="5"/>
+        <KeyBinding Modifiers="Ctrl" Key="Z" Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+        <KeyBinding Modifiers="Ctrl" Key="Y" Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+        <KeyBinding Modifiers="Ctrl+Shift" Key="Z" Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
     </Window.InputBindings>
 
     <materialDesign:DialogHost Identifier="RootDialog"
@@ -160,24 +164,71 @@
 
         <!-- Main Content Area -->
         <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Breadcrumb Navigation -->
+            <Border Grid.Row="0"
+                    Background="{DynamicResource MaterialDesignToolBarBackground}"
+                    Padding="16,8"
+                    Visibility="{Binding ShowBreadcrumb, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <controls:Breadcrumb x:Name="BreadcrumbControl"
+                                         Grid.Column="0"
+                                         AutomationProperties.Name="Breadcrumb navigation"/>
+                    <!-- Undo/Redo Buttons -->
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                Visibility="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Button Style="{StaticResource MaterialDesignIconButton}"
+                                Width="32" Height="32"
+                                Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                ToolTip="{loc:Loc Undo_Title}"
+                                AutomationProperties.Name="Undo last action"
+                                IsEnabled="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=Window}}">
+                            <materialDesign:PackIcon Kind="Undo" Width="18" Height="18"/>
+                        </Button>
+                        <Button Style="{StaticResource MaterialDesignIconButton}"
+                                Width="32" Height="32"
+                                Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                ToolTip="{loc:Loc Undo_Redo}"
+                                AutomationProperties.Name="Redo last undone action"
+                                IsEnabled="{Binding CanRedo, RelativeSource={RelativeSource AncestorType=Window}}">
+                            <materialDesign:PackIcon Kind="Redo" Width="18" Height="18"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
             <!-- Dashboard View -->
             <views:DashboardView x:Name="DashboardViewControl"
+                                  Grid.Row="1"
                                   Visibility="Visible"/>
 
             <!-- Deployment View -->
             <views:DeploymentView x:Name="DeploymentViewControl"
+                                   Grid.Row="1"
                                    Visibility="Collapsed"/>
 
             <!-- Apps View -->
             <views:AppsView x:Name="AppsViewControl"
+                             Grid.Row="1"
                              Visibility="Collapsed"/>
 
             <!-- Settings View -->
             <views:SettingsView x:Name="SettingsViewControl"
+                                 Grid.Row="1"
                                  Visibility="Collapsed"/>
 
             <!-- Prerequisites View -->
             <views:PrerequisitesView x:Name="PrerequisitesViewControl"
+                                      Grid.Row="1"
                                       Visibility="Collapsed"/>
         </Grid>
 

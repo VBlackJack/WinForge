@@ -123,6 +123,15 @@
     <value>Deploy</value>
     <comment>Breadcrumb step 3 - deployment</comment>
   </data>
+  <!-- Undo/Redo Actions -->
+  <data name="Undo_ActionUndone" xml:space="preserve">
+    <value>Undone: {0}</value>
+    <comment>Toast message when action is undone (0=action description)</comment>
+  </data>
+  <data name="Undo_ActionRedone" xml:space="preserve">
+    <value>Redone: {0}</value>
+    <comment>Toast message when action is redone (0=action description)</comment>
+  </data>
   <data name="Deploy_SelectProfile" xml:space="preserve">
     <value>Select Profile:</value>
     <comment>Label for profile selection dropdown</comment>

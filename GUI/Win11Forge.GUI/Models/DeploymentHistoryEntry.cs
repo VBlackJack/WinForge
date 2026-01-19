@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
 namespace Win11Forge.GUI.Models;
 
 /// <summary>
@@ -30,51 +33,62 @@ public enum DeploymentResult
 /// <summary>
 /// Represents a single deployment history entry.
 /// </summary>
-public class DeploymentHistoryEntry
+public class DeploymentHistoryEntry : IValidatableObject
 {
     /// <summary>
     /// Unique identifier for this entry.
     /// </summary>
+    [Required]
     public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>
     /// When the deployment was executed.
     /// </summary>
+    [Required]
     public DateTime Date { get; set; } = DateTime.Now;
 
     /// <summary>
     /// Name of the profile that was deployed.
     /// </summary>
+    [Required(ErrorMessage = "Profile name is required")]
+    [StringLength(128, MinimumLength = 1, ErrorMessage = "Profile name must be between 1 and 128 characters")]
     public string ProfileName { get; set; } = string.Empty;
 
     /// <summary>
     /// Overall result of the deployment.
     /// </summary>
+    [Required]
+    [EnumDataType(typeof(DeploymentResult))]
     public DeploymentResult Result { get; set; }
 
     /// <summary>
     /// Total number of applications attempted.
     /// </summary>
+    [Range(0, 10000, ErrorMessage = "Total apps must be between 0 and 10000")]
     public int TotalApps { get; set; }
 
     /// <summary>
     /// Number of successfully installed applications.
     /// </summary>
+    [Range(0, 10000, ErrorMessage = "Successful apps must be between 0 and 10000")]
     public int SuccessfulApps { get; set; }
 
     /// <summary>
     /// Number of failed installations.
     /// </summary>
+    [Range(0, 10000, ErrorMessage = "Failed apps must be between 0 and 10000")]
     public int FailedApps { get; set; }
 
     /// <summary>
     /// Number of skipped installations.
     /// </summary>
+    [Range(0, 10000, ErrorMessage = "Skipped apps must be between 0 and 10000")]
     public int SkippedApps { get; set; }
 
     /// <summary>
     /// Duration of the deployment in seconds.
     /// </summary>
+    [Range(0, 86400 * 7, ErrorMessage = "Duration must be between 0 and 7 days")]
     public double DurationSeconds { get; set; }
 
     /// <summary>
@@ -107,4 +121,42 @@ public class DeploymentHistoryEntry
     /// Gets a summary string for display.
     /// </summary>
     public string Summary => $"{SuccessfulApps}/{TotalApps} apps installed";
+
+    /// <summary>
+    /// Validates the model with complex business rules.
+    /// </summary>
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Sum of apps should equal total
+        var calculatedTotal = SuccessfulApps + FailedApps + SkippedApps;
+        if (calculatedTotal > TotalApps)
+        {
+            yield return new ValidationResult(
+                "Sum of successful, failed, and skipped apps cannot exceed total apps",
+                new[] { nameof(TotalApps), nameof(SuccessfulApps), nameof(FailedApps), nameof(SkippedApps) });
+        }
+
+        // Date should not be in the future
+        if (Date > DateTime.Now.AddMinutes(1))
+        {
+            yield return new ValidationResult(
+                "Deployment date cannot be in the future",
+                new[] { nameof(Date) });
+        }
+
+        // Validate result consistency
+        if (Result == DeploymentResult.Success && FailedApps > 0)
+        {
+            yield return new ValidationResult(
+                "Success result cannot have failed apps",
+                new[] { nameof(Result), nameof(FailedApps) });
+        }
+
+        if (Result == DeploymentResult.Failed && SuccessfulApps == TotalApps && TotalApps > 0)
+        {
+            yield return new ValidationResult(
+                "Failed result cannot have all apps successful",
+                new[] { nameof(Result), nameof(SuccessfulApps) });
+        }
+    }
 }

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+using System.ComponentModel.DataAnnotations;
+
 namespace Win11Forge.GUI.Models;
 
 /// <summary>
@@ -24,21 +26,25 @@ public class SystemInfoModel
     /// <summary>
     /// Computer hostname.
     /// </summary>
+    [StringLength(256, ErrorMessage = "Hostname must not exceed 256 characters")]
     public string Hostname { get; set; } = string.Empty;
 
     /// <summary>
     /// Current username.
     /// </summary>
+    [StringLength(256, ErrorMessage = "Username must not exceed 256 characters")]
     public string Username { get; set; } = string.Empty;
 
     /// <summary>
     /// Windows version (e.g., "Windows 11 Pro").
     /// </summary>
+    [StringLength(128, ErrorMessage = "Windows version must not exceed 128 characters")]
     public string WindowsVersion { get; set; } = string.Empty;
 
     /// <summary>
     /// Windows build number (e.g., "22631.2715").
     /// </summary>
+    [StringLength(64, ErrorMessage = "Windows build must not exceed 64 characters")]
     public string WindowsBuild { get; set; } = string.Empty;
 
     /// <summary>
@@ -49,6 +55,7 @@ public class SystemInfoModel
     /// <summary>
     /// Winget version if available.
     /// </summary>
+    [StringLength(64, ErrorMessage = "Winget version must not exceed 64 characters")]
     public string WingetVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -59,6 +66,7 @@ public class SystemInfoModel
     /// <summary>
     /// Chocolatey version if available.
     /// </summary>
+    [StringLength(64, ErrorMessage = "Chocolatey version must not exceed 64 characters")]
     public string ChocolateyVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -69,10 +77,12 @@ public class SystemInfoModel
     /// <summary>
     /// Total physical memory in GB.
     /// </summary>
+    [Range(0, 10000, ErrorMessage = "Total memory must be between 0 and 10000 GB")]
     public double TotalMemoryGB { get; set; }
 
     /// <summary>
     /// Number of logical processors.
     /// </summary>
+    [Range(1, 1024, ErrorMessage = "Processor count must be between 1 and 1024")]
     public int ProcessorCount { get; set; }
 }
