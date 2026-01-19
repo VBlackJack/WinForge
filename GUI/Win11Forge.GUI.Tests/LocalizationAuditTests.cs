@@ -75,7 +75,15 @@ public class LocalizationAuditTests
         "*",          // Asterisk
         " *",         // Required field indicator (space + asterisk)
         "×",          // Multiplication sign
-        "+"           // Plus sign
+        "+",          // Plus sign
+        "v",          // Version prefix (e.g., "v3.2.3")
+        " / ~",       // Time separator (elapsed / ~estimated)
+        "Win11Forge", // Brand name (not localized)
+        "Win11Forge v", // Brand name with version prefix
+        "\"",         // Quote character
+        " \"",        // Space + quote (formatting)
+        "&quot;",     // HTML entity quote
+        " &quot;"     // Space + HTML entity quote
     ];
 
     /// <summary>
