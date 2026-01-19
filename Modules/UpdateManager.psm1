@@ -230,7 +230,9 @@ function Test-IsNewerVersion {
         return $versionAvailable -gt $versionCurrent
     } catch {
         # Fallback to string comparison if parsing fails
-        Write-Verbose "Version parse failed, using string comparison: Current='$Current', Available='$Available'"
+        if (Get-Command -Name 'Get-LocalizedString' -ErrorAction SilentlyContinue) {
+            Write-Verbose (Get-LocalizedString -Key 'optimization.version_compare_fallback' -Parameters @{ Current = $Current; Available = $Available })
+        }
         return (Compare-SemanticVersions -Version1 $Available -Version2 $Current) -gt 0
     }
 }
