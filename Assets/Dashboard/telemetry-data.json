@@ -1,77 +1,57 @@
-﻿{
-    "summary":  {
-                    "DataVersion":  "1.0",
-                    "CreatedAt":  "2026-01-17T11:35:25.5447280+01:00",
-                    "LastUpdated":  "2026-01-17T11:35:25.5447280+01:00",
-                    "Deployments":  {
-                                        "SuccessRate":  "0%",
-                                        "Failed":  0,
-                                        "Successful":  0,
-                                        "Total":  0,
-                                        "RolledBack":  0
-                                    },
-                    "Applications":  {
-                                         "ByCategory":  {
-
-                                                        },
-                                         "TotalInstalled":  0,
-                                         "ByMethod":  {
-
-                                                      },
-                                         "TopInstalled":  [
-
-                                                          ],
-                                         "TotalFailed":  0
-                                     },
-                    "Performance":  {
-                                        "AverageDeploymentSeconds":  0,
-                                        "AverageDeploymentMinutes":  0,
-                                        "TotalDeploymentHours":  0
-                                    },
-                    "Profiles":  {
-                                     "UsageStats":  {
-
-                                                    },
-                                     "MostUsed":  "N/A"
-                                 }
-                },
-    "charts":  {
-                   "categoryBar":  {
-                                       "labels":  [
-
-                                                  ],
-                                       "data":  [
-
-                                                ]
-                                   },
-                   "topAppsBar":  {
-                                      "labels":  [
-
-                                                 ],
-                                      "data":  [
-
-                                               ]
-                                  },
-                   "methodBar":  {
-                                     "labels":  [
-
-                                                ],
-                                     "data":  [
-
-                                              ]
-                                 },
-                   "deploymentPie":  {
-                                         "labels":  [
-                                                        "Successful",
-                                                        "Failed",
-                                                        "Rolled Back"
-                                                    ],
-                                         "data":  [
-                                                      0,
-                                                      0,
-                                                      0
-                                                  ]
-                                     }
-               },
-    "generatedAt":  "2026-01-17T11:35:25.5644578+01:00"
+{
+  "summary": {
+    "DataVersion": "1.0",
+    "CreatedAt": "2026-01-19T09:52:20.2827512+01:00",
+    "LastUpdated": "2026-01-19T09:52:20.2827927+01:00",
+    "Deployments": {
+      "RolledBack": 0,
+      "SuccessRate": "0%",
+      "Failed": 0,
+      "Successful": 0,
+      "Total": 0
+    },
+    "Applications": {
+      "ByMethod": {},
+      "TopInstalled": [],
+      "TotalInstalled": 0,
+      "TotalFailed": 0.0,
+      "ByCategory": {}
+    },
+    "Performance": {
+      "AverageDeploymentMinutes": 0.0,
+      "TotalDeploymentHours": 0.0,
+      "AverageDeploymentSeconds": 0
+    },
+    "Profiles": {
+      "UsageStats": {},
+      "MostUsed": "N/A"
+    }
+  },
+  "charts": {
+    "deploymentPie": {
+      "labels": [
+        "Successful",
+        "Failed",
+        "Rolled Back"
+      ],
+      "data": [
+        0,
+        0,
+        0
+      ]
+    },
+    "categoryBar": {
+      "labels": [],
+      "data": []
+    },
+    "topAppsBar": {
+      "labels": [],
+      "data": []
+    },
+    "methodBar": {
+      "labels": [],
+      "data": []
+    }
+  },
+  "generatedAt": "2026-01-19T09:52:20.2983944+01:00"
 }

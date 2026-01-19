@@ -26,7 +26,7 @@ namespace Win11Forge.GUI.ViewModels;
 
 /// <summary>
 /// ViewModel for the Dashboard view.
-/// Displays system information, update scanner, and quick navigation.
+/// Displays a hero section with system status, stats, and quick navigation.
 /// </summary>
 public partial class DashboardViewModel : ViewModelBase
 {
@@ -34,6 +34,85 @@ public partial class DashboardViewModel : ViewModelBase
 
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IDeploymentHistoryService _historyService;
+
+    #region Hero Section Properties
+
+    /// <summary>
+    /// Current state of the dashboard hero section.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HeroTitle))]
+    [NotifyPropertyChangedFor(nameof(HeroSubtitle))]
+    [NotifyPropertyChangedFor(nameof(IsChecking))]
+    [NotifyPropertyChangedFor(nameof(IsReady))]
+    [NotifyPropertyChangedFor(nameof(NeedsPrerequisites))]
+    [NotifyPropertyChangedFor(nameof(HasUpdatesAvailable))]
+    [NotifyPropertyChangedFor(nameof(CanStartDeployment))]
+    private DashboardState _currentState = DashboardState.Checking;
+
+    /// <summary>
+    /// Number of missing prerequisites.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HeroTitle))]
+    private int _missingPrerequisitesCount;
+
+    /// <summary>
+    /// Current phase text during checking state.
+    /// </summary>
+    [ObservableProperty]
+    private string _checkingPhaseText = string.Empty;
+
+    /// <summary>
+    /// Title for the hero section based on current state.
+    /// </summary>
+    public string HeroTitle => CurrentState switch
+    {
+        DashboardState.Checking => CheckingPhaseText,
+        DashboardState.NeedPrereqs => string.Format(Resources.Resources.Dashboard_Hero_NeedPrereqs, MissingPrerequisitesCount),
+        DashboardState.Ready => Resources.Resources.Dashboard_Hero_Ready,
+        DashboardState.HasUpdates => string.Format(Resources.Resources.Dashboard_Hero_HasUpdates, UpdateCount),
+        _ => Resources.Resources.Dashboard_Hero_Checking
+    };
+
+    /// <summary>
+    /// Subtitle for the hero section based on current state.
+    /// </summary>
+    public string HeroSubtitle => CurrentState switch
+    {
+        DashboardState.Checking => Resources.Resources.Dashboard_Phase_LoadingInfo,
+        DashboardState.NeedPrereqs => Resources.Resources.Dashboard_Hero_Subtitle_Prereqs,
+        DashboardState.Ready => Resources.Resources.Dashboard_Hero_Subtitle_Ready,
+        DashboardState.HasUpdates => Resources.Resources.Dashboard_Hero_Subtitle_Updates,
+        _ => string.Empty
+    };
+
+    /// <summary>
+    /// Whether the dashboard is in checking state.
+    /// </summary>
+    public bool IsChecking => CurrentState == DashboardState.Checking;
+
+    /// <summary>
+    /// Whether the system is ready for deployment.
+    /// </summary>
+    public bool IsReady => CurrentState == DashboardState.Ready || CurrentState == DashboardState.HasUpdates;
+
+    /// <summary>
+    /// Whether prerequisites are missing.
+    /// </summary>
+    public bool NeedsPrerequisites => CurrentState == DashboardState.NeedPrereqs;
+
+    /// <summary>
+    /// Whether updates are available.
+    /// </summary>
+    public bool HasUpdatesAvailable => CurrentState == DashboardState.HasUpdates;
+
+    /// <summary>
+    /// Whether deployment can be started.
+    /// </summary>
+    public bool CanStartDeployment => CurrentState == DashboardState.Ready || CurrentState == DashboardState.HasUpdates;
+
+    #endregion
 
     #region System Info Properties
 
@@ -68,7 +147,7 @@ public partial class DashboardViewModel : ViewModelBase
     private bool _isAdmin;
 
     /// <summary>
-    /// Admin status display text.
+    /// Admin status display text (localized).
     /// </summary>
     [ObservableProperty]
     private string _adminStatus = string.Empty;
@@ -80,7 +159,7 @@ public partial class DashboardViewModel : ViewModelBase
     private bool _wingetInstalled;
 
     /// <summary>
-    /// Winget version or "Not installed".
+    /// Winget version or localized "Not installed".
     /// </summary>
     [ObservableProperty]
     private string _wingetVersion = string.Empty;
@@ -92,7 +171,7 @@ public partial class DashboardViewModel : ViewModelBase
     private bool _chocolateyInstalled;
 
     /// <summary>
-    /// Chocolatey version or "Not installed".
+    /// Chocolatey version or localized "Not installed".
     /// </summary>
     [ObservableProperty]
     private string _chocolateyVersion = string.Empty;
@@ -104,7 +183,7 @@ public partial class DashboardViewModel : ViewModelBase
     private bool _powerShellInstalled;
 
     /// <summary>
-    /// PowerShell version or "Not installed".
+    /// PowerShell version or localized "Not installed".
     /// </summary>
     [ObservableProperty]
     private string _powerShellVersion = string.Empty;
@@ -129,6 +208,7 @@ public partial class DashboardViewModel : ViewModelBase
     /// Number of available updates.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HeroTitle))]
     private int _updateCount;
 
     #endregion
@@ -163,11 +243,11 @@ public partial class DashboardViewModel : ViewModelBase
     public bool IsNotScanning => !IsScanning;
 
     /// <summary>
-    /// Text for the scan button.
+    /// Text for the scan button (localized).
     /// </summary>
     public string ScanButtonText => IsScanning
-        ? $"Scanning... ({ScanProgress}/{ScanTotal})"
-        : "Scan for Updates";
+        ? string.Format(Resources.Resources.Dashboard_Scan_Progress, ScanProgress, ScanTotal)
+        : Resources.Resources.Dashboard_Scan_Button;
 
     /// <summary>
     /// Timestamp of the last scan.
@@ -176,7 +256,7 @@ public partial class DashboardViewModel : ViewModelBase
     private DateTime? _lastScanTime;
 
     /// <summary>
-    /// Formatted string for last scan time.
+    /// Formatted string for last scan time (localized).
     /// </summary>
     public string LastScanDisplay
     {
@@ -231,17 +311,16 @@ public partial class DashboardViewModel : ViewModelBase
     {
         IsLoading = true;
         ErrorMessage = null;
+        CurrentState = DashboardState.Checking;
 
         try
         {
-            // Load version
+            // Phase 1: Load basic information
+            CheckingPhaseText = Resources.Resources.Dashboard_Phase_LoadingInfo;
+            OnPropertyChanged(nameof(HeroTitle));
+
             AppVersion = await _powerShellBridge.GetWin11ForgeVersionAsync();
-
-            // Load system info
             await LoadSystemInfoAsync();
-
-            // Load prerequisites status
-            await LoadPrerequisitesStatusAsync();
 
             // Load stats
             var profiles = await _powerShellBridge.GetAvailableProfilesAsync();
@@ -254,10 +333,37 @@ public partial class DashboardViewModel : ViewModelBase
             var history = await _historyService.GetRecentHistoryAsync(MaxRecentHistory);
             RecentDeployments = new ObservableCollection<DeploymentHistoryEntry>(history);
             OnPropertyChanged(nameof(HasRecentDeployments));
+
+            // Phase 2: Check prerequisites
+            CheckingPhaseText = Resources.Resources.Dashboard_Phase_CheckingPrereqs;
+            OnPropertyChanged(nameof(HeroTitle));
+
+            await LoadPrerequisitesStatusAsync();
+
+            // Determine state based on prerequisites
+            int missingCount = 0;
+            if (!WingetInstalled) missingCount++;
+            if (!PowerShellInstalled) missingCount++;
+
+            MissingPrerequisitesCount = missingCount;
+
+            if (missingCount > 0)
+            {
+                CurrentState = DashboardState.NeedPrereqs;
+            }
+            else
+            {
+                // Phase 3: Scan for updates (only if prerequisites are OK)
+                CheckingPhaseText = Resources.Resources.Dashboard_Phase_ScanningUpdates;
+                OnPropertyChanged(nameof(HeroTitle));
+
+                await ScanForUpdatesAsync();
+            }
         }
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
+            CurrentState = DashboardState.Ready;
         }
         finally
         {
@@ -277,9 +383,9 @@ public partial class DashboardViewModel : ViewModelBase
             {
                 Hostname = !string.IsNullOrEmpty(systemInfo.Hostname) ? systemInfo.Hostname : Environment.MachineName;
                 OSName = !string.IsNullOrEmpty(systemInfo.WindowsVersion) ? systemInfo.WindowsVersion : "Windows";
-                OSBuild = !string.IsNullOrEmpty(systemInfo.WindowsBuild) ? systemInfo.WindowsBuild : "Unknown";
+                OSBuild = !string.IsNullOrEmpty(systemInfo.WindowsBuild) ? systemInfo.WindowsBuild : Resources.Resources.Common_Unknown;
                 IsAdmin = systemInfo.IsAdministrator;
-                AdminStatus = IsAdmin ? "Yes" : "No";
+                AdminStatus = IsAdmin ? Resources.Resources.Common_Yes : Resources.Resources.Common_No;
             }
             else
             {
@@ -298,7 +404,7 @@ public partial class DashboardViewModel : ViewModelBase
         OSName = "Windows";
         OSBuild = Environment.OSVersion.Version.Build.ToString();
         IsAdmin = false;
-        AdminStatus = "No";
+        AdminStatus = Resources.Resources.Common_No;
     }
 
     /// <summary>
@@ -314,17 +420,17 @@ public partial class DashboardViewModel : ViewModelBase
                 PowerShellInstalled = prereqStatus.PowerShell7Installed;
                 PowerShellVersion = prereqStatus.PowerShell7Installed
                     ? (!string.IsNullOrEmpty(prereqStatus.PowerShellVersion) ? prereqStatus.PowerShellVersion : "7+")
-                    : "Not installed";
+                    : Resources.Resources.Status_Missing;
 
                 WingetInstalled = prereqStatus.WingetInstalled;
                 WingetVersion = prereqStatus.WingetInstalled
-                    ? (!string.IsNullOrEmpty(prereqStatus.WingetVersion) ? prereqStatus.WingetVersion : "Installed")
-                    : "Not installed";
+                    ? (!string.IsNullOrEmpty(prereqStatus.WingetVersion) ? prereqStatus.WingetVersion : Resources.Resources.Status_Installed)
+                    : Resources.Resources.Status_Missing;
 
                 ChocolateyInstalled = prereqStatus.ChocolateyInstalled;
                 ChocolateyVersion = prereqStatus.ChocolateyInstalled
-                    ? (!string.IsNullOrEmpty(prereqStatus.ChocolateyVersion) ? prereqStatus.ChocolateyVersion : "Installed")
-                    : "Not installed";
+                    ? (!string.IsNullOrEmpty(prereqStatus.ChocolateyVersion) ? prereqStatus.ChocolateyVersion : Resources.Resources.Status_Installed)
+                    : Resources.Resources.Status_Missing;
             }
             else
             {
@@ -340,16 +446,59 @@ public partial class DashboardViewModel : ViewModelBase
     private void SetPrerequisitesUnknown()
     {
         PowerShellInstalled = false;
-        PowerShellVersion = "Unknown";
+        PowerShellVersion = Resources.Resources.Common_Unknown;
         WingetInstalled = false;
-        WingetVersion = "Unknown";
+        WingetVersion = Resources.Resources.Common_Unknown;
         ChocolateyInstalled = false;
-        ChocolateyVersion = "Unknown";
+        ChocolateyVersion = Resources.Resources.Common_Unknown;
+    }
+
+    /// <summary>
+    /// Performs the initial update scan during initialization.
+    /// </summary>
+    private async Task ScanForUpdatesAsync()
+    {
+        IsScanning = true;
+        UpdateCount = 0;
+        ScanProgress = 0;
+        ScanTotal = 0;
+
+        var tcs = new TaskCompletionSource<int>();
+
+        WeakReferenceMessenger.Default.Send(new TriggerScanMessage(
+            progressCallback: (current, total) =>
+            {
+                ScanProgress = current;
+                ScanTotal = total;
+            },
+            completionCallback: (updateCount) =>
+            {
+                tcs.TrySetResult(updateCount);
+            }
+        ));
+
+        try
+        {
+            var resultCount = await tcs.Task.WaitAsync(TimeSpan.FromMinutes(5));
+            UpdateCount = resultCount;
+            LastScanTime = DateTime.Now;
+            OnPropertyChanged(nameof(LastScanDisplay));
+
+            // Set state based on update count
+            CurrentState = resultCount > 0 ? DashboardState.HasUpdates : DashboardState.Ready;
+        }
+        catch (TimeoutException)
+        {
+            CurrentState = DashboardState.Ready;
+        }
+        finally
+        {
+            IsScanning = false;
+        }
     }
 
     /// <summary>
     /// Scans for available updates by triggering the scan in AppsViewModel.
-    /// This ensures the Applications view has the scan results available.
     /// </summary>
     [RelayCommand]
     private void ScanUpdates()
@@ -361,8 +510,6 @@ public partial class DashboardViewModel : ViewModelBase
         ScanProgress = 0;
         ScanTotal = 0;
 
-        // Send message to AppsViewModel to trigger its scan
-        // with callbacks for progress and completion
         WeakReferenceMessenger.Default.Send(new TriggerScanMessage(
             progressCallback: (current, total) =>
             {
@@ -375,6 +522,12 @@ public partial class DashboardViewModel : ViewModelBase
                 LastScanTime = DateTime.Now;
                 OnPropertyChanged(nameof(LastScanDisplay));
                 IsScanning = false;
+
+                // Update state based on scan results
+                if (CurrentState == DashboardState.Ready || CurrentState == DashboardState.HasUpdates)
+                {
+                    CurrentState = updateCount > 0 ? DashboardState.HasUpdates : DashboardState.Ready;
+                }
             }
         ));
     }
@@ -398,6 +551,15 @@ public partial class DashboardViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Navigates to the Deployment view for profile selection.
+    /// </summary>
+    [RelayCommand]
+    private void NavigateToProfiles()
+    {
+        WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Deployment));
+    }
+
+    /// <summary>
     /// Navigates to the Apps view with updates filter.
     /// </summary>
     [RelayCommand]
@@ -405,5 +567,14 @@ public partial class DashboardViewModel : ViewModelBase
     {
         WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Apps));
         WeakReferenceMessenger.Default.Send(new ApplyFilterMessage(StatusFilterOption.HasUpdates, triggerScan: true));
+    }
+
+    /// <summary>
+    /// Starts the deployment process by navigating to the deployment view.
+    /// </summary>
+    [RelayCommand]
+    private void StartDeployment()
+    {
+        WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Apps));
     }
 }

@@ -3,12 +3,13 @@
     Pester tests for TelemetryCollector module
 
 .DESCRIPTION
-    Unit tests for Win11Forge TelemetryCollector v3.1.4
+    Unit tests for Win11Forge TelemetryCollector v3.2.2
     Tests deployment tracking, statistics, and reporting functions
+    Verifies data schema compliance for local telemetry storage
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.1.4
+    Version: 3.2.2
     Requires: Pester v5+
 #>
 
@@ -417,6 +418,188 @@ Describe 'TelemetryCollector Module' {
 
             $summary2 = Get-TelemetrySummary
             $summary2.Performance.TotalDeploymentHours | Should -BeGreaterOrEqual $time1
+        }
+    }
+
+    # === DATA SCHEMA VALIDATION TESTS ===
+
+    Context 'Telemetry Data Schema Validation' {
+        BeforeEach {
+            Initialize-TelemetryCollector
+            Clear-TelemetryData -Confirm
+        }
+
+        It 'Should export valid JSON with required schema fields' {
+            $sessionId = Register-DeploymentStart -ProfileName 'SchemaTest'
+            Register-ApplicationInstall -AppName 'TestApp' -Method 'Winget' -Category 'Testing' -Success $true -SessionId $sessionId
+            Register-DeploymentEnd -SessionId $sessionId -Success $true
+
+            $tempPath = Join-Path $env:TEMP "Win11ForgeSchemaTest_$(Get-Random).json"
+            try {
+                Export-TelemetryReport -OutputPath $tempPath
+                $content = Get-Content $tempPath -Raw | ConvertFrom-Json
+
+                # Validate top-level structure
+                $content.PSObject.Properties.Name | Should -Contain 'summary'
+                $content.PSObject.Properties.Name | Should -Contain 'charts'
+                $content.PSObject.Properties.Name | Should -Contain 'generatedAt'
+
+                # Validate summary structure
+                $content.summary.PSObject.Properties.Name | Should -Contain 'Deployments'
+                $content.summary.PSObject.Properties.Name | Should -Contain 'Applications'
+                $content.summary.PSObject.Properties.Name | Should -Contain 'Performance'
+                $content.summary.PSObject.Properties.Name | Should -Contain 'Profiles'
+            }
+            finally {
+                if (Test-Path $tempPath) {
+                    Remove-Item $tempPath -Force
+                }
+            }
+        }
+
+        It 'Should have correct chart data structure for visualization' {
+            $sessionId = Register-DeploymentStart -ProfileName 'ChartTest'
+            Register-ApplicationInstall -AppName 'App1' -Method 'Winget' -Success $true
+            Register-ApplicationInstall -AppName 'App2' -Method 'Chocolatey' -Success $true
+            Register-DeploymentEnd -SessionId $sessionId -Success $true
+
+            $tempPath = Join-Path $env:TEMP "Win11ForgeChartTest_$(Get-Random).json"
+            try {
+                Export-TelemetryReport -OutputPath $tempPath
+                $content = Get-Content $tempPath -Raw | ConvertFrom-Json
+
+                # Validate chart structures have labels and data arrays
+                $content.charts.deploymentPie.PSObject.Properties.Name | Should -Contain 'labels'
+                $content.charts.deploymentPie.PSObject.Properties.Name | Should -Contain 'data'
+
+                $content.charts.methodBar.PSObject.Properties.Name | Should -Contain 'labels'
+                $content.charts.methodBar.PSObject.Properties.Name | Should -Contain 'data'
+
+                $content.charts.categoryBar.PSObject.Properties.Name | Should -Contain 'labels'
+                $content.charts.categoryBar.PSObject.Properties.Name | Should -Contain 'data'
+            }
+            finally {
+                if (Test-Path $tempPath) {
+                    Remove-Item $tempPath -Force
+                }
+            }
+        }
+
+        It 'Should maintain data integrity across save/load cycles' {
+            # Create test data
+            $sessionId = Register-DeploymentStart -ProfileName 'IntegrityTest'
+            Register-ApplicationInstall -AppName 'IntegrityApp1' -Method 'Winget' -Success $true
+            Register-ApplicationInstall -AppName 'IntegrityApp2' -Method 'Chocolatey' -Success $false
+            Register-DeploymentEnd -SessionId $sessionId -Success $true
+
+            $summaryBefore = Get-TelemetrySummary
+
+            # Reinitialize to force reload from disk
+            Initialize-TelemetryCollector
+
+            $summaryAfter = Get-TelemetrySummary
+
+            # Verify key metrics are preserved
+            $summaryAfter.Deployments.Total | Should -Be $summaryBefore.Deployments.Total
+            $summaryAfter.Applications.TotalInstalled | Should -Be $summaryBefore.Applications.TotalInstalled
+        }
+    }
+
+    Context 'Session Management' {
+        BeforeEach {
+            Initialize-TelemetryCollector
+            Clear-TelemetryData -Confirm
+        }
+
+        It 'Should generate unique session IDs' {
+            $sessionId1 = Register-DeploymentStart -ProfileName 'Test1'
+            $sessionId2 = Register-DeploymentStart -ProfileName 'Test2'
+            $sessionId3 = Register-DeploymentStart -ProfileName 'Test3'
+
+            $sessionId1 | Should -Not -Be $sessionId2
+            $sessionId2 | Should -Not -Be $sessionId3
+            $sessionId1 | Should -Not -Be $sessionId3
+        }
+
+        It 'Should handle orphaned sessions gracefully' {
+            # Start session but never end it
+            $orphanedSession = Register-DeploymentStart -ProfileName 'Orphaned'
+
+            $summary = Get-TelemetrySummary
+
+            # Total should include the orphaned session
+            $summary.Deployments.Total | Should -BeGreaterOrEqual 1
+
+            # Success/Failed/RolledBack should not include orphaned
+            ($summary.Deployments.Successful + $summary.Deployments.Failed + $summary.Deployments.RolledBack) | Should -BeLessThan $summary.Deployments.Total
+        }
+
+        It 'Should handle ending non-existent session' {
+            # Ending a session that does not exist should not throw
+            { Register-DeploymentEnd -SessionId 'NonExistentSessionId' -Success $true } | Should -Not -Throw
+        }
+    }
+
+    Context 'Application Statistics Edge Cases' {
+        BeforeEach {
+            Initialize-TelemetryCollector
+            Clear-TelemetryData -Confirm
+        }
+
+        It 'Should handle special characters in app names' {
+            { Register-ApplicationInstall -AppName 'App (x64) [Beta]' -Method 'Winget' -Success $true } | Should -Not -Throw
+            { Register-ApplicationInstall -AppName "App with 'quotes'" -Method 'Winget' -Success $true } | Should -Not -Throw
+        }
+
+        It 'Should handle empty category gracefully' {
+            { Register-ApplicationInstall -AppName 'NoCategory' -Method 'Winget' -Category '' -Success $true } | Should -Not -Throw
+        }
+
+        It 'Should track both success and failure for same app' {
+            Register-ApplicationInstall -AppName 'FlakeyApp' -Method 'Winget' -Success $true
+            Register-ApplicationInstall -AppName 'FlakeyApp' -Method 'Winget' -Success $false
+            Register-ApplicationInstall -AppName 'FlakeyApp' -Method 'Winget' -Success $true
+
+            $summary = Get-TelemetrySummary
+
+            # Total should count successful installs
+            $summary.Applications.TotalInstalled | Should -Be 2
+            # Failed count should be tracked separately
+            $summary.Applications.TotalFailed | Should -Be 1
+        }
+    }
+
+    Context 'Performance Boundary Conditions' {
+        BeforeEach {
+            Initialize-TelemetryCollector
+            Clear-TelemetryData -Confirm
+        }
+
+        It 'Should handle zero duration deployments' {
+            $sessionId = Register-DeploymentStart -ProfileName 'InstantDeploy'
+            Register-DeploymentEnd -SessionId $sessionId -Success $true
+
+            $summary = Get-TelemetrySummary
+
+            # Average should be valid (>= 0)
+            $summary.Performance.AverageDeploymentSeconds | Should -BeGreaterOrEqual 0
+        }
+
+        It 'Should calculate correct averages with multiple deployments' {
+            # Create 3 deployments with small delays
+            1..3 | ForEach-Object {
+                $sessionId = Register-DeploymentStart -ProfileName "Multi$_"
+                Start-Sleep -Milliseconds 50
+                Register-DeploymentEnd -SessionId $sessionId -Success $true
+            }
+
+            $summary = Get-TelemetrySummary
+
+            # Average should be > 0 (at least some milliseconds)
+            $summary.Performance.AverageDeploymentSeconds | Should -BeGreaterThan 0
+            # TotalDeploymentHours may be 0 due to rounding for very short durations
+            # Check that it's at least >= 0 (valid calculation)
+            $summary.Performance.TotalDeploymentHours | Should -BeGreaterOrEqual 0
         }
     }
 }

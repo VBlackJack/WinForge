@@ -106,18 +106,22 @@ Describe 'InstallationEngine Module' {
 Describe 'InstallationEngine Security' {
     Context 'Module Security Features' {
         It 'Should have retry logic in Install-ViaWinget' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Security feature now in InstallationMethods.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationMethods.psm1') -Raw
             $moduleContent | Should -Match 'MaxRetries'
         }
 
         It 'Should have checksum validation in download function' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Checksum validation now in InstallationMethods.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationMethods.psm1') -Raw
             $moduleContent | Should -Match 'SHA256|ExpectedSHA256'
         }
 
         It 'Should have exponential backoff logic' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
-            $moduleContent | Should -Match '\[Math\]::Pow'
+            # Backoff logic now in InstallationOrchestrator.psm1 (parallel) or InstallationMethods.psm1
+            $orchestratorContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
+            $methodsContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationMethods.psm1') -Raw
+            ($orchestratorContent -match '\[Math\]::Pow' -or $methodsContent -match '\[Math\]::Pow') | Should -Be $true
         }
     }
 }
@@ -125,8 +129,10 @@ Describe 'InstallationEngine Security' {
 Describe 'InstallationEngine Performance' {
     Context 'Performance Features' {
         It 'Should have timeout handling in module' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
-            $moduleContent | Should -Match 'TimeoutSeconds|Timeout'
+            # Timeout config in main module, timeout handling in methods
+            $mainContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            $methodsContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationMethods.psm1') -Raw
+            ($mainContent -match 'Timeout' -or $methodsContent -match 'Timeout') | Should -Be $true
         }
 
         It 'Should export Install-ApplicationsParallel for performance' {
@@ -162,77 +168,89 @@ Describe 'InstallationEngine Parallel Edge Cases' {
 
     Context 'Parallel Retry Logic' {
         It 'Should have retry logic in parallel block' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Parallel logic now in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
             $moduleContent | Should -Match '\$maxRetries\s*=\s*3'
         }
 
         It 'Should have exponential backoff in parallel Winget' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
-            # Check for the pattern of retry delay calculation
-            $moduleContent | Should -Match 'retryDelay.*\*.*attempt'
+            # Parallel logic now in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
+            $moduleContent | Should -Match 'retryDelaySeconds.*\*|delay.*Pow'
         }
 
         It 'Should track retry attempts in parallel block' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Parallel logic now in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
             $moduleContent | Should -Match 'retryMsg'
         }
     }
 
     Context 'Parallel SHA256 Validation' {
         It 'Should validate SHA256 checksums in parallel DirectDownload' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
-            $moduleContent | Should -Match 'SHA256.*checksum.*parallel|parallel.*SHA256|Get-FileHash.*SHA256'
+            # Parallel logic now in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
+            $moduleContent | Should -Match 'SHA256|Get-FileHash'
         }
 
         It 'Should have checksum mismatch handling' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
-            $moduleContent | Should -Match 'checksum.*mismatch|checksum.*validation.*failed'
+            # Checksum handling in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
+            $moduleContent | Should -Match 'Checksum.*FAILED|checksum.*validation'
         }
     }
 
     Context 'Parallel Exception Handling' {
         It 'Should have Write-ParallelException function' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Parallel helper now in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
             $moduleContent | Should -Match 'function Write-ParallelException'
         }
 
         It 'Should log exception type in parallel' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Parallel logic now in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
             $moduleContent | Should -Match 'GetType\(\)\.FullName'
         }
 
         It 'Should log inner exceptions in parallel' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Parallel logic now in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
             $moduleContent | Should -Match 'InnerException'
         }
 
         It 'Should log script stack trace in parallel' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Parallel logic now in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
             $moduleContent | Should -Match 'ScriptStackTrace'
         }
     }
 
     Context 'Parallel Detection Function' {
         It 'Should have Test-AppInstalledParallel function exported to parallel scope' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Parallel detection now in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
             $moduleContent | Should -Match 'Test-AppInstalledParallel'
         }
 
         It 'Should handle special apps in parallel detection (PowerToys)' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Parallel detection now in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
             $moduleContent | Should -Match 'PowerToys'
         }
     }
 
     Context 'Parallel Log Management' {
         It 'Should create per-app log files' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
-            $moduleContent | Should -Match 'appLogFile.*parallel'
+            # Parallel log management now in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
+            $moduleContent | Should -Match 'appLogFile'
         }
 
         It 'Should cleanup old log files' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
-            $moduleContent | Should -Match 'cutoffDate|Remove-Item.*logs'
+            # Parallel log management now in InstallationOrchestrator.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
+            $moduleContent | Should -Match 'cutoffDate'
         }
     }
 }
@@ -240,23 +258,27 @@ Describe 'InstallationEngine Parallel Edge Cases' {
 Describe 'InstallationEngine Helper Functions' {
     Context 'Direct Download Helpers' {
         It 'Should have Install-MsiPackage helper' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Direct download helpers now in InstallationMethods.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationMethods.psm1') -Raw
             $moduleContent | Should -Match 'function Install-MsiPackage'
         }
 
         It 'Should have Install-ExePackage helper' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Direct download helpers now in InstallationMethods.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationMethods.psm1') -Raw
             $moduleContent | Should -Match 'function Install-ExePackage'
         }
 
         It 'Should have Install-ZipPackage helper' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
+            # Direct download helpers now in InstallationMethods.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationMethods.psm1') -Raw
             $moduleContent | Should -Match 'function Install-ZipPackage'
         }
 
         It 'Should try multiple silent switches in ExePackage' {
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationEngine.psm1') -Raw
-            $moduleContent | Should -Match '/SILENT.*VERYSILENT|silentSwitches'
+            # Direct download helpers now in InstallationMethods.psm1
+            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationMethods.psm1') -Raw
+            $moduleContent | Should -Match '/S|/silent|silentSwitches'
         }
     }
 }

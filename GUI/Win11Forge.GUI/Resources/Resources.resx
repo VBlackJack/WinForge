@@ -1877,4 +1877,38 @@
     <value>Not installed</value>
     <comment>Status for missing prerequisite</comment>
   </data>
+  <!-- Common Booleans -->
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Yes</value>
+    <comment>Boolean yes value</comment>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>No</value>
+    <comment>Boolean no value</comment>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+    <comment>Unknown status value</comment>
+  </data>
+  <!-- Dashboard Hero Section Extended -->
+  <data name="Dashboard_Scan_Progress" xml:space="preserve">
+    <value>Scanning... ({0}/{1})</value>
+    <comment>Scan progress with current/total count</comment>
+  </data>
+  <data name="Dashboard_Hero_Subtitle_Ready" xml:space="preserve">
+    <value>All systems ready for deployment</value>
+    <comment>Hero subtitle when ready state</comment>
+  </data>
+  <data name="Dashboard_Hero_Subtitle_Prereqs" xml:space="preserve">
+    <value>Install missing components to continue</value>
+    <comment>Hero subtitle when prerequisites missing</comment>
+  </data>
+  <data name="Dashboard_Hero_Subtitle_Updates" xml:space="preserve">
+    <value>Updates available for installed applications</value>
+    <comment>Hero subtitle when updates available</comment>
+  </data>
+  <data name="Dashboard_Stats_ClickToView" xml:space="preserve">
+    <value>Click to view</value>
+    <comment>Tooltip hint for clickable stats</comment>
+  </data>
 </root>

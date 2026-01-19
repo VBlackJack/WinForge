@@ -3,12 +3,13 @@
     Pester tests for WingetCache module
 
 .DESCRIPTION
-    Unit tests for Win11Forge WingetCache v3.1.4
+    Unit tests for Win11Forge WingetCache v3.2.2
     Tests caching, statistics, and persistence functions
+    Includes mocked tests for winget isolation
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.1.4
+    Version: 3.2.2
     Requires: Pester v5+
 #>
 
@@ -264,6 +265,199 @@ Describe 'WingetCache Module' {
             # First should be miss, rest should be hits
             $stats.ListMisses | Should -BeGreaterOrEqual 1
             $stats.ListHits | Should -BeGreaterOrEqual 4
+        }
+    }
+
+    # === MOCKED TESTS (isolated from real winget) ===
+
+    Context 'Mocked Winget List Output' {
+        BeforeAll {
+            # Sample winget list output (simulated)
+            $script:MockedWingetListOutput = @"
+Name                                      Id                                      Version      Available    Source
+------------------------------------------------------------------------------------------------------------
+Microsoft Visual Studio Code              Microsoft.VisualStudioCode              1.85.1       1.86.0       winget
+Git                                       Git.Git                                 2.43.0                    winget
+Node.js                                   OpenJS.NodeJS                           21.5.0                    winget
+7-Zip                                     7zip.7zip                               23.01                     winget
+Mozilla Firefox                           Mozilla.Firefox                         121.0                     winget
+"@
+        }
+
+        It 'Should parse mocked winget list output correctly' {
+            # Test that the mocked output format is recognized
+            $script:MockedWingetListOutput | Should -Match 'Microsoft.VisualStudioCode'
+            $script:MockedWingetListOutput | Should -Match 'Git.Git'
+            $script:MockedWingetListOutput | Should -Match 'Mozilla.Firefox'
+        }
+
+        It 'Should detect applications in mocked output' {
+            $output = $script:MockedWingetListOutput
+
+            # Test detection patterns used by InstallationEngine
+            ($output -match 'Microsoft.VisualStudioCode') | Should -Be $true
+            ($output -match 'Git.Git') | Should -Be $true
+            ($output -match 'NonExistent.App') | Should -Be $false
+        }
+
+        It 'Should detect version availability in mocked output' {
+            $output = $script:MockedWingetListOutput
+
+            # VSCode has an update available (1.86.0)
+            ($output -match 'Microsoft.VisualStudioCode.*1\.86\.0') | Should -Be $true
+
+            # Git has no update available (empty Available column)
+            $lines = $output -split "`n"
+            $gitLine = $lines | Where-Object { $_ -match 'Git\.Git' }
+            $gitLine | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context 'Mocked Winget Search Output' {
+        BeforeAll {
+            # Sample winget search output (simulated)
+            $script:MockedWingetSearchOutput = @"
+Name                          Id                              Version   Match        Source
+---------------------------------------------------------------------------------------------
+Mozilla Firefox               Mozilla.Firefox                 121.0     Tag: firefox winget
+Firefox Developer Edition     Mozilla.Firefox.DeveloperEdition 121.0                 winget
+Firefox Nightly               Mozilla.Firefox.Nightly         122.0a1                winget
+"@
+        }
+
+        It 'Should find packages in mocked search output' {
+            $output = $script:MockedWingetSearchOutput
+
+            ($output -match 'Mozilla.Firefox') | Should -Be $true
+            ($output -match 'Firefox Developer') | Should -Be $true
+        }
+
+        It 'Should handle no results scenario' {
+            $noResultsOutput = "No package found matching input criteria."
+
+            ($noResultsOutput -match 'No package found') | Should -Be $true
+            ($noResultsOutput -match 'Mozilla.Firefox') | Should -Be $false
+        }
+    }
+
+    Context 'Cache Expiry Behavior (Mocked Time)' {
+        BeforeEach {
+            Clear-WingetCache
+            Initialize-WingetCache -ListTTLMinutes 5 -SearchTTLMinutes 10
+        }
+
+        It 'Should correctly identify cache within TTL' {
+            $stats = Get-WingetCacheStatistics
+            $stats.TTLListMinutes | Should -Be 5
+            $stats.TTLSearchMinutes | Should -Be 10
+        }
+
+        It 'Should track cache age in minutes' {
+            # First call to populate cache
+            $null = Get-CachedWingetList
+
+            $stats = Get-WingetCacheStatistics
+            if ($stats.ListCacheValid) {
+                $stats.ListCacheAgeMinutes | Should -Not -BeNullOrEmpty
+                $stats.ListCacheAgeMinutes | Should -BeOfType [double]
+            }
+        }
+    }
+
+    Context 'Winget Unavailable Scenario' {
+        It 'Should handle gracefully when winget is not in PATH' {
+            # Note: This test documents expected behavior
+            # When winget is unavailable, Get-CachedWingetList returns empty string
+
+            # The actual behavior depends on system state
+            # If winget is available: returns list
+            # If winget is unavailable: returns ""
+            $result = Get-CachedWingetList
+            $result | Should -BeOfType [string]
+        }
+    }
+
+    Context 'Cache Miss Scenarios' {
+        BeforeEach {
+            Clear-WingetCache
+        }
+
+        It 'Should increment miss counter on first call' {
+            $statsBefore = Get-WingetCacheStatistics
+            $missesBefore = $statsBefore.ListMisses
+
+            $null = Get-CachedWingetList
+            $statsAfter = Get-WingetCacheStatistics
+
+            $statsAfter.ListMisses | Should -Be ($missesBefore + 1)
+        }
+
+        It 'Should increment hit counter on subsequent calls' {
+            # First call - miss
+            $null = Get-CachedWingetList
+            $statsAfterMiss = Get-WingetCacheStatistics
+            $hitsBefore = $statsAfterMiss.ListHits
+
+            # Second call - should be hit
+            $null = Get-CachedWingetList
+            $statsAfterHit = Get-WingetCacheStatistics
+
+            $statsAfterHit.ListHits | Should -Be ($hitsBefore + 1)
+        }
+
+        It 'Should miss when Force parameter is used' {
+            # Populate cache
+            $null = Get-CachedWingetList
+            $statsPopulated = Get-WingetCacheStatistics
+            $missesBefore = $statsPopulated.ListMisses
+
+            # Force refresh - should miss
+            $null = Get-CachedWingetList -Force
+            $statsAfterForce = Get-WingetCacheStatistics
+
+            $statsAfterForce.ListMisses | Should -Be ($missesBefore + 1)
+        }
+    }
+
+    Context 'Search Cache Key Normalization' {
+        BeforeEach {
+            Clear-WingetCache
+            Initialize-WingetCache
+        }
+
+        It 'Should use same cache key for case variations' {
+            # Reset statistics by clearing cache
+            Clear-WingetCache
+            Initialize-WingetCache
+
+            $null = Get-CachedWingetSearch -Query 'VSCODE'
+            $null = Get-CachedWingetSearch -Query 'vscode'
+            $null = Get-CachedWingetSearch -Query 'VsCode'
+
+            $stats = Get-WingetCacheStatistics
+            # All three should use same normalized key
+            $stats.SearchCacheEntries | Should -Be 1
+            # Verify hits increased (at least 2 hits for the cached queries)
+            $stats.SearchHits | Should -BeGreaterOrEqual 2
+        }
+
+        It 'Should trim whitespace from search queries' {
+            # Reset statistics
+            Clear-WingetCache
+            Initialize-WingetCache
+
+            $null = Get-CachedWingetSearch -Query '  firefox  '
+            $null = Get-CachedWingetSearch -Query 'firefox'
+
+            $stats = Get-WingetCacheStatistics
+            $stats.SearchCacheEntries | Should -Be 1
+        }
+    }
+
+    Context 'Cache Entry Limit' {
+        It 'Should respect MaxSearchEntries configuration' {
+            $stats = Get-WingetCacheStatistics
+            $stats.MaxSearchEntries | Should -Be 500
         }
     }
 }

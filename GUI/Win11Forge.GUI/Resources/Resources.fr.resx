@@ -1200,4 +1200,30 @@
   <data name="Status_Missing" xml:space="preserve">
     <value>Non installe</value>
   </data>
+  <!-- Common Booleans -->
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Oui</value>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>Non</value>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>Inconnu</value>
+  </data>
+  <!-- Dashboard Hero Section Extended -->
+  <data name="Dashboard_Scan_Progress" xml:space="preserve">
+    <value>Analyse... ({0}/{1})</value>
+  </data>
+  <data name="Dashboard_Hero_Subtitle_Ready" xml:space="preserve">
+    <value>Tous les systemes sont prets</value>
+  </data>
+  <data name="Dashboard_Hero_Subtitle_Prereqs" xml:space="preserve">
+    <value>Installez les composants manquants pour continuer</value>
+  </data>
+  <data name="Dashboard_Hero_Subtitle_Updates" xml:space="preserve">
+    <value>Mises a jour disponibles pour les applications installees</value>
+  </data>
+  <data name="Dashboard_Stats_ClickToView" xml:space="preserve">
+    <value>Cliquer pour voir</value>
+  </data>
 </root>

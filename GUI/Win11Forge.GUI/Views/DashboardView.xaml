@@ -9,9 +9,28 @@
              xmlns:models="clr-namespace:Win11Forge.GUI.Models"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewModels:DashboardViewModel}"
-             d:DesignHeight="700" d:DesignWidth="900">
+             d:DesignHeight="800" d:DesignWidth="1000">
 
     <UserControl.Resources>
+        <!-- Clickable Stats Card Style -->
+        <Style x:Key="ClickableStatsCard" TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+            <Setter Property="Height" Value="Auto"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="8"/>
+            <Setter Property="Background" Value="{DynamicResource MaterialDesignCardBackground}"/>
+            <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Quick Action Button Style -->
         <Style x:Key="QuickActionButtonStyle" TargetType="Button" BasedOn="{StaticResource ThemeAdaptiveOutlinedButton}">
             <Setter Property="Height" Value="Auto"/>
             <Setter Property="Padding" Value="24,16"/>
@@ -19,34 +38,260 @@
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="8"/>
         </Style>
+
+        <!-- Hero CTA Button Style -->
+        <Style x:Key="HeroCtaButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+            <Setter Property="Height" Value="56"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="32,0"/>
+            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="8"/>
+        </Style>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="32,24">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>   <!-- Header -->
+                <RowDefinition Height="Auto"/>   <!-- Hero Section -->
+                <RowDefinition Height="Auto"/>   <!-- Stats Row -->
                 <RowDefinition Height="Auto"/>   <!-- Main Content -->
                 <RowDefinition Height="Auto"/>   <!-- History -->
                 <RowDefinition Height="Auto"/>   <!-- Footer -->
             </Grid.RowDefinitions>
 
-            <!-- HEADER -->
-            <StackPanel Grid.Row="0" Margin="0,0,0,24">
-                <TextBlock Text="{loc:Loc Dashboard_Title}"
-                           Style="{StaticResource MaterialDesignHeadline4TextBlock}"
-                           Margin="0,0,0,4"/>
-                <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}" Opacity="0.7">
-                    <Run Text="Win11Forge v"/>
-                    <Run Text="{Binding AppVersion, Mode=OneWay}"/>
-                </TextBlock>
+            <!-- HERO SECTION -->
+            <materialDesign:Card Grid.Row="0"
+                                  Margin="0,0,0,24"
+                                  Padding="32"
+                                  materialDesign:ElevationAssist.Elevation="Dp2">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Hero Content -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <!-- State: Checking -->
+                        <StackPanel Visibility="{Binding IsChecking, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                             IsIndeterminate="True"
+                                             Width="32" Height="32"
+                                             Margin="0,0,16,0"/>
+                                <TextBlock Text="{Binding HeroTitle}"
+                                           Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding HeroSubtitle}"
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                       Opacity="0.7"/>
+                        </StackPanel>
+
+                        <!-- State: NeedPrereqs -->
+                        <StackPanel Visibility="{Binding NeedsPrerequisites, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <materialDesign:PackIcon Kind="AlertCircle"
+                                                          Width="32" Height="32"
+                                                          Foreground="{DynamicResource AccentOrangeTextBrush}"
+                                                          Margin="0,0,16,0"
+                                                          VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding HeroTitle}"
+                                           Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding HeroSubtitle}"
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                       Opacity="0.7"
+                                       Margin="0,0,0,16"/>
+                            <Button Command="{Binding NavigateToPrerequisitesCommand}"
+                                    Style="{StaticResource MaterialDesignRaisedButton}"
+                                    Background="{DynamicResource AccentOrangeTextBrush}"
+                                    Foreground="White"
+                                    materialDesign:ButtonAssist.CornerRadius="8"
+                                    Padding="24,12"
+                                    HorizontalAlignment="Left">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Wrench"
+                                                              Width="20" Height="20"
+                                                              VerticalAlignment="Center"
+                                                              Margin="0,0,8,0"/>
+                                    <TextBlock Text="{loc:Loc Dashboard_Btn_FixPrereqs}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- State: Ready -->
+                        <StackPanel Visibility="{Binding IsReady, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <materialDesign:PackIcon Kind="CheckCircle"
+                                                          Width="32" Height="32"
+                                                          Foreground="{DynamicResource AccentGreenTextBrush}"
+                                                          Margin="0,0,16,0"
+                                                          VerticalAlignment="Center"
+                                                          Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                <materialDesign:PackIcon Kind="InformationOutline"
+                                                          Width="32" Height="32"
+                                                          Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                          Margin="0,0,16,0"
+                                                          VerticalAlignment="Center"
+                                                          Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <TextBlock Text="{Binding HeroTitle}"
+                                           Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding HeroSubtitle}"
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                       Opacity="0.7"
+                                       Margin="0,0,0,16"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Command="{Binding StartDeploymentCommand}"
+                                        Style="{StaticResource HeroCtaButton}"
+                                        Margin="0,0,12,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="RocketLaunch"
+                                                                  Width="24" Height="24"
+                                                                  VerticalAlignment="Center"
+                                                                  Margin="0,0,12,0"/>
+                                        <TextBlock Text="{loc:Loc Dashboard_Btn_StartDeployment}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Command="{Binding ViewUpdatesCommand}"
+                                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                                        materialDesign:ButtonAssist.CornerRadius="8"
+                                        Height="56"
+                                        Padding="24,0"
+                                        Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Download"
+                                                                  Width="20" Height="20"
+                                                                  VerticalAlignment="Center"
+                                                                  Margin="0,0,8,0"/>
+                                        <TextBlock Text="{loc:Loc Dashboard_Btn_ViewUpdates}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Version Badge -->
+                    <Border Grid.Column="1"
+                            Background="{DynamicResource MaterialDesignCardBackground}"
+                            BorderBrush="{DynamicResource MaterialDesignDivider}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="16,12"
+                            VerticalAlignment="Top">
+                        <StackPanel>
+                            <TextBlock Text="Win11Forge"
+                                       Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                                       Opacity="0.7"/>
+                            <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}">
+                                <Run Text="v"/>
+                                <Run Text="{Binding AppVersion, Mode=OneWay}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- STATS ROW -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,24">
+                <!-- Profiles Stat (Clickable) -->
+                <Button Command="{Binding NavigateToProfilesCommand}"
+                        Style="{StaticResource ClickableStatsCard}"
+                        ToolTip="{loc:Loc Dashboard_Stats_ProfilesHint}"
+                        MinWidth="160">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding ProfileCount}"
+                                       Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                                       Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                            <TextBlock Text="{loc:Loc Dashboard_Stats_Profiles}"
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       Opacity="0.7"/>
+                        </StackPanel>
+                        <materialDesign:PackIcon Grid.Column="1"
+                                                  Kind="ChevronRight"
+                                                  Width="24" Height="24"
+                                                  Opacity="0.5"
+                                                  VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+
+                <!-- Apps Stat (Clickable) -->
+                <Button Command="{Binding NavigateToAppsCommand}"
+                        Style="{StaticResource ClickableStatsCard}"
+                        ToolTip="{loc:Loc Dashboard_Stats_AppsHint}"
+                        MinWidth="160">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding AppCount}"
+                                       Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                                       Foreground="{DynamicResource SecondaryHueMidBrush}"/>
+                            <TextBlock Text="{loc:Loc Dashboard_Stats_Apps}"
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       Opacity="0.7"/>
+                        </StackPanel>
+                        <materialDesign:PackIcon Grid.Column="1"
+                                                  Kind="ChevronRight"
+                                                  Width="24" Height="24"
+                                                  Opacity="0.5"
+                                                  VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+
+                <!-- Updates Stat (Clickable) -->
+                <Button Command="{Binding ViewUpdatesCommand}"
+                        Style="{StaticResource ClickableStatsCard}"
+                        ToolTip="{loc:Loc Dashboard_Stats_UpdatesHint}"
+                        MinWidth="160"
+                        Margin="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding UpdateCount}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignHeadline4TextBlock}">
+                                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding UpdateCount, Converter={StaticResource NonZeroToBoolConverter}}" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource AccentGreenTextBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Text="{loc:Loc Dashboard_Stats_Updates}"
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       Opacity="0.7"/>
+                        </StackPanel>
+                        <materialDesign:PackIcon Grid.Column="1"
+                                                  Kind="ChevronRight"
+                                                  Width="24" Height="24"
+                                                  Opacity="0.5"
+                                                  VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
             </StackPanel>
 
             <!-- MAIN CONTENT -->
-            <Grid Grid.Row="1" Margin="0,0,0,24">
+            <Grid Grid.Row="2" Margin="0,0,0,24">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="24"/>
-                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="320"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- LEFT: System Info -->
@@ -77,7 +322,6 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -160,7 +404,7 @@
                             </StackPanel>
 
                             <!-- PowerShell -->
-                            <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,16,16">
+                            <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,16,0">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_PowerShell}"
                                            Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                            Opacity="0.6"/>
@@ -173,41 +417,6 @@
                                     <TextBlock Text="{Binding PowerShellVersion}"
                                                Style="{StaticResource MaterialDesignBody1TextBlock}"/>
                                 </StackPanel>
-                            </StackPanel>
-
-                            <!-- Stats Row -->
-                            <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
-                                        Orientation="Horizontal"
-                                        Margin="0,8,0,0">
-                                <Border Background="{DynamicResource PrimaryHueMidBrush}"
-                                        CornerRadius="4"
-                                        Padding="12,6"
-                                        Margin="0,0,12,0">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding ProfileCount}"
-                                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
-                                                   Foreground="White"
-                                                   Margin="0,0,6,0"/>
-                                        <TextBlock Text="{loc:Loc Dashboard_Stats_Profiles}"
-                                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                                   Foreground="White"
-                                                   VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Background="{DynamicResource SecondaryHueMidBrush}"
-                                        CornerRadius="4"
-                                        Padding="12,6">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding AppCount}"
-                                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
-                                                   Foreground="Black"
-                                                   Margin="0,0,6,0"/>
-                                        <TextBlock Text="{loc:Loc Dashboard_Stats_Apps}"
-                                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                                   Foreground="Black"
-                                                   VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
                             </StackPanel>
                         </Grid>
                     </Grid>
@@ -229,34 +438,6 @@
                                 <TextBlock Text="{loc:Loc Dashboard_Updates_Title}"
                                            Style="{StaticResource MaterialDesignHeadline6TextBlock}"/>
                             </StackPanel>
-
-                            <!-- Update Count Display -->
-                            <Border Background="{DynamicResource MaterialDesignCardBackground}"
-                                    BorderBrush="{DynamicResource MaterialDesignDivider}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    Padding="16"
-                                    Margin="0,0,0,16">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding UpdateCount}"
-                                               HorizontalAlignment="Center">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignHeadline3TextBlock}">
-                                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding UpdateCount, Converter={StaticResource NonZeroToBoolConverter}}" Value="True">
-                                                        <Setter Property="Foreground" Value="{DynamicResource AccentGreenTextBrush}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                    <TextBlock Text="{loc:Loc Dashboard_Updates_Available}"
-                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                               HorizontalAlignment="Center"
-                                               Opacity="0.7"/>
-                                </StackPanel>
-                            </Border>
 
                             <!-- Scan Button -->
                             <Button Command="{Binding ScanUpdatesCommand}"
@@ -299,7 +480,7 @@
                             <!-- Prerequisites Button -->
                             <Button Command="{Binding NavigateToPrerequisitesCommand}"
                                     Style="{StaticResource QuickActionButtonStyle}">
-                                <Grid Width="220">
+                                <Grid Width="240">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
@@ -323,8 +504,9 @@
 
                             <!-- Applications Button -->
                             <Button Command="{Binding NavigateToAppsCommand}"
-                                    Style="{StaticResource QuickActionButtonStyle}">
-                                <Grid Width="220">
+                                    Style="{StaticResource QuickActionButtonStyle}"
+                                    Margin="0">
+                                <Grid Width="240">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
@@ -345,31 +527,13 @@
                                                               VerticalAlignment="Center"/>
                                 </Grid>
                             </Button>
-
-                            <!-- View Updates Button (only if updates > 0) -->
-                            <Button Command="{Binding ViewUpdatesCommand}"
-                                    Visibility="{Binding UpdateCount, Converter={StaticResource NonZeroToVisibilityConverter}}"
-                                    Style="{StaticResource MaterialDesignRaisedButton}"
-                                    Background="{DynamicResource SecondaryHueMidBrush}"
-                                    Foreground="{DynamicResource SecondaryHueMidForegroundBrush}"
-                                    materialDesign:ButtonAssist.CornerRadius="8"
-                                    Padding="24,12"
-                                    Margin="0,4,0,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Download"
-                                                              Width="20" Height="20"
-                                                              VerticalAlignment="Center"
-                                                              Margin="0,0,8,0"/>
-                                    <TextBlock Text="{loc:Loc Dashboard_Btn_ViewUpdates}" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
                         </StackPanel>
                     </materialDesign:Card>
                 </StackPanel>
             </Grid>
 
             <!-- HISTORY SECTION -->
-            <materialDesign:Card Grid.Row="2"
+            <materialDesign:Card Grid.Row="3"
                                   Padding="24"
                                   Margin="0,0,0,24"
                                   materialDesign:ElevationAssist.Elevation="Dp1">
@@ -442,7 +606,7 @@
                                                 Padding="8,4"
                                                 VerticalAlignment="Center"
                                                 Visibility="{Binding IsDryRun, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <TextBlock Text="DRY RUN"
+                                            <TextBlock Text="{loc:Loc Lbl_DryRun}"
                                                        Style="{StaticResource MaterialDesignCaptionTextBlock}"
                                                        Foreground="Black"/>
                                         </Border>
@@ -472,7 +636,7 @@
             </materialDesign:Card>
 
             <!-- FOOTER -->
-            <TextBlock Grid.Row="3"
+            <TextBlock Grid.Row="4"
                        HorizontalAlignment="Center"
                        Opacity="0.4"
                        Style="{StaticResource MaterialDesignCaptionTextBlock}">

@@ -21,7 +21,7 @@
     RootModule = 'InstallationEngine.psm1'
 
     # Version number of this module
-    ModuleVersion = '3.1.5'
+    ModuleVersion = '3.2.2'
 
     # ID used to uniquely identify this module
     GUID = 'e3a7b0c4-6d5f-4a1b-8c3e-4f5a6b7c8d9e'
@@ -47,7 +47,8 @@
     # Nested modules to load
     NestedModules = @(
         'ApplicationDetection.psm1',
-        'InstallationMethods.psm1'
+        'InstallationMethods.psm1',
+        'InstallationOrchestrator.psm1'
     )
 
     # Functions to export from this module
@@ -116,6 +117,12 @@
 
             # Release notes
             ReleaseNotes = @'
+v3.2.2: Complete Modular Architecture
+- InstallationOrchestrator.psm1: High-level coordination logic (Install-Application, Install-ApplicationsParallel)
+- State management (rollback, deployment resume) centralized in orchestrator
+- InstallationEngine.psm1: Thin wrapper that imports and re-exports from sub-modules
+- Clean separation of concerns across 4 modules
+
 v3.1.5: Modular Architecture
 - Split into 3 modules for maintainability
 - ApplicationDetection.psm1: Detection and verification functions

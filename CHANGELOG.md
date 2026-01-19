@@ -2,6 +2,55 @@
 
 Note: la source de vérité de la version du framework est `Config/version.json`. Les lanceurs et la GUI lisent dynamiquement cette valeur.
 
+## [3.2.2] - 2026-01-19
+
+### GUI
+
+#### Dashboard Refactoring
+- **Refactored**: Action-First Dashboard with state machine (Checking/Ready/Update)
+- **Added**: `DashboardState` enum with three states for clear UI flow
+- **Removed**: Hardcoded strings - all user-facing text now uses localization (.resx)
+- **Improved**: Scan button behavior with state-aware enablement
+- **Fixed**: Version display now reads dynamically from `Config/version.json`
+
+### Core
+
+#### InstallationEngine Architecture Refactoring
+- **Added**: `InstallationOrchestrator.psm1` - High-level orchestration module (~1900 lines)
+  - State management (rollback, deployment resume)
+  - Orchestration functions (`Install-Application`, `Install-ApplicationsParallel`)
+  - Environment restriction checking
+- **Refactored**: `InstallationEngine.psm1` converted to thin wrapper (~147 lines)
+  - Delegates to sub-modules: ApplicationDetection, InstallationMethods, InstallationOrchestrator
+  - Explicit sub-module imports for direct .psm1 loading compatibility
+- **Updated**: `InstallationEngine.psd1` manifest with NestedModules configuration
+
+### QA
+
+#### Test Coverage Improvements
+- **Enhanced**: `WingetCache.Tests.ps1` with mocked tests
+  - Mocked winget list/search output tests (isolated from real winget)
+  - Cache expiry behavior tests
+  - Cache miss/hit scenarios
+  - Search key normalization tests
+- **Enhanced**: `TelemetryCollector.Tests.ps1` with schema validation
+  - JSON schema structure validation
+  - Chart data integrity tests
+  - Session management tests
+  - Edge case handling
+- **Fixed**: `InstallationEngine.Tests.ps1` to check correct sub-modules
+- **Fixed**: Test isolation issues in WingetCache normalization tests
+
+#### Database Fixes
+- **Fixed**: `applications.json` TotalApplications metadata (167 → 170)
+- **Fixed**: 7-Zip category test expectation (Utility → Compression)
+
+### Statistics
+- **Test Coverage**: 711/711 tests passing (100%)
+- **Total Applications**: 170
+
+---
+
 ## [3.2.0] - 2026-01-17
 
 ### GUI Improvements

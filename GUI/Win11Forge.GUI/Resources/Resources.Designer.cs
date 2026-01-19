@@ -82,6 +82,9 @@ public class Resources
     // Common
     public static string Common_Loading => ResourceManager.GetString("Common_Loading", resourceCulture);
     public static string Common_Error => ResourceManager.GetString("Common_Error", resourceCulture);
+    public static string Common_Yes => ResourceManager.GetString("Common_Yes", resourceCulture);
+    public static string Common_No => ResourceManager.GetString("Common_No", resourceCulture);
+    public static string Common_Unknown => ResourceManager.GetString("Common_Unknown", resourceCulture);
 
     // Navigation
     public static string Nav_Dashboard => ResourceManager.GetString("Nav_Dashboard", resourceCulture);
@@ -485,6 +488,15 @@ public class Resources
     public static string Dashboard_Stats_ProfilesHint => ResourceManager.GetString("Dashboard_Stats_ProfilesHint", resourceCulture);
     public static string Dashboard_Stats_AppsHint => ResourceManager.GetString("Dashboard_Stats_AppsHint", resourceCulture);
     public static string Dashboard_Stats_UpdatesHint => ResourceManager.GetString("Dashboard_Stats_UpdatesHint", resourceCulture);
+
+    // Dashboard - Hero Subtitles
+    public static string Dashboard_Hero_Subtitle_Ready => ResourceManager.GetString("Dashboard_Hero_Subtitle_Ready", resourceCulture);
+    public static string Dashboard_Hero_Subtitle_Prereqs => ResourceManager.GetString("Dashboard_Hero_Subtitle_Prereqs", resourceCulture);
+    public static string Dashboard_Hero_Subtitle_Updates => ResourceManager.GetString("Dashboard_Hero_Subtitle_Updates", resourceCulture);
+
+    // Dashboard - Scan
+    public static string Dashboard_Scan_Button => ResourceManager.GetString("Dashboard_Scan_Button", resourceCulture);
+    public static string Dashboard_Scan_Progress => ResourceManager.GetString("Dashboard_Scan_Progress", resourceCulture);
 
     // Error Recovery Suggestions
     public static string Recovery_CheckInternet => ResourceManager.GetString("Recovery_CheckInternet", resourceCulture);

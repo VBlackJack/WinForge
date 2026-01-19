@@ -130,9 +130,9 @@ Describe 'StartMenuLayout Module' {
             $result | Should -Be 'Media'
         }
 
-        It 'Should categorize 7-Zip as Utility' {
+        It 'Should categorize 7-Zip as Compression' {
             $result = Get-ApplicationCategory -ApplicationName '7-Zip'
-            $result | Should -Be 'Utility'
+            $result | Should -Be 'Compression'
         }
 
         It 'Should categorize Discord as Communication' {
