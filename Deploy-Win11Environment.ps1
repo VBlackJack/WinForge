@@ -149,8 +149,8 @@ function Test-IsAdministrator {
 }
 
 if (-not (Test-IsAdministrator)) {
-    Write-Log -Message "ERROR: Administrator privileges required" -Level 'Error'
-    Write-Log -Message "Please run this script as Administrator" -Level 'Error'
+    Write-Log -Message (Get-LocalizedString -Key 'core.admin_required') -Level 'Error'
+    Write-Log -Message (Get-LocalizedString -Key 'core.admin_run_as') -Level 'Error'
     return 1
 }
 
@@ -165,19 +165,24 @@ $frameworkVersion = try {
     } else { '3.0.0' }
 } catch { '3.0.0' }
 
-Write-Log -Message "=== Win11Forge Framework v$frameworkVersion ===" -Level 'Info'
-Write-Log -Message "PowerShell Version: $($PSVersionTable.PSVersion)" -Level 'Info'
-Write-Log -Message "Starting deployment process..." -Level 'Info'
+Write-Log -Message "=== $(Get-LocalizedString -Key 'setup.banner_title' -Params @{ Version = $frameworkVersion }) ===" -Level 'Info'
+Write-Log -Message (Get-LocalizedString -Key 'setup.ps_version' -Params @{ Version = $PSVersionTable.PSVersion }) -Level 'Info'
+Write-Log -Message (Get-LocalizedString -Key 'gui.deploy.starting') -Level 'Info'
 
 # Vérification de la version pour mode parallèle
 if ($Parallel -and $PSVersionTable.PSVersion.Major -lt 7) {
-    Write-Log -Message "WARNING: Parallel mode requires PowerShell 7+" -Level 'Warning'
-    Write-Log -Message "Current version: $($PSVersionTable.PSVersion)" -Level 'Warning'
-    Write-Log -Message "Disabling parallel mode - falling back to sequential installation" -Level 'Warning'
+    Write-Log -Message (Get-LocalizedString -Key 'parallel.requires_ps7') -Level 'Warning'
+    Write-Log -Message (Get-LocalizedString -Key 'parallel.current_version' -Params @{ Version = $PSVersionTable.PSVersion }) -Level 'Warning'
+    Write-Log -Message (Get-LocalizedString -Key 'parallel.fallback_sequential') -Level 'Warning'
     $Parallel = $false
 }
 
-Write-Log -Message "Installation Mode: $(if ($Parallel) { 'PARALLEL (Max ' + $MaxParallelJobs + ' threads)' } else { 'SEQUENTIAL' })" -Level 'Info'
+$modeText = if ($Parallel) {
+    "$(Get-LocalizedString -Key 'gui.deploy.mode_name_parallel') (Max $MaxParallelJobs threads)"
+} else {
+    Get-LocalizedString -Key 'gui.deploy.mode_name_sequential'
+}
+Write-Log -Message (Get-LocalizedString -Key 'gui.deploy.mode_label' -Params @{ Mode = $modeText }) -Level 'Info'
 Write-Log -Message "Log file: $LogFile" -Level 'Info'
 Write-Host ""
 
@@ -300,23 +305,23 @@ Write-Host ""
 # === PREREQUISITES INSTALLATION ===
 
 if (-not $SkipPrerequisites) {
-    Write-Log -Message "=== Prerequisites Installation ===" -Level 'Info'
+    Write-Log -Message "=== $(Get-LocalizedString -Key 'prerequisites.title') ===" -Level 'Info'
 
     if ($TestMode) {
-        Write-Log -Message "TEST MODE: Skipping actual prerequisite installation" -Level 'Warning'
+        Write-Log -Message (Get-LocalizedString -Key 'gui.deploy.test_mode') -Level 'Warning'
         $prereqResults = Test-Prerequisites
     } else {
         try {
             $prereqResults = Start-PrerequisitesInstallation -Force:$Force
 
             Write-Host ""
-            Write-Log -Message "Prerequisites installation completed" -Level 'Success'
+            Write-Log -Message (Get-LocalizedString -Key 'prerequisites.workflow.completed') -Level 'Success'
 
             # Check if PowerShell 7 was just installed
             if ($prereqResults.PowerShell7.Installed -and $PSVersionTable.PSVersion.Major -lt 7) {
                 Write-Host ""
-                Write-Log -Message "IMPORTANT: PowerShell 7 has been installed" -Level 'Success'
-                Write-Log -Message "Auto-restarting script in PowerShell 7 for optimal performance..." -Level 'Info'
+                Write-Log -Message (Get-LocalizedString -Key 'prerequisites.powershell.completed') -Level 'Success'
+                Write-Log -Message (Get-LocalizedString -Key 'prerequisites.powershell.restart_required') -Level 'Info'
                 Write-Host ""
 
                 # Build restart command
@@ -341,13 +346,13 @@ if (-not $SkipPrerequisites) {
             }
 
         } catch {
-            Write-Log -Message "Prerequisites installation failed: $($_.Exception.Message)" -Level 'Error'
-            Write-Log -Message "Some applications may fail to install without prerequisites" -Level 'Warning'
+            Write-Log -Message (Get-LocalizedString -Key 'prerequisites.workflow.failed' -Params @{ Error = $_.Exception.Message }) -Level 'Error'
+            Write-Log -Message (Get-LocalizedString -Key 'prerequisites.some_missing') -Level 'Warning'
         }
     }
 } else {
-    Write-Log -Message "=== Prerequisites Check ===" -Level 'Info'
-    Write-Log -Message "Prerequisites installation skipped (--SkipPrerequisites)" -Level 'Warning'
+    Write-Log -Message "=== $(Get-LocalizedString -Key 'prerequisites.checking') ===" -Level 'Info'
+    Write-Log -Message (Get-LocalizedString -Key 'prerequisites.all_passed') -Level 'Warning'
     $prereqResults = Test-Prerequisites
 }
 
@@ -355,15 +360,14 @@ Write-Host ""
 
 # === PROFILE LOADING ===
 
-Write-Log -Message "=== Profile Configuration ===" -Level 'Info'
-Write-Log -Message "Loading profile: $ProfileName" -Level 'Info'
+Write-Log -Message "=== $(Get-LocalizedString -Key 'profile.loading' -Params @{ Name = $ProfileName }) ===" -Level 'Info'
 
 try {
     $profilesDirectory = Join-Path -Path $script:ScriptRoot -ChildPath 'Profiles'
     $deploymentProfile = Get-DeploymentProfile -ProfileName $ProfileName -ProfilesDirectory $profilesDirectory
 
-    Write-Log -Message "Profile: $($deploymentProfile.Name) v$($deploymentProfile.Version)" -Level 'Success'
-    Write-Log -Message "Description: $($deploymentProfile.Description)" -Level 'Info'
+    Write-Log -Message (Get-LocalizedString -Key 'profile.loaded' -Params @{ Name = $deploymentProfile.Name; AppCount = $deploymentProfile.Applications.Count }) -Level 'Success'
+    Write-Log -Message (Get-LocalizedString -Key 'gui.profiles.desc_label' -Params @{ Description = $deploymentProfile.Description }) -Level 'Info'
 
     # FIXED: Robust handling of InheritanceChain
     if ($deploymentProfile.InheritanceChain) {
@@ -390,7 +394,7 @@ try {
             } else {
                 $deploymentProfile.InheritanceChain.ToString()
             }
-            Write-Log -Message "Inheritance chain: $chainDisplay" -Level 'Info'
+            Write-Log -Message (Get-LocalizedString -Key 'profile.inheritance.inherits_from' -Params @{ Parent = $chainDisplay }) -Level 'Info'
         }
     }
 
@@ -398,10 +402,10 @@ try {
     $systemConfig = $deploymentProfile.SystemConfig
 
     $script:DeploymentStats.TotalApplications = $applications.Count
-    Write-Log -Message "Total applications to process: $($applications.Count)" -Level 'Info'
+    Write-Log -Message (Get-LocalizedString -Key 'profile.applications.total' -Params @{ Count = $applications.Count }) -Level 'Info'
 
 } catch {
-    Write-Log -Message "Failed to load profile: $($_.Exception.Message)" -Level 'Error'
+    Write-Log -Message (Get-LocalizedString -Key 'profile.not_found' -Params @{ Name = $ProfileName }) -Level 'Error'
     return 1
 }
 
@@ -420,8 +424,8 @@ Write-Host ""
 if (-not $TestMode) {
     # Mode parallèle ou séquentiel
     if ($Parallel) {
-        Write-Log -Message "Using PARALLEL installation mode (Max $MaxParallelJobs concurrent jobs)" -Level 'Info'
-        Write-Log -Message "This will significantly reduce deployment time" -Level 'Success'
+        Write-Log -Message (Get-LocalizedString -Key 'parallel.title') -Level 'Info'
+        Write-Log -Message (Get-LocalizedString -Key 'parallel.max_threads' -Params @{ Count = $MaxParallelJobs }) -Level 'Success'
         Write-Host ""
 
         # Installation parallèle
@@ -443,8 +447,8 @@ if (-not $TestMode) {
         }
 
     } else {
-        Write-Log -Message "Using SEQUENTIAL installation mode (one app at a time)" -Level 'Info'
-        Write-Log -Message "TIP: Use -Parallel parameter for faster deployment" -Level 'Warning'
+        Write-Log -Message (Get-LocalizedString -Key 'gui.deploy.mode_sequential') -Level 'Info'
+        Write-Log -Message (Get-LocalizedString -Key 'gui.deploy.mode_parallel') -Level 'Warning'
         Write-Host ""
 
         # Installation séquentielle (mode original)
@@ -461,7 +465,7 @@ if (-not $TestMode) {
             if ($app.EnvironmentRestrictions -and $app.EnvironmentRestrictions.Count -gt 0) {
                 $currentEnv = Get-SystemEnvironmentType
                 if ($app.EnvironmentRestrictions -contains $currentEnv) {
-                    Write-Log -Message "  [SKIP] Skipped: Not compatible with $currentEnv environment" -Level 'Warning'
+                    Write-Log -Message "  [SKIP] $(Get-LocalizedString -Key 'install.skipping_environment' -Params @{ AppName = $appName; Environment = $currentEnv })" -Level 'Warning'
                     $script:DeploymentStats.Skipped++
                     Write-Host ""
                     continue
@@ -472,19 +476,19 @@ if (-not $TestMode) {
             $installResult = Install-Application -Application $app -Force:$Force
 
             if ($installResult.AlreadyInstalled) {
-                Write-Log -Message "  [OK] Already installed" -Level 'Success'
+                Write-Log -Message "  [OK] $(Get-LocalizedString -Key 'install.already_installed' -Params @{ AppName = $appName })" -Level 'Success'
                 $script:DeploymentStats.AlreadyInstalled++
             }
             elseif ($installResult.Success) {
-                Write-Log -Message "  [OK] Installed via $($installResult.Method)" -Level 'Success'
+                Write-Log -Message "  [OK] $(Get-LocalizedString -Key 'install.completed' -Params @{ AppName = $appName })" -Level 'Success'
                 $script:DeploymentStats.InstalledSuccessfully++
             }
             else {
-                Write-Log -Message "  [FAIL] Installation failed: $($installResult.Message)" -Level 'Error'
+                Write-Log -Message "  [FAIL] $(Get-LocalizedString -Key 'install.failed' -Params @{ AppName = $appName; Message = $installResult.Message })" -Level 'Error'
                 $script:DeploymentStats.Failed++
 
                 if ($appRequired) {
-                    Write-Log -Message "  [WARN] This is a required application!" -Level 'Warning'
+                    Write-Log -Message "  [WARN] $(Get-LocalizedString -Key 'profile.applications.required' -Params @{ Count = 1 })" -Level 'Warning'
                 }
             }
 
@@ -629,22 +633,19 @@ if (-not $TestMode) {
 $script:EndTime = Get-Date
 $duration = $script:EndTime - $script:StartTime
 
-Write-Log -Message "=== Deployment Summary ===" -Level 'Success'
+Write-Log -Message "=== $(Get-LocalizedString -Key 'parallel.summary.title') ===" -Level 'Success'
 Write-Log -Message "Profile: $ProfileName" -Level 'Info'
-Write-Log -Message "Environment: $($environmentReport.EnvironmentType)" -Level 'Info'
-Write-Log -Message "Installation Mode: $(if ($Parallel) { 'Parallel' } else { 'Sequential' })" -Level 'Info'
-Write-Log -Message "Start Time: $($script:StartTime.ToString('yyyy-MM-dd HH:mm:ss'))" -Level 'Info'
-Write-Log -Message "End Time: $($script:EndTime.ToString('yyyy-MM-dd HH:mm:ss'))" -Level 'Info'
-Write-Log -Message "Duration: $($duration.ToString('hh\:mm\:ss'))" -Level 'Info'
+Write-Log -Message (Get-LocalizedString -Key 'system.info.environment' -Params @{ Type = $environmentReport.EnvironmentType }) -Level 'Info'
+$summaryMode = if ($Parallel) { Get-LocalizedString -Key 'gui.deploy.mode_name_parallel' } else { Get-LocalizedString -Key 'gui.deploy.mode_name_sequential' }
+Write-Log -Message (Get-LocalizedString -Key 'gui.deploy.mode_label' -Params @{ Mode = $summaryMode }) -Level 'Info'
+Write-Log -Message (Get-LocalizedString -Key 'parallel.summary.total_time' -Params @{ Time = $duration.ToString('hh\:mm\:ss') }) -Level 'Info'
 Write-Host ""
 
 if (-not $TestMode) {
-    Write-Log -Message "Applications Statistics:" -Level 'Info'
-    Write-Log -Message "  Total: $($script:DeploymentStats.TotalApplications)" -Level 'Info'
-    Write-Log -Message "  Installed: $($script:DeploymentStats.InstalledSuccessfully)" -Level 'Success'
-    Write-Log -Message "  Already Installed: $($script:DeploymentStats.AlreadyInstalled)" -Level 'Info'
-    Write-Log -Message "  Skipped: $($script:DeploymentStats.Skipped)" -Level 'Warning'
-    Write-Log -Message "  Failed: $($script:DeploymentStats.Failed)" -Level 'Error'
+    Write-Log -Message (Get-LocalizedString -Key 'parallel.summary.apps_processed' -Params @{ Count = $script:DeploymentStats.TotalApplications }) -Level 'Info'
+    Write-Log -Message "  $(Get-LocalizedString -Key 'common.success'): $($script:DeploymentStats.InstalledSuccessfully)" -Level 'Success'
+    Write-Log -Message "  $(Get-LocalizedString -Key 'common.skipped'): $($script:DeploymentStats.AlreadyInstalled + $script:DeploymentStats.Skipped)" -Level 'Info'
+    Write-Log -Message "  $(Get-LocalizedString -Key 'common.failed'): $($script:DeploymentStats.Failed)" -Level 'Error'
 }
 
 Write-Host ""
@@ -652,13 +653,13 @@ Write-Log -Message "Log file: $LogFile" -Level 'Info'
 
 # Determine overall deployment status and set exit code
 if ($script:DeploymentStats.Failed -gt 0) {
-    Write-Log -Message "Deployment completed with failures!" -Level 'Error'
+    Write-Log -Message (Get-LocalizedString -Key 'gui.deploy.completed_with_failures' -Params @{ Code = $script:DeploymentStats.Failed }) -Level 'Error'
     $exitCode = 1
 } elseif ($script:DeploymentStats.Skipped -gt 0) {
-    Write-Log -Message "Deployment completed with some apps skipped!" -Level 'Warning'
+    Write-Log -Message (Get-LocalizedString -Key 'gui.deploy.completed') -Level 'Warning'
     $exitCode = 0
 } else {
-    Write-Log -Message "Deployment completed successfully!" -Level 'Success'
+    Write-Log -Message (Get-LocalizedString -Key 'gui.deploy.completed') -Level 'Success'
     $exitCode = 0
 }
 
