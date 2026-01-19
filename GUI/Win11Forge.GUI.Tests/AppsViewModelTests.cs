@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.ObjectModel;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
@@ -42,11 +43,19 @@ public class AppsViewModelTests
     }
 
     /// <summary>
+    /// Creates a mock DeploymentStateService for testing.
+    /// </summary>
+    private static MockDeploymentStateService CreateMockDeploymentStateService()
+    {
+        return new MockDeploymentStateService();
+    }
+
+    /// <summary>
     /// Creates a configured AppsViewModel for testing.
     /// </summary>
-    private static AppsViewModel CreateViewModel(MockPowerShellBridge? bridge = null, MockAppSettingsService? settings = null)
+    private static AppsViewModel CreateViewModel(MockPowerShellBridge? bridge = null, MockAppSettingsService? settings = null, MockDeploymentStateService? deploymentState = null)
     {
-        return new AppsViewModel(bridge ?? CreateMockBridge(), settings ?? CreateMockSettingsService());
+        return new AppsViewModel(bridge ?? CreateMockBridge(), settings ?? CreateMockSettingsService(), deploymentState ?? CreateMockDeploymentStateService());
     }
 
     /// <summary>
@@ -381,4 +390,44 @@ internal class MockPowerShellBridge : IPowerShellBridge
 
     public Task<bool> LaunchApplicationAsync(ApplicationModel app) =>
         Task.FromResult(true);
+
+    public Task<Dictionary<string, BatchAppStatus>?> GetBatchApplicationStatusAsync(IReadOnlyList<ApplicationModel> apps) =>
+        Task.FromResult<Dictionary<string, BatchAppStatus>?>(new Dictionary<string, BatchAppStatus>());
+}
+
+/// <summary>
+/// Mock implementation of IDeploymentStateService for unit testing.
+/// </summary>
+internal class MockDeploymentStateService : IDeploymentStateService
+{
+    public bool IsDeploying => false;
+    public bool IsPaused => false;
+    public string? StatusMessage => null;
+    public string? CurrentAppName => null;
+    public int CompletedCount => 0;
+    public int TotalCount => 0;
+    public double ProgressPercentage => 0;
+    public string? ElapsedTime => null;
+    public string? EstimatedTimeRemaining => null;
+    public ObservableCollection<ApplicationModel> Applications { get; } = new();
+
+    public event EventHandler? StateChanged;
+    public event EventHandler? PauseRequested;
+    public event EventHandler? ResumeRequested;
+    public event EventHandler? CancelRequested;
+
+    public void StartDeployment(IEnumerable<ApplicationModel> apps) { }
+    public void UpdateProgress(string? currentAppName, int completed, int total, string? statusMessage) { }
+    public void UpdateTime(string? elapsed, string? remaining) { }
+    public void SetPaused(bool isPaused) { }
+    public void EndDeployment() { }
+    public void RequestPause() => PauseRequested?.Invoke(this, EventArgs.Empty);
+    public void RequestResume() => ResumeRequested?.Invoke(this, EventArgs.Empty);
+    public void RequestCancel() => CancelRequested?.Invoke(this, EventArgs.Empty);
+
+    // Suppress unused event warnings
+    private void SuppressWarnings()
+    {
+        StateChanged?.Invoke(this, EventArgs.Empty);
+    }
 }
