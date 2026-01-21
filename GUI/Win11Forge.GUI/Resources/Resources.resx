@@ -1899,6 +1899,18 @@
     <value>Unknown</value>
     <comment>Unknown status value</comment>
   </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+    <comment>OK button text</comment>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Cancel button text</comment>
+  </data>
+  <data name="Common_DryRun" xml:space="preserve">
+    <value>[DRY RUN]</value>
+    <comment>Dry run prefix for simulated installations</comment>
+  </data>
   <!-- Dashboard Hero Section Extended -->
   <data name="Dashboard_Scan_Progress" xml:space="preserve">
     <value>Scanning... ({0}/{1})</value>

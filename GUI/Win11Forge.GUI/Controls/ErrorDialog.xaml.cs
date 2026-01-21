@@ -205,7 +205,7 @@ public partial class ErrorDialog : UserControl
 
     private void HelpButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!string.IsNullOrEmpty(_helpUrl))
+        if (!string.IsNullOrEmpty(_helpUrl) && IsValidHttpUrl(_helpUrl))
         {
             try
             {
@@ -221,6 +221,22 @@ public partial class ErrorDialog : UserControl
             }
         }
         ActionSelected?.Invoke(this, DialogAction.Help);
+    }
+
+    /// <summary>
+    /// Validates that a URL is a safe HTTP/HTTPS URL to prevent protocol handler exploits.
+    /// </summary>
+    /// <param name="url">The URL to validate.</param>
+    /// <returns>True if the URL is a valid HTTP/HTTPS URL.</returns>
+    private static bool IsValidHttpUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return false;
+
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            return false;
+
+        return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
     }
 
     private void CopyDetailsButton_Click(object sender, RoutedEventArgs e)

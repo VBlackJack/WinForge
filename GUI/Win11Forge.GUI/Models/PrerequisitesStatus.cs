@@ -72,6 +72,8 @@ public class PrerequisitesStatus
     /// <summary>
     /// PowerShell version string.
     /// </summary>
+    [StringLength(64, ErrorMessage = "PowerShell version must not exceed 64 characters")]
+    [RegularExpression(@"^(\d+\.\d+(\.\d+)?(\.\d+)?)?$", ErrorMessage = "Invalid version format")]
     public string PowerShellVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -82,6 +84,8 @@ public class PrerequisitesStatus
     /// <summary>
     /// Chocolatey version string.
     /// </summary>
+    [StringLength(64, ErrorMessage = "Chocolatey version must not exceed 64 characters")]
+    [RegularExpression(@"^(\d+\.\d+(\.\d+)?)?$", ErrorMessage = "Invalid version format")]
     public string ChocolateyVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -92,6 +96,8 @@ public class PrerequisitesStatus
     /// <summary>
     /// Winget version string.
     /// </summary>
+    [StringLength(64, ErrorMessage = "Winget version must not exceed 64 characters")]
+    [RegularExpression(@"^(v?\d+\.\d+(\.\d+)?)?$", ErrorMessage = "Invalid version format")]
     public string WingetVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -102,6 +108,7 @@ public class PrerequisitesStatus
     /// <summary>
     /// .NET Core version info.
     /// </summary>
+    [StringLength(128, ErrorMessage = ".NET version must not exceed 128 characters")]
     public string DotNetVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -112,6 +119,8 @@ public class PrerequisitesStatus
     /// <summary>
     /// .NET Framework version string.
     /// </summary>
+    [StringLength(64, ErrorMessage = ".NET Framework version must not exceed 64 characters")]
+    [RegularExpression(@"^(\d+\.\d+(\.\d+)?(\.\d+)?)?$", ErrorMessage = "Invalid version format")]
     public string DotNetFrameworkVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -122,6 +131,7 @@ public class PrerequisitesStatus
     /// <summary>
     /// VC++ Redistributable version string.
     /// </summary>
+    [StringLength(128, ErrorMessage = "VC++ version must not exceed 128 characters")]
     public string VCRedistVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -132,6 +142,7 @@ public class PrerequisitesStatus
     /// <summary>
     /// Java version string.
     /// </summary>
+    [StringLength(128, ErrorMessage = "Java version must not exceed 128 characters")]
     public string JavaVersion { get; set; } = string.Empty;
 
     /// <summary>

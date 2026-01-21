@@ -1210,6 +1210,15 @@
   <data name="Common_Unknown" xml:space="preserve">
     <value>Inconnu</value>
   </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="Common_DryRun" xml:space="preserve">
+    <value>[SIMULATION]</value>
+  </data>
   <!-- Dashboard Hero Section Extended -->
   <data name="Dashboard_Scan_Progress" xml:space="preserve">
     <value>Analyse... ({0}/{1})</value>

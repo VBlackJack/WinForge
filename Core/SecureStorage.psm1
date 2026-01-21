@@ -415,7 +415,9 @@ function Save-SecureData {
                 $encryptedStorage = Get-Content -Path $script:SecureStoragePath -Raw
                 $json = Unprotect-Data -EncryptedData $encryptedStorage
                 $storage = $json | ConvertFrom-Json -AsHashtable
-            } catch { }
+            } catch {
+                Write-Verbose "Failed to read secure storage (will create new): $($_.Exception.Message)"
+            }
         }
 
         # Encrypt and store value

@@ -15,6 +15,8 @@
  */
 
 using System.IO;
+using Moq;
+using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI.Tests;
@@ -169,5 +171,384 @@ public class PowerShellBridgeTests
         Assert.NotNull(apps);
         Assert.NotEmpty(apps);
         Assert.True(apps.Count >= 60, $"Expected at least 60 applications, got {apps.Count}");
+    }
+}
+
+/// <summary>
+/// Moq-based unit tests for IPowerShellBridge interface.
+/// Tests the interface contract without actual PowerShell execution.
+/// </summary>
+public class PowerShellBridgeMockTests
+{
+    [Fact]
+    public async Task InstallApplicationAsync_ReturnsSuccessResult()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var app = new ApplicationModel { AppId = "TestApp", Name = "Test Application" };
+        var expectedResult = InstallResult.Successful("Installed successfully", "", "Winget");
+
+        mockBridge.Setup(b => b.InstallApplicationAsync(
+                It.IsAny<ApplicationModel>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<Action<string>?>()))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await mockBridge.Object.InstallApplicationAsync(app, false);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal("Winget", result.Method);
+    }
+
+    [Fact]
+    public async Task InstallApplicationAsync_DryRunReturnsCorrectResult()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var app = new ApplicationModel { AppId = "TestApp", Name = "Test Application" };
+        var dryRunResult = InstallResult.DryRun("Test Application");
+
+        mockBridge.Setup(b => b.InstallApplicationAsync(
+                It.IsAny<ApplicationModel>(),
+                true,
+                It.IsAny<bool>(),
+                It.IsAny<Action<string>?>()))
+            .ReturnsAsync(dryRunResult);
+
+        // Act
+        var result = await mockBridge.Object.InstallApplicationAsync(app, isDryRun: true);
+
+        // Assert
+        Assert.True(result.IsDryRun);
+    }
+
+    [Fact]
+    public async Task InstallApplicationAsync_InvokesProgressCallback()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var app = new ApplicationModel { AppId = "TestApp", Name = "Test Application" };
+        var progressMessages = new List<string>();
+
+        mockBridge.Setup(b => b.InstallApplicationAsync(
+                It.IsAny<ApplicationModel>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<Action<string>?>()))
+            .Callback<ApplicationModel, bool, bool, Action<string>?>((_, _, _, callback) =>
+            {
+                callback?.Invoke("Starting installation...");
+                callback?.Invoke("Installation complete.");
+            })
+            .ReturnsAsync(InstallResult.Successful("Done", "", "Winget"));
+
+        // Act
+        await mockBridge.Object.InstallApplicationAsync(app, false, false, msg => progressMessages.Add(msg));
+
+        // Assert
+        Assert.Equal(2, progressMessages.Count);
+        Assert.Contains("Starting installation...", progressMessages);
+    }
+
+    [Fact]
+    public async Task UninstallApplicationAsync_ReturnsResult()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var app = new ApplicationModel { AppId = "TestApp", Name = "Test Application" };
+
+        mockBridge.Setup(b => b.UninstallApplicationAsync(
+                It.IsAny<ApplicationModel>(),
+                It.IsAny<Action<string>?>()))
+            .ReturnsAsync(InstallResult.Successful("Uninstalled", "", "Winget"));
+
+        // Act
+        var result = await mockBridge.Object.UninstallApplicationAsync(app);
+
+        // Assert
+        Assert.True(result.Success);
+    }
+
+    [Fact]
+    public async Task CheckApplicationUpdateAsync_ReturnsUpdateAvailable()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var app = new ApplicationModel { AppId = "TestApp", Name = "Test Application" };
+        var updateResult = UpdateCheckResult.UpdateAvailable("1.0.0", "2.0.0");
+
+        mockBridge.Setup(b => b.CheckApplicationUpdateAsync(It.IsAny<ApplicationModel>()))
+            .ReturnsAsync(updateResult);
+
+        // Act
+        var result = await mockBridge.Object.CheckApplicationUpdateAsync(app);
+
+        // Assert
+        Assert.True(result.HasUpdate);
+        Assert.Equal("1.0.0", result.CurrentVersion);
+        Assert.Equal("2.0.0", result.AvailableVersion);
+    }
+
+    [Fact]
+    public async Task CheckApplicationUpdateAsync_ReturnsUpToDate()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var app = new ApplicationModel { AppId = "TestApp", Name = "Test Application" };
+        var upToDateResult = UpdateCheckResult.UpToDate("2.0.0");
+
+        mockBridge.Setup(b => b.CheckApplicationUpdateAsync(It.IsAny<ApplicationModel>()))
+            .ReturnsAsync(upToDateResult);
+
+        // Act
+        var result = await mockBridge.Object.CheckApplicationUpdateAsync(app);
+
+        // Assert
+        Assert.False(result.HasUpdate);
+    }
+
+    [Fact]
+    public async Task GetBatchApplicationStatusAsync_ReturnsDictionary()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var apps = new List<ApplicationModel>
+        {
+            new() { AppId = "App1", Name = "Application 1" },
+            new() { AppId = "App2", Name = "Application 2" }
+        };
+
+        var batchResult = new Dictionary<string, BatchAppStatus>
+        {
+            ["App1"] = new BatchAppStatus(ApplicationStatus.Installed, "1.0.0"),
+            ["App2"] = new BatchAppStatus(ApplicationStatus.Pending, null)
+        };
+
+        mockBridge.Setup(b => b.GetBatchApplicationStatusAsync(It.IsAny<IReadOnlyList<ApplicationModel>>()))
+            .ReturnsAsync(batchResult);
+
+        // Act
+        var result = await mockBridge.Object.GetBatchApplicationStatusAsync(apps);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+        Assert.Equal(ApplicationStatus.Installed, result["App1"].Status);
+        Assert.Equal("1.0.0", result["App1"].Version);
+    }
+
+    [Fact]
+    public async Task GetSystemInfoAsync_ReturnsSystemInfo()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var systemInfo = new SystemInfoModel
+        {
+            Hostname = "TESTPC",
+            Username = "TestUser",
+            WindowsVersion = "Windows 11 Pro",
+            IsAdministrator = true
+        };
+
+        mockBridge.Setup(b => b.GetSystemInfoAsync())
+            .ReturnsAsync(systemInfo);
+
+        // Act
+        var result = await mockBridge.Object.GetSystemInfoAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("TESTPC", result.Hostname);
+        Assert.True(result.IsAdministrator);
+    }
+
+    [Fact]
+    public async Task CheckPrerequisitesAsync_ReturnsStatus()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var prereqStatus = new PrerequisitesStatus
+        {
+            PowerShell7Installed = true,
+            WingetInstalled = true,
+            ChocolateyInstalled = true
+        };
+
+        mockBridge.Setup(b => b.CheckPrerequisitesAsync())
+            .ReturnsAsync(prereqStatus);
+
+        // Act
+        var result = await mockBridge.Object.CheckPrerequisitesAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.PowerShell7Installed);
+        Assert.True(result.AllPrerequisitesMet);
+    }
+
+    [Fact]
+    public async Task InstallPrerequisitesAsync_ReturnsTrue()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        mockBridge.Setup(b => b.InstallPrerequisitesAsync(It.IsAny<Action<string>?>()))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await mockBridge.Object.InstallPrerequisitesAsync();
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task LaunchApplicationAsync_ReturnsTrue()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var app = new ApplicationModel { AppId = "TestApp", Name = "Test Application" };
+
+        mockBridge.Setup(b => b.LaunchApplicationAsync(It.IsAny<ApplicationModel>()))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await mockBridge.Object.LaunchApplicationAsync(app);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task SaveProfileAsync_VerifiesParameters()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        mockBridge.Setup(b => b.SaveProfileAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string?>(),
+                It.IsAny<List<string>>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await mockBridge.Object.SaveProfileAsync(
+            "TestProfile",
+            "Test description",
+            "Base",
+            new List<string> { "App1", "App2" });
+
+        // Assert
+        mockBridge.Verify(b => b.SaveProfileAsync(
+            "TestProfile",
+            "Test description",
+            "Base",
+            It.Is<List<string>>(l => l.Count == 2)),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateApplicationAsync_ReturnsSuccessResult()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var app = new ApplicationModel { AppId = "TestApp", Name = "Test Application" };
+
+        mockBridge.Setup(b => b.UpdateApplicationAsync(
+                It.IsAny<ApplicationModel>(),
+                It.IsAny<Action<string>?>()))
+            .ReturnsAsync(InstallResult.Successful("Updated to 2.0.0", "", "Winget"));
+
+        // Act
+        var result = await mockBridge.Object.UpdateApplicationAsync(app);
+
+        // Assert
+        Assert.True(result.Success);
+    }
+
+    [Fact]
+    public async Task GetRawProfileAsync_ReturnsProfile()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var rawProfile = new DeploymentProfileModel
+        {
+            Name = "Office",
+            Description = "Office profile"
+        };
+        rawProfile.Applications.Add(new ApplicationModel { AppId = "Office365", Name = "Microsoft Office" });
+
+        mockBridge.Setup(b => b.GetRawProfileAsync("Office"))
+            .ReturnsAsync(rawProfile);
+
+        // Act
+        var result = await mockBridge.Object.GetRawProfileAsync("Office");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Office", result.Name);
+        Assert.Single(result.Applications);
+    }
+
+    [Fact]
+    public async Task GetResolvedProfileAsync_ReturnsProfileWithInheritance()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        var resolvedProfile = new DeploymentProfileModel
+        {
+            Name = "Office",
+            Description = "Office profile (resolved)"
+        };
+        resolvedProfile.Applications.Add(new ApplicationModel { AppId = "Chrome", Name = "Google Chrome" });
+        resolvedProfile.Applications.Add(new ApplicationModel { AppId = "Firefox", Name = "Mozilla Firefox" });
+        resolvedProfile.Applications.Add(new ApplicationModel { AppId = "Office365", Name = "Microsoft Office" });
+
+        mockBridge.Setup(b => b.GetResolvedProfileAsync("Office"))
+            .ReturnsAsync(resolvedProfile);
+
+        // Act
+        var result = await mockBridge.Object.GetResolvedProfileAsync("Office");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(3, result.Applications.Count);
+    }
+
+    [Fact]
+    public async Task GetApplicationStatusAsync_ReturnsCorrectStatus()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        mockBridge.Setup(b => b.GetApplicationStatusAsync("InstalledApp"))
+            .ReturnsAsync(ApplicationStatus.Installed);
+        mockBridge.Setup(b => b.GetApplicationStatusAsync("PendingApp"))
+            .ReturnsAsync(ApplicationStatus.Pending);
+
+        // Act
+        var installedStatus = await mockBridge.Object.GetApplicationStatusAsync("InstalledApp");
+        var pendingStatus = await mockBridge.Object.GetApplicationStatusAsync("PendingApp");
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Installed, installedStatus);
+        Assert.Equal(ApplicationStatus.Pending, pendingStatus);
+    }
+
+    [Fact]
+    public void RepositoryRoot_ReturnsPath()
+    {
+        // Arrange
+        var mockBridge = new Mock<IPowerShellBridge>();
+        mockBridge.Setup(b => b.RepositoryRoot)
+            .Returns(@"C:\Projects\Win11Forge");
+
+        // Act
+        var path = mockBridge.Object.RepositoryRoot;
+
+        // Assert
+        Assert.NotNull(path);
+        Assert.Contains("Win11Forge", path);
     }
 }

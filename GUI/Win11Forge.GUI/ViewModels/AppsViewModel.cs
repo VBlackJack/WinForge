@@ -15,9 +15,11 @@
  */
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using System.Windows.Data;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -47,7 +49,7 @@ public enum StatusFilterOption
 /// ViewModel for the Application Manager view.
 /// Displays all applications with search and category filtering.
 /// </summary>
-public partial class AppsViewModel : ViewModelBase
+public partial class AppsViewModel : ViewModelBase, IDisposable
 {
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IAppSettingsService _settingsService;
@@ -58,6 +60,7 @@ public partial class AppsViewModel : ViewModelBase
     private List<ApplicationModel> _allApplications = [];
     private CancellationTokenSource? _scanCancellationTokenSource;
     private CancellationTokenSource? _batchCancellationTokenSource;
+    private bool _disposed;
     private readonly ManualResetEventSlim _pauseEvent = new(true);
 
     // External callbacks for Dashboard scan integration
@@ -65,10 +68,31 @@ public partial class AppsViewModel : ViewModelBase
     private Action<int>? _externalCompletionCallback;
 
     /// <summary>
-    /// Filtered applications displayed in the view.
+    /// Source collection for all applications (used by CollectionViewSource).
     /// </summary>
-    [ObservableProperty]
-    private ObservableCollection<ApplicationModel> _filteredApplications = [];
+    private readonly ObservableCollection<ApplicationModel> _applicationsSource = [];
+
+    /// <summary>
+    /// CollectionView for efficient filtering without recreating collections.
+    /// </summary>
+    private ICollectionView? _applicationsView;
+
+    /// <summary>
+    /// Filtered applications displayed in the view via CollectionView.
+    /// Using ICollectionView for efficient filtering instead of recreating ObservableCollection.
+    /// </summary>
+    public ICollectionView FilteredApplications
+    {
+        get
+        {
+            if (_applicationsView == null)
+            {
+                _applicationsView = CollectionViewSource.GetDefaultView(_applicationsSource);
+                _applicationsView.Filter = FilterPredicate;
+            }
+            return _applicationsView;
+        }
+    }
 
     /// <summary>
     /// Available categories for filtering.
@@ -421,6 +445,13 @@ public partial class AppsViewModel : ViewModelBase
         {
             _allApplications = await _powerShellBridge.GetAllApplicationsAsync();
             TotalApplicationsCount = _allApplications.Count;
+
+            // Sync to ObservableCollection for CollectionView
+            _applicationsSource.Clear();
+            foreach (var app in _allApplications)
+            {
+                _applicationsSource.Add(app);
+            }
 
             // Build categories list
             var categoryList = _allApplications
@@ -899,49 +930,59 @@ public partial class AppsViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Applies search, category, and status filters to the application list.
+    /// Filter predicate for ICollectionView filtering.
     /// </summary>
-    private void ApplyFilter()
+    private bool FilterPredicate(object obj)
     {
-        var filtered = _allApplications.AsEnumerable();
+        if (obj is not ApplicationModel app)
+            return false;
 
         // Filter by search text (case-insensitive)
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
             var searchLower = SearchText.ToLowerInvariant();
-            filtered = filtered.Where(a =>
-                a.Name.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
-                a.AppId.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
-                a.Description.Contains(searchLower, StringComparison.OrdinalIgnoreCase));
+            var matchesSearch =
+                app.Name.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
+                app.AppId.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
+                app.Description.Contains(searchLower, StringComparison.OrdinalIgnoreCase);
+            if (!matchesSearch)
+                return false;
         }
 
         // Filter by category (if not "All Categories")
         if (!string.IsNullOrEmpty(SelectedCategory) &&
             SelectedCategory != Resources.Resources.Apps_CategoryAll)
         {
-            filtered = filtered.Where(a =>
-                a.Category.Equals(SelectedCategory, StringComparison.OrdinalIgnoreCase));
+            if (!app.Category.Equals(SelectedCategory, StringComparison.OrdinalIgnoreCase))
+                return false;
         }
 
         // Filter by installation status
-        filtered = SelectedStatusFilter switch
+        return SelectedStatusFilter switch
         {
-            StatusFilterOption.Installed => filtered.Where(a =>
-                a.Status == ApplicationStatus.Installed ||
-                a.Status == ApplicationStatus.AlreadyInstalled),
-            StatusFilterOption.NotInstalled => filtered.Where(a =>
-                a.Status != ApplicationStatus.Installed &&
-                a.Status != ApplicationStatus.AlreadyInstalled),
-            StatusFilterOption.Selected => filtered.Where(a => a.IsSelected),
-            StatusFilterOption.Favorites => filtered.Where(a => a.IsFavorite),
-            StatusFilterOption.HasUpdates => filtered.Where(a =>
-                a.Status == ApplicationStatus.UpdateAvailable),
-            _ => filtered // All
+            StatusFilterOption.Installed =>
+                app.Status == ApplicationStatus.Installed ||
+                app.Status == ApplicationStatus.AlreadyInstalled,
+            StatusFilterOption.NotInstalled =>
+                app.Status != ApplicationStatus.Installed &&
+                app.Status != ApplicationStatus.AlreadyInstalled,
+            StatusFilterOption.Selected => app.IsSelected,
+            StatusFilterOption.Favorites => app.IsFavorite,
+            StatusFilterOption.HasUpdates =>
+                app.Status == ApplicationStatus.UpdateAvailable,
+            _ => true // All
         };
+    }
 
-        var filteredList = filtered.ToList();
-        FilteredApplications = new ObservableCollection<ApplicationModel>(filteredList);
-        FilteredCount = filteredList.Count;
+    /// <summary>
+    /// Applies search, category, and status filters to the application list.
+    /// Uses ICollectionView.Refresh() for efficient filtering without recreating collections.
+    /// </summary>
+    private void ApplyFilter()
+    {
+        // Refresh the view filter - much more efficient than recreating collection
+        FilteredApplications.Refresh();
+        FilteredCount = FilteredApplications.Cast<ApplicationModel>().Count();
 
         // Update selected count
         UpdateSelectedCount();
@@ -1007,7 +1048,7 @@ public partial class AppsViewModel : ViewModelBase
         // Determine which apps to scan: filtered apps if any filter is active, otherwise all
         var hasActiveFilter = HasSearchFilter || HasCategoryFilter || HasStatusFilter;
         var appsToScan = hasActiveFilter
-            ? FilteredApplications.ToList()
+            ? FilteredApplications.Cast<ApplicationModel>().ToList()
             : _allApplications;
 
         if (appsToScan.Count == 0)
@@ -1042,8 +1083,20 @@ public partial class AppsViewModel : ViewModelBase
 
         try
         {
-            // Try batch detection first (optimized single-pass detection)
-            var batchResults = await _powerShellBridge.GetBatchApplicationStatusAsync(appsToScan);
+            Dictionary<string, BatchAppStatus>? batchResults = null;
+
+            // Try fast registry-first detection (10-50x faster than PowerShell)
+            if (_powerShellBridge is PowerShellBridge bridge)
+            {
+                batchResults = await bridge.GetBatchApplicationStatusFastAsync(appsToScan);
+                if (batchResults != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Fast detection succeeded: {batchResults.Count} apps checked");
+                }
+            }
+
+            // Fall back to PowerShell-based batch detection if fast method unavailable or failed
+            batchResults ??= await _powerShellBridge.GetBatchApplicationStatusAsync(appsToScan);
 
             if (batchResults != null)
             {
@@ -1105,6 +1158,8 @@ public partial class AppsViewModel : ViewModelBase
         CancellationToken cancellationToken)
     {
         // First pass: apply batch results with versions (fast)
+        var installedApps = new List<ApplicationModel>();
+
         foreach (var app in apps)
         {
             if (cancellationToken.IsCancellationRequested) return;
@@ -1122,6 +1177,7 @@ public partial class AppsViewModel : ViewModelBase
                         app.CurrentVersion = batchStatus.Version;
                     }
                     Interlocked.Increment(ref _scanInstalledCounter);
+                    installedApps.Add(app);
                 }
                 else
                 {
@@ -1136,16 +1192,97 @@ public partial class AppsViewModel : ViewModelBase
             ScannedCount++;
         }
 
-        // Second pass: check for updates only on installed apps without version info
-        var installedAppsNeedingUpdate = apps.Where(a =>
-            (a.Status == ApplicationStatus.Installed ||
-             a.Status == ApplicationStatus.AlreadyInstalled) &&
-            string.IsNullOrEmpty(a.CurrentVersion)).ToList();
-
-        if (installedAppsNeedingUpdate.Count > 0)
+        // Second pass: check for available updates using batch method
+        if (installedApps.Count > 0 && !cancellationToken.IsCancellationRequested)
         {
-            var updateTasks = installedAppsNeedingUpdate.Select(app => CheckAppUpdateAsync(app, cancellationToken));
+            await CheckBatchUpdatesAsync(installedApps, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Checks for available updates using batch detection for better performance.
+    /// Falls back to individual checks if batch method is unavailable.
+    /// </summary>
+    private async Task CheckBatchUpdatesAsync(List<ApplicationModel> installedApps, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Try batch update detection first (single call, ~500ms total)
+            if (_powerShellBridge is PowerShellBridge bridge)
+            {
+                var batchUpdates = await bridge.GetAvailableUpdatesAsync();
+
+                if (batchUpdates.Count > 0)
+                {
+                    // Build lookup dictionary for fast matching
+                    var updateLookup = batchUpdates.ToDictionary(
+                        u => u.Id,
+                        u => u,
+                        StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var app in installedApps)
+                    {
+                        if (cancellationToken.IsCancellationRequested) return;
+
+                        // Try direct AppId match
+                        if (updateLookup.TryGetValue(app.AppId, out var updateInfo))
+                        {
+                            ApplyUpdateInfo(app, updateInfo);
+                            continue;
+                        }
+
+                        // Try name match
+                        var matchingUpdate = batchUpdates.FirstOrDefault(u =>
+                            u.Name.Equals(app.Name, StringComparison.OrdinalIgnoreCase) ||
+                            u.Id.Contains(app.Name, StringComparison.OrdinalIgnoreCase) ||
+                            app.Name.Contains(u.Name, StringComparison.OrdinalIgnoreCase));
+
+                        if (matchingUpdate != null)
+                        {
+                            ApplyUpdateInfo(app, matchingUpdate);
+                        }
+                    }
+
+                    Debug.WriteLine($"Batch update check: {batchUpdates.Count} updates found, {_scanUpdatesCounter} matched");
+                    return;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Batch update detection failed, falling back to individual checks: {ex.Message}");
+        }
+
+        // Fallback: check updates individually for apps without version info
+        var appsNeedingIndividualCheck = installedApps
+            .Where(a => string.IsNullOrEmpty(a.CurrentVersion))
+            .ToList();
+
+        if (appsNeedingIndividualCheck.Count > 0)
+        {
+            var updateTasks = appsNeedingIndividualCheck.Select(app => CheckAppUpdateAsync(app, cancellationToken));
             await Task.WhenAll(updateTasks);
+        }
+    }
+
+    /// <summary>
+    /// Applies update information to an application.
+    /// </summary>
+    private void ApplyUpdateInfo(ApplicationModel app, UpdateInfo updateInfo)
+    {
+        // Check if there's actually an update available
+        var currentVersion = !string.IsNullOrEmpty(app.CurrentVersion)
+            ? app.CurrentVersion
+            : updateInfo.CurrentVersion;
+
+        if (!string.IsNullOrEmpty(updateInfo.NewVersion) &&
+            !string.Equals(currentVersion, updateInfo.NewVersion, StringComparison.OrdinalIgnoreCase))
+        {
+            app.Status = ApplicationStatus.UpdateAvailable;
+            app.CurrentVersion = currentVersion;
+            app.AvailableVersion = updateInfo.NewVersion;
+            app.StatusMessage = Resources.Resources.Status_UpdateAvailable;
+            Interlocked.Increment(ref _scanUpdatesCounter);
         }
     }
 
@@ -1313,8 +1450,16 @@ public partial class AppsViewModel : ViewModelBase
 
         try
         {
-            // Try batch detection first
-            var batchResults = await _powerShellBridge.GetBatchApplicationStatusAsync(selectedApps);
+            Dictionary<string, BatchAppStatus>? batchResults = null;
+
+            // Try fast registry-first detection (10-50x faster than PowerShell)
+            if (_powerShellBridge is PowerShellBridge bridge)
+            {
+                batchResults = await bridge.GetBatchApplicationStatusFastAsync(selectedApps);
+            }
+
+            // Fall back to PowerShell-based batch detection if fast method unavailable or failed
+            batchResults ??= await _powerShellBridge.GetBatchApplicationStatusAsync(selectedApps);
 
             if (batchResults != null)
             {
@@ -1889,7 +2034,7 @@ public partial class AppsViewModel : ViewModelBase
     [RelayCommand]
     private void SelectAll()
     {
-        foreach (var app in FilteredApplications)
+        foreach (var app in FilteredApplications.Cast<ApplicationModel>())
         {
             app.IsSelected = true;
         }
@@ -2480,5 +2625,62 @@ public partial class AppsViewModel : ViewModelBase
             }
         }
         UpdateSelectedCount();
+    }
+
+    /// <summary>
+    /// Invalidates all cached data, forcing a refresh on next access.
+    /// </summary>
+    public void InvalidateCaches()
+    {
+        _resolvedProfileAppIdsCache.Clear();
+        _rawProfileAppIdsCache.Clear();
+    }
+
+    /// <summary>
+    /// Releases all resources used by the AppsViewModel.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases the unmanaged resources and optionally releases the managed resources.
+    /// </summary>
+    /// <param name="disposing">True to release both managed and unmanaged resources.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing)
+        {
+            // Unregister from WeakReferenceMessenger
+            WeakReferenceMessenger.Default.Unregister<ApplyFilterMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<TriggerScanMessage>(this);
+
+            // Unsubscribe from events
+            _deploymentStateService.PauseRequested -= OnPauseRequested;
+            _deploymentStateService.ResumeRequested -= OnResumeRequested;
+            _deploymentStateService.CancelRequested -= OnCancelRequested;
+
+            // Cancel any ongoing operations
+            _scanCancellationTokenSource?.Cancel();
+            _scanCancellationTokenSource?.Dispose();
+            _batchCancellationTokenSource?.Cancel();
+            _batchCancellationTokenSource?.Dispose();
+
+            // Dispose synchronization primitives
+            _scanSemaphore?.Dispose();
+            _installSemaphore?.Dispose();
+            _pauseEvent?.Dispose();
+
+            // Clear caches
+            InvalidateCaches();
+            _allApplications.Clear();
+            _applicationsSource.Clear();
+        }
+
+        _disposed = true;
     }
 }

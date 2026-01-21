@@ -159,7 +159,9 @@ function script:Get-CachedFrameworkVersion {
             $versionData = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
             $script:CachedFrameworkVersion = $versionData.Version
             return $script:CachedFrameworkVersion
-        } catch { }
+        } catch {
+            Write-Verbose "Failed to read version.json: $($_.Exception.Message)"
+        }
     }
 
     return 'Unknown'

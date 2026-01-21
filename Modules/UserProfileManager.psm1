@@ -154,7 +154,9 @@ function Save-UserProfile {
     if (Test-Path $profilePath) {
         try {
             $existingProfile = Get-Content $profilePath -Raw | ConvertFrom-Json
-        } catch { }
+        } catch {
+            Write-Verbose "Failed to read existing profile '$Name': $($_.Exception.Message)"
+        }
     }
 
     $profile = [ordered]@{

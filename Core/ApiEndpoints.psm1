@@ -80,7 +80,9 @@ function Get-VersionHandler {
             $versionJson = Get-Content $script:VersionPath -Raw | ConvertFrom-Json
             $versionInfo.version = $versionJson.Version
             $versionInfo.lastUpdated = $versionJson.LastUpdated
-        } catch { }
+        } catch {
+            Write-Verbose "Failed to read version.json: $($_.Exception.Message)"
+        }
     }
 
     return $versionInfo
@@ -175,7 +177,8 @@ function Get-ApplicationsHandler {
     }
 
     if ($query -and $query['search']) {
-        $searchTerm = $query['search']
+        # Escape regex special characters to prevent ReDoS attacks
+        $searchTerm = [regex]::Escape($query['search'])
         $applications = $applications | Where-Object {
             $_.name -match $searchTerm -or $_.id -match $searchTerm
         }

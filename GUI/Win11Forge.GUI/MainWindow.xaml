@@ -83,7 +83,7 @@
                         </Button>
 
                         <TextBlock Grid.Row="0" Grid.Column="1"
-                                   Text="Win11Forge"
+                                   Text="{loc:Loc App_Name}"
                                    Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                    FontWeight="Bold"
                                    VerticalAlignment="Center"/>

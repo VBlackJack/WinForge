@@ -216,21 +216,14 @@ function Get-ApiConfig {
                         }
                     }
                 } else {
-                    # Secure storage not available - use config file with warning
+                    # Secure storage not available - SECURITY: Refuse to load plaintext API keys
+                    # This prevents accidental exposure of credentials in production
                     if ($json.apiKeys.keys) {
-                        foreach ($keyConfig in $json.apiKeys.keys) {
-                            if ($keyConfig.enabled) {
-                                $script:ServerState.ApiKeys[$keyConfig.key] = @{
-                                    Id = $keyConfig.id
-                                    Description = $keyConfig.description
-                                    Permissions = $keyConfig.permissions
-                                    CreatedAt = $keyConfig.createdAt
-                                    ExpiresAt = $keyConfig.expiresAt
-                                }
-                            }
-                        }
-                        if ($script:ServerState.ApiKeys.Count -gt 0) {
-                            Write-Verbose "Warning: DPAPI secure storage not available. API keys stored in plain text."
+                        $enabledKeys = @($json.apiKeys.keys | Where-Object { $_.enabled })
+                        if ($enabledKeys.Count -gt 0) {
+                            Write-Status -Message "SECURITY: DPAPI secure storage not available. Refusing to load plaintext API keys." -Level 'Error' -Category 'Api'
+                            Write-Status -Message "Use Save-SecureApiKey cmdlet to store API keys securely, or disable authentication." -Level 'Warning' -Category 'Api'
+                            # Do not load plaintext keys - this is a security requirement
                         }
                     }
                 }
@@ -349,7 +342,8 @@ function Test-ApiKeyValid {
 function Test-RateLimit {
     <#
     .SYNOPSIS
-        Tests if a client has exceeded rate limits.
+        Tests if a client has exceeded rate limits using sliding window algorithm.
+        Provides smoother rate limiting than fixed window by tracking actual request timestamps.
 
     .PARAMETER ClientIp
         The client IP address.
@@ -382,13 +376,10 @@ function Test-RateLimit {
     # Periodic cleanup of stale entries (every 10 minutes)
     Invoke-RateLimitCleanup
 
-    # Initialize state for new client
+    # Initialize state for new client with sliding window timestamp array
     if (-not $script:ServerState.RateLimitState.ContainsKey($ClientIp)) {
         $script:ServerState.RateLimitState[$ClientIp] = @{
-            MinuteWindowStart = $now
-            MinuteCount = 0
-            HourWindowStart = $now
-            HourCount = 0
+            RequestTimestamps = [System.Collections.Generic.List[datetime]]::new()
             LastAccess = $now
         }
     }
@@ -396,44 +387,54 @@ function Test-RateLimit {
     $state = $script:ServerState.RateLimitState[$ClientIp]
     $state.LastAccess = $now
 
-    # Reset minute window if needed
-    if (($now - $state.MinuteWindowStart).TotalSeconds -ge 60) {
-        $state.MinuteWindowStart = $now
-        $state.MinuteCount = 0
-    }
+    # Sliding window: Remove timestamps older than 1 hour
+    $oneHourAgo = $now.AddHours(-1)
+    $oneMinuteAgo = $now.AddMinutes(-1)
 
-    # Reset hour window if needed
-    if (($now - $state.HourWindowStart).TotalSeconds -ge 3600) {
-        $state.HourWindowStart = $now
-        $state.HourCount = 0
+    # Prune old timestamps (older than 1 hour)
+    $validTimestamps = [System.Collections.Generic.List[datetime]]::new()
+    foreach ($ts in $state.RequestTimestamps) {
+        if ($ts -gt $oneHourAgo) {
+            $validTimestamps.Add($ts)
+        }
     }
+    $state.RequestTimestamps = $validTimestamps
+
+    # Count requests in sliding windows
+    $requestsInMinute = @($state.RequestTimestamps | Where-Object { $_ -gt $oneMinuteAgo }).Count
+    $requestsInHour = $state.RequestTimestamps.Count
 
     # Check minute limit
-    if ($state.MinuteCount -ge $config.MaxRequestsPerMinute) {
+    if ($requestsInMinute -ge $config.MaxRequestsPerMinute) {
+        # Calculate retry-after based on oldest request in minute window
+        $oldestInMinute = $state.RequestTimestamps | Where-Object { $_ -gt $oneMinuteAgo } | Sort-Object | Select-Object -First 1
         $result.Allowed = $false
-        $result.RetryAfterSeconds = [int](60 - ($now - $state.MinuteWindowStart).TotalSeconds)
+        $result.RetryAfterSeconds = [int][Math]::Ceiling(60 - ($now - $oldestInMinute).TotalSeconds)
+        if ($result.RetryAfterSeconds -lt 1) { $result.RetryAfterSeconds = 1 }
         $result.Message = "Rate limit exceeded: $($config.MaxRequestsPerMinute) requests per minute"
-        $result.RequestsInMinute = $state.MinuteCount
-        $result.RequestsInHour = $state.HourCount
+        $result.RequestsInMinute = $requestsInMinute
+        $result.RequestsInHour = $requestsInHour
         return $result
     }
 
     # Check hour limit
-    if ($state.HourCount -ge $config.MaxRequestsPerHour) {
+    if ($requestsInHour -ge $config.MaxRequestsPerHour) {
+        # Calculate retry-after based on oldest request in hour window
+        $oldestInHour = $state.RequestTimestamps | Sort-Object | Select-Object -First 1
         $result.Allowed = $false
-        $result.RetryAfterSeconds = [int](3600 - ($now - $state.HourWindowStart).TotalSeconds)
+        $result.RetryAfterSeconds = [int][Math]::Ceiling(3600 - ($now - $oldestInHour).TotalSeconds)
+        if ($result.RetryAfterSeconds -lt 1) { $result.RetryAfterSeconds = 1 }
         $result.Message = "Rate limit exceeded: $($config.MaxRequestsPerHour) requests per hour"
-        $result.RequestsInMinute = $state.MinuteCount
-        $result.RequestsInHour = $state.HourCount
+        $result.RequestsInMinute = $requestsInMinute
+        $result.RequestsInHour = $requestsInHour
         return $result
     }
 
-    # Increment counters
-    $state.MinuteCount++
-    $state.HourCount++
+    # Add current request timestamp
+    $state.RequestTimestamps.Add($now)
 
-    $result.RequestsInMinute = $state.MinuteCount
-    $result.RequestsInHour = $state.HourCount
+    $result.RequestsInMinute = $requestsInMinute + 1
+    $result.RequestsInHour = $requestsInHour + 1
 
     return $result
 }
@@ -441,7 +442,7 @@ function Test-RateLimit {
 function Test-ApiKeyRateLimit {
     <#
     .SYNOPSIS
-        Tests rate limit for a specific API key.
+        Tests rate limit for a specific API key using sliding window algorithm.
     .PARAMETER ApiKeyId
         The API key identifier.
     .OUTPUTS
@@ -459,6 +460,7 @@ function Test-ApiKeyRateLimit {
         Allowed = $true
         RequestCount = 0
         Message = ''
+        RetryAfterSeconds = 0
     }
 
     if (-not $config.RateLimitEnabled) {
@@ -467,11 +469,10 @@ function Test-ApiKeyRateLimit {
 
     $now = Get-Date
 
-    # Initialize state for new API key
+    # Initialize state for new API key with sliding window
     if (-not $script:ServerState.ApiKeyRateLimitState.ContainsKey($ApiKeyId)) {
         $script:ServerState.ApiKeyRateLimitState[$ApiKeyId] = @{
-            RequestCount = 0
-            WindowStart = $now
+            RequestTimestamps = [System.Collections.Generic.List[datetime]]::new()
             LastAccess = $now
         }
     }
@@ -479,22 +480,32 @@ function Test-ApiKeyRateLimit {
     $state = $script:ServerState.ApiKeyRateLimitState[$ApiKeyId]
     $state.LastAccess = $now
 
-    # Reset window if hour passed
-    if (($now - $state.WindowStart).TotalSeconds -ge 3600) {
-        $state.WindowStart = $now
-        $state.RequestCount = 0
+    # Sliding window: Remove timestamps older than 1 hour
+    $oneHourAgo = $now.AddHours(-1)
+    $validTimestamps = [System.Collections.Generic.List[datetime]]::new()
+    foreach ($ts in $state.RequestTimestamps) {
+        if ($ts -gt $oneHourAgo) {
+            $validTimestamps.Add($ts)
+        }
     }
+    $state.RequestTimestamps = $validTimestamps
 
-    # Check limit (use MaxRequestsPerHour as default for API keys)
-    if ($state.RequestCount -ge $config.MaxRequestsPerHour) {
+    $requestCount = $state.RequestTimestamps.Count
+
+    # Check limit (use MaxRequestsPerHour for API keys)
+    if ($requestCount -ge $config.MaxRequestsPerHour) {
+        $oldestRequest = $state.RequestTimestamps | Sort-Object | Select-Object -First 1
         $result.Allowed = $false
         $result.Message = "API key rate limit exceeded"
-        $result.RequestCount = $state.RequestCount
+        $result.RequestCount = $requestCount
+        $result.RetryAfterSeconds = [int][Math]::Ceiling(3600 - ($now - $oldestRequest).TotalSeconds)
+        if ($result.RetryAfterSeconds -lt 1) { $result.RetryAfterSeconds = 1 }
         return $result
     }
 
-    $state.RequestCount++
-    $result.RequestCount = $state.RequestCount
+    # Add current request timestamp
+    $state.RequestTimestamps.Add($now)
+    $result.RequestCount = $requestCount + 1
 
     return $result
 }
@@ -1315,12 +1326,13 @@ function New-ApiKey {
         [int]$ExpiresInDays
     )
 
-    # Generate a secure random key
+    # Generate a secure random key with full entropy (256 bits)
     $bytes = [byte[]]::new(32)
     $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
     $rng.GetBytes($bytes)
     $apiKey = [Convert]::ToBase64String($bytes) -replace '[+/=]', ''
-    $apiKey = "w11f_$($apiKey.Substring(0, 40))"
+    # Keep full entropy - don't truncate (was 40 chars, now ~43 chars)
+    $apiKey = "w11f_$apiKey"
 
     $expiresAt = $null
     if ($ExpiresInDays -gt 0) {
@@ -1417,7 +1429,7 @@ function Get-ApiKeys {
 function Get-RateLimitStatus {
     <#
     .SYNOPSIS
-        Returns rate limit status for all tracked clients.
+        Returns rate limit status for all tracked clients (sliding window).
 
     .OUTPUTS
         Array of rate limit status objects.
@@ -1429,15 +1441,23 @@ function Get-RateLimitStatus {
     [OutputType([array])]
     param()
 
+    $now = Get-Date
+    $oneMinuteAgo = $now.AddMinutes(-1)
+    $oneHourAgo = $now.AddHours(-1)
+
     $status = @()
     foreach ($ip in $script:ServerState.RateLimitState.Keys) {
         $state = $script:ServerState.RateLimitState[$ip]
+        $timestamps = $state.RequestTimestamps
+        $requestsInMinute = @($timestamps | Where-Object { $_ -gt $oneMinuteAgo }).Count
+        $requestsInHour = @($timestamps | Where-Object { $_ -gt $oneHourAgo }).Count
+
         $status += [PSCustomObject]@{
             ClientIp = $ip
-            RequestsInMinute = $state.MinuteCount
-            RequestsInHour = $state.HourCount
-            MinuteWindowStart = $state.MinuteWindowStart
-            HourWindowStart = $state.HourWindowStart
+            RequestsInMinute = $requestsInMinute
+            RequestsInHour = $requestsInHour
+            LastAccess = $state.LastAccess
+            Algorithm = 'SlidingWindow'
         }
     }
 

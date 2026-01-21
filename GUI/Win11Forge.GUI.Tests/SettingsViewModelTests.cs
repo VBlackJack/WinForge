@@ -34,7 +34,8 @@ public class SettingsViewModelTests
         // Arrange
         var settingsService = new MockAppSettingsService();
         var historyService = new MockDeploymentHistoryService();
-        var viewModel = new SettingsViewModel(settingsService, historyService);
+        var powerShellBridge = new MockPowerShellBridge();
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         var initialTheme = viewModel.IsDarkTheme;
 
@@ -56,7 +57,8 @@ public class SettingsViewModelTests
         var settingsService = new MockAppSettingsService();
         settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", IsDarkTheme = true };
         var historyService = new MockDeploymentHistoryService();
-        var viewModel = new SettingsViewModel(settingsService, historyService);
+        var powerShellBridge = new MockPowerShellBridge();
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Act - Change language to French
         var frenchOption = viewModel.AvailableLanguages.First(l => l.Code == "fr");
@@ -77,7 +79,8 @@ public class SettingsViewModelTests
         var settingsService = new MockAppSettingsService();
         settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", IsDarkTheme = true };
         var historyService = new MockDeploymentHistoryService();
-        var viewModel = new SettingsViewModel(settingsService, historyService);
+        var powerShellBridge = new MockPowerShellBridge();
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Change language
         var frenchOption = viewModel.AvailableLanguages.First(l => l.Code == "fr");
@@ -101,7 +104,8 @@ public class SettingsViewModelTests
         // Arrange
         var settingsService = new MockAppSettingsService();
         var historyService = new MockDeploymentHistoryService();
-        var viewModel = new SettingsViewModel(settingsService, historyService);
+        var powerShellBridge = new MockPowerShellBridge();
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Act
         await viewModel.ClearHistoryCommand.ExecuteAsync(null);
@@ -126,9 +130,10 @@ public class SettingsViewModelTests
             LanguageCode = "fr"
         };
         var historyService = new MockDeploymentHistoryService();
+        var powerShellBridge = new MockPowerShellBridge();
 
         // Act
-        var viewModel = new SettingsViewModel(settingsService, historyService);
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Assert
         Assert.False(viewModel.IsDarkTheme);
@@ -144,7 +149,8 @@ public class SettingsViewModelTests
         // Arrange
         var settingsService = new MockAppSettingsService();
         var historyService = new MockDeploymentHistoryService();
-        var viewModel = new SettingsViewModel(settingsService, historyService);
+        var powerShellBridge = new MockPowerShellBridge();
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Act - Change theme multiple times
         viewModel.IsDarkTheme = false;
@@ -165,7 +171,8 @@ public class SettingsViewModelTests
         var settingsService = new MockAppSettingsService();
         settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", IsDarkTheme = true };
         var historyService = new MockDeploymentHistoryService();
-        var viewModel = new SettingsViewModel(settingsService, historyService);
+        var powerShellBridge = new MockPowerShellBridge();
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Act - Select same language
         var englishOption = viewModel.AvailableLanguages.First(l => l.Code == "en");
@@ -185,9 +192,10 @@ public class SettingsViewModelTests
         // Arrange
         var settingsService = new MockAppSettingsService();
         var historyService = new MockDeploymentHistoryService();
+        var powerShellBridge = new MockPowerShellBridge();
 
         // Act
-        var viewModel = new SettingsViewModel(settingsService, historyService);
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Assert
         Assert.Equal(2, viewModel.AvailableLanguages.Count);

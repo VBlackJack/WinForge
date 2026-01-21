@@ -685,7 +685,7 @@ function Test-PluginManifest {
             return $false
         }
 
-        # Security: Validate entryPoint for path traversal
+        # Security: Validate entryPoint for path traversal using canonical path resolution
         if ($manifest.entryPoint -match '\.\.') {
             Write-Verbose "Security: Path traversal detected in entryPoint"
             return $false
@@ -700,6 +700,21 @@ function Test-PluginManifest {
         # Security: Validate entryPoint characters (only allow safe characters)
         if ($manifest.entryPoint -notmatch '^[a-zA-Z0-9_\-./\\]+\.psm1$') {
             Write-Verbose "Security: Invalid entryPoint format (must be .psm1 file)"
+            return $false
+        }
+
+        # Security: Use GetFullPath to canonicalize and verify path stays within plugin directory
+        try {
+            $pluginDir = [System.IO.Path]::GetFullPath([System.IO.Path]::GetDirectoryName($ManifestPath))
+            $entryPointFull = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($pluginDir, $manifest.entryPoint))
+
+            # Verify the resolved path is within the plugin directory
+            if (-not $entryPointFull.StartsWith($pluginDir, [System.StringComparison]::OrdinalIgnoreCase)) {
+                Write-Verbose "Security: EntryPoint escapes plugin directory (path traversal attempt)"
+                return $false
+            }
+        } catch {
+            Write-Verbose "Security: Failed to validate entryPoint path: $($_.Exception.Message)"
             return $false
         }
 

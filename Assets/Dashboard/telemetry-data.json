@@ -1,57 +1,57 @@
 {
-  "generatedAt": "2026-01-19T22:54:13.7108232+01:00",
-  "charts": {
-    "topAppsBar": {
-      "labels": [],
-      "data": []
-    },
-    "categoryBar": {
-      "labels": [],
-      "data": []
-    },
-    "methodBar": {
-      "labels": [],
-      "data": []
-    },
-    "deploymentPie": {
-      "labels": [
-        "Successful",
-        "Failed",
-        "Rolled Back"
-      ],
-      "data": [
-        0,
-        0,
-        0
-      ]
-    }
-  },
+  "generatedAt": "2026-01-20T22:51:28.7207796+01:00",
   "summary": {
     "DataVersion": "1.0",
-    "CreatedAt": "2026-01-19T22:54:13.6726185+01:00",
-    "LastUpdated": "2026-01-19T22:54:13.672668+01:00",
+    "CreatedAt": "2026-01-20T22:51:28.6911886+01:00",
+    "LastUpdated": "2026-01-20T22:51:28.6912952+01:00",
     "Deployments": {
-      "Failed": 0,
-      "Successful": 0,
-      "SuccessRate": "0%",
       "RolledBack": 0,
-      "Total": 0
+      "Failed": 0,
+      "Total": 0,
+      "SuccessRate": "0%",
+      "Successful": 0
     },
     "Applications": {
-      "TotalFailed": 0.0,
-      "ByMethod": {},
-      "TotalInstalled": 0,
       "TopInstalled": [],
-      "ByCategory": {}
+      "TotalInstalled": 0,
+      "ByMethod": {},
+      "ByCategory": {},
+      "TotalFailed": 0.0
     },
     "Performance": {
       "AverageDeploymentMinutes": 0.0,
-      "AverageDeploymentSeconds": 0,
-      "TotalDeploymentHours": 0.0
+      "TotalDeploymentHours": 0.0,
+      "AverageDeploymentSeconds": 0
     },
     "Profiles": {
       "UsageStats": {},
       "MostUsed": "N/A"
+    }
+  },
+  "charts": {
+    "categoryBar": {
+      "data": [],
+      "labels": []
+    },
+    "methodBar": {
+      "data": [],
+      "labels": []
+    },
+    "topAppsBar": {
+      "data": [],
+      "labels": []
+    },
+    "deploymentPie": {
+      "data": [
+        0,
+        0,
+        0
+      ],
+      "labels": [
+        "Successful",
+        "Failed",
+        "Rolled Back"
+      ]
     }
   }
 }

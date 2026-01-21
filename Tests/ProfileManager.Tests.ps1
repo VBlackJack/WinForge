@@ -274,7 +274,7 @@ Describe 'ProfileManager Module' {
             $chain[3].Name | Should -Be 'Personnel'
         }
 
-        It 'Should detect circular inheritance and return empty' {
+        It 'Should detect circular inheritance and throw exception' {
             # Create profiles with circular dependency
             $circularA = Join-Path $script:TestDataDirectory 'CircularA.json'
             $circularB = Join-Path $script:TestDataDirectory 'CircularB.json'
@@ -298,10 +298,10 @@ Describe 'ProfileManager Module' {
             } | ConvertTo-Json | Set-Content -Path $circularB
 
             $profileA = Import-ProfileJson -Path $circularA
-            $chain = Resolve-ProfileInheritance -InputProfile $profileA -ProfilesDirectory $script:TestDataDirectory
 
-            # Should handle circular reference without infinite loop
-            $chain | Should -Not -BeNullOrEmpty
+            # Should throw InvalidOperationException with cycle path when circular reference detected
+            { Resolve-ProfileInheritance -InputProfile $profileA -ProfilesDirectory $script:TestDataDirectory } |
+                Should -Throw -ExceptionType ([System.InvalidOperationException]) -ExpectedMessage '*Circular inheritance detected*'
         }
     }
 

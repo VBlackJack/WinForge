@@ -50,7 +50,7 @@ public class ToastService : IToastService
     {
         if (_messageQueue == null) return;
 
-        Application.Current.Dispatcher.Invoke(() =>
+        Application.Current.Dispatcher.BeginInvoke(() =>
         {
             _messageQueue.Enqueue(
                 message,
@@ -68,7 +68,7 @@ public class ToastService : IToastService
     {
         if (_messageQueue == null) return;
 
-        Application.Current.Dispatcher.Invoke(() =>
+        Application.Current.Dispatcher.BeginInvoke(() =>
         {
             _messageQueue.Enqueue(
                 message,

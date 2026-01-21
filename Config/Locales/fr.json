@@ -1267,5 +1267,52 @@
       "Error": "Erreur",
       "Critical": "Critique"
     }
+  },
+  "scheduledDeployment": {
+    "title": "Déploiements planifiés",
+    "created": "Déploiement planifié créé : {Id}",
+    "removed": "Déploiement planifié supprimé : {Id}",
+    "enabled": "Déploiement planifié activé : {Id}",
+    "disabled": "Déploiement planifié désactivé : {Id}",
+    "started": "Déploiement planifié démarré : {Id}",
+    "noDeployments": "Aucun déploiement planifié trouvé",
+    "nextRun": "Prochaine exécution : {Time}",
+    "lastRun": "Dernière exécution : {Time}",
+    "triggerType": {
+      "OneTime": "Une seule fois",
+      "Daily": "Quotidien",
+      "Weekly": "Hebdomadaire",
+      "AtStartup": "Au démarrage du système",
+      "AtLogon": "À la connexion utilisateur"
+    },
+    "status": {
+      "Pending": "En attente",
+      "Running": "En cours",
+      "Completed": "Terminé",
+      "Failed": "Échoué",
+      "Cancelled": "Annulé"
+    },
+    "summary": {
+      "title": "Résumé des déploiements planifiés",
+      "total": "Total planifié : {Count}",
+      "pending": "En attente : {Count}",
+      "running": "En cours : {Count}",
+      "nextScheduled": "Prochain déploiement : {Profile} à {Time}"
+    },
+    "confirm": {
+      "remove": "Êtes-vous sûr de vouloir supprimer ce déploiement planifié ?",
+      "disable": "Êtes-vous sûr de vouloir désactiver ce déploiement planifié ?"
+    },
+    "error": {
+      "taskSchedulerUnavailable": "Le module Planificateur de tâches Windows n'est pas disponible",
+      "createFailed": "Échec de la création du déploiement planifié : {Error}",
+      "removeFailed": "Échec de la suppression du déploiement planifié : {Error}",
+      "enableFailed": "Échec de l'activation du déploiement planifié : {Error}",
+      "disableFailed": "Échec de la désactivation du déploiement planifié : {Error}",
+      "startFailed": "Échec du démarrage du déploiement planifié : {Error}",
+      "listFailed": "Échec de la liste des déploiements planifiés : {Error}",
+      "profileNotFound": "Profil non trouvé : {Name}",
+      "invalidTime": "Heure planifiée invalide - doit être dans le futur"
+    }
   }
 }

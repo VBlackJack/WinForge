@@ -32,7 +32,7 @@ public class DeploymentProfileModel : IValidatableObject
     public string Name { get; set; } = string.Empty;
 
     /// <summary>Profile description.</summary>
-    [StringLength(1024, ErrorMessage = "Description must not exceed 1024 characters")]
+    [StringLength(2048, ErrorMessage = "Description must not exceed 2048 characters")]
     public string Description { get; set; } = string.Empty;
 
     /// <summary>Profile version.</summary>

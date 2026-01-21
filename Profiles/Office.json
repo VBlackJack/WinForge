@@ -1,7 +1,7 @@
 {
   "Name": "Office",
-  "Description": "Professional productivity profile - Base + office and collaboration tools (v3.0.0 - Database Mode)",
-  "Version": "3.0.1",
+  "Description": "Professional productivity profile - Base + office and collaboration tools (v3.5.0 - Database Mode)",
+  "Version": "3.5.0",
   "Inherits": ["Base"],
   "Applications": [
     "Office365",
@@ -11,9 +11,6 @@
     "OBSStudio"
   ],
   "SystemConfig": {
-    "Network": {
-      "QoSOptimization": true
-    },
     "Performance": {
       "PowerPlan": "Balanced"
     }

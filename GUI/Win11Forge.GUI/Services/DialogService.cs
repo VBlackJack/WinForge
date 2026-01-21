@@ -126,7 +126,7 @@ public class DialogService : IDialogService
     }
 
     /// <inheritdoc/>
-    public async Task<bool> ShowConfirmAsync(string title, string message, string confirmText = "OK", string cancelText = "Cancel")
+    public async Task<bool> ShowConfirmAsync(string title, string message, string? confirmText = null, string? cancelText = null)
     {
         var result = false;
 
@@ -134,8 +134,8 @@ public class DialogService : IDialogService
         {
             Title = title,
             Message = message,
-            ConfirmText = confirmText,
-            CancelText = cancelText
+            ConfirmText = confirmText ?? Resources.Resources.Common_OK,
+            CancelText = cancelText ?? Resources.Resources.Common_Cancel
         };
 
         dialog.ResultSelected += (_, confirmed) => result = confirmed;
@@ -181,7 +181,7 @@ public interface IDialogService
     /// <summary>
     /// Shows a confirmation dialog and returns user choice.
     /// </summary>
-    Task<bool> ShowConfirmAsync(string title, string message, string confirmText = "OK", string cancelText = "Cancel");
+    Task<bool> ShowConfirmAsync(string title, string message, string? confirmText = null, string? cancelText = null);
 }
 
 /// <summary>
@@ -226,8 +226,8 @@ public class ConfirmDialogContent
 {
     public string Title { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
-    public string ConfirmText { get; set; } = "OK";
-    public string CancelText { get; set; } = "Cancel";
+    public string ConfirmText { get; set; } = Resources.Resources.Common_OK;
+    public string CancelText { get; set; } = Resources.Resources.Common_Cancel;
 
     public event EventHandler<bool>? ResultSelected;
 

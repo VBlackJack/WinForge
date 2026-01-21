@@ -692,7 +692,7 @@
 
                 <!-- DataGrid with UI Virtualization for performance -->
                 <DataGrid x:Name="ApplicationsDataGrid"
-                          ItemsSource="{Binding FilteredApplications}"
+                          ItemsSource="{Binding FilteredApplications, ValidatesOnDataErrors=False, ValidatesOnNotifyDataErrors=False}"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
                           CanUserDeleteRows="False"
@@ -706,12 +706,14 @@
                           BorderThickness="0"
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.VirtualizationMode="Recycling"
-                          VirtualizingPanel.ScrollUnit="Pixel"
+                          VirtualizingPanel.ScrollUnit="Item"
                           EnableRowVirtualization="True"
-                          EnableColumnVirtualization="True"
-                          ScrollViewer.IsDeferredScrollingEnabled="True"
+                          EnableColumnVirtualization="False"
+                          ScrollViewer.IsDeferredScrollingEnabled="False"
                           materialDesign:DataGridAssist.CellPadding="16 8"
                           materialDesign:DataGridAssist.ColumnHeaderPadding="16 8"
+                          RowValidationErrorTemplate="{x:Null}"
+                          RowHeaderWidth="0"
                           Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                           PreviewKeyDown="ApplicationsDataGrid_PreviewKeyDown"
                           AutomationProperties.Name="Applications list"
@@ -719,6 +721,7 @@
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow" BasedOn="{StaticResource MaterialDesignDataGridRow}">
                             <Setter Property="Background" Value="{Binding Status, Converter={StaticResource StatusToRowBackgroundConverter}}"/>
+                            <Setter Property="MinHeight" Value="56"/>
                         </Style>
                     </DataGrid.RowStyle>
                     <DataGrid.ContextMenu>

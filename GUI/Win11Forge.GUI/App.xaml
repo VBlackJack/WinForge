@@ -27,6 +27,7 @@
             <SolidColorBrush x:Key="RowFailedBackground" Color="#1EF44336"/>
             <SolidColorBrush x:Key="RowInstallingBackground" Color="#1E2196F3"/>
             <SolidColorBrush x:Key="RowUninstalledBackground" Color="#1E7986CB"/>
+            <SolidColorBrush x:Key="RowUpdateAvailableBackground" Color="#28FF9800"/>
 
             <!-- Accent Colors -->
             <SolidColorBrush x:Key="FavoriteActiveBrush" Color="#FFD700"/>

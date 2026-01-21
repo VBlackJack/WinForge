@@ -26,9 +26,10 @@ namespace Win11Forge.GUI.ViewModels;
 /// ViewModel for the Deployment Monitoring view.
 /// Observes the shared deployment state service and displays progress.
 /// </summary>
-public partial class DeploymentViewModel : ViewModelBase
+public partial class DeploymentViewModel : ViewModelBase, IDisposable
 {
     private readonly IDeploymentStateService _deploymentStateService;
+    private bool _disposed;
 
     /// <summary>
     /// Whether deployment is currently in progress.
@@ -237,5 +238,31 @@ public partial class DeploymentViewModel : ViewModelBase
     {
         IsLogViewerOpen = false;
         LogViewerApplication = null;
+    }
+
+    /// <summary>
+    /// Disposes resources and unsubscribes from events.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Disposes managed resources.
+    /// </summary>
+    /// <param name="disposing">True if disposing managed resources.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing)
+        {
+            // Unsubscribe from service events to prevent memory leaks
+            _deploymentStateService.StateChanged -= OnDeploymentStateChanged;
+        }
+
+        _disposed = true;
     }
 }

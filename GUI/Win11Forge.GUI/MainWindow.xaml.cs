@@ -33,6 +33,7 @@ namespace Win11Forge.GUI;
 
 /// <summary>
 /// Main application window with navigation.
+/// Implements cleanup pattern for event handlers and messenger subscriptions.
 /// </summary>
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
@@ -48,6 +49,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private readonly AppsViewModel _appsViewModel;
     private readonly SettingsViewModel _settingsViewModel;
     private readonly PrerequisitesViewModel _prerequisitesViewModel;
+
+    // Event handlers stored for cleanup
+    private EventHandler? _undoStateChangedHandler;
+    private EventHandler? _navigationChangedHandler;
 
     private bool _dashboardInitialized;
     private bool _deploymentInitialized;
@@ -149,20 +154,21 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             _navigationService = App.GetService<INavigationService>();
             _undoService = App.GetService<IUndoService>();
 
-            // Subscribe to undo service state changes
-            _undoService.StateChanged += (s, e) =>
+            // Subscribe to undo service state changes (store handler for cleanup)
+            _undoStateChangedHandler = (s, e) =>
             {
-                Dispatcher.Invoke(() =>
+                Dispatcher.BeginInvoke(() =>
                 {
                     OnPropertyChanged(nameof(CanUndo));
                     OnPropertyChanged(nameof(CanRedo));
                 });
             };
+            _undoService.StateChanged += _undoStateChangedHandler;
 
-            // Subscribe to navigation service changes
-            _navigationService.NavigationChanged += (s, e) =>
+            // Subscribe to navigation service changes (store handler for cleanup)
+            _navigationChangedHandler = (s, e) =>
             {
-                Dispatcher.Invoke(() =>
+                Dispatcher.BeginInvoke(() =>
                 {
                     OnPropertyChanged(nameof(CanGoBack));
                     if (!_isNavigatingFromService)
@@ -173,6 +179,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                     }
                 });
             };
+            _navigationService.NavigationChanged += _navigationChangedHandler;
 
             // Create ViewModels using DI
             _dashboardViewModel = App.GetService<DashboardViewModel>();
@@ -191,10 +198,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             // Initialize on window load
             Loaded += MainWindow_Loaded;
 
+            // Subscribe to window closing for cleanup
+            Closing += MainWindow_Closing;
+
             // Subscribe to navigation messages
             WeakReferenceMessenger.Default.Register<NavigateMessage>(this, (r, m) =>
             {
-                Dispatcher.Invoke(() => NavigateTo(m.TargetViewIndex));
+                Dispatcher.BeginInvoke(() => NavigateTo(m.TargetViewIndex));
             });
         }
         catch (Exception ex)
@@ -228,6 +238,31 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    /// <summary>
+    /// Handles window closing to clean up resources.
+    /// Unsubscribes from events and disposes ViewModels to prevent memory leaks.
+    /// </summary>
+    private void MainWindow_Closing(object? sender, CancelEventArgs e)
+    {
+        // Unsubscribe from service events
+        if (_undoService != null && _undoStateChangedHandler != null)
+        {
+            _undoService.StateChanged -= _undoStateChangedHandler;
+        }
+
+        if (_navigationService != null && _navigationChangedHandler != null)
+        {
+            _navigationService.NavigationChanged -= _navigationChangedHandler;
+        }
+
+        // Unregister from WeakReferenceMessenger
+        WeakReferenceMessenger.Default.Unregister<NavigateMessage>(this);
+
+        // Dispose ViewModels that implement IDisposable
+        (_deploymentViewModel as IDisposable)?.Dispose();
+        (_appsViewModel as IDisposable)?.Dispose();
     }
 
     /// <summary>
@@ -308,6 +343,26 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         // Initialize toast service with snackbar
         _toastService.SetMessageQueue(MainSnackbar.MessageQueue);
 
+        // Start cache pre-warming in background (non-blocking)
+        // This makes subsequent app scanning 10-50x faster
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                if (_powerShellBridge is PowerShellBridge bridge)
+                {
+                    System.Diagnostics.Debug.WriteLine("Starting detection cache pre-warming...");
+                    await bridge.WarmDetectionCacheAsync();
+                    var stats = bridge.GetDetectionCacheStatistics();
+                    System.Diagnostics.Debug.WriteLine($"Cache warmed: {stats.PackageCount} packages in {stats.AverageDetectionTime.TotalMilliseconds:F0}ms");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Cache pre-warming failed (non-critical): {ex.Message}");
+            }
+        });
+
         // Check for first run and show onboarding
         var settings = _settingsService.LoadSettings();
         if (settings.IsFirstRun)
@@ -340,7 +395,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         catch
         {
             // Fallback to static title if version retrieval fails
-            Title = string.Format(Loc.App_Title, "3.2.3");
+            Title = string.Format(Loc.App_Title, "?");
         }
     }
 

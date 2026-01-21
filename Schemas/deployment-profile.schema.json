@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://win11forge.local/schemas/deployment-profile.schema.json",
+  "title": "Win11Forge Deployment Profile",
+  "description": "Schema for Win11Forge deployment profile configuration files",
+  "type": "object",
+  "required": ["Name", "Version", "Applications"],
+  "additionalProperties": false,
+  "properties": {
+    "Name": {
+      "type": "string",
+      "description": "Unique name of the deployment profile",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"
+    },
+    "Description": {
+      "type": "string",
+      "description": "Human-readable description of the profile",
+      "maxLength": 2048
+    },
+    "Version": {
+      "type": "string",
+      "description": "Semantic version of the profile",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "Inherits": {
+      "type": "array",
+      "description": "List of parent profile names to inherit from",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "maxItems": 10
+    },
+    "Applications": {
+      "type": "array",
+      "description": "List of applications to install (AppId strings or objects)",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Application ID from the database",
+            "minLength": 1
+          },
+          {
+            "$ref": "#/$defs/ApplicationOverride"
+          }
+        ]
+      }
+    },
+    "SystemConfig": {
+      "$ref": "#/$defs/SystemConfig"
+    }
+  },
+  "$defs": {
+    "ApplicationOverride": {
+      "type": "object",
+      "description": "Application reference with overrides",
+      "required": ["AppId"],
+      "additionalProperties": false,
+      "properties": {
+        "AppId": {
+          "type": "string",
+          "description": "Application ID from the database",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "Priority": {
+          "type": "integer",
+          "description": "Override for installation priority (0 = system-critical)",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "Required": {
+          "type": "boolean",
+          "description": "Whether the application is required"
+        },
+        "Overrides": {
+          "type": "object",
+          "description": "Additional property overrides",
+          "additionalProperties": true
+        }
+      }
+    },
+    "SystemConfig": {
+      "type": "object",
+      "description": "System configuration settings",
+      "additionalProperties": true,
+      "properties": {
+        "Explorer": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "ShowHiddenFiles": { "type": "boolean" },
+            "ShowFileExtensions": { "type": "boolean" },
+            "NavigationPaneOptimized": { "type": "boolean" },
+            "DeveloperMode": { "type": "boolean" }
+          }
+        },
+        "Taskbar": {
+          "type": "object",
+          "properties": {
+            "DisableWidgets": { "type": "boolean" },
+            "StartAlignment": {
+              "type": "string",
+              "enum": ["left", "center"]
+            },
+            "SearchMode": {
+              "type": "string",
+              "enum": ["hidden", "icon_only", "search_box"]
+            }
+          }
+        },
+        "Network": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "DnsServers": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "GamingOptimizations": { "type": "boolean" },
+            "QoSOptimization": { "type": "boolean" },
+            "DeveloperOptimizations": { "type": "boolean" }
+          }
+        },
+        "Privacy": {
+          "type": "object",
+          "properties": {
+            "DisableTelemetry": { "type": "boolean" },
+            "MinimalDataCollection": { "type": "boolean" }
+          }
+        },
+        "Performance": {
+          "type": "object",
+          "properties": {
+            "DisableVisualEffects": { "type": "boolean" },
+            "OptimizeServices": { "type": "boolean" },
+            "PowerPlan": { "type": "string" },
+            "GameMode": { "type": "boolean" }
+          }
+        },
+        "Security": {
+          "type": "object",
+          "properties": {
+            "WindowsDefender": { "type": "boolean" },
+            "Firewall": { "type": "boolean" },
+            "DeveloperMode": { "type": "boolean" }
+          }
+        }
+      }
+    }
+  }
+}

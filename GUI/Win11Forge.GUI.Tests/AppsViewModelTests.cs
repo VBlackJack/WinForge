@@ -15,6 +15,7 @@
  */
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
@@ -26,6 +27,18 @@ namespace Win11Forge.GUI.Tests;
 /// </summary>
 public class AppsViewModelTests
 {
+    /// <summary>
+    /// Helper to get filtered applications as typed list from ICollectionView.
+    /// </summary>
+    private static List<ApplicationModel> GetFilteredApps(ICollectionView view)
+        => view.Cast<ApplicationModel>().ToList();
+
+    /// <summary>
+    /// Helper to get filtered applications count from ICollectionView.
+    /// </summary>
+    private static int GetFilteredCount(ICollectionView view)
+        => view.Cast<ApplicationModel>().Count();
+
     /// <summary>
     /// Creates a mock PowerShellBridge for testing.
     /// </summary>
@@ -73,9 +86,10 @@ public class AppsViewModelTests
         viewModel.SearchText = "Visual";
 
         // Assert
-        Assert.True(viewModel.FilteredApplications.Count > 0,
+        var filteredApps = GetFilteredApps(viewModel.FilteredApplications);
+        Assert.True(filteredApps.Count > 0,
             "Should find at least one application matching 'Visual'");
-        Assert.All(viewModel.FilteredApplications, app =>
+        Assert.All(filteredApps, app =>
             Assert.True(
                 app.Name.Contains("Visual", StringComparison.OrdinalIgnoreCase) ||
                 app.AppId.Contains("Visual", StringComparison.OrdinalIgnoreCase) ||
@@ -98,9 +112,10 @@ public class AppsViewModelTests
         viewModel.SelectedCategory = "Development";
 
         // Assert
-        Assert.True(viewModel.FilteredApplications.Count > 0,
+        var filteredApps = GetFilteredApps(viewModel.FilteredApplications);
+        Assert.True(filteredApps.Count > 0,
             "Should find at least one application in 'Development' category");
-        Assert.All(viewModel.FilteredApplications, app =>
+        Assert.All(filteredApps, app =>
             Assert.Equal("Development", app.Category, StringComparer.OrdinalIgnoreCase));
     }
 
@@ -120,7 +135,8 @@ public class AppsViewModelTests
         viewModel.SearchText = "Code";
 
         // Assert
-        Assert.All(viewModel.FilteredApplications, app =>
+        var filteredApps = GetFilteredApps(viewModel.FilteredApplications);
+        Assert.All(filteredApps, app =>
         {
             Assert.Equal("Development", app.Category, StringComparer.OrdinalIgnoreCase);
             Assert.True(
@@ -141,17 +157,17 @@ public class AppsViewModelTests
         var bridge = CreateMockBridge();
         var viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
-        var originalCount = viewModel.FilteredApplications.Count;
+        var originalCount = GetFilteredCount(viewModel.FilteredApplications);
 
         // Apply some filters
         viewModel.SearchText = "NonexistentApp12345";
-        Assert.Empty(viewModel.FilteredApplications);
+        Assert.Empty(GetFilteredApps(viewModel.FilteredApplications));
 
         // Act
         viewModel.ClearFiltersCommand.Execute(null);
 
         // Assert
-        Assert.Equal(originalCount, viewModel.FilteredApplications.Count);
+        Assert.Equal(originalCount, GetFilteredCount(viewModel.FilteredApplications));
         Assert.Empty(viewModel.SearchText);
     }
 
@@ -187,13 +203,13 @@ public class AppsViewModelTests
 
         // Act - Search with different cases
         viewModel.SearchText = "visual";
-        var lowerCount = viewModel.FilteredApplications.Count;
+        var lowerCount = GetFilteredCount(viewModel.FilteredApplications);
 
         viewModel.SearchText = "VISUAL";
-        var upperCount = viewModel.FilteredApplications.Count;
+        var upperCount = GetFilteredCount(viewModel.FilteredApplications);
 
         viewModel.SearchText = "ViSuAl";
-        var mixedCount = viewModel.FilteredApplications.Count;
+        var mixedCount = GetFilteredCount(viewModel.FilteredApplications);
 
         // Assert
         Assert.Equal(lowerCount, upperCount);
@@ -218,7 +234,7 @@ public class AppsViewModelTests
         // Assert
         Assert.True(viewModel.FilteredCount < totalCount,
             "FilteredCount should be less after applying filter");
-        Assert.Equal(viewModel.FilteredApplications.Count, viewModel.FilteredCount);
+        Assert.Equal(GetFilteredCount(viewModel.FilteredApplications), viewModel.FilteredCount);
     }
 
     /// <summary>
@@ -234,13 +250,13 @@ public class AppsViewModelTests
 
         // Select a category first
         viewModel.SelectedCategory = "Development";
-        var categoryCount = viewModel.FilteredApplications.Count;
+        var categoryCount = GetFilteredCount(viewModel.FilteredApplications);
 
         // Act - Set empty search
         viewModel.SearchText = "";
 
         // Assert - Should still show all apps in category
-        Assert.Equal(categoryCount, viewModel.FilteredApplications.Count);
+        Assert.Equal(categoryCount, GetFilteredCount(viewModel.FilteredApplications));
     }
 }
 
@@ -424,6 +440,7 @@ internal class MockDeploymentStateService : IDeploymentStateService
     public void RequestPause() => PauseRequested?.Invoke(this, EventArgs.Empty);
     public void RequestResume() => ResumeRequested?.Invoke(this, EventArgs.Empty);
     public void RequestCancel() => CancelRequested?.Invoke(this, EventArgs.Empty);
+    public void Dispose() { }
 
     // Suppress unused event warnings
     private void SuppressWarnings()

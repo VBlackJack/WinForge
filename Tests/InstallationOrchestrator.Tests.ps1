@@ -357,3 +357,285 @@ Describe 'InstallationOrchestrator Performance' {
         }
     }
 }
+
+Describe 'Deployment Progress Tracking' {
+    BeforeEach {
+        Clear-DeploymentState -ErrorAction SilentlyContinue
+    }
+
+    Context 'Update-DeploymentProgress' {
+        It 'Should track successful app installations' {
+            $apps = @(
+                [PSCustomObject]@{ Name = 'App1'; Sources = @{ Winget = 'Test.App1' } },
+                [PSCustomObject]@{ Name = 'App2'; Sources = @{ Winget = 'Test.App2' } }
+            )
+            Initialize-DeploymentSession -ProfileName 'TestProfile' -Applications $apps
+
+            Update-DeploymentProgress -AppName 'App1' -Success $true
+
+            $state = Get-DeploymentState
+            $state.CompletedApps | Should -Contain 'App1'
+            $state.PendingApps | Should -Not -Contain 'App1'
+        }
+
+        It 'Should track failed app installations' {
+            $apps = @(
+                [PSCustomObject]@{ Name = 'App1'; Sources = @{ Winget = 'Test.App1' } }
+            )
+            Initialize-DeploymentSession -ProfileName 'TestProfile' -Applications $apps
+
+            Update-DeploymentProgress -AppName 'App1' -Success $false
+
+            $state = Get-DeploymentState
+            $state.FailedApps | Should -Contain 'App1'
+            $state.PendingApps | Should -Not -Contain 'App1'
+        }
+
+        It 'Should update LastUpdated timestamp' {
+            $apps = @([PSCustomObject]@{ Name = 'App1'; Sources = $null })
+            Initialize-DeploymentSession -ProfileName 'TestProfile' -Applications $apps
+
+            $beforeUpdate = Get-Date
+            Start-Sleep -Milliseconds 100
+            Update-DeploymentProgress -AppName 'App1' -Success $true
+            $state = Get-DeploymentState
+
+            if ($state.LastUpdated) {
+                [datetime]$state.LastUpdated | Should -BeGreaterThan $beforeUpdate
+            }
+        }
+    }
+
+    Context 'Resume-Deployment' {
+        It 'Should return null when no incomplete deployment exists' {
+            Clear-DeploymentState
+            $result = Resume-Deployment
+            $result | Should -BeNullOrEmpty
+        }
+
+        It 'Should return pending apps for incomplete deployment' {
+            $apps = @(
+                [PSCustomObject]@{ Name = 'App1'; Sources = $null },
+                [PSCustomObject]@{ Name = 'App2'; Sources = $null },
+                [PSCustomObject]@{ Name = 'App3'; Sources = $null }
+            )
+            Initialize-DeploymentSession -ProfileName 'TestProfile' -Applications $apps
+            Update-DeploymentProgress -AppName 'App1' -Success $true
+
+            $pending = Resume-Deployment
+            $pending | Should -Not -BeNullOrEmpty
+            $pending | Should -Contain 'App2'
+            $pending | Should -Contain 'App3'
+            $pending | Should -Not -Contain 'App1'
+        }
+    }
+}
+
+Describe 'Rollback Operations' {
+    BeforeEach {
+        Clear-RollbackState -ErrorAction SilentlyContinue
+    }
+
+    Context 'Invoke-Rollback' {
+        It 'Should return success result when no apps to rollback' {
+            Initialize-RollbackSession
+            $result = Invoke-Rollback -Force
+            $result | Should -Not -BeNullOrEmpty
+            $result.Success | Should -BeTrue
+            $result.RolledBack.Count | Should -Be 0
+        }
+
+        It 'Should have correct result structure' {
+            Initialize-RollbackSession
+            $result = Invoke-Rollback -Force
+            $result.Keys | Should -Contain 'Success'
+            $result.Keys | Should -Contain 'RolledBack'
+            $result.Keys | Should -Contain 'Failed'
+        }
+    }
+
+    Context 'Save-RollbackState' {
+        It 'Should not throw on save' {
+            Initialize-RollbackSession
+            { Save-RollbackState } | Should -Not -Throw
+        }
+    }
+}
+
+Describe 'State Data Validation Extended' {
+    Context 'Profile Name Validation' {
+        It 'Should reject profile name with forward slash' {
+            $invalidData = @{
+                SessionId = [Guid]::NewGuid().ToString()
+                ProfileName = 'Test/Profile'
+            }
+            $result = Test-ValidStateData -StateData $invalidData
+            $result | Should -BeFalse
+        }
+
+        It 'Should reject profile name with backslash' {
+            $invalidData = @{
+                SessionId = [Guid]::NewGuid().ToString()
+                ProfileName = 'Test\Profile'
+            }
+            $result = Test-ValidStateData -StateData $invalidData
+            $result | Should -BeFalse
+        }
+
+        It 'Should reject profile name longer than 100 characters' {
+            $invalidData = @{
+                SessionId = [Guid]::NewGuid().ToString()
+                ProfileName = 'A' * 101
+            }
+            $result = Test-ValidStateData -StateData $invalidData
+            $result | Should -BeFalse
+        }
+
+        It 'Should accept valid profile name' {
+            $validData = @{
+                SessionId = [Guid]::NewGuid().ToString()
+                ProfileName = 'Valid-Profile_Name123'
+            }
+            $result = Test-ValidStateData -StateData $validData
+            $result | Should -BeTrue
+        }
+    }
+
+    Context 'TotalApps Validation' {
+        It 'Should reject negative TotalApps' {
+            $invalidData = @{
+                SessionId = [Guid]::NewGuid().ToString()
+                ProfileName = 'Test'
+                TotalApps = -1
+            }
+            $result = Test-ValidStateData -StateData $invalidData
+            $result | Should -BeFalse
+        }
+
+        It 'Should reject TotalApps over 1000' {
+            $invalidData = @{
+                SessionId = [Guid]::NewGuid().ToString()
+                ProfileName = 'Test'
+                TotalApps = 1001
+            }
+            $result = Test-ValidStateData -StateData $invalidData
+            $result | Should -BeFalse
+        }
+
+        It 'Should accept TotalApps of 0' {
+            $validData = @{
+                SessionId = [Guid]::NewGuid().ToString()
+                ProfileName = 'Test'
+                TotalApps = 0
+            }
+            $result = Test-ValidStateData -StateData $validData
+            $result | Should -BeTrue
+        }
+    }
+
+    Context 'App Name Security Validation' {
+        It 'Should reject app names with semicolon' {
+            $invalidData = @{
+                SessionId = [Guid]::NewGuid().ToString()
+                ProfileName = 'Test'
+                CompletedApps = @('App1; malicious command')
+            }
+            $result = Test-ValidStateData -StateData $invalidData
+            $result | Should -BeFalse
+        }
+
+        It 'Should reject app names with pipe' {
+            $invalidData = @{
+                SessionId = [Guid]::NewGuid().ToString()
+                ProfileName = 'Test'
+                PendingApps = @('App1 | rm -rf')
+            }
+            $result = Test-ValidStateData -StateData $invalidData
+            $result | Should -BeFalse
+        }
+
+        It 'Should reject app names with backtick' {
+            $invalidData = @{
+                SessionId = [Guid]::NewGuid().ToString()
+                ProfileName = 'Test'
+                FailedApps = @('App`whoami`')
+            }
+            $result = Test-ValidStateData -StateData $invalidData
+            $result | Should -BeFalse
+        }
+
+        It 'Should accept app names with parentheses and brackets' {
+            $validData = @{
+                SessionId = [Guid]::NewGuid().ToString()
+                ProfileName = 'Test'
+                CompletedApps = @('App (x64) [v2.0]')
+            }
+            $result = Test-ValidStateData -StateData $validData
+            $result | Should -BeTrue
+        }
+    }
+}
+
+Describe 'Environment Restriction Extended' {
+    Context 'Restriction Checking' {
+        It 'Should return Environment property' {
+            $app = [PSCustomObject]@{
+                Name = 'TestApp'
+                EnvironmentRestrictions = @()
+            }
+            $result = Test-EnvironmentRestriction -Application $app
+            $result.Keys | Should -Contain 'Environment'
+        }
+
+        It 'Should return Message property' {
+            $app = [PSCustomObject]@{
+                Name = 'TestApp'
+                EnvironmentRestrictions = @()
+            }
+            $result = Test-EnvironmentRestriction -Application $app
+            $result.Keys | Should -Contain 'Message'
+        }
+
+        It 'Should handle null EnvironmentRestrictions' {
+            $app = [PSCustomObject]@{
+                Name = 'TestApp'
+                EnvironmentRestrictions = $null
+            }
+            $result = Test-EnvironmentRestriction -Application $app
+            $result.Restricted | Should -BeFalse
+        }
+    }
+}
+
+Describe 'Module Export Completeness' {
+    Context 'All Expected Functions Exported' {
+        $expectedFunctions = @(
+            'Initialize-RollbackSession',
+            'Save-RollbackState',
+            'Add-RollbackEntry',
+            'Invoke-Rollback',
+            'Clear-RollbackState',
+            'Get-RollbackState',
+            'Initialize-DeploymentSession',
+            'Save-DeploymentState',
+            'Update-DeploymentProgress',
+            'Test-ValidStateData',
+            'Get-DeploymentState',
+            'Test-IncompleteDeployment',
+            'Resume-Deployment',
+            'Clear-DeploymentState',
+            'Test-EnvironmentRestriction',
+            'Invoke-InstallationMethodSequence',
+            'Get-ApplicationSources',
+            'Invoke-ApplicationUpgrade',
+            'Install-Application',
+            'Install-ApplicationsParallel'
+        )
+
+        foreach ($func in $expectedFunctions) {
+            It "Should export $func function" {
+                Get-Command -Module InstallationOrchestrator -Name $func -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            }
+        }
+    }
+}

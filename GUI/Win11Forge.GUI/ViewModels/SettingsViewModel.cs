@@ -34,6 +34,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly PaletteHelper _paletteHelper = new();
     private readonly IAppSettingsService _settingsService;
     private readonly IDeploymentHistoryService _historyService;
+    private readonly IPowerShellBridge _powerShellBridge;
     private string _initialLanguageCode = string.Empty;
 
     /// <summary>
@@ -104,17 +105,18 @@ public partial class SettingsViewModel : ViewModelBase
     /// Initializes a new instance of SettingsViewModel with default services.
     /// </summary>
     public SettingsViewModel()
-        : this(new AppSettingsService(), new DeploymentHistoryService())
+        : this(new AppSettingsService(), new DeploymentHistoryService(), new PowerShellBridge())
     {
     }
 
     /// <summary>
     /// Initializes a new instance of SettingsViewModel with injected services.
     /// </summary>
-    public SettingsViewModel(IAppSettingsService settingsService, IDeploymentHistoryService historyService)
+    public SettingsViewModel(IAppSettingsService settingsService, IDeploymentHistoryService historyService, IPowerShellBridge powerShellBridge)
     {
         _settingsService = settingsService;
         _historyService = historyService;
+        _powerShellBridge = powerShellBridge;
 
         // Initialize available languages
         AvailableLanguages =
@@ -123,18 +125,18 @@ public partial class SettingsViewModel : ViewModelBase
             new LanguageOption("fr", "Francais")
         ];
 
-        // Initialize version
-        AppVersion = "3.2.3";
+        // Version will be loaded in InitializeAsync
+        AppVersion = "...";
 
         // Load current settings
         LoadCurrentSettings();
     }
 
     /// <inheritdoc/>
-    public override Task InitializeAsync()
+    public override async Task InitializeAsync()
     {
         LoadCurrentSettings();
-        return Task.CompletedTask;
+        AppVersion = await _powerShellBridge.GetWin11ForgeVersionAsync();
     }
 
     /// <summary>

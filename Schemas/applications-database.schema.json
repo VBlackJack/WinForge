@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://win11forge.local/schemas/applications-database.schema.json",
+  "title": "Win11Forge Applications Database",
+  "description": "Schema for Win11Forge centralized application database",
+  "type": "object",
+  "required": ["DatabaseVersion", "Applications"],
+  "additionalProperties": true,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "DatabaseVersion": {
+      "type": "string",
+      "description": "Semantic version of the database",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "LastUpdated": {
+      "type": "string",
+      "description": "Date of last update",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "TotalApplications": {
+      "type": "integer",
+      "description": "Total number of applications in the database",
+      "minimum": 0
+    },
+    "PriorityRanges": {
+      "type": "object",
+      "description": "Documentation of priority ranges"
+    },
+    "DependencySchema": {
+      "type": "object",
+      "description": "Documentation of dependency schema"
+    },
+    "Applications": {
+      "type": "object",
+      "description": "Dictionary of applications keyed by AppId",
+      "additionalProperties": {
+        "$ref": "#/$defs/Application"
+      }
+    }
+  },
+  "$defs": {
+    "Application": {
+      "type": "object",
+      "description": "Application definition",
+      "required": ["Name", "Category", "Sources"],
+      "additionalProperties": true,
+      "properties": {
+        "Name": {
+          "type": "string",
+          "description": "Display name of the application",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "Category": {
+          "type": "string",
+          "description": "Application category for grouping",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "Description": {
+          "type": "string",
+          "description": "Description of the application",
+          "maxLength": 2048
+        },
+        "Sources": {
+          "$ref": "#/$defs/Sources"
+        },
+        "Detection": {
+          "$ref": "#/$defs/Detection"
+        },
+        "DefaultPriority": {
+          "type": "integer",
+          "description": "Default installation priority (1-50: Essential, 51-100: Standard, 101-150: Optional, 151-200: Low, 201-255: Diagnostic)",
+          "minimum": 1,
+          "maximum": 255
+        },
+        "DefaultRequired": {
+          "type": "boolean",
+          "description": "Whether the application is required by default"
+        },
+        "EnvironmentRestrictions": {
+          "type": "array",
+          "description": "Environments where the app cannot be installed",
+          "items": {
+            "type": "string",
+            "enum": ["Physical", "Virtual", "Sandbox", "Hyper-V", "VMware", "VirtualBox"]
+          }
+        },
+        "Tags": {
+          "type": "array",
+          "description": "Tags for searching and filtering",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LastVerified": {
+          "type": "string",
+          "description": "Date when the application was last verified",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "Verified": {
+          "type": "boolean",
+          "description": "Whether the application has been verified"
+        },
+        "Homepage": {
+          "type": "string",
+          "description": "URL of the application homepage",
+          "format": "uri"
+        },
+        "Dependencies": {
+          "type": "array",
+          "description": "Application dependencies",
+          "items": {
+            "$ref": "#/$defs/Dependency"
+          }
+        }
+      }
+    },
+    "Sources": {
+      "type": "object",
+      "description": "Installation sources",
+      "additionalProperties": false,
+      "properties": {
+        "Winget": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "null" }
+          ],
+          "description": "Winget package ID"
+        },
+        "Chocolatey": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "null" }
+          ],
+          "description": "Chocolatey package ID"
+        },
+        "Store": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "null" }
+          ],
+          "description": "Microsoft Store ID"
+        },
+        "DirectUrl": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uri"
+            },
+            { "type": "null" }
+          ],
+          "description": "Direct download URL"
+        }
+      }
+    },
+    "Detection": {
+      "type": "object",
+      "description": "Application detection configuration",
+      "required": ["Method"],
+      "properties": {
+        "Method": {
+          "type": "string",
+          "description": "Detection method",
+          "enum": ["Registry", "File", "Command", "StoreApp", "Winget"]
+        },
+        "Path": {
+          "type": "string",
+          "description": "Detection path (registry key, file path, etc.)"
+        },
+        "Command": {
+          "type": "string",
+          "description": "Command to run for detection"
+        },
+        "PackageId": {
+          "type": "string",
+          "description": "Package ID for store app detection"
+        }
+      }
+    },
+    "Dependency": {
+      "type": "object",
+      "description": "Application dependency",
+      "required": ["AppId", "Type"],
+      "properties": {
+        "AppId": {
+          "type": "string",
+          "description": "ID of the dependency application",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "Type": {
+          "type": "string",
+          "description": "Type of dependency",
+          "enum": ["required", "optional", "recommended"]
+        },
+        "MinVersion": {
+          "type": "string",
+          "description": "Minimum required version"
+        },
+        "Reason": {
+          "type": "string",
+          "description": "Reason for the dependency"
+        }
+      }
+    }
+  }
+}

@@ -1142,7 +1142,9 @@ function Test-AppInstalledParallel {
         try {
             $pkg = Get-AppxPackage -Name "MicrosoftCorporationII.QuickAssist" -ErrorAction SilentlyContinue
             if ($pkg) { return $true }
-        } catch { }
+        } catch {
+            Write-Verbose "Quick Assist detection failed: $($_.Exception.Message)"
+        }
     }
 
     if (-not $App.Detection) {
@@ -1207,7 +1209,9 @@ function Test-AppInstalledParallel {
                     $list = Get-CachedWingetList
                     if ($App.Sources.Store -and $list -match [regex]::Escape($App.Sources.Store) -and $list -notmatch "No installed package") { return $true }
                     if ($App.Detection.PackageName -and $list -match [regex]::Escape($App.Detection.PackageName)) { return $true }
-                } catch { }
+                } catch {
+                    Write-Verbose "StoreApp detection failed for $appName : $($_.Exception.Message)"
+                }
             }
             return $false
         }

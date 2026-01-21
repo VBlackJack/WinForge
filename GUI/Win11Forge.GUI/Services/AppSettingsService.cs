@@ -25,11 +25,13 @@ namespace Win11Forge.GUI.Services;
 /// <summary>
 /// Service for persisting application settings (theme, language) to JSON.
 /// Settings are stored in %LOCALAPPDATA%\Win11Forge\settings.json.
+/// Thread-safe implementation using lock for concurrent access.
 /// </summary>
 public class AppSettingsService : IAppSettingsService
 {
     private static readonly string SettingsFilePath;
     private static readonly JsonSerializerOptions JsonOptions;
+    private static readonly object _cacheLock = new();
     private static AppSettings? _cachedSettings;
 
     static AppSettingsService()
@@ -79,55 +81,61 @@ public class AppSettingsService : IAppSettingsService
     /// <inheritdoc/>
     public AppSettings LoadSettings()
     {
-        if (_cachedSettings != null)
+        lock (_cacheLock)
         {
-            return _cachedSettings;
-        }
-
-        try
-        {
-            if (File.Exists(SettingsFilePath))
+            if (_cachedSettings != null)
             {
-                var json = File.ReadAllText(SettingsFilePath);
-                if (!string.IsNullOrEmpty(json))
+                return _cachedSettings;
+            }
+
+            try
+            {
+                if (File.Exists(SettingsFilePath))
                 {
-                    var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
-                    if (settings != null)
+                    var json = File.ReadAllText(SettingsFilePath);
+                    if (!string.IsNullOrEmpty(json))
                     {
-                        _cachedSettings = settings;
-                        return settings;
+                        var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
+                        if (settings != null)
+                        {
+                            _cachedSettings = settings;
+                            return settings;
+                        }
                     }
                 }
             }
-        }
-        catch
-        {
-            // If file is corrupted, return defaults
-        }
+            catch
+            {
+                // If file is corrupted, return defaults
+            }
 
-        // Return default settings
-        _cachedSettings = new AppSettings();
-        return _cachedSettings;
+            // Return default settings
+            _cachedSettings = new AppSettings();
+            return _cachedSettings;
+        }
     }
 
     /// <inheritdoc/>
     public void SaveSettings(AppSettings settings)
     {
-        try
+        lock (_cacheLock)
         {
-            var directory = Path.GetDirectoryName(SettingsFilePath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            try
             {
-                Directory.CreateDirectory(directory);
-            }
+                var directory = Path.GetDirectoryName(SettingsFilePath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
 
-            var json = JsonSerializer.Serialize(settings, JsonOptions);
-            File.WriteAllText(SettingsFilePath, json);
-            _cachedSettings = settings;
-        }
-        catch
-        {
-            // Silently fail - settings persistence is non-critical
+                var json = JsonSerializer.Serialize(settings, JsonOptions);
+                File.WriteAllText(SettingsFilePath, json);
+                _cachedSettings = settings;
+            }
+            catch
+            {
+                // Silently fail - settings persistence is non-critical
+            }
         }
     }
 

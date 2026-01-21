@@ -75,7 +75,7 @@ public class InstallResult
         return new InstallResult
         {
             Success = true,
-            Message = $"[DRY RUN] Would install: {appName}",
+            Message = $"{Resources.Resources.Common_DryRun} Would install: {appName}",
             Logs = $"Simulation mode - no changes made\nApplication: {appName}",
             IsDryRun = true
         };

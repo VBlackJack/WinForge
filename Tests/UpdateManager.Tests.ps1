@@ -155,3 +155,189 @@ Describe 'UpdateManager Module' {
         }
     }
 }
+
+Describe 'Compare-SemanticVersions Extended' {
+    Context 'Edge Cases' {
+        It 'Should handle single digit versions' {
+            Compare-SemanticVersions -Version1 '1' -Version2 '1' | Should -Be 0
+        }
+
+        It 'Should handle two-part versions' {
+            Compare-SemanticVersions -Version1 '1.0' -Version2 '1.0' | Should -Be 0
+        }
+
+        It 'Should handle four-part versions (Windows style)' {
+            Compare-SemanticVersions -Version1 '1.0.0.1' -Version2 '1.0.0.0' | Should -Be 1
+        }
+
+        It 'Should handle versions with build metadata' {
+            Compare-SemanticVersions -Version1 '1.0.0+build123' -Version2 '1.0.0' | Should -Be 0
+        }
+
+        It 'Should sort alpha < beta' {
+            Compare-SemanticVersions -Version1 '1.0.0-alpha' -Version2 '1.0.0-beta' | Should -Be -1
+        }
+
+        It 'Should sort beta < rc' {
+            Compare-SemanticVersions -Version1 '1.0.0-beta' -Version2 '1.0.0-rc' | Should -Be -1
+        }
+
+        It 'Should handle null Version1 gracefully' {
+            { Compare-SemanticVersions -Version1 $null -Version2 '1.0.0' } | Should -Not -Throw
+        }
+
+        It 'Should handle empty Version1' {
+            { Compare-SemanticVersions -Version1 '' -Version2 '1.0.0' } | Should -Not -Throw
+        }
+
+        It 'Should handle Version2 prefix V uppercase' {
+            Compare-SemanticVersions -Version1 '1.0.0' -Version2 'V1.0.0' | Should -Be 0
+        }
+    }
+
+    Context 'Numeric Comparisons' {
+        It 'Should compare 10 > 9' {
+            Compare-SemanticVersions -Version1 '1.10.0' -Version2 '1.9.0' | Should -Be 1
+        }
+
+        It 'Should compare 100 > 99' {
+            Compare-SemanticVersions -Version1 '1.100.0' -Version2 '1.99.0' | Should -Be 1
+        }
+
+        It 'Should handle leading zeros' {
+            Compare-SemanticVersions -Version1 '1.01.0' -Version2 '1.1.0' | Should -Be 0
+        }
+    }
+}
+
+Describe 'Test-UpdateAvailable' {
+    Context 'Basic Functionality' {
+        It 'Should return hashtable' {
+            $result = Test-UpdateAvailable
+            $result | Should -BeOfType [hashtable]
+        }
+
+        It 'Should have UpdateAvailable key' {
+            $result = Test-UpdateAvailable
+            $result.Keys | Should -Contain 'UpdateAvailable'
+        }
+
+        It 'Should have CurrentVersion key' {
+            $result = Test-UpdateAvailable
+            $result.Keys | Should -Contain 'CurrentVersion'
+        }
+    }
+}
+
+Describe 'Test-IsNewerVersion' {
+    Context 'Direct Comparison' {
+        It 'Should export Test-IsNewerVersion function' {
+            Get-Command Test-IsNewerVersion -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
+
+        It 'Should return true when available is newer' {
+            $result = Test-IsNewerVersion -CurrentVersion '1.0.0' -AvailableVersion '2.0.0'
+            $result | Should -BeTrue
+        }
+
+        It 'Should return false when current is newer' {
+            $result = Test-IsNewerVersion -CurrentVersion '2.0.0' -AvailableVersion '1.0.0'
+            $result | Should -BeFalse
+        }
+
+        It 'Should return false when versions are equal' {
+            $result = Test-IsNewerVersion -CurrentVersion '1.0.0' -AvailableVersion '1.0.0'
+            $result | Should -BeFalse
+        }
+
+        It 'Should handle prerelease comparison' {
+            $result = Test-IsNewerVersion -CurrentVersion '1.0.0-beta' -AvailableVersion '1.0.0'
+            $result | Should -BeTrue
+        }
+    }
+}
+
+Describe 'UpdateManager Integration' {
+    Context 'Configuration Persistence' {
+        It 'Should persist AutoCheckEnabled setting' {
+            $originalConfig = Get-UpdateConfiguration
+            $originalValue = $originalConfig.AutoCheckEnabled
+
+            # Toggle the value
+            Set-UpdateConfiguration -AutoCheckEnabled (-not $originalValue)
+            $newConfig = Get-UpdateConfiguration
+            $newConfig.AutoCheckEnabled | Should -Be (-not $originalValue)
+
+            # Restore original value
+            Set-UpdateConfiguration -AutoCheckEnabled $originalValue
+        }
+
+        It 'Should validate CheckIntervalHours range' {
+            # Should accept valid values
+            { Set-UpdateConfiguration -CheckIntervalHours 1 } | Should -Not -Throw
+            { Set-UpdateConfiguration -CheckIntervalHours 24 } | Should -Not -Throw
+            { Set-UpdateConfiguration -CheckIntervalHours 168 } | Should -Not -Throw
+        }
+    }
+
+    Context 'Version File Access' {
+        It 'Should read version from Config/version.json' {
+            $version = Get-CurrentVersion
+            $version | Should -Match '^\d+\.\d+\.\d+'
+        }
+
+        It 'Should return consistent version' {
+            $version1 = Get-CurrentVersion
+            $version2 = Get-CurrentVersion
+            $version1 | Should -Be $version2
+        }
+    }
+}
+
+Describe 'UpdateManager Export Completeness' {
+    Context 'All Expected Functions Exported' {
+        $expectedFunctions = @(
+            'Get-CurrentVersion',
+            'Compare-SemanticVersions',
+            'Test-IsNewerVersion',
+            'Test-UpdateAvailable',
+            'Get-UpdateConfiguration',
+            'Set-UpdateConfiguration',
+            'Get-AvailableBackups',
+            'New-Win11ForgeBackup',
+            'Restore-Win11ForgeBackup'
+        )
+
+        foreach ($func in $expectedFunctions) {
+            It "Should export $func function" {
+                Get-Command -Module UpdateManager -Name $func -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            }
+        }
+    }
+}
+
+Describe 'UpdateManager Security' {
+    Context 'Input Validation' {
+        It 'Should handle version strings with special characters safely' {
+            { Compare-SemanticVersions -Version1 '1.0.0; rm -rf' -Version2 '1.0.0' } | Should -Not -Throw
+        }
+
+        It 'Should handle unicode in version strings' {
+            { Compare-SemanticVersions -Version1 '1.0.0-\u00e9' -Version2 '1.0.0' } | Should -Not -Throw
+        }
+    }
+}
+
+Describe 'Backup Functions' {
+    Context 'New-Win11ForgeBackup' {
+        It 'Should be available' {
+            Get-Command New-Win11ForgeBackup -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context 'Restore-Win11ForgeBackup' {
+        It 'Should be available' {
+            Get-Command Restore-Win11ForgeBackup -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
+    }
+}

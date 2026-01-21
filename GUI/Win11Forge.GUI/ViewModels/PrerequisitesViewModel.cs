@@ -124,7 +124,7 @@ public partial class PrerequisitesViewModel : ViewModelBase
         {
             var success = await _powerShellBridge.InstallPrerequisitesAsync(msg =>
             {
-                Application.Current.Dispatcher.Invoke(() =>
+                Application.Current.Dispatcher.BeginInvoke(() =>
                 {
                     ProgressMessage = msg;
                     LogOutput += msg + Environment.NewLine;

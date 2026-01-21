@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://win11forge.local/schemas/scheduled-deployments.schema.json",
+  "title": "Win11Forge Scheduled Deployments Configuration",
+  "description": "Schema for Win11Forge scheduled deployments configuration file",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Schema version (semver format)"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Human-readable description of this configuration"
+    },
+    "settings": {
+      "type": "object",
+      "description": "Global settings for scheduled deployments",
+      "properties": {
+        "defaultTriggerType": {
+          "type": "string",
+          "enum": ["OneTime", "Daily", "Weekly", "AtStartup", "AtLogon"],
+          "default": "OneTime",
+          "description": "Default trigger type for new deployments"
+        },
+        "maxConcurrentDeployments": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "default": 1,
+          "description": "Maximum number of deployments that can run simultaneously"
+        },
+        "retryOnFailure": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to retry failed deployments automatically"
+        },
+        "retryDelayMinutes": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 1440,
+          "default": 30,
+          "description": "Delay in minutes before retrying a failed deployment"
+        },
+        "maxRetries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 3,
+          "description": "Maximum number of retry attempts"
+        },
+        "notifyOnCompletion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notification when deployment completes"
+        },
+        "notifyOnFailure": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notification when deployment fails"
+        },
+        "logRetentionDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 365,
+          "default": 30,
+          "description": "Number of days to retain deployment logs"
+        }
+      },
+      "additionalProperties": false
+    },
+    "deployments": {
+      "type": "object",
+      "description": "Map of deployment ID to deployment configuration",
+      "additionalProperties": {
+        "$ref": "#/$defs/deployment"
+      }
+    }
+  },
+  "required": ["version", "settings", "deployments"],
+  "additionalProperties": false,
+  "$defs": {
+    "deployment": {
+      "type": "object",
+      "description": "A scheduled deployment configuration",
+      "properties": {
+        "profileName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+          "description": "Name of the deployment profile to use"
+        },
+        "triggerType": {
+          "type": "string",
+          "enum": ["OneTime", "Daily", "Weekly", "AtStartup", "AtLogon"],
+          "description": "Type of schedule trigger"
+        },
+        "scheduledTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 datetime for scheduled execution"
+        },
+        "daysOfWeek": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+          },
+          "uniqueItems": true,
+          "description": "Days of week for Weekly trigger type"
+        },
+        "options": {
+          "type": "object",
+          "properties": {
+            "parallel": {
+              "type": "boolean",
+              "default": false,
+              "description": "Run installations in parallel"
+            },
+            "testMode": {
+              "type": "boolean",
+              "default": false,
+              "description": "Run in test/dry-run mode"
+            },
+            "forceUpdate": {
+              "type": "boolean",
+              "default": false,
+              "description": "Force update already installed apps"
+            }
+          },
+          "additionalProperties": false
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Pending", "Running", "Completed", "Failed", "Cancelled"],
+          "default": "Pending",
+          "description": "Current status of the deployment"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 datetime when deployment was created"
+        },
+        "createdBy": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Username who created this deployment"
+        },
+        "lastRunTime": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "ISO 8601 datetime of last execution"
+        },
+        "lastRunResult": {
+          "type": ["string", "null"],
+          "description": "Result of last execution"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Optional description for this deployment"
+        }
+      },
+      "required": ["profileName", "triggerType"],
+      "additionalProperties": false
+    }
+  }
+}

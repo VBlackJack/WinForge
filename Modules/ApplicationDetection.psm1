@@ -158,7 +158,9 @@ function Get-RegistryInstalledApp {
                             }
                         }
                     }
-                } catch { }
+                } catch {
+                    Write-Verbose "Registry scan error for $path on $($key.Name): $($_.Exception.Message)"
+                }
                 $results
             }
 
@@ -323,7 +325,9 @@ function Get-InstalledAppVersion {
                     return $Matches[1]
                 }
             }
-        } catch { }
+        } catch {
+            Write-Verbose "Winget version detection failed for $WingetId : $($_.Exception.Message)"
+        }
     }
 
     # Try Chocolatey
@@ -333,7 +337,9 @@ function Get-InstalledAppVersion {
             if ($output -match "$ChocolateyId\s+([\d\.]+)") {
                 return $Matches[1]
             }
-        } catch { }
+        } catch {
+            Write-Verbose "Chocolatey version detection failed for $ChocolateyId : $($_.Exception.Message)"
+        }
     }
 
     return $null
@@ -742,35 +748,45 @@ function Get-InstalledApplicationsCache {
         try {
             $commandOutputs['dotnet --list-runtimes'] = & dotnet --list-runtimes 2>&1 | Out-String
             $commandOutputs['dotnet --version'] = & dotnet --version 2>&1 | Out-String
-        } catch { }
+        } catch {
+            Write-Verbose "Failed to cache dotnet info: $($_.Exception.Message)"
+        }
     }
 
     # Cache java version (used by Java/JRE/JDK detections)
     if (Get-Command -Name 'java' -ErrorAction SilentlyContinue) {
         try {
             $commandOutputs['java -version'] = & java -version 2>&1 | Out-String
-        } catch { }
+        } catch {
+            Write-Verbose "Failed to cache java info: $($_.Exception.Message)"
+        }
     }
 
     # Cache python version
     if (Get-Command -Name 'python' -ErrorAction SilentlyContinue) {
         try {
             $commandOutputs['python --version'] = & python --version 2>&1 | Out-String
-        } catch { }
+        } catch {
+            Write-Verbose "Failed to cache python info: $($_.Exception.Message)"
+        }
     }
 
     # Cache node version
     if (Get-Command -Name 'node' -ErrorAction SilentlyContinue) {
         try {
             $commandOutputs['node --version'] = & node --version 2>&1 | Out-String
-        } catch { }
+        } catch {
+            Write-Verbose "Failed to cache node info: $($_.Exception.Message)"
+        }
     }
 
     # Cache git version
     if (Get-Command -Name 'git' -ErrorAction SilentlyContinue) {
         try {
             $commandOutputs['git --version'] = & git --version 2>&1 | Out-String
-        } catch { }
+        } catch {
+            Write-Verbose "Failed to cache git info: $($_.Exception.Message)"
+        }
     }
 
     Write-Verbose "Commands: Cached $($commandOutputs.Count) command outputs"
@@ -828,13 +844,28 @@ function Test-ApplicationInstalledFast {
                 # Check if registry path exists (with null-safe property check)
                 if ($Application.Detection.PSObject.Properties['Path'] -and $Application.Detection.Path) {
                     $detected = Test-Path -Path $Application.Detection.Path -ErrorAction SilentlyContinue
-                    # Try to get version from registry
+                    # Try to get version from registry using VersionKey if specified
                     if ($detected) {
                         try {
                             $regEntry = Get-ItemProperty -Path $Application.Detection.Path -ErrorAction SilentlyContinue
-                            if ($regEntry.DisplayVersion) { $version = $regEntry.DisplayVersion }
-                            elseif ($regEntry.Version) { $version = $regEntry.Version }
-                        } catch {}
+                            # Use VersionKey from app config if specified, otherwise fall back to common keys
+                            $versionKey = if ($Application.Detection.PSObject.Properties['VersionKey']) {
+                                $Application.Detection.VersionKey
+                            } else {
+                                $null
+                            }
+                            if ($versionKey -and $regEntry.PSObject.Properties[$versionKey]) {
+                                $version = $regEntry.$versionKey
+                            } elseif ($regEntry.DisplayVersion) {
+                                $version = $regEntry.DisplayVersion
+                            } elseif ($regEntry.Version) {
+                                $version = $regEntry.Version
+                            } elseif ($regEntry.CurrentVersion) {
+                                $version = $regEntry.CurrentVersion
+                            }
+                        } catch {
+                            Write-Verbose "Failed to get registry version for $($Application.Name): $($_.Exception.Message)"
+                        }
                     }
                 }
             }
@@ -850,7 +881,9 @@ function Test-ApplicationInstalledFast {
                             if ($fileInfo.VersionInfo.FileVersion) {
                                 $version = $fileInfo.VersionInfo.FileVersion
                             }
-                        } catch {}
+                        } catch {
+                            Write-Verbose "Failed to get file version for $($Application.Name): $($_.Exception.Message)"
+                        }
                     }
                 }
             }
@@ -878,6 +911,12 @@ function Test-ApplicationInstalledFast {
                     $commandParts = $fullCommand -split '\s+', 2
                     $executable = $commandParts[0]
                     $expectedPattern = if ($Application.Detection.PSObject.Properties['Arguments']) { $Application.Detection.Arguments } else { $null }
+                    # Get custom VersionRegex from app config or use default
+                    $versionRegex = if ($Application.Detection.PSObject.Properties['VersionRegex']) {
+                        $Application.Detection.VersionRegex
+                    } else {
+                        '(\d+\.\d+[\.\d]*)'  # Default pattern
+                    }
 
                     # Security: Only allow whitelisted executables for command detection
                     $exeBaseName = [System.IO.Path]::GetFileName($executable).ToLower()
@@ -894,27 +933,32 @@ function Test-ApplicationInstalledFast {
                             # Use cached output
                             if ($expectedPattern) {
                                 $detected = $output -match [regex]::Escape($expectedPattern)
-                                if ($detected -and $output -match '(\d+\.\d+[\.\d]*)') {
+                                if ($detected -and $output -match $versionRegex) {
                                     $version = $matches[1]
                                 }
                             } else {
                                 $detected = $true
+                                # Extract version even without expected pattern
+                                if ($output -match $versionRegex) {
+                                    $version = $matches[1]
+                                }
                             }
                         } elseif (Get-Command -Name $executable -ErrorAction SilentlyContinue) {
                             # Fallback: execute command if not cached
                             $arguments = if ($commandParts.Count -gt 1) { $commandParts[1] } else { $null }
+                            $output = if ($arguments) {
+                                & $executable $arguments 2>&1 | Out-String
+                            } else {
+                                & $executable 2>&1 | Out-String
+                            }
                             if ($expectedPattern) {
-                                $output = if ($arguments) {
-                                    & $executable $arguments 2>&1 | Out-String
-                                } else {
-                                    & $executable 2>&1 | Out-String
-                                }
                                 $detected = $output -match [regex]::Escape($expectedPattern)
-                                if ($detected -and $output -match '(\d+\.\d+[\.\d]*)') {
-                                    $version = $matches[1]
-                                }
                             } else {
                                 $detected = $true
+                            }
+                            # Extract version using custom regex
+                            if ($detected -and $output -match $versionRegex) {
+                                $version = $matches[1]
                             }
                         }
                     }

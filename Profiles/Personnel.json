@@ -1,7 +1,7 @@
 {
   "Name": "Personnel",
-  "Description": "Advanced personal profile - Gaming + development and power user tools (v3.0.0 - Database Mode)",
-  "Version": "3.0.1",
+  "Description": "Advanced personal profile - Gaming + development and power user tools (v3.5.0 - Database Mode)",
+  "Version": "3.5.0",
   "Inherits": ["Gaming"],
   "Applications": [
     "VSCode",
@@ -32,14 +32,8 @@
     "TVRename"
   ],
   "SystemConfig": {
-    "Explorer": {
-      "DeveloperMode": true
-    },
-    "Network": {
-      "DeveloperOptimizations": true
-    },
     "Security": {
-      "DeveloperMode": true
+      "AllowDevelopmentWithoutDevLicense": true
     }
   }
 }

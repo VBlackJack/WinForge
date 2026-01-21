@@ -345,8 +345,8 @@ function Invoke-StartupBlacklist {
         Write-Status -Message (Get-LocalizedString -Key 'startup.blacklist_loaded' -Parameters @{ Description = $config.Description }) -Level 'Info'
         Write-Status -Message (Get-LocalizedString -Key 'startup.blacklist_version' -Parameters @{ Version = $config.Version }) -Level 'Verbose'
 
-        # Filter enabled applications
-        $appsToDisable = $config.DisabledApplications | Where-Object { $_.Enabled -eq $true }
+        # Filter applications marked for disabling (supports both old "Enabled" and new "ShouldDisable" property names)
+        $appsToDisable = $config.DisabledApplications | Where-Object { $_.ShouldDisable -eq $true -or $_.Enabled -eq $true }
 
         if ($appsToDisable.Count -eq 0) {
             Write-Status -Message (Get-LocalizedString -Key 'startup.no_apps_configured') -Level 'Info'

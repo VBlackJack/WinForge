@@ -1,0 +1,16 @@
+{
+  "$schema": "../Schemas/scheduled-deployments.schema.json",
+  "version": "1.0.0",
+  "description": "Scheduled deployments configuration for Win11Forge",
+  "settings": {
+    "defaultTriggerType": "OneTime",
+    "maxConcurrentDeployments": 1,
+    "retryOnFailure": true,
+    "retryDelayMinutes": 30,
+    "maxRetries": 3,
+    "notifyOnCompletion": true,
+    "notifyOnFailure": true,
+    "logRetentionDays": 30
+  },
+  "deployments": {}
+}

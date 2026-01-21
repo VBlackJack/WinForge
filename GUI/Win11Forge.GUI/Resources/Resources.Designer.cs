@@ -85,6 +85,9 @@ public class Resources
     public static string Common_Yes => ResourceManager.GetString("Common_Yes", resourceCulture);
     public static string Common_No => ResourceManager.GetString("Common_No", resourceCulture);
     public static string Common_Unknown => ResourceManager.GetString("Common_Unknown", resourceCulture);
+    public static string Common_OK => ResourceManager.GetString("Common_OK", resourceCulture);
+    public static string Common_Cancel => ResourceManager.GetString("Common_Cancel", resourceCulture);
+    public static string Common_DryRun => ResourceManager.GetString("Common_DryRun", resourceCulture);
 
     // Navigation
     public static string Nav_Dashboard => ResourceManager.GetString("Nav_Dashboard", resourceCulture);

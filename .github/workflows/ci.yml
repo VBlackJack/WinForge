@@ -59,7 +59,7 @@ jobs:
           Write-Host "PSScriptAnalyzer: No issues found" -ForegroundColor Green
 
   # ===========================================
-  # PowerShell Pester Tests
+  # PowerShell Pester Tests with Code Coverage
   # ===========================================
   test-powershell:
     name: Pester Tests
@@ -74,7 +74,7 @@ jobs:
         run: |
           Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0.0
 
-      - name: Run Pester Tests
+      - name: Run Pester Tests with Code Coverage
         shell: pwsh
         run: |
           $config = New-PesterConfiguration
@@ -85,7 +85,46 @@ jobs:
           $config.TestResult.OutputPath = 'TestResults-Pester.xml'
           $config.TestResult.OutputFormat = 'NUnitXML'
 
+          # Enable code coverage
+          $config.CodeCoverage.Enabled = $true
+          $config.CodeCoverage.Path = @('Core/*.psm1', 'Modules/*.psm1')
+          $config.CodeCoverage.OutputPath = 'Coverage-Pester.xml'
+          $config.CodeCoverage.OutputFormat = 'JaCoCo'
+
           Invoke-Pester -Configuration $config
+
+      - name: Generate Pester Coverage Report
+        shell: pwsh
+        if: always()
+        run: |
+          if (Test-Path 'Coverage-Pester.xml') {
+            [xml]$coverage = Get-Content 'Coverage-Pester.xml'
+            $counters = $coverage.report.counter | Where-Object { $_.type -eq 'LINE' }
+            if ($counters) {
+              $covered = [int]$counters.covered
+              $missed = [int]$counters.missed
+              $total = $covered + $missed
+              $percentage = if ($total -gt 0) { [math]::Round(($covered / $total) * 100, 2) } else { 0 }
+              $minCoverage = 75
+              Write-Host "=== PowerShell Code Coverage ===" -ForegroundColor Cyan
+              Write-Host "Lines Covered: $covered / $total ($percentage%) (minimum: $minCoverage%)" -ForegroundColor $(if ($percentage -ge 80) { 'Green' } elseif ($percentage -ge $minCoverage) { 'Yellow' } else { 'Red' })
+
+              # Create coverage summary JSON
+              @{
+                Type = 'PowerShell'
+                LineCoverage = $percentage
+                LinesCovered = $covered
+                LinesTotal = $total
+                MinimumCoverage = $minCoverage
+              } | ConvertTo-Json | Set-Content 'coverage-summary-pester.json'
+
+              # Enforce minimum coverage threshold
+              if ($percentage -lt $minCoverage) {
+                Write-Host "::error::PowerShell line coverage ($percentage%) is below minimum threshold ($minCoverage%)" -ForegroundColor Red
+                exit 1
+              }
+            }
+          }
 
       - name: Upload Pester Test Results
         uses: actions/upload-artifact@v4
@@ -94,8 +133,17 @@ jobs:
           name: pester-test-results
           path: TestResults-Pester.xml
 
+      - name: Upload Pester Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pester-coverage
+          path: |
+            Coverage-Pester.xml
+            coverage-summary-pester.json
+
   # ===========================================
-  # .NET 8 GUI Build & Test
+  # .NET 8 GUI Build & Test with Code Coverage
   # ===========================================
   test-gui:
     name: GUI Build & Test (.NET 8)
@@ -115,8 +163,49 @@ jobs:
       - name: Build GUI (Release)
         run: dotnet build GUI/Win11Forge.slnx --configuration Release --no-restore
 
-      - name: Run GUI Tests
-        run: dotnet test GUI/Win11Forge.GUI.Tests/Win11Forge.GUI.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=TestResults-GUI.trx"
+      - name: Run GUI Tests with Code Coverage
+        run: |
+          dotnet test GUI/Win11Forge.GUI.Tests/Win11Forge.GUI.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=TestResults-GUI.trx" --collect:"XPlat Code Coverage" --results-directory GUI/Win11Forge.GUI.Tests/TestResults
+
+      - name: Install ReportGenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      - name: Generate Coverage Report
+        shell: pwsh
+        run: |
+          $coverageFile = Get-ChildItem -Path 'GUI/Win11Forge.GUI.Tests/TestResults' -Filter 'coverage.cobertura.xml' -Recurse | Select-Object -First 1
+          if ($coverageFile) {
+            reportgenerator -reports:$($coverageFile.FullName) -targetdir:coverage-report-gui -reporttypes:"Html;JsonSummary;Cobertura"
+
+            # Parse and display coverage summary
+            if (Test-Path 'coverage-report-gui/Summary.json') {
+              $summary = Get-Content 'coverage-report-gui/Summary.json' | ConvertFrom-Json
+              $lineCoverage = $summary.summary.linecoverage
+              $branchCoverage = $summary.summary.branchcoverage
+              $minCoverage = 75
+
+              Write-Host "=== .NET GUI Code Coverage ===" -ForegroundColor Cyan
+              Write-Host "Line Coverage: $lineCoverage% (minimum: $minCoverage%)" -ForegroundColor $(if ($lineCoverage -ge 80) { 'Green' } elseif ($lineCoverage -ge $minCoverage) { 'Yellow' } else { 'Red' })
+              Write-Host "Branch Coverage: $branchCoverage%" -ForegroundColor $(if ($branchCoverage -ge 80) { 'Green' } elseif ($branchCoverage -ge 60) { 'Yellow' } else { 'Red' })
+
+              # Enforce minimum coverage threshold
+              if ($lineCoverage -lt $minCoverage) {
+                Write-Host "::error::Line coverage ($lineCoverage%) is below minimum threshold ($minCoverage%)" -ForegroundColor Red
+                exit 1
+              }
+
+              # Create coverage summary JSON
+              @{
+                Type = '.NET'
+                LineCoverage = $summary.summary.linecoverage
+                BranchCoverage = $summary.summary.branchcoverage
+                CoveredLines = $summary.summary.coveredlines
+                TotalLines = $summary.summary.coverablelines
+              } | ConvertTo-Json | Set-Content 'coverage-summary-gui.json'
+            }
+          } else {
+            Write-Host "No coverage file found" -ForegroundColor Yellow
+          }
 
       - name: Upload GUI Test Results
         uses: actions/upload-artifact@v4
@@ -124,6 +213,96 @@ jobs:
         with:
           name: gui-test-results
           path: GUI/Win11Forge.GUI.Tests/TestResults/TestResults-GUI.trx
+
+      - name: Upload GUI Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gui-coverage
+          path: |
+            coverage-report-gui/
+            coverage-summary-gui.json
+
+  # ===========================================
+  # Combined Code Coverage Summary
+  # ===========================================
+  coverage-summary:
+    name: Code Coverage Summary
+    runs-on: windows-latest
+    needs: [test-powershell, test-gui]
+    if: always()
+    steps:
+      - name: Download Pester Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: pester-coverage
+          path: pester-coverage
+        continue-on-error: true
+
+      - name: Download GUI Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: gui-coverage
+          path: gui-coverage
+        continue-on-error: true
+
+      - name: Generate Combined Coverage Summary
+        shell: pwsh
+        run: |
+          Write-Host "========================================" -ForegroundColor Cyan
+          Write-Host "       WIN11FORGE CODE COVERAGE         " -ForegroundColor Cyan
+          Write-Host "========================================" -ForegroundColor Cyan
+          Write-Host ""
+
+          $combinedSummary = @{
+            Timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+            Components = @()
+          }
+
+          # PowerShell Coverage
+          if (Test-Path 'pester-coverage/coverage-summary-pester.json') {
+            $pester = Get-Content 'pester-coverage/coverage-summary-pester.json' | ConvertFrom-Json
+            Write-Host "PowerShell (Pester):" -ForegroundColor White
+            Write-Host "  Line Coverage: $($pester.LineCoverage)%" -ForegroundColor $(if ($pester.LineCoverage -ge 80) { 'Green' } elseif ($pester.LineCoverage -ge 60) { 'Yellow' } else { 'Red' })
+            Write-Host "  Lines: $($pester.LinesCovered) / $($pester.LinesTotal)" -ForegroundColor Gray
+            Write-Host ""
+            $combinedSummary.Components += $pester
+          } else {
+            Write-Host "PowerShell (Pester): No coverage data available" -ForegroundColor Yellow
+          }
+
+          # .NET Coverage
+          if (Test-Path 'gui-coverage/coverage-summary-gui.json') {
+            $gui = Get-Content 'gui-coverage/coverage-summary-gui.json' | ConvertFrom-Json
+            Write-Host ".NET GUI (xUnit):" -ForegroundColor White
+            Write-Host "  Line Coverage: $($gui.LineCoverage)%" -ForegroundColor $(if ($gui.LineCoverage -ge 80) { 'Green' } elseif ($gui.LineCoverage -ge 60) { 'Yellow' } else { 'Red' })
+            Write-Host "  Branch Coverage: $($gui.BranchCoverage)%" -ForegroundColor $(if ($gui.BranchCoverage -ge 80) { 'Green' } elseif ($gui.BranchCoverage -ge 60) { 'Yellow' } else { 'Red' })
+            Write-Host "  Lines: $($gui.CoveredLines) / $($gui.TotalLines)" -ForegroundColor Gray
+            Write-Host ""
+            $combinedSummary.Components += $gui
+          } else {
+            Write-Host ".NET GUI (xUnit): No coverage data available" -ForegroundColor Yellow
+          }
+
+          # Calculate overall average
+          $coverages = $combinedSummary.Components | Where-Object { $_.LineCoverage -gt 0 } | Select-Object -ExpandProperty LineCoverage
+          if ($coverages.Count -gt 0) {
+            $average = [math]::Round(($coverages | Measure-Object -Average).Average, 2)
+            $combinedSummary.OverallCoverage = $average
+            Write-Host "----------------------------------------" -ForegroundColor Gray
+            Write-Host "Overall Average: $average%" -ForegroundColor $(if ($average -ge 80) { 'Green' } elseif ($average -ge 60) { 'Yellow' } else { 'Red' })
+          }
+
+          Write-Host "========================================" -ForegroundColor Cyan
+
+          # Save combined summary
+          $combinedSummary | ConvertTo-Json -Depth 5 | Set-Content 'coverage-summary-combined.json'
+
+      - name: Upload Combined Coverage Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-summary
+          path: coverage-summary-combined.json
 
   # ===========================================
   # Framework Validation

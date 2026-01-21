@@ -94,7 +94,9 @@ function Test-AppInstalledParallel {
         try {
             $pkg = Get-AppxPackage -Name "MicrosoftCorporationII.QuickAssist" -ErrorAction SilentlyContinue
             if ($pkg) { return $true }
-        } catch { }
+        } catch {
+            Write-Verbose "Quick Assist detection failed: $($_.Exception.Message)"
+        }
     }
 
     # === NO DETECTION CONFIG - USE WINGET ===
@@ -106,7 +108,9 @@ function Test-AppInstalledParallel {
             try {
                 $list = & winget list --accept-source-agreements 2>&1 | Out-String
                 if ($list -match [regex]::Escape($appName)) { return $true }
-            } catch { }
+            } catch {
+                Write-Verbose "Winget list detection failed for $appName : $($_.Exception.Message)"
+            }
         }
         return $false
     }
@@ -140,7 +144,9 @@ function Test-AppInstalledParallel {
                 try {
                     $list = & winget list --accept-source-agreements 2>&1 | Out-String
                     if ($list -match [regex]::Escape($appName)) { return $true }
-                } catch { }
+                } catch {
+                    Write-Verbose "Winget fallback detection failed for $appName : $($_.Exception.Message)"
+                }
             }
             return $false
         }
@@ -194,7 +200,7 @@ function Test-FileDetection {
 
     # Handle wildcard paths
     if ($expandedPath -match '\*') {
-        return (Get-ChildItem -Path $expandedPath -ErrorAction SilentlyContinue).Count -gt 0
+        return @(Get-ChildItem -Path $expandedPath -ErrorAction SilentlyContinue).Count -gt 0
     }
 
     return Test-Path -Path $expandedPath -PathType Leaf -ErrorAction SilentlyContinue

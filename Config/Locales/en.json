@@ -1267,5 +1267,52 @@
       "Error": "Error",
       "Critical": "Critical"
     }
+  },
+  "scheduledDeployment": {
+    "title": "Scheduled Deployments",
+    "created": "Scheduled deployment created: {Id}",
+    "removed": "Scheduled deployment removed: {Id}",
+    "enabled": "Scheduled deployment enabled: {Id}",
+    "disabled": "Scheduled deployment disabled: {Id}",
+    "started": "Scheduled deployment started: {Id}",
+    "noDeployments": "No scheduled deployments found",
+    "nextRun": "Next run: {Time}",
+    "lastRun": "Last run: {Time}",
+    "triggerType": {
+      "OneTime": "One-time",
+      "Daily": "Daily",
+      "Weekly": "Weekly",
+      "AtStartup": "At system startup",
+      "AtLogon": "At user logon"
+    },
+    "status": {
+      "Pending": "Pending",
+      "Running": "Running",
+      "Completed": "Completed",
+      "Failed": "Failed",
+      "Cancelled": "Cancelled"
+    },
+    "summary": {
+      "title": "Deployment Schedule Summary",
+      "total": "Total scheduled: {Count}",
+      "pending": "Pending: {Count}",
+      "running": "Running: {Count}",
+      "nextScheduled": "Next deployment: {Profile} at {Time}"
+    },
+    "confirm": {
+      "remove": "Are you sure you want to remove this scheduled deployment?",
+      "disable": "Are you sure you want to disable this scheduled deployment?"
+    },
+    "error": {
+      "taskSchedulerUnavailable": "Windows Task Scheduler module is not available",
+      "createFailed": "Failed to create scheduled deployment: {Error}",
+      "removeFailed": "Failed to remove scheduled deployment: {Error}",
+      "enableFailed": "Failed to enable scheduled deployment: {Error}",
+      "disableFailed": "Failed to disable scheduled deployment: {Error}",
+      "startFailed": "Failed to start scheduled deployment: {Error}",
+      "listFailed": "Failed to list scheduled deployments: {Error}",
+      "profileNotFound": "Profile not found: {Name}",
+      "invalidTime": "Invalid scheduled time - must be in the future"
+    }
   }
 }

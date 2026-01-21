@@ -504,7 +504,9 @@ function Get-StructuredLogs {
             if ([string]::IsNullOrWhiteSpace($line)) { continue }
             try {
                 $entries += ($line | ConvertFrom-Json)
-            } catch { }
+            } catch {
+                # Skip malformed JSON lines (common in log files)
+            }
         }
     } else {
         $jsonDir = $script:LoggingState.Config.JsonLogging.Directory
@@ -516,7 +518,9 @@ function Get-StructuredLogs {
                     if ([string]::IsNullOrWhiteSpace($line)) { continue }
                     try {
                         $entries += ($line | ConvertFrom-Json)
-                    } catch { }
+                    } catch {
+                        # Skip malformed JSON lines (common in log files)
+                    }
                 }
             }
         }
