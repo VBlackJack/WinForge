@@ -2,6 +2,57 @@
 
 Note: la source de vérité de la version du framework est `Config/version.json`. Les lanceurs et la GUI lisent dynamiquement cette valeur.
 
+## [3.5.0] - 2026-01-21
+
+### GUI - Runtime Detection Fix
+
+#### JsonApplicationDetectionService (NEW)
+- **Added**: JSON-based detection service for applications.json detection methods
+- **Added**: Support for Command, Registry, File, and WindowsFeature detection methods
+- **Added**: Proper parsing of nested `Applications` structure with WinGet ID matching
+- **Added**: Executable path resolution for `dotnet`, `java`, `node`, `python`, `git`
+- **Fixed**: Runtime detection now correctly identifies .NET, VC++, Java, etc.
+- **Impact**: All 177 applications now properly detected when scanning
+
+#### Interface Segregation (ISP)
+- **Added**: Focused interfaces split from IPowerShellBridge:
+  - IApplicationManagementService
+  - IProfileManagementService
+  - IPrerequisitesService
+  - ISystemInfoService
+  - IVersionService
+  - IDeploymentOrchestrationService
+- **Added**: Adapter classes: ApplicationBridge, ProfileBridge, PrerequisitesService
+- **Added**: FocusedInterfacesTests.cs to verify contract compliance
+
+#### UI Enhancements
+- **Added**: Scheduled Deployments UI in Settings view
+- **Added**: SplashScreen with cache pre-warming
+- **Added**: AccessibilityService for high contrast theme detection
+- **Added**: HighContrastTheme.xaml resource dictionary
+- **Updated**: ApplicationModel with 177 applications (was 170)
+
+### Core
+
+#### Security
+- **Added**: DPAPI encryption for api-settings.json via SecureStorage.psm1
+- **Added**: ValidatePathWithinDirectory() for path traversal prevention
+- **Added**: URL validation with regex patterns in REST API
+
+#### Profiles
+- **Added**: Enterprise.json profile
+- **Added**: Profile cycle detection (Test-ProfileCycles)
+
+### Documentation
+- **Consolidated**: BMAD audit reports into single BMAD-AUDIT-v3.5.0.md
+- **Cleaned**: Removed old audit reports from Docs/ and Reports/
+
+### Statistics
+- **Test Coverage**: 1040+ tests passing
+- **Total Applications**: 177
+
+---
+
 ## [3.2.3] - 2026-01-19
 
 ### Performance Optimizations
