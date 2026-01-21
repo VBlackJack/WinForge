@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#nullable enable
+
 using System.ComponentModel.DataAnnotations;
 
 namespace Win11Forge.GUI.Models;

@@ -29,36 +29,37 @@ namespace Win11Forge.GUI.Services;
 public class PowerShellBridge : IPowerShellBridge
 {
     private readonly string _repositoryRoot;
+    private readonly IApplicationDetectionService _detectionService;
     private Dictionary<string, JsonElement>? _applicationsCache;
 
-    // Fast detection service for optimized scanning
-    private HybridDetectionService? _fastDetectionService;
-    private readonly object _fastDetectionLock = new();
+    /// <summary>
+    /// Default timeout for short operations (queries, status checks) in milliseconds.
+    /// </summary>
+    private const int DefaultQueryTimeoutMs = 300000; // 5 minutes
 
     /// <summary>
-    /// Gets the fast detection service (lazy initialized).
+    /// Timeout for installation operations in milliseconds.
     /// </summary>
-    private HybridDetectionService FastDetectionService
+    private const int InstallationTimeoutMs = 1800000; // 30 minutes
+
+    /// <summary>
+    /// Initializes a new instance of the PowerShellBridge with dependency injection.
+    /// </summary>
+    /// <param name="detectionService">The application detection service.</param>
+    public PowerShellBridge(IApplicationDetectionService detectionService)
     {
-        get
-        {
-            if (_fastDetectionService == null)
-            {
-                lock (_fastDetectionLock)
-                {
-                    _fastDetectionService ??= new HybridDetectionService();
-                }
-            }
-            return _fastDetectionService;
-        }
+        _detectionService = detectionService ?? throw new ArgumentNullException(nameof(detectionService));
+        _repositoryRoot = ResolveRepositoryRootSafe();
     }
 
     /// <summary>
     /// Initializes a new instance of the PowerShellBridge.
     /// Calculates repository root relative to executable location.
     /// </summary>
+    [Obsolete("Use constructor with IApplicationDetectionService injection instead")]
     public PowerShellBridge()
     {
+        _detectionService = new HybridDetectionService();
         _repositoryRoot = ResolveRepositoryRootSafe();
     }
 
@@ -123,7 +124,7 @@ public class PowerShellBridge : IPowerShellBridge
         var startInfo = new System.Diagnostics.ProcessStartInfo
         {
             FileName = psPath,
-            Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encodedScript}",
+            Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -EncodedCommand {encodedScript}",
             WorkingDirectory = repoRoot,
             UseShellExecute = false,
             RedirectStandardOutput = true,
@@ -140,8 +141,17 @@ public class PowerShellBridge : IPowerShellBridge
         var outputTask = process.StandardOutput.ReadToEndAsync();
         var errorTask = process.StandardError.ReadToEndAsync();
 
-        // Wait for both streams AND the process to complete
-        await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
+        // Wait for both streams AND the process to complete with timeout
+        using var timeoutCts = new CancellationTokenSource(DefaultQueryTimeoutMs);
+        try
+        {
+            await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token));
+        }
+        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+        {
+            try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+            throw new TimeoutException($"PowerShell script execution timed out after {DefaultQueryTimeoutMs / 1000} seconds");
+        }
 
         var output = await outputTask;
         var error = await errorTask;
@@ -574,7 +584,7 @@ public class PowerShellBridge : IPowerShellBridge
                 // Build a PowerShell script that outputs status messages and JSON result
                 // Use 6>&1 to redirect Information stream (Write-Host in PS5+) to stdout
                 var script = $@"
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
 $ErrorActionPreference = 'Continue'
 
 # Redirect Write-Host to stdout for streaming capture
@@ -610,7 +620,7 @@ try {{
                 var startInfo = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = psPath,
-                    Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encodedScript}",
+                    Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -EncodedCommand {encodedScript}",
                     WorkingDirectory = repoRoot,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
@@ -667,7 +677,17 @@ try {{
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
-                await process.WaitForExitAsync();
+                // Wait for process with installation timeout
+                using var installTimeoutCts = new CancellationTokenSource(InstallationTimeoutMs);
+                try
+                {
+                    await process.WaitForExitAsync(installTimeoutCts.Token);
+                }
+                catch (OperationCanceledException) when (installTimeoutCts.IsCancellationRequested)
+                {
+                    try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+                    throw new TimeoutException($"Installation of {app.Name} timed out after {InstallationTimeoutMs / 60000} minutes");
+                }
 
                 // Find JSON line in output (last non-empty line that starts with {)
                 string? jsonLine = null;
@@ -938,7 +958,16 @@ try {{
             process.Start();
 
             var output = await process.StandardOutput.ReadToEndAsync();
-            await process.WaitForExitAsync();
+            using var timeoutCts = new CancellationTokenSource(DefaultQueryTimeoutMs);
+            try
+            {
+                await process.WaitForExitAsync(timeoutCts.Token);
+            }
+            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+                return string.Empty;
+            }
 
             // Clean output from progress indicators before parsing
             var cleanOutput = CleanWingetOutput(output);
@@ -1006,7 +1035,16 @@ try {{
             process.Start();
 
             var output = await process.StandardOutput.ReadToEndAsync();
-            await process.WaitForExitAsync();
+            using var timeoutCts = new CancellationTokenSource(DefaultQueryTimeoutMs);
+            try
+            {
+                await process.WaitForExitAsync(timeoutCts.Token);
+            }
+            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+                return string.Empty;
+            }
 
             // Clean output from progress indicators before parsing
             var cleanOutput = CleanWingetOutput(output);
@@ -1505,7 +1543,18 @@ try {{
             var outputTask = process.StandardOutput.ReadToEndAsync();
             var errorTask = process.StandardError.ReadToEndAsync();
 
-            await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
+            // Wait with installation timeout (updates can take as long as installs)
+            using var updateTimeoutCts = new CancellationTokenSource(InstallationTimeoutMs);
+            try
+            {
+                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(updateTimeoutCts.Token));
+            }
+            catch (OperationCanceledException) when (updateTimeoutCts.IsCancellationRequested)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+                logBuilder.AppendLine($"[ERROR] Update command timed out after {InstallationTimeoutMs / 60000} minutes");
+                return (false, -1, "Update command timed out");
+            }
 
             var output = await outputTask;
             var error = await errorTask;
@@ -1552,7 +1601,18 @@ try {{
             var outputTask = process.StandardOutput.ReadToEndAsync();
             var errorTask = process.StandardError.ReadToEndAsync();
 
-            await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync());
+            // Wait with installation timeout (uninstalls can take time too)
+            using var uninstallTimeoutCts = new CancellationTokenSource(InstallationTimeoutMs);
+            try
+            {
+                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(uninstallTimeoutCts.Token));
+            }
+            catch (OperationCanceledException) when (uninstallTimeoutCts.IsCancellationRequested)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+                logBuilder.AppendLine($"[ERROR] Uninstall command timed out after {InstallationTimeoutMs / 60000} minutes");
+                return (false, -1, "Uninstall command timed out");
+            }
 
             var output = await outputTask;
             var error = await errorTask;
@@ -1748,7 +1808,7 @@ try {{
         {
             using var ps = CreatePowerShellInstance();
             ps.AddCommand("Set-ExecutionPolicy")
-              .AddParameter("ExecutionPolicy", "Bypass")
+              .AddParameter("ExecutionPolicy", "RemoteSigned")
               .AddParameter("Scope", "Process")
               .AddParameter("Force");
             ps.Invoke();
@@ -1909,7 +1969,7 @@ try {{
 
             // Set execution policy
             ps.AddCommand("Set-ExecutionPolicy")
-              .AddParameter("ExecutionPolicy", "Bypass")
+              .AddParameter("ExecutionPolicy", "RemoteSigned")
               .AddParameter("Scope", "Process")
               .AddParameter("Force");
             ps.Invoke();
@@ -2010,7 +2070,7 @@ try {{
         {
             // Use external PowerShell process for reliability
             var script = $@"
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
 $ErrorActionPreference = 'SilentlyContinue'
 
 try {{
@@ -2071,7 +2131,7 @@ try {{
             var appIdsJson = EscapeForPowerShell(JsonSerializer.Serialize(appIds));
 
             var script = $@"
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
 $ErrorActionPreference = 'SilentlyContinue'
 
 try {{
@@ -2183,7 +2243,7 @@ try {{
 
         try
         {
-            var detectionResult = await FastDetectionService.GetInstalledPackagesAsync();
+            var detectionResult = await _detectionService.GetInstalledPackagesAsync();
             var result = new Dictionary<string, BatchAppStatus>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var app in apps)
@@ -2249,7 +2309,7 @@ try {{
     /// </summary>
     public async Task WarmDetectionCacheAsync()
     {
-        await FastDetectionService.WarmCacheAsync();
+        await _detectionService.WarmCacheAsync();
     }
 
     /// <summary>
@@ -2257,7 +2317,7 @@ try {{
     /// </summary>
     public CacheStatistics GetDetectionCacheStatistics()
     {
-        return FastDetectionService.GetCacheStatistics();
+        return _detectionService.GetCacheStatistics();
     }
 
     /// <summary>
@@ -2265,7 +2325,7 @@ try {{
     /// </summary>
     public void ClearDetectionCache()
     {
-        FastDetectionService.ClearCache();
+        _detectionService.ClearCache();
     }
 
     /// <summary>
@@ -2274,7 +2334,7 @@ try {{
     /// </summary>
     public async Task<IReadOnlyList<UpdateInfo>> GetAvailableUpdatesAsync()
     {
-        return await FastDetectionService.GetAvailableUpdatesAsync();
+        return await _detectionService.GetAvailableUpdatesAsync();
     }
 
     /// <inheritdoc/>
@@ -2774,7 +2834,7 @@ $result | ConvertTo-Json -Compress
 
             // Build a PowerShell script that outputs progress in real-time
             var script = $@"
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
 $ErrorActionPreference = 'Continue'
 
 try {{
@@ -2831,7 +2891,7 @@ try {{
         var startInfo = new System.Diagnostics.ProcessStartInfo
         {
             FileName = psPath,
-            Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encodedScript}",
+            Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -EncodedCommand {encodedScript}",
             WorkingDirectory = repoRoot,
             UseShellExecute = false,
             RedirectStandardOutput = true,
@@ -2885,7 +2945,17 @@ try {{
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
 
-        await process.WaitForExitAsync();
+        // Wait with installation timeout for prerequisites
+        using var prereqTimeoutCts = new CancellationTokenSource(InstallationTimeoutMs);
+        try
+        {
+            await process.WaitForExitAsync(prereqTimeoutCts.Token);
+        }
+        catch (OperationCanceledException) when (prereqTimeoutCts.IsCancellationRequested)
+        {
+            try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+            return (false, $"Prerequisites installation timed out after {InstallationTimeoutMs / 60000} minutes");
+        }
 
         // If process exited with 0 and we saw success marker, it's successful
         if (process.ExitCode == 0 && success)
@@ -3078,7 +3148,7 @@ internal class PowerShellProcessWrapper : IDisposable
         var startInfo = new System.Diagnostics.ProcessStartInfo
         {
             FileName = _psPath,
-            Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encodedScript}",
+            Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -EncodedCommand {encodedScript}",
             WorkingDirectory = _workingDir,
             UseShellExecute = false,
             RedirectStandardOutput = true,
@@ -3094,7 +3164,13 @@ internal class PowerShellProcessWrapper : IDisposable
             var output = process.StandardOutput.ReadToEnd();
             var error = process.StandardError.ReadToEnd();
 
-            process.WaitForExit();
+            // Wait with timeout (5 minutes for script execution)
+            const int processTimeoutMs = 300000; // 5 minutes
+            if (!process.WaitForExit(processTimeoutMs))
+            {
+                try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+                throw new TimeoutException($"Script execution timed out after {processTimeoutMs / 1000} seconds");
+            }
 
             if (!string.IsNullOrEmpty(error))
             {

@@ -140,6 +140,84 @@ public class AppSettingsService : IAppSettingsService
     }
 
     /// <inheritdoc/>
+    public async Task<AppSettings> LoadSettingsAsync(CancellationToken cancellationToken = default)
+    {
+        // Check cache first (thread-safe read)
+        lock (_cacheLock)
+        {
+            if (_cachedSettings != null)
+            {
+                return _cachedSettings;
+            }
+        }
+
+        try
+        {
+            if (File.Exists(SettingsFilePath))
+            {
+                var json = await File.ReadAllTextAsync(SettingsFilePath, cancellationToken);
+                if (!string.IsNullOrEmpty(json))
+                {
+                    var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
+                    if (settings != null)
+                    {
+                        lock (_cacheLock)
+                        {
+                            _cachedSettings = settings;
+                        }
+                        return settings;
+                    }
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch
+        {
+            // If file is corrupted, return defaults
+        }
+
+        // Return and cache default settings
+        var defaultSettings = new AppSettings();
+        lock (_cacheLock)
+        {
+            _cachedSettings = defaultSettings;
+        }
+        return defaultSettings;
+    }
+
+    /// <inheritdoc/>
+    public async Task SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var directory = Path.GetDirectoryName(SettingsFilePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var json = JsonSerializer.Serialize(settings, JsonOptions);
+            await File.WriteAllTextAsync(SettingsFilePath, json, cancellationToken);
+
+            lock (_cacheLock)
+            {
+                _cachedSettings = settings;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch
+        {
+            // Silently fail - settings persistence is non-critical
+        }
+    }
+
+    /// <inheritdoc/>
     public void ApplySettings(AppSettings settings)
     {
         // Apply theme
@@ -243,17 +321,34 @@ public class AppSettingsService : IAppSettingsService
 public interface IAppSettingsService
 {
     /// <summary>
-    /// Loads settings from disk.
+    /// Loads settings from disk synchronously.
+    /// Prefer LoadSettingsAsync for non-blocking operations.
     /// </summary>
     AppSettings LoadSettings();
 
     /// <summary>
-    /// Saves settings to disk.
+    /// Loads settings from disk asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Loaded settings or defaults if file doesn't exist</returns>
+    Task<AppSettings> LoadSettingsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Saves settings to disk synchronously.
+    /// Prefer SaveSettingsAsync for non-blocking operations.
     /// </summary>
     void SaveSettings(AppSettings settings);
 
     /// <summary>
+    /// Saves settings to disk asynchronously.
+    /// </summary>
+    /// <param name="settings">Settings to save</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    Task SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Applies settings to the application (theme, language).
+    /// Must be called on UI thread.
     /// </summary>
     void ApplySettings(AppSettings settings);
 }

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://win11forge.local/schemas/api-deploy-request.schema.json",
+  "title": "Win11Forge Deploy Request",
+  "description": "Schema for POST /api/deploy request body",
+  "type": "object",
+  "required": ["profile"],
+  "properties": {
+    "profile": {
+      "type": "string",
+      "description": "Name of the deployment profile to execute",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "testMode": {
+      "type": "boolean",
+      "description": "Run in test/simulation mode without making changes",
+      "default": false
+    },
+    "selectedApps": {
+      "type": "array",
+      "description": "Optional list of specific application IDs to deploy",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "uniqueItems": true
+    },
+    "parallelJobs": {
+      "type": "integer",
+      "description": "Number of parallel installation jobs",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 5
+    },
+    "skipInstalled": {
+      "type": "boolean",
+      "description": "Skip applications that are already installed",
+      "default": true
+    }
+  },
+  "additionalProperties": false
+}

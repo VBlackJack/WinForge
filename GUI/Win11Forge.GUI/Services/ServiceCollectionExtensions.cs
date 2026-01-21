@@ -29,16 +29,31 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddWin11ForgeServices(this IServiceCollection services)
     {
+        // Register detection service (used by PowerShellBridge)
+        services.AddSingleton<IApplicationDetectionService, HybridDetectionService>();
+
         // Register services as singletons (shared state across the application)
-        services.AddSingleton<IPowerShellBridge, PowerShellBridge>();
+        // PowerShellBridge is registered as the composite interface and its focused interfaces
+        // This follows ISP - consumers can depend on the smallest interface they need
+        services.AddSingleton<PowerShellBridge>();
+        services.AddSingleton<IPowerShellBridge>(sp => sp.GetRequiredService<PowerShellBridge>());
+        services.AddSingleton<IVersionService>(sp => sp.GetRequiredService<PowerShellBridge>());
+        services.AddSingleton<IProfileManagementService>(sp => sp.GetRequiredService<PowerShellBridge>());
+        services.AddSingleton<IApplicationManagementService>(sp => sp.GetRequiredService<PowerShellBridge>());
+        services.AddSingleton<ISystemInfoService>(sp => sp.GetRequiredService<PowerShellBridge>());
         services.AddSingleton<IDeploymentHistoryService, DeploymentHistoryService>();
         services.AddSingleton<IAppSettingsService, AppSettingsService>();
         services.AddSingleton<IProfileExportService, ProfileExportService>();
         services.AddSingleton<IDeploymentStateService, DeploymentStateService>();
         services.AddSingleton<IUndoService, UndoService>();
         services.AddSingleton<IValidationService, ValidationService>();
+        services.AddSingleton<IProfileValidationService, ProfileValidationService>();
+        services.AddSingleton<IProfileBridge, ProfileBridge>();
+        services.AddSingleton<IApplicationBridge, ApplicationBridge>();
+        services.AddSingleton<IPrerequisitesService, PrerequisitesService>();
         services.AddSingleton<ToastService>();
         services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<IAccessibilityService, AccessibilityService>();
 
         // Register ViewModels as transient (new instance per request)
         services.AddTransient<DashboardViewModel>();

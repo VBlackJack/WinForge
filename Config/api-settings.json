@@ -19,7 +19,8 @@
       "/api/status",
       "/api/deploy",
       "/api/rollback",
-      "/api/cache/stats"
+      "/api/cache/stats",
+      "/api/csrf-token"
     ]
   },
   "security": {
@@ -27,6 +28,12 @@
     "requireAuthentication": true,
     "authenticationMethod": "apiKey",
     "apiKeyHeader": "X-API-Key",
+    "csrf": {
+      "enabled": true,
+      "tokenHeader": "X-CSRF-Token",
+      "tokenTtlMinutes": 60,
+      "description": "CSRF tokens required for POST/PUT/DELETE requests. Get token from /api/csrf-token endpoint."
+    },
     "rateLimiting": {
       "enabled": true,
       "maxRequestsPerMinute": 60,
@@ -34,7 +41,7 @@
       "maxFailedAuthPerHour": 10,
       "blockDurationMinutes": 60
     },
-    "notes": "API requires authentication via X-API-Key header. Rate limiting is enabled by default."
+    "notes": "API requires authentication via X-API-Key header. CSRF protection and rate limiting are enabled by default."
   },
   "apiKeys": {
     "description": "API keys for authentication. Keys should be 32+ characters. Generate new keys using New-ApiKey cmdlet.",

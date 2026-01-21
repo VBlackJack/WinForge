@@ -421,10 +421,23 @@ function Install-PowerShell7 {
 
         $sources = Get-DownloadSources
         $downloadUrl = $sources.prerequisites.powershell7.downloadUrl
+        $expectedHash = $sources.prerequisites.powershell7.sha256
         $fileName = [System.IO.Path]::GetFileName($downloadUrl)
         $tempPath = Join-Path -Path $env:TEMP -ChildPath $fileName
 
         Invoke-WebRequest -Uri $downloadUrl -OutFile $tempPath -UseBasicParsing
+
+        # SHA256 checksum validation
+        if ($expectedHash -and $expectedHash -ne 'SKIP_VALIDATION') {
+            Write-Status -Message 'Validating SHA256 checksum...' -Level 'Info'
+            $actualHash = (Get-FileHash -Path $tempPath -Algorithm SHA256).Hash
+            if ($actualHash -ne $expectedHash) {
+                Write-Status -Message "SHA256 verification failed! Expected: $expectedHash, Got: $actualHash" -Level 'Error'
+                Remove-Item -Path $tempPath -Force -ErrorAction SilentlyContinue
+                throw "SHA256 checksum mismatch - download may be corrupted or tampered"
+            }
+            Write-Status -Message 'SHA256 checksum verified successfully' -Level 'Success'
+        }
 
         $arguments = @('/i', "`"$tempPath`"", '/qn', '/norestart', 'ADD_PATH=1', 'ENABLE_MU=1')
         if (Invoke-ExternalProcess -FilePath 'msiexec.exe' -ArgumentList $arguments -RefreshEnvironment) {

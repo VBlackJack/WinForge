@@ -332,6 +332,203 @@
                 </ScrollViewer>
             </TabItem>
 
+            <!-- Scheduled Deployments Tab -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel>
+                        <materialDesign:PackIcon Kind="CalendarClock" Width="24" Height="24" HorizontalAlignment="Center"
+                                                  Foreground="White"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_Scheduled}" Style="{StaticResource MaterialDesignCaptionTextBlock}" HorizontalAlignment="Center"
+                                   Foreground="White"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
+                    <StackPanel>
+                        <!-- Admin Required Warning -->
+                        <materialDesign:Card Padding="16" Margin="0,0,0,16" materialDesign:ElevationAssist.Elevation="Dp2"
+                                              Visibility="{Binding IsScheduledDeploymentsAvailable, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="AlertCircle" Width="24" Height="24"
+                                                          Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
+                                                          VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                <TextBlock Text="{loc:Loc ScheduledDeployment_AdminRequired}"
+                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           VerticalAlignment="Center"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </materialDesign:Card>
+
+                        <!-- Create New Scheduled Deployment -->
+                        <materialDesign:Card Padding="16" Margin="0,0,0,16" materialDesign:ElevationAssist.Elevation="Dp2"
+                                              IsEnabled="{Binding IsScheduledDeploymentsAvailable}">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                    <materialDesign:PackIcon Kind="CalendarPlus" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBlock Text="{loc:Loc ScheduledDeployment_CreateNew}"
+                                               Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Profile Selection -->
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="2*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="{loc:Loc ScheduledDeployment_Profile}"
+                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               VerticalAlignment="Center"/>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding AvailableProfiles}"
+                                              SelectedItem="{Binding NewScheduledProfile}"
+                                              Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
+                                </Grid>
+
+                                <!-- Trigger Type -->
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="2*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="{loc:Loc ScheduledDeployment_TriggerType}"
+                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               VerticalAlignment="Center"/>
+                                    <ComboBox Grid.Column="1"
+                                              ItemsSource="{Binding AvailableTriggerTypes}"
+                                              SelectedItem="{Binding NewScheduledTriggerType}"
+                                              Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
+                                </Grid>
+
+                                <!-- Schedule Time -->
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="{loc:Loc ScheduledDeployment_DateTime}"
+                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               VerticalAlignment="Center"/>
+                                    <DatePicker Grid.Column="1"
+                                                SelectedDate="{Binding NewScheduledTime}"
+                                                Style="{StaticResource MaterialDesignOutlinedDatePicker}"
+                                                Margin="0,0,8,0"/>
+                                    <materialDesign:TimePicker Grid.Column="2"
+                                                                SelectedTime="{Binding NewScheduledTime}"
+                                                                Style="{StaticResource MaterialDesignOutlinedTimePicker}"
+                                                                Is24Hours="True"/>
+                                </Grid>
+
+                                <!-- Create Button -->
+                                <Button Command="{Binding CreateScheduledDeploymentCommand}"
+                                        Style="{StaticResource MaterialDesignRaisedButton}"
+                                        HorizontalAlignment="Right">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="CalendarPlus" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{loc:Loc ScheduledDeployment_Create}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </materialDesign:Card>
+
+                        <!-- Scheduled Deployments List -->
+                        <materialDesign:Card Padding="16" materialDesign:ElevationAssist.Elevation="Dp2"
+                                              IsEnabled="{Binding IsScheduledDeploymentsAvailable}">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="CalendarMultiple" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                        <TextBlock Text="{loc:Loc ScheduledDeployment_List}"
+                                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="1"
+                                            Command="{Binding LoadScheduledDeploymentsCommand}"
+                                            Style="{StaticResource MaterialDesignIconButton}"
+                                            ToolTip="{loc:Loc ScheduledDeployment_Refresh}">
+                                        <materialDesign:PackIcon Kind="Refresh" Width="20" Height="20"/>
+                                    </Button>
+                                </Grid>
+
+                                <!-- Loading Indicator -->
+                                <ProgressBar IsIndeterminate="True"
+                                             Visibility="{Binding IsLoadingScheduledDeployments, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                             Margin="0,0,0,12"/>
+
+                                <!-- Empty State -->
+                                <TextBlock Text="{loc:Loc ScheduledDeployment_Empty}"
+                                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,16"
+                                           Visibility="{Binding ScheduledDeployments.Count, Converter={StaticResource ZeroToVisibilityConverter}}"/>
+
+                                <!-- Deployments DataGrid -->
+                                <DataGrid ItemsSource="{Binding ScheduledDeployments}"
+                                          SelectedItem="{Binding SelectedScheduledDeployment}"
+                                          AutoGenerateColumns="False"
+                                          CanUserAddRows="False"
+                                          CanUserDeleteRows="False"
+                                          IsReadOnly="True"
+                                          SelectionMode="Single"
+                                          Style="{StaticResource MaterialDesignDataGrid}"
+                                          Visibility="{Binding ScheduledDeployments.Count, Converter={StaticResource NonZeroToVisibilityConverter}}"
+                                          MaxHeight="300">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="{loc:Loc ScheduledDeployment_Col_Profile}"
+                                                            Binding="{Binding ProfileName}"
+                                                            Width="*"/>
+                                        <DataGridTextColumn Header="{loc:Loc ScheduledDeployment_Col_Schedule}"
+                                                            Binding="{Binding ScheduledTimeDisplay}"
+                                                            Width="*"/>
+                                        <DataGridTextColumn Header="{loc:Loc ScheduledDeployment_Col_Status}"
+                                                            Binding="{Binding StatusDisplay}"
+                                                            Width="Auto"/>
+                                        <DataGridTextColumn Header="{loc:Loc ScheduledDeployment_Col_LastRun}"
+                                                            Binding="{Binding LastRunResult}"
+                                                            Width="Auto"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <!-- Action Buttons -->
+                                <StackPanel Orientation="Horizontal"
+                                            HorizontalAlignment="Right"
+                                            Margin="0,16,0,0"
+                                            Visibility="{Binding ScheduledDeployments.Count, Converter={StaticResource NonZeroToVisibilityConverter}}">
+                                    <Button Command="{Binding RunScheduledDeploymentNowCommand}"
+                                            Style="{StaticResource ThemeAdaptiveOutlinedButton}"
+                                            Margin="0,0,8,0"
+                                            IsEnabled="{Binding SelectedScheduledDeployment, Converter={StaticResource NullableToBooleanConverter}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Play" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <TextBlock Text="{loc:Loc ScheduledDeployment_RunNow}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Command="{Binding RemoveScheduledDeploymentCommand}"
+                                            Style="{StaticResource ThemeAdaptiveOutlinedButton}"
+                                            Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
+                                            IsEnabled="{Binding SelectedScheduledDeployment, Converter={StaticResource NullableToBooleanConverter}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <TextBlock Text="{loc:Loc ScheduledDeployment_Remove}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </materialDesign:Card>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
             <!-- About Tab -->
             <TabItem>
                 <TabItem.Header>

@@ -44,6 +44,75 @@ if (-not (Test-Path $secureDir)) {
     New-Item -Path $secureDir -ItemType Directory -Force | Out-Null
 }
 
+# Security: Per-user entropy file path
+$script:EntropyPath = Join-Path $env:LOCALAPPDATA 'Win11Forge\entropy.dat'
+
+# === ENTROPY MANAGEMENT ===
+
+function Get-DpapiEntropy {
+    <#
+    .SYNOPSIS
+        Gets or creates per-user random entropy for DPAPI.
+    .DESCRIPTION
+        Generates a random 32-byte entropy value on first use and stores it
+        securely in the user's LOCALAPPDATA. This provides an additional
+        layer of security beyond DPAPI's default protection.
+    .OUTPUTS
+        [byte[]] The entropy bytes for DPAPI operations.
+    #>
+    [CmdletBinding()]
+    [OutputType([byte[]])]
+    param()
+
+    if (Test-Path -Path $script:EntropyPath) {
+        try {
+            # Read existing entropy
+            $entropyBytes = [System.IO.File]::ReadAllBytes($script:EntropyPath)
+            if ($entropyBytes.Length -eq 32) {
+                return $entropyBytes
+            }
+            # Invalid entropy file, regenerate
+            Write-Verbose "Regenerating entropy file (invalid length)"
+        } catch {
+            Write-Verbose "Failed to read entropy file, regenerating: $($_.Exception.Message)"
+        }
+    }
+
+    # Generate new random entropy (32 bytes = 256 bits)
+    $entropyBytes = [byte[]]::new(32)
+    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    try {
+        $rng.GetBytes($entropyBytes)
+    } finally {
+        $rng.Dispose()
+    }
+
+    # Store entropy securely
+    try {
+        $entropyDir = Split-Path $script:EntropyPath -Parent
+        if (-not (Test-Path $entropyDir)) {
+            New-Item -Path $entropyDir -ItemType Directory -Force | Out-Null
+        }
+        [System.IO.File]::WriteAllBytes($script:EntropyPath, $entropyBytes)
+
+        # Set restrictive permissions (owner only)
+        $acl = Get-Acl -Path $script:EntropyPath
+        $acl.SetAccessRuleProtection($true, $false)
+        $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+            $currentUser,
+            [System.Security.AccessControl.FileSystemRights]::FullControl,
+            [System.Security.AccessControl.AccessControlType]::Allow
+        )
+        $acl.AddAccessRule($rule)
+        Set-Acl -Path $script:EntropyPath -AclObject $acl -ErrorAction SilentlyContinue
+    } catch {
+        Write-Verbose "Could not persist entropy file: $($_.Exception.Message)"
+    }
+
+    return $entropyBytes
+}
+
 # === DPAPI FUNCTIONS ===
 
 function Protect-Data {
@@ -81,7 +150,8 @@ function Protect-Data {
     process {
         try {
             $bytes = [System.Text.Encoding]::UTF8.GetBytes($PlainText)
-            $entropy = [System.Text.Encoding]::UTF8.GetBytes('Win11Forge-v1')
+            # Security: Use per-user random entropy instead of hardcoded value
+            $entropy = Get-DpapiEntropy
 
             $protectionScope = switch ($Scope) {
                 'LocalMachine' { [System.Security.Cryptography.DataProtectionScope]::LocalMachine }
@@ -136,7 +206,8 @@ function Unprotect-Data {
     process {
         try {
             $encryptedBytes = [Convert]::FromBase64String($EncryptedData)
-            $entropy = [System.Text.Encoding]::UTF8.GetBytes('Win11Forge-v1')
+            # Security: Use per-user random entropy instead of hardcoded value
+            $entropy = Get-DpapiEntropy
 
             $protectionScope = switch ($Scope) {
                 'LocalMachine' { [System.Security.Cryptography.DataProtectionScope]::LocalMachine }

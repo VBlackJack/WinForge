@@ -214,9 +214,18 @@ internal class MockAppSettingsService : IAppSettingsService
 
     public AppSettings LoadSettings() => SettingsToReturn;
 
+    public Task<AppSettings> LoadSettingsAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(SettingsToReturn);
+
     public void SaveSettings(AppSettings settings)
     {
         LastSavedSettings = settings;
+    }
+
+    public Task SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
+    {
+        LastSavedSettings = settings;
+        return Task.CompletedTask;
     }
 
     public void ApplySettings(AppSettings settings)

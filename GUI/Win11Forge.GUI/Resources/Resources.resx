@@ -67,6 +67,31 @@
     <value>Win11Forge</value>
     <comment>Application name (brand name, not translated)</comment>
   </data>
+  <!-- Splash Screen -->
+  <data name="Splash_Initializing" xml:space="preserve">
+    <value>Initializing...</value>
+    <comment>Splash screen initial status</comment>
+  </data>
+  <data name="Splash_ConfiguringServices" xml:space="preserve">
+    <value>Configuring services...</value>
+    <comment>Splash screen status during DI configuration</comment>
+  </data>
+  <data name="Splash_LoadingSettings" xml:space="preserve">
+    <value>Loading settings...</value>
+    <comment>Splash screen status during settings load</comment>
+  </data>
+  <data name="Splash_ApplyingLanguage" xml:space="preserve">
+    <value>Applying language settings...</value>
+    <comment>Splash screen status during language application</comment>
+  </data>
+  <data name="Splash_ApplyingTheme" xml:space="preserve">
+    <value>Applying theme...</value>
+    <comment>Splash screen status during theme application</comment>
+  </data>
+  <data name="Splash_LoadingInterface" xml:space="preserve">
+    <value>Loading interface...</value>
+    <comment>Splash screen status during main window creation</comment>
+  </data>
   <!-- Main Window -->
   <data name="MainWindow_Welcome" xml:space="preserve">
     <value>Welcome to Win11Forge</value>
@@ -167,6 +192,10 @@
   <data name="Deploy_Selected" xml:space="preserve">
     <value>Selected:</value>
     <comment>Selected applications count label</comment>
+  </data>
+  <data name="Deploy_Installing" xml:space="preserve">
+    <value>Installing {0}...</value>
+    <comment>Status message during application installation</comment>
   </data>
   <!-- Column Headers -->
   <data name="Col_Status" xml:space="preserve">
@@ -1222,6 +1251,34 @@
     <value>A profile with this name already exists</value>
     <comment>Duplicate name validation message</comment>
   </data>
+  <data name="Validation_ProfileNameRequired" xml:space="preserve">
+    <value>Profile name is required</value>
+    <comment>Profile name required validation message</comment>
+  </data>
+  <data name="Validation_ProfileNameInvalidChars" xml:space="preserve">
+    <value>Profile name contains invalid characters</value>
+    <comment>Profile name invalid characters validation message</comment>
+  </data>
+  <data name="Validation_ProfileNameTooLong" xml:space="preserve">
+    <value>Profile name must not exceed {0} characters</value>
+    <comment>Profile name too long validation message (0=max length)</comment>
+  </data>
+  <data name="Validation_ManualInstallCannotBeSuccess" xml:space="preserve">
+    <value>Manual install required cannot be marked as success</value>
+    <comment>Validation error for InstallResult semantic consistency</comment>
+  </data>
+  <data name="Validation_DryRunShouldSucceed" xml:space="preserve">
+    <value>Dry run results should always be successful</value>
+    <comment>Validation error for InstallResult dry run consistency</comment>
+  </data>
+  <data name="Validation_FailedInstallNeedsMessage" xml:space="preserve">
+    <value>Failed installation must include an error message</value>
+    <comment>Validation error for InstallResult message requirement</comment>
+  </data>
+  <data name="Error_ProfileNotFound" xml:space="preserve">
+    <value>Profile not found</value>
+    <comment>Profile not found error message</comment>
+  </data>
   <!-- Help System -->
   <data name="Help_Tooltip_Scan" xml:space="preserve">
     <value>Check which applications are installed and detect available updates</value>
@@ -1931,5 +1988,187 @@
   <data name="Dashboard_Stats_ClickToView" xml:space="preserve">
     <value>Click to view</value>
     <comment>Tooltip hint for clickable stats</comment>
+  </data>
+  <!-- Accessibility -->
+  <data name="Accessibility_Progress" xml:space="preserve">
+    <value>{0} of {1} completed, {2}%</value>
+    <comment>Progress announcement (0=current, 1=total, 2=percent)</comment>
+  </data>
+  <data name="Accessibility_ProgressWithItem" xml:space="preserve">
+    <value>{0} of {1} completed, processing {2}</value>
+    <comment>Progress with item name (0=current, 1=total, 2=item name)</comment>
+  </data>
+  <data name="Accessibility_ProgressComplete" xml:space="preserve">
+    <value>Operation complete. {0} items processed.</value>
+    <comment>Progress complete announcement (0=total items)</comment>
+  </data>
+  <data name="Accessibility_DeploymentStarted" xml:space="preserve">
+    <value>Deployment started</value>
+    <comment>Announcement when deployment begins</comment>
+  </data>
+  <data name="Accessibility_DeploymentComplete" xml:space="preserve">
+    <value>Deployment complete. {0} successful, {1} failed, {2} skipped.</value>
+    <comment>Deployment complete announcement (0=success, 1=failed, 2=skipped)</comment>
+  </data>
+  <data name="Accessibility_InstallationStarted" xml:space="preserve">
+    <value>Installing {0}</value>
+    <comment>Announcement when app installation starts (0=app name)</comment>
+  </data>
+  <data name="Accessibility_InstallationComplete" xml:space="preserve">
+    <value>{0} installed successfully</value>
+    <comment>Announcement when app installation completes (0=app name)</comment>
+  </data>
+  <data name="Accessibility_InstallationFailed" xml:space="preserve">
+    <value>{0} installation failed</value>
+    <comment>Announcement when app installation fails (0=app name)</comment>
+  </data>
+  <data name="Accessibility_LiveRegion" xml:space="preserve">
+    <value>Status announcements</value>
+    <comment>Accessible name for screen reader live region</comment>
+  </data>
+  <!-- Scheduled Deployments -->
+  <data name="Settings_Tab_Scheduled" xml:space="preserve">
+    <value>Schedule</value>
+    <comment>Settings scheduled deployments tab</comment>
+  </data>
+  <data name="ScheduledDeployment_AdminRequired" xml:space="preserve">
+    <value>Administrator privileges required to manage scheduled deployments. Please restart the application as administrator.</value>
+    <comment>Warning when admin rights are needed</comment>
+  </data>
+  <data name="ScheduledDeployment_CreateNew" xml:space="preserve">
+    <value>Create Scheduled Deployment</value>
+    <comment>Section header for creating new scheduled deployment</comment>
+  </data>
+  <data name="ScheduledDeployment_Profile" xml:space="preserve">
+    <value>Profile</value>
+    <comment>Profile selection label</comment>
+  </data>
+  <data name="ScheduledDeployment_TriggerType" xml:space="preserve">
+    <value>Schedule Type</value>
+    <comment>Trigger type selection label</comment>
+  </data>
+  <data name="ScheduledDeployment_DateTime" xml:space="preserve">
+    <value>Date and Time</value>
+    <comment>Date/time selection label</comment>
+  </data>
+  <data name="ScheduledDeployment_Create" xml:space="preserve">
+    <value>Schedule</value>
+    <comment>Create scheduled deployment button</comment>
+  </data>
+  <data name="ScheduledDeployment_List" xml:space="preserve">
+    <value>Scheduled Deployments</value>
+    <comment>Section header for deployment list</comment>
+  </data>
+  <data name="ScheduledDeployment_Refresh" xml:space="preserve">
+    <value>Refresh list</value>
+    <comment>Refresh button tooltip</comment>
+  </data>
+  <data name="ScheduledDeployment_Empty" xml:space="preserve">
+    <value>No scheduled deployments</value>
+    <comment>Empty state message</comment>
+  </data>
+  <data name="ScheduledDeployment_Col_Profile" xml:space="preserve">
+    <value>Profile</value>
+    <comment>Profile column header</comment>
+  </data>
+  <data name="ScheduledDeployment_Col_Schedule" xml:space="preserve">
+    <value>Schedule</value>
+    <comment>Schedule column header</comment>
+  </data>
+  <data name="ScheduledDeployment_Col_Status" xml:space="preserve">
+    <value>Status</value>
+    <comment>Status column header</comment>
+  </data>
+  <data name="ScheduledDeployment_Col_LastRun" xml:space="preserve">
+    <value>Last Result</value>
+    <comment>Last run result column header</comment>
+  </data>
+  <data name="ScheduledDeployment_RunNow" xml:space="preserve">
+    <value>Run Now</value>
+    <comment>Run now button</comment>
+  </data>
+  <data name="ScheduledDeployment_Remove" xml:space="preserve">
+    <value>Remove</value>
+    <comment>Remove button</comment>
+  </data>
+  <data name="ScheduledDeployment_SelectProfile" xml:space="preserve">
+    <value>Please select a profile</value>
+    <comment>Error when no profile selected</comment>
+  </data>
+  <data name="ScheduledDeployment_Created" xml:space="preserve">
+    <value>Scheduled deployment created successfully</value>
+    <comment>Success message after creating deployment</comment>
+  </data>
+  <data name="ScheduledDeployment_CreateError" xml:space="preserve">
+    <value>Failed to create scheduled deployment</value>
+    <comment>Error message when creation fails</comment>
+  </data>
+  <data name="ScheduledDeployment_ConfirmRemove" xml:space="preserve">
+    <value>Are you sure you want to remove this scheduled deployment?</value>
+    <comment>Confirmation message for removal</comment>
+  </data>
+  <data name="ScheduledDeployment_ConfirmRemoveTitle" xml:space="preserve">
+    <value>Remove Scheduled Deployment</value>
+    <comment>Confirmation dialog title</comment>
+  </data>
+  <data name="ScheduledDeployment_Removed" xml:space="preserve">
+    <value>Scheduled deployment removed</value>
+    <comment>Success message after removal</comment>
+  </data>
+  <data name="ScheduledDeployment_RemoveError" xml:space="preserve">
+    <value>Failed to remove scheduled deployment</value>
+    <comment>Error message when removal fails</comment>
+  </data>
+  <data name="ScheduledDeployment_Started" xml:space="preserve">
+    <value>Scheduled deployment started</value>
+    <comment>Success message after starting deployment</comment>
+  </data>
+  <data name="ScheduledDeployment_StartError" xml:space="preserve">
+    <value>Failed to start scheduled deployment</value>
+    <comment>Error message when start fails</comment>
+  </data>
+  <data name="ScheduledDeployment_LoadError" xml:space="preserve">
+    <value>Failed to load scheduled deployments</value>
+    <comment>Error message when loading fails</comment>
+  </data>
+  <data name="ScheduledDeployment_AtStartup" xml:space="preserve">
+    <value>At Startup</value>
+    <comment>At startup trigger display</comment>
+  </data>
+  <data name="ScheduledDeployment_AtLogon" xml:space="preserve">
+    <value>At Logon</value>
+    <comment>At logon trigger display</comment>
+  </data>
+  <data name="ScheduledDeployment_Daily" xml:space="preserve">
+    <value>Daily at</value>
+    <comment>Daily trigger display prefix</comment>
+  </data>
+  <data name="ScheduledDeployment_Weekly" xml:space="preserve">
+    <value>Weekly at</value>
+    <comment>Weekly trigger display prefix</comment>
+  </data>
+  <data name="ScheduledDeployment_Status_Pending" xml:space="preserve">
+    <value>Pending</value>
+    <comment>Pending status display</comment>
+  </data>
+  <data name="ScheduledDeployment_Status_Running" xml:space="preserve">
+    <value>Running</value>
+    <comment>Running status display</comment>
+  </data>
+  <data name="ScheduledDeployment_Status_Completed" xml:space="preserve">
+    <value>Completed</value>
+    <comment>Completed status display</comment>
+  </data>
+  <data name="ScheduledDeployment_Status_Failed" xml:space="preserve">
+    <value>Failed</value>
+    <comment>Failed status display</comment>
+  </data>
+  <data name="ScheduledDeployment_Status_Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+    <comment>Cancelled status display</comment>
+  </data>
+  <data name="ScheduledDeployment_Status_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+    <comment>Unknown status display</comment>
   </data>
 </root>

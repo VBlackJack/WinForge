@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#nullable enable
+
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -35,6 +37,21 @@ public enum DeploymentResult
 /// </summary>
 public class DeploymentHistoryEntry : IValidatableObject
 {
+    /// <summary>
+    /// Seconds per day constant.
+    /// </summary>
+    private const int SecondsPerDay = 86400;
+
+    /// <summary>
+    /// Maximum deployment duration in days.
+    /// </summary>
+    private const int MaxDeploymentDurationDays = 7;
+
+    /// <summary>
+    /// Maximum deployment duration in seconds.
+    /// </summary>
+    public const int MaxDeploymentDurationSeconds = SecondsPerDay * MaxDeploymentDurationDays;
+
     /// <summary>
     /// Unique identifier for this entry.
     /// </summary>
@@ -88,7 +105,7 @@ public class DeploymentHistoryEntry : IValidatableObject
     /// <summary>
     /// Duration of the deployment in seconds.
     /// </summary>
-    [Range(0, 86400 * 7, ErrorMessage = "Duration must be between 0 and 7 days")]
+    [Range(0, MaxDeploymentDurationSeconds, ErrorMessage = "Duration must be between 0 and 7 days")]
     public double DurationSeconds { get; set; }
 
     /// <summary>

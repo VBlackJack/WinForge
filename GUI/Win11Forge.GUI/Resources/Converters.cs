@@ -546,3 +546,20 @@ public class ThemeAdaptiveBrushConverter : IValueConverter
         throw new NotSupportedException();
     }
 }
+
+/// <summary>
+/// Converts a nullable value to boolean (true if not null, false if null).
+/// Used to enable/disable controls based on selection state.
+/// </summary>
+public class NullableToBooleanConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value != null;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}

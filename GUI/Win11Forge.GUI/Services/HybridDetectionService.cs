@@ -34,6 +34,7 @@ namespace Win11Forge.GUI.Services;
 public class HybridDetectionService : IApplicationDetectionService, IDisposable
 {
     private readonly RegistryDetectionService _registryService;
+    private readonly JsonApplicationDetectionService _jsonDetectionService;
     private readonly object _cacheLock = new();
     private readonly SemaphoreSlim _refreshSemaphore = new(1, 1);
 
@@ -56,11 +57,76 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     private bool? _winGetModuleAvailable;
     private readonly object _winGetCheckLock = new();
 
+    /// <summary>
+    /// Event raised when the cache is refreshed.
+    /// </summary>
     public event EventHandler<CacheRefreshedEventArgs>? CacheRefreshed;
+
+    /// <summary>
+    /// Event raised when the cache is invalidated.
+    /// </summary>
+    public event EventHandler<CacheInvalidatedEventArgs>? CacheInvalidated;
 
     public HybridDetectionService()
     {
         _registryService = new RegistryDetectionService();
+        _jsonDetectionService = new JsonApplicationDetectionService();
+    }
+
+    /// <summary>
+    /// Invalidates the cache for a specific application after installation/uninstallation.
+    /// This triggers an immediate refresh on next access.
+    /// </summary>
+    /// <param name="appId">The application ID that was modified.</param>
+    /// <param name="reason">The reason for invalidation.</param>
+    public void InvalidateCacheForApp(string appId, CacheInvalidationReason reason)
+    {
+        lock (_cacheLock)
+        {
+            // Remove specific app from cache if present
+            if (_cache?.Packages != null && _cache.Packages is Dictionary<string, InstalledPackageInfo> dict)
+            {
+                dict.Remove(appId);
+            }
+
+            // If it's an install/uninstall, we should force a full refresh on next access
+            if (reason == CacheInvalidationReason.ApplicationInstalled ||
+                reason == CacheInvalidationReason.ApplicationUninstalled)
+            {
+                _cacheTime = DateTime.MinValue; // Force cache expiration
+            }
+        }
+
+        CacheInvalidated?.Invoke(this, new CacheInvalidatedEventArgs
+        {
+            AppId = appId,
+            Reason = reason,
+            Timestamp = DateTime.UtcNow
+        });
+
+        Debug.WriteLine($"Cache invalidated for {appId}: {reason}");
+    }
+
+    /// <summary>
+    /// Invalidates the entire cache, forcing a refresh on next access.
+    /// </summary>
+    /// <param name="reason">The reason for invalidation.</param>
+    public void InvalidateAllCache(CacheInvalidationReason reason)
+    {
+        lock (_cacheLock)
+        {
+            _cacheTime = DateTime.MinValue;
+            _updateCacheTime = DateTime.MinValue;
+        }
+
+        CacheInvalidated?.Invoke(this, new CacheInvalidatedEventArgs
+        {
+            AppId = null,
+            Reason = reason,
+            Timestamp = DateTime.UtcNow
+        });
+
+        Debug.WriteLine($"Full cache invalidated: {reason}");
     }
 
     /// <inheritdoc/>
@@ -195,6 +261,24 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
         catch (Exception ex)
         {
             Debug.WriteLine($"AppX scan failed: {ex.Message}");
+        }
+
+        // Step 4: JSON database detection (for runtimes with Command/custom Registry detection)
+        // This catches .NET runtimes, Java, VC++ Redist, etc. that have special detection methods
+        try
+        {
+            var jsonPackages = await _jsonDetectionService.DetectAllAsync();
+            foreach (var kvp in jsonPackages)
+            {
+                // JSON detection has priority for its defined apps (especially runtimes)
+                // because it uses the correct detection method from applications.json
+                allPackages[kvp.Key] = kvp.Value;
+            }
+            Debug.WriteLine($"JSON database scan: {jsonPackages.Count} packages");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"JSON database scan failed: {ex.Message}");
         }
 
         stopwatch.Stop();
@@ -506,10 +590,15 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
 
                     if (string.IsNullOrEmpty(name)) continue;
 
-                    // Skip framework packages and system apps
-                    if (name.Contains(".NET") || name.Contains("Microsoft.VCLibs"))
+                    // Skip internal framework packages and system apps
+                    // Note: .NET Desktop Runtime and other runtimes are detected via JSON database
+                    // detection (Step 4) using their proper detection methods (command/registry)
+                    if (name.StartsWith("Microsoft.NET.") || name.StartsWith("Microsoft.VCLibs."))
                         continue;
-                    if (name.StartsWith("Microsoft.Windows."))
+                    if (name.StartsWith("Microsoft.Windows.") && !name.Contains("Terminal"))
+                        continue;
+                    // Skip internal framework packages but allow user-facing apps
+                    if (name.StartsWith("Microsoft.UI.") || name.StartsWith("Microsoft.WinUI."))
                         continue;
 
                     packages.Add(new InstalledPackageInfo

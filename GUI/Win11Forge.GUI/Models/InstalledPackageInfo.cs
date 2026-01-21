@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#nullable enable
+
 namespace Win11Forge.GUI.Models;
 
 /// <summary>
@@ -69,6 +71,15 @@ public enum DetectionSource
 
     /// <summary>Detected via Chocolatey.</summary>
     Chocolatey,
+
+    /// <summary>Detected via file existence check.</summary>
+    File,
+
+    /// <summary>Detected via Windows optional feature.</summary>
+    WindowsFeature,
+
+    /// <summary>Detected via JSON application database.</summary>
+    JsonDatabase,
 
     /// <summary>Detection source unknown.</summary>
     Unknown

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://win11forge.local/schemas/api-rollback-request.schema.json",
+  "title": "Win11Forge Rollback Request",
+  "description": "Schema for POST /api/rollback request body",
+  "type": "object",
+  "properties": {
+    "force": {
+      "type": "boolean",
+      "description": "Force rollback even if some operations fail",
+      "default": false
+    },
+    "appIds": {
+      "type": "array",
+      "description": "Optional list of specific application IDs to rollback",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "uniqueItems": true
+    },
+    "skipConfirmation": {
+      "type": "boolean",
+      "description": "Skip confirmation prompts",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

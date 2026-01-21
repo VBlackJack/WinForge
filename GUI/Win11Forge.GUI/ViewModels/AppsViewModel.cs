@@ -1906,6 +1906,10 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// <summary>
     /// Installs a single application with semaphore-controlled concurrency.
     /// </summary>
+    /// <remarks>
+    /// Uses Interlocked operations for thread-safe counter updates, which require backing field access.
+    /// </remarks>
+#pragma warning disable MVVMTK0034 // Direct field reference required for Interlocked operations
     private async Task InstallSingleAppAsync(ApplicationModel app, CancellationToken cancellationToken)
     {
         // Check for cancellation before acquiring semaphore
@@ -2027,6 +2031,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
                 EstimatedTimeRemaining);
         }
     }
+#pragma warning restore MVVMTK0034
 
     /// <summary>
     /// Selects all visible (filtered) applications.
@@ -2281,6 +2286,10 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// <summary>
     /// Uninstalls a single application with semaphore-controlled concurrency.
     /// </summary>
+    /// <remarks>
+    /// Uses Interlocked operations for thread-safe counter updates, which require backing field access.
+    /// </remarks>
+#pragma warning disable MVVMTK0034 // Direct field reference required for Interlocked operations
     private async Task UninstallSingleAppAsync(ApplicationModel app, CancellationToken cancellationToken)
     {
         // Check for cancellation before acquiring semaphore
@@ -2378,6 +2387,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             EstimatedTimeRemaining = _progressEstimator.GetFormattedTimeRemaining();
         }
     }
+#pragma warning restore MVVMTK0034
 
     /// <summary>
     /// Whether the Pause command can execute.

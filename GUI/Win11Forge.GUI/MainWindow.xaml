@@ -239,6 +239,13 @@
                                   VerticalAlignment="Bottom"
                                   HorizontalAlignment="Stretch"
                                   Margin="16"/>
+
+        <!-- Screen Reader Live Region (invisible but announced) -->
+        <TextBlock x:Name="ScreenReaderLiveRegion"
+                   Grid.Column="1"
+                   Visibility="Collapsed"
+                   AutomationProperties.LiveSetting="Polite"
+                   AutomationProperties.Name="{loc:Loc Accessibility_LiveRegion}"/>
     </Grid>
     </materialDesign:DialogHost>
 </Window>

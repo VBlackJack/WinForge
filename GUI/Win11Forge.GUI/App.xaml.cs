@@ -21,6 +21,7 @@ using MaterialDesignThemes.Wpf;
 using Microsoft.Extensions.DependencyInjection;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Services;
+using Win11Forge.GUI.Views;
 
 namespace Win11Forge.GUI;
 
@@ -58,6 +59,7 @@ public partial class App : Application
     /// <summary>
     /// Called on application startup.
     /// Loads and applies persisted user settings (theme, language) BEFORE UI initialization.
+    /// Shows splash screen during initialization for better UX.
     /// </summary>
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -72,21 +74,54 @@ public partial class App : Application
         TaskScheduler.UnobservedTaskException += (s, args) =>
             LogError("UnobservedTaskException", args.Exception);
 
+        Views.SplashScreen? splash = null;
+
         try
         {
             Log("App.OnStartup starting...");
 
-            // Step 0: Configure dependency injection
+            // Step 0: Show splash screen immediately
+            Log("Showing splash screen...");
+            splash = new Views.SplashScreen();
+            splash.Show();
+            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_Initializing);
+
+            // Step 1: Configure dependency injection
             Log("Configuring services...");
+            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_ConfiguringServices);
             Services = ConfigureServices();
 
-            // Step 1: Load settings FIRST (before any UI)
+            // Step 2: Load settings FIRST (before any UI)
             Log("Loading settings...");
+            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingSettings);
             var settingsService = Services.GetRequiredService<IAppSettingsService>();
             var settings = settingsService.LoadSettings();
 
-            // Step 2: Apply language/culture BEFORE UI initialization
+            // Get version for splash screen
+            try
+            {
+                var powerShellBridge = Services.GetService<IPowerShellBridge>();
+                if (powerShellBridge != null)
+                {
+                    var versionPath = Path.Combine(powerShellBridge.RepositoryRoot, "Config", "version.json");
+                    if (File.Exists(versionPath))
+                    {
+                        var versionJson = System.Text.Json.JsonDocument.Parse(File.ReadAllText(versionPath));
+                        if (versionJson.RootElement.TryGetProperty("Version", out var versionElement))
+                        {
+                            splash.SetVersion(versionElement.GetString() ?? "3.0.0");
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Version display is non-critical
+            }
+
+            // Step 3: Apply language/culture BEFORE UI initialization
             Log($"Applying language: {settings.LanguageCode}");
+            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_ApplyingLanguage);
             if (!string.IsNullOrEmpty(settings.LanguageCode))
             {
                 try
@@ -104,8 +139,9 @@ public partial class App : Application
                 }
             }
 
-            // Step 3: Apply theme
+            // Step 4: Apply theme
             Log($"Applying theme: {(settings.IsDarkTheme ? "Dark" : "Light")}");
+            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_ApplyingTheme);
             try
             {
                 var paletteHelper = new PaletteHelper();
@@ -121,16 +157,20 @@ public partial class App : Application
                 Log($"Theme application failed: {ex.Message}");
             }
 
-            // Step 4: Detect reduced motion preference for accessibility
+            // Step 5: Detect reduced motion preference for accessibility
             Log($"Reduced motion preference: {ReducedMotion}");
             InitializeAnimationResources();
 
-            // Step 5: Call base AFTER settings are applied
+            // Step 6: Call base AFTER settings are applied
             base.OnStartup(e);
 
-            // Step 6: NOW create and show MainWindow (after culture is set)
+            // Step 7: NOW create and show MainWindow (after culture is set)
             Log("Creating MainWindow...");
+            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingInterface);
             var mainWindow = new MainWindow();
+
+            // Close splash and show main window
+            splash.CloseWithAnimation();
             mainWindow.Show();
 
             Log("Startup complete.");
@@ -138,6 +178,14 @@ public partial class App : Application
         catch (Exception ex)
         {
             LogError("OnStartup", ex);
+
+            // Close splash if it's open
+            try
+            {
+                splash?.Close();
+            }
+            catch { }
+
             base.OnStartup(e);
 
             // Still try to show MainWindow even if settings failed

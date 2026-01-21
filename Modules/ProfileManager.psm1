@@ -211,6 +211,11 @@ function Get-ProfilePath {
         [string]$ProfilesDirectory
     )
 
+    # Security: Validate profile name doesn't contain path traversal attempts
+    if ($ProfileName -match '\.\.|[/\\]' -and -not [System.IO.Path]::IsPathRooted($ProfileName)) {
+        throw "Invalid profile name: contains path traversal characters"
+    }
+
     # If ProfileName is already a full path
     if (Test-Path -Path $ProfileName -PathType Leaf) {
         return $ProfileName
@@ -221,14 +226,31 @@ function Get-ProfilePath {
         $ProfilesDirectory = Join-Path -Path $script:RepositoryRoot -ChildPath 'Profiles'
     }
 
+    # Security: Get canonical base path for validation
+    $canonicalBase = [System.IO.Path]::GetFullPath($ProfilesDirectory)
+
     # Try with .json extension
     $profilePath = Join-Path -Path $ProfilesDirectory -ChildPath "$ProfileName.json"
+    $canonicalPath = [System.IO.Path]::GetFullPath($profilePath)
+
+    # Security: Verify resolved path stays within profiles directory
+    if (-not $canonicalPath.StartsWith($canonicalBase, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Security violation: Path traversal attempt detected for profile '$ProfileName'"
+    }
+
     if (Test-Path -Path $profilePath) {
         return $profilePath
     }
 
     # Try without extension (maybe user provided it)
     $profilePath = Join-Path -Path $ProfilesDirectory -ChildPath $ProfileName
+    $canonicalPath = [System.IO.Path]::GetFullPath($profilePath)
+
+    # Security: Verify resolved path stays within profiles directory
+    if (-not $canonicalPath.StartsWith($canonicalBase, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Security violation: Path traversal attempt detected for profile '$ProfileName'"
+    }
+
     if (Test-Path -Path $profilePath) {
         return $profilePath
     }
@@ -811,6 +833,16 @@ function Get-DeploymentProfile {
         # Get profile path
         $profilePath = Get-ProfilePath -ProfileName $ProfileName -ProfilesDirectory $ProfilesDirectory
 
+        # Security: Runtime cycle detection before loading
+        Write-Status -Message "Checking for circular dependencies..." -Level 'Verbose'
+        $cycleCheck = Test-ProfileCycles -ProfileName $ProfileName -ProfilesDirectory $ProfilesDirectory
+        if ($cycleCheck.HasCycles) {
+            $cycleDetails = $cycleCheck.Cycles -join '; '
+            throw [System.InvalidOperationException]::new(
+                "Circular inheritance detected in profile '$ProfileName': $cycleDetails"
+            )
+        }
+
         # Load base profile
         $baseProfile = Import-ProfileJson -Path $profilePath
 
@@ -1030,6 +1062,196 @@ function Get-RequiredApplications {
     return $Applications | Where-Object { $_.Required -eq $true }
 }
 
+# === APPID CROSS-REFERENCE VALIDATION ===
+
+function Test-ProfileAppIds {
+    <#
+    .SYNOPSIS
+        Validates that all AppIds in a profile exist in the applications database.
+
+    .DESCRIPTION
+        Cross-references AppIds from a profile against the applications.json database
+        to ensure all referenced applications are valid and installable.
+
+    .PARAMETER ProfilePath
+        Path to profile JSON file to validate.
+
+    .PARAMETER ApplicationsDbPath
+        Path to applications.json database. Defaults to Apps/Database/applications.json.
+
+    .OUTPUTS
+        [hashtable] Validation result with:
+          - Valid: [bool] Whether all AppIds are valid
+          - InvalidAppIds: [string[]] List of AppIds not found in database
+          - ValidAppIds: [string[]] List of valid AppIds
+          - TotalAppIds: [int] Total number of AppIds in profile
+
+    .EXAMPLE
+        Test-ProfileAppIds -ProfilePath "Profiles/Gaming.json"
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ProfilePath,
+
+        [Parameter()]
+        [string]$ApplicationsDbPath
+    )
+
+    $result = @{
+        Valid = $true
+        InvalidAppIds = @()
+        ValidAppIds = @()
+        TotalAppIds = 0
+        Errors = @()
+    }
+
+    # Determine applications database path
+    if ([string]::IsNullOrWhiteSpace($ApplicationsDbPath)) {
+        $ApplicationsDbPath = Join-Path $script:RepositoryRoot 'Apps\Database\applications.json'
+    }
+
+    # Load applications database
+    if (-not (Test-Path -Path $ApplicationsDbPath)) {
+        $result.Valid = $false
+        $result.Errors += "Applications database not found: $ApplicationsDbPath"
+        return $result
+    }
+
+    try {
+        $dbContent = Get-Content -Path $ApplicationsDbPath -Raw -Encoding UTF8
+        $database = $dbContent | ConvertFrom-Json -ErrorAction Stop
+
+        # Build HashSet of valid AppIds for O(1) lookup
+        $validAppIdSet = [System.Collections.Generic.HashSet[string]]::new(
+            [StringComparer]::OrdinalIgnoreCase
+        )
+
+        if ($database.Applications) {
+            foreach ($prop in $database.Applications.PSObject.Properties) {
+                $null = $validAppIdSet.Add($prop.Name)
+            }
+        }
+
+        Write-Verbose "Loaded $($validAppIdSet.Count) valid AppIds from database"
+
+    } catch {
+        $result.Valid = $false
+        $result.Errors += "Failed to parse applications database: $($_.Exception.Message)"
+        return $result
+    }
+
+    # Load profile
+    if (-not (Test-Path -Path $ProfilePath)) {
+        $result.Valid = $false
+        $result.Errors += "Profile not found: $ProfilePath"
+        return $result
+    }
+
+    try {
+        $profile = Import-ProfileJson -Path $ProfilePath
+
+        # Extract AppIds from profile
+        $profileAppIds = @()
+        foreach ($app in $profile.Applications) {
+            if ($app -is [string]) {
+                $profileAppIds += $app
+            } elseif ($app.PSObject.Properties['AppId']) {
+                $profileAppIds += $app.AppId
+            }
+        }
+
+        $result.TotalAppIds = $profileAppIds.Count
+
+        # Validate each AppId
+        foreach ($appId in $profileAppIds) {
+            if ($validAppIdSet.Contains($appId)) {
+                $result.ValidAppIds += $appId
+            } else {
+                $result.InvalidAppIds += $appId
+                $result.Valid = $false
+            }
+        }
+
+        if ($result.InvalidAppIds.Count -gt 0) {
+            Write-Status -Message "Profile contains $($result.InvalidAppIds.Count) invalid AppId(s): $($result.InvalidAppIds -join ', ')" -Level 'Warning'
+        } else {
+            Write-Status -Message "All $($result.TotalAppIds) AppIds validated successfully" -Level 'Success'
+        }
+
+    } catch {
+        $result.Valid = $false
+        $result.Errors += "Failed to validate profile: $($_.Exception.Message)"
+    }
+
+    return $result
+}
+
+function Test-AllProfilesAppIds {
+    <#
+    .SYNOPSIS
+        Validates AppIds in all profiles in the Profiles directory.
+
+    .DESCRIPTION
+        Iterates through all profile JSON files and validates their AppIds
+        against the applications database.
+
+    .PARAMETER ProfilesDirectory
+        Directory containing profile JSON files.
+
+    .OUTPUTS
+        [hashtable] Summary of validation results for all profiles.
+
+    .EXAMPLE
+        Test-AllProfilesAppIds
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter()]
+        [string]$ProfilesDirectory
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ProfilesDirectory)) {
+        $ProfilesDirectory = Join-Path $script:RepositoryRoot 'Profiles'
+    }
+
+    $summary = @{
+        TotalProfiles = 0
+        ValidProfiles = 0
+        InvalidProfiles = 0
+        AllInvalidAppIds = @()
+        Results = @{}
+    }
+
+    $profileFiles = Get-ChildItem -Path $ProfilesDirectory -Filter '*.json' -File
+
+    foreach ($file in $profileFiles) {
+        $summary.TotalProfiles++
+        $profileName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
+
+        Write-Status -Message "Validating profile: $profileName" -Level 'Info'
+        $result = Test-ProfileAppIds -ProfilePath $file.FullName
+
+        $summary.Results[$profileName] = $result
+
+        if ($result.Valid) {
+            $summary.ValidProfiles++
+        } else {
+            $summary.InvalidProfiles++
+            $summary.AllInvalidAppIds += $result.InvalidAppIds
+        }
+    }
+
+    # Deduplicate invalid AppIds
+    $summary.AllInvalidAppIds = $summary.AllInvalidAppIds | Select-Object -Unique
+
+    Write-Status -Message "Profile validation complete: $($summary.ValidProfiles)/$($summary.TotalProfiles) valid" -Level $(if ($summary.InvalidProfiles -eq 0) { 'Success' } else { 'Warning' })
+
+    return $summary
+}
+
 # === MODULE EXPORTS ===
 
 Export-ModuleMember -Function @(
@@ -1042,6 +1264,8 @@ Export-ModuleMember -Function @(
     'Get-DeploymentProfile',
     'Test-ProfileValid',
     'Test-ProfileCycles',
+    'Test-ProfileAppIds',
+    'Test-AllProfilesAppIds',
     'Get-ApplicationsByCategory',
     'Get-RequiredApplications',
     'ConvertTo-Hashtable',

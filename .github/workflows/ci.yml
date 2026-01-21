@@ -6,8 +6,50 @@ on:
     tags: ['v*']
   pull_request:
     branches: [main]
+  schedule:
+    # Run security scan weekly on Sundays at 2am UTC
+    - cron: '0 2 * * 0'
 
 jobs:
+  # ===========================================
+  # Security Analysis (CodeQL SAST)
+  # ===========================================
+  security:
+    name: CodeQL Security Analysis
+    runs-on: windows-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: csharp, powershell
+          queries: security-extended, security-and-quality
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build for CodeQL Analysis
+        run: dotnet build GUI/Win11Forge.slnx --configuration Release
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:csharp"
+
+      - name: Upload SARIF Results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: ../results/csharp.sarif
+        continue-on-error: true
   # ===========================================
   # PowerShell Linting
   # ===========================================
@@ -105,9 +147,9 @@ jobs:
               $missed = [int]$counters.missed
               $total = $covered + $missed
               $percentage = if ($total -gt 0) { [math]::Round(($covered / $total) * 100, 2) } else { 0 }
-              $minCoverage = 75
+              $minCoverage = 80
               Write-Host "=== PowerShell Code Coverage ===" -ForegroundColor Cyan
-              Write-Host "Lines Covered: $covered / $total ($percentage%) (minimum: $minCoverage%)" -ForegroundColor $(if ($percentage -ge 80) { 'Green' } elseif ($percentage -ge $minCoverage) { 'Yellow' } else { 'Red' })
+              Write-Host "Lines Covered: $covered / $total ($percentage%) (minimum: $minCoverage%)" -ForegroundColor $(if ($percentage -ge $minCoverage) { 'Green' } elseif ($percentage -ge 70) { 'Yellow' } else { 'Red' })
 
               # Create coverage summary JSON
               @{
@@ -182,11 +224,11 @@ jobs:
               $summary = Get-Content 'coverage-report-gui/Summary.json' | ConvertFrom-Json
               $lineCoverage = $summary.summary.linecoverage
               $branchCoverage = $summary.summary.branchcoverage
-              $minCoverage = 75
+              $minCoverage = 80
 
               Write-Host "=== .NET GUI Code Coverage ===" -ForegroundColor Cyan
-              Write-Host "Line Coverage: $lineCoverage% (minimum: $minCoverage%)" -ForegroundColor $(if ($lineCoverage -ge 80) { 'Green' } elseif ($lineCoverage -ge $minCoverage) { 'Yellow' } else { 'Red' })
-              Write-Host "Branch Coverage: $branchCoverage%" -ForegroundColor $(if ($branchCoverage -ge 80) { 'Green' } elseif ($branchCoverage -ge 60) { 'Yellow' } else { 'Red' })
+              Write-Host "Line Coverage: $lineCoverage% (minimum: $minCoverage%)" -ForegroundColor $(if ($lineCoverage -ge $minCoverage) { 'Green' } elseif ($lineCoverage -ge 70) { 'Yellow' } else { 'Red' })
+              Write-Host "Branch Coverage: $branchCoverage%" -ForegroundColor $(if ($branchCoverage -ge 70) { 'Green' } elseif ($branchCoverage -ge 60) { 'Yellow' } else { 'Red' })
 
               # Enforce minimum coverage threshold
               if ($lineCoverage -lt $minCoverage) {
@@ -343,7 +385,7 @@ jobs:
   deploy:
     name: Build Release Package
     runs-on: windows-latest
-    needs: [test-powershell, test-gui, validate]
+    needs: [test-powershell, test-gui, validate, security]
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Checkout code

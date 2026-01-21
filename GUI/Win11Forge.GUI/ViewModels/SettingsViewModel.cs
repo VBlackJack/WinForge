@@ -21,6 +21,7 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
+using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI.ViewModels;
@@ -102,6 +103,66 @@ public partial class SettingsViewModel : ViewModelBase
     public int[] ParallelScanOptions { get; } = [1, 2, 4, 6, 8, 10, 12, 16, 20];
 
     /// <summary>
+    /// Collection of scheduled deployments.
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<ScheduledDeploymentModel> _scheduledDeployments = [];
+
+    /// <summary>
+    /// Currently selected scheduled deployment.
+    /// </summary>
+    [ObservableProperty]
+    private ScheduledDeploymentModel? _selectedScheduledDeployment;
+
+    /// <summary>
+    /// Whether scheduled deployments are loading.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isLoadingScheduledDeployments;
+
+    /// <summary>
+    /// Whether the scheduled deployment feature is available (requires admin).
+    /// </summary>
+    [ObservableProperty]
+    private bool _isScheduledDeploymentsAvailable;
+
+    /// <summary>
+    /// Available profiles for scheduling.
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<string> _availableProfiles = [];
+
+    /// <summary>
+    /// Selected profile for new scheduled deployment.
+    /// </summary>
+    [ObservableProperty]
+    private string? _newScheduledProfile;
+
+    /// <summary>
+    /// Scheduled time for new deployment.
+    /// </summary>
+    [ObservableProperty]
+    private DateTime _newScheduledTime = DateTime.Now.AddHours(1);
+
+    /// <summary>
+    /// Trigger type for new scheduled deployment.
+    /// </summary>
+    [ObservableProperty]
+    private ScheduledTriggerType _newScheduledTriggerType = ScheduledTriggerType.OneTime;
+
+    /// <summary>
+    /// Available trigger types for the dropdown.
+    /// </summary>
+    public ScheduledTriggerType[] AvailableTriggerTypes { get; } =
+    [
+        ScheduledTriggerType.OneTime,
+        ScheduledTriggerType.Daily,
+        ScheduledTriggerType.Weekly,
+        ScheduledTriggerType.AtStartup,
+        ScheduledTriggerType.AtLogon
+    ];
+
+    /// <summary>
     /// Initializes a new instance of SettingsViewModel with default services.
     /// </summary>
     public SettingsViewModel()
@@ -136,7 +197,13 @@ public partial class SettingsViewModel : ViewModelBase
     public override async Task InitializeAsync()
     {
         LoadCurrentSettings();
-        AppVersion = await _powerShellBridge.GetWin11ForgeVersionAsync();
+
+        // Load version and scheduled deployments in parallel
+        var versionTask = _powerShellBridge.GetWin11ForgeVersionAsync();
+        var deploymentsTask = LoadScheduledDeploymentsAsync();
+
+        await Task.WhenAll(versionTask, deploymentsTask);
+        AppVersion = await versionTask;
     }
 
     /// <summary>
@@ -459,6 +526,283 @@ public partial class SettingsViewModel : ViewModelBase
         {
             StatusMessage = $"{Resources.Resources.Settings_ResetFailed}: {ex.Message}";
         }
+    }
+
+    /// <summary>
+    /// Loads scheduled deployments from the system.
+    /// </summary>
+    [RelayCommand]
+    private async Task LoadScheduledDeploymentsAsync()
+    {
+        try
+        {
+            IsLoadingScheduledDeployments = true;
+
+            // Check if admin and Task Scheduler available
+            var checkScript = @"
+                Import-Module (Join-Path $PSScriptRoot 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
+                @{
+                    TaskSchedulerAvailable = Test-ScheduledTasksAvailable
+                    IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+                } | ConvertTo-Json
+            ";
+
+            var checkResult = await _powerShellBridge.ExecuteCommandAsync(checkScript);
+
+            if (!string.IsNullOrEmpty(checkResult))
+            {
+                var checkJson = System.Text.Json.JsonDocument.Parse(checkResult);
+                var taskSchedulerAvailable = checkJson.RootElement.GetProperty("TaskSchedulerAvailable").GetBoolean();
+                var isAdmin = checkJson.RootElement.GetProperty("IsAdmin").GetBoolean();
+
+                IsScheduledDeploymentsAvailable = taskSchedulerAvailable && isAdmin;
+            }
+
+            if (!IsScheduledDeploymentsAvailable)
+            {
+                return;
+            }
+
+            // Load available profiles
+            var profiles = await _powerShellBridge.GetAvailableProfilesAsync();
+            AvailableProfiles.Clear();
+            foreach (var profile in profiles)
+            {
+                AvailableProfiles.Add(profile);
+            }
+
+            if (AvailableProfiles.Count > 0 && NewScheduledProfile == null)
+            {
+                NewScheduledProfile = AvailableProfiles[0];
+            }
+
+            // Load scheduled deployments
+            var script = @"
+                Import-Module (Join-Path $PSScriptRoot 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
+                Get-ScheduledDeployment | ForEach-Object {
+                    @{
+                        Id = $_.Id
+                        ProfileName = $_.ProfileName
+                        ScheduledTime = $_.ScheduledTime.ToString('o')
+                        TriggerType = $_.TriggerType
+                        Status = $_.Status
+                        CreatedBy = $_.CreatedBy
+                        CreatedAt = $_.CreatedAt.ToString('o')
+                        LastRunTime = if ($_.LastRunTime -and $_.LastRunTime -ne [datetime]::MinValue) { $_.LastRunTime.ToString('o') } else { $null }
+                        LastRunResult = $_.LastRunResult
+                    }
+                } | ConvertTo-Json -Compress
+            ";
+
+            var result = await _powerShellBridge.ExecuteCommandAsync(script);
+
+            ScheduledDeployments.Clear();
+
+            if (string.IsNullOrWhiteSpace(result) || result == "null")
+            {
+                return;
+            }
+
+            var jsonOptions = new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            // Handle both single object and array
+            if (result.TrimStart().StartsWith('['))
+            {
+                var deployments = System.Text.Json.JsonSerializer.Deserialize<List<ScheduledDeploymentJson>>(result, jsonOptions);
+                if (deployments != null)
+                {
+                    foreach (var d in deployments)
+                    {
+                        ScheduledDeployments.Add(MapToModel(d));
+                    }
+                }
+            }
+            else
+            {
+                var deployment = System.Text.Json.JsonSerializer.Deserialize<ScheduledDeploymentJson>(result, jsonOptions);
+                if (deployment != null)
+                {
+                    ScheduledDeployments.Add(MapToModel(deployment));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"{Resources.Resources.ScheduledDeployment_LoadError}: {ex.Message}";
+        }
+        finally
+        {
+            IsLoadingScheduledDeployments = false;
+        }
+    }
+
+    /// <summary>
+    /// Creates a new scheduled deployment.
+    /// </summary>
+    [RelayCommand]
+    private async Task CreateScheduledDeploymentAsync()
+    {
+        if (string.IsNullOrEmpty(NewScheduledProfile))
+        {
+            StatusMessage = Resources.Resources.ScheduledDeployment_SelectProfile;
+            return;
+        }
+
+        try
+        {
+            var triggerTypeStr = NewScheduledTriggerType.ToString();
+            var timeStr = NewScheduledTime.ToString("o");
+
+            var script = $@"
+                Import-Module (Join-Path $PSScriptRoot 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
+                $deployment = New-ScheduledDeployment -ProfileName '{NewScheduledProfile}' -ScheduledTime ([datetime]'{timeStr}') -TriggerType '{triggerTypeStr}'
+                @{{
+                    Success = $true
+                    Id = $deployment.Id
+                }} | ConvertTo-Json
+            ";
+
+            var result = await _powerShellBridge.ExecuteCommandAsync(script);
+
+            if (!string.IsNullOrEmpty(result))
+            {
+                var json = System.Text.Json.JsonDocument.Parse(result);
+                if (json.RootElement.TryGetProperty("Success", out var successProp) && successProp.GetBoolean())
+                {
+                    StatusMessage = Resources.Resources.ScheduledDeployment_Created;
+                    await LoadScheduledDeploymentsAsync();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"{Resources.Resources.ScheduledDeployment_CreateError}: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Removes the selected scheduled deployment.
+    /// </summary>
+    [RelayCommand]
+    private async Task RemoveScheduledDeploymentAsync()
+    {
+        if (SelectedScheduledDeployment == null)
+        {
+            return;
+        }
+
+        var result = System.Windows.MessageBox.Show(
+            Resources.Resources.ScheduledDeployment_ConfirmRemove,
+            Resources.Resources.ScheduledDeployment_ConfirmRemoveTitle,
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question);
+
+        if (result != System.Windows.MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        try
+        {
+            var script = $@"
+                Import-Module (Join-Path $PSScriptRoot 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
+                Remove-ScheduledDeployment -Id '{SelectedScheduledDeployment.Id}' -Force
+            ";
+
+            await _powerShellBridge.ExecuteCommandAsync(script);
+            StatusMessage = Resources.Resources.ScheduledDeployment_Removed;
+            await LoadScheduledDeploymentsAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"{Resources.Resources.ScheduledDeployment_RemoveError}: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Runs the selected scheduled deployment immediately.
+    /// </summary>
+    [RelayCommand]
+    private async Task RunScheduledDeploymentNowAsync()
+    {
+        if (SelectedScheduledDeployment == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var script = $@"
+                Import-Module (Join-Path $PSScriptRoot 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
+                Start-ScheduledDeployment -Id '{SelectedScheduledDeployment.Id}'
+            ";
+
+            await _powerShellBridge.ExecuteCommandAsync(script);
+            StatusMessage = Resources.Resources.ScheduledDeployment_Started;
+            await LoadScheduledDeploymentsAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"{Resources.Resources.ScheduledDeployment_StartError}: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Maps JSON data to a ScheduledDeploymentModel.
+    /// </summary>
+    private static ScheduledDeploymentModel MapToModel(ScheduledDeploymentJson json)
+    {
+        var status = json.Status?.ToLowerInvariant() switch
+        {
+            "pending" => ScheduledDeploymentStatus.Pending,
+            "running" => ScheduledDeploymentStatus.Running,
+            "completed" => ScheduledDeploymentStatus.Completed,
+            "failed" => ScheduledDeploymentStatus.Failed,
+            "cancelled" => ScheduledDeploymentStatus.Cancelled,
+            _ => ScheduledDeploymentStatus.Unknown
+        };
+
+        var triggerType = json.TriggerType?.ToLowerInvariant() switch
+        {
+            "onetime" => ScheduledTriggerType.OneTime,
+            "daily" => ScheduledTriggerType.Daily,
+            "weekly" => ScheduledTriggerType.Weekly,
+            "atstartup" => ScheduledTriggerType.AtStartup,
+            "atlogon" => ScheduledTriggerType.AtLogon,
+            _ => ScheduledTriggerType.OneTime
+        };
+
+        return new ScheduledDeploymentModel
+        {
+            Id = json.Id ?? string.Empty,
+            ProfileName = json.ProfileName ?? string.Empty,
+            ScheduledTime = DateTime.TryParse(json.ScheduledTime, out var st) ? st : DateTime.Now,
+            TriggerType = triggerType,
+            Status = status,
+            CreatedBy = json.CreatedBy ?? Environment.UserName,
+            CreatedAt = DateTime.TryParse(json.CreatedAt, out var ca) ? ca : DateTime.Now,
+            LastRunTime = DateTime.TryParse(json.LastRunTime, out var lrt) ? lrt : null,
+            LastRunResult = json.LastRunResult
+        };
+    }
+
+    /// <summary>
+    /// JSON DTO for scheduled deployment data.
+    /// </summary>
+    private class ScheduledDeploymentJson
+    {
+        public string? Id { get; set; }
+        public string? ProfileName { get; set; }
+        public string? ScheduledTime { get; set; }
+        public string? TriggerType { get; set; }
+        public string? Status { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? CreatedAt { get; set; }
+        public string? LastRunTime { get; set; }
+        public string? LastRunResult { get; set; }
     }
 }
 

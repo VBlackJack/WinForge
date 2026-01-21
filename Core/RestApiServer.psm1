@@ -83,15 +83,227 @@ $script:DefaultConfig = @{
     Host = 'localhost'
     RequestTimeoutMs = 30000
     MaxConcurrentRequests = 10
+    MaxRequestBodyBytes = 5242880  # 5MB maximum request body size
     EnableCors = $false
     LogRequests = $true
     RequireAuthentication = $true
     ApiKeyHeader = 'X-API-Key'
+    CsrfEnabled = $true
+    CsrfTokenHeader = 'X-CSRF-Token'
+    CsrfTokenTtlMinutes = 60
     RateLimitEnabled = $true
     MaxRequestsPerMinute = 60
     MaxRequestsPerHour = 1000
     MaxFailedAuthPerHour = 10
     BlockDurationMinutes = 60
+}
+
+# CSRF Token State
+$script:CsrfTokens = @{} # Token -> { CreatedAt, ApiKeyId }
+
+# === CSRF FUNCTIONS ===
+
+function New-CsrfToken {
+    <#
+    .SYNOPSIS
+        Generates a new CSRF token for a given API key.
+    .DESCRIPTION
+        Creates a cryptographically secure CSRF token that is associated with
+        a specific API key. Tokens expire after the configured TTL.
+    .PARAMETER ApiKeyId
+        The API key identifier to associate with this token.
+    .OUTPUTS
+        The generated CSRF token string.
+    .EXAMPLE
+        $token = New-CsrfToken -ApiKeyId 'gui-client'
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ApiKeyId
+    )
+
+    $config = Get-ApiConfig
+
+    # Generate cryptographically secure token (256 bits)
+    $bytes = [byte[]]::new(32)
+    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $rng.GetBytes($bytes)
+    $token = [BitConverter]::ToString($bytes) -replace '-', ''
+    $token = "csrf_$($token.ToLowerInvariant())"
+    $rng.Dispose()
+
+    # Store token with metadata
+    $script:CsrfTokens[$token] = @{
+        CreatedAt = Get-Date
+        ApiKeyId = $ApiKeyId
+        TtlMinutes = $config.CsrfTokenTtlMinutes
+    }
+
+    # Clean up expired tokens periodically
+    Invoke-CsrfTokenCleanup
+
+    Write-Verbose "Created CSRF token for API key: $ApiKeyId"
+    return $token
+}
+
+function Test-CsrfToken {
+    <#
+    .SYNOPSIS
+        Validates a CSRF token.
+    .DESCRIPTION
+        Checks if the provided CSRF token is valid, not expired, and
+        optionally matches the expected API key.
+    .PARAMETER Token
+        The CSRF token to validate.
+    .PARAMETER ApiKeyId
+        Optional API key ID to verify token ownership.
+    .OUTPUTS
+        Hashtable with validation result.
+    .EXAMPLE
+        $result = Test-CsrfToken -Token $token -ApiKeyId 'gui-client'
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Token,
+
+        [Parameter()]
+        [string]$ApiKeyId
+    )
+
+    $result = @{
+        Valid = $false
+        Message = ''
+        Expired = $false
+    }
+
+    # Check if CSRF is enabled
+    $config = Get-ApiConfig
+    if (-not $config.CsrfEnabled) {
+        $result.Valid = $true
+        $result.Message = 'CSRF validation disabled'
+        return $result
+    }
+
+    if ([string]::IsNullOrWhiteSpace($Token)) {
+        $result.Message = 'CSRF token is required'
+        return $result
+    }
+
+    if (-not $script:CsrfTokens.ContainsKey($Token)) {
+        $result.Message = 'Invalid CSRF token'
+        return $result
+    }
+
+    $tokenData = $script:CsrfTokens[$Token]
+    $now = Get-Date
+
+    # Check expiration
+    $expirationTime = $tokenData.CreatedAt.AddMinutes($tokenData.TtlMinutes)
+    if ($now -gt $expirationTime) {
+        $result.Message = 'CSRF token has expired'
+        $result.Expired = $true
+        # Remove expired token
+        $script:CsrfTokens.Remove($Token)
+        return $result
+    }
+
+    # Check API key ownership if specified
+    if ($ApiKeyId -and $tokenData.ApiKeyId -ne $ApiKeyId) {
+        $result.Message = 'CSRF token does not belong to this API key'
+        return $result
+    }
+
+    $result.Valid = $true
+    $result.Message = 'Valid'
+
+    return $result
+}
+
+function Invoke-CsrfTokenCleanup {
+    <#
+    .SYNOPSIS
+        Removes expired CSRF tokens from memory.
+    .DESCRIPTION
+        Cleans up tokens that have exceeded their TTL to prevent memory leaks.
+        Called automatically during token generation.
+    #>
+    [CmdletBinding()]
+    param()
+
+    $now = Get-Date
+    $expiredTokens = @()
+
+    foreach ($token in $script:CsrfTokens.Keys) {
+        $data = $script:CsrfTokens[$token]
+        $expirationTime = $data.CreatedAt.AddMinutes($data.TtlMinutes)
+        if ($now -gt $expirationTime) {
+            $expiredTokens += $token
+        }
+    }
+
+    foreach ($token in $expiredTokens) {
+        $script:CsrfTokens.Remove($token)
+    }
+
+    if ($expiredTokens.Count -gt 0) {
+        Write-Verbose "CSRF cleanup: removed $($expiredTokens.Count) expired tokens"
+    }
+}
+
+function Get-CsrfTokenStatus {
+    <#
+    .SYNOPSIS
+        Returns status of all active CSRF tokens.
+    .OUTPUTS
+        Array of CSRF token status objects.
+    .EXAMPLE
+        Get-CsrfTokenStatus
+    #>
+    [CmdletBinding()]
+    [OutputType([array])]
+    param()
+
+    $now = Get-Date
+    $status = @()
+
+    foreach ($token in $script:CsrfTokens.Keys) {
+        $data = $script:CsrfTokens[$token]
+        $expirationTime = $data.CreatedAt.AddMinutes($data.TtlMinutes)
+        $remainingSeconds = [int]($expirationTime - $now).TotalSeconds
+
+        $status += [PSCustomObject]@{
+            TokenPrefix = $token.Substring(0, [Math]::Min(15, $token.Length)) + '...'
+            ApiKeyId = $data.ApiKeyId
+            CreatedAt = $data.CreatedAt
+            ExpiresAt = $expirationTime
+            RemainingSeconds = [Math]::Max(0, $remainingSeconds)
+            Expired = $remainingSeconds -le 0
+        }
+    }
+
+    return $status
+}
+
+function Clear-CsrfTokens {
+    <#
+    .SYNOPSIS
+        Clears all CSRF tokens from memory.
+    .DESCRIPTION
+        Removes all CSRF tokens. Use with caution as this will invalidate
+        all active sessions.
+    .EXAMPLE
+        Clear-CsrfTokens
+    #>
+    [CmdletBinding()]
+    param()
+
+    $count = $script:CsrfTokens.Count
+    $script:CsrfTokens = @{}
+    Write-Verbose "Cleared $count CSRF tokens"
 }
 
 # === SECURITY FUNCTIONS ===
@@ -942,6 +1154,11 @@ function Start-ApiServer {
                             try {
                                 $requestBody = $null
                                 if ($request.HasEntityBody) {
+                                    # Security: Validate request body size to prevent DoS
+                                    $maxBodySize = $script:ServerState.Config.MaxRequestBodyBytes
+                                    if ($request.ContentLength64 -gt $maxBodySize) {
+                                        throw "Request body too large (max: $maxBodySize bytes)"
+                                    }
                                     $reader = [System.IO.StreamReader]::new($request.InputStream)
                                     $requestBody = $reader.ReadToEnd() | ConvertFrom-Json -ErrorAction SilentlyContinue
                                 }
@@ -975,8 +1192,14 @@ function Start-ApiServer {
                         $buffer = [System.Text.Encoding]::UTF8.GetBytes($jsonResponse)
                         $response.ContentLength64 = $buffer.Length
                         $response.OutputStream.Write($buffer, 0, $buffer.Length)
-                        # Explicit response cleanup
-                        try { $response.OutputStream.Flush(); $response.OutputStream.Close() } catch { }
+                        # Explicit response cleanup with error logging
+                        try {
+                            $response.OutputStream.Flush()
+                            $response.OutputStream.Close()
+                        } catch {
+                            # Log but don't throw - response cleanup is best-effort
+                            Write-Verbose "Response cleanup warning: $($_.Exception.Message)"
+                        }
                         $response.Close()
                     } catch [System.Net.HttpListenerException] {
                         break
@@ -1136,6 +1359,33 @@ function Invoke-ApiServerLoop {
                     }
                     continue
                 }
+
+                # CSRF validation for state-changing methods (POST, PUT, DELETE)
+                if ($config.CsrfEnabled -and $method -in @('POST', 'PUT', 'DELETE')) {
+                    # Skip CSRF for token generation endpoint
+                    if ($path -ne '/api/csrf-token') {
+                        $csrfToken = $request.Headers[$config.CsrfTokenHeader]
+                        $csrfResult = Test-CsrfToken -Token $csrfToken -ApiKeyId $authResult.KeyId
+
+                        if (-not $csrfResult.Valid) {
+                            $response.StatusCode = 403
+                            $errorResponse = @{
+                                error = $csrfResult.Message
+                                code = 'CSRF_VALIDATION_FAILED'
+                            } | ConvertTo-Json
+                            $buffer = [System.Text.Encoding]::UTF8.GetBytes($errorResponse)
+                            $response.ContentLength64 = $buffer.Length
+                            $response.ContentType = 'application/json'
+                            $response.OutputStream.Write($buffer, 0, $buffer.Length)
+                            $response.Close()
+
+                            if ($config.LogRequests) {
+                                Write-Status -Message "CSRF validation failed for $path from ${clientIp}: $($csrfResult.Message)" -Level 'Warning' -Category 'Api'
+                            }
+                            continue
+                        }
+                    }
+                }
             }
 
             # Find handler
@@ -1152,6 +1402,11 @@ function Invoke-ApiServerLoop {
                     # Build request context
                     $requestBody = $null
                     if ($request.HasEntityBody) {
+                        # Security: Validate request body size to prevent DoS
+                        $maxBodySize = $script:ServerState.Config.MaxRequestBodyBytes
+                        if ($request.ContentLength64 -gt $maxBodySize) {
+                            throw "Request body too large (max: $maxBodySize bytes)"
+                        }
                         $reader = [System.IO.StreamReader]::new($request.InputStream)
                         $requestBody = $reader.ReadToEnd()
 
@@ -1207,11 +1462,14 @@ function Invoke-ApiServerLoop {
                 $response.OutputStream.Write($buffer, 0, $buffer.Length)
             }
 
-            # Explicit HttpContext response cleanup
+            # Explicit HttpContext response cleanup with error logging
             try {
                 $response.OutputStream.Flush()
                 $response.OutputStream.Close()
-            } catch { }
+            } catch {
+                # Log but don't throw - response cleanup is best-effort
+                Write-Verbose "Response cleanup warning: $($_.Exception.Message)"
+            }
             $response.Close()
         } catch [System.Net.HttpListenerException] {
             # Listener was closed
@@ -1327,12 +1585,14 @@ function New-ApiKey {
     )
 
     # Generate a secure random key with full entropy (256 bits)
+    # Use hex encoding to preserve full entropy (no character filtering needed)
     $bytes = [byte[]]::new(32)
     $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
     $rng.GetBytes($bytes)
-    $apiKey = [Convert]::ToBase64String($bytes) -replace '[+/=]', ''
-    # Keep full entropy - don't truncate (was 40 chars, now ~43 chars)
-    $apiKey = "w11f_$apiKey"
+    # Convert to hex string (64 chars) - preserves full 256-bit entropy
+    $apiKey = [BitConverter]::ToString($bytes) -replace '-', ''
+    $apiKey = "w11f_$($apiKey.ToLowerInvariant())"
+    $rng.Dispose()
 
     $expiresAt = $null
     if ($ExpiresInDays -gt 0) {
@@ -1498,6 +1758,12 @@ Export-ModuleMember -Function @(
     'New-ApiKey',
     'Remove-ApiKey',
     'Get-ApiKeys',
+    # CSRF Protection
+    'New-CsrfToken',
+    'Test-CsrfToken',
+    'Invoke-CsrfTokenCleanup',
+    'Get-CsrfTokenStatus',
+    'Clear-CsrfTokens',
     # Rate Limiting
     'Test-RateLimit',
     'Test-ApiKeyRateLimit',

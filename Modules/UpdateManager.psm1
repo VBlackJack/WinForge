@@ -126,16 +126,36 @@ function Compare-SemanticVersions {
     [CmdletBinding()]
     [OutputType([int])]
     param(
-        [Parameter(Mandatory)]
+        [Parameter()]
+        [AllowNull()]
+        [AllowEmptyString()]
         [string]$Version1,
 
-        [Parameter(Mandatory)]
+        [Parameter()]
+        [AllowNull()]
+        [AllowEmptyString()]
         [string]$Version2
     )
 
-    # Remove 'v' prefix if present
-    $v1 = $Version1 -replace '^v', ''
-    $v2 = $Version2 -replace '^v', ''
+    # Handle null/empty versions gracefully
+    # Empty/null is considered "older" than any version
+    if ([string]::IsNullOrWhiteSpace($Version1) -and [string]::IsNullOrWhiteSpace($Version2)) {
+        return 0
+    }
+    if ([string]::IsNullOrWhiteSpace($Version1)) {
+        return -1
+    }
+    if ([string]::IsNullOrWhiteSpace($Version2)) {
+        return 1
+    }
+
+    # Remove 'v' or 'V' prefix if present (case insensitive)
+    $v1 = $Version1 -replace '^[vV]', ''
+    $v2 = $Version2 -replace '^[vV]', ''
+
+    # Remove build metadata (+xyz) as it doesn't affect precedence per SemVer spec
+    $v1 = $v1 -replace '\+.*$', ''
+    $v2 = $v2 -replace '\+.*$', ''
 
     # Extract prerelease suffix
     $v1Parts = $v1 -split '-', 2
@@ -146,16 +166,40 @@ function Compare-SemanticVersions {
     $v1Pre = if ($v1Parts.Count -gt 1) { $v1Parts[1] } else { $null }
     $v2Pre = if ($v2Parts.Count -gt 1) { $v2Parts[1] } else { $null }
 
-    # Parse version numbers
-    $v1Nums = $v1Core -split '\.' | ForEach-Object { [int]$_ }
-    $v2Nums = $v2Core -split '\.' | ForEach-Object { [int]$_ }
+    # Parse version numbers safely (handle invalid input gracefully)
+    $v1NumsList = [System.Collections.ArrayList]::new()
+    $v2NumsList = [System.Collections.ArrayList]::new()
 
-    # Pad to 3 elements
-    while ($v1Nums.Count -lt 3) { $v1Nums += 0 }
-    while ($v2Nums.Count -lt 3) { $v2Nums += 0 }
+    foreach ($part in ($v1Core -split '\.')) {
+        $num = 0
+        if ([int]::TryParse($part, [ref]$num)) {
+            [void]$v1NumsList.Add($num)
+        } else {
+            # Invalid part - treat as 0
+            [void]$v1NumsList.Add(0)
+        }
+    }
 
-    # Compare major, minor, patch
-    for ($i = 0; $i -lt 3; $i++) {
+    foreach ($part in ($v2Core -split '\.')) {
+        $num = 0
+        if ([int]::TryParse($part, [ref]$num)) {
+            [void]$v2NumsList.Add($num)
+        } else {
+            [void]$v2NumsList.Add(0)
+        }
+    }
+
+    # Convert to arrays
+    $v1Nums = @($v1NumsList)
+    $v2Nums = @($v2NumsList)
+
+    # Pad to at least 3 elements, but support 4-part Windows versions
+    $maxParts = [Math]::Max([Math]::Max($v1Nums.Count, $v2Nums.Count), 3)
+    while ($v1Nums.Count -lt $maxParts) { $v1Nums += 0 }
+    while ($v2Nums.Count -lt $maxParts) { $v2Nums += 0 }
+
+    # Compare all version parts
+    for ($i = 0; $i -lt $maxParts; $i++) {
         if ($v1Nums[$i] -gt $v2Nums[$i]) { return 1 }
         if ($v1Nums[$i] -lt $v2Nums[$i]) { return -1 }
     }
@@ -204,9 +248,17 @@ function Test-IsNewerVersion {
     if ([string]::IsNullOrWhiteSpace($Current)) { return $true }
     if ([string]::IsNullOrWhiteSpace($Available)) { return $false }
 
-    # Clean version strings - remove common prefixes
-    $cleanCurrent = $Current -replace '^[vV]', '' -replace '^version\s*', '' -replace '[^\d\.].*$', ''
-    $cleanAvailable = $Available -replace '^[vV]', '' -replace '^version\s*', '' -replace '[^\d\.].*$', ''
+    # Clean version strings - remove common prefixes (v, V, version)
+    $cleanedCurrent = $Current -replace '^[vV]', '' -replace '^version\s*', ''
+    $cleanedAvailable = $Available -replace '^[vV]', '' -replace '^version\s*', ''
+
+    # Detect prerelease suffixes (e.g., -alpha, -beta, -rc)
+    $currentHasPrerelease = $cleanedCurrent -match '-[a-zA-Z]'
+    $availableHasPrerelease = $cleanedAvailable -match '-[a-zA-Z]'
+
+    # Extract base version (numeric parts only)
+    $cleanCurrent = $cleanedCurrent -replace '[^\d\.].*$', ''
+    $cleanAvailable = $cleanedAvailable -replace '[^\d\.].*$', ''
 
     # Ensure we have at least major.minor.patch format
     $currentParts = $cleanCurrent -split '\.'
@@ -226,6 +278,18 @@ function Test-IsNewerVersion {
     try {
         $versionCurrent = [System.Version]::Parse($normalizedCurrent)
         $versionAvailable = [System.Version]::Parse($normalizedAvailable)
+
+        # If base versions are equal, check prerelease status
+        # Stable (no prerelease) is newer than prerelease of same version
+        if ($versionCurrent -eq $versionAvailable) {
+            if ($currentHasPrerelease -and -not $availableHasPrerelease) {
+                return $true  # Available stable is newer than Current prerelease
+            }
+            if (-not $currentHasPrerelease -and $availableHasPrerelease) {
+                return $false  # Available prerelease is not newer than Current stable
+            }
+            return $false  # Same version, same prerelease status
+        }
 
         return $versionAvailable -gt $versionCurrent
     } catch {

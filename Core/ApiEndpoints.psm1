@@ -38,15 +38,141 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:RestApiServerPath = Join-Path $script:ModuleRoot 'RestApiServer.psm1'
-$script:VersionPath = Join-Path $script:RepositoryRoot 'version.json'
+$script:VersionPath = Join-Path $script:RepositoryRoot 'Config\version.json'
 $script:DatabasePath = Join-Path $script:RepositoryRoot 'Apps\Database\applications.json'
-$script:ProfilesPath = Join-Path $script:RepositoryRoot 'Apps\Profiles'
+$script:ProfilesPath = Join-Path $script:RepositoryRoot 'Profiles'
+$script:SchemasPath = Join-Path $script:RepositoryRoot 'Schemas'
 
 # Import RestApiServer module
 if (-not (Get-Command -Name Register-ApiEndpoint -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:RestApiServerPath) {
         Import-Module -Name $script:RestApiServerPath -Force
     }
+}
+
+# Import JsonSchemaValidation module for schema validation
+$script:JsonSchemaValidationPath = Join-Path $script:RepositoryRoot 'Modules\JsonSchemaValidation.psm1'
+if (-not (Get-Command -Name Test-JsonAgainstSchema -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:JsonSchemaValidationPath) {
+        Import-Module -Name $script:JsonSchemaValidationPath -Force
+    }
+}
+
+# === JSON VALIDATION HELPER ===
+
+function Test-ApiRequestBody {
+    <#
+    .SYNOPSIS
+        Validates an API request body against a JSON schema.
+    .PARAMETER Body
+        The parsed request body object.
+    .PARAMETER SchemaName
+        Name of the schema file (without path) to validate against.
+    .OUTPUTS
+        Hashtable with IsValid and Errors properties.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [AllowNull()]
+        $Body,
+
+        [Parameter(Mandatory)]
+        [string]$SchemaName
+    )
+
+    $result = @{
+        IsValid = $false
+        Errors = @()
+    }
+
+    # Convert body to JSON string for schema validation
+    try {
+        if ($null -eq $Body) {
+            $jsonString = '{}'
+        } else {
+            $jsonString = $Body | ConvertTo-Json -Depth 10 -Compress
+        }
+
+        $schemaPath = Join-Path $script:SchemasPath $SchemaName
+        if (-not (Test-Path -Path $schemaPath)) {
+            # Schema not found - skip validation but log warning
+            Write-Verbose "Schema not found: $schemaPath"
+            $result.IsValid = $true
+            return $result
+        }
+
+        if (Get-Command -Name Test-JsonAgainstSchema -ErrorAction SilentlyContinue) {
+            $schemaValidation = Test-JsonAgainstSchema -JsonContent $jsonString -SchemaPath $schemaPath
+            if (-not $schemaValidation.IsValid) {
+                $result.Errors = $schemaValidation.Errors
+                return $result
+            }
+        }
+
+        $result.IsValid = $true
+    }
+    catch {
+        $result.Errors = @("Request body validation failed: $($_.Exception.Message)")
+    }
+
+    return $result
+}
+
+function Test-JsonFileValid {
+    <#
+    .SYNOPSIS
+        Validates a JSON file and optionally validates against a schema.
+    .PARAMETER FilePath
+        Path to the JSON file to validate.
+    .PARAMETER SchemaName
+        Name of the schema file (without path) to validate against.
+    .OUTPUTS
+        Hashtable with IsValid, Data, and ErrorMessage properties.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$FilePath,
+
+        [Parameter()]
+        [string]$SchemaName
+    )
+
+    $result = @{
+        IsValid = $false
+        Data = $null
+        ErrorMessage = $null
+    }
+
+    try {
+        if (-not (Test-Path -Path $FilePath)) {
+            $result.ErrorMessage = "File not found: $FilePath"
+            return $result
+        }
+
+        $jsonContent = Get-Content -Path $FilePath -Raw -ErrorAction Stop
+        $result.Data = $jsonContent | ConvertFrom-Json -ErrorAction Stop
+
+        # Optional schema validation
+        if ($SchemaName -and (Get-Command -Name Test-JsonAgainstSchema -ErrorAction SilentlyContinue)) {
+            $schemaPath = Join-Path $script:SchemasPath $SchemaName
+            if (Test-Path -Path $schemaPath) {
+                $schemaValidation = Test-JsonAgainstSchema -JsonContent $jsonContent -SchemaPath $schemaPath
+                if (-not $schemaValidation.IsValid) {
+                    $result.ErrorMessage = "Schema validation failed: $($schemaValidation.Errors -join '; ')"
+                    return $result
+                }
+            }
+        }
+
+        $result.IsValid = $true
+    }
+    catch {
+        $result.ErrorMessage = "JSON parsing failed: $($_.Exception.Message)"
+    }
+
+    return $result
 }
 
 # === DEPLOYMENT STATE ===
@@ -232,6 +358,17 @@ function Start-DeploymentHandler {
     }
 
     $body = $Context.Body
+
+    # Validate request body against schema
+    $validationResult = Test-ApiRequestBody -Body $body -SchemaName 'api-deploy-request.schema.json'
+    if (-not $validationResult.IsValid) {
+        return @{
+            success = $false
+            error = 'Request validation failed'
+            validationErrors = $validationResult.Errors
+        }
+    }
+
     if (-not $body -or -not $body.profile) {
         return @{
             success = $false
@@ -242,8 +379,35 @@ function Start-DeploymentHandler {
     $profileName = $body.profile
     $testMode = if ($body.testMode) { $body.testMode } else { $false }
 
-    # Verify profile exists
+    # Security: Validate profile name doesn't contain path traversal attempts
+    if ($profileName -match '\.\.|[/\\]') {
+        return @{
+            success = $false
+            error = 'Invalid profile name: contains forbidden characters'
+        }
+    }
+
+    # Security: Validate profile name length
+    if ($profileName.Length -gt 100) {
+        return @{
+            success = $false
+            error = 'Profile name too long (max 100 characters)'
+        }
+    }
+
+    # Verify profile exists with path traversal protection
     $profilePath = Join-Path $script:ProfilesPath "$profileName.json"
+    $canonicalPath = [System.IO.Path]::GetFullPath($profilePath)
+    $canonicalBase = [System.IO.Path]::GetFullPath($script:ProfilesPath)
+
+    # Security: Verify resolved path stays within profiles directory
+    if (-not $canonicalPath.StartsWith($canonicalBase, [StringComparison]::OrdinalIgnoreCase)) {
+        return @{
+            success = $false
+            error = 'Security violation: Invalid profile path'
+        }
+    }
+
     if (-not (Test-Path $profilePath)) {
         return @{
             success = $false
@@ -279,6 +443,17 @@ function Start-RollbackHandler {
     param($Context)
 
     $body = $Context.Body
+
+    # Validate request body against schema
+    $validationResult = Test-ApiRequestBody -Body $body -SchemaName 'api-rollback-request.schema.json'
+    if (-not $validationResult.IsValid) {
+        return @{
+            success = $false
+            error = 'Request validation failed'
+            validationErrors = $validationResult.Errors
+        }
+    }
+
     $force = if ($body -and $body.force) { $body.force } else { $false }
 
     # Import RollbackManager if available
@@ -369,6 +544,48 @@ function Get-CacheStatsHandler {
     return $stats
 }
 
+function Get-CsrfTokenHandler {
+    <#
+    .SYNOPSIS
+        Handler for GET /api/csrf-token
+    .DESCRIPTION
+        Generates and returns a new CSRF token for the authenticated API key.
+        This token must be included in the X-CSRF-Token header for all
+        state-changing requests (POST, PUT, DELETE).
+    #>
+    param($Context)
+
+    # Get API key from headers to associate token
+    $config = Get-ApiConfig
+    $apiKey = $Context.Headers[$config.ApiKeyHeader]
+
+    if (-not $apiKey) {
+        return @{
+            error = 'API key required to obtain CSRF token'
+            code = 'UNAUTHORIZED'
+        }
+    }
+
+    # Validate API key and get its ID
+    $authResult = Test-ApiKeyValid -ApiKey $apiKey
+    if (-not $authResult.Valid) {
+        return @{
+            error = $authResult.Message
+            code = 'UNAUTHORIZED'
+        }
+    }
+
+    # Generate new CSRF token
+    $csrfToken = New-CsrfToken -ApiKeyId $authResult.KeyId
+
+    return @{
+        csrfToken = $csrfToken
+        expiresInMinutes = $config.CsrfTokenTtlMinutes
+        headerName = $config.CsrfTokenHeader
+        timestamp = (Get-Date).ToString('o')
+    }
+}
+
 # === ENDPOINT REGISTRATION ===
 
 function Register-DefaultEndpoints {
@@ -400,8 +617,9 @@ function Register-DefaultEndpoints {
     Register-ApiEndpoint -Path '/api/deploy' -Method 'POST' -Handler ${function:Start-DeploymentHandler} -Description 'Start a deployment'
     Register-ApiEndpoint -Path '/api/rollback' -Method 'POST' -Handler ${function:Start-RollbackHandler} -Description 'Trigger rollback operation'
     Register-ApiEndpoint -Path '/api/cache/stats' -Method 'GET' -Handler ${function:Get-CacheStatsHandler} -Description 'Get cache statistics'
+    Register-ApiEndpoint -Path '/api/csrf-token' -Method 'GET' -Handler ${function:Get-CsrfTokenHandler} -Description 'Get CSRF token for state-changing requests'
 
-    Write-Verbose "Registered 7 default API endpoints"
+    Write-Verbose "Registered 8 default API endpoints"
 }
 
 function Update-DeploymentState {
@@ -474,5 +692,6 @@ Export-ModuleMember -Function @(
     'Get-StatusHandler',
     'Start-DeploymentHandler',
     'Start-RollbackHandler',
-    'Get-CacheStatsHandler'
+    'Get-CacheStatsHandler',
+    'Get-CsrfTokenHandler'
 )

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#nullable enable
+
 using System.ComponentModel.DataAnnotations;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -97,7 +99,7 @@ public partial class ApplicationModel : ObservableValidator
     /// <summary>Official download URL for manual installation.</summary>
     [ObservableProperty]
     [StringLength(2048, ErrorMessage = "URL must not exceed 2048 characters")]
-    [RegularExpression(@"^(https?://.*)?$", ErrorMessage = "URL must be a valid HTTP or HTTPS URL")]
+    [ValidUrl(ErrorMessage = "URL must be a valid HTTP or HTTPS URL")]
     private string _officialUrl = string.Empty;
 
     /// <summary>Installation notes or warnings.</summary>

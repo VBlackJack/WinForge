@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
+#nullable enable
+
+using System.ComponentModel.DataAnnotations;
+
 namespace Win11Forge.GUI.Models;
 
 /// <summary>
 /// Result of an application installation attempt.
+/// Implements IValidatableObject for cross-property validation.
 /// </summary>
-public class InstallResult
+public class InstallResult : IValidatableObject
 {
     /// <summary>Whether the installation succeeded.</summary>
     public bool Success { get; init; }
@@ -30,7 +35,10 @@ public class InstallResult
     /// <summary>Full installation log output.</summary>
     public string Logs { get; init; } = string.Empty;
 
-    /// <summary>Installation method used (Winget, Chocolatey, etc.).</summary>
+    /// <summary>Installation method used (strongly typed).</summary>
+    public InstallationMethod MethodType { get; init; } = InstallationMethod.Unknown;
+
+    /// <summary>Installation method used (string for backwards compatibility).</summary>
     public string Method { get; init; } = string.Empty;
 
     /// <summary>Whether the application was already installed.</summary>
@@ -50,6 +58,23 @@ public class InstallResult
             Message = message,
             Logs = logs,
             Method = method,
+            MethodType = method.ToInstallationMethod(),
+            AlreadyInstalled = alreadyInstalled
+        };
+    }
+
+    /// <summary>
+    /// Creates a successful installation result with strongly typed method.
+    /// </summary>
+    public static InstallResult Successful(string message, string logs, InstallationMethod methodType, bool alreadyInstalled = false)
+    {
+        return new InstallResult
+        {
+            Success = true,
+            Message = message,
+            Logs = logs,
+            Method = methodType.ToDisplayString(),
+            MethodType = methodType,
             AlreadyInstalled = alreadyInstalled
         };
     }
@@ -97,6 +122,38 @@ public class InstallResult
 
     /// <summary>Whether manual installation is required for this application.</summary>
     public bool IsManualInstallRequired { get; init; }
+
+    /// <summary>
+    /// Validates the semantic consistency of the result.
+    /// </summary>
+    /// <param name="validationContext">Validation context</param>
+    /// <returns>Collection of validation results</returns>
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        // Success should be false if manual install is required
+        if (IsManualInstallRequired && Success)
+        {
+            yield return new ValidationResult(
+                Resources.Resources.Validation_ManualInstallCannotBeSuccess,
+                new[] { nameof(Success), nameof(IsManualInstallRequired) });
+        }
+
+        // Dry run results should always be successful
+        if (IsDryRun && !Success)
+        {
+            yield return new ValidationResult(
+                Resources.Resources.Validation_DryRunShouldSucceed,
+                new[] { nameof(Success), nameof(IsDryRun) });
+        }
+
+        // Message should not be empty for failed installations
+        if (!Success && !IsDryRun && string.IsNullOrWhiteSpace(Message))
+        {
+            yield return new ValidationResult(
+                Resources.Resources.Validation_FailedInstallNeedsMessage,
+                new[] { nameof(Message) });
+        }
+    }
 }
 
 /// <summary>

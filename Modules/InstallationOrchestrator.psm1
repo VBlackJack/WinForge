@@ -426,35 +426,47 @@ function Test-ValidStateData {
         $StateData
     )
 
-    if ($StateData.SessionId) {
+    # Convert hashtable to PSCustomObject for consistent property access
+    if ($StateData -is [hashtable]) {
+        $StateData = [PSCustomObject]$StateData
+    }
+
+    $sessionId = $StateData.PSObject.Properties['SessionId']?.Value
+    if ($sessionId) {
         try {
-            [guid]::Parse($StateData.SessionId) | Out-Null
+            [guid]::Parse($sessionId) | Out-Null
         } catch {
             Write-Status -Message "Invalid SessionId format in state file" -Level 'Warning'
             return $false
         }
     }
 
-    if ($StateData.ProfileName) {
-        if ($StateData.ProfileName -match '\.\.|\|[/\\]|[<>:"|?*]') {
+    $profileName = $StateData.PSObject.Properties['ProfileName']?.Value
+    if ($profileName) {
+        if ($profileName -match '\.\.|[/\\|<>:"|?*]') {
             Write-Status -Message "Invalid ProfileName in state file (contains forbidden characters)" -Level 'Warning'
             return $false
         }
-        if ($StateData.ProfileName.Length -gt 100) {
+        if ($profileName.Length -gt 100) {
             Write-Status -Message "ProfileName too long in state file" -Level 'Warning'
             return $false
         }
     }
 
-    if ($null -ne $StateData.TotalApps) {
-        if ($StateData.TotalApps -lt 0 -or $StateData.TotalApps -gt 1000) {
+    $totalApps = $StateData.PSObject.Properties['TotalApps']?.Value
+    if ($null -ne $totalApps) {
+        if ($totalApps -lt 0 -or $totalApps -gt 1000) {
             Write-Status -Message "Invalid TotalApps value in state file" -Level 'Warning'
             return $false
         }
     }
 
     $dangerousPattern = '[;&|`$<>]'
-    foreach ($appList in @($StateData.CompletedApps, $StateData.FailedApps, $StateData.PendingApps)) {
+    $completedApps = $StateData.PSObject.Properties['CompletedApps']?.Value
+    $failedApps = $StateData.PSObject.Properties['FailedApps']?.Value
+    $pendingApps = $StateData.PSObject.Properties['PendingApps']?.Value
+
+    foreach ($appList in @($completedApps, $failedApps, $pendingApps)) {
         if ($appList) {
             foreach ($appName in $appList) {
                 if ($appName -match $dangerousPattern) {

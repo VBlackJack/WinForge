@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
+#nullable enable
+
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace Win11Forge.GUI.Models;
 
@@ -157,32 +160,51 @@ public class PrerequisitesStatus
                                  DotNetInstalled && DotNetFrameworkInstalled && VCRedistInstalled && JavaInstalled;
 
     /// <summary>
+    /// Array of required prerequisite installation statuses.
+    /// </summary>
+    private bool[] RequiredPrerequisiteStatuses => new[]
+    {
+        PowerShell7Installed,
+        ChocolateyInstalled,
+        WingetInstalled
+    };
+
+    /// <summary>
     /// Number of missing required prerequisites.
     /// </summary>
-    public int MissingCount =>
-        (PowerShell7Installed ? 0 : 1) +
-        (ChocolateyInstalled ? 0 : 1) +
-        (WingetInstalled ? 0 : 1);
+    public int MissingCount => RequiredPrerequisiteStatuses.Count(s => !s);
+
+    /// <summary>
+    /// Total number of required prerequisites.
+    /// </summary>
+    public int RequiredCount => RequiredPrerequisiteStatuses.Length;
+
+    /// <summary>
+    /// Array of all prerequisite installation statuses for dynamic counting.
+    /// </summary>
+    private bool[] AllPrerequisiteStatuses => new[]
+    {
+        PowerShell7Installed,
+        ChocolateyInstalled,
+        WingetInstalled,
+        DotNetInstalled,
+        DotNetFrameworkInstalled,
+        VCRedistInstalled,
+        JavaInstalled
+    };
 
     /// <summary>
     /// Total number of missing prerequisites (including optional).
     /// </summary>
-    public int TotalMissingCount =>
-        (PowerShell7Installed ? 0 : 1) +
-        (ChocolateyInstalled ? 0 : 1) +
-        (WingetInstalled ? 0 : 1) +
-        (DotNetInstalled ? 0 : 1) +
-        (DotNetFrameworkInstalled ? 0 : 1) +
-        (VCRedistInstalled ? 0 : 1) +
-        (JavaInstalled ? 0 : 1);
+    public int TotalMissingCount => AllPrerequisiteStatuses.Count(s => !s);
 
     /// <summary>
-    /// Total number of prerequisites.
+    /// Total number of prerequisites (calculated dynamically).
     /// </summary>
-    public int TotalCount => 7;
+    public int TotalCount => AllPrerequisiteStatuses.Length;
 
     /// <summary>
     /// Number of installed prerequisites.
     /// </summary>
-    public int InstalledCount => TotalCount - TotalMissingCount;
+    public int InstalledCount => AllPrerequisiteStatuses.Count(s => s);
 }

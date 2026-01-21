@@ -34,6 +34,193 @@
 
 Set-StrictMode -Version Latest
 
+# === TYPE DEFINITIONS ===
+# PowerShell classes for type-safe state management
+
+enum InstallationMethod {
+    Winget
+    Chocolatey
+    Store
+    DirectDownload
+    WindowsFeature
+    WindowsCapability
+}
+
+class RollbackEntry {
+    [string]$AppName
+    [InstallationMethod]$Method
+    [string]$Identifier
+    [datetime]$InstalledAt
+
+    RollbackEntry([string]$appName, [InstallationMethod]$method, [string]$identifier) {
+        if ([string]::IsNullOrWhiteSpace($appName)) {
+            throw [System.ArgumentException]::new('AppName cannot be null or empty')
+        }
+        if ($identifier -match '[;&|`$<>]') {
+            throw [System.ArgumentException]::new('Identifier contains invalid characters')
+        }
+        $this.AppName = $appName
+        $this.Method = $method
+        $this.Identifier = $identifier
+        $this.InstalledAt = Get-Date
+    }
+
+    [hashtable] ToHashtable() {
+        return @{
+            AppName = $this.AppName
+            Method = $this.Method.ToString()
+            Identifier = $this.Identifier
+            InstalledAt = $this.InstalledAt.ToString('o')
+        }
+    }
+
+    static [RollbackEntry] FromHashtable([hashtable]$data) {
+        $parsedMethod = [InstallationMethod]::Winget
+        if ($data.Method) {
+            $parsedMethod = [Enum]::Parse([InstallationMethod], $data.Method)
+        }
+        $entry = [RollbackEntry]::new($data.AppName, $parsedMethod, $data.Identifier)
+        if ($data.InstalledAt) {
+            $entry.InstalledAt = [datetime]::Parse($data.InstalledAt)
+        }
+        return $entry
+    }
+}
+
+class RollbackStateData {
+    [string]$SessionId
+    [RollbackEntry[]]$InstalledApps
+    [datetime]$StartTime
+
+    RollbackStateData() {
+        $this.InstalledApps = @()
+    }
+
+    RollbackStateData([string]$sessionId) {
+        if (-not ($sessionId -match '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')) {
+            throw [System.ArgumentException]::new('SessionId must be a valid GUID')
+        }
+        $this.SessionId = $sessionId
+        $this.InstalledApps = @()
+        $this.StartTime = Get-Date
+    }
+
+    [void] AddEntry([RollbackEntry]$entry) {
+        $this.InstalledApps = @($this.InstalledApps) + $entry
+    }
+
+    [hashtable] ToHashtable() {
+        return @{
+            SessionId = $this.SessionId
+            InstalledApps = @($this.InstalledApps | ForEach-Object { $_.ToHashtable() })
+            StartTime = $this.StartTime.ToString('o')
+        }
+    }
+}
+
+class DeploymentStateData {
+    [string]$SessionId
+    [string]$ProfileName
+    [int]$TotalApps
+    [string[]]$CompletedApps
+    [string[]]$FailedApps
+    [string[]]$PendingApps
+    [datetime]$StartTime
+    [datetime]$LastUpdated
+
+    DeploymentStateData() {
+        $this.CompletedApps = @()
+        $this.FailedApps = @()
+        $this.PendingApps = @()
+    }
+
+    DeploymentStateData([string]$sessionId, [string]$profileName, [string[]]$applications) {
+        if (-not ($sessionId -match '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')) {
+            throw [System.ArgumentException]::new('SessionId must be a valid GUID')
+        }
+        if ([string]::IsNullOrWhiteSpace($profileName) -or $profileName.Length -gt 100) {
+            throw [System.ArgumentException]::new('ProfileName must be 1-100 characters')
+        }
+        if ($applications.Count -lt 0 -or $applications.Count -gt 1000) {
+            throw [System.ArgumentException]::new('Applications count must be 0-1000')
+        }
+        $this.SessionId = $sessionId
+        $this.ProfileName = $profileName
+        $this.TotalApps = $applications.Count
+        $this.CompletedApps = @()
+        $this.FailedApps = @()
+        $this.PendingApps = @($applications)
+        $this.StartTime = Get-Date
+        $this.LastUpdated = Get-Date
+    }
+
+    [void] MarkCompleted([string]$appName) {
+        $this.PendingApps = @($this.PendingApps | Where-Object { $_ -ne $appName })
+        $this.CompletedApps = @($this.CompletedApps) + $appName
+        $this.LastUpdated = Get-Date
+    }
+
+    [void] MarkFailed([string]$appName) {
+        $this.PendingApps = @($this.PendingApps | Where-Object { $_ -ne $appName })
+        $this.FailedApps = @($this.FailedApps) + $appName
+        $this.LastUpdated = Get-Date
+    }
+
+    [int] GetProgressPercent() {
+        if ($this.TotalApps -eq 0) { return 0 }
+        $completed = $this.CompletedApps.Count + $this.FailedApps.Count
+        return [math]::Round(($completed / $this.TotalApps) * 100)
+    }
+
+    [hashtable] ToHashtable() {
+        return @{
+            SessionId = $this.SessionId
+            ProfileName = $this.ProfileName
+            TotalApps = $this.TotalApps
+            CompletedApps = @($this.CompletedApps)
+            FailedApps = @($this.FailedApps)
+            PendingApps = @($this.PendingApps)
+            StartTime = $this.StartTime.ToString('o')
+            LastUpdated = $this.LastUpdated.ToString('o')
+        }
+    }
+}
+
+class ResumableDeploymentInfo {
+    [string]$ProfileName
+    [int]$CompletedCount
+    [int]$FailedCount
+    [int]$PendingCount
+    [int]$TotalCount
+    [datetime]$StartTime
+    [datetime]$LastUpdated
+    [string[]]$PendingApps
+
+    ResumableDeploymentInfo([DeploymentStateData]$state) {
+        $this.ProfileName = $state.ProfileName
+        $this.CompletedCount = $state.CompletedApps.Count
+        $this.FailedCount = $state.FailedApps.Count
+        $this.PendingCount = $state.PendingApps.Count
+        $this.TotalCount = $state.TotalApps
+        $this.StartTime = $state.StartTime
+        $this.LastUpdated = $state.LastUpdated
+        $this.PendingApps = @($state.PendingApps)
+    }
+
+    [hashtable] ToHashtable() {
+        return @{
+            ProfileName = $this.ProfileName
+            CompletedCount = $this.CompletedCount
+            FailedCount = $this.FailedCount
+            PendingCount = $this.PendingCount
+            TotalCount = $this.TotalCount
+            StartTime = $this.StartTime.ToString('o')
+            LastUpdated = $this.LastUpdated.ToString('o')
+            PendingApps = $this.PendingApps
+        }
+    }
+}
+
 # === MODULE INITIALIZATION ===
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
@@ -114,7 +301,7 @@ function Test-ValidStateData {
 
     # Validate ProfileName (no path traversal, no special chars)
     if ($StateData.ProfileName) {
-        if ($StateData.ProfileName -match '\.\.|\|[/\\]|[<>:"|?*]') {
+        if ($StateData.ProfileName -match '\.\.|[/\\|<>:"|?*]') {
             Write-Status -Message (Get-LocalizedString -Key 'state.validation.invalid_profile_name') -Level 'Warning' -Category 'State'
             return $false
         }

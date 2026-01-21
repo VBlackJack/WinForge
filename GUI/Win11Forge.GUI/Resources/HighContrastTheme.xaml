@@ -15,51 +15,53 @@
 -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
                     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
 
     <!-- High Contrast Color Palette (WCAG AAA compliant - 7:1 minimum contrast) -->
+    <!-- All brushes are frozen for improved performance and thread safety -->
 
     <!-- Primary Colors - High contrast yellow on black -->
-    <SolidColorBrush x:Key="HighContrastPrimaryBrush" Color="#FFFF00"/>
-    <SolidColorBrush x:Key="HighContrastPrimaryForegroundBrush" Color="#000000"/>
+    <SolidColorBrush x:Key="HighContrastPrimaryBrush" Color="#FFFF00" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastPrimaryForegroundBrush" Color="#000000" po:Freeze="True"/>
 
     <!-- Secondary Colors - High contrast cyan -->
-    <SolidColorBrush x:Key="HighContrastSecondaryBrush" Color="#00FFFF"/>
-    <SolidColorBrush x:Key="HighContrastSecondaryForegroundBrush" Color="#000000"/>
+    <SolidColorBrush x:Key="HighContrastSecondaryBrush" Color="#00FFFF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastSecondaryForegroundBrush" Color="#000000" po:Freeze="True"/>
 
     <!-- Background Colors -->
-    <SolidColorBrush x:Key="HighContrastBackgroundBrush" Color="#000000"/>
-    <SolidColorBrush x:Key="HighContrastSurfaceBrush" Color="#1A1A1A"/>
-    <SolidColorBrush x:Key="HighContrastCardBrush" Color="#262626"/>
+    <SolidColorBrush x:Key="HighContrastBackgroundBrush" Color="#000000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastSurfaceBrush" Color="#1A1A1A" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastCardBrush" Color="#262626" po:Freeze="True"/>
 
     <!-- Text Colors -->
-    <SolidColorBrush x:Key="HighContrastTextPrimaryBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="HighContrastTextSecondaryBrush" Color="#E0E0E0"/>
-    <SolidColorBrush x:Key="HighContrastTextDisabledBrush" Color="#808080"/>
+    <SolidColorBrush x:Key="HighContrastTextPrimaryBrush" Color="#FFFFFF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastTextSecondaryBrush" Color="#E0E0E0" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastTextDisabledBrush" Color="#808080" po:Freeze="True"/>
 
     <!-- Status Colors - High visibility -->
-    <SolidColorBrush x:Key="HighContrastSuccessBrush" Color="#00FF00"/>
-    <SolidColorBrush x:Key="HighContrastSuccessBackgroundBrush" Color="#003300"/>
-    <SolidColorBrush x:Key="HighContrastErrorBrush" Color="#FF0000"/>
-    <SolidColorBrush x:Key="HighContrastErrorBackgroundBrush" Color="#330000"/>
-    <SolidColorBrush x:Key="HighContrastWarningBrush" Color="#FFFF00"/>
-    <SolidColorBrush x:Key="HighContrastWarningBackgroundBrush" Color="#333300"/>
-    <SolidColorBrush x:Key="HighContrastInfoBrush" Color="#00FFFF"/>
-    <SolidColorBrush x:Key="HighContrastInfoBackgroundBrush" Color="#003333"/>
+    <SolidColorBrush x:Key="HighContrastSuccessBrush" Color="#00FF00" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastSuccessBackgroundBrush" Color="#003300" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastErrorBrush" Color="#FF0000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastErrorBackgroundBrush" Color="#330000" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastWarningBrush" Color="#FFFF00" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastWarningBackgroundBrush" Color="#333300" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastInfoBrush" Color="#00FFFF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastInfoBackgroundBrush" Color="#003333" po:Freeze="True"/>
 
     <!-- Border Colors -->
-    <SolidColorBrush x:Key="HighContrastBorderBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="HighContrastBorderLightBrush" Color="#666666"/>
-    <SolidColorBrush x:Key="HighContrastFocusBorderBrush" Color="#FFFF00"/>
+    <SolidColorBrush x:Key="HighContrastBorderBrush" Color="#FFFFFF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastBorderLightBrush" Color="#666666" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastFocusBorderBrush" Color="#FFFF00" po:Freeze="True"/>
 
     <!-- Link Colors -->
-    <SolidColorBrush x:Key="HighContrastLinkBrush" Color="#00FFFF"/>
-    <SolidColorBrush x:Key="HighContrastLinkHoverBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="HighContrastLinkVisitedBrush" Color="#FF00FF"/>
+    <SolidColorBrush x:Key="HighContrastLinkBrush" Color="#00FFFF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastLinkHoverBrush" Color="#FFFFFF" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastLinkVisitedBrush" Color="#FF00FF" po:Freeze="True"/>
 
     <!-- Selection Colors -->
-    <SolidColorBrush x:Key="HighContrastSelectionBrush" Color="#FFFF00"/>
-    <SolidColorBrush x:Key="HighContrastSelectionForegroundBrush" Color="#000000"/>
+    <SolidColorBrush x:Key="HighContrastSelectionBrush" Color="#FFFF00" po:Freeze="True"/>
+    <SolidColorBrush x:Key="HighContrastSelectionForegroundBrush" Color="#000000" po:Freeze="True"/>
 
     <!-- High Contrast Focus Visual Style (extra thick border) -->
     <Style x:Key="HighContrastFocusVisual">

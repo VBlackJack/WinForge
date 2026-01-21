@@ -15,11 +15,12 @@
     },
     "powershell7": {
       "description": "PowerShell 7 MSI installer",
-      "version": "3.5.0",
+      "version": "7.5.0",
       "downloadUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/PowerShell-7.5.0-win-x64.msi",
       "homepage": "https://github.com/PowerShell/PowerShell",
       "checksumUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/hashes.sha256",
-      "notes": "Update version and URL when new stable release is available"
+      "sha256": "D12B63D2CA67765FF91D30BA5EA5C01956F36CE8C04C2DB71795CB56A90D7912",
+      "notes": "Update version, URL and SHA256 when new stable release is available"
     }
   },
   "trustedDomains": {

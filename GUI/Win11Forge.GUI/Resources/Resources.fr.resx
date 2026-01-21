@@ -668,6 +668,25 @@
     <value>Win11Forge</value>
     <comment>Application name (brand name, not translated)</comment>
   </data>
+  <!-- Splash Screen -->
+  <data name="Splash_Initializing" xml:space="preserve">
+    <value>Initialisation...</value>
+  </data>
+  <data name="Splash_ConfiguringServices" xml:space="preserve">
+    <value>Configuration des services...</value>
+  </data>
+  <data name="Splash_LoadingSettings" xml:space="preserve">
+    <value>Chargement des parametres...</value>
+  </data>
+  <data name="Splash_ApplyingLanguage" xml:space="preserve">
+    <value>Application des parametres de langue...</value>
+  </data>
+  <data name="Splash_ApplyingTheme" xml:space="preserve">
+    <value>Application du theme...</value>
+  </data>
+  <data name="Splash_LoadingInterface" xml:space="preserve">
+    <value>Chargement de l'interface...</value>
+  </data>
   <!-- Favorites -->
   <data name="Apps_StatusFavorites" xml:space="preserve">
     <value>Favoris</value>
@@ -915,6 +934,27 @@
   </data>
   <data name="Validation_AlreadyExists" xml:space="preserve">
     <value>Un profil avec ce nom existe deja</value>
+  </data>
+  <data name="Validation_ProfileNameRequired" xml:space="preserve">
+    <value>Le nom du profil est obligatoire</value>
+  </data>
+  <data name="Validation_ProfileNameInvalidChars" xml:space="preserve">
+    <value>Le nom du profil contient des caracteres invalides</value>
+  </data>
+  <data name="Validation_ProfileNameTooLong" xml:space="preserve">
+    <value>Le nom du profil ne doit pas depasser {0} caracteres</value>
+  </data>
+  <data name="Validation_ManualInstallCannotBeSuccess" xml:space="preserve">
+    <value>Une installation manuelle requise ne peut pas etre marquee comme reussie</value>
+  </data>
+  <data name="Validation_DryRunShouldSucceed" xml:space="preserve">
+    <value>Les resultats de simulation doivent toujours etre marques comme reussis</value>
+  </data>
+  <data name="Validation_FailedInstallNeedsMessage" xml:space="preserve">
+    <value>Une installation echouee doit inclure un message d'erreur</value>
+  </data>
+  <data name="Error_ProfileNotFound" xml:space="preserve">
+    <value>Profil introuvable</value>
   </data>
   <!-- Help System -->
   <data name="Help_Tooltip_Scan" xml:space="preserve">
@@ -1234,5 +1274,142 @@
   </data>
   <data name="Dashboard_Stats_ClickToView" xml:space="preserve">
     <value>Cliquer pour voir</value>
+  </data>
+  <!-- Accessibility -->
+  <data name="Accessibility_Progress" xml:space="preserve">
+    <value>{0} sur {1} termine, {2}%</value>
+  </data>
+  <data name="Accessibility_ProgressWithItem" xml:space="preserve">
+    <value>{0} sur {1} termine, traitement de {2}</value>
+  </data>
+  <data name="Accessibility_ProgressComplete" xml:space="preserve">
+    <value>Operation terminee. {0} elements traites.</value>
+  </data>
+  <data name="Accessibility_DeploymentStarted" xml:space="preserve">
+    <value>Deploiement demarre</value>
+  </data>
+  <data name="Accessibility_DeploymentComplete" xml:space="preserve">
+    <value>Deploiement termine. {0} reussis, {1} echecs, {2} ignores.</value>
+  </data>
+  <data name="Accessibility_InstallationStarted" xml:space="preserve">
+    <value>Installation de {0}</value>
+  </data>
+  <data name="Accessibility_InstallationComplete" xml:space="preserve">
+    <value>{0} installe avec succes</value>
+  </data>
+  <data name="Accessibility_InstallationFailed" xml:space="preserve">
+    <value>Echec de l'installation de {0}</value>
+  </data>
+  <data name="Accessibility_LiveRegion" xml:space="preserve">
+    <value>Annonces de statut</value>
+  </data>
+  <!-- Deploiements planifies -->
+  <data name="Settings_Tab_Scheduled" xml:space="preserve">
+    <value>Planifier</value>
+  </data>
+  <data name="ScheduledDeployment_AdminRequired" xml:space="preserve">
+    <value>Privileges administrateur requis pour gerer les deploiements planifies. Veuillez redemarrer l'application en tant qu'administrateur.</value>
+  </data>
+  <data name="ScheduledDeployment_CreateNew" xml:space="preserve">
+    <value>Creer un deploiement planifie</value>
+  </data>
+  <data name="ScheduledDeployment_Profile" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="ScheduledDeployment_TriggerType" xml:space="preserve">
+    <value>Type de planification</value>
+  </data>
+  <data name="ScheduledDeployment_DateTime" xml:space="preserve">
+    <value>Date et heure</value>
+  </data>
+  <data name="ScheduledDeployment_Create" xml:space="preserve">
+    <value>Planifier</value>
+  </data>
+  <data name="ScheduledDeployment_List" xml:space="preserve">
+    <value>Deploiements planifies</value>
+  </data>
+  <data name="ScheduledDeployment_Refresh" xml:space="preserve">
+    <value>Actualiser la liste</value>
+  </data>
+  <data name="ScheduledDeployment_Empty" xml:space="preserve">
+    <value>Aucun deploiement planifie</value>
+  </data>
+  <data name="ScheduledDeployment_Col_Profile" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="ScheduledDeployment_Col_Schedule" xml:space="preserve">
+    <value>Planification</value>
+  </data>
+  <data name="ScheduledDeployment_Col_Status" xml:space="preserve">
+    <value>Statut</value>
+  </data>
+  <data name="ScheduledDeployment_Col_LastRun" xml:space="preserve">
+    <value>Dernier resultat</value>
+  </data>
+  <data name="ScheduledDeployment_RunNow" xml:space="preserve">
+    <value>Executer maintenant</value>
+  </data>
+  <data name="ScheduledDeployment_Remove" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="ScheduledDeployment_SelectProfile" xml:space="preserve">
+    <value>Veuillez selectionner un profil</value>
+  </data>
+  <data name="ScheduledDeployment_Created" xml:space="preserve">
+    <value>Deploiement planifie cree avec succes</value>
+  </data>
+  <data name="ScheduledDeployment_CreateError" xml:space="preserve">
+    <value>Echec de la creation du deploiement planifie</value>
+  </data>
+  <data name="ScheduledDeployment_ConfirmRemove" xml:space="preserve">
+    <value>Voulez-vous vraiment supprimer ce deploiement planifie ?</value>
+  </data>
+  <data name="ScheduledDeployment_ConfirmRemoveTitle" xml:space="preserve">
+    <value>Supprimer le deploiement planifie</value>
+  </data>
+  <data name="ScheduledDeployment_Removed" xml:space="preserve">
+    <value>Deploiement planifie supprime</value>
+  </data>
+  <data name="ScheduledDeployment_RemoveError" xml:space="preserve">
+    <value>Echec de la suppression du deploiement planifie</value>
+  </data>
+  <data name="ScheduledDeployment_Started" xml:space="preserve">
+    <value>Deploiement planifie demarre</value>
+  </data>
+  <data name="ScheduledDeployment_StartError" xml:space="preserve">
+    <value>Echec du demarrage du deploiement planifie</value>
+  </data>
+  <data name="ScheduledDeployment_LoadError" xml:space="preserve">
+    <value>Echec du chargement des deploiements planifies</value>
+  </data>
+  <data name="ScheduledDeployment_AtStartup" xml:space="preserve">
+    <value>Au demarrage</value>
+  </data>
+  <data name="ScheduledDeployment_AtLogon" xml:space="preserve">
+    <value>A la connexion</value>
+  </data>
+  <data name="ScheduledDeployment_Daily" xml:space="preserve">
+    <value>Quotidien a</value>
+  </data>
+  <data name="ScheduledDeployment_Weekly" xml:space="preserve">
+    <value>Hebdomadaire a</value>
+  </data>
+  <data name="ScheduledDeployment_Status_Pending" xml:space="preserve">
+    <value>En attente</value>
+  </data>
+  <data name="ScheduledDeployment_Status_Running" xml:space="preserve">
+    <value>En cours</value>
+  </data>
+  <data name="ScheduledDeployment_Status_Completed" xml:space="preserve">
+    <value>Termine</value>
+  </data>
+  <data name="ScheduledDeployment_Status_Failed" xml:space="preserve">
+    <value>Echoue</value>
+  </data>
+  <data name="ScheduledDeployment_Status_Cancelled" xml:space="preserve">
+    <value>Annule</value>
+  </data>
+  <data name="ScheduledDeployment_Status_Unknown" xml:space="preserve">
+    <value>Inconnu</value>
   </data>
 </root>

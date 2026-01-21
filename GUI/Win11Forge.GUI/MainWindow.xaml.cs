@@ -49,6 +49,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private readonly AppsViewModel _appsViewModel;
     private readonly SettingsViewModel _settingsViewModel;
     private readonly PrerequisitesViewModel _prerequisitesViewModel;
+    private readonly IAccessibilityService? _accessibilityService;
 
     // Event handlers stored for cleanup
     private EventHandler? _undoStateChangedHandler;
@@ -153,6 +154,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             _toastService = App.GetService<ToastService>();
             _navigationService = App.GetService<INavigationService>();
             _undoService = App.GetService<IUndoService>();
+            _accessibilityService = App.GetService<IAccessibilityService>();
 
             // Subscribe to undo service state changes (store handler for cleanup)
             _undoStateChangedHandler = (s, e) =>
@@ -342,6 +344,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
         // Initialize toast service with snackbar
         _toastService.SetMessageQueue(MainSnackbar.MessageQueue);
+
+        // Initialize accessibility service with live region for screen readers
+        if (_accessibilityService is AccessibilityService accessibilityService)
+        {
+            accessibilityService.Initialize(ScreenReaderLiveRegion);
+        }
 
         // Start cache pre-warming in background (non-blocking)
         // This makes subsequent app scanning 10-50x faster

@@ -409,6 +409,12 @@ internal class MockPowerShellBridge : IPowerShellBridge
 
     public Task<Dictionary<string, BatchAppStatus>?> GetBatchApplicationStatusAsync(IReadOnlyList<ApplicationModel> apps) =>
         Task.FromResult<Dictionary<string, BatchAppStatus>?>(new Dictionary<string, BatchAppStatus>());
+
+    public Task<string> ExecuteScriptAsync(string relativePath) =>
+        Task.FromResult(string.Empty);
+
+    public Task<string> ExecuteCommandAsync(string command) =>
+        Task.FromResult(string.Empty);
 }
 
 /// <summary>

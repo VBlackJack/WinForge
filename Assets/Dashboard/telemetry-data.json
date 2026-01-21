@@ -1,57 +1,57 @@
 {
-  "generatedAt": "2026-01-20T22:51:28.7207796+01:00",
   "summary": {
     "DataVersion": "1.0",
-    "CreatedAt": "2026-01-20T22:51:28.6911886+01:00",
-    "LastUpdated": "2026-01-20T22:51:28.6912952+01:00",
+    "CreatedAt": "2026-01-21T18:09:39.9233709+01:00",
+    "LastUpdated": "2026-01-21T18:09:39.9234438+01:00",
     "Deployments": {
-      "RolledBack": 0,
       "Failed": 0,
+      "Successful": 0,
       "Total": 0,
       "SuccessRate": "0%",
-      "Successful": 0
+      "RolledBack": 0
     },
     "Applications": {
+      "ByCategory": {},
+      "TotalFailed": 0.0,
       "TopInstalled": [],
       "TotalInstalled": 0,
-      "ByMethod": {},
-      "ByCategory": {},
-      "TotalFailed": 0.0
+      "ByMethod": {}
     },
     "Performance": {
-      "AverageDeploymentMinutes": 0.0,
       "TotalDeploymentHours": 0.0,
+      "AverageDeploymentMinutes": 0.0,
       "AverageDeploymentSeconds": 0
     },
     "Profiles": {
-      "UsageStats": {},
-      "MostUsed": "N/A"
+      "MostUsed": "N/A",
+      "UsageStats": {}
     }
   },
   "charts": {
     "categoryBar": {
-      "data": [],
-      "labels": []
-    },
-    "methodBar": {
-      "data": [],
-      "labels": []
-    },
-    "topAppsBar": {
-      "data": [],
-      "labels": []
+      "labels": [],
+      "data": []
     },
     "deploymentPie": {
-      "data": [
-        0,
-        0,
-        0
-      ],
       "labels": [
         "Successful",
         "Failed",
         "Rolled Back"
+      ],
+      "data": [
+        0,
+        0,
+        0
       ]
+    },
+    "methodBar": {
+      "labels": [],
+      "data": []
+    },
+    "topAppsBar": {
+      "labels": [],
+      "data": []
     }
-  }
+  },
+  "generatedAt": "2026-01-21T18:09:39.9703533+01:00"
 }

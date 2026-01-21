@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "DatabaseVersion": "3.5.0",
-  "LastUpdated": "2026-01-20",
-  "TotalApplications": 170,
+  "DatabaseVersion": "3.5.1",
+  "LastUpdated": "2026-01-21",
+  "TotalApplications": 177,
   "PriorityRanges": {
     "Description": "Priority ranges for application installation order",
     "Ranges": {
@@ -4694,6 +4694,207 @@
       "LastVerified": "2026-01-17",
       "Verified": true,
       "Homepage": "https://www.nirsoft.net/"
+    },
+    "AzureCLI": {
+      "Name": "Azure CLI",
+      "Category": "Development",
+      "Description": "Microsoft Azure command-line interface for managing Azure resources",
+      "Sources": {
+        "Winget": "Microsoft.AzureCLI",
+        "Chocolatey": "azure-cli",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Command",
+        "Command": "az --version",
+        "VersionRegex": "azure-cli\\s+(\\d+\\.\\d+\\.\\d+)"
+      },
+      "DefaultPriority": 45,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "development",
+        "cloud",
+        "azure",
+        "microsoft",
+        "enterprise"
+      ],
+      "LastVerified": "2026-01-21",
+      "Verified": true,
+      "Homepage": "https://docs.microsoft.com/cli/azure/"
+    },
+    "AzureDataStudio": {
+      "Name": "Azure Data Studio",
+      "Category": "Development",
+      "Description": "Cross-platform database tool for SQL Server, Azure SQL and PostgreSQL",
+      "Sources": {
+        "Winget": "Microsoft.AzureDataStudio",
+        "Chocolatey": "azure-data-studio",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%LOCALAPPDATA%\\Programs\\Azure Data Studio\\azuredatastudio.exe"
+      },
+      "DefaultPriority": 46,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "development",
+        "database",
+        "azure",
+        "sql",
+        "microsoft",
+        "enterprise"
+      ],
+      "LastVerified": "2026-01-21",
+      "Verified": true,
+      "Homepage": "https://docs.microsoft.com/sql/azure-data-studio/"
+    },
+    "RemoteDesktopManager": {
+      "Name": "Remote Desktop Manager",
+      "Category": "Network",
+      "Description": "Remote connection and password management for IT professionals",
+      "Sources": {
+        "Winget": "Devolutions.RemoteDesktopManager",
+        "Chocolatey": "rdm",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Registry",
+        "Path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Remote Desktop Manager",
+        "VersionKey": "DisplayVersion"
+      },
+      "DefaultPriority": 48,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "network",
+        "remote",
+        "rdp",
+        "enterprise",
+        "it-admin"
+      ],
+      "LastVerified": "2026-01-21",
+      "Verified": true,
+      "Homepage": "https://devolutions.net/remote-desktop-manager/"
+    },
+    "mRemoteNG": {
+      "Name": "mRemoteNG",
+      "Category": "Network",
+      "Description": "Multi-protocol remote connection manager (RDP, VNC, SSH)",
+      "Sources": {
+        "Winget": "mRemoteNG.mRemoteNG",
+        "Chocolatey": "mremoteng",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%ProgramFiles%\\mRemoteNG\\mRemoteNG.exe"
+      },
+      "DefaultPriority": 49,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "network",
+        "remote",
+        "rdp",
+        "ssh",
+        "vnc",
+        "open-source"
+      ],
+      "LastVerified": "2026-01-21",
+      "Verified": true,
+      "Homepage": "https://mremoteng.org/"
+    },
+    "Sysinternals": {
+      "Name": "Sysinternals Suite",
+      "Category": "Diagnostic",
+      "Description": "Advanced system utilities from Microsoft Sysinternals (Process Explorer, Autoruns, etc.)",
+      "Sources": {
+        "Winget": "Microsoft.Sysinternals.Suite",
+        "Chocolatey": "sysinternals",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%LOCALAPPDATA%\\Microsoft\\WinGet\\Packages\\Microsoft.Sysinternals.Suite_Microsoft.Winget.Source_*\\procexp.exe"
+      },
+      "DefaultPriority": 15,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "diagnostic",
+        "system",
+        "microsoft",
+        "essential",
+        "enterprise",
+        "it-admin"
+      ],
+      "LastVerified": "2026-01-21",
+      "Verified": true,
+      "Homepage": "https://docs.microsoft.com/sysinternals/"
+    },
+    "TreeSizeFree": {
+      "Name": "TreeSize Free",
+      "Category": "Utility",
+      "Description": "Disk space analyzer for quickly finding large files and folders",
+      "Sources": {
+        "Winget": "JAMSoftware.TreeSize.Free",
+        "Chocolatey": "treesizefree",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Registry",
+        "Path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\TreeSize Free_is1",
+        "VersionKey": "DisplayVersion"
+      },
+      "DefaultPriority": 50,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "utility",
+        "disk",
+        "storage",
+        "analysis"
+      ],
+      "LastVerified": "2026-01-21",
+      "Verified": true,
+      "Homepage": "https://www.jam-software.com/treesize_free"
+    },
+    "AdobeAcrobatReader": {
+      "Name": "Adobe Acrobat Reader DC",
+      "Category": "Productivity",
+      "Description": "PDF viewer and annotation tool from Adobe",
+      "Sources": {
+        "Winget": "Adobe.Acrobat.Reader.64-bit",
+        "Chocolatey": "adobereader",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Registry",
+        "Path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{AC76BA86-7AD7-1033-7B44-AC0F074E4100}",
+        "VersionKey": "DisplayVersion"
+      },
+      "DefaultPriority": 20,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "productivity",
+        "pdf",
+        "adobe",
+        "office"
+      ],
+      "LastVerified": "2026-01-21",
+      "Verified": true,
+      "Homepage": "https://acrobat.adobe.com/us/en/acrobat/pdf-reader.html"
     }
   },
   "Categories": {

@@ -238,13 +238,96 @@ function Clear-RegistryAppsCache {
 
 # === HELPER FUNCTIONS ===
 
-function Test-RegistryKey {
+# Security: Whitelist of allowed registry path patterns
+# Only registry paths matching these patterns are allowed for detection
+$script:AllowedRegistryPatterns = @(
+    '^HK(LM|CU):\\SOFTWARE(\\|$)',                        # Standard software keys (with or without trailing path)
+    '^HK(LM|CU):\\SOFTWARE\\WOW6432Node(\\|$)',           # 32-bit software keys
+    '^HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall(\\|$)',  # Uninstall keys
+    '^HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall(\\|$)',
+    '^HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall(\\|$)'
+)
+
+# Security: Blocked registry paths (sensitive hives)
+$script:BlockedRegistryPatterns = @(
+    '\\SAM\\',           # Security Account Manager
+    '\\SECURITY\\',      # Security settings
+    '\\SYSTEM\\',        # System configuration (except specific subkeys)
+    '\\\.DEFAULT\\',     # Default user profile
+    'RunOnce',           # Startup entries (potential persistence)
+    'Run$'               # Startup entries
+)
+
+function Test-RegistryPathAllowed {
+    <#
+    .SYNOPSIS
+        Validates that a registry path is allowed for detection.
+    .DESCRIPTION
+        Checks registry path against whitelist and blocklist patterns.
+        Returns $false for sensitive or disallowed paths.
+    .PARAMETER Path
+        The registry path to validate.
+    .OUTPUTS
+        Boolean indicating if the path is allowed.
+    #>
     [CmdletBinding()]
     [OutputType([bool])]
     param(
         [Parameter(Mandatory)]
         [string]$Path
     )
+
+    # Normalize path separators
+    $normalizedPath = $Path -replace '/', '\'
+
+    # Check against blocked patterns first
+    foreach ($blocked in $script:BlockedRegistryPatterns) {
+        if ($normalizedPath -match $blocked) {
+            Write-Verbose "Registry path blocked (sensitive): $Path"
+            return $false
+        }
+    }
+
+    # Check path length (prevent DoS via deep paths)
+    if ($normalizedPath.Length -gt 512) {
+        Write-Verbose "Registry path too long: $($normalizedPath.Length) chars"
+        return $false
+    }
+
+    # Check against allowed patterns
+    foreach ($allowed in $script:AllowedRegistryPatterns) {
+        if ($normalizedPath -match $allowed) {
+            return $true
+        }
+    }
+
+    Write-Verbose "Registry path not in whitelist: $Path"
+    return $false
+}
+
+function Test-RegistryKey {
+    <#
+    .SYNOPSIS
+        Tests if a registry key exists with security validation.
+    .DESCRIPTION
+        Validates the registry path against security rules before testing existence.
+    .PARAMETER Path
+        The registry path to test.
+    .OUTPUTS
+        Boolean indicating if the key exists and is allowed.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    # Security: Validate path is allowed
+    if (-not (Test-RegistryPathAllowed -Path $Path)) {
+        Write-Status -Message "Registry path not allowed: $Path" -Level 'Warning'
+        return $false
+    }
 
     return Test-Path -Path $Path -ErrorAction SilentlyContinue
 }

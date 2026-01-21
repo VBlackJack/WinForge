@@ -1,0 +1,86 @@
+{
+  "Name": "Enterprise",
+  "Description": "Enterprise security profile with compliance tools, hardened configuration, and IT management utilities (v3.5.0)",
+  "Version": "3.5.0",
+  "Inherits": ["Base"],
+  "Applications": [
+    "MicrosoftTeams",
+    "Slack",
+    "Zoom",
+    "AzureCLI",
+    "AzureDataStudio",
+    "PowerShellISE",
+    "RemoteDesktopManager",
+    "mRemoteNG",
+    "Wireshark",
+    "PuTTY",
+    "WinSCP",
+    "Sysinternals",
+    "TreeSizeFree",
+    "Greenshot",
+    "AdobeAcrobatReader",
+    "LibreOffice"
+  ],
+  "SystemConfig": {
+    "Explorer": {
+      "ShowHiddenFiles": true,
+      "ShowFileExtensions": true,
+      "ShowSystemFiles": false,
+      "NavigationPaneOptimized": true
+    },
+    "Taskbar": {
+      "DisableWidgets": true,
+      "StartAlignment": "left",
+      "SearchMode": "icon_only",
+      "DisableCortana": true
+    },
+    "Network": {
+      "DnsServers": [
+        "9.9.9.9",
+        "149.112.112.112"
+      ],
+      "DisableNetBIOS": true,
+      "DisableLLMNR": true,
+      "EnableSMBSigning": true
+    },
+    "Privacy": {
+      "DisableTelemetry": true,
+      "MinimalDataCollection": true,
+      "DisableAdvertisingId": true,
+      "DisableActivityHistory": true,
+      "DisableLocationTracking": true
+    },
+    "Performance": {
+      "DisableVisualEffects": false,
+      "OptimizeServices": true,
+      "PowerPlan": "Balanced"
+    },
+    "Security": {
+      "WindowsDefender": true,
+      "Firewall": true,
+      "EnableSecureBoot": true,
+      "EnableBitLocker": true,
+      "RequireAdminApproval": true,
+      "DisableAutoPlay": true,
+      "DisableRemoteAssistance": true,
+      "AuditPolicyEnabled": true,
+      "PasswordPolicy": {
+        "MinLength": 12,
+        "RequireComplexity": true,
+        "MaxAge": 90
+      },
+      "AccountLockout": {
+        "Threshold": 5,
+        "Duration": 30,
+        "ResetCounter": 30
+      }
+    },
+    "Compliance": {
+      "EnableEventLogging": true,
+      "LogRetentionDays": 90,
+      "EnablePowerShellLogging": true,
+      "EnableScriptBlockLogging": true,
+      "EnableModuleLogging": true
+    }
+  }
+}

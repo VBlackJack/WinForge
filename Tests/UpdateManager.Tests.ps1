@@ -212,19 +212,19 @@ Describe 'Compare-SemanticVersions Extended' {
 
 Describe 'Test-UpdateAvailable' {
     Context 'Basic Functionality' {
-        It 'Should return hashtable' {
+        It 'Should return PSCustomObject' {
             $result = Test-UpdateAvailable
-            $result | Should -BeOfType [hashtable]
+            $result | Should -BeOfType [PSCustomObject]
         }
 
-        It 'Should have UpdateAvailable key' {
+        It 'Should have UpdateAvailable property' {
             $result = Test-UpdateAvailable
-            $result.Keys | Should -Contain 'UpdateAvailable'
+            $result.PSObject.Properties.Name | Should -Contain 'UpdateAvailable'
         }
 
-        It 'Should have CurrentVersion key' {
+        It 'Should have CurrentVersion property' {
             $result = Test-UpdateAvailable
-            $result.Keys | Should -Contain 'CurrentVersion'
+            $result.PSObject.Properties.Name | Should -Contain 'CurrentVersion'
         }
     }
 }
@@ -236,22 +236,22 @@ Describe 'Test-IsNewerVersion' {
         }
 
         It 'Should return true when available is newer' {
-            $result = Test-IsNewerVersion -CurrentVersion '1.0.0' -AvailableVersion '2.0.0'
+            $result = Test-IsNewerVersion -Current '1.0.0' -Available '2.0.0'
             $result | Should -BeTrue
         }
 
         It 'Should return false when current is newer' {
-            $result = Test-IsNewerVersion -CurrentVersion '2.0.0' -AvailableVersion '1.0.0'
+            $result = Test-IsNewerVersion -Current '2.0.0' -Available '1.0.0'
             $result | Should -BeFalse
         }
 
         It 'Should return false when versions are equal' {
-            $result = Test-IsNewerVersion -CurrentVersion '1.0.0' -AvailableVersion '1.0.0'
+            $result = Test-IsNewerVersion -Current '1.0.0' -Available '1.0.0'
             $result | Should -BeFalse
         }
 
         It 'Should handle prerelease comparison' {
-            $result = Test-IsNewerVersion -CurrentVersion '1.0.0-beta' -AvailableVersion '1.0.0'
+            $result = Test-IsNewerVersion -Current '1.0.0-beta' -Available '1.0.0'
             $result | Should -BeTrue
         }
     }
@@ -296,22 +296,19 @@ Describe 'UpdateManager Integration' {
 
 Describe 'UpdateManager Export Completeness' {
     Context 'All Expected Functions Exported' {
-        $expectedFunctions = @(
-            'Get-CurrentVersion',
-            'Compare-SemanticVersions',
-            'Test-IsNewerVersion',
-            'Test-UpdateAvailable',
-            'Get-UpdateConfiguration',
-            'Set-UpdateConfiguration',
-            'Get-AvailableBackups',
-            'New-Win11ForgeBackup',
-            'Restore-Win11ForgeBackup'
-        )
-
-        foreach ($func in $expectedFunctions) {
-            It "Should export $func function" {
-                Get-Command -Module UpdateManager -Name $func -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
-            }
+        It 'Should export <FunctionName> function' -TestCases @(
+            @{ FunctionName = 'Get-CurrentVersion' }
+            @{ FunctionName = 'Compare-SemanticVersions' }
+            @{ FunctionName = 'Test-IsNewerVersion' }
+            @{ FunctionName = 'Test-UpdateAvailable' }
+            @{ FunctionName = 'Get-UpdateConfiguration' }
+            @{ FunctionName = 'Set-UpdateConfiguration' }
+            @{ FunctionName = 'Get-AvailableBackups' }
+            @{ FunctionName = 'Backup-CurrentVersion' }
+            @{ FunctionName = 'Restore-PreviousVersion' }
+        ) {
+            param($FunctionName)
+            Get-Command -Module UpdateManager -Name $FunctionName -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
     }
 }
@@ -329,15 +326,15 @@ Describe 'UpdateManager Security' {
 }
 
 Describe 'Backup Functions' {
-    Context 'New-Win11ForgeBackup' {
+    Context 'Backup-CurrentVersion' {
         It 'Should be available' {
-            Get-Command New-Win11ForgeBackup -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command Backup-CurrentVersion -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
     }
 
-    Context 'Restore-Win11ForgeBackup' {
+    Context 'Restore-PreviousVersion' {
         It 'Should be available' {
-            Get-Command Restore-Win11ForgeBackup -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command Restore-PreviousVersion -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
     }
 }

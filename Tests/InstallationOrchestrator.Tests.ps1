@@ -609,33 +609,30 @@ Describe 'Environment Restriction Extended' {
 
 Describe 'Module Export Completeness' {
     Context 'All Expected Functions Exported' {
-        $expectedFunctions = @(
-            'Initialize-RollbackSession',
-            'Save-RollbackState',
-            'Add-RollbackEntry',
-            'Invoke-Rollback',
-            'Clear-RollbackState',
-            'Get-RollbackState',
-            'Initialize-DeploymentSession',
-            'Save-DeploymentState',
-            'Update-DeploymentProgress',
-            'Test-ValidStateData',
-            'Get-DeploymentState',
-            'Test-IncompleteDeployment',
-            'Resume-Deployment',
-            'Clear-DeploymentState',
-            'Test-EnvironmentRestriction',
-            'Invoke-InstallationMethodSequence',
-            'Get-ApplicationSources',
-            'Invoke-ApplicationUpgrade',
-            'Install-Application',
-            'Install-ApplicationsParallel'
-        )
-
-        foreach ($func in $expectedFunctions) {
-            It "Should export $func function" {
-                Get-Command -Module InstallationOrchestrator -Name $func -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
-            }
+        It 'Should export <FunctionName> function' -TestCases @(
+            @{ FunctionName = 'Initialize-RollbackSession' }
+            @{ FunctionName = 'Save-RollbackState' }
+            @{ FunctionName = 'Add-RollbackEntry' }
+            @{ FunctionName = 'Invoke-Rollback' }
+            @{ FunctionName = 'Clear-RollbackState' }
+            @{ FunctionName = 'Get-RollbackState' }
+            @{ FunctionName = 'Initialize-DeploymentSession' }
+            @{ FunctionName = 'Save-DeploymentState' }
+            @{ FunctionName = 'Update-DeploymentProgress' }
+            @{ FunctionName = 'Test-ValidStateData' }
+            @{ FunctionName = 'Get-DeploymentState' }
+            @{ FunctionName = 'Test-IncompleteDeployment' }
+            @{ FunctionName = 'Resume-Deployment' }
+            @{ FunctionName = 'Clear-DeploymentState' }
+            @{ FunctionName = 'Test-EnvironmentRestriction' }
+            @{ FunctionName = 'Invoke-InstallationMethodSequence' }
+            @{ FunctionName = 'Get-ApplicationSources' }
+            @{ FunctionName = 'Invoke-ApplicationUpgrade' }
+            @{ FunctionName = 'Install-Application' }
+            @{ FunctionName = 'Install-ApplicationsParallel' }
+        ) {
+            param($FunctionName)
+            Get-Command -Module InstallationOrchestrator -Name $FunctionName -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
     }
 }

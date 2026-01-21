@@ -74,6 +74,24 @@ public interface IApplicationDetectionService
     /// Event raised when cache is refreshed.
     /// </summary>
     event EventHandler<CacheRefreshedEventArgs>? CacheRefreshed;
+
+    /// <summary>
+    /// Event raised when cache is invalidated.
+    /// </summary>
+    event EventHandler<CacheInvalidatedEventArgs>? CacheInvalidated;
+
+    /// <summary>
+    /// Invalidates the cache for a specific application after installation/uninstallation.
+    /// </summary>
+    /// <param name="appId">The application ID that was modified.</param>
+    /// <param name="reason">The reason for invalidation.</param>
+    void InvalidateCacheForApp(string appId, CacheInvalidationReason reason);
+
+    /// <summary>
+    /// Invalidates the entire cache, forcing a refresh on next access.
+    /// </summary>
+    /// <param name="reason">The reason for invalidation.</param>
+    void InvalidateAllCache(CacheInvalidationReason reason);
 }
 
 /// <summary>
@@ -116,4 +134,43 @@ public class CacheRefreshedEventArgs : EventArgs
 
     /// <summary>Whether refresh was triggered by user.</summary>
     public bool ManualRefresh { get; init; }
+}
+
+/// <summary>
+/// Reason for cache invalidation.
+/// </summary>
+public enum CacheInvalidationReason
+{
+    /// <summary>An application was installed.</summary>
+    ApplicationInstalled,
+
+    /// <summary>An application was uninstalled.</summary>
+    ApplicationUninstalled,
+
+    /// <summary>An application was updated.</summary>
+    ApplicationUpdated,
+
+    /// <summary>Manual user request.</summary>
+    UserRequested,
+
+    /// <summary>System configuration changed.</summary>
+    SystemChanged,
+
+    /// <summary>Cache TTL expired.</summary>
+    TtlExpired
+}
+
+/// <summary>
+/// Event args for cache invalidation events.
+/// </summary>
+public class CacheInvalidatedEventArgs : EventArgs
+{
+    /// <summary>The application ID that triggered invalidation, or null for full cache.</summary>
+    public string? AppId { get; init; }
+
+    /// <summary>The reason for invalidation.</summary>
+    public CacheInvalidationReason Reason { get; init; }
+
+    /// <summary>When the invalidation occurred.</summary>
+    public DateTime Timestamp { get; init; }
 }

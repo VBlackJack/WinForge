@@ -100,6 +100,38 @@
                 </Setter>
             </Style>
 
+            <!-- Keyboard-focused Button Style with enhanced visibility -->
+            <Style x:Key="KeyboardFocusableButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="AutomationProperties.IsRequiredForForm" Value="False"/>
+                <Style.Triggers>
+                    <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp8"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Keyboard-focused Icon Button Style -->
+            <Style x:Key="KeyboardFocusableIconButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Style.Triggers>
+                    <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Keyboard-focused Card Style with outline on focus -->
+            <Style x:Key="KeyboardFocusableCard" TargetType="materialDesign:Card" BasedOn="{StaticResource {x:Type materialDesign:Card}}">
+                <Setter Property="Focusable" Value="True"/>
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Style.Triggers>
+                    <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp8"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
             <!-- Navigation ListBoxItem Style with visible focus -->
             <Style x:Key="NavigationListBoxItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource MaterialDesignNavigationPrimaryListBoxItem}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
@@ -292,6 +324,7 @@
             <converters:BooleanToCheckIconConverter x:Key="BooleanToCheckIconConverter"/>
             <converters:BooleanToPhaseColorConverter x:Key="BooleanToPhaseColorConverter"/>
             <converters:BooleanToPhaseOpacityConverter x:Key="BooleanToPhaseOpacityConverter"/>
+            <converters:NullableToBooleanConverter x:Key="NullableToBooleanConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

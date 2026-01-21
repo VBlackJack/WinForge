@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#nullable enable
+
 namespace Win11Forge.GUI.Models;
 
 /// <summary>

@@ -44,6 +44,15 @@ public class Resources
 
     // Application
     public static string App_Title => ResourceManager.GetString("App_Title", resourceCulture);
+    public static string App_Name => ResourceManager.GetString("App_Name", resourceCulture);
+
+    // Splash Screen
+    public static string Splash_Initializing => ResourceManager.GetString("Splash_Initializing", resourceCulture);
+    public static string Splash_ConfiguringServices => ResourceManager.GetString("Splash_ConfiguringServices", resourceCulture);
+    public static string Splash_LoadingSettings => ResourceManager.GetString("Splash_LoadingSettings", resourceCulture);
+    public static string Splash_ApplyingLanguage => ResourceManager.GetString("Splash_ApplyingLanguage", resourceCulture);
+    public static string Splash_ApplyingTheme => ResourceManager.GetString("Splash_ApplyingTheme", resourceCulture);
+    public static string Splash_LoadingInterface => ResourceManager.GetString("Splash_LoadingInterface", resourceCulture);
 
     // Main Window
     public static string MainWindow_Welcome => ResourceManager.GetString("MainWindow_Welcome", resourceCulture);
@@ -71,6 +80,7 @@ public class Resources
     public static string Deploy_SelectAll => ResourceManager.GetString("Deploy_SelectAll", resourceCulture);
     public static string Deploy_SelectNone => ResourceManager.GetString("Deploy_SelectNone", resourceCulture);
     public static string Deploy_Selected => ResourceManager.GetString("Deploy_Selected", resourceCulture);
+    public static string Deploy_Installing => ResourceManager.GetString("Deploy_Installing", resourceCulture);
 
     // Column Headers
     public static string Col_Status => ResourceManager.GetString("Col_Status", resourceCulture);
@@ -357,6 +367,15 @@ public class Resources
     public static string Validation_InvalidChars => ResourceManager.GetString("Validation_InvalidChars", resourceCulture);
     public static string Validation_TooLong => ResourceManager.GetString("Validation_TooLong", resourceCulture);
     public static string Validation_AlreadyExists => ResourceManager.GetString("Validation_AlreadyExists", resourceCulture);
+    public static string Validation_ProfileNameRequired => ResourceManager.GetString("Validation_ProfileNameRequired", resourceCulture);
+    public static string Validation_ProfileNameInvalidChars => ResourceManager.GetString("Validation_ProfileNameInvalidChars", resourceCulture);
+    public static string Validation_ProfileNameTooLong => ResourceManager.GetString("Validation_ProfileNameTooLong", resourceCulture);
+    public static string Validation_ManualInstallCannotBeSuccess => ResourceManager.GetString("Validation_ManualInstallCannotBeSuccess", resourceCulture);
+    public static string Validation_DryRunShouldSucceed => ResourceManager.GetString("Validation_DryRunShouldSucceed", resourceCulture);
+    public static string Validation_FailedInstallNeedsMessage => ResourceManager.GetString("Validation_FailedInstallNeedsMessage", resourceCulture);
+
+    // Errors
+    public static string Error_ProfileNotFound => ResourceManager.GetString("Error_ProfileNotFound", resourceCulture);
 
     // Help System Tooltips
     public static string Help_Tooltip_Scan => ResourceManager.GetString("Help_Tooltip_Scan", resourceCulture);
@@ -524,4 +543,53 @@ public class Resources
     public static string Recovery_Generic_Retry => ResourceManager.GetString("Recovery_Generic_Retry", resourceCulture);
     public static string Recovery_Generic_Restart => ResourceManager.GetString("Recovery_Generic_Restart", resourceCulture);
     public static string Recovery_Generic_CheckLogs => ResourceManager.GetString("Recovery_Generic_CheckLogs", resourceCulture);
+
+    // Accessibility
+    public static string Accessibility_Progress => ResourceManager.GetString("Accessibility_Progress", resourceCulture);
+    public static string Accessibility_ProgressWithItem => ResourceManager.GetString("Accessibility_ProgressWithItem", resourceCulture);
+    public static string Accessibility_ProgressComplete => ResourceManager.GetString("Accessibility_ProgressComplete", resourceCulture);
+    public static string Accessibility_DeploymentStarted => ResourceManager.GetString("Accessibility_DeploymentStarted", resourceCulture);
+    public static string Accessibility_DeploymentComplete => ResourceManager.GetString("Accessibility_DeploymentComplete", resourceCulture);
+    public static string Accessibility_InstallationStarted => ResourceManager.GetString("Accessibility_InstallationStarted", resourceCulture);
+    public static string Accessibility_InstallationComplete => ResourceManager.GetString("Accessibility_InstallationComplete", resourceCulture);
+    public static string Accessibility_InstallationFailed => ResourceManager.GetString("Accessibility_InstallationFailed", resourceCulture);
+    public static string Accessibility_LiveRegion => ResourceManager.GetString("Accessibility_LiveRegion", resourceCulture);
+
+    // Scheduled Deployments
+    public static string Settings_Tab_Scheduled => ResourceManager.GetString("Settings_Tab_Scheduled", resourceCulture);
+    public static string ScheduledDeployment_AdminRequired => ResourceManager.GetString("ScheduledDeployment_AdminRequired", resourceCulture);
+    public static string ScheduledDeployment_CreateNew => ResourceManager.GetString("ScheduledDeployment_CreateNew", resourceCulture);
+    public static string ScheduledDeployment_Profile => ResourceManager.GetString("ScheduledDeployment_Profile", resourceCulture);
+    public static string ScheduledDeployment_TriggerType => ResourceManager.GetString("ScheduledDeployment_TriggerType", resourceCulture);
+    public static string ScheduledDeployment_DateTime => ResourceManager.GetString("ScheduledDeployment_DateTime", resourceCulture);
+    public static string ScheduledDeployment_Create => ResourceManager.GetString("ScheduledDeployment_Create", resourceCulture);
+    public static string ScheduledDeployment_List => ResourceManager.GetString("ScheduledDeployment_List", resourceCulture);
+    public static string ScheduledDeployment_Refresh => ResourceManager.GetString("ScheduledDeployment_Refresh", resourceCulture);
+    public static string ScheduledDeployment_Empty => ResourceManager.GetString("ScheduledDeployment_Empty", resourceCulture);
+    public static string ScheduledDeployment_Col_Profile => ResourceManager.GetString("ScheduledDeployment_Col_Profile", resourceCulture);
+    public static string ScheduledDeployment_Col_Schedule => ResourceManager.GetString("ScheduledDeployment_Col_Schedule", resourceCulture);
+    public static string ScheduledDeployment_Col_Status => ResourceManager.GetString("ScheduledDeployment_Col_Status", resourceCulture);
+    public static string ScheduledDeployment_Col_LastRun => ResourceManager.GetString("ScheduledDeployment_Col_LastRun", resourceCulture);
+    public static string ScheduledDeployment_RunNow => ResourceManager.GetString("ScheduledDeployment_RunNow", resourceCulture);
+    public static string ScheduledDeployment_Remove => ResourceManager.GetString("ScheduledDeployment_Remove", resourceCulture);
+    public static string ScheduledDeployment_SelectProfile => ResourceManager.GetString("ScheduledDeployment_SelectProfile", resourceCulture);
+    public static string ScheduledDeployment_Created => ResourceManager.GetString("ScheduledDeployment_Created", resourceCulture);
+    public static string ScheduledDeployment_CreateError => ResourceManager.GetString("ScheduledDeployment_CreateError", resourceCulture);
+    public static string ScheduledDeployment_ConfirmRemove => ResourceManager.GetString("ScheduledDeployment_ConfirmRemove", resourceCulture);
+    public static string ScheduledDeployment_ConfirmRemoveTitle => ResourceManager.GetString("ScheduledDeployment_ConfirmRemoveTitle", resourceCulture);
+    public static string ScheduledDeployment_Removed => ResourceManager.GetString("ScheduledDeployment_Removed", resourceCulture);
+    public static string ScheduledDeployment_RemoveError => ResourceManager.GetString("ScheduledDeployment_RemoveError", resourceCulture);
+    public static string ScheduledDeployment_Started => ResourceManager.GetString("ScheduledDeployment_Started", resourceCulture);
+    public static string ScheduledDeployment_StartError => ResourceManager.GetString("ScheduledDeployment_StartError", resourceCulture);
+    public static string ScheduledDeployment_LoadError => ResourceManager.GetString("ScheduledDeployment_LoadError", resourceCulture);
+    public static string ScheduledDeployment_AtStartup => ResourceManager.GetString("ScheduledDeployment_AtStartup", resourceCulture);
+    public static string ScheduledDeployment_AtLogon => ResourceManager.GetString("ScheduledDeployment_AtLogon", resourceCulture);
+    public static string ScheduledDeployment_Daily => ResourceManager.GetString("ScheduledDeployment_Daily", resourceCulture);
+    public static string ScheduledDeployment_Weekly => ResourceManager.GetString("ScheduledDeployment_Weekly", resourceCulture);
+    public static string ScheduledDeployment_Status_Pending => ResourceManager.GetString("ScheduledDeployment_Status_Pending", resourceCulture);
+    public static string ScheduledDeployment_Status_Running => ResourceManager.GetString("ScheduledDeployment_Status_Running", resourceCulture);
+    public static string ScheduledDeployment_Status_Completed => ResourceManager.GetString("ScheduledDeployment_Status_Completed", resourceCulture);
+    public static string ScheduledDeployment_Status_Failed => ResourceManager.GetString("ScheduledDeployment_Status_Failed", resourceCulture);
+    public static string ScheduledDeployment_Status_Cancelled => ResourceManager.GetString("ScheduledDeployment_Status_Cancelled", resourceCulture);
+    public static string ScheduledDeployment_Status_Unknown => ResourceManager.GetString("ScheduledDeployment_Status_Unknown", resourceCulture);
 }

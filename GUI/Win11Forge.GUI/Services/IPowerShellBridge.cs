@@ -19,136 +19,25 @@ using Win11Forge.GUI.Models;
 namespace Win11Forge.GUI.Services;
 
 /// <summary>
-/// Interface for PowerShell script execution bridge.
-/// Provides methods to interact with Win11Forge PowerShell modules.
+/// Composite interface for PowerShell script execution bridge.
+/// Provides unified access to Win11Forge PowerShell modules.
+///
+/// This interface is composed of focused interfaces following the Interface Segregation Principle (ISP):
+/// - IVersionService: Version information retrieval
+/// - IProfileManagementService: Deployment profile CRUD operations
+/// - IApplicationManagementService: Application lifecycle management
+/// - ISystemInfoService: System information retrieval
+///
+/// Consumers should depend on the smallest interface that meets their needs.
+/// This composite interface exists for backward compatibility and convenience
+/// when a class legitimately needs all capabilities.
 /// </summary>
-public interface IPowerShellBridge
+public interface IPowerShellBridge :
+    IVersionService,
+    IProfileManagementService,
+    IApplicationManagementService,
+    ISystemInfoService
 {
-    /// <summary>
-    /// Gets the repository root path where PowerShell scripts are located.
-    /// </summary>
-    string RepositoryRoot { get; }
-
-    /// <summary>
-    /// Gets the Win11Forge version from Config/version.json.
-    /// </summary>
-    /// <returns>Version string (e.g., "2.6.0")</returns>
-    Task<string> GetWin11ForgeVersionAsync();
-
-    /// <summary>
-    /// Gets the list of available deployment profiles.
-    /// </summary>
-    /// <returns>List of profile names (without .json extension)</returns>
-    Task<List<string>> GetAvailableProfilesAsync();
-
-    /// <summary>
-    /// Loads a deployment profile with full inheritance resolution.
-    /// </summary>
-    /// <param name="profileName">Name of the profile to load</param>
-    /// <returns>Deployment profile model with merged applications</returns>
-    Task<DeploymentProfileModel> LoadProfileAsync(string profileName);
-
-    /// <summary>
-    /// Installs a single application.
-    /// </summary>
-    /// <param name="app">Application model to install</param>
-    /// <param name="isDryRun">If true, simulates installation without making changes</param>
-    /// <param name="forceUpdate">If true, attempts to upgrade already installed apps</param>
-    /// <param name="progressCallback">Optional callback for progress updates</param>
-    /// <returns>Installation result</returns>
-    Task<InstallResult> InstallApplicationAsync(
-        ApplicationModel app,
-        bool isDryRun,
-        bool forceUpdate = false,
-        Action<string>? progressCallback = null);
-
-    /// <summary>
-    /// Uninstalls a single application.
-    /// </summary>
-    /// <param name="app">Application model to uninstall</param>
-    /// <param name="progressCallback">Optional callback for progress updates</param>
-    /// <returns>Uninstallation result</returns>
-    Task<InstallResult> UninstallApplicationAsync(
-        ApplicationModel app,
-        Action<string>? progressCallback = null);
-
-    /// <summary>
-    /// Checks if an application has an update available.
-    /// </summary>
-    /// <param name="app">Application model to check</param>
-    /// <returns>Update check result with version info</returns>
-    Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app);
-
-    /// <summary>
-    /// Updates a single application to the latest version.
-    /// </summary>
-    /// <param name="app">Application model to update</param>
-    /// <param name="progressCallback">Optional callback for progress updates</param>
-    /// <returns>Update result</returns>
-    Task<InstallResult> UpdateApplicationAsync(
-        ApplicationModel app,
-        Action<string>? progressCallback = null);
-
-    /// <summary>
-    /// Launches an installed application.
-    /// </summary>
-    /// <param name="app">The application to launch</param>
-    /// <returns>True if launched successfully, false otherwise</returns>
-    Task<bool> LaunchApplicationAsync(ApplicationModel app);
-
-    /// <summary>
-    /// Gets all applications from the database.
-    /// </summary>
-    /// <returns>List of all applications</returns>
-    Task<List<ApplicationModel>> GetAllApplicationsAsync();
-
-    /// <summary>
-    /// Checks if an application is installed on the system.
-    /// </summary>
-    /// <param name="appId">Application ID to check</param>
-    /// <returns>ApplicationStatus indicating installed state</returns>
-    Task<ApplicationStatus> GetApplicationStatusAsync(string appId);
-
-    /// <summary>
-    /// Checks installation status for multiple applications in a single batch operation.
-    /// Uses optimized caching of Registry, Winget, and AppX data for faster detection.
-    /// </summary>
-    /// <param name="apps">List of applications to check</param>
-    /// <returns>Dictionary mapping AppId to BatchAppStatus (status + version). Returns null if batch detection fails.</returns>
-    Task<Dictionary<string, BatchAppStatus>?> GetBatchApplicationStatusAsync(IReadOnlyList<ApplicationModel> apps);
-
-    /// <summary>
-    /// Gets a raw profile without inheritance resolution.
-    /// Used for editing to see what's defined in this specific profile.
-    /// </summary>
-    /// <param name="profileName">Name of the profile</param>
-    /// <returns>Profile with only its own applications (not inherited)</returns>
-    Task<DeploymentProfileModel> GetRawProfileAsync(string profileName);
-
-    /// <summary>
-    /// Gets a resolved profile with full inheritance.
-    /// Alias for LoadProfileAsync for clarity.
-    /// </summary>
-    /// <param name="profileName">Name of the profile</param>
-    /// <returns>Profile with all inherited applications merged</returns>
-    Task<DeploymentProfileModel> GetResolvedProfileAsync(string profileName);
-
-    /// <summary>
-    /// Saves a deployment profile to disk.
-    /// Creates or overwrites the profile JSON file.
-    /// </summary>
-    /// <param name="profileName">Name of the profile</param>
-    /// <param name="description">Profile description</param>
-    /// <param name="parentProfile">Parent profile name (null for no inheritance)</param>
-    /// <param name="addedAppIds">List of application IDs added in this profile</param>
-    Task SaveProfileAsync(string profileName, string description, string? parentProfile, List<string> addedAppIds);
-
-    /// <summary>
-    /// Gets system information for the Dashboard display.
-    /// </summary>
-    /// <returns>System information model</returns>
-    Task<SystemInfoModel> GetSystemInfoAsync();
-
     /// <summary>
     /// Checks the status of system prerequisites.
     /// </summary>
@@ -161,6 +50,20 @@ public interface IPowerShellBridge
     /// <param name="progressCallback">Optional callback for progress updates</param>
     /// <returns>True if installation succeeded</returns>
     Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null);
+
+    /// <summary>
+    /// Executes a PowerShell script from the repository.
+    /// </summary>
+    /// <param name="relativePath">Relative path to script from repository root</param>
+    /// <returns>Script output</returns>
+    Task<string> ExecuteScriptAsync(string relativePath);
+
+    /// <summary>
+    /// Executes a PowerShell command/script inline.
+    /// </summary>
+    /// <param name="command">PowerShell command or script to execute</param>
+    /// <returns>Command output</returns>
+    Task<string> ExecuteCommandAsync(string command);
 }
 
 /// <summary>
