@@ -565,6 +565,7 @@ public class PowerShellBridge : IPowerShellBridge
         var corePath = Path.Combine(repoRoot, "Core", "Core.psm1").Replace("\\", "/");
         var dbModulePath = Path.Combine(repoRoot, "Modules", "ApplicationDatabase.psm1").Replace("\\", "/");
         var enginePath = Path.Combine(repoRoot, "Modules", "InstallationEngine.psm1").Replace("\\", "/");
+        var orchestratorPath = Path.Combine(repoRoot, "Modules", "InstallationOrchestrator.psm1").Replace("\\", "/");
 
         return await Task.Run(async () =>
         {
@@ -594,6 +595,7 @@ try {{
     Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue
     Import-Module '{dbModulePath}' -Force -ErrorAction Stop
     Import-Module '{enginePath}' -Force -ErrorAction Stop
+    Import-Module '{orchestratorPath}' -Force -ErrorAction Stop
 
     $app = Get-ApplicationById -AppId '{EscapeForPowerShell(validatedAppId)}'
     if (-not $app) {{
@@ -2065,6 +2067,7 @@ try {{
         var corePath = Path.Combine(repoRoot, "Core", "Core.psm1").Replace("\\", "/");
         var dbModulePath = Path.Combine(repoRoot, "Modules", "ApplicationDatabase.psm1").Replace("\\", "/");
         var enginePath = Path.Combine(repoRoot, "Modules", "InstallationEngine.psm1").Replace("\\", "/");
+        var detectionPath = Path.Combine(repoRoot, "Modules", "ApplicationDetection.psm1").Replace("\\", "/");
 
         try
         {
@@ -2077,6 +2080,7 @@ try {{
     Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue
     Import-Module '{dbModulePath}' -Force -ErrorAction Stop
     Import-Module '{enginePath}' -Force -ErrorAction Stop
+    Import-Module '{detectionPath}' -Force -ErrorAction Stop
 
     $app = Get-ApplicationById -AppId '{EscapeForPowerShell(appId)}'
     if (-not $app) {{
@@ -2123,6 +2127,7 @@ try {{
         var corePath = Path.Combine(repoRoot, "Core", "Core.psm1").Replace("\\", "/");
         var dbModulePath = Path.Combine(repoRoot, "Modules", "ApplicationDatabase.psm1").Replace("\\", "/");
         var enginePath = Path.Combine(repoRoot, "Modules", "InstallationEngine.psm1").Replace("\\", "/");
+        var detectionPath = Path.Combine(repoRoot, "Modules", "ApplicationDetection.psm1").Replace("\\", "/");
 
         try
         {
@@ -2138,6 +2143,7 @@ try {{
     Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue
     Import-Module '{dbModulePath}' -Force -ErrorAction Stop
     Import-Module '{enginePath}' -Force -ErrorAction Stop
+    Import-Module '{detectionPath}' -Force -ErrorAction Stop
 
     # Parse AppIds from JSON and get full app objects from database
     $appIds = '{appIdsJson}' | ConvertFrom-Json
