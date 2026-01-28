@@ -65,25 +65,84 @@ public class PowerShellBridge : IPowerShellBridge
 
     /// <summary>
     /// Finds the PowerShell executable path.
+    /// Prefers PowerShell 7+ (pwsh.exe) for null-conditional operator support.
     /// </summary>
     private static string? _powerShellPath;
     private static string GetPowerShellPath()
     {
         if (_powerShellPath != null) return _powerShellPath;
 
-        // Try PowerShell 7 first
+        // Try PowerShell 7+ in multiple locations
         var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+        // Check Program Files for PowerShell 7.x installations
         if (!string.IsNullOrEmpty(programFiles))
         {
-            var pwshPath = Path.Combine(programFiles, "PowerShell", "7", "pwsh.exe");
-            if (File.Exists(pwshPath))
+            var psBaseDir = Path.Combine(programFiles, "PowerShell");
+            if (Directory.Exists(psBaseDir))
             {
-                _powerShellPath = pwshPath;
+                // Look for any version 7+ directory (7, 7.0, 7.4.0, etc.)
+                try
+                {
+                    var versionDirs = Directory.GetDirectories(psBaseDir)
+                        .Where(d => Path.GetFileName(d).StartsWith("7"))
+                        .OrderByDescending(d => d)
+                        .ToList();
+
+                    foreach (var versionDir in versionDirs)
+                    {
+                        var pwshPath = Path.Combine(versionDir, "pwsh.exe");
+                        if (File.Exists(pwshPath))
+                        {
+                            _powerShellPath = pwshPath;
+                            return _powerShellPath;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Directory enumeration failed, try direct path
+                }
+
+                // Direct path fallback
+                var directPath = Path.Combine(psBaseDir, "7", "pwsh.exe");
+                if (File.Exists(directPath))
+                {
+                    _powerShellPath = directPath;
+                    return _powerShellPath;
+                }
+            }
+        }
+
+        // Try Microsoft Store installation via WindowsApps
+        if (!string.IsNullOrEmpty(localAppData))
+        {
+            var storeAppPath = Path.Combine(localAppData, "Microsoft", "WindowsApps", "pwsh.exe");
+            if (File.Exists(storeAppPath))
+            {
+                _powerShellPath = storeAppPath;
                 return _powerShellPath;
             }
         }
 
-        // Try Windows PowerShell
+        // Try pwsh in PATH (covers winget, scoop, chocolatey installations)
+        try
+        {
+            var pwshInPath = FindExecutableInPath("pwsh.exe");
+            if (!string.IsNullOrEmpty(pwshInPath) && File.Exists(pwshInPath))
+            {
+                _powerShellPath = pwshInPath;
+                return _powerShellPath;
+            }
+        }
+        catch
+        {
+            // PATH search failed
+        }
+
+        // Try Windows PowerShell as last resort
         var systemPath = Environment.GetFolderPath(Environment.SpecialFolder.System);
         if (!string.IsNullOrEmpty(systemPath))
         {
@@ -95,9 +154,36 @@ public class PowerShellBridge : IPowerShellBridge
             }
         }
 
-        // Fallback to just "pwsh" or "powershell" hoping it's in PATH
+        // Final fallback
         _powerShellPath = "pwsh";
         return _powerShellPath;
+    }
+
+    /// <summary>
+    /// Searches for an executable in the PATH environment variable.
+    /// </summary>
+    private static string? FindExecutableInPath(string executableName)
+    {
+        var pathEnv = Environment.GetEnvironmentVariable("PATH");
+        if (string.IsNullOrEmpty(pathEnv)) return null;
+
+        var paths = pathEnv.Split(Path.PathSeparator);
+        foreach (var path in paths)
+        {
+            try
+            {
+                var fullPath = Path.Combine(path.Trim(), executableName);
+                if (File.Exists(fullPath))
+                {
+                    return fullPath;
+                }
+            }
+            catch
+            {
+                // Invalid path, skip
+            }
+        }
+        return null;
     }
 
     /// <summary>

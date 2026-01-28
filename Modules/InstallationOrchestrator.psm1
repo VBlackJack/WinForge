@@ -431,7 +431,9 @@ function Test-ValidStateData {
         $StateData = [PSCustomObject]$StateData
     }
 
-    $sessionId = $StateData.PSObject.Properties['SessionId']?.Value
+    # Use PS 5.1 compatible property access (no null-conditional operator)
+    $sessionIdProp = $StateData.PSObject.Properties['SessionId']
+    $sessionId = if ($sessionIdProp) { $sessionIdProp.Value } else { $null }
     if ($sessionId) {
         try {
             [guid]::Parse($sessionId) | Out-Null
@@ -441,7 +443,8 @@ function Test-ValidStateData {
         }
     }
 
-    $profileName = $StateData.PSObject.Properties['ProfileName']?.Value
+    $profileNameProp = $StateData.PSObject.Properties['ProfileName']
+    $profileName = if ($profileNameProp) { $profileNameProp.Value } else { $null }
     if ($profileName) {
         if ($profileName -match '\.\.|[/\\|<>:"|?*]') {
             Write-Status -Message "Invalid ProfileName in state file (contains forbidden characters)" -Level 'Warning'
@@ -453,7 +456,8 @@ function Test-ValidStateData {
         }
     }
 
-    $totalApps = $StateData.PSObject.Properties['TotalApps']?.Value
+    $totalAppsProp = $StateData.PSObject.Properties['TotalApps']
+    $totalApps = if ($totalAppsProp) { $totalAppsProp.Value } else { $null }
     if ($null -ne $totalApps) {
         if ($totalApps -lt 0 -or $totalApps -gt 1000) {
             Write-Status -Message "Invalid TotalApps value in state file" -Level 'Warning'
@@ -462,9 +466,12 @@ function Test-ValidStateData {
     }
 
     $dangerousPattern = '[;&|`$<>]'
-    $completedApps = $StateData.PSObject.Properties['CompletedApps']?.Value
-    $failedApps = $StateData.PSObject.Properties['FailedApps']?.Value
-    $pendingApps = $StateData.PSObject.Properties['PendingApps']?.Value
+    $completedAppsProp = $StateData.PSObject.Properties['CompletedApps']
+    $completedApps = if ($completedAppsProp) { $completedAppsProp.Value } else { $null }
+    $failedAppsProp = $StateData.PSObject.Properties['FailedApps']
+    $failedApps = if ($failedAppsProp) { $failedAppsProp.Value } else { $null }
+    $pendingAppsProp = $StateData.PSObject.Properties['PendingApps']
+    $pendingApps = if ($pendingAppsProp) { $pendingAppsProp.Value } else { $null }
 
     foreach ($appList in @($completedApps, $failedApps, $pendingApps)) {
         if ($appList) {
