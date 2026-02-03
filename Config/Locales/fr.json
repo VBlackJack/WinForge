@@ -2,7 +2,7 @@
   "_meta": {
     "locale": "fr",
     "name": "Français",
-    "version": "3.5.0",
+    "version": "3.5.2",
     "author": "Julien Bombled"
   },
   "common": {
@@ -27,7 +27,7 @@
     "next": "Suivant",
     "exit": "Quitter",
     "retry": "Réessayer",
-    "version": "3.5.0"
+    "version": "3.5.2"
   },
   "core": {
     "admin_required": "Privilèges administrateur requis",
@@ -49,7 +49,9 @@
     "detection": {
       "checking": "Vérification si {AppName} est installé...",
       "found": "{AppName} détecté (installé)",
-      "not_found": "{AppName} non détecté"
+      "not_found": "{AppName} non détecté",
+      "scan_starting": "Analyse de {Count} applications...",
+      "scan_complete": "Analyse terminée : {Installed}/{Total} installées"
     },
     "method": {
       "winget": "Installation via Winget : {PackageId}",
@@ -506,7 +508,11 @@
     "blacklist_error": "Erreur lors de l'application de la liste noire : {Error}",
     "could_not_enum_tasks": "Impossible d'énumérer les tâches planifiées : {Error}",
     "apps_list_header": "Applications à désactiver au démarrage :",
-    "app_reason": "Raison : {Reason}"
+    "app_reason": "Raison : {Reason}",
+    "group_header": "[{GroupName}]",
+    "app_name": "  - {Name}",
+    "app_command": "    Commande : {Command}",
+    "app_path": "    Chemin : {Path}"
   },
   "startmenu": {
     "title": "=== Configuration du menu Démarrer ===",
@@ -676,7 +682,13 @@
     "rolled_back": "Restauré : {AppName}",
     "rollback_failed": "Impossible de restaurer : {AppName}",
     "rollback_error": "Erreur de restauration pour {AppName} : {Error}",
-    "state_cleared": "État de restauration effacé"
+    "state_cleared": "État de restauration effacé",
+    "summary_title": "=== RÉSUMÉ DE RESTAURATION ===",
+    "summary_apps_count": "Applications à restaurer : {Count}",
+    "summary_app_item": "  - {AppName} ({Method})",
+    "confirm_prompt": "Voulez-vous procéder à la restauration ? (O/N) [Délai : {Timeout}s]",
+    "confirm_timeout_proceed": "Délai atteint - restauration en cours",
+    "confirm_timeout_cancel": "Délai atteint - restauration annulée"
   },
   "deployment": {
     "session_initialized": "Session de déploiement initialisée : {ProfileName} ({Count} apps)",
@@ -1011,7 +1023,19 @@
     "restore_complete": "Restauration terminée",
     "available_backups": "Sauvegardes disponibles : {Count}",
     "release_notes": "Notes de version :",
-    "prerelease_warning": "Ceci est une version préliminaire"
+    "prerelease_warning": "Ceci est une version préliminaire",
+    "batch_cache_failed": "Échec de la construction du cache de mise à jour : {Error}",
+    "fetch_failed": "Échec de la récupération des informations de version : {Error}",
+    "no_assets": "Aucun asset téléchargeable trouvé dans la release",
+    "no_suitable_asset": "Aucun asset approprié trouvé pour le téléchargement",
+    "downloading_asset": "Téléchargement de la mise à jour : {FileName}",
+    "download_completed_path": "Téléchargement terminé : {Path}",
+    "download_failed": "Échec du téléchargement : {Error}",
+    "restore_failed": "Échec de la restauration : {Error}",
+    "backup_abort": "Échec de la sauvegarde, abandon de la mise à jour",
+    "restore_attempt": "Tentative de restauration depuis la sauvegarde...",
+    "restore_also_failed": "La restauration a également échoué. Intervention manuelle requise.",
+    "installing_from": "Installation de la mise à jour depuis : {Path}"
   },
   "telemetry": {
     "initialized": "Collecteur de télémétrie initialisé",

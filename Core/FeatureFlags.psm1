@@ -63,7 +63,7 @@ $script:DefaultFlags = @{
 
 # === PRIVATE FUNCTIONS ===
 
-function Load-FeatureFlags {
+function Import-FeatureFlags {
     <#
     .SYNOPSIS
         Loads feature flags from configuration file.
@@ -141,7 +141,7 @@ function Initialize-FeatureFlags {
         $script:RuntimeOverrides = @{}
     }
 
-    Load-FeatureFlags
+    Import-FeatureFlags
 }
 
 function Test-FeatureEnabled {
@@ -164,7 +164,7 @@ function Test-FeatureEnabled {
 
     # Ensure flags are loaded
     if (-not $script:FlagsLoaded) {
-        Load-FeatureFlags
+        Import-FeatureFlags
     }
 
     # Check runtime override first
@@ -257,7 +257,7 @@ function Get-AllFeatureFlags {
 
     # Ensure flags are loaded
     if (-not $script:FlagsLoaded) {
-        Load-FeatureFlags
+        Import-FeatureFlags
     }
 
     $result = @()

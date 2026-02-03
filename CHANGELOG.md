@@ -2,6 +2,52 @@
 
 Note: la source de vérité de la version du framework est `Config/version.json`. Les lanceurs et la GUI lisent dynamiquement cette valeur.
 
+## [3.5.2] - 2026-01-28
+
+### Bug Fixes & Test Improvements
+
+#### Tests
+- **Fixed**: `StructuredLogging.Tests.ps1` - Corrected function name `Flush-LogBuffer` → `Clear-LogBuffer`
+- **Status**: All 1047 tests passing (100%)
+
+#### Documentation
+- **Updated**: README.md version and application count (175+ apps)
+- **Added**: Enterprise profile to profile documentation
+- **Added**: API REST and scheduled deployments features to README
+
+#### Code Quality
+- **Verified**: All BMAD audit items completed (100%)
+- **Validated**: Zero hardcoding mandate compliance
+
+### Statistics
+- **Test Coverage**: 1047/1047 tests passing
+- **Total Applications**: 175
+
+---
+
+## [3.5.1] - 2026-01-24
+
+### Database & Schema Updates
+
+#### Applications Database
+- **Updated**: `applications.json` database version to 3.5.1
+- **Fixed**: Application count metadata (177 → 175)
+- **Added**: Detection method improvements for runtime applications
+
+#### JSON Schema Validation
+- **Enhanced**: `JsonSchemaValidation.psm1` with additional validation rules
+- **Added**: Priority range documentation in applications-database.schema.json
+
+#### Infrastructure
+- **Improved**: State management validation in `StateManager.psm1`
+- **Enhanced**: Scheduled deployment configuration validation
+
+### Statistics
+- **Test Coverage**: 1045/1045 tests passing
+- **Total Applications**: 175
+
+---
+
 ## [3.5.0] - 2026-01-21
 
 ### GUI - Runtime Detection Fix

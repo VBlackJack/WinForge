@@ -123,7 +123,8 @@ function script:Set-CachedProfile {
         $script:ProfileCache[$absPath] = $Profile
         $script:ProfileCacheLastModified[$absPath] = (Get-Item $absPath -ErrorAction Stop).LastWriteTime
     } catch {
-        # Silently fail if file not accessible
+        # Cache update is non-critical, but log for debugging
+        Write-Verbose "Profile cache update failed for '$absPath': $($_.Exception.Message)"
     }
 }
 

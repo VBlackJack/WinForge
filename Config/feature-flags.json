@@ -1,8 +1,11 @@
 {
-  "$schema": "Win11Forge-FeatureFlags-v1.0",
-  "description": "Feature flags for Win11Forge framework",
-  "version": "3.5.0",
-  "lastUpdated": "2026-01-19",
+  "_meta": {
+    "$schema": "Win11Forge-FeatureFlags-v1.0",
+    "description": "Feature flags for Win11Forge framework",
+    "version": "3.5.2",
+    "author": "Julien Bombled",
+    "lastUpdated": "2026-02-03"
+  },
   "features": {
     "parallelInstallation": {
       "enabled": true,

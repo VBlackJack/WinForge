@@ -1136,10 +1136,40 @@ function Start-ApiServer {
                         # Authentication (skip for public endpoints)
                         if ($config.RequireAuthentication -and $path -notin $publicEndpoints) {
                             $apiKey = $request.Headers[$config.ApiKeyHeader]
-                            if (-not $apiKey -or -not $apiKeys.ContainsKey($apiKey)) {
+                            $authError = $null
+
+                            if (-not $apiKey) {
+                                $authError = 'API key required'
+                            } elseif (-not $apiKeys.ContainsKey($apiKey)) {
+                                $authError = 'Invalid API key'
+                            } else {
+                                $keyData = $apiKeys[$apiKey]
+                                # Check if key is enabled
+                                if ($keyData.Enabled -eq $false) {
+                                    $authError = 'API key is disabled'
+                                }
+                                # Check if key has expired
+                                elseif ($keyData.ExpiresAt -and (Get-Date) -gt [DateTime]::Parse($keyData.ExpiresAt)) {
+                                    $authError = 'API key has expired'
+                                }
+                                # Check required permission
+                                else {
+                                    $requiredPerm = if ($path -match '/api/(deploy|rollback)') { 'deploy' }
+                                                    elseif ($method -in @('POST', 'PUT', 'DELETE')) { 'write' }
+                                                    else { 'read' }
+                                    $hasPermission = $keyData.Permissions -contains $requiredPerm -or $keyData.Permissions -contains 'admin'
+                                    if (-not $hasPermission) {
+                                        $authError = "Insufficient permissions: requires '$requiredPerm'"
+                                    }
+                                }
+                            }
+
+                            if ($authError) {
                                 $response.StatusCode = 401
-                                $buffer = [System.Text.Encoding]::UTF8.GetBytes('{"error":"Unauthorized"}')
+                                $errorJson = "{`"error`":`"$authError`",`"code`":`"UNAUTHORIZED`"}"
+                                $buffer = [System.Text.Encoding]::UTF8.GetBytes($errorJson)
                                 $response.ContentLength64 = $buffer.Length
+                                $response.ContentType = 'application/json'
                                 $response.OutputStream.Write($buffer, 0, $buffer.Length)
                                 $response.Close()
                                 continue
@@ -1204,7 +1234,8 @@ function Start-ApiServer {
                     } catch [System.Net.HttpListenerException] {
                         break
                     } catch {
-                        # Log error but continue
+                        # Log error but continue - in job context, use Write-Verbose
+                        Write-Verbose "API request processing error: $($_.Exception.Message)"
                     }
                 }
 

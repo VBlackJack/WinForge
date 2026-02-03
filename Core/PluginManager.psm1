@@ -370,7 +370,7 @@ function Import-Plugin {
     }
 }
 
-function Unload-Plugin {
+function Remove-Plugin {
     <#
     .SYNOPSIS
         Unloads a plugin.
@@ -379,7 +379,7 @@ function Unload-Plugin {
         Name of the plugin to unload.
 
     .EXAMPLE
-        Unload-Plugin -Name 'my-custom-plugin'
+        Remove-Plugin -Name 'my-custom-plugin'
     #>
     [CmdletBinding()]
     param(
@@ -732,7 +732,7 @@ Export-ModuleMember -Function @(
     'Get-AvailablePlugins',
     'Get-LoadedPlugins',
     'Import-Plugin',
-    'Unload-Plugin',
+    'Remove-Plugin',
     'Register-PluginHook',
     'Invoke-PluginHook',
     'Register-CustomInstallMethod',

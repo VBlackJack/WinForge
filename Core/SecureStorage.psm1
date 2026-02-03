@@ -46,6 +46,8 @@ if (-not (Test-Path $secureDir)) {
 
 # Security: Per-user entropy file path
 $script:EntropyPath = Join-Path $env:LOCALAPPDATA 'Win11Forge\entropy.dat'
+# Mutex name for cross-process synchronization (per-user to avoid privilege issues)
+$script:EntropyMutexName = "Local\Win11Forge_Entropy_$($env:USERNAME)"
 
 # === ENTROPY MANAGEMENT ===
 
@@ -57,6 +59,9 @@ function Get-DpapiEntropy {
         Generates a random 32-byte entropy value on first use and stores it
         securely in the user's LOCALAPPDATA. This provides an additional
         layer of security beyond DPAPI's default protection.
+
+        Uses a named mutex to prevent race conditions (TOCTOU) when multiple
+        processes access the entropy file simultaneously.
     .OUTPUTS
         [byte[]] The entropy bytes for DPAPI operations.
     #>
@@ -64,53 +69,95 @@ function Get-DpapiEntropy {
     [OutputType([byte[]])]
     param()
 
-    if (Test-Path -Path $script:EntropyPath) {
+    $mutex = $null
+    $mutexAcquired = $false
+
+    try {
+        # Create or open the named mutex for cross-process synchronization
+        $mutex = [System.Threading.Mutex]::new($false, $script:EntropyMutexName)
+
+        # Wait for exclusive access (10 second timeout to prevent deadlock)
+        $mutexAcquired = $mutex.WaitOne(10000)
+        if (-not $mutexAcquired) {
+            Write-Warning "Could not acquire entropy mutex within timeout, proceeding without lock"
+        }
+
+        # Try to read existing entropy file atomically (no separate Test-Path check)
         try {
-            # Read existing entropy
             $entropyBytes = [System.IO.File]::ReadAllBytes($script:EntropyPath)
             if ($entropyBytes.Length -eq 32) {
                 return $entropyBytes
             }
-            # Invalid entropy file, regenerate
-            Write-Verbose "Regenerating entropy file (invalid length)"
+            # Invalid entropy file, will regenerate below
+            Write-Verbose "Regenerating entropy file (invalid length: $($entropyBytes.Length))"
+        } catch [System.IO.FileNotFoundException] {
+            # File doesn't exist, will create below
+            Write-Verbose "Entropy file not found, creating new one"
+        } catch [System.IO.DirectoryNotFoundException] {
+            # Directory doesn't exist, will create below
+            Write-Verbose "Entropy directory not found, creating new one"
         } catch {
             Write-Verbose "Failed to read entropy file, regenerating: $($_.Exception.Message)"
         }
-    }
 
-    # Generate new random entropy (32 bytes = 256 bits)
-    $entropyBytes = [byte[]]::new(32)
-    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-    try {
-        $rng.GetBytes($entropyBytes)
-    } finally {
-        $rng.Dispose()
-    }
-
-    # Store entropy securely
-    try {
-        $entropyDir = Split-Path $script:EntropyPath -Parent
-        if (-not (Test-Path $entropyDir)) {
-            New-Item -Path $entropyDir -ItemType Directory -Force | Out-Null
+        # Generate new random entropy (32 bytes = 256 bits)
+        $entropyBytes = [byte[]]::new(32)
+        $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+        try {
+            $rng.GetBytes($entropyBytes)
+        } finally {
+            $rng.Dispose()
         }
-        [System.IO.File]::WriteAllBytes($script:EntropyPath, $entropyBytes)
 
-        # Set restrictive permissions (owner only)
-        $acl = Get-Acl -Path $script:EntropyPath
-        $acl.SetAccessRuleProtection($true, $false)
-        $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-        $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
-            $currentUser,
-            [System.Security.AccessControl.FileSystemRights]::FullControl,
-            [System.Security.AccessControl.AccessControlType]::Allow
-        )
-        $acl.AddAccessRule($rule)
-        Set-Acl -Path $script:EntropyPath -AclObject $acl -ErrorAction SilentlyContinue
-    } catch {
-        Write-Verbose "Could not persist entropy file: $($_.Exception.Message)"
+        # Store entropy securely with atomic write
+        try {
+            $entropyDir = Split-Path $script:EntropyPath -Parent
+
+            # Create directory if needed (idempotent operation)
+            if (-not (Test-Path $entropyDir)) {
+                New-Item -Path $entropyDir -ItemType Directory -Force | Out-Null
+            }
+
+            # Use a temporary file and atomic rename for safe writes
+            $tempPath = "$script:EntropyPath.tmp.$PID"
+            try {
+                # Write to temp file first
+                [System.IO.File]::WriteAllBytes($tempPath, $entropyBytes)
+
+                # Set restrictive permissions on temp file before renaming
+                $acl = Get-Acl -Path $tempPath
+                $acl.SetAccessRuleProtection($true, $false)
+                $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+                $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+                    $currentUser,
+                    [System.Security.AccessControl.FileSystemRights]::FullControl,
+                    [System.Security.AccessControl.AccessControlType]::Allow
+                )
+                $acl.AddAccessRule($rule)
+                Set-Acl -Path $tempPath -AclObject $acl -ErrorAction SilentlyContinue
+
+                # Atomic move (rename) to final path
+                [System.IO.File]::Move($tempPath, $script:EntropyPath, $true)
+            } finally {
+                # Clean up temp file if it still exists (move failed)
+                if (Test-Path $tempPath) {
+                    Remove-Item -Path $tempPath -Force -ErrorAction SilentlyContinue
+                }
+            }
+        } catch {
+            Write-Verbose "Could not persist entropy file: $($_.Exception.Message)"
+        }
+
+        return $entropyBytes
+    } finally {
+        # Always release the mutex
+        if ($mutexAcquired -and $mutex) {
+            $mutex.ReleaseMutex()
+        }
+        if ($mutex) {
+            $mutex.Dispose()
+        }
     }
-
-    return $entropyBytes
 }
 
 # === DPAPI FUNCTIONS ===

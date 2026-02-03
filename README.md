@@ -1,8 +1,8 @@
-# Win11Forge v3.1.4
+# Win11Forge v3.5.2
 
 **Configurez votre PC Windows 11 en quelques clics**
 
-[![Version](https://img.shields.io/badge/version-3.1.4-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.5.2-blue.svg)](CHANGELOG.md)
 [![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
@@ -12,7 +12,7 @@
 
 Win11Forge installe automatiquement toutes vos applications preferees sur un nouveau PC Windows. Plus besoin de telecharger et installer chaque logiciel un par un !
 
-**Exemple :** En 1 clic, installez Chrome, Firefox, 7-Zip, VLC, Discord, Steam, Office... et 60+ autres applications.
+**Exemple :** En 1 clic, installez Chrome, Firefox, 7-Zip, VLC, Discord, Steam, Office... et 175+ autres applications.
 
 ---
 
@@ -20,12 +20,12 @@ Win11Forge installe automatiquement toutes vos applications preferees sur un nou
 
 ### 1. Telecharger
 
-Telechargez la derniere version : [Win11Forge_v3.1.4.zip](https://github.com/VBlackJack/Win11Forge/releases/latest)
+Telechargez la derniere version : [Win11Forge_v3.5.2.zip](https://github.com/VBlackJack/Win11Forge/releases/latest)
 
 ### 2. Extraire et lancer
 
 1. Dezippez le fichier
-2. Double-cliquez sur `Win11Forge.cmd`
+2. Double-cliquez sur `Win11Forge.cmd` ou lancez `Win11Forge.GUI.exe`
 3. Choisissez un profil et laissez faire !
 
 ---
@@ -38,6 +38,7 @@ Telechargez la derniere version : [Win11Forge_v3.1.4.zip](https://github.com/VBl
 | **Office** | Travail / Etudes | Base + Microsoft Office, Zoom, Adobe Reader |
 | **Gaming** | Joueurs | Office + Steam, Discord, Epic Games, Battle.net |
 | **Personnel** | Developpeurs | Gaming + VS Code, Git, Docker, outils cloud |
+| **Enterprise** | Entreprises | Configuration securisee, outils professionnels |
 
 ---
 
@@ -47,15 +48,17 @@ Telechargez la derniere version : [Win11Forge_v3.1.4.zip](https://github.com/VBl
 - Theme sombre ou clair au choix
 - Disponible en francais et anglais
 - Suivi en temps reel de l'installation
+- Accessibilite WCAG 2.1 (lecteurs d'ecran, navigation clavier)
 
 ### Installation intelligente
 - Detecte les applications deja installees (pas de doublons)
 - Installe jusqu'a 10 applications en parallele (configurable)
 - Logs d'installation en temps reel
 - Pause et reprise possible a tout moment
+- Rollback automatique en cas d'echec
 
 ### Gestionnaire d'applications
-- Parcourez les 70+ applications disponibles
+- Parcourez les 175+ applications disponibles
 - Recherchez par nom ou categorie
 - Scannez pour detecter les applications installees
 - Installez ou mettez a jour individuellement
@@ -63,6 +66,15 @@ Telechargez la derniere version : [Win11Forge_v3.1.4.zip](https://github.com/VBl
 ### Editeur de profils
 - Creez vos propres profils personnalises
 - Combinez plusieurs profils (heritage)
+
+### Deploiements planifies
+- Programmez des installations automatiques
+- Support des triggers: unique, quotidien, hebdomadaire, au demarrage
+
+### API REST (avance)
+- Controlez Win11Forge via API REST locale
+- Authentification par cle API
+- Documentation complete disponible
 
 ---
 
@@ -102,11 +114,15 @@ R: Oui, Windows 10 version 21H2 ou plus recent.
 **Q: Comment ajouter mes propres applications ?**
 R: Utilisez l'editeur de profils pour creer un profil personnalise.
 
+**Q: Comment utiliser l'API REST ?**
+R: Consultez la [documentation API](Docs/API_DOCUMENTATION.md) pour les details.
+
 ---
 
 ## Besoin d'aide ?
 
 - [Guide utilisateur complet](Docs/USER_GUIDE_v3.md)
+- [Documentation API](Docs/API_DOCUMENTATION.md)
 - [Signaler un probleme](https://github.com/VBlackJack/Win11Forge/issues)
 
 ---

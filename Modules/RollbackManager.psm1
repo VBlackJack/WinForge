@@ -407,10 +407,10 @@ function Invoke-RollbackWithConfirmation {
 
     # Show summary
     Write-Host ""
-    Write-Host "=== ROLLBACK SUMMARY ===" -ForegroundColor Cyan
-    Write-Host "Applications to rollback: $($summary.TotalApps)" -ForegroundColor Yellow
+    Write-Host (Get-LocalizedString -Key 'rollback.summary_title') -ForegroundColor Cyan
+    Write-Host (Get-LocalizedString -Key 'rollback.summary_apps_count' -Parameters @{ Count = $summary.TotalApps }) -ForegroundColor Yellow
     foreach ($app in $summary.Applications) {
-        Write-Host "  - $($app.AppName) ($($app.Method))" -ForegroundColor Gray
+        Write-Host (Get-LocalizedString -Key 'rollback.summary_app_item' -Parameters @{ AppName = $app.AppName; Method = $app.Method }) -ForegroundColor Gray
     }
     Write-Host ""
 
@@ -418,7 +418,7 @@ function Invoke-RollbackWithConfirmation {
     $proceed = $Force.IsPresent -or (-not $config.RequireConfirmation)
 
     if (-not $proceed) {
-        Write-Host "Do you want to proceed with rollback? (Y/N) [Timeout: ${timeout}s]" -ForegroundColor Yellow
+        Write-Host (Get-LocalizedString -Key 'rollback.confirm_prompt' -Parameters @{ Timeout = $timeout }) -ForegroundColor Yellow
 
         $startTime = Get-Date
         $response = $null
@@ -438,10 +438,10 @@ function Invoke-RollbackWithConfirmation {
             $elapsed = (Get-Date) - $startTime
             if ($elapsed.TotalSeconds -ge $timeout) {
                 if ($AutoProceedOnTimeout) {
-                    Write-Host "Timeout reached - proceeding with rollback" -ForegroundColor Yellow
+                    Write-Host (Get-LocalizedString -Key 'rollback.confirm_timeout_proceed') -ForegroundColor Yellow
                     $proceed = $true
                 } else {
-                    Write-Host "Timeout reached - rollback cancelled" -ForegroundColor Yellow
+                    Write-Host (Get-LocalizedString -Key 'rollback.confirm_timeout_cancel') -ForegroundColor Yellow
                     $proceed = $false
                 }
                 break

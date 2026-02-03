@@ -41,24 +41,32 @@ Set-StrictMode -Version Latest
 # === MODULE INITIALIZATION ===
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
-$script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
+
+# Use centralized module loader for core dependencies
+$script:ModuleLoaderPath = Join-Path $script:RepositoryRoot 'Core\ModuleLoader.psm1'
+if (Test-Path -Path $script:ModuleLoaderPath) {
+    Import-Module -Name $script:ModuleLoaderPath -Force
+    $null = Initialize-Win11ForgeModule
+} else {
+    # Fallback: direct import if ModuleLoader not available
+    $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
+    if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
+        if (Test-Path -Path $script:CoreModulePath) {
+            Import-Module -Name $script:CoreModulePath -Force
+        } else {
+            throw 'Core module is required before loading Prerequisites.psm1'
+        }
+    }
+    $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
+    if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+        if (Test-Path -Path $script:LocalizationModulePath) {
+            Import-Module -Name $script:LocalizationModulePath -Force
+        }
+    }
+}
+
+# === CONFIGURATION PATHS ===
 $script:DownloadSourcesPath = Join-Path $script:RepositoryRoot 'Config\download-sources.json'
-
-if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
-    if (Test-Path -Path $script:CoreModulePath) {
-        Import-Module -Name $script:CoreModulePath -Force
-    } else {
-        throw 'Core module is required before loading Prerequisites.psm1'
-    }
-}
-
-# Import Localization module for i18n support
-$script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
-if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
-    if (Test-Path -Path $script:LocalizationModulePath) {
-        Import-Module -Name $script:LocalizationModulePath -Force
-    }
-}
 
 # === DOWNLOAD SOURCES CONFIGURATION ===
 $script:DownloadSources = $null

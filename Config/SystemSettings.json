@@ -1,4 +1,10 @@
 {
+  "_meta": {
+    "description": "System registry paths and settings constants for Win11Forge",
+    "version": "3.5.2",
+    "author": "Julien Bombled",
+    "lastUpdated": "2026-02-03"
+  },
   "RegistryPaths": {
     "ExplorerAdvanced": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
     "Explorer": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",

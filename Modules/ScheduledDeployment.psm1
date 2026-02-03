@@ -796,7 +796,8 @@ function Initialize-ScheduledDeploymentTaskFolder {
         }
     }
     catch {
-        # Silently fail - folder will be created when first task is registered
+        # Task folder initialization is non-critical (will be created when needed)
+        Write-Verbose "Task folder initialization deferred: $($_.Exception.Message)"
     }
 }
 

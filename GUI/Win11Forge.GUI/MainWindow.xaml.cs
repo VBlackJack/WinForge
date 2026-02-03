@@ -35,8 +35,9 @@ namespace Win11Forge.GUI;
 /// Main application window with navigation.
 /// Implements cleanup pattern for event handlers and messenger subscriptions.
 /// </summary>
-public partial class MainWindow : Window, INotifyPropertyChanged
+public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
 {
+    private bool _disposed;
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IDeploymentHistoryService _historyService;
     private readonly IAppSettingsService _settingsService;
@@ -71,7 +72,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     /// <summary>
     /// Command to show keyboard shortcuts dialog.
     /// </summary>
-    public ICommand ShowKeyboardShortcutsCommand { get; }
+    public IAsyncRelayCommand ShowKeyboardShortcutsCommand { get; }
 
     /// <summary>
     /// Command to navigate to a specific view by index.
@@ -129,7 +130,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         InitializeComponent();
 
         // Initialize commands
-        ShowKeyboardShortcutsCommand = new RelayCommand(ShowKeyboardShortcuts);
+        ShowKeyboardShortcutsCommand = new AsyncRelayCommand(ShowKeyboardShortcutsAsync);
         NavigateToCommand = new RelayCommand<string>(index =>
         {
             if (int.TryParse(index, out var viewIndex))
@@ -527,16 +528,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     /// <summary>
     /// Shows the keyboard shortcuts help dialog.
     /// </summary>
-    private async void ShowKeyboardShortcuts()
+    private async Task ShowKeyboardShortcutsAsync()
     {
         try
         {
             var panel = new KeyboardShortcutsPanel();
             await DialogHost.Show(panel, "RootDialog");
         }
-        catch
+        catch (Exception ex)
         {
-            // Dialog display is non-critical
+            // Dialog display is non-critical, but log for diagnostics
+            System.Diagnostics.Debug.WriteLine($"Failed to show keyboard shortcuts dialog: {ex.Message}");
         }
     }
 
@@ -565,9 +567,56 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             currentSettings.IsFirstRun = false;
             _settingsService.SaveSettings(currentSettings);
         }
-        catch
+        catch (Exception ex)
         {
-            // Onboarding is non-critical
+            // Onboarding is non-critical, but log for diagnostics
+            System.Diagnostics.Debug.WriteLine($"Failed to show onboarding dialog: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Releases all resources used by the MainWindow.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases managed and unmanaged resources.
+    /// </summary>
+    /// <param name="disposing">True if disposing managed resources.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing)
+        {
+            // Unsubscribe from service events
+            if (_undoService != null && _undoStateChangedHandler != null)
+            {
+                _undoService.StateChanged -= _undoStateChangedHandler;
+                _undoStateChangedHandler = null;
+            }
+
+            if (_navigationService != null && _navigationChangedHandler != null)
+            {
+                _navigationService.NavigationChanged -= _navigationChangedHandler;
+                _navigationChangedHandler = null;
+            }
+
+            // Unregister from WeakReferenceMessenger
+            WeakReferenceMessenger.Default.Unregister<NavigateMessage>(this);
+
+            // Dispose ViewModels that implement IDisposable
+            (_deploymentViewModel as IDisposable)?.Dispose();
+            (_appsViewModel as IDisposable)?.Dispose();
+            (_dashboardViewModel as IDisposable)?.Dispose();
+            (_settingsViewModel as IDisposable)?.Dispose();
+            (_prerequisitesViewModel as IDisposable)?.Dispose();
+        }
+
+        _disposed = true;
     }
 }

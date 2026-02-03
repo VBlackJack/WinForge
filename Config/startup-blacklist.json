@@ -1,8 +1,11 @@
 {
-  "$schema": "https://json-schema.org/draft-07/schema#",
-  "Description": "Configuration for applications to disable from Windows startup",
-  "Version": "1.1.0",
-  "LastUpdated": "2026-01-20",
+  "_meta": {
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "description": "Configuration for applications to disable from Windows startup",
+    "version": "3.5.2",
+    "author": "Julien Bombled",
+    "lastUpdated": "2026-02-03"
+  },
   "DisabledApplications": [
     {
       "Name": "Epic Games Launcher",

@@ -1127,7 +1127,7 @@ function Get-ApplicationsInstallationStatus {
         [PSCustomObject[]]$Applications
     )
 
-    Write-Host "Scanning $($Applications.Count) applications..." -ForegroundColor Cyan
+    Write-Host (Get-LocalizedString -Key 'install.detection.scan_starting' -Parameters @{ Count = $Applications.Count }) -ForegroundColor Cyan
 
     # Build cache once
     $cache = Get-InstalledApplicationsCache
@@ -1145,7 +1145,7 @@ function Get-ApplicationsInstallationStatus {
         if ($status.IsInstalled) { $installedCount++ }
     }
 
-    Write-Host "Scan complete: $installedCount/$($Applications.Count) installed" -ForegroundColor Green
+    Write-Host (Get-LocalizedString -Key 'install.detection.scan_complete' -Parameters @{ Installed = $installedCount; Total = $Applications.Count }) -ForegroundColor Green
 
     return $results
 }

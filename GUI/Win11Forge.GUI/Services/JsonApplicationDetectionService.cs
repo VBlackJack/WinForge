@@ -22,6 +22,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using Win11Forge.GUI.Models;
+using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Services;
 
@@ -321,14 +322,14 @@ public class JsonApplicationDetectionService
             // Just checking if key exists
             else
             {
-                version = "installed";
+                version = Loc.Status_Installed;
             }
 
             return new InstalledPackageInfo
             {
                 Id = appId,
                 Name = appName,
-                InstalledVersion = version ?? "installed",
+                InstalledVersion = version ?? Loc.Status_Installed,
                 Source = DetectionSource.Registry
             };
         }
@@ -419,7 +420,11 @@ public class JsonApplicationDetectionService
             var completed = process.WaitForExit(CommandTimeoutMs);
             if (!completed)
             {
-                try { process.Kill(); } catch { }
+                try { process.Kill(); }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Process kill failed (non-critical): {ex.Message}");
+                }
                 return null;
             }
 
@@ -462,7 +467,7 @@ public class JsonApplicationDetectionService
             {
                 Id = appId,
                 Name = appName,
-                InstalledVersion = version ?? "installed",
+                InstalledVersion = version ?? Loc.Status_Installed,
                 Source = DetectionSource.Command
             };
         }
@@ -497,14 +502,14 @@ public class JsonApplicationDetectionService
             }
             catch
             {
-                version = "installed";
+                version = Loc.Status_Installed;
             }
 
             return new InstalledPackageInfo
             {
                 Id = appId,
                 Name = appName,
-                InstalledVersion = version ?? "installed",
+                InstalledVersion = version ?? Loc.Status_Installed,
                 Source = DetectionSource.File
             };
         }

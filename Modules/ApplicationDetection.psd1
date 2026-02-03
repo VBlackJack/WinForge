@@ -21,7 +21,7 @@
     RootModule = 'ApplicationDetection.psm1'
 
     # Version number of this module
-    ModuleVersion = '3.1.4'
+    ModuleVersion = '3.5.2'
 
     # ID used to uniquely identify this module
     GUID = 'c1e5f8a2-4b3d-4e9f-8a1c-2d3e4f5a6b7c'

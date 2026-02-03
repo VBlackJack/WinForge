@@ -348,12 +348,92 @@ function Expand-ArchiveSafe {
 
 # === HELPER FUNCTIONS ===
 
+function Test-InternalAddress {
+    <#
+    .SYNOPSIS
+        Tests if a host resolves to an internal/private IP address.
+    .DESCRIPTION
+        Detects localhost, private IP ranges (RFC1918), and link-local addresses
+        to prevent SSRF attacks targeting internal services.
+    .PARAMETER Host
+        The hostname or IP address to check.
+    .OUTPUTS
+        Boolean indicating if address is internal.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Host
+    )
+
+    # Block localhost variations
+    $localhostPatterns = @('localhost', 'localhost.localdomain', '127.0.0.1', '::1', '0.0.0.0')
+    if ($Host.ToLower() -in $localhostPatterns -or $Host.ToLower().EndsWith('.local')) {
+        return $true
+    }
+
+    # Try to resolve the hostname to IP addresses
+    try {
+        $addresses = [System.Net.Dns]::GetHostAddresses($Host)
+    } catch {
+        # If resolution fails, allow (will fail at download anyway)
+        return $false
+    }
+
+    foreach ($addr in $addresses) {
+        $bytes = $addr.GetAddressBytes()
+
+        if ($addr.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetwork) {
+            # IPv4 checks
+            $first = $bytes[0]
+            $second = $bytes[1]
+
+            # 127.0.0.0/8 - Loopback
+            if ($first -eq 127) { return $true }
+
+            # 10.0.0.0/8 - Private Class A
+            if ($first -eq 10) { return $true }
+
+            # 172.16.0.0/12 - Private Class B (172.16.x.x - 172.31.x.x)
+            if ($first -eq 172 -and $second -ge 16 -and $second -le 31) { return $true }
+
+            # 192.168.0.0/16 - Private Class C
+            if ($first -eq 192 -and $second -eq 168) { return $true }
+
+            # 169.254.0.0/16 - Link-local
+            if ($first -eq 169 -and $second -eq 254) { return $true }
+
+            # 0.0.0.0/8 - This network
+            if ($first -eq 0) { return $true }
+        }
+        elseif ($addr.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetworkV6) {
+            # IPv6 checks
+            if ($addr.IsIPv6LinkLocal) { return $true }
+            if ($addr.IsIPv6SiteLocal) { return $true }
+
+            # ::1 - Loopback
+            if ($bytes.Length -eq 16 -and
+                $bytes[0..14] -join '' -eq ([byte[]]::new(15) -join '') -and
+                $bytes[15] -eq 1) {
+                return $true
+            }
+
+            # fc00::/7 - Unique local address
+            if (($bytes[0] -band 0xFE) -eq 0xFC) { return $true }
+        }
+    }
+
+    return $false
+}
+
 function Test-ValidDownloadUrl {
     <#
     .SYNOPSIS
         Validates download URL for security and format
     .DESCRIPTION
-        Validates URL structure and checks against trusted domain whitelist.
+        Validates URL structure, blocks internal/private IP addresses (SSRF protection),
+        and checks against trusted domain whitelist.
         Loads trusted domains from Config/download-sources.json if available.
     .PARAMETER Url
         The URL to validate.
@@ -385,6 +465,12 @@ function Test-ValidDownloadUrl {
         }
     } catch {
         Write-Status -Message "Malformed URL: $Url" -Level 'Verbose'
+        return $false
+    }
+
+    # SSRF Protection: Block internal/private IP addresses
+    if (Test-InternalAddress -Host $uri.Host) {
+        Write-Status -Message "Security: Download blocked - internal/private address detected: $($uri.Host)" -Level 'Error'
         return $false
     }
 

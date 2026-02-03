@@ -49,8 +49,8 @@ Describe 'StructuredLogging Module' {
             Get-Command Write-StructuredLog -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
 
-        It 'Should export Flush-LogBuffer function' {
-            Get-Command Flush-LogBuffer -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        It 'Should export Clear-LogBuffer function' {
+            Get-Command Clear-LogBuffer -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
 
         It 'Should export Export-LogsToJson function' {

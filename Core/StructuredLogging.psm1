@@ -297,11 +297,11 @@ function Write-StructuredLog {
 
     # Flush buffer if full
     if ($script:LoggingState.LogBuffer.Count -ge $script:LoggingState.BufferSize) {
-        Flush-LogBuffer
+        Clear-LogBuffer
     }
 }
 
-function Flush-LogBuffer {
+function Clear-LogBuffer {
     <#
     .SYNOPSIS
         Flushes the log buffer to disk.
@@ -388,7 +388,7 @@ function Export-LogsToJson {
     )
 
     # Ensure buffer is flushed
-    Flush-LogBuffer
+    Clear-LogBuffer
 
     $jsonDir = $script:LoggingState.Config.JsonLogging.Directory
     if (-not (Test-Path -Path $jsonDir)) {
@@ -494,7 +494,7 @@ function Get-StructuredLogs {
     )
 
     # Flush buffer first
-    Flush-LogBuffer
+    Clear-LogBuffer
 
     $entries = @()
 
@@ -752,7 +752,7 @@ function Close-StructuredLogging {
     }
 
     # Final flush
-    Flush-LogBuffer
+    Clear-LogBuffer
 
     # Reset state
     $script:LoggingState.Initialized = $false
@@ -825,7 +825,7 @@ Export-ModuleMember -Function @(
     'Initialize-StructuredLogging',
     'Get-LoggingConfig',
     'Write-StructuredLog',
-    'Flush-LogBuffer',
+    'Clear-LogBuffer',
     'Export-LogsToJson',
     'Get-StructuredLogs',
     'Invoke-LogRetentionCleanup',

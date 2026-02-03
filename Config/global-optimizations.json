@@ -1,9 +1,11 @@
 {
-  "$schema": "https://json-schema.org/draft-07/schema#",
-  "Description": "Global optimizations applied to all profiles - Safe for all users",
-  "Version": "1.0.0",
-  "LastUpdated": "2025-10-06",
-
+  "_meta": {
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "description": "Global optimizations applied to all profiles - Safe for all users",
+    "version": "3.5.2",
+    "author": "Julien Bombled",
+    "lastUpdated": "2026-02-03"
+  },
   "SystemConfig": {
     "Explorer": {
       "ShowHiddenFiles": true,

@@ -2,7 +2,7 @@
   "_meta": {
     "locale": "en",
     "name": "English",
-    "version": "3.5.0",
+    "version": "3.5.2",
     "author": "Julien Bombled"
   },
   "common": {
@@ -27,7 +27,7 @@
     "next": "Next",
     "exit": "Exit",
     "retry": "Retry",
-    "version": "3.5.0"
+    "version": "3.5.2"
   },
   "core": {
     "admin_required": "Administrator privileges required",
@@ -49,7 +49,9 @@
     "detection": {
       "checking": "Checking if {AppName} is installed...",
       "found": "{AppName} detected (installed)",
-      "not_found": "{AppName} not detected"
+      "not_found": "{AppName} not detected",
+      "scan_starting": "Scanning {Count} applications...",
+      "scan_complete": "Scan complete: {Installed}/{Total} installed"
     },
     "method": {
       "winget": "Installing via Winget: {PackageId}",
@@ -506,7 +508,11 @@
     "blacklist_error": "Error applying startup blacklist: {Error}",
     "could_not_enum_tasks": "Could not enumerate scheduled tasks: {Error}",
     "apps_list_header": "Applications to disable from startup:",
-    "app_reason": "Reason: {Reason}"
+    "app_reason": "Reason: {Reason}",
+    "group_header": "[{GroupName}]",
+    "app_name": "  - {Name}",
+    "app_command": "    Command: {Command}",
+    "app_path": "    Path: {Path}"
   },
   "startmenu": {
     "title": "=== Start Menu Configuration ===",
@@ -676,7 +682,13 @@
     "rolled_back": "Rolled back: {AppName}",
     "rollback_failed": "Could not roll back: {AppName}",
     "rollback_error": "Rollback error for {AppName}: {Error}",
-    "state_cleared": "Rollback state cleared"
+    "state_cleared": "Rollback state cleared",
+    "summary_title": "=== ROLLBACK SUMMARY ===",
+    "summary_apps_count": "Applications to rollback: {Count}",
+    "summary_app_item": "  - {AppName} ({Method})",
+    "confirm_prompt": "Do you want to proceed with rollback? (Y/N) [Timeout: {Timeout}s]",
+    "confirm_timeout_proceed": "Timeout reached - proceeding with rollback",
+    "confirm_timeout_cancel": "Timeout reached - rollback cancelled"
   },
   "deployment": {
     "session_initialized": "Deployment session initialized: {ProfileName} ({Count} apps)",
@@ -1011,7 +1023,19 @@
     "restore_complete": "Restore completed",
     "available_backups": "Available backups: {Count}",
     "release_notes": "Release Notes:",
-    "prerelease_warning": "This is a pre-release version"
+    "prerelease_warning": "This is a pre-release version",
+    "batch_cache_failed": "Failed to build batch update cache: {Error}",
+    "fetch_failed": "Failed to fetch release info: {Error}",
+    "no_assets": "No downloadable assets found in release",
+    "no_suitable_asset": "No suitable asset found for download",
+    "downloading_asset": "Downloading update: {FileName}",
+    "download_completed_path": "Download completed: {Path}",
+    "download_failed": "Download failed: {Error}",
+    "restore_failed": "Restore failed: {Error}",
+    "backup_abort": "Backup failed, aborting update",
+    "restore_attempt": "Attempting to restore from backup...",
+    "restore_also_failed": "Restore also failed. Manual intervention required.",
+    "installing_from": "Installing update from: {Path}"
   },
   "telemetry": {
     "initialized": "Telemetry collector initialized",

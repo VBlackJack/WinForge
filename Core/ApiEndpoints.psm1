@@ -270,12 +270,22 @@ function Get-ApplicationsHandler {
             if ($db.Applications) {
                 foreach ($prop in $db.Applications.PSObject.Properties) {
                     $app = $prop.Value
+
+                    # Determine install method from Sources property
+                    $installMethod = 'Unknown'
+                    if ($app.PSObject.Properties['Sources'] -and $app.Sources) {
+                        $sourceKeys = @($app.Sources.PSObject.Properties.Name)
+                        if ($sourceKeys.Count -gt 0) {
+                            $installMethod = $sourceKeys[0]
+                        }
+                    }
+
                     $appInfo = @{
                         id = $prop.Name
-                        name = if ($app.Name) { $app.Name } else { $prop.Name }
-                        category = if ($app.Category) { $app.Category } else { 'Uncategorized' }
-                        installMethod = if ($app.InstallMethod) { $app.InstallMethod } else { 'Unknown' }
-                        description = if ($app.Description) { $app.Description } else { '' }
+                        name = if ($app.PSObject.Properties['Name'] -and $app.Name) { $app.Name } else { $prop.Name }
+                        category = if ($app.PSObject.Properties['Category'] -and $app.Category) { $app.Category } else { 'Uncategorized' }
+                        installMethod = $installMethod
+                        description = if ($app.PSObject.Properties['Description'] -and $app.Description) { $app.Description } else { '' }
                     }
 
                     $applications += $appInfo
@@ -296,7 +306,7 @@ function Get-ApplicationsHandler {
     }
 
     # Apply query filters if provided
-    $query = $Context.Query
+    $query = if ($Context -is [hashtable]) { $Context['Query'] } elseif ($Context.PSObject.Properties['Query']) { $Context.Query } else { $null }
     if ($query -and $query['category']) {
         $filterCategory = $query['category']
         $applications = $applications | Where-Object { $_.category -eq $filterCategory }
@@ -309,6 +319,9 @@ function Get-ApplicationsHandler {
             $_.name -match $searchTerm -or $_.id -match $searchTerm
         }
     }
+
+    # Ensure applications is always an array (filters can return $null)
+    $applications = @($applications)
 
     return @{
         applications = $applications

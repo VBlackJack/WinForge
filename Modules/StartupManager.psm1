@@ -291,14 +291,14 @@ function Show-StartupApplications {
     $grouped = $startupApps | Group-Object -Property Location
 
     foreach ($group in $grouped) {
-        Write-Host "[$($group.Name)]" -ForegroundColor Cyan
+        Write-Host (Get-LocalizedString -Key 'startup.group_header' -Parameters @{ GroupName = $group.Name }) -ForegroundColor Cyan
         foreach ($app in $group.Group) {
-            Write-Host "  - $($app.Name)" -ForegroundColor Yellow
+            Write-Host (Get-LocalizedString -Key 'startup.app_name' -Parameters @{ Name = $app.Name }) -ForegroundColor Yellow
             if ($app.Command) {
-                Write-Host "    Command: $($app.Command)" -ForegroundColor Gray
+                Write-Host (Get-LocalizedString -Key 'startup.app_command' -Parameters @{ Command = $app.Command }) -ForegroundColor Gray
             }
             elseif ($app.Path -and $app.Type -eq 'Shortcut') {
-                Write-Host "    Path: $($app.Path)" -ForegroundColor Gray
+                Write-Host (Get-LocalizedString -Key 'startup.app_path' -Parameters @{ Path = $app.Path }) -ForegroundColor Gray
             }
         }
         Write-Host ""
@@ -362,7 +362,7 @@ function Invoke-StartupBlacklist {
         Write-Host ""
         Write-Host (Get-LocalizedString -Key 'startup.apps_list_header') -ForegroundColor Yellow
         foreach ($app in $appsToDisable) {
-            Write-Host "  - $($app.Name)" -ForegroundColor White
+            Write-Host (Get-LocalizedString -Key 'startup.app_name' -Parameters @{ Name = $app.Name }) -ForegroundColor White
             if ($app.Reason) {
                 Write-Host "    $(Get-LocalizedString -Key 'startup.app_reason' -Parameters @{ Reason = $app.Reason })" -ForegroundColor Gray
             }

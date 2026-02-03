@@ -1,7 +1,7 @@
 {
   "Name": "Base",
-  "Description": "Universal foundation profile with essential tools and professional diagnostic suite (v3.5.0 - Database Mode)",
-  "Version": "3.5.0",
+  "Description": "Universal foundation profile with essential tools and professional diagnostic suite (v3.5.2 - Database Mode)",
+  "Version": "3.5.2",
   "Inherits": [],
   "Applications": [
     "GoogleChrome",

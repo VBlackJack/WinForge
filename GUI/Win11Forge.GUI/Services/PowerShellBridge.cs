@@ -19,6 +19,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
 using Win11Forge.GUI.Models;
+using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Services;
 
@@ -602,7 +603,7 @@ public class PowerShellBridge : IPowerShellBridge
         {
             AppId = appId,
             Name = appId,
-            Category = "Unknown",
+            Category = Loc.Common_Unknown,
             Priority = 50,
             IsRequired = false,
             Status = ApplicationStatus.Pending,
@@ -1822,7 +1823,7 @@ try {{
         else
         {
             app.Name = appId;
-            app.Category = "Unknown";
+            app.Category = Loc.Common_Unknown;
         }
 
         return app;

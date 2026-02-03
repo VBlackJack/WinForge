@@ -114,9 +114,10 @@ public partial class App : Application
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Version display is non-critical
+                // Version display is non-critical, but log for diagnostics
+                System.Diagnostics.Debug.WriteLine($"Failed to get version for splash screen: {ex.Message}");
             }
 
             // Step 3: Apply language/culture BEFORE UI initialization
@@ -184,7 +185,10 @@ public partial class App : Application
             {
                 splash?.Close();
             }
-            catch { }
+            catch (Exception closeEx)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to close splash screen: {closeEx.Message}");
+            }
 
             base.OnStartup(e);
 
@@ -208,7 +212,11 @@ public partial class App : Application
         {
             File.AppendAllText(LogPath, $"[{DateTime.Now:HH:mm:ss}] {message}\n");
         }
-        catch { }
+        catch (Exception ex)
+        {
+            // File logging failed - use debug output as fallback
+            System.Diagnostics.Debug.WriteLine($"[Win11Forge] {message} (file log failed: {ex.Message})");
+        }
     }
 
     private static void LogError(string context, Exception? ex)
@@ -218,7 +226,11 @@ public partial class App : Application
             File.AppendAllText(LogPath,
                 $"[{DateTime.Now:HH:mm:ss}] ERROR in {context}:\n{ex}\n\n");
         }
-        catch { }
+        catch (Exception logEx)
+        {
+            // File logging failed - use debug output as fallback
+            System.Diagnostics.Debug.WriteLine($"[Win11Forge ERROR] {context}: {ex?.Message} (file log failed: {logEx.Message})");
+        }
     }
 
     /// <summary>
