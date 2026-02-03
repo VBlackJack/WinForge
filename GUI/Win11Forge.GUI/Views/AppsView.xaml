@@ -195,8 +195,8 @@
 
         <!-- Profile Selector Card -->
         <materialDesign:Card Grid.Row="1"
-                              Padding="16"
-                              Margin="0,0,0,16"
+                              Padding="{StaticResource CardPadding}"
+                              Margin="{StaticResource MarginNormalBottom}"
                               materialDesign:ElevationAssist.Elevation="Dp2">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -208,7 +208,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Profile Icon and Label -->
+                <!-- Profile Icon and Label with Help -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <materialDesign:PackIcon Kind="FolderAccount"
                                               Width="24" Height="24"
@@ -218,9 +218,16 @@
                     <TextBlock Text="{loc:Loc Apps_ProfileLabel}"
                                Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
                                VerticalAlignment="Center"/>
+                    <materialDesign:PackIcon Kind="HelpCircleOutline"
+                                              Width="18" Height="18"
+                                              VerticalAlignment="Center"
+                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                              Margin="6,0,0,0"
+                                              ToolTip="{loc:Loc Apps_ProfileHelpTooltip}"
+                                              Cursor="Help"/>
                 </StackPanel>
 
-                <!-- Profile ComboBox -->
+                <!-- Profile ComboBox (visible when profiles exist) -->
                 <ComboBox Grid.Column="1"
                           ItemsSource="{Binding AvailableProfiles}"
                           SelectedItem="{Binding SelectedProfile}"
@@ -228,8 +235,28 @@
                           materialDesign:HintAssist.Hint="{loc:Loc Apps_SelectProfile}"
                           MinWidth="180"
                           Margin="16,0,0,0"
+                          ToolTip="{loc:Loc Apps_ProfileHelpTooltip}"
+                          Visibility="{Binding HasProfiles, Converter={StaticResource BooleanToVisibilityConverter}}"
                           AutomationProperties.Name="Select deployment profile"
                           AutomationProperties.HelpText="Choose a profile to auto-select its applications"/>
+
+                <!-- No Profiles Message (visible when no profiles exist) -->
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Margin="16,0,0,0"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding HasProfiles, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <materialDesign:PackIcon Kind="InformationOutline"
+                                              Width="18" Height="18"
+                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,8,0"/>
+                    <TextBlock Text="{loc:Loc Apps_NoProfilesAvailable}"
+                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               VerticalAlignment="Center"
+                               ToolTip="{loc:Loc Apps_NoProfilesHint}"/>
+                </StackPanel>
 
                 <!-- Clear Profile Button -->
                 <Button Grid.Column="2"
@@ -289,20 +316,28 @@
 
         <!-- Filter Bar Card -->
         <materialDesign:Card Grid.Row="2"
-                              Padding="16"
-                              Margin="0,0,0,16"
+                              Padding="{StaticResource CardPadding}"
+                              Margin="{StaticResource MarginNormalBottom}"
                               materialDesign:ElevationAssist.Elevation="Dp2">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" MinWidth="220"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <!-- Filters Section -->
+                    <ColumnDefinition Width="Auto" MinWidth="220"/> <!-- 0: Search -->
+                    <ColumnDefinition Width="Auto"/>                <!-- 1: Category -->
+                    <ColumnDefinition Width="Auto"/>                <!-- 2: Status -->
+                    <ColumnDefinition Width="Auto"/>                <!-- 3: Clear Filters -->
+                    <!-- Separator -->
+                    <ColumnDefinition Width="Auto"/>                <!-- 4: Separator -->
+                    <!-- View Options Section -->
+                    <ColumnDefinition Width="Auto"/>                <!-- 5: Column Visibility -->
+                    <ColumnDefinition Width="Auto"/>                <!-- 6: Active Filter Badges -->
+                    <ColumnDefinition Width="*"/>                   <!-- 7: Stats (flexible) -->
+                    <!-- Actions Section -->
+                    <ColumnDefinition Width="Auto"/>                <!-- 8: Scan -->
+                    <ColumnDefinition Width="Auto"/>                <!-- 9: Scan Updates -->
                 </Grid.ColumnDefinitions>
+
+                <!-- FILTERS SECTION -->
 
                 <!-- Search Box with Auto-complete -->
                 <controls:SearchBox Grid.Column="0"
@@ -350,16 +385,69 @@
                     <materialDesign:PackIcon Kind="FilterRemove"/>
                 </Button>
 
-                <!-- Active Filter Indicators -->
-                <StackPanel Grid.Column="4"
+                <!-- VIEW OPTIONS SECTION -->
+
+                <!-- Separator between Filters and View Options -->
+                <Border Grid.Column="4"
+                        Width="1"
+                        Background="{DynamicResource MaterialDesignDivider}"
+                        Margin="16,4"
+                        VerticalAlignment="Stretch"/>
+
+                <!-- Column Visibility Toggle Button with Popup -->
+                <materialDesign:PopupBox Grid.Column="5"
+                                          PlacementMode="BottomAndAlignRightEdges"
+                                          ToolTip="{loc:Loc Apps_ColumnVisibility}"
+                                          Margin="8,0,0,0"
+                                          StaysOpen="True"
+                                          AutomationProperties.Name="Toggle column visibility"
+                                          AutomationProperties.HelpText="Show or hide table columns">
+                    <materialDesign:PopupBox.ToggleContent>
+                        <materialDesign:PackIcon Kind="TableColumn" Width="24" Height="24"/>
+                    </materialDesign:PopupBox.ToggleContent>
+                    <StackPanel Orientation="Vertical" MinWidth="180" Margin="8">
+                        <TextBlock Text="{loc:Loc Apps_ColumnVisibility}"
+                                   Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                                   Margin="8,4,8,12"/>
+                        <CheckBox Content="{loc:Loc Col_Favorites}"
+                                  IsChecked="{Binding ShowFavoritesColumn, Mode=TwoWay}"
+                                  Style="{StaticResource MaterialDesignCheckBox}"
+                                  Margin="8,4"/>
+                        <CheckBox Content="{loc:Loc Col_Version}"
+                                  IsChecked="{Binding ShowVersionColumn, Mode=TwoWay}"
+                                  Style="{StaticResource MaterialDesignCheckBox}"
+                                  Margin="8,4"/>
+                        <CheckBox Content="{loc:Loc Col_Status}"
+                                  IsChecked="{Binding ShowStatusColumn, Mode=TwoWay}"
+                                  Style="{StaticResource MaterialDesignCheckBox}"
+                                  Margin="8,4"/>
+                        <CheckBox Content="{loc:Loc Col_Category}"
+                                  IsChecked="{Binding ShowCategoryColumn, Mode=TwoWay}"
+                                  Style="{StaticResource MaterialDesignCheckBox}"
+                                  Margin="8,4"/>
+                        <CheckBox Content="{loc:Loc Apps_Col_Sources}"
+                                  IsChecked="{Binding ShowSourcesColumn, Mode=TwoWay}"
+                                  Style="{StaticResource MaterialDesignCheckBox}"
+                                  Margin="8,4"/>
+                        <CheckBox Content="{loc:Loc Col_Logs}"
+                                  IsChecked="{Binding ShowLogsColumn, Mode=TwoWay}"
+                                  Style="{StaticResource MaterialDesignCheckBox}"
+                                  Margin="8,4"/>
+                    </StackPanel>
+                </materialDesign:PopupBox>
+
+                <!-- Active Filter Indicators (moved after separator) -->
+                <StackPanel Grid.Column="6"
                             Orientation="Horizontal"
                             VerticalAlignment="Center"
-                            Margin="16,0,0,0">
+                            Margin="8,0,0,0">
                     <!-- Search Filter Badge -->
-                    <Border Background="{DynamicResource PrimaryHueMidBrush}"
+                    <Border Style="{StaticResource HoverBadgeStyle}"
+                            Background="{DynamicResource PrimaryHueMidBrush}"
                             CornerRadius="12"
                             Padding="8,4"
                             Margin="0,0,8,0"
+                            Cursor="Hand"
                             Visibility="{Binding HasSearchFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Magnify" Width="14" Height="14" VerticalAlignment="Center"
@@ -374,10 +462,12 @@
                         </StackPanel>
                     </Border>
                     <!-- Category Filter Badge -->
-                    <Border Background="{DynamicResource SecondaryHueMidBrush}"
+                    <Border Style="{StaticResource HoverBadgeStyle}"
+                            Background="{DynamicResource SecondaryHueMidBrush}"
                             CornerRadius="12"
                             Padding="8,4"
                             Margin="0,0,8,0"
+                            Cursor="Hand"
                             Visibility="{Binding HasCategoryFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="FolderOutline" Width="14" Height="14" VerticalAlignment="Center"
@@ -390,9 +480,11 @@
                         </StackPanel>
                     </Border>
                     <!-- Status Filter Badge -->
-                    <Border Background="{DynamicResource MaterialDesignChipBackground}"
+                    <Border Style="{StaticResource HoverBadgeStyle}"
+                            Background="{DynamicResource MaterialDesignChipBackground}"
                             CornerRadius="12"
                             Padding="8,4"
+                            Cursor="Hand"
                             Visibility="{Binding HasStatusFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="FilterOutline" Width="14" Height="14" VerticalAlignment="Center"/>
@@ -405,7 +497,7 @@
                 </StackPanel>
 
                 <!-- Stats Display -->
-                <StackPanel Grid.Column="5"
+                <StackPanel Grid.Column="7"
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
                     <!-- Normal stats -->
@@ -444,7 +536,7 @@
                 </StackPanel>
 
                 <!-- Scan/Cancel Button -->
-                <Button Grid.Column="6"
+                <Button Grid.Column="8"
                         Command="{Binding ScanCommand}"
                         Style="{StaticResource MaterialDesignRaisedButton}"
                         Content="{loc:Loc Btn_Scan}"
@@ -453,7 +545,7 @@
                         Visibility="{Binding IsScanning, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                         AutomationProperties.Name="Scan for installed applications"
                         AutomationProperties.HelpText="Check which applications are already installed on this system"/>
-                <Button Grid.Column="6"
+                <Button Grid.Column="8"
                         Command="{Binding CancelScanCommand}"
                         Style="{StaticResource ThemeAdaptiveOutlinedButton}"
                         Content="{loc:Loc Btn_Cancel}"
@@ -463,7 +555,7 @@
                         AutomationProperties.HelpText="Stop the current scan operation"/>
 
                 <!-- Scan Updates Button -->
-                <Button Grid.Column="7"
+                <Button Grid.Column="9"
                         Command="{Binding ScanUpdatesCommand}"
                         Style="{StaticResource ThemeAdaptiveOutlinedButton}"
                         Margin="8,0,0,0"
@@ -475,7 +567,7 @@
                         <TextBlock Text="{loc:Loc Btn_ScanUpdates}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
-                <StackPanel Grid.Column="7"
+                <StackPanel Grid.Column="9"
                             Orientation="Horizontal"
                             Margin="8,0,0,0"
                             Visibility="{Binding IsScanningUpdates, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -494,8 +586,8 @@
 
         <!-- Selection Action Bar -->
         <materialDesign:Card Grid.Row="3"
-                              Padding="12"
-                              Margin="0,0,0,8"
+                              Padding="{StaticResource MarginMedium}"
+                              Margin="{StaticResource MarginSmallBottom}"
                               materialDesign:ElevationAssist.Elevation="Dp1"
                               Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <Grid>
@@ -503,12 +595,22 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
+                <!-- Selection Help Icon -->
+                <materialDesign:PackIcon Grid.Column="0"
+                                          Kind="HelpCircleOutline"
+                                          Width="18" Height="18"
+                                          VerticalAlignment="Center"
+                                          Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                          Margin="0,0,12,0"
+                                          ToolTip="{loc:Loc Apps_SelectionHelpTooltip}"
+                                          Cursor="Help"/>
                 <!-- Select All/None/Not Installed Buttons -->
-                <Button Grid.Column="0"
+                <Button Grid.Column="1"
                         Content="{loc:Loc Apps_SelectAll}"
                         Command="{Binding SelectAllCommand}"
                         Style="{StaticResource ThemeAdaptiveOutlinedButton}"
@@ -516,7 +618,7 @@
                         Margin="0,0,8,0"
                         AutomationProperties.Name="Select all applications"
                         AutomationProperties.HelpText="Select all applications in the filtered list"/>
-                <Button Grid.Column="1"
+                <Button Grid.Column="2"
                         Content="{loc:Loc Apps_SelectNone}"
                         Command="{Binding SelectNoneCommand}"
                         Style="{StaticResource ThemeAdaptiveOutlinedButton}"
@@ -524,7 +626,7 @@
                         Margin="0,0,8,0"
                         AutomationProperties.Name="Select none"
                         AutomationProperties.HelpText="Deselect all applications"/>
-                <Button Grid.Column="2"
+                <Button Grid.Column="3"
                         Content="{loc:Loc Apps_SelectNotInstalled}"
                         Command="{Binding SelectNotInstalledCommand}"
                         Style="{StaticResource ThemeAdaptiveOutlinedButton}"
@@ -533,7 +635,7 @@
                         AutomationProperties.HelpText="Select only applications that are not yet installed"/>
 
                 <!-- Install Selected Button (hidden during batch ops) -->
-                <StackPanel Grid.Column="4" Orientation="Horizontal"
+                <StackPanel Grid.Column="5" Orientation="Horizontal"
                             Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <!-- Select Favorites Button -->
                     <Button Content="{loc:Loc Apps_SelectFavorites}"
@@ -575,7 +677,7 @@
                 </StackPanel>
 
                 <!-- Batch Progress Panel (visible during batch ops) -->
-                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
                     <StackPanel.Style>
                         <Style TargetType="StackPanel">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -638,7 +740,7 @@
                     <!-- Pause Button -->
                     <Button Command="{Binding PauseCommand}"
                             Style="{StaticResource MaterialDesignIconButton}"
-                            Width="36" Height="36"
+                            Width="44" Height="44"
                             ToolTip="{loc:Loc Btn_Pause}"
                             Visibility="{Binding IsPaused, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                             AutomationProperties.Name="Pause"
@@ -648,7 +750,7 @@
                     <!-- Resume Button -->
                     <Button Command="{Binding ResumeCommand}"
                             Style="{StaticResource MaterialDesignIconButton}"
-                            Width="36" Height="36"
+                            Width="44" Height="44"
                             ToolTip="{loc:Loc Btn_Resume}"
                             Visibility="{Binding IsPaused, Converter={StaticResource BooleanToVisibilityConverter}}"
                             AutomationProperties.Name="Resume"
@@ -658,7 +760,7 @@
                     <!-- Cancel Button -->
                     <Button Command="{Binding CancelBatchCommand}"
                             Style="{StaticResource MaterialDesignIconButton}"
-                            Width="36" Height="36"
+                            Width="44" Height="44"
                             ToolTip="{loc:Loc Btn_Cancel}"
                             Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
                             AutomationProperties.Name="Cancel"
@@ -688,6 +790,33 @@
                                Style="{StaticResource MaterialDesignBody1TextBlock}"
                                HorizontalAlignment="Center"
                                Margin="0,16,0,0"/>
+                </StackPanel>
+
+                <!-- Empty Filter Results State -->
+                <StackPanel Orientation="Vertical"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding IsEmptyFilterResults, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <materialDesign:PackIcon Kind="FilterOff"
+                                              Width="64" Height="64"
+                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                              HorizontalAlignment="Center"
+                                              Margin="0,0,0,16"/>
+                    <TextBlock Text="{loc:Loc Apps_EmptyFilterResults}"
+                               Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,8"/>
+                    <TextBlock Text="{loc:Loc Apps_EmptyFilterResultsHint}"
+                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,16"/>
+                    <Button Content="{loc:Loc Apps_ClearFilters}"
+                            Command="{Binding ClearFiltersCommand}"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            HorizontalAlignment="Center"
+                            AutomationProperties.Name="Clear all filters to show applications"/>
                 </StackPanel>
 
                 <!-- DataGrid with UI Virtualization for performance -->
@@ -813,7 +942,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                     <CheckBox IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}"
-                                              Style="{StaticResource MaterialDesignCheckBox}"
+                                              Style="{StaticResource AnimatedSelectionCheckBox}"
                                               HorizontalAlignment="Center"
                                               Checked="SelectionCheckBox_Changed"
                                               Unchecked="SelectionCheckBox_Changed"
@@ -824,11 +953,11 @@
                         </DataGridTemplateColumn>
 
                         <!-- Favorites Column -->
-                        <DataGridTemplateColumn Width="Auto" MinWidth="40" SortMemberPath="IsFavorite">
+                        <DataGridTemplateColumn Width="Auto" MinWidth="40" SortMemberPath="IsFavorite"
+                                                Visibility="{Binding DataContext.ShowFavoritesColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                    <Button Style="{StaticResource MaterialDesignIconButton}"
-                                            Width="44" Height="44"
+                                    <Button Style="{StaticResource AnimatedFavoriteButton}"
                                             Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}"
                                             ToolTip="{loc:Loc Menu_ToggleFavorite}"
@@ -867,7 +996,7 @@
                                                            Foreground="White"/>
                                             </Border>
                                             <!-- Manual Install Badge -->
-                                            <Border Background="{DynamicResource MaterialDesignValidationErrorBrush}"
+                                            <Border Background="{DynamicResource ManualInstallBadgeBrush}"
                                                     CornerRadius="4"
                                                     Padding="6,2"
                                                     Margin="8,0,0,0"
@@ -899,7 +1028,8 @@
                         </DataGridTemplateColumn>
 
                         <!-- Version Column (combined current + available) -->
-                        <DataGridTemplateColumn Width="Auto" MinWidth="120" SortMemberPath="CurrentVersion">
+                        <DataGridTemplateColumn Width="Auto" MinWidth="120" SortMemberPath="CurrentVersion"
+                                                Visibility="{Binding DataContext.ShowVersionColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <DataGridTemplateColumn.Header>
                                 <TextBlock Text="{loc:Loc Col_Version}"/>
                             </DataGridTemplateColumn.Header>
@@ -934,7 +1064,8 @@
                         </DataGridTemplateColumn>
 
                         <!-- Status Column -->
-                        <DataGridTemplateColumn Width="Auto" MinWidth="100" SortMemberPath="Status">
+                        <DataGridTemplateColumn Width="Auto" MinWidth="100" SortMemberPath="Status"
+                                                Visibility="{Binding DataContext.ShowStatusColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <DataGridTemplateColumn.Header>
                                 <TextBlock Text="{loc:Loc Col_Status}"/>
                             </DataGridTemplateColumn.Header>
@@ -958,7 +1089,8 @@
                         </DataGridTemplateColumn>
 
                         <!-- Category Column -->
-                        <DataGridTemplateColumn Width="Auto" MinWidth="100" SortMemberPath="Category">
+                        <DataGridTemplateColumn Width="Auto" MinWidth="100" SortMemberPath="Category"
+                                                Visibility="{Binding DataContext.ShowCategoryColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <DataGridTemplateColumn.Header>
                                 <TextBlock Text="{loc:Loc Col_Category}"/>
                             </DataGridTemplateColumn.Header>
@@ -978,7 +1110,8 @@
                         </DataGridTemplateColumn>
 
                         <!-- Sources Column -->
-                        <DataGridTemplateColumn Width="Auto" MinWidth="100" SortMemberPath="Sources">
+                        <DataGridTemplateColumn Width="Auto" MinWidth="100" SortMemberPath="Sources"
+                                                Visibility="{Binding DataContext.ShowSourcesColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <DataGridTemplateColumn.Header>
                                 <TextBlock Text="{loc:Loc Apps_Col_Sources}"/>
                             </DataGridTemplateColumn.Header>
@@ -992,13 +1125,14 @@
                         </DataGridTemplateColumn>
 
                         <!-- Logs Column -->
-                        <DataGridTemplateColumn Width="Auto" MinWidth="50" SortMemberPath="LogOutput">
+                        <DataGridTemplateColumn Width="Auto" MinWidth="50" SortMemberPath="LogOutput"
+                                                Visibility="{Binding DataContext.ShowLogsColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <DataGridTemplateColumn.Header>
                                 <TextBlock Text="{loc:Loc Col_Logs}"/>
                             </DataGridTemplateColumn.Header>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                    <Button Style="{StaticResource MaterialDesignIconButton}"
+                                    <Button Style="{StaticResource HoverScaleIconButton}"
                                             Width="44" Height="44"
                                             ToolTip="{loc:Loc Btn_ViewLogs}"
                                             Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
@@ -1016,14 +1150,46 @@
             </Grid>
         </materialDesign:Card>
 
-        <!-- Error Message -->
-        <TextBlock Grid.Row="4"
-                   Text="{Binding ErrorMessage}"
-                   Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
-                   Style="{StaticResource MaterialDesignBody1TextBlock}"
-                   Visibility="{Binding ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"/>
+        <!-- Error Message with Recovery Options -->
+        <Border Grid.Row="4"
+                Background="{DynamicResource ErrorBackgroundBrush}"
+                BorderBrush="{DynamicResource ErrorBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="16"
+                Margin="24"
+                Visibility="{Binding ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MaxWidth="500">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
+                    <materialDesign:PackIcon Kind="AlertCircle"
+                                              Width="24" Height="24"
+                                              Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,12,0"/>
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
+                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="{loc:Loc Common_TryAgain}"
+                            Command="{Binding RetryLastOperationCommand}"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Margin="0,0,8,0"
+                            MinWidth="100"
+                            AutomationProperties.Name="Retry the failed operation"/>
+                    <Button Content="{loc:Loc Common_Dismiss}"
+                            Command="{Binding DismissErrorCommand}"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            MinWidth="100"
+                            AutomationProperties.Name="Dismiss error message"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
     </Grid>
     </materialDesign:DialogHost>
 </UserControl>

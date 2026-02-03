@@ -9,8 +9,8 @@
         xmlns:controls="clr-namespace:Win11Forge.GUI.Controls"
         mc:Ignorable="d"
         Title="{loc:Loc App_Title}"
-        Height="900" Width="1440"
-        MinHeight="600" MinWidth="960"
+        Height="900" Width="1600"
+        MinHeight="600" MinWidth="1200"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource MaterialDesign.Brush.Background}"
         TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
@@ -27,6 +27,7 @@
         <KeyBinding Modifiers="Ctrl" Key="D4" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="3"/>
         <KeyBinding Modifiers="Ctrl" Key="D5" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="4"/>
         <KeyBinding Modifiers="Ctrl" Key="D6" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="5"/>
+        <KeyBinding Modifiers="Ctrl" Key="D7" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="6"/>
         <KeyBinding Modifiers="Ctrl" Key="OemComma" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="5"/>
         <KeyBinding Modifiers="Ctrl" Key="Z" Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
         <KeyBinding Modifiers="Ctrl" Key="Y" Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
@@ -41,6 +42,33 @@
             <ColumnDefinition Width="220"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
+
+        <!-- Skip to Content Link (WCAG 2.1 Accessibility) -->
+        <Button x:Name="SkipToContentButton"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Content="{loc:Loc Accessibility_SkipToContent}"
+                Click="SkipToContent_Click"
+                VerticalAlignment="Top"
+                HorizontalAlignment="Left"
+                Panel.ZIndex="1000"
+                Margin="4"
+                Padding="12,8"
+                AutomationProperties.Name="Skip to main content"
+                AutomationProperties.HelpText="Press Enter to skip navigation and go directly to the main content area">
+            <Button.Style>
+                <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+                    <Setter Property="Opacity" Value="0"/>
+                    <Setter Property="IsHitTestVisible" Value="False"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Setter Property="IsHitTestVisible" Value="True"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
 
         <!-- Navigation Drawer -->
         <materialDesign:Card Grid.Column="0"
@@ -67,7 +95,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Back Button -->
+                        <!-- Back Button (WCAG 2.5.5: 44x44px minimum touch target) -->
                         <Button x:Name="BackButton"
                                 Grid.Row="0" Grid.Column="0"
                                 Style="{StaticResource MaterialDesignIconButton}"
@@ -75,11 +103,11 @@
                                 Visibility="{Binding CanGoBack, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}"
                                 ToolTip="{loc:Loc Nav_Back}"
                                 Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                Width="32" Height="32"
+                                Width="44" Height="44"
                                 Margin="0,0,8,0"
                                 AutomationProperties.Name="Go back"
                                 AutomationProperties.HelpText="Navigate to the previous view">
-                            <materialDesign:PackIcon Kind="ArrowLeft" Width="20" Height="20"/>
+                            <materialDesign:PackIcon Kind="ArrowLeft" Width="24" Height="24"/>
                         </Button>
 
                         <TextBlock Grid.Row="0" Grid.Column="1"
@@ -158,12 +186,24 @@
                                        VerticalAlignment="Center"/>
                         </StackPanel>
                     </ListBoxItem>
+                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_AppDatabase}"
+                                 AutomationProperties.HelpText="Navigate to Application Database view, Ctrl+7">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Database"
+                                                      Width="24"
+                                                      Height="24"
+                                                      Margin="0,0,16,0"/>
+                            <TextBlock Text="{loc:Loc Nav_AppDatabase}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ListBoxItem>
                 </ListBox>
             </Grid>
         </materialDesign:Card>
 
         <!-- Main Content Area -->
-        <Grid Grid.Column="1">
+        <Grid x:Name="MainContentArea" Grid.Column="1" Focusable="True"
+              AutomationProperties.Name="Main content area">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -186,21 +226,22 @@
                     <StackPanel Grid.Column="1"
                                 Orientation="Horizontal"
                                 Visibility="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <!-- WCAG 2.5.5: 44x44px minimum touch targets -->
                         <Button Style="{StaticResource MaterialDesignIconButton}"
-                                Width="32" Height="32"
+                                Width="44" Height="44"
                                 Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                 ToolTip="{loc:Loc Undo_Title}"
                                 AutomationProperties.Name="Undo last action"
                                 IsEnabled="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=Window}}">
-                            <materialDesign:PackIcon Kind="Undo" Width="18" Height="18"/>
+                            <materialDesign:PackIcon Kind="Undo" Width="20" Height="20"/>
                         </Button>
                         <Button Style="{StaticResource MaterialDesignIconButton}"
-                                Width="32" Height="32"
+                                Width="44" Height="44"
                                 Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                 ToolTip="{loc:Loc Undo_Redo}"
                                 AutomationProperties.Name="Redo last undone action"
                                 IsEnabled="{Binding CanRedo, RelativeSource={RelativeSource AncestorType=Window}}">
-                            <materialDesign:PackIcon Kind="Redo" Width="18" Height="18"/>
+                            <materialDesign:PackIcon Kind="Redo" Width="20" Height="20"/>
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -225,6 +266,11 @@
             <views:SettingsView x:Name="SettingsViewControl"
                                  Grid.Row="1"
                                  Visibility="Collapsed"/>
+
+            <!-- Applications Database View -->
+            <views:ApplicationsView x:Name="ApplicationsViewControl"
+                                     Grid.Row="1"
+                                     Visibility="Collapsed"/>
 
             <!-- Prerequisites View -->
             <views:PrerequisitesView x:Name="PrerequisitesViewControl"

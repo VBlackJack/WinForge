@@ -340,13 +340,14 @@
                     <DataGridTemplateColumn Width="50">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                <!-- WCAG 2.5.5: 44x44px minimum touch target -->
                                 <Button Style="{StaticResource MaterialDesignIconButton}"
-                                        Width="28" Height="28"
+                                        Width="44" Height="44"
                                         ToolTip="{loc:Loc Btn_ViewLogs}"
                                         Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
                                         Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
-                                    <materialDesign:PackIcon Kind="FileDocumentOutline" Width="16" Height="16"/>
+                                    <materialDesign:PackIcon Kind="FileDocumentOutline" Width="20" Height="20"/>
                                 </Button>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>

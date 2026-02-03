@@ -742,7 +742,8 @@ function Invoke-InstallationMethodSequence {
         if (& $getInstallResult $wingetOutput) {
             if ($isOfficeApp) {
                 & $writeLog "Office installation initiated, waiting for Click-to-Run to complete..." 'Info'
-                $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $script:OfficeInstallTimeoutSeconds
+                $officeTimeout = Get-InstallationTimeout -AppName 'Office'
+                $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $officeTimeout
                 if (-not $officeInstalled) {
                     $result.FailureReasons += "Office Click-to-Run did not complete in time"
                 }
@@ -772,7 +773,8 @@ function Invoke-InstallationMethodSequence {
         if (& $getInstallResult $chocoOutput) {
             if ($isOfficeApp) {
                 & $writeLog "Office installation initiated, waiting for Click-to-Run to complete..." 'Info'
-                $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $script:OfficeInstallTimeoutSeconds
+                $officeTimeout = Get-InstallationTimeout -AppName 'Office'
+                $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $officeTimeout
                 if (-not $officeInstalled) {
                     $result.FailureReasons += "Office Click-to-Run did not complete in time"
                 }

@@ -2532,6 +2532,31 @@ No = Skip duplicates</value>
     <value>No applications selected for export.</value>
     <comment>Message when no apps selected for export</comment>
   </data>
+  <data name="AppDb_Verify" xml:space="preserve">
+    <value>Verify</value>
+    <comment>Verify button text</comment>
+  </data>
+  <data name="AppDb_VerifySources" xml:space="preserve">
+    <value>Verify Sources</value>
+    <comment>Context menu item to verify application sources</comment>
+  </data>
+  <!-- Source Type Labels -->
+  <data name="Source_Winget" xml:space="preserve">
+    <value>Winget</value>
+    <comment>Winget source badge label</comment>
+  </data>
+  <data name="Source_Chocolatey" xml:space="preserve">
+    <value>Choco</value>
+    <comment>Chocolatey source badge label</comment>
+  </data>
+  <data name="Source_Store" xml:space="preserve">
+    <value>Store</value>
+    <comment>Microsoft Store source badge label</comment>
+  </data>
+  <data name="Source_Direct" xml:space="preserve">
+    <value>Direct</value>
+    <comment>Direct download source badge label</comment>
+  </data>
   <!-- Application Editor Dialog -->
   <data name="AppEditor_Tab_General" xml:space="preserve">
     <value>General</value>
