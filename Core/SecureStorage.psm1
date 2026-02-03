@@ -76,8 +76,8 @@ function Get-DpapiEntropy {
         # Create or open the named mutex for cross-process synchronization
         $mutex = [System.Threading.Mutex]::new($false, $script:EntropyMutexName)
 
-        # Wait for exclusive access (10 second timeout to prevent deadlock)
-        $mutexAcquired = $mutex.WaitOne(10000)
+        # Wait for exclusive access (2 second timeout to mitigate attack surface)
+        $mutexAcquired = $mutex.WaitOne(2000)
         if (-not $mutexAcquired) {
             Write-Warning "Could not acquire entropy mutex within timeout, proceeding without lock"
         }

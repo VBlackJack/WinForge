@@ -331,12 +331,12 @@ function Test-TranslationKey {
         Initialize-Localization
     }
 
-    $value = Get-NestedValue -Hashtable $script:Translations -Key $Key
+    $value = Get-NestedValue -Object $script:Translations -Key $Key
     if ($null -ne $value) {
         return $true
     }
 
-    $value = Get-NestedValue -Hashtable $script:FallbackTranslations -Key $Key
+    $value = Get-NestedValue -Object $script:FallbackTranslations -Key $Key
     return $null -ne $value
 }
 
