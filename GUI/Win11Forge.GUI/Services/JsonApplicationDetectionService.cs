@@ -41,6 +41,20 @@ public class JsonApplicationDetectionService
 
     private const int CommandTimeoutMs = 5000;
 
+    /// <summary>
+    /// Regex pattern for validating Windows feature names.
+    /// Only allows alphanumeric characters, hyphens, and underscores.
+    /// </summary>
+    private static readonly Regex ValidFeatureNamePattern = new(
+        @"^[a-zA-Z0-9\-_]+$",
+        RegexOptions.Compiled,
+        TimeSpan.FromMilliseconds(100));
+
+    /// <summary>
+    /// Regex timeout for version extraction patterns to prevent ReDoS attacks.
+    /// </summary>
+    private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(500);
+
     public JsonApplicationDetectionService()
     {
         // Find applications.json relative to the executable or repo root
@@ -211,7 +225,7 @@ public class JsonApplicationDetectionService
         }
 
         // Use parallel detection for performance, but limit concurrency
-        var semaphore = new SemaphoreSlim(4);
+        using var semaphore = new SemaphoreSlim(4);
         var tasks = appsToCheck.Select(async kvp =>
         {
             await semaphore.WaitAsync(cancellationToken);
@@ -292,13 +306,20 @@ public class JsonApplicationDetectionService
                 {
                     version = versionValue.ToString();
 
-                    // Apply regex if specified
+                    // Apply regex if specified (with timeout to prevent ReDoS)
                     if (!string.IsNullOrEmpty(config.VersionRegex) && version != null)
                     {
-                        var match = Regex.Match(version, config.VersionRegex);
-                        if (match.Success && match.Groups.Count > 1)
+                        try
                         {
-                            version = match.Groups[1].Value;
+                            var match = Regex.Match(version, config.VersionRegex, RegexOptions.None, RegexTimeout);
+                            if (match.Success && match.Groups.Count > 1)
+                            {
+                                version = match.Groups[1].Value;
+                            }
+                        }
+                        catch (RegexMatchTimeoutException)
+                        {
+                            Debug.WriteLine($"Version regex timed out for {appId} - possible ReDoS pattern");
                         }
                     }
                 }
@@ -456,10 +477,17 @@ public class JsonApplicationDetectionService
                     }
                 }
 
-                var match = Regex.Match(searchText, config.VersionRegex);
-                if (match.Success)
+                try
                 {
-                    version = match.Groups.Count > 1 ? match.Groups[1].Value : match.Value;
+                    var match = Regex.Match(searchText, config.VersionRegex, RegexOptions.None, RegexTimeout);
+                    if (match.Success)
+                    {
+                        version = match.Groups.Count > 1 ? match.Groups[1].Value : match.Value;
+                    }
+                }
+                catch (RegexMatchTimeoutException)
+                {
+                    Debug.WriteLine($"Version regex timed out for {appId} - possible ReDoS pattern");
                 }
             }
 
@@ -489,6 +517,13 @@ public class JsonApplicationDetectionService
         {
             // Expand environment variables
             var expandedPath = Environment.ExpandEnvironmentVariables(config.Path);
+
+            // Security: Validate expanded path for safety
+            if (!IsValidExpandedPath(expandedPath))
+            {
+                Debug.WriteLine($"Security: Invalid expanded path for {appId}: {expandedPath}");
+                return null;
+            }
 
             if (!File.Exists(expandedPath)) return null;
 
@@ -521,18 +556,53 @@ public class JsonApplicationDetectionService
     }
 
     /// <summary>
+    /// Validates an expanded file path for security.
+    /// Blocks paths with dangerous patterns that could result from malicious environment variables.
+    /// </summary>
+    private static bool IsValidExpandedPath(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return false;
+
+        // Block null bytes
+        if (path.Contains('\0')) return false;
+
+        // Block unexpanded environment variables (indicates potential attack or misconfiguration)
+        if (path.Contains('%')) return false;
+
+        // Block command injection characters
+        var dangerousChars = new[] { ';', '&', '|', '`', '$', '(', ')', '<', '>', '"', '\'' };
+        if (path.IndexOfAny(dangerousChars) >= 0) return false;
+
+        // Validate it's a plausible file path (contains drive letter or UNC path)
+        if (!Path.IsPathRooted(path)) return false;
+
+        return true;
+    }
+
+    /// <summary>
     /// Detects Windows feature.
     /// </summary>
     private async Task<InstalledPackageInfo?> DetectWindowsFeatureAsync(string appId, string appName, DetectionConfiguration config)
     {
         if (string.IsNullOrEmpty(config.FeatureName)) return null;
 
+        // Security: Validate feature name to prevent command injection
+        // Windows feature names only contain alphanumeric characters, hyphens, and underscores
+        if (!ValidFeatureNamePattern.IsMatch(config.FeatureName))
+        {
+            Debug.WriteLine($"Invalid Windows feature name rejected for security: {appId}");
+            return null;
+        }
+
         try
         {
+            // Escape single quotes in feature name (double them for PowerShell)
+            var escapedFeatureName = config.FeatureName.Replace("'", "''");
+
             var psi = new ProcessStartInfo
             {
                 FileName = "powershell.exe",
-                Arguments = $"-NoProfile -Command \"(Get-WindowsOptionalFeature -Online -FeatureName '{config.FeatureName}').State\"",
+                Arguments = $"-NoProfile -Command \"(Get-WindowsOptionalFeature -Online -FeatureName '{escapedFeatureName}').State\"",
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true

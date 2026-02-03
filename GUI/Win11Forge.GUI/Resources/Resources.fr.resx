@@ -134,6 +134,25 @@
   <data name="Breadcrumb_Deploy" xml:space="preserve">
     <value>Deployer</value>
   </data>
+  <!-- Undo/Redo Actions -->
+  <data name="Undo_ActionUndone" xml:space="preserve">
+    <value>Annule : {0}</value>
+  </data>
+  <data name="Undo_ActionRedone" xml:space="preserve">
+    <value>Retabli : {0}</value>
+  </data>
+  <data name="Undo_Action" xml:space="preserve">
+    <value>action</value>
+  </data>
+  <data name="Undo_AddApplication" xml:space="preserve">
+    <value>Ajouter l'application : {0}</value>
+  </data>
+  <data name="Undo_EditApplication" xml:space="preserve">
+    <value>Modifier l'application : {0}</value>
+  </data>
+  <data name="Undo_DeleteApplication" xml:space="preserve">
+    <value>Supprimer l'application : {0}</value>
+  </data>
   <data name="Deploy_SelectProfile" xml:space="preserve">
     <value>Selectionner un profil :</value>
   </data>
@@ -162,6 +181,9 @@
     <value>Selectionne :</value>
   </data>
   <!-- Column Headers -->
+  <data name="Col_Favorites" xml:space="preserve">
+    <value>Favoris</value>
+  </data>
   <data name="Col_Status" xml:space="preserve">
     <value>Statut</value>
   </data>
@@ -183,6 +205,16 @@
   </data>
   <data name="Common_Error" xml:space="preserve">
     <value>Erreur</value>
+  </data>
+  <data name="Init_ErrorTitle" xml:space="preserve">
+    <value>Erreur d'initialisation</value>
+  </data>
+  <data name="Init_ErrorMessage" xml:space="preserve">
+    <value>Échec de l'initialisation de Win11Forge :
+
+{0}
+
+Veuillez vous assurer que Win11Forge est extrait correctement avec tous les dossiers (Config/, Modules/, Profiles/).</value>
   </data>
   <!-- Navigation -->
   <data name="Nav_Dashboard" xml:space="preserve">
@@ -399,6 +431,9 @@
   <data name="Settings_ThemeApplied" xml:space="preserve">
     <value>Theme applique</value>
   </data>
+  <data name="Settings_AutoSaved" xml:space="preserve">
+    <value>Parametres enregistres</value>
+  </data>
   <data name="Settings_Language" xml:space="preserve">
     <value>Langue</value>
   </data>
@@ -410,6 +445,9 @@
   </data>
   <data name="Settings_RestartRequired" xml:space="preserve">
     <value>Redemarrage requis pour le changement de langue</value>
+  </data>
+  <data name="Settings_RestartNow" xml:space="preserve">
+    <value>Redemarrer</value>
   </data>
   <data name="Settings_ClearHistory" xml:space="preserve">
     <value>Effacer l'historique</value>
@@ -511,6 +549,18 @@
   </data>
   <data name="Apps_OpenWebsite" xml:space="preserve">
     <value>Ouvrir le site</value>
+  </data>
+  <data name="Apps_ClearFilters" xml:space="preserve">
+    <value>Effacer les filtres</value>
+  </data>
+  <data name="Apps_EmptyFilterResults" xml:space="preserve">
+    <value>Aucune application ne correspond a vos filtres</value>
+  </data>
+  <data name="Apps_EmptyFilterResultsHint" xml:space="preserve">
+    <value>Essayez d'ajuster vos criteres de recherche ou de filtre</value>
+  </data>
+  <data name="Apps_ColumnVisibility" xml:space="preserve">
+    <value>Colonnes</value>
   </data>
   <data name="Status_ManualRequired" xml:space="preserve">
     <value>Installation manuelle requise</value>
@@ -953,6 +1003,27 @@
   <data name="Validation_FailedInstallNeedsMessage" xml:space="preserve">
     <value>Une installation echouee doit inclure un message d'erreur</value>
   </data>
+  <data name="Validation_AppId_Required" xml:space="preserve">
+    <value>L'identifiant de l'application est requis</value>
+  </data>
+  <data name="Validation_AppId_Length" xml:space="preserve">
+    <value>L'identifiant de l'application doit comporter entre 1 et 256 caracteres</value>
+  </data>
+  <data name="Validation_AppName_Required" xml:space="preserve">
+    <value>Le nom de l'application est requis</value>
+  </data>
+  <data name="Validation_AppName_Length" xml:space="preserve">
+    <value>Le nom de l'application doit comporter entre 1 et 512 caracteres</value>
+  </data>
+  <data name="Validation_StringTooLong" xml:space="preserve">
+    <value>{0} ne doit pas depasser {1} caracteres</value>
+  </data>
+  <data name="Validation_RangeError" xml:space="preserve">
+    <value>{0} doit etre compris entre {1} et {2}</value>
+  </data>
+  <data name="Validation_InvalidUrl" xml:space="preserve">
+    <value>L'URL doit etre une URL HTTP ou HTTPS valide</value>
+  </data>
   <data name="Error_ProfileNotFound" xml:space="preserve">
     <value>Profil introuvable</value>
   </data>
@@ -1102,6 +1173,18 @@
   </data>
   <data name="Apps_AppsSelected" xml:space="preserve">
     <value>applications selectionnees</value>
+  </data>
+  <data name="Apps_ProfileHelpTooltip" xml:space="preserve">
+    <value>Selectionnez un profil pour selectionner automatiquement ses applications. Vous pouvez ensuite modifier la selection manuellement avant l'installation.</value>
+  </data>
+  <data name="Apps_SelectionHelpTooltip" xml:space="preserve">
+    <value>Cochez les cases pour selectionner les applications a installer. Utilisez les filtres pour trouver des applications specifiques.</value>
+  </data>
+  <data name="Apps_NoProfilesAvailable" xml:space="preserve">
+    <value>Aucun profil disponible</value>
+  </data>
+  <data name="Apps_NoProfilesHint" xml:space="preserve">
+    <value>Selectionnez des applications manuellement ou creez un profil en selectionnant des applications et en cliquant sur Sauvegarder le profil.</value>
   </data>
   <!-- Save Profile Dialog -->
   <data name="Apps_SaveProfile" xml:space="preserve">
@@ -1256,6 +1339,12 @@
   <data name="Common_Cancel" xml:space="preserve">
     <value>Annuler</value>
   </data>
+  <data name="Common_TryAgain" xml:space="preserve">
+    <value>Reessayer</value>
+  </data>
+  <data name="Common_Dismiss" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
   <data name="Common_DryRun" xml:space="preserve">
     <value>[SIMULATION]</value>
   </data>
@@ -1302,6 +1391,12 @@
   </data>
   <data name="Accessibility_LiveRegion" xml:space="preserve">
     <value>Annonces de statut</value>
+  </data>
+  <data name="Accessibility_SkipToContent" xml:space="preserve">
+    <value>Passer au contenu</value>
+  </data>
+  <data name="Accessibility_SkippedToContent" xml:space="preserve">
+    <value>Passe au contenu principal</value>
   </data>
   <!-- Deploiements planifies -->
   <data name="Settings_Tab_Scheduled" xml:space="preserve">
@@ -1411,5 +1506,441 @@
   </data>
   <data name="ScheduledDeployment_Status_Unknown" xml:space="preserve">
     <value>Inconnu</value>
+  </data>
+  <!-- Application Database Service -->
+  <data name="Apps_ValidationFailed" xml:space="preserve">
+    <value>La validation a echoue</value>
+  </data>
+  <data name="Apps_SaveFailed" xml:space="preserve">
+    <value>Echec de l'enregistrement de l'application</value>
+  </data>
+  <data name="Apps_FileNotFound" xml:space="preserve">
+    <value>Fichier introuvable</value>
+  </data>
+  <data name="Apps_ImportFailed" xml:space="preserve">
+    <value>Echec de l'importation des applications</value>
+  </data>
+  <data name="Validation_AtLeastOneSource" xml:space="preserve">
+    <value>Au moins une source d'installation est requise</value>
+  </data>
+  <data name="Validation_DuplicateAppId" xml:space="preserve">
+    <value>L'identifiant d'application '{0}' existe deja</value>
+  </data>
+  <!-- Applications Catalog Management View -->
+  <data name="Nav_AppDatabase" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
+  <data name="AppDb_Title" xml:space="preserve">
+    <value>Catalogue des applications</value>
+  </data>
+  <data name="AppDb_Subtitle" xml:space="preserve">
+    <value>Gerer les definitions d'applications et les sources d'installation</value>
+  </data>
+  <data name="AppDb_Add" xml:space="preserve">
+    <value>Ajouter</value>
+  </data>
+  <data name="AppDb_AddTooltip" xml:space="preserve">
+    <value>Ajouter une nouvelle application (Ctrl+N)</value>
+  </data>
+  <data name="AppDb_Edit" xml:space="preserve">
+    <value>Modifier</value>
+  </data>
+  <data name="AppDb_EditTooltip" xml:space="preserve">
+    <value>Modifier l'application selectionnee (Ctrl+E)</value>
+  </data>
+  <data name="AppDb_Delete" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="AppDb_DeleteTooltip" xml:space="preserve">
+    <value>Supprimer l'application selectionnee (Suppr)</value>
+  </data>
+  <data name="AppDb_Duplicate" xml:space="preserve">
+    <value>Dupliquer</value>
+  </data>
+  <data name="AppDb_DuplicateTooltip" xml:space="preserve">
+    <value>Dupliquer l'application selectionnee (Ctrl+D)</value>
+  </data>
+  <data name="AppDb_Refresh" xml:space="preserve">
+    <value>Actualiser (F5)</value>
+  </data>
+  <data name="AppDb_SearchHint" xml:space="preserve">
+    <value>Rechercher par ID, nom ou tags...</value>
+  </data>
+  <data name="AppDb_CategoryFilter" xml:space="preserve">
+    <value>Categorie</value>
+  </data>
+  <data name="AppDb_Col_Id" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="AppDb_Col_Name" xml:space="preserve">
+    <value>Nom</value>
+  </data>
+  <data name="AppDb_Col_Category" xml:space="preserve">
+    <value>Categorie</value>
+  </data>
+  <data name="AppDb_Col_Sources" xml:space="preserve">
+    <value>Sources</value>
+  </data>
+  <data name="AppDb_Col_Priority" xml:space="preserve">
+    <value>Priorite</value>
+  </data>
+  <data name="AppDb_Col_Verified" xml:space="preserve">
+    <value>Verifie</value>
+  </data>
+  <data name="AppDb_Col_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="AppDb_Loading" xml:space="preserve">
+    <value>Chargement des applications...</value>
+  </data>
+  <data name="AppDb_LoadedCount" xml:space="preserve">
+    <value>{0} applications chargees</value>
+  </data>
+  <data name="AppDb_LoadError" xml:space="preserve">
+    <value>Echec du chargement des applications : {0}</value>
+  </data>
+  <data name="AppDb_Deleting" xml:space="preserve">
+    <value>Suppression de l'application...</value>
+  </data>
+  <data name="AppDb_Deleted" xml:space="preserve">
+    <value>Application supprimee avec succes</value>
+  </data>
+  <data name="AppDb_DeleteError" xml:space="preserve">
+    <value>Echec de la suppression de l'application</value>
+  </data>
+  <data name="AppDb_Added" xml:space="preserve">
+    <value>Application ajoutee avec succes</value>
+  </data>
+  <data name="AppDb_Updated" xml:space="preserve">
+    <value>Application mise a jour avec succes</value>
+  </data>
+  <!-- Import/Export -->
+  <data name="AppDb_ImportSuccess" xml:space="preserve">
+    <value>Import termine : {0} ajoutees, {1} mises a jour</value>
+  </data>
+  <data name="AppDb_ImportError" xml:space="preserve">
+    <value>Echec de l'import : {0}</value>
+  </data>
+  <data name="AppDb_ExportSuccess" xml:space="preserve">
+    <value>{0} applications exportees avec succes</value>
+  </data>
+  <data name="AppDb_ExportError" xml:space="preserve">
+    <value>Échec de l'export des applications : {0}</value>
+  </data>
+  <data name="AppDb_Import" xml:space="preserve">
+    <value>Importer</value>
+  </data>
+  <data name="AppDb_Export" xml:space="preserve">
+    <value>Exporter</value>
+  </data>
+  <data name="AppDb_ExportSelected" xml:space="preserve">
+    <value>Exporter la selection</value>
+  </data>
+  <data name="AppDb_ExportAll" xml:space="preserve">
+    <value>Tout exporter</value>
+  </data>
+  <data name="AppDb_ImportTooltip" xml:space="preserve">
+    <value>Importer des applications depuis un fichier JSON</value>
+  </data>
+  <data name="AppDb_ExportTooltip" xml:space="preserve">
+    <value>Exporter les applications vers un fichier JSON</value>
+  </data>
+  <data name="AppDb_DeleteConfirm" xml:space="preserve">
+    <value>Etes-vous sur de vouloir supprimer '{0}' ({1}) ?
+
+Cette action est irreversible.</value>
+  </data>
+  <data name="AppDb_DeleteTitle" xml:space="preserve">
+    <value>Confirmer la suppression</value>
+  </data>
+  <data name="AppDb_AddTitle" xml:space="preserve">
+    <value>Ajouter une application</value>
+  </data>
+  <data name="AppDb_EditTitle" xml:space="preserve">
+    <value>Modifier l'application</value>
+  </data>
+  <data name="AppDb_NoResults" xml:space="preserve">
+    <value>Aucune application trouvee</value>
+  </data>
+  <data name="AppDb_NoResultsHint" xml:space="preserve">
+    <value>Essayez de modifier votre recherche ou vos filtres</value>
+  </data>
+  <data name="AppDb_Showing" xml:space="preserve">
+    <value>Affichage de</value>
+  </data>
+  <data name="AppDb_Of" xml:space="preserve">
+    <value>sur</value>
+  </data>
+  <data name="AppDb_Applications" xml:space="preserve">
+    <value>applications</value>
+  </data>
+  <data name="AppDb_EditorOwnerNotFound" xml:space="preserve">
+    <value>Impossible d'ouvrir l'éditeur : fenêtre parente introuvable.</value>
+  </data>
+  <data name="AppDb_EditorOpenError" xml:space="preserve">
+    <value>Erreur lors de l'ouverture de l'éditeur d'application :
+
+{0}
+
+{1}</value>
+  </data>
+  <data name="AppDb_ImportModeConfirm" xml:space="preserve">
+    <value>Voulez-vous remplacer les applications existantes avec le même ID ?
+
+Oui = Remplacer les existantes
+Non = Ignorer les doublons</value>
+  </data>
+  <data name="AppDb_NoExportSelection" xml:space="preserve">
+    <value>Aucune application sélectionnée pour l'export.</value>
+  </data>
+  <!-- Application Editor Dialog -->
+  <data name="AppEditor_Tab_General" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="AppEditor_Tab_Sources" xml:space="preserve">
+    <value>Sources</value>
+  </data>
+  <data name="AppEditor_Tab_Detection" xml:space="preserve">
+    <value>Detection</value>
+  </data>
+  <data name="AppEditor_AppId" xml:space="preserve">
+    <value>ID de l'application</value>
+  </data>
+  <data name="AppEditor_Name" xml:space="preserve">
+    <value>Nom</value>
+  </data>
+  <data name="AppEditor_Category" xml:space="preserve">
+    <value>Categorie</value>
+  </data>
+  <data name="AppEditor_Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="AppEditor_Homepage" xml:space="preserve">
+    <value>URL de la page d'accueil</value>
+  </data>
+  <data name="AppEditor_DefaultRequired" xml:space="preserve">
+    <value>Requis par defaut dans les profils</value>
+  </data>
+  <data name="AppEditor_AddNewCategory" xml:space="preserve">
+    <value>+ Ajouter une nouvelle categorie...</value>
+  </data>
+  <data name="AppEditor_WingetPackageId" xml:space="preserve">
+    <value>ID du package (ex: Google.Chrome)</value>
+  </data>
+  <data name="AppEditor_ChocoPackageName" xml:space="preserve">
+    <value>Nom du package (ex: googlechrome)</value>
+  </data>
+  <data name="AppEditor_StoreAppId" xml:space="preserve">
+    <value>ID de l'application Store (12 caracteres)</value>
+  </data>
+  <data name="AppEditor_DirectDownload" xml:space="preserve">
+    <value>Telechargement direct</value>
+  </data>
+  <data name="AppEditor_DirectUrl" xml:space="preserve">
+    <value>URL de telechargement</value>
+  </data>
+  <data name="AppEditor_DetectionDescription" xml:space="preserve">
+    <value>Configurez la methode de detection pour verifier si l'application est deja installee sur le systeme.</value>
+  </data>
+  <data name="AppEditor_DetectionMethod" xml:space="preserve">
+    <value>Methode de detection</value>
+  </data>
+  <data name="AppEditor_DetectionPath" xml:space="preserve">
+    <value>Chemin (cle de registre, chemin de fichier ou commande)</value>
+  </data>
+  <data name="AppEditor_VersionKey" xml:space="preserve">
+    <value>Cle de version (nom de la valeur de registre)</value>
+  </data>
+  <data name="AppEditor_MinVersion" xml:space="preserve">
+    <value>Version minimum</value>
+  </data>
+  <data name="AppEditor_Save" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="AppEditor_Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="AppEditor_UnsavedChanges" xml:space="preserve">
+    <value>Vous avez des modifications non enregistrees</value>
+  </data>
+  <data name="AppEditor_DiscardChanges" xml:space="preserve">
+    <value>Vous avez des modifications non enregistrees. Voulez-vous vraiment les abandonner ?</value>
+  </data>
+  <data name="AppEditor_DiscardTitle" xml:space="preserve">
+    <value>Abandonner les modifications ?</value>
+  </data>
+  <data name="AppEditor_NewCategoryTitle" xml:space="preserve">
+    <value>Nouvelle categorie</value>
+  </data>
+  <data name="AppEditor_NewCategoryPrompt" xml:space="preserve">
+    <value>Entrez le nom de la nouvelle categorie :</value>
+  </data>
+  <!-- Source Editor Controls -->
+  <data name="SourceEditor_EnableDisable" xml:space="preserve">
+    <value>Activer/Desactiver cette source d'installation</value>
+  </data>
+  <data name="SourceEditor_Version" xml:space="preserve">
+    <value>Version (optionnel)</value>
+  </data>
+  <data name="SourceEditor_Repository" xml:space="preserve">
+    <value>Depot source</value>
+  </data>
+  <data name="SourceEditor_Test" xml:space="preserve">
+    <value>Tester le package</value>
+  </data>
+  <data name="SourceEditor_TestTooltip" xml:space="preserve">
+    <value>Verifier que le package existe dans le depot</value>
+  </data>
+  <data name="SourceEditor_TestPlaceholder" xml:space="preserve">
+    <value>La verification des packages sera implementee dans un sprint futur</value>
+  </data>
+  <data name="SourceEditor_StoreIdHint" xml:space="preserve">
+    <value>Format : 12 caracteres alphanumeriques (ex: 9NBLGGH4NNS1)</value>
+  </data>
+  <data name="SourceEditor_InstallerType" xml:space="preserve">
+    <value>Type d'installeur</value>
+  </data>
+  <data name="SourceEditor_SilentArgs" xml:space="preserve">
+    <value>Arguments silencieux</value>
+  </data>
+  <data name="SourceEditor_Checksum" xml:space="preserve">
+    <value>Somme de controle (optionnel)</value>
+  </data>
+  <data name="SourceEditor_ChecksumHint" xml:space="preserve">
+    <value>Format : algorithme:hash (ex: sha256:abc123...)</value>
+  </data>
+  <data name="SourceEditor_TestUrl" xml:space="preserve">
+    <value>Tester l'URL</value>
+  </data>
+  <data name="SourceEditor_TestUrlTooltip" xml:space="preserve">
+    <value>Verifier que l'URL de telechargement est accessible</value>
+  </data>
+  <data name="SourceEditor_UrlTestSuccess" xml:space="preserve">
+    <value>URL accessible ({0}, {1})</value>
+  </data>
+  <data name="SourceEditor_UrlTestSuccessNoSize" xml:space="preserve">
+    <value>URL accessible ({0})</value>
+  </data>
+  <data name="SourceEditor_UrlTestFailed" xml:space="preserve">
+    <value>HTTP {0} : {1}</value>
+  </data>
+  <data name="SourceEditor_UrlTestError" xml:space="preserve">
+    <value>Erreur de connexion : {0}</value>
+  </data>
+  <data name="SourceEditor_UrlTestTimeout" xml:space="preserve">
+    <value>Delai d'attente depasse</value>
+  </data>
+  <!-- Package Verification -->
+  <data name="Verify_PackageFound" xml:space="preserve">
+    <value>Package trouve : {0}</value>
+  </data>
+  <data name="Verify_PackageNotFound" xml:space="preserve">
+    <value>Package non trouve</value>
+  </data>
+  <data name="Verify_Error" xml:space="preserve">
+    <value>Erreur de verification : {0}</value>
+  </data>
+  <data name="Verify_WingetUnavailable" xml:space="preserve">
+    <value>Winget n'est pas disponible sur ce systeme</value>
+  </data>
+  <data name="Verify_ChocoUnavailable" xml:space="preserve">
+    <value>Chocolatey n'est pas disponible sur ce systeme</value>
+  </data>
+  <data name="Verify_AllSourcesValid" xml:space="preserve">
+    <value>Toutes les sources verifiees ({0}/{1})</value>
+  </data>
+  <data name="Verify_SomeSourcesInvalid" xml:space="preserve">
+    <value>{0} sur {1} sources valides</value>
+  </data>
+  <data name="Verify_NoValidSources" xml:space="preserve">
+    <value>Aucune source d'installation valide trouvee</value>
+  </data>
+  <data name="Verify_Verifying" xml:space="preserve">
+    <value>Verification des packages...</value>
+  </data>
+  <!-- Detection Editor -->
+  <data name="Detection_Method_Registry" xml:space="preserve">
+    <value>Registre</value>
+  </data>
+  <data name="Detection_Method_File" xml:space="preserve">
+    <value>Fichier</value>
+  </data>
+  <data name="Detection_Method_Command" xml:space="preserve">
+    <value>Commande</value>
+  </data>
+  <data name="Detection_Method_WindowsFeature" xml:space="preserve">
+    <value>Fonctionnalite Windows</value>
+  </data>
+  <data name="Detection_Method_StoreApp" xml:space="preserve">
+    <value>Application Store</value>
+  </data>
+  <data name="Detection_Registry_Title" xml:space="preserve">
+    <value>Detection par registre</value>
+  </data>
+  <data name="Detection_Registry_Path" xml:space="preserve">
+    <value>Chemin du registre (ex: HKLM\SOFTWARE\App)</value>
+  </data>
+  <data name="Detection_File_Title" xml:space="preserve">
+    <value>Detection par fichier</value>
+  </data>
+  <data name="Detection_File_Path" xml:space="preserve">
+    <value>Chemin du fichier (ex: C:\Program Files\App\app.exe)</value>
+  </data>
+  <data name="Detection_Browse" xml:space="preserve">
+    <value>Parcourir...</value>
+  </data>
+  <data name="Detection_Command_Title" xml:space="preserve">
+    <value>Detection par commande</value>
+  </data>
+  <data name="Detection_Command_Path" xml:space="preserve">
+    <value>Commande (ex: app --version)</value>
+  </data>
+  <data name="Detection_Command_Hint" xml:space="preserve">
+    <value>La commande doit retourner le code 0 si l'application est installee</value>
+  </data>
+  <data name="Detection_WindowsFeature_Title" xml:space="preserve">
+    <value>Detection de fonctionnalite Windows</value>
+  </data>
+  <data name="Detection_WindowsFeature_Name" xml:space="preserve">
+    <value>Nom de la fonctionnalite (ex: Microsoft-Windows-Subsystem-Linux)</value>
+  </data>
+  <data name="Detection_StoreApp_Title" xml:space="preserve">
+    <value>Detection d'application Store</value>
+  </data>
+  <data name="Detection_StoreApp_PackageName" xml:space="preserve">
+    <value>Nom de famille du package</value>
+  </data>
+  <data name="Detection_TestButton" xml:space="preserve">
+    <value>Tester la detection</value>
+  </data>
+  <data name="Detection_TestTooltip" xml:space="preserve">
+    <value>Tester si l'application est detectee sur ce systeme</value>
+  </data>
+  <data name="Detection_Found" xml:space="preserve">
+    <value>Detecte</value>
+  </data>
+  <data name="Detection_NotFound" xml:space="preserve">
+    <value>Non detecte</value>
+  </data>
+  <data name="Detection_Version" xml:space="preserve">
+    <value>Version : {0}</value>
+  </data>
+  <data name="Detection_Error" xml:space="preserve">
+    <value>Erreur : {0}</value>
+  </data>
+  <data name="Detection_PathRequired" xml:space="preserve">
+    <value>Le chemin est requis</value>
+  </data>
+  <data name="Detection_UnknownMethod" xml:space="preserve">
+    <value>Methode de detection inconnue</value>
+  </data>
+  <data name="Detection_SelectFile" xml:space="preserve">
+    <value>Selectionner le fichier a detecter</value>
+  </data>
+  <data name="Detection_FeatureCheckNotSupported" xml:space="preserve">
+    <value>La detection de fonctionnalite Windows necessite PowerShell</value>
+  </data>
+  <data name="Detection_StoreAppCheckNotSupported" xml:space="preserve">
+    <value>La detection d'application Store necessite PowerShell</value>
   </data>
 </root>

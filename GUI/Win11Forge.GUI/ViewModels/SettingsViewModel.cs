@@ -36,6 +36,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly IAppSettingsService _settingsService;
     private readonly IDeploymentHistoryService _historyService;
     private readonly IPowerShellBridge _powerShellBridge;
+    private readonly ToastService? _toastService;
     private string _initialLanguageCode = string.Empty;
 
     /// <summary>
@@ -166,18 +167,19 @@ public partial class SettingsViewModel : ViewModelBase
     /// Initializes a new instance of SettingsViewModel with default services.
     /// </summary>
     public SettingsViewModel()
-        : this(new AppSettingsService(), new DeploymentHistoryService(), new PowerShellBridge())
+        : this(new AppSettingsService(), new DeploymentHistoryService(), new PowerShellBridge(), null)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of SettingsViewModel with injected services.
     /// </summary>
-    public SettingsViewModel(IAppSettingsService settingsService, IDeploymentHistoryService historyService, IPowerShellBridge powerShellBridge)
+    public SettingsViewModel(IAppSettingsService settingsService, IDeploymentHistoryService historyService, IPowerShellBridge powerShellBridge, ToastService? toastService = null)
     {
         _settingsService = settingsService;
         _historyService = historyService;
         _powerShellBridge = powerShellBridge;
+        _toastService = toastService;
 
         // Initialize available languages
         AvailableLanguages =
@@ -236,6 +238,7 @@ public partial class SettingsViewModel : ViewModelBase
     {
         SaveSettings();
         StatusMessage = Resources.Resources.Settings_ParallelInstallsApplied;
+        _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
     }
 
     /// <summary>
@@ -245,6 +248,7 @@ public partial class SettingsViewModel : ViewModelBase
     {
         SaveSettings();
         StatusMessage = Resources.Resources.Settings_ParallelScansApplied;
+        _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
     }
 
     /// <summary>
@@ -255,6 +259,7 @@ public partial class SettingsViewModel : ViewModelBase
         ApplyThemeInternal(value);
         SaveSettings();
         StatusMessage = Resources.Resources.Settings_ThemeApplied;
+        _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
     }
 
     /// <summary>
@@ -338,6 +343,31 @@ public partial class SettingsViewModel : ViewModelBase
 
         RestartRequired = true;
         StatusMessage = Resources.Resources.Settings_RestartRequired;
+    }
+
+    /// <summary>
+    /// Restarts the application to apply language changes.
+    /// </summary>
+    [RelayCommand]
+    private void RestartApplication()
+    {
+        try
+        {
+            var currentExecutablePath = Environment.ProcessPath;
+            if (!string.IsNullOrEmpty(currentExecutablePath))
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = currentExecutablePath,
+                    UseShellExecute = true
+                });
+                System.Windows.Application.Current.Shutdown();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to restart application: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -433,7 +463,7 @@ public partial class SettingsViewModel : ViewModelBase
     /// Exports settings to a JSON file.
     /// </summary>
     [RelayCommand]
-    private void ExportSettings()
+    private async Task ExportSettingsAsync()
     {
         try
         {
@@ -451,7 +481,7 @@ public partial class SettingsViewModel : ViewModelBase
                 {
                     WriteIndented = true
                 });
-                File.WriteAllText(dialog.FileName, json);
+                await File.WriteAllTextAsync(dialog.FileName, json);
                 StatusMessage = Resources.Resources.Settings_ExportSuccess;
             }
         }
@@ -465,7 +495,7 @@ public partial class SettingsViewModel : ViewModelBase
     /// Imports settings from a JSON file.
     /// </summary>
     [RelayCommand]
-    private void ImportSettings()
+    private async Task ImportSettingsAsync()
     {
         try
         {
@@ -477,7 +507,7 @@ public partial class SettingsViewModel : ViewModelBase
 
             if (dialog.ShowDialog() == true)
             {
-                var json = File.ReadAllText(dialog.FileName);
+                var json = await File.ReadAllTextAsync(dialog.FileName);
                 var importedSettings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json);
 
                 if (importedSettings != null)
@@ -539,12 +569,13 @@ public partial class SettingsViewModel : ViewModelBase
             IsLoadingScheduledDeployments = true;
 
             // Check if admin and Task Scheduler available
-            var checkScript = @"
-                Import-Module (Join-Path $PSScriptRoot 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
-                @{
+            var repoRoot = _powerShellBridge.RepositoryRoot.Replace("'", "''");
+            var checkScript = $@"
+                Import-Module (Join-Path '{repoRoot}' 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
+                @{{
                     TaskSchedulerAvailable = Test-ScheduledTasksAvailable
                     IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-                } | ConvertTo-Json
+                }} | ConvertTo-Json
             ";
 
             var checkResult = await _powerShellBridge.ExecuteCommandAsync(checkScript);
@@ -577,10 +608,10 @@ public partial class SettingsViewModel : ViewModelBase
             }
 
             // Load scheduled deployments
-            var script = @"
-                Import-Module (Join-Path $PSScriptRoot 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
-                Get-ScheduledDeployment | ForEach-Object {
-                    @{
+            var script = $@"
+                Import-Module (Join-Path '{repoRoot}' 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
+                Get-ScheduledDeployment | ForEach-Object {{
+                    @{{
                         Id = $_.Id
                         ProfileName = $_.ProfileName
                         ScheduledTime = $_.ScheduledTime.ToString('o')
@@ -588,10 +619,10 @@ public partial class SettingsViewModel : ViewModelBase
                         Status = $_.Status
                         CreatedBy = $_.CreatedBy
                         CreatedAt = $_.CreatedAt.ToString('o')
-                        LastRunTime = if ($_.LastRunTime -and $_.LastRunTime -ne [datetime]::MinValue) { $_.LastRunTime.ToString('o') } else { $null }
+                        LastRunTime = if ($_.LastRunTime -and $_.LastRunTime -ne [datetime]::MinValue) {{ $_.LastRunTime.ToString('o') }} else {{ $null }}
                         LastRunResult = $_.LastRunResult
-                    }
-                } | ConvertTo-Json -Compress
+                    }}
+                }} | ConvertTo-Json -Compress
             ";
 
             var result = await _powerShellBridge.ExecuteCommandAsync(script);
@@ -655,9 +686,10 @@ public partial class SettingsViewModel : ViewModelBase
         {
             var triggerTypeStr = NewScheduledTriggerType.ToString();
             var timeStr = NewScheduledTime.ToString("o");
+            var repoRoot = _powerShellBridge.RepositoryRoot.Replace("'", "''");
 
             var script = $@"
-                Import-Module (Join-Path $PSScriptRoot 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
+                Import-Module (Join-Path '{repoRoot}' 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
                 $deployment = New-ScheduledDeployment -ProfileName '{NewScheduledProfile}' -ScheduledTime ([datetime]'{timeStr}') -TriggerType '{triggerTypeStr}'
                 @{{
                     Success = $true
@@ -707,8 +739,9 @@ public partial class SettingsViewModel : ViewModelBase
 
         try
         {
+            var repoRoot = _powerShellBridge.RepositoryRoot.Replace("'", "''");
             var script = $@"
-                Import-Module (Join-Path $PSScriptRoot 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
+                Import-Module (Join-Path '{repoRoot}' 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
                 Remove-ScheduledDeployment -Id '{SelectedScheduledDeployment.Id}' -Force
             ";
 
@@ -735,8 +768,9 @@ public partial class SettingsViewModel : ViewModelBase
 
         try
         {
+            var repoRoot = _powerShellBridge.RepositoryRoot.Replace("'", "''");
             var script = $@"
-                Import-Module (Join-Path $PSScriptRoot 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
+                Import-Module (Join-Path '{repoRoot}' 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
                 Start-ScheduledDeployment -Id '{SelectedScheduledDeployment.Id}'
             ";
 

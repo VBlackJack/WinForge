@@ -24,11 +24,12 @@ namespace Win11Forge.GUI.Services;
 /// Service for managing deployment history.
 /// Stores history in a JSON file with 100% crash-proof path resolution.
 /// </summary>
-public class DeploymentHistoryService : IDeploymentHistoryService
+public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
 {
     private readonly string _historyFilePath;
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly SemaphoreSlim _fileLock = new(1, 1);
+    private bool _disposed;
 
     /// <summary>
     /// Initializes the history service with crash-proof path resolution.
@@ -390,6 +391,30 @@ public class DeploymentHistoryService : IDeploymentHistoryService
         {
             // Silently fail - history persistence is non-critical
         }
+    }
+
+    /// <summary>
+    /// Releases all resources used by the DeploymentHistoryService.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases the unmanaged resources and optionally releases managed resources.
+    /// </summary>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing)
+        {
+            _fileLock.Dispose();
+        }
+
+        _disposed = true;
     }
 }
 

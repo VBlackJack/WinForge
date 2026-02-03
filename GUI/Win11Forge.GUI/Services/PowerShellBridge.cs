@@ -27,11 +27,26 @@ namespace Win11Forge.GUI.Services;
 /// PowerShell bridge implementation for executing Win11Forge scripts.
 /// Handles path resolution from GUI executable to repository root.
 /// </summary>
-public class PowerShellBridge : IPowerShellBridge
+public partial class PowerShellBridge : IPowerShellBridge, IDisposable
 {
     private readonly string _repositoryRoot;
     private readonly IApplicationDetectionService _detectionService;
     private Dictionary<string, JsonElement>? _applicationsCache;
+    private readonly SemaphoreSlim _cacheLock = new(1, 1);
+    private bool _disposed;
+
+    /// <summary>
+    /// Compiled regex for extracting version strings from winget output.
+    /// Matches patterns like "3.7.7", "1.0.0-beta", "2024.1.0".
+    /// </summary>
+    [System.Text.RegularExpressions.GeneratedRegex(@"^[\d]+[.\d\-a-zA-Z_]*", System.Text.RegularExpressions.RegexOptions.Compiled)]
+    private static partial System.Text.RegularExpressions.Regex WingetVersionPattern();
+
+    /// <summary>
+    /// Compiled regex for extracting leading digits from version parts.
+    /// </summary>
+    [System.Text.RegularExpressions.GeneratedRegex(@"^\d+", System.Text.RegularExpressions.RegexOptions.Compiled)]
+    private static partial System.Text.RegularExpressions.Regex LeadingDigitsPattern();
 
     /// <summary>
     /// Default timeout for short operations (queries, status checks) in milliseconds.
@@ -236,7 +251,7 @@ public class PowerShellBridge : IPowerShellBridge
         }
         catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
         {
-            try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+            try { process.Kill(entireProcessTree: true); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
             throw new TimeoutException($"PowerShell script execution timed out after {DefaultQueryTimeoutMs / 1000} seconds");
         }
 
@@ -516,6 +531,9 @@ public class PowerShellBridge : IPowerShellBridge
     {
         var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
 
+        // Defense-in-depth: verify the resolved path stays within profiles directory
+        profilePath = ValidatePathWithinDirectory(profilePath, profilesDir);
+
         if (!File.Exists(profilePath))
         {
             throw new FileNotFoundException($"Profile not found: {profileName}");
@@ -774,7 +792,7 @@ try {{
                 }
                 catch (OperationCanceledException) when (installTimeoutCts.IsCancellationRequested)
                 {
-                    try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+                    try { process.Kill(entireProcessTree: true); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
                     throw new TimeoutException($"Installation of {app.Name} timed out after {InstallationTimeoutMs / 60000} minutes");
                 }
 
@@ -1054,7 +1072,7 @@ try {{
             }
             catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
-                try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
                 return string.Empty;
             }
 
@@ -1131,7 +1149,7 @@ try {{
             }
             catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
-                try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
                 return string.Empty;
             }
 
@@ -1205,8 +1223,7 @@ try {{
                 var versionPart = line.Substring(versionColumnStart, endPos - versionColumnStart).Trim();
 
                 // Extract version number pattern (handles versions like "3.7.7", "1.0.0-beta", etc.)
-                var versionMatch = System.Text.RegularExpressions.Regex.Match(
-                    versionPart, @"^[\d]+[.\d\-a-zA-Z]*");
+                var versionMatch = WingetVersionPattern().Match(versionPart);
 
                 if (versionMatch.Success && versionMatch.Value.Contains('.'))
                 {
@@ -1250,8 +1267,7 @@ try {{
 
                     // Clean up version string - extract version pattern
                     // Handles: "3.7.7", "1.0.0-beta", "2024.1.0", etc.
-                    var match = System.Text.RegularExpressions.Regex.Match(
-                        version, @"^[\d]+[.\d\-a-zA-Z_]*");
+                    var match = WingetVersionPattern().Match(version);
 
                     if (match.Success && match.Value.Contains('.'))
                     {
@@ -1283,13 +1299,13 @@ try {{
         // Try to parse as Version objects
         var parts1 = v1.Split('.', '-').Select(p =>
         {
-            var numMatch = System.Text.RegularExpressions.Regex.Match(p, @"^\d+");
+            var numMatch = LeadingDigitsPattern().Match(p);
             return numMatch.Success ? int.Parse(numMatch.Value) : 0;
         }).ToArray();
 
         var parts2 = v2.Split('.', '-').Select(p =>
         {
-            var numMatch = System.Text.RegularExpressions.Regex.Match(p, @"^\d+");
+            var numMatch = LeadingDigitsPattern().Match(p);
             return numMatch.Success ? int.Parse(numMatch.Value) : 0;
         }).ToArray();
 
@@ -1640,7 +1656,7 @@ try {{
             }
             catch (OperationCanceledException) when (updateTimeoutCts.IsCancellationRequested)
             {
-                try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
                 logBuilder.AppendLine($"[ERROR] Update command timed out after {InstallationTimeoutMs / 60000} minutes");
                 return (false, -1, "Update command timed out");
             }
@@ -1698,7 +1714,7 @@ try {{
             }
             catch (OperationCanceledException) when (uninstallTimeoutCts.IsCancellationRequested)
             {
-                try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
                 logBuilder.AppendLine($"[ERROR] Uninstall command timed out after {InstallationTimeoutMs / 60000} minutes");
                 return (false, -1, "Uninstall command timed out");
             }
@@ -1831,31 +1847,47 @@ try {{
 
     /// <summary>
     /// Ensures the applications database is loaded into cache.
+    /// Thread-safe using double-check locking pattern with async semaphore.
     /// </summary>
     private async Task EnsureApplicationsCacheAsync()
     {
+        // Quick check without lock
         if (_applicationsCache != null) return;
 
-        var repoRoot = GetSafeRepositoryRoot();
-        var dbPath = Path.Combine(repoRoot, "Apps", "Database", "applications.json");
-
-        if (!File.Exists(dbPath))
+        await _cacheLock.WaitAsync();
+        try
         {
-            _applicationsCache = new Dictionary<string, JsonElement>();
-            return;
-        }
+            // Double-check inside lock
+            if (_applicationsCache != null) return;
 
-        var jsonContent = await File.ReadAllTextAsync(dbPath);
-        using var document = JsonDocument.Parse(jsonContent);
+            var repoRoot = GetSafeRepositoryRoot();
+            var dbPath = Path.Combine(repoRoot, "Apps", "Database", "applications.json");
 
-        _applicationsCache = new Dictionary<string, JsonElement>();
-
-        if (document.RootElement.TryGetProperty("Applications", out var apps))
-        {
-            foreach (var app in apps.EnumerateObject())
+            if (!File.Exists(dbPath))
             {
-                _applicationsCache[app.Name] = app.Value.Clone();
+                _applicationsCache = new Dictionary<string, JsonElement>();
+                return;
             }
+
+            var jsonContent = await File.ReadAllTextAsync(dbPath);
+            using var document = JsonDocument.Parse(jsonContent);
+
+            var newCache = new Dictionary<string, JsonElement>();
+
+            if (document.RootElement.TryGetProperty("Applications", out var apps))
+            {
+                foreach (var app in apps.EnumerateObject())
+                {
+                    newCache[app.Name] = app.Value.Clone();
+                }
+            }
+
+            // Atomic assignment after building the entire cache
+            _applicationsCache = newCache;
+        }
+        finally
+        {
+            _cacheLock.Release();
         }
     }
 
@@ -1883,8 +1915,10 @@ try {{
     /// <summary>
     /// Executes a PowerShell script file from the repository.
     /// </summary>
-    public async Task<string> ExecuteScriptAsync(string relativePath)
+    public async Task<string> ExecuteScriptAsync(string relativePath, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var repoRoot = GetSafeRepositoryRoot();
         var scriptPath = Path.Combine(repoRoot, relativePath);
 
@@ -1895,6 +1929,7 @@ try {{
 
         return await Task.Run(() =>
         {
+            cancellationToken.ThrowIfCancellationRequested();
             using var ps = CreatePowerShellInstance();
             ps.AddCommand("Set-ExecutionPolicy")
               .AddParameter("ExecutionPolicy", "RemoteSigned")
@@ -1920,16 +1955,22 @@ try {{
     /// <summary>
     /// Executes a PowerShell command string.
     /// </summary>
-    public async Task<string> ExecuteCommandAsync(string command)
+    public async Task<string> ExecuteCommandAsync(string command, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var repoRoot = GetSafeRepositoryRoot();
         return await Task.Run(() =>
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             using var ps = CreatePowerShellInstance();
 
             ps.AddScript($"Set-Location '{repoRoot}'");
             ps.Invoke();
             ps.Commands.Clear();
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             ps.AddScript(command);
             var results = ps.Invoke();
@@ -1942,7 +1983,7 @@ try {{
             }
 
             return string.Join(Environment.NewLine, results.Select(r => r?.ToString() ?? string.Empty));
-        });
+        }, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -2051,6 +2092,9 @@ try {{
         var corePath = Path.Combine(repoRoot, "Core", "Core.psm1");
         var profilesDir = Path.Combine(repoRoot, "Profiles");
         var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
+
+        // Defense-in-depth: verify the resolved path stays within profiles directory
+        profilePath = ValidatePathWithinDirectory(profilePath, profilesDir);
 
         return await Task.Run(() =>
         {
@@ -2444,6 +2488,9 @@ try {{
         var profilesDir = Path.Combine(repoRoot, "Profiles");
         var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
 
+        // Defense-in-depth: verify the resolved path stays within profiles directory
+        profilePath = ValidatePathWithinDirectory(profilePath, profilesDir);
+
         // Ensure profiles directory exists
         if (!Directory.Exists(profilesDir))
         {
@@ -2665,6 +2712,7 @@ try {
     $result.PowerShell7Installed = $null -ne $ver
     $result.PowerShellVersion = if ($ver) { $ver.Trim() } else { 'Not installed' }
 } catch {
+    Write-Warning ""PowerShell 7 check failed: $($_.Exception.Message)""
     $result.PowerShell7Installed = $false
     $result.PowerShellVersion = 'Not installed'
 }
@@ -2675,6 +2723,7 @@ try {
     $result.WingetInstalled = $null -ne $ver
     $result.WingetVersion = if ($ver) { $ver.Trim() } else { 'Not installed' }
 } catch {
+    Write-Warning ""Winget check failed: $($_.Exception.Message)""
     $result.WingetInstalled = $false
     $result.WingetVersion = 'Not installed'
 }
@@ -2685,6 +2734,7 @@ try {
     $result.ChocolateyInstalled = $null -ne $ver
     $result.ChocolateyVersion = if ($ver) { $ver.Trim() } else { 'Not installed' }
 } catch {
+    Write-Warning ""Chocolatey check failed: $($_.Exception.Message)""
     $result.ChocolateyInstalled = $false
     $result.ChocolateyVersion = 'Not installed'
 }
@@ -2700,6 +2750,7 @@ try {
         $result.DotNetVersion = 'Not installed'
     }
 } catch {
+    Write-Warning "".NET Core check failed: $($_.Exception.Message)""
     $result.DotNetInstalled = $false
     $result.DotNetVersion = 'Not installed'
 }
@@ -2722,6 +2773,7 @@ try {
         $result.DotNetFrameworkVersion = 'Not installed'
     }
 } catch {
+    Write-Warning "".NET Framework check failed: $($_.Exception.Message)""
     $result.DotNetFrameworkInstalled = $false
     $result.DotNetFrameworkVersion = 'Not installed'
 }
@@ -2747,6 +2799,7 @@ try {
         $result.VCRedistVersion = 'Not installed'
     }
 } catch {
+    Write-Warning ""Visual C++ Redistributable check failed: $($_.Exception.Message)""
     $result.VCRedistInstalled = $false
     $result.VCRedistVersion = 'Not installed'
 }
@@ -2762,6 +2815,7 @@ try {
         $result.JavaVersion = 'Not installed'
     }
 } catch {
+    Write-Warning ""Java check failed: $($_.Exception.Message)""
     $result.JavaInstalled = $false
     $result.JavaVersion = 'Not installed'
 }
@@ -2913,11 +2967,15 @@ $result | ConvertTo-Json -Compress
     }
 
     /// <inheritdoc/>
-    public async Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null)
+    public async Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var repoRoot = GetSafeRepositoryRoot();
         var prerequisitesModule = Path.Combine(repoRoot, "Modules", "Prerequisites.psm1").Replace("\\", "/");
         var corePath = Path.Combine(repoRoot, "Core", "Core.psm1").Replace("\\", "/");
+        var localizationPath = Path.Combine(repoRoot, "Core", "Localization.psm1").Replace("\\", "/");
+        var moduleLoaderPath = Path.Combine(repoRoot, "Core", "ModuleLoader.psm1").Replace("\\", "/");
 
         progressCallback?.Invoke(Resources.Resources.Prerequisites_Starting);
 
@@ -2931,7 +2989,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
 $ErrorActionPreference = 'Continue'
 
 try {{
+    # Load core modules explicitly to ensure all dependencies are available
+    Import-Module '{moduleLoaderPath}' -Force -ErrorAction SilentlyContinue
     Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue
+    Import-Module '{localizationPath}' -Force -ErrorAction SilentlyContinue
     Import-Module '{prerequisitesModule}' -Force -ErrorAction Stop
 
     # Run prerequisites installation
@@ -2947,7 +3008,7 @@ try {{
             progressCallback?.Invoke(Resources.Resources.Prerequisites_Installing);
 
             // Execute with real-time output streaming
-            var result = await ExecutePowerShellWithStreamingAsync(script, progressCallback);
+            var result = await ExecutePowerShellWithStreamingAsync(script, progressCallback, cancellationToken);
 
             if (result.Success)
             {
@@ -2974,8 +3035,11 @@ try {{
     /// </summary>
     private async Task<(bool Success, string ErrorMessage)> ExecutePowerShellWithStreamingAsync(
         string script,
-        Action<string>? outputCallback)
+        Action<string>? outputCallback,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var psPath = GetPowerShellPath();
         var repoRoot = GetSafeRepositoryRoot();
 
@@ -3038,15 +3102,22 @@ try {{
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
 
-        // Wait with installation timeout for prerequisites
+        // Wait with installation timeout for prerequisites, linked with external cancellation
         using var prereqTimeoutCts = new CancellationTokenSource(InstallationTimeoutMs);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(prereqTimeoutCts.Token, cancellationToken);
         try
         {
-            await process.WaitForExitAsync(prereqTimeoutCts.Token);
+            await process.WaitForExitAsync(linkedCts.Token);
         }
-        catch (OperationCanceledException) when (prereqTimeoutCts.IsCancellationRequested)
+        catch (OperationCanceledException)
         {
-            try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+            try { process.Kill(entireProcessTree: true); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw; // Re-throw for external cancellation
+            }
+
             return (false, $"Prerequisites installation timed out after {InstallationTimeoutMs / 60000} minutes");
         }
 
@@ -3173,6 +3244,30 @@ try {{
 
         return null;
     }
+
+    /// <summary>
+    /// Releases all resources used by the PowerShellBridge.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases the unmanaged resources and optionally releases managed resources.
+    /// </summary>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing)
+        {
+            _cacheLock.Dispose();
+        }
+
+        _disposed = true;
+    }
 }
 
 /// <summary>
@@ -3261,7 +3356,7 @@ internal class PowerShellProcessWrapper : IDisposable
             const int processTimeoutMs = 300000; // 5 minutes
             if (!process.WaitForExit(processTimeoutMs))
             {
-                try { process.Kill(entireProcessTree: true); } catch { /* Best effort */ }
+                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
                 throw new TimeoutException($"Script execution timed out after {processTimeoutMs / 1000} seconds");
             }
 

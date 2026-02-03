@@ -83,6 +83,7 @@ public class Resources
     public static string Deploy_Installing => ResourceManager.GetString("Deploy_Installing", resourceCulture);
 
     // Column Headers
+    public static string Col_Favorites => ResourceManager.GetString("Col_Favorites", resourceCulture);
     public static string Col_Status => ResourceManager.GetString("Col_Status", resourceCulture);
     public static string Col_Application => ResourceManager.GetString("Col_Application", resourceCulture);
     public static string Col_Category => ResourceManager.GetString("Col_Category", resourceCulture);
@@ -92,11 +93,15 @@ public class Resources
     // Common
     public static string Common_Loading => ResourceManager.GetString("Common_Loading", resourceCulture);
     public static string Common_Error => ResourceManager.GetString("Common_Error", resourceCulture);
+    public static string Init_ErrorTitle => ResourceManager.GetString("Init_ErrorTitle", resourceCulture);
+    public static string Init_ErrorMessage => ResourceManager.GetString("Init_ErrorMessage", resourceCulture);
     public static string Common_Yes => ResourceManager.GetString("Common_Yes", resourceCulture);
     public static string Common_No => ResourceManager.GetString("Common_No", resourceCulture);
     public static string Common_Unknown => ResourceManager.GetString("Common_Unknown", resourceCulture);
     public static string Common_OK => ResourceManager.GetString("Common_OK", resourceCulture);
     public static string Common_Cancel => ResourceManager.GetString("Common_Cancel", resourceCulture);
+    public static string Common_TryAgain => ResourceManager.GetString("Common_TryAgain", resourceCulture);
+    public static string Common_Dismiss => ResourceManager.GetString("Common_Dismiss", resourceCulture);
     public static string Common_DryRun => ResourceManager.GetString("Common_DryRun", resourceCulture);
 
     // Navigation
@@ -110,6 +115,9 @@ public class Resources
     public static string Search_RecentSearches => ResourceManager.GetString("Search_RecentSearches", resourceCulture);
     public static string Apps_CategoryAll => ResourceManager.GetString("Apps_CategoryAll", resourceCulture);
     public static string Apps_ClearFilters => ResourceManager.GetString("Apps_ClearFilters", resourceCulture);
+    public static string Apps_ColumnVisibility => ResourceManager.GetString("Apps_ColumnVisibility", resourceCulture);
+    public static string Apps_EmptyFilterResults => ResourceManager.GetString("Apps_EmptyFilterResults", resourceCulture);
+    public static string Apps_EmptyFilterResultsHint => ResourceManager.GetString("Apps_EmptyFilterResultsHint", resourceCulture);
     public static string Apps_Col_Sources => ResourceManager.GetString("Apps_Col_Sources", resourceCulture);
     public static string Apps_Col_Id => ResourceManager.GetString("Apps_Col_Id", resourceCulture);
     public static string Btn_Scan => ResourceManager.GetString("Btn_Scan", resourceCulture);
@@ -191,6 +199,10 @@ public class Resources
     // Undo/Redo
     public static string Undo_ActionUndone => ResourceManager.GetString("Undo_ActionUndone", resourceCulture);
     public static string Undo_ActionRedone => ResourceManager.GetString("Undo_ActionRedone", resourceCulture);
+    public static string Undo_Action => ResourceManager.GetString("Undo_Action", resourceCulture);
+    public static string Undo_AddApplication => ResourceManager.GetString("Undo_AddApplication", resourceCulture);
+    public static string Undo_EditApplication => ResourceManager.GetString("Undo_EditApplication", resourceCulture);
+    public static string Undo_DeleteApplication => ResourceManager.GetString("Undo_DeleteApplication", resourceCulture);
 
     // Settings
     public static string Nav_Settings => ResourceManager.GetString("Nav_Settings", resourceCulture);
@@ -201,10 +213,12 @@ public class Resources
     public static string Settings_Theme => ResourceManager.GetString("Settings_Theme", resourceCulture);
     public static string Settings_Theme_Desc => ResourceManager.GetString("Settings_Theme_Desc", resourceCulture);
     public static string Settings_ThemeApplied => ResourceManager.GetString("Settings_ThemeApplied", resourceCulture);
+    public static string Settings_AutoSaved => ResourceManager.GetString("Settings_AutoSaved", resourceCulture);
     public static string Settings_Language => ResourceManager.GetString("Settings_Language", resourceCulture);
     public static string Settings_Language_Desc => ResourceManager.GetString("Settings_Language_Desc", resourceCulture);
     public static string Settings_Apply => ResourceManager.GetString("Settings_Apply", resourceCulture);
     public static string Settings_RestartRequired => ResourceManager.GetString("Settings_RestartRequired", resourceCulture);
+    public static string Settings_RestartNow => ResourceManager.GetString("Settings_RestartNow", resourceCulture);
     public static string Settings_ClearHistory => ResourceManager.GetString("Settings_ClearHistory", resourceCulture);
     public static string Settings_ClearHistory_Desc => ResourceManager.GetString("Settings_ClearHistory_Desc", resourceCulture);
     public static string Settings_ClearBtn => ResourceManager.GetString("Settings_ClearBtn", resourceCulture);
@@ -373,6 +387,13 @@ public class Resources
     public static string Validation_ManualInstallCannotBeSuccess => ResourceManager.GetString("Validation_ManualInstallCannotBeSuccess", resourceCulture);
     public static string Validation_DryRunShouldSucceed => ResourceManager.GetString("Validation_DryRunShouldSucceed", resourceCulture);
     public static string Validation_FailedInstallNeedsMessage => ResourceManager.GetString("Validation_FailedInstallNeedsMessage", resourceCulture);
+    public static string Validation_AppId_Required => ResourceManager.GetString("Validation_AppId_Required", resourceCulture);
+    public static string Validation_AppId_Length => ResourceManager.GetString("Validation_AppId_Length", resourceCulture);
+    public static string Validation_AppName_Required => ResourceManager.GetString("Validation_AppName_Required", resourceCulture);
+    public static string Validation_AppName_Length => ResourceManager.GetString("Validation_AppName_Length", resourceCulture);
+    public static string Validation_StringTooLong => ResourceManager.GetString("Validation_StringTooLong", resourceCulture);
+    public static string Validation_RangeError => ResourceManager.GetString("Validation_RangeError", resourceCulture);
+    public static string Validation_InvalidUrl => ResourceManager.GetString("Validation_InvalidUrl", resourceCulture);
 
     // Errors
     public static string Error_ProfileNotFound => ResourceManager.GetString("Error_ProfileNotFound", resourceCulture);
@@ -472,6 +493,10 @@ public class Resources
     public static string Apps_SelectProfile => ResourceManager.GetString("Apps_SelectProfile", resourceCulture);
     public static string Apps_ClearProfile => ResourceManager.GetString("Apps_ClearProfile", resourceCulture);
     public static string Apps_AppsSelected => ResourceManager.GetString("Apps_AppsSelected", resourceCulture);
+    public static string Apps_ProfileHelpTooltip => ResourceManager.GetString("Apps_ProfileHelpTooltip", resourceCulture);
+    public static string Apps_SelectionHelpTooltip => ResourceManager.GetString("Apps_SelectionHelpTooltip", resourceCulture);
+    public static string Apps_NoProfilesAvailable => ResourceManager.GetString("Apps_NoProfilesAvailable", resourceCulture);
+    public static string Apps_NoProfilesHint => ResourceManager.GetString("Apps_NoProfilesHint", resourceCulture);
 
     // Save Profile Dialog
     public static string Apps_SaveProfile => ResourceManager.GetString("Apps_SaveProfile", resourceCulture);
@@ -554,6 +579,8 @@ public class Resources
     public static string Accessibility_InstallationComplete => ResourceManager.GetString("Accessibility_InstallationComplete", resourceCulture);
     public static string Accessibility_InstallationFailed => ResourceManager.GetString("Accessibility_InstallationFailed", resourceCulture);
     public static string Accessibility_LiveRegion => ResourceManager.GetString("Accessibility_LiveRegion", resourceCulture);
+    public static string Accessibility_SkipToContent => ResourceManager.GetString("Accessibility_SkipToContent", resourceCulture);
+    public static string Accessibility_SkippedToContent => ResourceManager.GetString("Accessibility_SkippedToContent", resourceCulture);
 
     // Scheduled Deployments
     public static string Settings_Tab_Scheduled => ResourceManager.GetString("Settings_Tab_Scheduled", resourceCulture);
@@ -592,4 +619,150 @@ public class Resources
     public static string ScheduledDeployment_Status_Failed => ResourceManager.GetString("ScheduledDeployment_Status_Failed", resourceCulture);
     public static string ScheduledDeployment_Status_Cancelled => ResourceManager.GetString("ScheduledDeployment_Status_Cancelled", resourceCulture);
     public static string ScheduledDeployment_Status_Unknown => ResourceManager.GetString("ScheduledDeployment_Status_Unknown", resourceCulture);
+    public static string Apps_ValidationFailed => ResourceManager.GetString("Apps_ValidationFailed", resourceCulture);
+    public static string Apps_SaveFailed => ResourceManager.GetString("Apps_SaveFailed", resourceCulture);
+    public static string Apps_FileNotFound => ResourceManager.GetString("Apps_FileNotFound", resourceCulture);
+    public static string Apps_ImportFailed => ResourceManager.GetString("Apps_ImportFailed", resourceCulture);
+    public static string Validation_AtLeastOneSource => ResourceManager.GetString("Validation_AtLeastOneSource", resourceCulture);
+    public static string Validation_DuplicateAppId => ResourceManager.GetString("Validation_DuplicateAppId", resourceCulture);
+    public static string Nav_AppDatabase => ResourceManager.GetString("Nav_AppDatabase", resourceCulture);
+    public static string AppDb_Title => ResourceManager.GetString("AppDb_Title", resourceCulture);
+    public static string AppDb_Subtitle => ResourceManager.GetString("AppDb_Subtitle", resourceCulture);
+    public static string AppDb_Add => ResourceManager.GetString("AppDb_Add", resourceCulture);
+    public static string AppDb_AddTooltip => ResourceManager.GetString("AppDb_AddTooltip", resourceCulture);
+    public static string AppDb_Edit => ResourceManager.GetString("AppDb_Edit", resourceCulture);
+    public static string AppDb_EditTooltip => ResourceManager.GetString("AppDb_EditTooltip", resourceCulture);
+    public static string AppDb_Delete => ResourceManager.GetString("AppDb_Delete", resourceCulture);
+    public static string AppDb_DeleteTooltip => ResourceManager.GetString("AppDb_DeleteTooltip", resourceCulture);
+    public static string AppDb_Duplicate => ResourceManager.GetString("AppDb_Duplicate", resourceCulture);
+    public static string AppDb_DuplicateTooltip => ResourceManager.GetString("AppDb_DuplicateTooltip", resourceCulture);
+    public static string AppDb_Refresh => ResourceManager.GetString("AppDb_Refresh", resourceCulture);
+    public static string AppDb_SearchHint => ResourceManager.GetString("AppDb_SearchHint", resourceCulture);
+    public static string AppDb_CategoryFilter => ResourceManager.GetString("AppDb_CategoryFilter", resourceCulture);
+    public static string AppDb_Col_Id => ResourceManager.GetString("AppDb_Col_Id", resourceCulture);
+    public static string AppDb_Col_Name => ResourceManager.GetString("AppDb_Col_Name", resourceCulture);
+    public static string AppDb_Col_Category => ResourceManager.GetString("AppDb_Col_Category", resourceCulture);
+    public static string AppDb_Col_Sources => ResourceManager.GetString("AppDb_Col_Sources", resourceCulture);
+    public static string AppDb_Col_Priority => ResourceManager.GetString("AppDb_Col_Priority", resourceCulture);
+    public static string AppDb_Col_Verified => ResourceManager.GetString("AppDb_Col_Verified", resourceCulture);
+    public static string AppDb_Col_Description => ResourceManager.GetString("AppDb_Col_Description", resourceCulture);
+    public static string AppDb_Loading => ResourceManager.GetString("AppDb_Loading", resourceCulture);
+    public static string AppDb_LoadedCount => ResourceManager.GetString("AppDb_LoadedCount", resourceCulture);
+    public static string AppDb_LoadError => ResourceManager.GetString("AppDb_LoadError", resourceCulture);
+    public static string AppDb_Deleting => ResourceManager.GetString("AppDb_Deleting", resourceCulture);
+    public static string AppDb_Deleted => ResourceManager.GetString("AppDb_Deleted", resourceCulture);
+    public static string AppDb_DeleteError => ResourceManager.GetString("AppDb_DeleteError", resourceCulture);
+    public static string AppDb_Added => ResourceManager.GetString("AppDb_Added", resourceCulture);
+    public static string AppDb_Updated => ResourceManager.GetString("AppDb_Updated", resourceCulture);
+
+    // Import/Export
+    public static string AppDb_ImportSuccess => ResourceManager.GetString("AppDb_ImportSuccess", resourceCulture);
+    public static string AppDb_ImportError => ResourceManager.GetString("AppDb_ImportError", resourceCulture);
+    public static string AppDb_ExportSuccess => ResourceManager.GetString("AppDb_ExportSuccess", resourceCulture);
+    public static string AppDb_ExportError => ResourceManager.GetString("AppDb_ExportError", resourceCulture);
+    public static string AppDb_Import => ResourceManager.GetString("AppDb_Import", resourceCulture);
+    public static string AppDb_Export => ResourceManager.GetString("AppDb_Export", resourceCulture);
+    public static string AppDb_ExportSelected => ResourceManager.GetString("AppDb_ExportSelected", resourceCulture);
+    public static string AppDb_ExportAll => ResourceManager.GetString("AppDb_ExportAll", resourceCulture);
+    public static string AppDb_ImportTooltip => ResourceManager.GetString("AppDb_ImportTooltip", resourceCulture);
+    public static string AppDb_ExportTooltip => ResourceManager.GetString("AppDb_ExportTooltip", resourceCulture);
+
+    public static string AppDb_DeleteConfirm => ResourceManager.GetString("AppDb_DeleteConfirm", resourceCulture);
+    public static string AppDb_DeleteTitle => ResourceManager.GetString("AppDb_DeleteTitle", resourceCulture);
+    public static string AppDb_AddTitle => ResourceManager.GetString("AppDb_AddTitle", resourceCulture);
+    public static string AppDb_EditTitle => ResourceManager.GetString("AppDb_EditTitle", resourceCulture);
+    public static string AppDb_NoResults => ResourceManager.GetString("AppDb_NoResults", resourceCulture);
+    public static string AppDb_NoResultsHint => ResourceManager.GetString("AppDb_NoResultsHint", resourceCulture);
+    public static string AppDb_Showing => ResourceManager.GetString("AppDb_Showing", resourceCulture);
+    public static string AppDb_Of => ResourceManager.GetString("AppDb_Of", resourceCulture);
+    public static string AppDb_Applications => ResourceManager.GetString("AppDb_Applications", resourceCulture);
+    public static string AppDb_EditorOwnerNotFound => ResourceManager.GetString("AppDb_EditorOwnerNotFound", resourceCulture);
+    public static string AppDb_EditorOpenError => ResourceManager.GetString("AppDb_EditorOpenError", resourceCulture);
+    public static string AppDb_ImportModeConfirm => ResourceManager.GetString("AppDb_ImportModeConfirm", resourceCulture);
+    public static string AppDb_NoExportSelection => ResourceManager.GetString("AppDb_NoExportSelection", resourceCulture);
+    public static string AppEditor_Tab_General => ResourceManager.GetString("AppEditor_Tab_General", resourceCulture);
+    public static string AppEditor_Tab_Sources => ResourceManager.GetString("AppEditor_Tab_Sources", resourceCulture);
+    public static string AppEditor_Tab_Detection => ResourceManager.GetString("AppEditor_Tab_Detection", resourceCulture);
+    public static string AppEditor_AppId => ResourceManager.GetString("AppEditor_AppId", resourceCulture);
+    public static string AppEditor_Name => ResourceManager.GetString("AppEditor_Name", resourceCulture);
+    public static string AppEditor_Category => ResourceManager.GetString("AppEditor_Category", resourceCulture);
+    public static string AppEditor_Description => ResourceManager.GetString("AppEditor_Description", resourceCulture);
+    public static string AppEditor_Homepage => ResourceManager.GetString("AppEditor_Homepage", resourceCulture);
+    public static string AppEditor_DefaultRequired => ResourceManager.GetString("AppEditor_DefaultRequired", resourceCulture);
+    public static string AppEditor_AddNewCategory => ResourceManager.GetString("AppEditor_AddNewCategory", resourceCulture);
+    public static string AppEditor_WingetPackageId => ResourceManager.GetString("AppEditor_WingetPackageId", resourceCulture);
+    public static string AppEditor_ChocoPackageName => ResourceManager.GetString("AppEditor_ChocoPackageName", resourceCulture);
+    public static string AppEditor_StoreAppId => ResourceManager.GetString("AppEditor_StoreAppId", resourceCulture);
+    public static string AppEditor_DirectDownload => ResourceManager.GetString("AppEditor_DirectDownload", resourceCulture);
+    public static string AppEditor_DirectUrl => ResourceManager.GetString("AppEditor_DirectUrl", resourceCulture);
+    public static string AppEditor_DetectionDescription => ResourceManager.GetString("AppEditor_DetectionDescription", resourceCulture);
+    public static string AppEditor_DetectionMethod => ResourceManager.GetString("AppEditor_DetectionMethod", resourceCulture);
+    public static string AppEditor_DetectionPath => ResourceManager.GetString("AppEditor_DetectionPath", resourceCulture);
+    public static string AppEditor_VersionKey => ResourceManager.GetString("AppEditor_VersionKey", resourceCulture);
+    public static string AppEditor_MinVersion => ResourceManager.GetString("AppEditor_MinVersion", resourceCulture);
+    public static string AppEditor_Save => ResourceManager.GetString("AppEditor_Save", resourceCulture);
+    public static string AppEditor_Cancel => ResourceManager.GetString("AppEditor_Cancel", resourceCulture);
+    public static string AppEditor_UnsavedChanges => ResourceManager.GetString("AppEditor_UnsavedChanges", resourceCulture);
+    public static string AppEditor_DiscardChanges => ResourceManager.GetString("AppEditor_DiscardChanges", resourceCulture);
+    public static string AppEditor_DiscardTitle => ResourceManager.GetString("AppEditor_DiscardTitle", resourceCulture);
+    public static string AppEditor_NewCategoryTitle => ResourceManager.GetString("AppEditor_NewCategoryTitle", resourceCulture);
+    public static string AppEditor_NewCategoryPrompt => ResourceManager.GetString("AppEditor_NewCategoryPrompt", resourceCulture);
+    public static string SourceEditor_EnableDisable => ResourceManager.GetString("SourceEditor_EnableDisable", resourceCulture);
+    public static string SourceEditor_Version => ResourceManager.GetString("SourceEditor_Version", resourceCulture);
+    public static string SourceEditor_Repository => ResourceManager.GetString("SourceEditor_Repository", resourceCulture);
+    public static string SourceEditor_Test => ResourceManager.GetString("SourceEditor_Test", resourceCulture);
+    public static string SourceEditor_TestTooltip => ResourceManager.GetString("SourceEditor_TestTooltip", resourceCulture);
+    public static string SourceEditor_TestPlaceholder => ResourceManager.GetString("SourceEditor_TestPlaceholder", resourceCulture);
+    public static string SourceEditor_StoreIdHint => ResourceManager.GetString("SourceEditor_StoreIdHint", resourceCulture);
+    public static string SourceEditor_InstallerType => ResourceManager.GetString("SourceEditor_InstallerType", resourceCulture);
+    public static string SourceEditor_SilentArgs => ResourceManager.GetString("SourceEditor_SilentArgs", resourceCulture);
+    public static string SourceEditor_Checksum => ResourceManager.GetString("SourceEditor_Checksum", resourceCulture);
+    public static string SourceEditor_ChecksumHint => ResourceManager.GetString("SourceEditor_ChecksumHint", resourceCulture);
+    public static string SourceEditor_TestUrl => ResourceManager.GetString("SourceEditor_TestUrl", resourceCulture);
+    public static string SourceEditor_TestUrlTooltip => ResourceManager.GetString("SourceEditor_TestUrlTooltip", resourceCulture);
+    public static string SourceEditor_UrlTestSuccess => ResourceManager.GetString("SourceEditor_UrlTestSuccess", resourceCulture);
+    public static string SourceEditor_UrlTestSuccessNoSize => ResourceManager.GetString("SourceEditor_UrlTestSuccessNoSize", resourceCulture);
+    public static string SourceEditor_UrlTestFailed => ResourceManager.GetString("SourceEditor_UrlTestFailed", resourceCulture);
+    public static string SourceEditor_UrlTestError => ResourceManager.GetString("SourceEditor_UrlTestError", resourceCulture);
+    public static string SourceEditor_UrlTestTimeout => ResourceManager.GetString("SourceEditor_UrlTestTimeout", resourceCulture);
+
+    // Package Verification
+    public static string Verify_PackageFound => ResourceManager.GetString("Verify_PackageFound", resourceCulture);
+    public static string Verify_PackageNotFound => ResourceManager.GetString("Verify_PackageNotFound", resourceCulture);
+    public static string Verify_Error => ResourceManager.GetString("Verify_Error", resourceCulture);
+    public static string Verify_WingetUnavailable => ResourceManager.GetString("Verify_WingetUnavailable", resourceCulture);
+    public static string Verify_ChocoUnavailable => ResourceManager.GetString("Verify_ChocoUnavailable", resourceCulture);
+    public static string Verify_AllSourcesValid => ResourceManager.GetString("Verify_AllSourcesValid", resourceCulture);
+    public static string Verify_SomeSourcesInvalid => ResourceManager.GetString("Verify_SomeSourcesInvalid", resourceCulture);
+    public static string Verify_NoValidSources => ResourceManager.GetString("Verify_NoValidSources", resourceCulture);
+    public static string Verify_Verifying => ResourceManager.GetString("Verify_Verifying", resourceCulture);
+
+    public static string Detection_Method_Registry => ResourceManager.GetString("Detection_Method_Registry", resourceCulture);
+    public static string Detection_Method_File => ResourceManager.GetString("Detection_Method_File", resourceCulture);
+    public static string Detection_Method_Command => ResourceManager.GetString("Detection_Method_Command", resourceCulture);
+    public static string Detection_Method_WindowsFeature => ResourceManager.GetString("Detection_Method_WindowsFeature", resourceCulture);
+    public static string Detection_Method_StoreApp => ResourceManager.GetString("Detection_Method_StoreApp", resourceCulture);
+    public static string Detection_Registry_Title => ResourceManager.GetString("Detection_Registry_Title", resourceCulture);
+    public static string Detection_Registry_Path => ResourceManager.GetString("Detection_Registry_Path", resourceCulture);
+    public static string Detection_File_Title => ResourceManager.GetString("Detection_File_Title", resourceCulture);
+    public static string Detection_File_Path => ResourceManager.GetString("Detection_File_Path", resourceCulture);
+    public static string Detection_Browse => ResourceManager.GetString("Detection_Browse", resourceCulture);
+    public static string Detection_Command_Title => ResourceManager.GetString("Detection_Command_Title", resourceCulture);
+    public static string Detection_Command_Path => ResourceManager.GetString("Detection_Command_Path", resourceCulture);
+    public static string Detection_Command_Hint => ResourceManager.GetString("Detection_Command_Hint", resourceCulture);
+    public static string Detection_WindowsFeature_Title => ResourceManager.GetString("Detection_WindowsFeature_Title", resourceCulture);
+    public static string Detection_WindowsFeature_Name => ResourceManager.GetString("Detection_WindowsFeature_Name", resourceCulture);
+    public static string Detection_StoreApp_Title => ResourceManager.GetString("Detection_StoreApp_Title", resourceCulture);
+    public static string Detection_StoreApp_PackageName => ResourceManager.GetString("Detection_StoreApp_PackageName", resourceCulture);
+    public static string Detection_TestButton => ResourceManager.GetString("Detection_TestButton", resourceCulture);
+    public static string Detection_TestTooltip => ResourceManager.GetString("Detection_TestTooltip", resourceCulture);
+    public static string Detection_Found => ResourceManager.GetString("Detection_Found", resourceCulture);
+    public static string Detection_NotFound => ResourceManager.GetString("Detection_NotFound", resourceCulture);
+    public static string Detection_Version => ResourceManager.GetString("Detection_Version", resourceCulture);
+    public static string Detection_Error => ResourceManager.GetString("Detection_Error", resourceCulture);
+    public static string Detection_PathRequired => ResourceManager.GetString("Detection_PathRequired", resourceCulture);
+    public static string Detection_UnknownMethod => ResourceManager.GetString("Detection_UnknownMethod", resourceCulture);
+    public static string Detection_SelectFile => ResourceManager.GetString("Detection_SelectFile", resourceCulture);
+    public static string Detection_FeatureCheckNotSupported => ResourceManager.GetString("Detection_FeatureCheckNotSupported", resourceCulture);
+    public static string Detection_StoreAppCheckNotSupported => ResourceManager.GetString("Detection_StoreAppCheckNotSupported", resourceCulture);
 }

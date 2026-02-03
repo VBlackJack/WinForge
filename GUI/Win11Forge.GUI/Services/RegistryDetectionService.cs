@@ -15,6 +15,7 @@
  */
 
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using Win11Forge.GUI.Models;
 
@@ -26,7 +27,7 @@ namespace Win11Forge.GUI.Services;
 ///
 /// Performance: ~20ms for full scan vs ~2000ms for winget list
 /// </summary>
-public class RegistryDetectionService
+public partial class RegistryDetectionService
 {
     private static readonly string[] RegistryPaths =
     {
@@ -39,6 +40,22 @@ public class RegistryDetectionService
         Registry.LocalMachine,
         Registry.CurrentUser
     };
+
+    /// <summary>
+    /// Compiled regex patterns for normalizing application names.
+    /// These remove version suffixes and architecture indicators.
+    /// </summary>
+    [GeneratedRegex(@"\s+v?\d+(\.\d+)+.*$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    private static partial Regex VersionSuffixPattern();
+
+    [GeneratedRegex(@"\s+\(x64\).*$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    private static partial Regex X64SuffixPattern();
+
+    [GeneratedRegex(@"\s+\(x86\).*$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    private static partial Regex X86SuffixPattern();
+
+    [GeneratedRegex(@"\s+-\s+\d+.*$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    private static partial Regex DashVersionPattern();
 
     /// <summary>
     /// Scans all registry uninstall keys to detect installed applications.
@@ -227,20 +244,11 @@ public class RegistryDetectionService
         if (string.IsNullOrEmpty(name)) return string.Empty;
 
         // Common patterns: "App Name 1.2.3", "App Name v1.2.3", "App Name (x64)"
-        var patterns = new[]
-        {
-            @"\s+v?\d+(\.\d+)+.*$",     // Version suffix
-            @"\s+\(x64\).*$",            // Architecture suffix
-            @"\s+\(x86\).*$",
-            @"\s+-\s+\d+.*$",            // Dash version
-        };
-
         var result = name;
-        foreach (var pattern in patterns)
-        {
-            result = System.Text.RegularExpressions.Regex.Replace(
-                result, pattern, "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        }
+        result = VersionSuffixPattern().Replace(result, "");
+        result = X64SuffixPattern().Replace(result, "");
+        result = X86SuffixPattern().Replace(result, "");
+        result = DashVersionPattern().Replace(result, "");
 
         return result.Trim().ToLowerInvariant();
     }

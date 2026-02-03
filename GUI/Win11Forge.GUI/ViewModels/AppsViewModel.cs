@@ -141,6 +141,16 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     public bool HasStatusFilter => SelectedStatusFilter != StatusFilterOption.All;
 
     /// <summary>
+    /// Indicates whether any filter is currently active.
+    /// </summary>
+    public bool HasFiltersApplied => HasSearchFilter || HasCategoryFilter || HasStatusFilter;
+
+    /// <summary>
+    /// Indicates whether filters result in zero applications (empty state should be shown).
+    /// </summary>
+    public bool IsEmptyFilterResults => HasFiltersApplied && FilteredCount == 0 && !IsLoading;
+
+    /// <summary>
     /// Available deployment profiles.
     /// </summary>
     [ObservableProperty]
@@ -156,6 +166,19 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// Indicates whether a profile is currently applied.
     /// </summary>
     public bool HasProfileApplied => !string.IsNullOrEmpty(SelectedProfile);
+
+    /// <summary>
+    /// Indicates whether there are any profiles available.
+    /// </summary>
+    public bool HasProfiles => AvailableProfiles.Count > 0;
+
+    /// <summary>
+    /// Notifies dependent properties when AvailableProfiles changes.
+    /// </summary>
+    partial void OnAvailableProfilesChanged(ObservableCollection<string> value)
+    {
+        OnPropertyChanged(nameof(HasProfiles));
+    }
 
     /// <summary>
     /// Cache of resolved profile app IDs with their tier.
@@ -302,6 +325,52 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private int _favoritesCount;
 
+    #region Column Visibility
+
+    /// <summary>
+    /// Whether the column visibility popup is open.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isColumnVisibilityPopupOpen;
+
+    /// <summary>
+    /// Whether the Favorites column is visible.
+    /// </summary>
+    [ObservableProperty]
+    private bool _showFavoritesColumn = true;
+
+    /// <summary>
+    /// Whether the Version column is visible.
+    /// </summary>
+    [ObservableProperty]
+    private bool _showVersionColumn = true;
+
+    /// <summary>
+    /// Whether the Status column is visible.
+    /// </summary>
+    [ObservableProperty]
+    private bool _showStatusColumn = true;
+
+    /// <summary>
+    /// Whether the Category column is visible.
+    /// </summary>
+    [ObservableProperty]
+    private bool _showCategoryColumn = true;
+
+    /// <summary>
+    /// Whether the Sources column is visible.
+    /// </summary>
+    [ObservableProperty]
+    private bool _showSourcesColumn = true;
+
+    /// <summary>
+    /// Whether the Logs column is visible.
+    /// </summary>
+    [ObservableProperty]
+    private bool _showLogsColumn = true;
+
+    #endregion
+
     /// <summary>
     /// Whether summary dialog is open.
     /// </summary>
@@ -345,6 +414,49 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private string _estimatedTimeRemaining = string.Empty;
 
     /// <summary>
+    /// Tracks the last operation type for retry functionality.
+    /// </summary>
+    private string _lastOperationType = string.Empty;
+
+    /// <summary>
+    /// Dismisses the current error message.
+    /// </summary>
+    [RelayCommand]
+    private void DismissError()
+    {
+        ErrorMessage = null;
+    }
+
+    /// <summary>
+    /// Retries the last failed operation.
+    /// </summary>
+    [RelayCommand]
+    private async Task RetryLastOperationAsync()
+    {
+        ErrorMessage = null;
+
+        switch (_lastOperationType)
+        {
+            case "scan":
+                if (CanScan)
+                    await ScanAsync();
+                break;
+            case "install":
+                await InstallSelectedAsync();
+                break;
+            case "uninstall":
+                await UninstallSelectedAsync();
+                break;
+            case "load":
+                await InitializeAsync();
+                break;
+            default:
+                await InitializeAsync();
+                break;
+        }
+    }
+
+    /// <summary>
     /// Initializes a new instance of AppsViewModel.
     /// </summary>
     public AppsViewModel(
@@ -367,6 +479,17 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         var maxParallelScans = Math.Clamp(settings.MaxParallelScans, 1, 20);
         _installSemaphore = new SemaphoreSlim(maxParallelInstalls);
         _scanSemaphore = new SemaphoreSlim(maxParallelScans);
+
+        // Restore persisted filter state from settings
+        _searchText = settings.AppsLastSearchText ?? string.Empty;
+        _selectedStatusFilter = (StatusFilterOption)Math.Clamp(settings.AppsLastStatusFilter, 0, 5);
+        _showFavoritesColumn = settings.AppsShowFavoritesColumn;
+        _showVersionColumn = settings.AppsShowVersionColumn;
+        _showStatusColumn = settings.AppsShowStatusColumn;
+        _showCategoryColumn = settings.AppsShowCategoryColumn;
+        _showSourcesColumn = settings.AppsShowSourcesColumn;
+        _showLogsColumn = settings.AppsShowLogsColumn;
+        // Note: _selectedCategory is restored in InitializeAsync after categories are loaded
 
         // Register for filter messages from Dashboard
         WeakReferenceMessenger.Default.Register<ApplyFilterMessage>(this, async (r, m) =>
@@ -465,13 +588,21 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             Categories = new ObservableCollection<string>(
                 new[] { Resources.Resources.Apps_CategoryAll }.Concat(categoryList));
 
-            // Select "All Categories" by default
-            SelectedCategory = Categories[0];
+            // Restore persisted category filter, or default to "All Categories"
+            var settings = _settingsService.LoadSettings();
+            var persistedCategory = settings.AppsLastSelectedCategory;
+            if (!string.IsNullOrEmpty(persistedCategory) && Categories.Contains(persistedCategory))
+            {
+                SelectedCategory = persistedCategory;
+            }
+            else
+            {
+                SelectedCategory = Categories[0];
+            }
 
-            // Initialize status filters
+            // Initialize status filters (status filter is already restored in constructor)
             StatusFilters = new ObservableCollection<StatusFilterOption>(
                 Enum.GetValues<StatusFilterOption>());
-            SelectedStatusFilter = StatusFilterOption.All;
 
             // Load available profiles and pre-cache them
             var profiles = await _powerShellBridge.GetAvailableProfilesAsync();
@@ -495,12 +626,23 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     }
 
     /// <summary>
+    /// Called when FilteredCount changes.
+    /// </summary>
+    partial void OnFilteredCountChanged(int value)
+    {
+        OnPropertyChanged(nameof(IsEmptyFilterResults));
+    }
+
+    /// <summary>
     /// Called when SearchText changes.
     /// </summary>
     partial void OnSearchTextChanged(string value)
     {
         OnPropertyChanged(nameof(HasSearchFilter));
+        OnPropertyChanged(nameof(HasFiltersApplied));
+        OnPropertyChanged(nameof(IsEmptyFilterResults));
         ApplyFilter();
+        SaveFilterState();
     }
 
     /// <summary>
@@ -509,7 +651,10 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     partial void OnSelectedCategoryChanged(string value)
     {
         OnPropertyChanged(nameof(HasCategoryFilter));
+        OnPropertyChanged(nameof(HasFiltersApplied));
+        OnPropertyChanged(nameof(IsEmptyFilterResults));
         ApplyFilter();
+        SaveFilterState();
     }
 
     /// <summary>
@@ -518,7 +663,45 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     partial void OnSelectedStatusFilterChanged(StatusFilterOption value)
     {
         OnPropertyChanged(nameof(HasStatusFilter));
+        OnPropertyChanged(nameof(HasFiltersApplied));
+        OnPropertyChanged(nameof(IsEmptyFilterResults));
         ApplyFilter();
+        SaveFilterState();
+    }
+
+    /// <summary>
+    /// Called when column visibility changes.
+    /// </summary>
+    partial void OnShowFavoritesColumnChanged(bool value) => SaveFilterState();
+    partial void OnShowVersionColumnChanged(bool value) => SaveFilterState();
+    partial void OnShowStatusColumnChanged(bool value) => SaveFilterState();
+    partial void OnShowCategoryColumnChanged(bool value) => SaveFilterState();
+    partial void OnShowSourcesColumnChanged(bool value) => SaveFilterState();
+    partial void OnShowLogsColumnChanged(bool value) => SaveFilterState();
+
+    /// <summary>
+    /// Saves the current filter state to settings for persistence across navigation.
+    /// </summary>
+    private void SaveFilterState()
+    {
+        try
+        {
+            var settings = _settingsService.LoadSettings();
+            settings.AppsLastSearchText = SearchText ?? string.Empty;
+            settings.AppsLastSelectedCategory = SelectedCategory ?? string.Empty;
+            settings.AppsLastStatusFilter = (int)SelectedStatusFilter;
+            settings.AppsShowFavoritesColumn = ShowFavoritesColumn;
+            settings.AppsShowVersionColumn = ShowVersionColumn;
+            settings.AppsShowStatusColumn = ShowStatusColumn;
+            settings.AppsShowCategoryColumn = ShowCategoryColumn;
+            settings.AppsShowSourcesColumn = ShowSourcesColumn;
+            settings.AppsShowLogsColumn = ShowLogsColumn;
+            _settingsService.SaveSettings(settings);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to save filter state: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -2449,7 +2632,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// Exports the current selection to a JSON file.
     /// </summary>
     [RelayCommand]
-    private void ExportSelection()
+    private async Task ExportSelectionAsync()
     {
         var selectedIds = _allApplications
             .Where(a => a.IsSelected)
@@ -2473,7 +2656,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
                 {
                     WriteIndented = true
                 });
-                File.WriteAllText(dialog.FileName, json);
+                await File.WriteAllTextAsync(dialog.FileName, json);
             }
             catch
             {
@@ -2486,7 +2669,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// Imports a selection from a JSON file.
     /// </summary>
     [RelayCommand]
-    private void ImportSelection()
+    private async Task ImportSelectionAsync()
     {
         var dialog = new OpenFileDialog
         {
@@ -2498,7 +2681,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         {
             try
             {
-                var json = File.ReadAllText(dialog.FileName);
+                var json = await File.ReadAllTextAsync(dialog.FileName);
                 var selectedIds = JsonSerializer.Deserialize<List<string>>(json);
 
                 if (selectedIds != null)
@@ -2534,7 +2717,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// Exports favorites to a JSON file.
     /// </summary>
     [RelayCommand]
-    private void ExportFavorites()
+    private async Task ExportFavoritesAsync()
     {
         var favoriteIds = _allApplications
             .Where(a => a.IsFavorite)
@@ -2558,7 +2741,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
                 {
                     WriteIndented = true
                 });
-                File.WriteAllText(dialog.FileName, json);
+                await File.WriteAllTextAsync(dialog.FileName, json);
             }
             catch
             {
@@ -2571,7 +2754,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// Imports favorites from a JSON file.
     /// </summary>
     [RelayCommand]
-    private void ImportFavorites()
+    private async Task ImportFavoritesAsync()
     {
         var dialog = new OpenFileDialog
         {
@@ -2583,7 +2766,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         {
             try
             {
-                var json = File.ReadAllText(dialog.FileName);
+                var json = await File.ReadAllTextAsync(dialog.FileName);
                 var favoriteIds = JsonSerializer.Deserialize<List<string>>(json);
 
                 if (favoriteIds != null)

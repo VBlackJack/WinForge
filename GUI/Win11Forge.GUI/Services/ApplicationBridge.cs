@@ -218,7 +218,7 @@ public class ApplicationBridge : IApplicationBridge
         else
         {
             // Parallel installation with semaphore
-            var semaphore = new SemaphoreSlim(parallelism);
+            using var semaphore = new SemaphoreSlim(parallelism);
             var tasks = new List<Task<InstallResult>>();
             var progressLock = new object();
             var currentIndex = 0;

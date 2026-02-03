@@ -157,6 +157,22 @@
     <value>Redone: {0}</value>
     <comment>Toast message when action is redone (0=action description)</comment>
   </data>
+  <data name="Undo_Action" xml:space="preserve">
+    <value>action</value>
+    <comment>Generic action fallback text</comment>
+  </data>
+  <data name="Undo_AddApplication" xml:space="preserve">
+    <value>Add application: {0}</value>
+    <comment>Undo description for adding application (0=app name)</comment>
+  </data>
+  <data name="Undo_EditApplication" xml:space="preserve">
+    <value>Edit application: {0}</value>
+    <comment>Undo description for editing application (0=app name)</comment>
+  </data>
+  <data name="Undo_DeleteApplication" xml:space="preserve">
+    <value>Delete application: {0}</value>
+    <comment>Undo description for deleting application (0=app name)</comment>
+  </data>
   <data name="Deploy_SelectProfile" xml:space="preserve">
     <value>Select Profile:</value>
     <comment>Label for profile selection dropdown</comment>
@@ -198,6 +214,10 @@
     <comment>Status message during application installation</comment>
   </data>
   <!-- Column Headers -->
+  <data name="Col_Favorites" xml:space="preserve">
+    <value>Favorites</value>
+    <comment>Favorites column header</comment>
+  </data>
   <data name="Col_Status" xml:space="preserve">
     <value>Status</value>
     <comment>Status column header</comment>
@@ -226,6 +246,18 @@
   <data name="Common_Error" xml:space="preserve">
     <value>Error</value>
     <comment>Generic error label</comment>
+  </data>
+  <data name="Init_ErrorTitle" xml:space="preserve">
+    <value>Initialization Error</value>
+    <comment>Title for initialization failure dialog</comment>
+  </data>
+  <data name="Init_ErrorMessage" xml:space="preserve">
+    <value>Failed to initialize Win11Forge:
+
+{0}
+
+Please ensure Win11Forge is extracted correctly with all folders (Config/, Modules/, Profiles/).</value>
+    <comment>Message for initialization failure (0=error details)</comment>
   </data>
   <!-- Navigation -->
   <data name="Nav_Dashboard" xml:space="preserve">
@@ -569,6 +601,10 @@
     <value>Theme applied</value>
     <comment>Status message after theme change</comment>
   </data>
+  <data name="Settings_AutoSaved" xml:space="preserve">
+    <value>Settings saved</value>
+    <comment>Toast notification when settings are auto-saved</comment>
+  </data>
   <data name="Settings_Language" xml:space="preserve">
     <value>Language</value>
     <comment>Language setting label</comment>
@@ -584,6 +620,10 @@
   <data name="Settings_RestartRequired" xml:space="preserve">
     <value>Restart required for language change</value>
     <comment>Warning for language change</comment>
+  </data>
+  <data name="Settings_RestartNow" xml:space="preserve">
+    <value>Restart Now</value>
+    <comment>Button to restart the application immediately</comment>
   </data>
   <data name="Settings_ClearHistory" xml:space="preserve">
     <value>Clear History</value>
@@ -718,6 +758,22 @@
   <data name="Apps_OpenWebsite" xml:space="preserve">
     <value>Open Website</value>
     <comment>Button to open official website</comment>
+  </data>
+  <data name="Apps_ClearFilters" xml:space="preserve">
+    <value>Clear Filters</value>
+    <comment>Button to clear all active filters</comment>
+  </data>
+  <data name="Apps_EmptyFilterResults" xml:space="preserve">
+    <value>No applications match your filters</value>
+    <comment>Title when filters produce no results</comment>
+  </data>
+  <data name="Apps_EmptyFilterResultsHint" xml:space="preserve">
+    <value>Try adjusting your search or filter criteria</value>
+    <comment>Hint text when filters produce no results</comment>
+  </data>
+  <data name="Apps_ColumnVisibility" xml:space="preserve">
+    <value>Columns</value>
+    <comment>Column visibility menu title</comment>
   </data>
   <data name="Status_ManualRequired" xml:space="preserve">
     <value>Manual installation required</value>
@@ -1275,6 +1331,35 @@
     <value>Failed installation must include an error message</value>
     <comment>Validation error for InstallResult message requirement</comment>
   </data>
+  <!-- ApplicationModel Validation -->
+  <data name="Validation_AppId_Required" xml:space="preserve">
+    <value>Application ID is required</value>
+    <comment>Application ID required validation</comment>
+  </data>
+  <data name="Validation_AppId_Length" xml:space="preserve">
+    <value>Application ID must be between 1 and 256 characters</value>
+    <comment>Application ID length validation</comment>
+  </data>
+  <data name="Validation_AppName_Required" xml:space="preserve">
+    <value>Application name is required</value>
+    <comment>Application name required validation</comment>
+  </data>
+  <data name="Validation_AppName_Length" xml:space="preserve">
+    <value>Application name must be between 1 and 512 characters</value>
+    <comment>Application name length validation</comment>
+  </data>
+  <data name="Validation_StringTooLong" xml:space="preserve">
+    <value>{0} must not exceed {1} characters</value>
+    <comment>Generic string too long validation (0=field, 1=max)</comment>
+  </data>
+  <data name="Validation_RangeError" xml:space="preserve">
+    <value>{0} must be between {1} and {2}</value>
+    <comment>Generic range validation (0=field, 1=min, 2=max)</comment>
+  </data>
+  <data name="Validation_InvalidUrl" xml:space="preserve">
+    <value>URL must be a valid HTTP or HTTPS URL</value>
+    <comment>Invalid URL validation</comment>
+  </data>
   <data name="Error_ProfileNotFound" xml:space="preserve">
     <value>Profile not found</value>
     <comment>Profile not found error message</comment>
@@ -1765,8 +1850,24 @@
     <comment>Clear profile button tooltip</comment>
   </data>
   <data name="Apps_AppsSelected" xml:space="preserve">
-    <value>apps selected</value>
-    <comment>Apps selected count suffix</comment>
+    <value>applications selected</value>
+    <comment>Applications selected count suffix</comment>
+  </data>
+  <data name="Apps_ProfileHelpTooltip" xml:space="preserve">
+    <value>Select a profile to automatically select its applications. You can then modify the selection manually before installing.</value>
+    <comment>Help tooltip explaining profile selection workflow</comment>
+  </data>
+  <data name="Apps_SelectionHelpTooltip" xml:space="preserve">
+    <value>Check the boxes to select applications for installation. Use filters to find specific applications.</value>
+    <comment>Help tooltip explaining application selection</comment>
+  </data>
+  <data name="Apps_NoProfilesAvailable" xml:space="preserve">
+    <value>No profiles available</value>
+    <comment>Message when no deployment profiles exist</comment>
+  </data>
+  <data name="Apps_NoProfilesHint" xml:space="preserve">
+    <value>Select applications manually or create a profile by selecting apps and clicking Save Profile.</value>
+    <comment>Hint text when no profiles exist</comment>
   </data>
   <!-- Save Profile Dialog -->
   <data name="Apps_SaveProfile" xml:space="preserve">
@@ -1964,6 +2065,14 @@
     <value>Cancel</value>
     <comment>Cancel button text</comment>
   </data>
+  <data name="Common_TryAgain" xml:space="preserve">
+    <value>Try Again</value>
+    <comment>Retry button text for error recovery</comment>
+  </data>
+  <data name="Common_Dismiss" xml:space="preserve">
+    <value>Dismiss</value>
+    <comment>Dismiss button text to close error messages</comment>
+  </data>
   <data name="Common_DryRun" xml:space="preserve">
     <value>[DRY RUN]</value>
     <comment>Dry run prefix for simulated installations</comment>
@@ -2025,6 +2134,14 @@
   <data name="Accessibility_LiveRegion" xml:space="preserve">
     <value>Status announcements</value>
     <comment>Accessible name for screen reader live region</comment>
+  </data>
+  <data name="Accessibility_SkipToContent" xml:space="preserve">
+    <value>Skip to content</value>
+    <comment>Button text for skip-to-content accessibility link</comment>
+  </data>
+  <data name="Accessibility_SkippedToContent" xml:space="preserve">
+    <value>Skipped to main content</value>
+    <comment>Screen reader announcement after skipping navigation</comment>
   </data>
   <!-- Scheduled Deployments -->
   <data name="Settings_Tab_Scheduled" xml:space="preserve">
@@ -2170,5 +2287,581 @@
   <data name="ScheduledDeployment_Status_Unknown" xml:space="preserve">
     <value>Unknown</value>
     <comment>Unknown status display</comment>
+  </data>
+  <!-- Application Database Service -->
+  <data name="Apps_ValidationFailed" xml:space="preserve">
+    <value>Validation failed</value>
+    <comment>Error message when application validation fails</comment>
+  </data>
+  <data name="Apps_SaveFailed" xml:space="preserve">
+    <value>Failed to save application</value>
+    <comment>Error message when application save fails</comment>
+  </data>
+  <data name="Apps_FileNotFound" xml:space="preserve">
+    <value>File not found</value>
+    <comment>Error message when import file not found</comment>
+  </data>
+  <data name="Apps_ImportFailed" xml:space="preserve">
+    <value>Failed to import applications</value>
+    <comment>Error message when import fails</comment>
+  </data>
+  <data name="Validation_AtLeastOneSource" xml:space="preserve">
+    <value>At least one installation source is required</value>
+    <comment>Validation error for missing sources</comment>
+  </data>
+  <data name="Validation_DuplicateAppId" xml:space="preserve">
+    <value>Application ID '{0}' already exists</value>
+    <comment>Validation error for duplicate application ID</comment>
+  </data>
+  <!-- Applications Catalog Management View -->
+  <data name="Nav_AppDatabase" xml:space="preserve">
+    <value>App Catalog</value>
+    <comment>Navigation item for application catalog management</comment>
+  </data>
+  <data name="AppDb_Title" xml:space="preserve">
+    <value>App Catalog</value>
+    <comment>Title of the application catalog view</comment>
+  </data>
+  <data name="AppDb_Subtitle" xml:space="preserve">
+    <value>Manage application definitions and installation sources</value>
+    <comment>Subtitle of the application database view</comment>
+  </data>
+  <data name="AppDb_Add" xml:space="preserve">
+    <value>Add</value>
+    <comment>Add button text</comment>
+  </data>
+  <data name="AppDb_AddTooltip" xml:space="preserve">
+    <value>Add a new application (Ctrl+N)</value>
+    <comment>Add button tooltip</comment>
+  </data>
+  <data name="AppDb_Edit" xml:space="preserve">
+    <value>Edit</value>
+    <comment>Edit button text</comment>
+  </data>
+  <data name="AppDb_EditTooltip" xml:space="preserve">
+    <value>Edit selected application (Ctrl+E)</value>
+    <comment>Edit button tooltip</comment>
+  </data>
+  <data name="AppDb_Delete" xml:space="preserve">
+    <value>Delete</value>
+    <comment>Delete button text</comment>
+  </data>
+  <data name="AppDb_DeleteTooltip" xml:space="preserve">
+    <value>Delete selected application (Del)</value>
+    <comment>Delete button tooltip</comment>
+  </data>
+  <data name="AppDb_Duplicate" xml:space="preserve">
+    <value>Duplicate</value>
+    <comment>Duplicate button text</comment>
+  </data>
+  <data name="AppDb_DuplicateTooltip" xml:space="preserve">
+    <value>Duplicate selected application (Ctrl+D)</value>
+    <comment>Duplicate button tooltip</comment>
+  </data>
+  <data name="AppDb_Refresh" xml:space="preserve">
+    <value>Refresh (F5)</value>
+    <comment>Refresh button tooltip</comment>
+  </data>
+  <data name="AppDb_SearchHint" xml:space="preserve">
+    <value>Search by ID, name, or tags...</value>
+    <comment>Search box placeholder</comment>
+  </data>
+  <data name="AppDb_CategoryFilter" xml:space="preserve">
+    <value>Category</value>
+    <comment>Category filter label</comment>
+  </data>
+  <data name="AppDb_Col_Id" xml:space="preserve">
+    <value>ID</value>
+    <comment>Column header for app ID</comment>
+  </data>
+  <data name="AppDb_Col_Name" xml:space="preserve">
+    <value>Name</value>
+    <comment>Column header for app name</comment>
+  </data>
+  <data name="AppDb_Col_Category" xml:space="preserve">
+    <value>Category</value>
+    <comment>Column header for category</comment>
+  </data>
+  <data name="AppDb_Col_Sources" xml:space="preserve">
+    <value>Sources</value>
+    <comment>Column header for installation sources</comment>
+  </data>
+  <data name="AppDb_Col_Priority" xml:space="preserve">
+    <value>Priority</value>
+    <comment>Column header for priority</comment>
+  </data>
+  <data name="AppDb_Col_Verified" xml:space="preserve">
+    <value>Verified</value>
+    <comment>Column header for verified status</comment>
+  </data>
+  <data name="AppDb_Col_Description" xml:space="preserve">
+    <value>Description</value>
+    <comment>Column header for description</comment>
+  </data>
+  <data name="AppDb_Loading" xml:space="preserve">
+    <value>Loading applications...</value>
+    <comment>Loading status message</comment>
+  </data>
+  <data name="AppDb_LoadedCount" xml:space="preserve">
+    <value>{0} applications loaded</value>
+    <comment>Loaded count message</comment>
+  </data>
+  <data name="AppDb_LoadError" xml:space="preserve">
+    <value>Failed to load applications: {0}</value>
+    <comment>Load error message</comment>
+  </data>
+  <data name="AppDb_Deleting" xml:space="preserve">
+    <value>Deleting application...</value>
+    <comment>Deleting status message</comment>
+  </data>
+  <data name="AppDb_Deleted" xml:space="preserve">
+    <value>Application deleted successfully</value>
+    <comment>Deleted success message</comment>
+  </data>
+  <data name="AppDb_DeleteError" xml:space="preserve">
+    <value>Failed to delete application</value>
+    <comment>Delete error message</comment>
+  </data>
+  <data name="AppDb_Added" xml:space="preserve">
+    <value>Application added successfully</value>
+    <comment>Added success message</comment>
+  </data>
+  <data name="AppDb_Updated" xml:space="preserve">
+    <value>Application updated successfully</value>
+    <comment>Updated success message</comment>
+  </data>
+  <!-- Import/Export -->
+  <data name="AppDb_ImportSuccess" xml:space="preserve">
+    <value>Import complete: {0} added, {1} updated</value>
+    <comment>Import success message</comment>
+  </data>
+  <data name="AppDb_ImportError" xml:space="preserve">
+    <value>Import failed: {0}</value>
+    <comment>Import error message</comment>
+  </data>
+  <data name="AppDb_ExportSuccess" xml:space="preserve">
+    <value>Exported {0} applications successfully</value>
+    <comment>Export success message</comment>
+  </data>
+  <data name="AppDb_ExportError" xml:space="preserve">
+    <value>Failed to export applications: {0}</value>
+    <comment>Export error message (0=error details)</comment>
+  </data>
+  <data name="AppDb_Import" xml:space="preserve">
+    <value>Import</value>
+    <comment>Import button text</comment>
+  </data>
+  <data name="AppDb_Export" xml:space="preserve">
+    <value>Export</value>
+    <comment>Export button text</comment>
+  </data>
+  <data name="AppDb_ExportSelected" xml:space="preserve">
+    <value>Export Selected</value>
+    <comment>Export selected button text</comment>
+  </data>
+  <data name="AppDb_ExportAll" xml:space="preserve">
+    <value>Export All</value>
+    <comment>Export all button text</comment>
+  </data>
+  <data name="AppDb_ImportTooltip" xml:space="preserve">
+    <value>Import applications from JSON file</value>
+    <comment>Import button tooltip</comment>
+  </data>
+  <data name="AppDb_ExportTooltip" xml:space="preserve">
+    <value>Export applications to JSON file</value>
+    <comment>Export button tooltip</comment>
+  </data>
+  <data name="AppDb_DeleteConfirm" xml:space="preserve">
+    <value>Are you sure you want to delete '{0}' ({1})?
+
+This action cannot be undone.</value>
+    <comment>Delete confirmation message</comment>
+  </data>
+  <data name="AppDb_DeleteTitle" xml:space="preserve">
+    <value>Confirm Delete</value>
+    <comment>Delete confirmation dialog title</comment>
+  </data>
+  <data name="AppDb_AddTitle" xml:space="preserve">
+    <value>Add Application</value>
+    <comment>Add dialog title</comment>
+  </data>
+  <data name="AppDb_EditTitle" xml:space="preserve">
+    <value>Edit Application</value>
+    <comment>Edit dialog title</comment>
+  </data>
+  <data name="AppDb_NoResults" xml:space="preserve">
+    <value>No applications found</value>
+    <comment>Empty state title</comment>
+  </data>
+  <data name="AppDb_NoResultsHint" xml:space="preserve">
+    <value>Try adjusting your search or filters</value>
+    <comment>Empty state hint</comment>
+  </data>
+  <data name="AppDb_Showing" xml:space="preserve">
+    <value>Showing</value>
+    <comment>Status bar showing prefix</comment>
+  </data>
+  <data name="AppDb_Of" xml:space="preserve">
+    <value>of</value>
+    <comment>Status bar of separator</comment>
+  </data>
+  <data name="AppDb_Applications" xml:space="preserve">
+    <value>applications</value>
+    <comment>Status bar applications suffix</comment>
+  </data>
+  <data name="AppDb_EditorOwnerNotFound" xml:space="preserve">
+    <value>Cannot open editor: Owner window not found.</value>
+    <comment>Error when editor cannot find parent window</comment>
+  </data>
+  <data name="AppDb_EditorOpenError" xml:space="preserve">
+    <value>Error opening application editor:
+
+{0}
+
+{1}</value>
+    <comment>Error opening editor (0=message, 1=stack trace)</comment>
+  </data>
+  <data name="AppDb_ImportModeConfirm" xml:space="preserve">
+    <value>Do you want to replace existing applications with the same ID?
+
+Yes = Replace existing
+No = Skip duplicates</value>
+    <comment>Import mode confirmation message</comment>
+  </data>
+  <data name="AppDb_NoExportSelection" xml:space="preserve">
+    <value>No applications selected for export.</value>
+    <comment>Message when no apps selected for export</comment>
+  </data>
+  <!-- Application Editor Dialog -->
+  <data name="AppEditor_Tab_General" xml:space="preserve">
+    <value>General</value>
+    <comment>General tab header</comment>
+  </data>
+  <data name="AppEditor_Tab_Sources" xml:space="preserve">
+    <value>Sources</value>
+    <comment>Sources tab header</comment>
+  </data>
+  <data name="AppEditor_Tab_Detection" xml:space="preserve">
+    <value>Detection</value>
+    <comment>Detection tab header</comment>
+  </data>
+  <data name="AppEditor_AppId" xml:space="preserve">
+    <value>Application ID</value>
+    <comment>App ID field label</comment>
+  </data>
+  <data name="AppEditor_Name" xml:space="preserve">
+    <value>Name</value>
+    <comment>Name field label</comment>
+  </data>
+  <data name="AppEditor_Category" xml:space="preserve">
+    <value>Category</value>
+    <comment>Category field label</comment>
+  </data>
+  <data name="AppEditor_Description" xml:space="preserve">
+    <value>Description</value>
+    <comment>Description field label</comment>
+  </data>
+  <data name="AppEditor_Homepage" xml:space="preserve">
+    <value>Homepage URL</value>
+    <comment>Homepage field label</comment>
+  </data>
+  <data name="AppEditor_DefaultRequired" xml:space="preserve">
+    <value>Required by default in profiles</value>
+    <comment>Default required checkbox</comment>
+  </data>
+  <data name="AppEditor_AddNewCategory" xml:space="preserve">
+    <value>+ Add new category...</value>
+    <comment>Add new category option</comment>
+  </data>
+  <data name="AppEditor_WingetPackageId" xml:space="preserve">
+    <value>Package ID (e.g., Google.Chrome)</value>
+    <comment>Winget package ID field</comment>
+  </data>
+  <data name="AppEditor_ChocoPackageName" xml:space="preserve">
+    <value>Package Name (e.g., googlechrome)</value>
+    <comment>Chocolatey package name field</comment>
+  </data>
+  <data name="AppEditor_StoreAppId" xml:space="preserve">
+    <value>Store App ID (12 characters)</value>
+    <comment>Microsoft Store app ID field</comment>
+  </data>
+  <data name="AppEditor_DirectDownload" xml:space="preserve">
+    <value>Direct Download</value>
+    <comment>Direct download section header</comment>
+  </data>
+  <data name="AppEditor_DirectUrl" xml:space="preserve">
+    <value>Download URL</value>
+    <comment>Direct download URL field</comment>
+  </data>
+  <data name="AppEditor_DetectionDescription" xml:space="preserve">
+    <value>Configure how the application is detected on the system to check if it's already installed.</value>
+    <comment>Detection tab description</comment>
+  </data>
+  <data name="AppEditor_DetectionMethod" xml:space="preserve">
+    <value>Detection Method</value>
+    <comment>Detection method field label</comment>
+  </data>
+  <data name="AppEditor_DetectionPath" xml:space="preserve">
+    <value>Path (registry key, file path, or command)</value>
+    <comment>Detection path field label</comment>
+  </data>
+  <data name="AppEditor_VersionKey" xml:space="preserve">
+    <value>Version Key (registry value name)</value>
+    <comment>Version key field label</comment>
+  </data>
+  <data name="AppEditor_MinVersion" xml:space="preserve">
+    <value>Minimum Version</value>
+    <comment>Minimum version field label</comment>
+  </data>
+  <data name="AppEditor_Save" xml:space="preserve">
+    <value>Save</value>
+    <comment>Save button text</comment>
+  </data>
+  <data name="AppEditor_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Cancel button text</comment>
+  </data>
+  <data name="AppEditor_UnsavedChanges" xml:space="preserve">
+    <value>You have unsaved changes</value>
+    <comment>Unsaved changes indicator</comment>
+  </data>
+  <data name="AppEditor_DiscardChanges" xml:space="preserve">
+    <value>You have unsaved changes. Are you sure you want to discard them?</value>
+    <comment>Discard changes confirmation message</comment>
+  </data>
+  <data name="AppEditor_DiscardTitle" xml:space="preserve">
+    <value>Discard Changes?</value>
+    <comment>Discard changes dialog title</comment>
+  </data>
+  <data name="AppEditor_NewCategoryTitle" xml:space="preserve">
+    <value>New Category</value>
+    <comment>New category dialog title</comment>
+  </data>
+  <data name="AppEditor_NewCategoryPrompt" xml:space="preserve">
+    <value>Enter the new category name:</value>
+    <comment>New category dialog prompt</comment>
+  </data>
+  <!-- Source Editor Controls -->
+  <data name="SourceEditor_EnableDisable" xml:space="preserve">
+    <value>Enable/Disable this installation source</value>
+    <comment>Tooltip for source enable toggle</comment>
+  </data>
+  <data name="SourceEditor_Version" xml:space="preserve">
+    <value>Version (optional)</value>
+    <comment>Version field hint</comment>
+  </data>
+  <data name="SourceEditor_Repository" xml:space="preserve">
+    <value>Source Repository</value>
+    <comment>Winget source repository field</comment>
+  </data>
+  <data name="SourceEditor_Test" xml:space="preserve">
+    <value>Test Package</value>
+    <comment>Test package button text</comment>
+  </data>
+  <data name="SourceEditor_TestTooltip" xml:space="preserve">
+    <value>Verify that the package exists in the repository</value>
+    <comment>Test package button tooltip</comment>
+  </data>
+  <data name="SourceEditor_TestPlaceholder" xml:space="preserve">
+    <value>Package verification will be implemented in a future sprint</value>
+    <comment>Placeholder message for test functionality</comment>
+  </data>
+  <data name="SourceEditor_StoreIdHint" xml:space="preserve">
+    <value>Format: 12 alphanumeric characters (e.g., 9NBLGGH4NNS1)</value>
+    <comment>Store ID format hint</comment>
+  </data>
+  <data name="SourceEditor_InstallerType" xml:space="preserve">
+    <value>Installer Type</value>
+    <comment>Installer type field hint</comment>
+  </data>
+  <data name="SourceEditor_SilentArgs" xml:space="preserve">
+    <value>Silent Arguments</value>
+    <comment>Silent args field hint</comment>
+  </data>
+  <data name="SourceEditor_Checksum" xml:space="preserve">
+    <value>Checksum (optional)</value>
+    <comment>Checksum field hint</comment>
+  </data>
+  <data name="SourceEditor_ChecksumHint" xml:space="preserve">
+    <value>Format: algorithm:hash (e.g., sha256:abc123...)</value>
+    <comment>Checksum format hint</comment>
+  </data>
+  <data name="SourceEditor_TestUrl" xml:space="preserve">
+    <value>Test URL</value>
+    <comment>Test URL button text</comment>
+  </data>
+  <data name="SourceEditor_TestUrlTooltip" xml:space="preserve">
+    <value>Verify that the download URL is accessible</value>
+    <comment>Test URL button tooltip</comment>
+  </data>
+  <data name="SourceEditor_UrlTestSuccess" xml:space="preserve">
+    <value>URL accessible ({0}, {1})</value>
+    <comment>URL test success message with size and type</comment>
+  </data>
+  <data name="SourceEditor_UrlTestSuccessNoSize" xml:space="preserve">
+    <value>URL accessible ({0})</value>
+    <comment>URL test success message without size</comment>
+  </data>
+  <data name="SourceEditor_UrlTestFailed" xml:space="preserve">
+    <value>HTTP {0}: {1}</value>
+    <comment>URL test failed message with status code</comment>
+  </data>
+  <data name="SourceEditor_UrlTestError" xml:space="preserve">
+    <value>Connection error: {0}</value>
+    <comment>URL test connection error message</comment>
+  </data>
+  <data name="SourceEditor_UrlTestTimeout" xml:space="preserve">
+    <value>Request timed out</value>
+    <comment>URL test timeout message</comment>
+  </data>
+  <!-- Package Verification -->
+  <data name="Verify_PackageFound" xml:space="preserve">
+    <value>Package found: {0}</value>
+    <comment>Package verification success message</comment>
+  </data>
+  <data name="Verify_PackageNotFound" xml:space="preserve">
+    <value>Package not found</value>
+    <comment>Package not found message</comment>
+  </data>
+  <data name="Verify_Error" xml:space="preserve">
+    <value>Verification error: {0}</value>
+    <comment>Package verification error message</comment>
+  </data>
+  <data name="Verify_WingetUnavailable" xml:space="preserve">
+    <value>Winget is not available on this system</value>
+    <comment>Winget not available warning</comment>
+  </data>
+  <data name="Verify_ChocoUnavailable" xml:space="preserve">
+    <value>Chocolatey is not available on this system</value>
+    <comment>Chocolatey not available warning</comment>
+  </data>
+  <data name="Verify_AllSourcesValid" xml:space="preserve">
+    <value>All sources verified ({0}/{1})</value>
+    <comment>All sources valid message</comment>
+  </data>
+  <data name="Verify_SomeSourcesInvalid" xml:space="preserve">
+    <value>{0} of {1} sources valid</value>
+    <comment>Partial verification success message</comment>
+  </data>
+  <data name="Verify_NoValidSources" xml:space="preserve">
+    <value>No valid installation sources found</value>
+    <comment>No valid sources message</comment>
+  </data>
+  <data name="Verify_Verifying" xml:space="preserve">
+    <value>Verifying packages...</value>
+    <comment>Verification in progress message</comment>
+  </data>
+  <!-- Detection Editor -->
+  <data name="Detection_Method_Registry" xml:space="preserve">
+    <value>Registry</value>
+    <comment>Registry detection method</comment>
+  </data>
+  <data name="Detection_Method_File" xml:space="preserve">
+    <value>File</value>
+    <comment>File detection method</comment>
+  </data>
+  <data name="Detection_Method_Command" xml:space="preserve">
+    <value>Command</value>
+    <comment>Command detection method</comment>
+  </data>
+  <data name="Detection_Method_WindowsFeature" xml:space="preserve">
+    <value>Windows Feature</value>
+    <comment>Windows Feature detection method</comment>
+  </data>
+  <data name="Detection_Method_StoreApp" xml:space="preserve">
+    <value>Store App</value>
+    <comment>Store App detection method</comment>
+  </data>
+  <data name="Detection_Registry_Title" xml:space="preserve">
+    <value>Registry Detection</value>
+    <comment>Registry detection section title</comment>
+  </data>
+  <data name="Detection_Registry_Path" xml:space="preserve">
+    <value>Registry Path (e.g., HKLM\SOFTWARE\App)</value>
+    <comment>Registry path field hint</comment>
+  </data>
+  <data name="Detection_File_Title" xml:space="preserve">
+    <value>File Detection</value>
+    <comment>File detection section title</comment>
+  </data>
+  <data name="Detection_File_Path" xml:space="preserve">
+    <value>File Path (e.g., C:\Program Files\App\app.exe)</value>
+    <comment>File path field hint</comment>
+  </data>
+  <data name="Detection_Browse" xml:space="preserve">
+    <value>Browse...</value>
+    <comment>Browse button text</comment>
+  </data>
+  <data name="Detection_Command_Title" xml:space="preserve">
+    <value>Command Detection</value>
+    <comment>Command detection section title</comment>
+  </data>
+  <data name="Detection_Command_Path" xml:space="preserve">
+    <value>Command (e.g., app --version)</value>
+    <comment>Command field hint</comment>
+  </data>
+  <data name="Detection_Command_Hint" xml:space="preserve">
+    <value>Command should return exit code 0 if application is installed</value>
+    <comment>Command detection hint</comment>
+  </data>
+  <data name="Detection_WindowsFeature_Title" xml:space="preserve">
+    <value>Windows Feature Detection</value>
+    <comment>Windows Feature detection section title</comment>
+  </data>
+  <data name="Detection_WindowsFeature_Name" xml:space="preserve">
+    <value>Feature Name (e.g., Microsoft-Windows-Subsystem-Linux)</value>
+    <comment>Feature name field hint</comment>
+  </data>
+  <data name="Detection_StoreApp_Title" xml:space="preserve">
+    <value>Store App Detection</value>
+    <comment>Store App detection section title</comment>
+  </data>
+  <data name="Detection_StoreApp_PackageName" xml:space="preserve">
+    <value>Package Family Name</value>
+    <comment>Package family name field hint</comment>
+  </data>
+  <data name="Detection_TestButton" xml:space="preserve">
+    <value>Test Detection</value>
+    <comment>Test detection button text</comment>
+  </data>
+  <data name="Detection_TestTooltip" xml:space="preserve">
+    <value>Test if the application is detected on this system</value>
+    <comment>Test detection button tooltip</comment>
+  </data>
+  <data name="Detection_Found" xml:space="preserve">
+    <value>Detected</value>
+    <comment>Detection found result</comment>
+  </data>
+  <data name="Detection_NotFound" xml:space="preserve">
+    <value>Not detected</value>
+    <comment>Detection not found result</comment>
+  </data>
+  <data name="Detection_Version" xml:space="preserve">
+    <value>Version: {0}</value>
+    <comment>Detected version format</comment>
+  </data>
+  <data name="Detection_Error" xml:space="preserve">
+    <value>Error: {0}</value>
+    <comment>Detection error format</comment>
+  </data>
+  <data name="Detection_PathRequired" xml:space="preserve">
+    <value>Path is required</value>
+    <comment>Path required validation message</comment>
+  </data>
+  <data name="Detection_UnknownMethod" xml:space="preserve">
+    <value>Unknown detection method</value>
+    <comment>Unknown method error</comment>
+  </data>
+  <data name="Detection_SelectFile" xml:space="preserve">
+    <value>Select file to detect</value>
+    <comment>File selection dialog title</comment>
+  </data>
+  <data name="Detection_FeatureCheckNotSupported" xml:space="preserve">
+    <value>Windows Feature detection requires PowerShell</value>
+    <comment>Feature check not supported message</comment>
+  </data>
+  <data name="Detection_StoreAppCheckNotSupported" xml:space="preserve">
+    <value>Store App detection requires PowerShell</value>
+    <comment>Store app check not supported message</comment>
   </data>
 </root>

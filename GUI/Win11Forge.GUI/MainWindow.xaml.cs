@@ -38,18 +38,20 @@ namespace Win11Forge.GUI;
 public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
 {
     private bool _disposed;
-    private readonly IPowerShellBridge _powerShellBridge;
-    private readonly IDeploymentHistoryService _historyService;
-    private readonly IAppSettingsService _settingsService;
-    private readonly IProfileExportService _profileExportService;
-    private readonly ToastService _toastService;
-    private readonly INavigationService _navigationService;
-    private readonly IUndoService _undoService;
-    private readonly DashboardViewModel _dashboardViewModel;
-    private readonly DeploymentViewModel _deploymentViewModel;
-    private readonly AppsViewModel _appsViewModel;
-    private readonly SettingsViewModel _settingsViewModel;
-    private readonly PrerequisitesViewModel _prerequisitesViewModel;
+    private bool _initializationFailed;
+    private readonly IPowerShellBridge? _powerShellBridge;
+    private readonly IDeploymentHistoryService? _historyService;
+    private readonly IAppSettingsService? _settingsService;
+    private readonly IProfileExportService? _profileExportService;
+    private readonly ToastService? _toastService;
+    private readonly INavigationService? _navigationService;
+    private readonly IUndoService? _undoService;
+    private readonly DashboardViewModel? _dashboardViewModel;
+    private readonly DeploymentViewModel? _deploymentViewModel;
+    private readonly AppsViewModel? _appsViewModel;
+    private readonly SettingsViewModel? _settingsViewModel;
+    private readonly PrerequisitesViewModel? _prerequisitesViewModel;
+    private readonly ApplicationsViewModel? _applicationsViewModel;
     private readonly IAccessibilityService? _accessibilityService;
 
     // Event handlers stored for cleanup
@@ -61,6 +63,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
     private bool _appsInitialized;
     private bool _settingsInitialized;
     private bool _prerequisitesInitialized;
+    private bool _applicationsInitialized;
     private bool _isNavigatingFromService;
     private bool _showBreadcrumb = true;
 
@@ -190,6 +193,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
             _appsViewModel = App.GetService<AppsViewModel>();
             _settingsViewModel = App.GetService<SettingsViewModel>();
             _prerequisitesViewModel = App.GetService<PrerequisitesViewModel>();
+            _applicationsViewModel = App.GetService<ApplicationsViewModel>();
 
             // Wire up DataContexts
             DashboardViewControl.DataContext = _dashboardViewModel;
@@ -197,6 +201,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
             AppsViewControl.DataContext = _appsViewModel;
             SettingsViewControl.DataContext = _settingsViewModel;
             PrerequisitesViewControl.DataContext = _prerequisitesViewModel;
+            ApplicationsViewControl.DataContext = _applicationsViewModel;
 
             // Initialize on window load
             Loaded += MainWindow_Loaded;
@@ -212,26 +217,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
         }
         catch (Exception ex)
         {
+            _initializationFailed = true;
+
             // Show error dialog and allow graceful exit
             MessageBox.Show(
-                $"Failed to initialize Win11Forge:\n\n{ex.Message}\n\nPlease ensure Win11Forge is extracted correctly with all folders (Config/, Modules/, Profiles/).",
-                "Initialization Error",
+                string.Format(Loc.Init_ErrorMessage, ex.Message),
+                Loc.Init_ErrorTitle,
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
 
-            // Set to null to avoid further issues (fields will be checked before use)
-            _powerShellBridge = null!;
-            _historyService = null!;
-            _settingsService = null!;
-            _profileExportService = null!;
-            _toastService = null!;
-            _navigationService = null!;
-            _undoService = null!;
-            _dashboardViewModel = null!;
-            _deploymentViewModel = null!;
-            _appsViewModel = null!;
-            _settingsViewModel = null!;
-            _prerequisitesViewModel = null!;
+            // Close the window after showing the error - fields remain null (nullable types)
+            Dispatcher.BeginInvoke(() => Close());
         }
     }
 
@@ -340,64 +336,77 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        // Skip if initialization failed
-        if (_dashboardViewModel == null) return;
-
-        // Initialize toast service with snackbar
-        _toastService.SetMessageQueue(MainSnackbar.MessageQueue);
-
-        // Initialize accessibility service with live region for screen readers
-        if (_accessibilityService is AccessibilityService accessibilityService)
+        try
         {
-            accessibilityService.Initialize(ScreenReaderLiveRegion);
-        }
+            // Skip if initialization failed
+            if (_initializationFailed || _dashboardViewModel == null) return;
 
-        // Start cache pre-warming in background (non-blocking)
-        // This makes subsequent app scanning 10-50x faster
-        _ = Task.Run(async () =>
-        {
-            try
+            // Initialize toast service with snackbar
+            _toastService?.SetMessageQueue(MainSnackbar.MessageQueue);
+
+            // Initialize accessibility service with live region for screen readers
+            if (_accessibilityService is AccessibilityService accessibilityService)
             {
-                if (_powerShellBridge is PowerShellBridge bridge)
+                accessibilityService.Initialize(ScreenReaderLiveRegion);
+            }
+
+            // Start cache pre-warming in background (non-blocking)
+            // This makes subsequent app scanning 10-50x faster
+            _ = Task.Run(async () =>
+            {
+                try
                 {
-                    System.Diagnostics.Debug.WriteLine("Starting detection cache pre-warming...");
-                    await bridge.WarmDetectionCacheAsync();
-                    var stats = bridge.GetDetectionCacheStatistics();
-                    System.Diagnostics.Debug.WriteLine($"Cache warmed: {stats.PackageCount} packages in {stats.AverageDetectionTime.TotalMilliseconds:F0}ms");
+                    if (_powerShellBridge is PowerShellBridge bridge)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Starting detection cache pre-warming...");
+                        await bridge.WarmDetectionCacheAsync();
+                        var stats = bridge.GetDetectionCacheStatistics();
+                        System.Diagnostics.Debug.WriteLine($"Cache warmed: {stats.PackageCount} packages in {stats.AverageDetectionTime.TotalMilliseconds:F0}ms");
+                    }
                 }
-            }
-            catch (Exception ex)
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Cache pre-warming failed (non-critical): {ex.Message}");
+                }
+            });
+
+            // Check for first run and show onboarding
+            var settings = _settingsService?.LoadSettings();
+            if (settings?.IsFirstRun == true)
             {
-                System.Diagnostics.Debug.WriteLine($"Cache pre-warming failed (non-critical): {ex.Message}");
+                await ShowOnboardingAsync();
             }
-        });
 
-        // Check for first run and show onboarding
-        var settings = _settingsService.LoadSettings();
-        if (settings.IsFirstRun)
-        {
-            await ShowOnboardingAsync();
-        }
+            // Restore last navigation state
+            if (settings != null && settings.LastNavigationIndex > 0 && settings.LastNavigationIndex < NavigationListBox.Items.Count)
+            {
+                NavigationListBox.SelectedIndex = settings.LastNavigationIndex;
+            }
+            else
+            {
+                // Initialize Dashboard (default view)
+                await InitializeDashboardAsync();
+            }
 
-        // Restore last navigation state
-        if (settings.LastNavigationIndex > 0 && settings.LastNavigationIndex < NavigationListBox.Items.Count)
-        {
-            NavigationListBox.SelectedIndex = settings.LastNavigationIndex;
+            // Set window title with dynamic version
+            await UpdateWindowTitleAsync();
         }
-        else
+        catch (Exception ex)
         {
-            // Initialize Dashboard (default view)
-            await InitializeDashboardAsync();
+            System.Diagnostics.Debug.WriteLine($"MainWindow_Loaded failed: {ex}");
+            _toastService?.ShowError($"Initialization error: {ex.Message}");
         }
-
-        // Set window title with dynamic version
-        await UpdateWindowTitleAsync();
     }
 
     private async Task UpdateWindowTitleAsync()
     {
         try
         {
+            if (_powerShellBridge == null)
+            {
+                Title = string.Format(Loc.App_Title, "?");
+                return;
+            }
             var version = await _powerShellBridge.GetWin11ForgeVersionAsync();
             Title = string.Format(Loc.App_Title, version);
         }
@@ -424,34 +433,70 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
         AppsViewControl.Visibility = Visibility.Collapsed;
         SettingsViewControl.Visibility = Visibility.Collapsed;
         PrerequisitesViewControl.Visibility = Visibility.Collapsed;
+        ApplicationsViewControl.Visibility = Visibility.Collapsed;
 
         // Show selected view and initialize if needed
         switch (selectedIndex)
         {
             case 0: // Dashboard
                 DashboardViewControl.Visibility = Visibility.Visible;
-                _ = InitializeDashboardAsync();
+                _ = SafeInitializeAsync(InitializeDashboardAsync, "Dashboard");
                 break;
 
             case 1: // Prerequisites
                 PrerequisitesViewControl.Visibility = Visibility.Visible;
-                _ = InitializePrerequisitesAsync();
+                _ = SafeInitializeAsync(InitializePrerequisitesAsync, "Prerequisites");
                 break;
 
             case 2: // Apps
                 AppsViewControl.Visibility = Visibility.Visible;
-                _ = InitializeAppsAsync();
+                _ = SafeInitializeAsync(InitializeAppsAsync, "Apps");
                 break;
 
             case 3: // Deployment
                 DeploymentViewControl.Visibility = Visibility.Visible;
-                _ = InitializeDeploymentAsync();
+                _ = SafeInitializeAsync(InitializeDeploymentAsync, "Deployment");
                 break;
 
             case 4: // Settings
                 SettingsViewControl.Visibility = Visibility.Visible;
-                _ = InitializeSettingsAsync();
+                _ = SafeInitializeAsync(InitializeSettingsAsync, "Settings");
                 break;
+
+            case 5: // Applications Database
+                ApplicationsViewControl.Visibility = Visibility.Visible;
+                _ = SafeInitializeAsync(InitializeApplicationsAsync, "Applications");
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Handles the skip-to-content accessibility button click.
+    /// Moves keyboard focus to the main content area.
+    /// </summary>
+    private void SkipToContent_Click(object sender, RoutedEventArgs e)
+    {
+        // Move focus to the main content area
+        MainContentArea?.Focus();
+
+        // Announce to screen readers
+        _accessibilityService?.Announce(Loc.Accessibility_SkippedToContent);
+    }
+
+    /// <summary>
+    /// Safely executes an async initialization task, catching and logging exceptions.
+    /// Prevents unobserved task exceptions from fire-and-forget calls.
+    /// </summary>
+    private async Task SafeInitializeAsync(Func<Task> initializeTask, string viewName)
+    {
+        try
+        {
+            await initializeTask();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to initialize {viewName} view: {ex.Message}");
+            _toastService?.ShowError($"Failed to load {viewName}. Please try again.");
         }
     }
 
@@ -493,6 +538,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
 
         await _prerequisitesViewModel.InitializeAsync();
         _prerequisitesInitialized = true;
+    }
+
+    private async Task InitializeApplicationsAsync()
+    {
+        if (_applicationsInitialized) return;
+
+        await _applicationsViewModel.LoadApplicationsCommand.ExecuteAsync(null);
+        _applicationsInitialized = true;
     }
 
     /// <summary>
