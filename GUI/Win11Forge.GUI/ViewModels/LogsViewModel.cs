@@ -168,15 +168,19 @@ public partial class LogsViewModel : ObservableObject
                     }
                 }
 
-                Application.Current.Dispatcher.Invoke(() =>
+                var dispatcher = Application.Current?.Dispatcher;
+                if (dispatcher != null)
                 {
-                    LogFiles.Clear();
-                    foreach (var file in files.OrderByDescending(f => f.LastModified))
+                    dispatcher.Invoke(() =>
                     {
-                        LogFiles.Add(file);
-                    }
-                    TotalSizeFormatted = FormatFileSize(totalSize);
-                });
+                        LogFiles.Clear();
+                        foreach (var file in files.OrderByDescending(f => f.LastModified))
+                        {
+                            LogFiles.Add(file);
+                        }
+                        TotalSizeFormatted = FormatFileSize(totalSize);
+                    });
+                }
             });
 
             ApplyFilters();
@@ -400,6 +404,19 @@ public partial class LogsViewModel : ObservableObject
 
         try
         {
+            if (string.IsNullOrWhiteSpace(logFile.FullPath))
+            {
+                StatusMessage = "Log file path is empty";
+                return;
+            }
+
+            if (!File.Exists(logFile.FullPath))
+            {
+                StatusMessage = $"Log file not found: {logFile.FileName}";
+                _ = RefreshAsync();
+                return;
+            }
+
             using var process = Process.Start(new ProcessStartInfo
             {
                 FileName = logFile.FullPath,
