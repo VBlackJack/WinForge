@@ -68,6 +68,15 @@ public partial class KeyboardShortcutsPanel : UserControl
             new KeyboardShortcut { Key = "Ctrl+4", Description = Res.Help_Shortcut_Deployment },
             new KeyboardShortcut { Key = "Ctrl+5", Description = Res.Help_Shortcut_Settings }
         };
+
+        DataGridShortcuts.ItemsSource = new[]
+        {
+            new KeyboardShortcut { Key = "Arrow Keys", Description = Res.Help_Shortcut_GridNavigate },
+            new KeyboardShortcut { Key = "Page Up/Down", Description = Res.Help_Shortcut_GridPage },
+            new KeyboardShortcut { Key = "Home/End", Description = Res.Help_Shortcut_GridHomeEnd },
+            new KeyboardShortcut { Key = "Enter", Description = Res.Help_Shortcut_GridSelect },
+            new KeyboardShortcut { Key = "Ctrl+A", Description = Res.Help_Shortcut_GridSelectAll }
+        };
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)

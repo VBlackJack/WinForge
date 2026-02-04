@@ -65,6 +65,19 @@ if (Test-Path -Path $script:AppDatabaseModulePath) {
     Write-Verbose "Application Database module not found - using legacy mode"
 }
 
+# Import JSON Schema Validation module for profile validation
+$script:JsonSchemaValidationModulePath = Join-Path $script:ModuleRoot 'JsonSchemaValidation.psm1'
+$script:UseSchemaValidation = $false
+if (Test-Path -Path $script:JsonSchemaValidationModulePath) {
+    try {
+        Import-Module -Name $script:JsonSchemaValidationModulePath -Force -ErrorAction Stop
+        $script:UseSchemaValidation = $true
+        Write-Verbose "JSON Schema Validation module loaded"
+    } catch {
+        Write-Verbose "Failed to load JSON Schema Validation module: $($_.Exception.Message)"
+    }
+}
+
 # === PERFORMANCE OPTIMIZATION: PROFILE CACHING ===
 
 # Profile cache (keyed by absolute file path)
@@ -285,6 +298,24 @@ function Import-ProfileJson {
 
     if (-not (Test-Path -Path $Path)) {
         throw "Profile file not found: $Path"
+    }
+
+    # Validate profile against schema before loading (security check)
+    if ($script:UseSchemaValidation) {
+        try {
+            $validationResult = Test-DeploymentProfile -ProfilePath $Path
+            if (-not $validationResult.IsValid) {
+                $errorMessages = $validationResult.Errors -join '; '
+                throw "Profile schema validation failed for '$Path': $errorMessages"
+            }
+            Write-Verbose "Profile schema validation passed: $Path"
+        } catch {
+            if ($_.Exception.Message -like '*schema validation failed*') {
+                throw
+            }
+            # Log validation errors but continue if schema module has issues
+            Write-Status -Message "Schema validation skipped: $($_.Exception.Message)" -Level 'Warning'
+        }
     }
 
     # Check cache first (unless NoCache specified)

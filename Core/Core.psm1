@@ -43,10 +43,11 @@ $script:StructuredLoggingEnabled = $false
 $script:StructuredLoggingPath = Join-Path (Split-Path -Parent $PSCommandPath) 'StructuredLogging.psm1'
 if (Test-Path -Path $script:StructuredLoggingPath) {
     try {
-        Import-Module -Name $script:StructuredLoggingPath -Force -ErrorAction SilentlyContinue
+        Import-Module -Name $script:StructuredLoggingPath -Force -ErrorAction Stop
         $script:StructuredLoggingEnabled = $true
     } catch {
         $script:StructuredLoggingEnabled = $false
+        Write-Warning "Failed to load StructuredLogging module: $($_.Exception.Message)"
     }
 }
 
@@ -642,7 +643,11 @@ function Clear-TemporaryFiles {
 
 $script:LocalizationModulePath = Join-Path -Path $PSScriptRoot -ChildPath 'Localization.psm1'
 if (Test-Path -Path $script:LocalizationModulePath) {
-    Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
+    try {
+        Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction Stop
+    } catch {
+        Write-Warning "Failed to load Localization module: $($_.Exception.Message)"
+    }
 }
 
 # === MODULE EXPORTS ===

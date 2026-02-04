@@ -354,12 +354,15 @@ function Expand-DetectionPath {
         return $null
     }
 
-    # Expand %VAR% style environment variables
+    # Expand %VAR% style environment variables only
+    # Security: Do NOT use ExpandString() as it allows code injection via $() syntax
+    # Only %VARNAME% format is supported for detection paths (not $env:VAR)
     $expanded = [Environment]::ExpandEnvironmentVariables($Path)
 
-    # Also handle $env:VAR style (PowerShell native)
-    if ($expanded -match '\$env:') {
-        $expanded = $ExecutionContext.InvokeCommand.ExpandString($expanded)
+    # Security: Block $env: or $() syntax in detection paths - these indicate potential injection
+    if ($expanded -match '\$env:|\$\(') {
+        Write-Status -Message "Security: PowerShell variable syntax not allowed in detection paths: $Path" -Level 'Warning'
+        return $null
     }
 
     # Security: Block path traversal attempts after expansion
@@ -436,8 +439,8 @@ function Wait-ForOfficeInstallation {
         Office installations via winget can take a long time due to Click-to-Run
         streaming technology. This function monitors the installation progress
         and waits until completion or timeout.
-    .PARAMETER TimeoutMinutes
-        Maximum time to wait for installation (default: 45 minutes for Office).
+    .PARAMETER TimeoutSeconds
+        Maximum time to wait for installation in seconds (default: 2700 = 45 minutes for Office).
     .PARAMETER CheckIntervalSeconds
         How often to check installation status (default: 30 seconds).
     #>
@@ -445,7 +448,7 @@ function Wait-ForOfficeInstallation {
     [OutputType([bool])]
     param(
         [Parameter()]
-        [int]$TimeoutMinutes = 45,
+        [int]$TimeoutSeconds = 2700,
 
         [Parameter()]
         [int]$CheckIntervalSeconds = 30
@@ -454,7 +457,7 @@ function Wait-ForOfficeInstallation {
     Write-Status -Message "Monitoring Office installation progress..." -Level 'Info'
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    $timeoutMs = $TimeoutMinutes * 60 * 1000
+    $timeoutMs = $TimeoutSeconds * 1000
 
     $officeProcesses = @('OfficeClickToRun', 'OfficeC2RClient', 'setup', 'officeclicktorun')
 
@@ -504,7 +507,8 @@ function Wait-ForOfficeInstallation {
         Start-Sleep -Seconds $CheckIntervalSeconds
     }
 
-    Write-Status -Message "Office installation timed out after $TimeoutMinutes minutes" -Level 'Warning'
+    $timeoutMinutes = [math]::Round($TimeoutSeconds / 60, 1)
+    Write-Status -Message "Office installation timed out after $timeoutMinutes minutes" -Level 'Warning'
     return $false
 }
 
@@ -637,23 +641,32 @@ function Test-ApplicationInstalled {
                         Write-Status -Message "Command detection blocked: '$executable' not in allowed executables list" -Level 'Verbose'
                         $detected = $false
                     }
+                    # Security: Sanitize arguments - block dangerous patterns including newlines (command injection)
+                    elseif ($arguments -and ($arguments -match '[;&|`$\(\)\r\n]|>>|<<|[\x00-\x1f]')) {
+                        Write-Status -Message "Command detection blocked: arguments contain dangerous characters for '$executable'" -Level 'Warning'
+                        $detected = $false
+                    }
                     # Validate executable exists
                     elseif (Get-Command -Name $executable -ErrorAction SilentlyContinue) {
                         # Check if we need to verify output content (Arguments field contains expected pattern)
                         $expectedPattern = if ($Application.Detection.PSObject.Properties['Arguments']) { $Application.Detection.Arguments } else { $null }
 
+                        # Security: Split arguments into array for safe execution (prevents shell interpretation)
+                        $argArray = if ($arguments) { @($arguments -split '\s+' | Where-Object { $_ -ne '' }) } else { @() }
+
                         if ($expectedPattern) {
                             # Run command and capture output for pattern matching
-                            $output = if ($arguments) {
-                                & $executable $arguments 2>&1 | Out-String
+                            # Security: Use array splatting to prevent argument injection
+                            $output = if ($argArray.Count -gt 0) {
+                                & $executable @argArray 2>&1 | Out-String
                             } else {
                                 & $executable 2>&1 | Out-String
                             }
                             $detected = $output -match [regex]::Escape($expectedPattern)
                         } else {
                             # Execute securely with Start-Process for simple exit code check
-                            $process = if ($arguments) {
-                                Start-Process -FilePath $executable -ArgumentList $arguments -Wait -NoNewWindow -PassThru -ErrorAction Stop
+                            $process = if ($argArray.Count -gt 0) {
+                                Start-Process -FilePath $executable -ArgumentList $argArray -Wait -NoNewWindow -PassThru -ErrorAction Stop
                             } else {
                                 Start-Process -FilePath $executable -Wait -NoNewWindow -PassThru -ErrorAction Stop
                             }
@@ -1029,15 +1042,22 @@ function Test-ApplicationInstalledFast {
                         } elseif (Get-Command -Name $executable -ErrorAction SilentlyContinue) {
                             # Fallback: execute command if not cached
                             $arguments = if ($commandParts.Count -gt 1) { $commandParts[1] } else { $null }
-                            $output = if ($arguments) {
-                                & $executable $arguments 2>&1 | Out-String
+
+                            # Security: Sanitize arguments - block dangerous patterns
+                            if ($arguments -and ($arguments -match '[;&|`$\(\)]|>>|<<')) {
+                                Write-Status -Message "Command detection blocked: arguments contain dangerous characters for '$executable'" -Level 'Warning'
+                                $detected = $false
                             } else {
-                                & $executable 2>&1 | Out-String
-                            }
-                            if ($expectedPattern) {
-                                $detected = $output -match [regex]::Escape($expectedPattern)
-                            } else {
-                                $detected = $true
+                                $output = if ($arguments) {
+                                    & $executable $arguments 2>&1 | Out-String
+                                } else {
+                                    & $executable 2>&1 | Out-String
+                                }
+                                if ($expectedPattern) {
+                                    $detected = $output -match [regex]::Escape($expectedPattern)
+                                } else {
+                                    $detected = $true
+                                }
                             }
                             # Extract version using custom regex
                             if ($detected -and $output -match $versionRegex) {

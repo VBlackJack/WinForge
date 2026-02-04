@@ -23,6 +23,23 @@ using Win11Forge.GUI.Services;
 namespace Win11Forge.GUI.ViewModels;
 
 /// <summary>
+/// Represents the final result type of a deployment.
+/// </summary>
+public enum DeploymentResultType
+{
+    /// <summary>No result yet (deployment in progress or not started).</summary>
+    None,
+    /// <summary>All applications installed successfully.</summary>
+    Success,
+    /// <summary>Some applications failed but others succeeded.</summary>
+    Partial,
+    /// <summary>All applications failed.</summary>
+    Failed,
+    /// <summary>Deployment was cancelled by the user.</summary>
+    Cancelled
+}
+
+/// <summary>
 /// ViewModel for the Deployment Monitoring view.
 /// Observes the shared deployment state service and displays progress.
 /// </summary>
@@ -119,6 +136,36 @@ public partial class DeploymentViewModel : ViewModelBase, IDisposable
     private bool _isLogViewerOpen;
 
     /// <summary>
+    /// Whether deployment has completed (success, partial, or failed).
+    /// </summary>
+    [ObservableProperty]
+    private bool _isDeploymentComplete;
+
+    /// <summary>
+    /// Deployment result type: Success, Partial, Failed, Cancelled.
+    /// </summary>
+    [ObservableProperty]
+    private DeploymentResultType _deploymentResult;
+
+    /// <summary>
+    /// Number of successfully installed applications.
+    /// </summary>
+    [ObservableProperty]
+    private int _successCount;
+
+    /// <summary>
+    /// Number of failed installations.
+    /// </summary>
+    [ObservableProperty]
+    private int _failureCount;
+
+    /// <summary>
+    /// Number of skipped applications.
+    /// </summary>
+    [ObservableProperty]
+    private int _skippedCount;
+
+    /// <summary>
     /// Whether deployment can be paused.
     /// </summary>
     public bool CanPauseDeployment => IsDeploying && !IsPaused;
@@ -174,6 +221,8 @@ public partial class DeploymentViewModel : ViewModelBase, IDisposable
     /// </summary>
     private void SyncFromService()
     {
+        var wasDeploying = IsDeploying;
+
         // Use property setters to trigger proper change notifications
         IsDeploying = _deploymentStateService.IsDeploying;
         IsPaused = _deploymentStateService.IsPaused;
@@ -185,10 +234,61 @@ public partial class DeploymentViewModel : ViewModelBase, IDisposable
         ElapsedTime = _deploymentStateService.ElapsedTime;
         EstimatedTimeRemaining = _deploymentStateService.EstimatedTimeRemaining;
 
+        // Calculate deployment result when deployment completes
+        if (wasDeploying && !IsDeploying && TotalToInstall > 0)
+        {
+            CalculateDeploymentResult();
+        }
+        else if (!wasDeploying && IsDeploying)
+        {
+            // Reset result when new deployment starts
+            IsDeploymentComplete = false;
+            DeploymentResult = DeploymentResultType.None;
+            SuccessCount = 0;
+            FailureCount = 0;
+            SkippedCount = 0;
+        }
+
         // Notify property changes for computed properties and collection
         OnPropertyChanged(nameof(DeploymentApplications));
         OnPropertyChanged(nameof(CanPauseDeployment));
         OnPropertyChanged(nameof(CanResumeDeployment));
+    }
+
+    /// <summary>
+    /// Calculates the deployment result based on application statuses.
+    /// </summary>
+    private void CalculateDeploymentResult()
+    {
+        var apps = DeploymentApplications.ToList();
+        SuccessCount = apps.Count(a => a.Status == Models.ApplicationStatus.Installed);
+        FailureCount = apps.Count(a => a.Status == Models.ApplicationStatus.Failed);
+        SkippedCount = apps.Count(a => a.Status == Models.ApplicationStatus.Skipped ||
+                                       a.Status == Models.ApplicationStatus.AlreadyInstalled);
+
+        IsDeploymentComplete = true;
+
+        // Determine result type
+        if (_deploymentStateService.IsCancelled)
+        {
+            DeploymentResult = DeploymentResultType.Cancelled;
+        }
+        else if (FailureCount == 0 && SuccessCount > 0)
+        {
+            DeploymentResult = DeploymentResultType.Success;
+        }
+        else if (SuccessCount > 0 && FailureCount > 0)
+        {
+            DeploymentResult = DeploymentResultType.Partial;
+        }
+        else if (FailureCount > 0)
+        {
+            DeploymentResult = DeploymentResultType.Failed;
+        }
+        else
+        {
+            DeploymentResult = DeploymentResultType.Success; // All skipped = success
+        }
     }
 
     /// <summary>

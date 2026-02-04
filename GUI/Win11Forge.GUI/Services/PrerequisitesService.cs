@@ -49,7 +49,7 @@ public class PrerequisitesService : IPrerequisitesService
         Action<string>? progressCallback = null,
         CancellationToken cancellationToken = default)
     {
-        return _powerShellBridge.InstallPrerequisitesAsync(progressCallback);
+        return _powerShellBridge.InstallPrerequisitesAsync(progressCallback, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -79,7 +79,7 @@ public class PrerequisitesService : IPrerequisitesService
 
         // For now, delegate to full prerequisites installation
         // In future, this could be expanded to install individual prerequisites
-        var result = await _powerShellBridge.InstallPrerequisitesAsync(progressCallback);
+        var result = await _powerShellBridge.InstallPrerequisitesAsync(progressCallback, cancellationToken);
         return result;
     }
 

@@ -36,6 +36,11 @@ public interface IDeploymentStateService : IDisposable
     bool IsPaused { get; }
 
     /// <summary>
+    /// Whether the deployment was cancelled.
+    /// </summary>
+    bool IsCancelled { get; }
+
+    /// <summary>
     /// Current deployment status message.
     /// </summary>
     string? StatusMessage { get; }
@@ -121,6 +126,12 @@ public interface IDeploymentStateService : IDisposable
     void EndDeployment();
 
     /// <summary>
+    /// Clears application logs and resets state after successful deployment.
+    /// This frees memory used by log strings while keeping applications for display.
+    /// </summary>
+    void ClearApplicationLogs();
+
+    /// <summary>
     /// Requests pause from the monitoring view.
     /// </summary>
     void RequestPause();
@@ -141,8 +152,10 @@ public interface IDeploymentStateService : IDisposable
 /// </summary>
 public partial class DeploymentStateService : ObservableObject, IDeploymentStateService
 {
+    private readonly object _applicationsLock = new();
     private bool _isDeploying;
     private bool _isPaused;
+    private bool _isCancelled;
     private string? _statusMessage;
     private string? _currentAppName;
     private int _completedCount;
@@ -150,6 +163,15 @@ public partial class DeploymentStateService : ObservableObject, IDeploymentState
     private double _progressPercentage;
     private string? _elapsedTime;
     private string? _estimatedTimeRemaining;
+
+    /// <summary>
+    /// Initializes a new instance with thread-safe collection support.
+    /// </summary>
+    public DeploymentStateService()
+    {
+        // Enable cross-thread access to the ObservableCollection
+        System.Windows.Data.BindingOperations.EnableCollectionSynchronization(Applications, _applicationsLock);
+    }
 
     public bool IsDeploying
     {
@@ -161,6 +183,12 @@ public partial class DeploymentStateService : ObservableObject, IDeploymentState
     {
         get => _isPaused;
         private set => SetProperty(ref _isPaused, value);
+    }
+
+    public bool IsCancelled
+    {
+        get => _isCancelled;
+        private set => SetProperty(ref _isCancelled, value);
     }
 
     public string? StatusMessage
@@ -214,21 +242,35 @@ public partial class DeploymentStateService : ObservableObject, IDeploymentState
 
     public void StartDeployment(IEnumerable<ApplicationModel> apps)
     {
-        Applications.Clear();
-        foreach (var app in apps)
+        lock (_applicationsLock)
         {
-            Applications.Add(app);
-        }
+            // Clear logs from previous deployment to free memory
+            foreach (var existingApp in Applications)
+            {
+                existingApp.LogOutput = string.Empty;
+            }
 
-        IsDeploying = true;
-        IsPaused = false;
-        CompletedCount = 0;
-        TotalCount = Applications.Count;
-        ProgressPercentage = 0;
-        StatusMessage = Resources.Resources.Progress_Deploying;
-        CurrentAppName = null;
-        ElapsedTime = null;
-        EstimatedTimeRemaining = null;
+            Applications.Clear();
+            foreach (var app in apps)
+            {
+                // Clear any existing logs on the new apps
+                app.LogOutput = string.Empty;
+                Applications.Add(app);
+            }
+
+            // Thread-safety: Update all state properties inside the lock
+            // to prevent race conditions with UI thread reading inconsistent state
+            IsDeploying = true;
+            IsPaused = false;
+            IsCancelled = false;
+            CompletedCount = 0;
+            TotalCount = Applications.Count;
+            ProgressPercentage = 0;
+            StatusMessage = Resources.Resources.Progress_Deploying;
+            CurrentAppName = null;
+            ElapsedTime = null;
+            EstimatedTimeRemaining = null;
+        }
 
         RaiseStateChanged();
     }
@@ -272,6 +314,20 @@ public partial class DeploymentStateService : ObservableObject, IDeploymentState
         RaiseStateChanged();
     }
 
+    public void ClearApplicationLogs()
+    {
+        lock (_applicationsLock)
+        {
+            foreach (var app in Applications)
+            {
+                // Clear log output to free memory (can be 256KB per app)
+                app.LogOutput = string.Empty;
+            }
+        }
+
+        RaiseStateChanged();
+    }
+
     public void RequestPause()
     {
         PauseRequested?.Invoke(this, EventArgs.Empty);
@@ -284,6 +340,7 @@ public partial class DeploymentStateService : ObservableObject, IDeploymentState
 
     public void RequestCancel()
     {
+        IsCancelled = true;
         CancelRequested?.Invoke(this, EventArgs.Empty);
     }
 
@@ -312,7 +369,10 @@ public partial class DeploymentStateService : ObservableObject, IDeploymentState
 
         if (disposing)
         {
-            Applications.Clear();
+            lock (_applicationsLock)
+            {
+                Applications.Clear();
+            }
             StateChanged = null;
             PauseRequested = null;
             ResumeRequested = null;

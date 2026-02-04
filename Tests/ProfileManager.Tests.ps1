@@ -583,7 +583,13 @@ Describe 'ProfileManager Module' {
             $result = Test-ProfileValid -ProfilePath $invalidPath
 
             $result.Valid | Should -BeFalse
-            $result.Errors | Should -Contain 'Profile name is missing'
+            # Accept either schema validation error or legacy validation error
+            $hasNameError = ($result.Errors | Where-Object {
+                $_ -match 'Profile name is missing' -or
+                $_ -match 'Name.*String.*length' -or
+                $_ -match 'schema validation failed'
+            }).Count -gt 0
+            $hasNameError | Should -BeTrue -Because "Profile without name should be detected as invalid"
         }
 
         It 'Should return error for invalid JSON' {

@@ -388,7 +388,7 @@ internal class MockPowerShellBridge : IPowerShellBridge
             WingetInstalled = true
         });
 
-    public Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null) =>
+    public Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null, CancellationToken cancellationToken = default) =>
         Task.FromResult(true);
 
     public Task<InstallResult> UninstallApplicationAsync(
@@ -410,10 +410,10 @@ internal class MockPowerShellBridge : IPowerShellBridge
     public Task<Dictionary<string, BatchAppStatus>?> GetBatchApplicationStatusAsync(IReadOnlyList<ApplicationModel> apps) =>
         Task.FromResult<Dictionary<string, BatchAppStatus>?>(new Dictionary<string, BatchAppStatus>());
 
-    public Task<string> ExecuteScriptAsync(string relativePath) =>
+    public Task<string> ExecuteScriptAsync(string relativePath, CancellationToken cancellationToken = default) =>
         Task.FromResult(string.Empty);
 
-    public Task<string> ExecuteCommandAsync(string command) =>
+    public Task<string> ExecuteCommandAsync(string command, CancellationToken cancellationToken = default) =>
         Task.FromResult(string.Empty);
 }
 
@@ -424,6 +424,7 @@ internal class MockDeploymentStateService : IDeploymentStateService
 {
     public bool IsDeploying => false;
     public bool IsPaused => false;
+    public bool IsCancelled => false;
     public string? StatusMessage => null;
     public string? CurrentAppName => null;
     public int CompletedCount => 0;
@@ -443,6 +444,7 @@ internal class MockDeploymentStateService : IDeploymentStateService
     public void UpdateTime(string? elapsed, string? remaining) { }
     public void SetPaused(bool isPaused) { }
     public void EndDeployment() { }
+    public void ClearApplicationLogs() { }
     public void RequestPause() => PauseRequested?.Invoke(this, EventArgs.Empty);
     public void RequestResume() => ResumeRequested?.Invoke(this, EventArgs.Empty);
     public void RequestCancel() => CancelRequested?.Invoke(this, EventArgs.Empty);

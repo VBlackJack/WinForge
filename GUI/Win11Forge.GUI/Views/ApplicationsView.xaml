@@ -269,13 +269,20 @@
         <!-- Data Grid -->
         <Border Grid.Row="2" Padding="16">
             <Grid>
-                <!-- Loading Indicator -->
-                <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                             IsIndeterminate="True"
-                             Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center"
-                             Width="48" Height="48"/>
+                <!-- Loading Indicator with message -->
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                 IsIndeterminate="True"
+                                 HorizontalAlignment="Center"
+                                 Width="48" Height="48"/>
+                    <TextBlock Text="{loc:Loc Loading_Database}"
+                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               HorizontalAlignment="Center"
+                               Margin="0,16,0,0"/>
+                </StackPanel>
 
                 <!-- Applications DataGrid -->
                 <DataGrid ItemsSource="{Binding ApplicationsView}"
@@ -292,7 +299,9 @@
                           HorizontalScrollBarVisibility="Auto"
                           MouseDoubleClick="DataGrid_MouseDoubleClick"
                           Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                          AutomationProperties.Name="Applications database grid">
+                          AutomationProperties.Name="Applications database grid"
+                          RowStyle="{StaticResource EnhancedDataGridRowStyle}"
+                          CellStyle="{StaticResource EnhancedDataGridCellStyle}">
 
                     <!-- Context Menu -->
                     <DataGrid.ContextMenu>
@@ -443,7 +452,8 @@
                                               Width="64" Height="64"
                                               Foreground="{DynamicResource MaterialDesignBodyLight}"
                                               HorizontalAlignment="Center"
-                                              Margin="0,0,0,16"/>
+                                              Margin="0,0,0,16"
+                                              AutomationProperties.Name="{loc:Loc A11y_NoDatabaseIcon}"/>
                     <TextBlock Text="{loc:Loc AppDb_NoResults}"
                                Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                                Foreground="{DynamicResource MaterialDesignBodyLight}"

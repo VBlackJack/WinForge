@@ -249,7 +249,7 @@ public partial class LogsViewModel : ObservableObject
             {
                 Directory.CreateDirectory(_logsPath);
             }
-            Process.Start(new ProcessStartInfo
+            using var process = Process.Start(new ProcessStartInfo
             {
                 FileName = _logsPath,
                 UseShellExecute = true
@@ -275,23 +275,78 @@ public partial class LogsViewModel : ObservableObject
 
             if (dialog.ShowDialog() == true)
             {
-                // Create a temporary directory and copy logs
-                var tempDir = Path.Combine(Path.GetTempPath(), $"Win11Forge_Logs_{Guid.NewGuid()}");
+                // Security: Use unpredictable random temp directory name
+                var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
                 Directory.CreateDirectory(tempDir);
+                var tempDirFullPath = Path.GetFullPath(tempDir);
 
-                foreach (var logFile in FilteredLogFiles)
+                try
                 {
-                    var destPath = Path.Combine(tempDir, logFile.FileName);
-                    File.Copy(logFile.FullPath, destPath, true);
+                    var copiedCount = 0;
+                    foreach (var logFile in FilteredLogFiles)
+                    {
+                        try
+                        {
+                            // Security: Validate filename doesn't contain path traversal
+                            var safeFileName = Path.GetFileName(logFile.FileName);
+                            if (string.IsNullOrWhiteSpace(safeFileName) || safeFileName.Contains(".."))
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Skipping unsafe filename: {logFile.FileName}");
+                                continue;
+                            }
+
+                            var destPath = Path.Combine(tempDir, safeFileName);
+
+                            // Security: Verify destination stays within temp directory (TOCTOU protection)
+                            var destFullPath = Path.GetFullPath(destPath);
+                            if (!destFullPath.StartsWith(tempDirFullPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Path traversal attempt blocked: {destPath}");
+                                continue;
+                            }
+
+                            File.Copy(logFile.FullPath, destPath, true);
+                            copiedCount++;
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            // File was deleted between enumeration and copy - skip silently
+                            System.Diagnostics.Debug.WriteLine($"Log file not found (deleted): {logFile.FullPath}");
+                        }
+                        catch (UnauthorizedAccessException ex)
+                        {
+                            // Could be symlink attack or permission issue - log and skip
+                            System.Diagnostics.Debug.WriteLine($"Access denied copying log (possible symlink): {logFile.FullPath} - {ex.Message}");
+                        }
+                        catch (IOException ex)
+                        {
+                            // File locked or other IO issue - log and skip
+                            System.Diagnostics.Debug.WriteLine($"IO error copying log: {logFile.FullPath} - {ex.Message}");
+                        }
+                    }
+
+                    if (copiedCount == 0)
+                    {
+                        StatusMessage = "No log files could be exported";
+                        return;
+                    }
+
+                    // Create ZIP
+                    System.IO.Compression.ZipFile.CreateFromDirectory(tempDir, dialog.FileName);
+                    StatusMessage = $"Logs exported to {Path.GetFileName(dialog.FileName)} ({copiedCount} files)";
                 }
-
-                // Create ZIP
-                System.IO.Compression.ZipFile.CreateFromDirectory(tempDir, dialog.FileName);
-
-                // Cleanup
-                Directory.Delete(tempDir, true);
-
-                StatusMessage = $"Logs exported to {Path.GetFileName(dialog.FileName)}";
+                finally
+                {
+                    // Cleanup temp directory
+                    try
+                    {
+                        Directory.Delete(tempDir, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Failed to cleanup temp directory: {ex.Message}");
+                    }
+                }
             }
         }
         catch (Exception ex)
@@ -345,7 +400,7 @@ public partial class LogsViewModel : ObservableObject
 
         try
         {
-            Process.Start(new ProcessStartInfo
+            using var process = Process.Start(new ProcessStartInfo
             {
                 FileName = logFile.FullPath,
                 UseShellExecute = true

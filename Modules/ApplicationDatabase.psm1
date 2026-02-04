@@ -37,15 +37,20 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 
-# Import Localization module for i18n support
+# Import Localization module for i18n support (optional - don't fail if not available)
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
 if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:LocalizationModulePath) {
-        Import-Module -Name $script:LocalizationModulePath -Force
+        try {
+            Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
+        } catch {
+            # Localization is optional, continue without it
+        }
     }
 }
 
-$Script:DatabasePath = Join-Path $PSScriptRoot "..\Apps\Database\applications.json"
+# Use $script:ModuleRoot for consistent path resolution
+$Script:DatabasePath = Join-Path $script:RepositoryRoot 'Apps\Database\applications.json'
 $Script:DatabaseCache = $null
 $Script:DatabaseLastModified = $null
 $Script:FileWatcher = $null
@@ -790,6 +795,721 @@ function Test-DependenciesSatisfied {
     }
 }
 
+# === DATABASE MODIFICATION FUNCTIONS ===
+
+<#
+.SYNOPSIS
+    Saves the application database to disk
+.DESCRIPTION
+    Writes the application database to the JSON file with optional backup
+.PARAMETER Applications
+    Hashtable of applications to save
+.PARAMETER CreateBackup
+    If specified, creates a timestamped backup before saving
+.EXAMPLE
+    Save-ApplicationDatabase -Applications $apps -CreateBackup
+#>
+function Save-ApplicationDatabase {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [hashtable]$Applications,
+
+        [Parameter()]
+        [switch]$CreateBackup
+    )
+
+    try {
+        # Create backup if requested
+        $backupPath = $null
+        if ($CreateBackup) {
+            $backupPath = New-DatabaseBackup
+        }
+
+        # Load current database to preserve metadata
+        $database = Get-ApplicationDatabase -ForceReload
+        if ($null -eq $database) {
+            # Create new database structure
+            $database = [PSCustomObject]@{
+                '$schema' = 'https://json-schema.org/draft-07/schema#'
+                DatabaseVersion = '3.5.2'
+                LastUpdated = (Get-Date).ToString('yyyy-MM-dd')
+                TotalApplications = $Applications.Count
+                Applications = [PSCustomObject]@{}
+            }
+        }
+
+        # Update applications
+        $appsObject = [PSCustomObject]@{}
+        foreach ($key in $Applications.Keys | Sort-Object) {
+            $appsObject | Add-Member -NotePropertyName $key -NotePropertyValue $Applications[$key]
+        }
+
+        # Update database metadata
+        $database.Applications = $appsObject
+        $database.TotalApplications = $Applications.Count
+        $database.LastUpdated = (Get-Date).ToString('yyyy-MM-dd')
+
+        # Convert to JSON with proper formatting
+        $jsonContent = $database | ConvertTo-Json -Depth 10
+
+        # Write to temp file first (atomic write)
+        $tempPath = "$Script:DatabasePath.tmp"
+        $jsonContent | Out-File -FilePath $tempPath -Encoding UTF8 -NoNewline
+
+        # Replace original file
+        Move-Item -Path $tempPath -Destination $Script:DatabasePath -Force
+
+        # Clear cache
+        Clear-DatabaseCache
+
+        return [PSCustomObject]@{
+            Success = $true
+            BackupPath = $backupPath
+            ApplicationCount = $Applications.Count
+        }
+    }
+    catch {
+        # Clean up temp file if exists
+        if (Test-Path "$Script:DatabasePath.tmp") {
+            Remove-Item "$Script:DatabasePath.tmp" -Force -ErrorAction SilentlyContinue
+        }
+
+        return [PSCustomObject]@{
+            Success = $false
+            Error = $_.Exception.Message
+            BackupPath = $backupPath
+        }
+    }
+}
+
+<#
+.SYNOPSIS
+    Creates a backup of the application database
+.DESCRIPTION
+    Creates a timestamped backup of the current database and manages backup rotation
+.PARAMETER MaxBackups
+    Maximum number of backups to keep (default: 10)
+.OUTPUTS
+    Path to the created backup file
+.EXAMPLE
+    $backupPath = New-DatabaseBackup
+#>
+function New-DatabaseBackup {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter()]
+        [int]$MaxBackups = 10
+    )
+
+    try {
+        # Get backup directory
+        $backupDir = Join-Path $env:LOCALAPPDATA 'Win11Forge\Backups\Database'
+        if (-not (Test-Path $backupDir)) {
+            New-Item -Path $backupDir -ItemType Directory -Force | Out-Null
+        }
+
+        # Create backup filename with timestamp
+        $timestamp = (Get-Date).ToString('yyyyMMdd-HHmmss')
+        $backupFileName = "applications-$timestamp.json"
+        $backupPath = Join-Path $backupDir $backupFileName
+
+        # Copy current database to backup
+        if (Test-Path $Script:DatabasePath) {
+            Copy-Item -Path $Script:DatabasePath -Destination $backupPath -Force
+            Write-Verbose "Database backup created: $backupPath"
+        }
+
+        # Rotate old backups
+        $backups = Get-ChildItem -Path $backupDir -Filter 'applications-*.json' |
+            Sort-Object LastWriteTime -Descending
+
+        if ($backups.Count -gt $MaxBackups) {
+            $toDelete = $backups | Select-Object -Skip $MaxBackups
+            foreach ($old in $toDelete) {
+                Remove-Item $old.FullName -Force
+                Write-Verbose "Removed old backup: $($old.Name)"
+            }
+        }
+
+        return $backupPath
+    }
+    catch {
+        Write-Warning "Failed to create backup: $($_.Exception.Message)"
+        return $null
+    }
+}
+
+<#
+.SYNOPSIS
+    Gets all available database backups
+.DESCRIPTION
+    Returns a list of all available database backups with metadata
+.OUTPUTS
+    Array of backup objects with Path, Date, and Size properties
+.EXAMPLE
+    $backups = Get-DatabaseBackups
+#>
+function Get-DatabaseBackups {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject[]])]
+    param()
+
+    $backupDir = Join-Path $env:LOCALAPPDATA 'Win11Forge\Backups\Database'
+
+    if (-not (Test-Path $backupDir)) {
+        return @()
+    }
+
+    $backups = Get-ChildItem -Path $backupDir -Filter 'applications-*.json' |
+        Sort-Object LastWriteTime -Descending |
+        ForEach-Object {
+            [PSCustomObject]@{
+                Path = $_.FullName
+                FileName = $_.Name
+                Date = $_.LastWriteTime
+                Size = $_.Length
+                SizeFormatted = if ($_.Length -ge 1MB) {
+                    "{0:N2} MB" -f ($_.Length / 1MB)
+                } elseif ($_.Length -ge 1KB) {
+                    "{0:N2} KB" -f ($_.Length / 1KB)
+                } else {
+                    "{0} bytes" -f $_.Length
+                }
+            }
+        }
+
+    return @($backups)
+}
+
+<#
+.SYNOPSIS
+    Restores the database from a backup
+.DESCRIPTION
+    Restores the application database from a specified backup file
+.PARAMETER BackupPath
+    Path to the backup file to restore
+.PARAMETER CreateBackupFirst
+    If specified, creates a backup of current state before restoring
+.OUTPUTS
+    Result object with Success and message
+.EXAMPLE
+    Restore-DatabaseFromBackup -BackupPath 'C:\...\applications-20260203-120000.json'
+#>
+function Restore-DatabaseFromBackup {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$BackupPath,
+
+        [Parameter()]
+        [switch]$CreateBackupFirst
+    )
+
+    try {
+        # Validate backup file exists
+        if (-not (Test-Path $BackupPath)) {
+            return [PSCustomObject]@{
+                Success = $false
+                Error = "Backup file not found: $BackupPath"
+            }
+        }
+
+        # Validate backup file is valid JSON
+        $backupContent = Get-Content -Path $BackupPath -Raw -Encoding UTF8
+        try {
+            $null = $backupContent | ConvertFrom-Json
+        }
+        catch {
+            return [PSCustomObject]@{
+                Success = $false
+                Error = "Invalid backup file format: $($_.Exception.Message)"
+            }
+        }
+
+        # Create backup of current state if requested
+        $currentBackup = $null
+        if ($CreateBackupFirst -and (Test-Path $Script:DatabasePath)) {
+            $currentBackup = New-DatabaseBackup
+        }
+
+        # Copy backup to database location
+        Copy-Item -Path $BackupPath -Destination $Script:DatabasePath -Force
+
+        # Clear cache to reload
+        Clear-DatabaseCache
+
+        return [PSCustomObject]@{
+            Success = $true
+            RestoredFrom = $BackupPath
+            PreviousStateBackup = $currentBackup
+            Message = "Database restored successfully from backup"
+        }
+    }
+    catch {
+        return [PSCustomObject]@{
+            Success = $false
+            Error = $_.Exception.Message
+        }
+    }
+}
+
+<#
+.SYNOPSIS
+    Cleans up old database backups
+.DESCRIPTION
+    Removes old backups beyond the specified limit
+.PARAMETER MaxBackups
+    Maximum number of backups to keep (default: 10)
+.OUTPUTS
+    Number of backups deleted
+.EXAMPLE
+    Invoke-BackupRotation -MaxBackups 5
+#>
+function Invoke-BackupRotation {
+    [CmdletBinding()]
+    [OutputType([int])]
+    param(
+        [Parameter()]
+        [int]$MaxBackups = 10
+    )
+
+    $backupDir = Join-Path $env:LOCALAPPDATA 'Win11Forge\Backups\Database'
+
+    if (-not (Test-Path $backupDir)) {
+        return 0
+    }
+
+    $backups = Get-ChildItem -Path $backupDir -Filter 'applications-*.json' |
+        Sort-Object LastWriteTime -Descending
+
+    $deletedCount = 0
+
+    if ($backups.Count -gt $MaxBackups) {
+        $toDelete = $backups | Select-Object -Skip $MaxBackups
+        foreach ($old in $toDelete) {
+            Remove-Item $old.FullName -Force
+            $deletedCount++
+            Write-Verbose "Removed old backup: $($old.Name)"
+        }
+    }
+
+    return $deletedCount
+}
+
+<#
+.SYNOPSIS
+    Validates an application configuration
+.DESCRIPTION
+    Validates an application object against required fields and format rules
+.PARAMETER Application
+    The application object to validate
+.PARAMETER IsNew
+    If true, validates that AppId doesn't already exist
+.OUTPUTS
+    Validation result object with IsValid and Errors properties
+.EXAMPLE
+    $result = Test-ApplicationConfiguration -Application $app -IsNew
+#>
+function Test-ApplicationConfiguration {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject]$Application,
+
+        [Parameter()]
+        [switch]$IsNew
+    )
+
+    $errors = @()
+
+    # Validate AppId
+    if ([string]::IsNullOrWhiteSpace($Application.AppId)) {
+        $errors += [PSCustomObject]@{ Field = 'AppId'; Message = 'Application ID is required' }
+    }
+    elseif ($Application.AppId -notmatch '^[A-Za-z][A-Za-z0-9\.\-_]*$') {
+        $errors += [PSCustomObject]@{ Field = 'AppId'; Message = 'Application ID must start with a letter and contain only letters, numbers, dots, dashes, and underscores' }
+    }
+    elseif ($IsNew) {
+        # Check uniqueness for new applications
+        $existing = Get-ApplicationById -AppId $Application.AppId
+        if ($null -ne $existing) {
+            $errors += [PSCustomObject]@{ Field = 'AppId'; Message = "Application ID '$($Application.AppId)' already exists" }
+        }
+    }
+
+    # Validate Name
+    if ([string]::IsNullOrWhiteSpace($Application.Name)) {
+        $errors += [PSCustomObject]@{ Field = 'Name'; Message = 'Application name is required' }
+    }
+
+    # Validate Category
+    if ([string]::IsNullOrWhiteSpace($Application.Category)) {
+        $errors += [PSCustomObject]@{ Field = 'Category'; Message = 'Category is required' }
+    }
+
+    # Validate Sources
+    $hasSources = $false
+    if ($Application.Sources) {
+        if (-not [string]::IsNullOrWhiteSpace($Application.Sources.Winget)) { $hasSources = $true }
+        if (-not [string]::IsNullOrWhiteSpace($Application.Sources.Chocolatey)) { $hasSources = $true }
+        if (-not [string]::IsNullOrWhiteSpace($Application.Sources.Store)) { $hasSources = $true }
+        if (-not [string]::IsNullOrWhiteSpace($Application.Sources.DirectUrl)) { $hasSources = $true }
+    }
+
+    if (-not $hasSources) {
+        $errors += [PSCustomObject]@{ Field = 'Sources'; Message = 'At least one installation source is required' }
+    }
+
+    # Validate DirectUrl format if provided
+    if ($Application.Sources -and -not [string]::IsNullOrWhiteSpace($Application.Sources.DirectUrl)) {
+        if ($Application.Sources.DirectUrl -notmatch '^https?://') {
+            $errors += [PSCustomObject]@{ Field = 'Sources.DirectUrl'; Message = 'Direct URL must be a valid HTTP or HTTPS URL' }
+        }
+    }
+
+    # Validate Homepage format if provided
+    if (-not [string]::IsNullOrWhiteSpace($Application.Homepage)) {
+        if ($Application.Homepage -notmatch '^https?://') {
+            $errors += [PSCustomObject]@{ Field = 'Homepage'; Message = 'Homepage must be a valid HTTP or HTTPS URL' }
+        }
+    }
+
+    # Validate Priority
+    if ($Application.DefaultPriority -and ($Application.DefaultPriority -lt 1 -or $Application.DefaultPriority -gt 100)) {
+        $errors += [PSCustomObject]@{ Field = 'DefaultPriority'; Message = 'Priority must be between 1 and 100' }
+    }
+
+    return [PSCustomObject]@{
+        IsValid = ($errors.Count -eq 0)
+        Errors = $errors
+    }
+}
+
+<#
+.SYNOPSIS
+    Adds or updates an application in the database
+.DESCRIPTION
+    Adds a new application or updates an existing one in the database
+.PARAMETER Application
+    The application object to save
+.PARAMETER Force
+    If specified, skips validation
+.EXAMPLE
+    Set-Application -Application $app
+#>
+function Set-Application {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject]$Application,
+
+        [Parameter()]
+        [switch]$Force
+    )
+
+    # Validate unless Force
+    if (-not $Force) {
+        $existing = Get-ApplicationById -AppId $Application.AppId
+        $isNew = ($null -eq $existing)
+        $validation = Test-ApplicationConfiguration -Application $Application -IsNew:$isNew
+
+        if (-not $validation.IsValid) {
+            return [PSCustomObject]@{
+                Success = $false
+                Errors = $validation.Errors
+            }
+        }
+    }
+
+    try {
+        # Load current database
+        $database = Get-ApplicationDatabase -ForceReload
+        if ($null -eq $database) {
+            return [PSCustomObject]@{
+                Success = $false
+                Errors = @([PSCustomObject]@{ Field = 'Database'; Message = 'Failed to load database' })
+            }
+        }
+
+        # Convert applications to hashtable for manipulation
+        $apps = @{}
+        foreach ($prop in $database.Applications.PSObject.Properties) {
+            $apps[$prop.Name] = $prop.Value
+        }
+
+        # Prepare application object (remove AppId from properties as it's the key)
+        $appToSave = [PSCustomObject]@{
+            Name = $Application.Name
+            Category = $Application.Category
+            Description = if ($Application.Description) { $Application.Description } else { '' }
+            Sources = $Application.Sources
+            Detection = $Application.Detection
+            DefaultPriority = if ($Application.DefaultPriority) { $Application.DefaultPriority } else { 50 }
+            DefaultRequired = if ($null -ne $Application.DefaultRequired) { $Application.DefaultRequired } else { $false }
+            EnvironmentRestrictions = if ($Application.EnvironmentRestrictions) { $Application.EnvironmentRestrictions } else { @() }
+            Tags = if ($Application.Tags) { $Application.Tags } else { @() }
+            LastVerified = (Get-Date).ToString('yyyy-MM-dd')
+            Verified = $false
+            Homepage = if ($Application.Homepage) { $Application.Homepage } else { '' }
+        }
+
+        # Add or update
+        $apps[$Application.AppId] = $appToSave
+
+        # Save database
+        $result = Save-ApplicationDatabase -Applications $apps -CreateBackup
+
+        return [PSCustomObject]@{
+            Success = $result.Success
+            IsNew = ($null -eq $existing)
+            BackupPath = $result.BackupPath
+            Errors = if ($result.Error) { @([PSCustomObject]@{ Field = 'Save'; Message = $result.Error }) } else { @() }
+        }
+    }
+    catch {
+        return [PSCustomObject]@{
+            Success = $false
+            Errors = @([PSCustomObject]@{ Field = 'Exception'; Message = $_.Exception.Message })
+        }
+    }
+}
+
+<#
+.SYNOPSIS
+    Removes an application from the database
+.DESCRIPTION
+    Deletes an application from the database by its ID
+.PARAMETER AppId
+    The application ID to remove
+.EXAMPLE
+    Remove-Application -AppId 'MyApp'
+#>
+function Remove-Application {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$AppId
+    )
+
+    try {
+        # Verify application exists
+        $existing = Get-ApplicationById -AppId $AppId
+        if ($null -eq $existing) {
+            return [PSCustomObject]@{
+                Success = $false
+                Error = "Application '$AppId' not found"
+            }
+        }
+
+        # Load current database
+        $database = Get-ApplicationDatabase -ForceReload
+        if ($null -eq $database) {
+            return [PSCustomObject]@{
+                Success = $false
+                Error = 'Failed to load database'
+            }
+        }
+
+        # Convert to hashtable and remove
+        $apps = @{}
+        foreach ($prop in $database.Applications.PSObject.Properties) {
+            if ($prop.Name -ne $AppId) {
+                $apps[$prop.Name] = $prop.Value
+            }
+        }
+
+        # Save database
+        $result = Save-ApplicationDatabase -Applications $apps -CreateBackup
+
+        return [PSCustomObject]@{
+            Success = $result.Success
+            RemovedAppId = $AppId
+            BackupPath = $result.BackupPath
+            Error = $result.Error
+        }
+    }
+    catch {
+        return [PSCustomObject]@{
+            Success = $false
+            Error = $_.Exception.Message
+        }
+    }
+}
+
+<#
+.SYNOPSIS
+    Imports applications from a JSON file
+.DESCRIPTION
+    Imports applications from an external JSON file into the database
+.PARAMETER Path
+    Path to the JSON file to import
+.PARAMETER Mode
+    Import mode: Merge (skip duplicates), Replace (overwrite duplicates), or ReplaceAll
+.EXAMPLE
+    Import-ApplicationsFromFile -Path 'C:\apps.json' -Mode Merge
+#>
+function Import-ApplicationsFromFile {
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+
+        [Parameter()]
+        [ValidateSet('Merge', 'Replace', 'ReplaceAll')]
+        [string]$Mode = 'Merge'
+    )
+
+    try {
+        if (-not (Test-Path $Path)) {
+            return [PSCustomObject]@{
+                Success = $false
+                Error = "File not found: $Path"
+            }
+        }
+
+        # Read import file
+        $importContent = Get-Content -Path $Path -Raw -Encoding UTF8 | ConvertFrom-Json
+        $importApps = $importContent.Applications
+
+        if ($null -eq $importApps) {
+            return [PSCustomObject]@{
+                Success = $false
+                Error = 'No Applications found in import file'
+            }
+        }
+
+        # Load current database
+        $database = Get-ApplicationDatabase -ForceReload
+        $apps = @{}
+
+        if ($Mode -ne 'ReplaceAll' -and $null -ne $database) {
+            foreach ($prop in $database.Applications.PSObject.Properties) {
+                $apps[$prop.Name] = $prop.Value
+            }
+        }
+
+        # Process imports
+        $added = 0
+        $updated = 0
+        $skipped = 0
+        $errors = @()
+
+        foreach ($prop in $importApps.PSObject.Properties) {
+            $appId = $prop.Name
+            $app = $prop.Value
+
+            # Validate
+            $app | Add-Member -NotePropertyName 'AppId' -NotePropertyValue $appId -Force
+            $validation = Test-ApplicationConfiguration -Application $app
+
+            if (-not $validation.IsValid) {
+                $errors += "Invalid app '$appId': $($validation.Errors.Message -join ', ')"
+                $skipped++
+                continue
+            }
+
+            $exists = $apps.ContainsKey($appId)
+
+            if ($exists) {
+                if ($Mode -eq 'Merge') {
+                    $skipped++
+                }
+                else {
+                    $apps[$appId] = $prop.Value
+                    $updated++
+                }
+            }
+            else {
+                $apps[$appId] = $prop.Value
+                $added++
+            }
+        }
+
+        # Save database
+        $result = Save-ApplicationDatabase -Applications $apps -CreateBackup
+
+        return [PSCustomObject]@{
+            Success = $result.Success
+            Added = $added
+            Updated = $updated
+            Skipped = $skipped
+            Errors = $errors
+            BackupPath = $result.BackupPath
+        }
+    }
+    catch {
+        return [PSCustomObject]@{
+            Success = $false
+            Error = $_.Exception.Message
+        }
+    }
+}
+
+<#
+.SYNOPSIS
+    Exports applications to a JSON file
+.DESCRIPTION
+    Exports selected applications to a JSON file
+.PARAMETER AppIds
+    Array of application IDs to export
+.PARAMETER Path
+    Destination file path
+.EXAMPLE
+    Export-ApplicationsToFile -AppIds @('Chrome', 'Firefox') -Path 'C:\export.json'
+#>
+function Export-ApplicationsToFile {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$AppIds,
+
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    try {
+        $database = Get-ApplicationDatabase
+        if ($null -eq $database) {
+            Write-Error "Failed to load database"
+            return $false
+        }
+
+        # Build export object
+        $exportApps = [PSCustomObject]@{}
+
+        foreach ($appId in $AppIds) {
+            $prop = $database.Applications.PSObject.Properties | Where-Object { $_.Name -eq $appId }
+            if ($prop) {
+                $exportApps | Add-Member -NotePropertyName $prop.Name -NotePropertyValue $prop.Value
+            }
+        }
+
+        $export = [PSCustomObject]@{
+            ExportDate = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+            ExportedFrom = 'Win11Forge'
+            ApplicationCount = ($exportApps.PSObject.Properties | Measure-Object).Count
+            Applications = $exportApps
+        }
+
+        $export | ConvertTo-Json -Depth 10 | Out-File -FilePath $Path -Encoding UTF8
+
+        return $true
+    }
+    catch {
+        Write-Error "Export failed: $($_.Exception.Message)"
+        return $false
+    }
+}
+
 # Export module members
 Export-ModuleMember -Function @(
     'Get-ApplicationDatabase',
@@ -805,6 +1525,22 @@ Export-ModuleMember -Function @(
     # Dependency management
     'Get-ApplicationDependencies',
     'Resolve-ApplicationDependencies',
-    'Test-DependenciesSatisfied'
+    'Test-DependenciesSatisfied',
+    # Database modification
+    'Save-ApplicationDatabase',
+    'New-DatabaseBackup',
+    'Test-ApplicationConfiguration',
+    'Set-Application',
+    'Remove-Application',
+    'Import-ApplicationsFromFile',
+    'Export-ApplicationsToFile',
+    # Backup management
+    'Get-DatabaseBackups',
+    'Restore-DatabaseFromBackup',
+    'Invoke-BackupRotation',
+    # File watcher
+    'Enable-DatabaseFileWatcher',
+    'Disable-DatabaseFileWatcher',
+    'Clear-DatabaseCache'
 )
 

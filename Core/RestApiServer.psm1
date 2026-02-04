@@ -60,6 +60,15 @@ if (Test-Path -Path $script:SecureStoragePath) {
     }
 }
 
+# === SECURITY CONSTANTS ===
+# These constants define security-critical values used throughout the module
+$script:CSRF_TOKEN_ENTROPY_BYTES = 32      # 256 bits of entropy for CSRF tokens
+$script:API_KEY_ENTROPY_BYTES = 32         # 256 bits of entropy for API keys
+$script:RATE_LIMIT_RETRY_SECONDS = 60      # Seconds client should wait after rate limit
+$script:MAX_LOG_FILE_SIZE_BYTES = 1MB      # Maximum log file size before rotation
+$script:CLEANUP_INTERVAL_MINUTES = 5       # Interval for periodic memory cleanup
+$script:STALE_ENTRY_TIMEOUT_MINUTES = 60   # Time before rate limit entries are cleaned up
+
 # === SERVER STATE ===
 $script:ServerState = @{
     Listener = $null
@@ -75,6 +84,7 @@ $script:ServerState = @{
     FailedAuthState = @{}      # IP -> { FailCount, FirstFailTime, BlockedUntil }
     ApiKeys = @{}              # key -> keyConfig
     LastCleanupTime = $null    # For periodic memory cleanup
+    RateLimitLock = [System.Object]::new()  # Thread-safety: Lock for rate limit state operations
 }
 
 # === DEFAULT CONFIGURATION ===
@@ -126,8 +136,8 @@ function New-CsrfToken {
 
     $config = Get-ApiConfig
 
-    # Generate cryptographically secure token (256 bits)
-    $bytes = [byte[]]::new(32)
+    # Generate cryptographically secure token using defined entropy constant
+    $bytes = [byte[]]::new($script:CSRF_TOKEN_ENTROPY_BYTES)
     $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
     $rng.GetBytes($bytes)
     $token = [BitConverter]::ToString($bytes) -replace '-', ''
@@ -217,8 +227,12 @@ function Test-CsrfToken {
         return $result
     }
 
+    # Security: Single-use enforcement - remove token after successful validation
+    # This prevents replay attacks where a captured token could be reused
+    $script:CsrfTokens.Remove($Token)
+
     $result.Valid = $true
-    $result.Message = 'Valid'
+    $result.Message = 'Valid (token consumed)'
 
     return $result
 }
@@ -387,7 +401,7 @@ function Get-ApiConfig {
                     MaxRequestsPerHour = if ($null -ne $json.security.rateLimiting.maxRequestsPerHour) { $json.security.rateLimiting.maxRequestsPerHour } else { $script:DefaultConfig.MaxRequestsPerHour }
                 }
 
-                # Load API keys - prefer secure storage over plain config
+                # Load API keys - SECURITY: Only load from secure storage, never plaintext
                 if ($script:UseSecureStorage) {
                     try {
                         $secureKeys = Get-SecureApiKeysForAuth
@@ -395,37 +409,19 @@ function Get-ApiConfig {
                             $script:ServerState.ApiKeys = $secureKeys
                             Write-Verbose "Loaded $($secureKeys.Count) API keys from secure storage (DPAPI)"
                         } else {
-                            # Fall back to config file if no secure keys exist
+                            # SECURITY: Do NOT fall back to plaintext config - this is intentional
                             if ($json.apiKeys.keys) {
-                                foreach ($keyConfig in $json.apiKeys.keys) {
-                                    if ($keyConfig.enabled) {
-                                        $script:ServerState.ApiKeys[$keyConfig.key] = @{
-                                            Id = $keyConfig.id
-                                            Description = $keyConfig.description
-                                            Permissions = $keyConfig.permissions
-                                            CreatedAt = $keyConfig.createdAt
-                                            ExpiresAt = $keyConfig.expiresAt
-                                        }
-                                        Write-Verbose "Warning: Using unencrypted API key from config. Consider using Save-SecureApiKey for encryption."
-                                    }
+                                $enabledKeys = @($json.apiKeys.keys | Where-Object { $_.enabled })
+                                if ($enabledKeys.Count -gt 0) {
+                                    Write-Status -Message "SECURITY: No secure API keys found. Plaintext keys in config are ignored." -Level 'Warning' -Category 'Api'
+                                    Write-Status -Message "Use Save-SecureApiKey cmdlet to store API keys securely." -Level 'Info' -Category 'Api'
                                 }
                             }
                         }
                     } catch {
-                        Write-Verbose "Failed to load secure keys, falling back to config: $($_.Exception.Message)"
-                        if ($json.apiKeys.keys) {
-                            foreach ($keyConfig in $json.apiKeys.keys) {
-                                if ($keyConfig.enabled) {
-                                    $script:ServerState.ApiKeys[$keyConfig.key] = @{
-                                        Id = $keyConfig.id
-                                        Description = $keyConfig.description
-                                        Permissions = $keyConfig.permissions
-                                        CreatedAt = $keyConfig.createdAt
-                                        ExpiresAt = $keyConfig.expiresAt
-                                    }
-                                }
-                            }
-                        }
+                        # SECURITY: On failure, do NOT fall back to plaintext - log error instead
+                        Write-Status -Message "SECURITY: Failed to load secure API keys: $($_.Exception.Message)" -Level 'Error' -Category 'Api'
+                        Write-Status -Message "API authentication will be unavailable. Use Save-SecureApiKey to configure keys." -Level 'Warning' -Category 'Api'
                     }
                 } else {
                     # Secure storage not available - SECURITY: Refuse to load plaintext API keys
@@ -588,65 +584,76 @@ function Test-RateLimit {
     # Periodic cleanup of stale entries (every 10 minutes)
     Invoke-RateLimitCleanup
 
-    # Initialize state for new client with sliding window timestamp array
-    if (-not $script:ServerState.RateLimitState.ContainsKey($ClientIp)) {
-        $script:ServerState.RateLimitState[$ClientIp] = @{
-            RequestTimestamps = [System.Collections.Generic.List[datetime]]::new()
-            LastAccess = $now
+    # Thread-safety: Lock entire rate limit check-and-update sequence
+    # This prevents race conditions under concurrent load
+    $lockTaken = $false
+    try {
+        [System.Threading.Monitor]::Enter($script:ServerState.RateLimitLock, [ref]$lockTaken)
+
+        # Initialize state for new client with sliding window timestamp array
+        if (-not $script:ServerState.RateLimitState.ContainsKey($ClientIp)) {
+            $script:ServerState.RateLimitState[$ClientIp] = @{
+                RequestTimestamps = [System.Collections.Generic.List[datetime]]::new()
+                LastAccess = $now
+            }
+        }
+
+        $state = $script:ServerState.RateLimitState[$ClientIp]
+        $state.LastAccess = $now
+
+        # Sliding window: Remove timestamps older than 1 hour
+        $oneHourAgo = $now.AddHours(-1)
+        $oneMinuteAgo = $now.AddMinutes(-1)
+
+        # Prune old timestamps (older than 1 hour)
+        $validTimestamps = [System.Collections.Generic.List[datetime]]::new()
+        foreach ($ts in $state.RequestTimestamps) {
+            if ($ts -gt $oneHourAgo) {
+                $validTimestamps.Add($ts)
+            }
+        }
+        $state.RequestTimestamps = $validTimestamps
+
+        # Count requests in sliding windows
+        $requestsInMinute = @($state.RequestTimestamps | Where-Object { $_ -gt $oneMinuteAgo }).Count
+        $requestsInHour = $state.RequestTimestamps.Count
+
+        # Check minute limit
+        if ($requestsInMinute -ge $config.MaxRequestsPerMinute) {
+            # Calculate retry-after based on oldest request in minute window
+            $oldestInMinute = $state.RequestTimestamps | Where-Object { $_ -gt $oneMinuteAgo } | Sort-Object | Select-Object -First 1
+            $result.Allowed = $false
+            $result.RetryAfterSeconds = [int][Math]::Ceiling(60 - ($now - $oldestInMinute).TotalSeconds)
+            if ($result.RetryAfterSeconds -lt 1) { $result.RetryAfterSeconds = 1 }
+            $result.Message = "Rate limit exceeded: $($config.MaxRequestsPerMinute) requests per minute"
+            $result.RequestsInMinute = $requestsInMinute
+            $result.RequestsInHour = $requestsInHour
+            return $result
+        }
+
+        # Check hour limit
+        if ($requestsInHour -ge $config.MaxRequestsPerHour) {
+            # Calculate retry-after based on oldest request in hour window
+            $oldestInHour = $state.RequestTimestamps | Sort-Object | Select-Object -First 1
+            $result.Allowed = $false
+            $result.RetryAfterSeconds = [int][Math]::Ceiling(3600 - ($now - $oldestInHour).TotalSeconds)
+            if ($result.RetryAfterSeconds -lt 1) { $result.RetryAfterSeconds = 1 }
+            $result.Message = "Rate limit exceeded: $($config.MaxRequestsPerHour) requests per hour"
+            $result.RequestsInMinute = $requestsInMinute
+            $result.RequestsInHour = $requestsInHour
+            return $result
+        }
+
+        # Add current request timestamp
+        $state.RequestTimestamps.Add($now)
+
+        $result.RequestsInMinute = $requestsInMinute + 1
+        $result.RequestsInHour = $requestsInHour + 1
+    } finally {
+        if ($lockTaken) {
+            [System.Threading.Monitor]::Exit($script:ServerState.RateLimitLock)
         }
     }
-
-    $state = $script:ServerState.RateLimitState[$ClientIp]
-    $state.LastAccess = $now
-
-    # Sliding window: Remove timestamps older than 1 hour
-    $oneHourAgo = $now.AddHours(-1)
-    $oneMinuteAgo = $now.AddMinutes(-1)
-
-    # Prune old timestamps (older than 1 hour)
-    $validTimestamps = [System.Collections.Generic.List[datetime]]::new()
-    foreach ($ts in $state.RequestTimestamps) {
-        if ($ts -gt $oneHourAgo) {
-            $validTimestamps.Add($ts)
-        }
-    }
-    $state.RequestTimestamps = $validTimestamps
-
-    # Count requests in sliding windows
-    $requestsInMinute = @($state.RequestTimestamps | Where-Object { $_ -gt $oneMinuteAgo }).Count
-    $requestsInHour = $state.RequestTimestamps.Count
-
-    # Check minute limit
-    if ($requestsInMinute -ge $config.MaxRequestsPerMinute) {
-        # Calculate retry-after based on oldest request in minute window
-        $oldestInMinute = $state.RequestTimestamps | Where-Object { $_ -gt $oneMinuteAgo } | Sort-Object | Select-Object -First 1
-        $result.Allowed = $false
-        $result.RetryAfterSeconds = [int][Math]::Ceiling(60 - ($now - $oldestInMinute).TotalSeconds)
-        if ($result.RetryAfterSeconds -lt 1) { $result.RetryAfterSeconds = 1 }
-        $result.Message = "Rate limit exceeded: $($config.MaxRequestsPerMinute) requests per minute"
-        $result.RequestsInMinute = $requestsInMinute
-        $result.RequestsInHour = $requestsInHour
-        return $result
-    }
-
-    # Check hour limit
-    if ($requestsInHour -ge $config.MaxRequestsPerHour) {
-        # Calculate retry-after based on oldest request in hour window
-        $oldestInHour = $state.RequestTimestamps | Sort-Object | Select-Object -First 1
-        $result.Allowed = $false
-        $result.RetryAfterSeconds = [int][Math]::Ceiling(3600 - ($now - $oldestInHour).TotalSeconds)
-        if ($result.RetryAfterSeconds -lt 1) { $result.RetryAfterSeconds = 1 }
-        $result.Message = "Rate limit exceeded: $($config.MaxRequestsPerHour) requests per hour"
-        $result.RequestsInMinute = $requestsInMinute
-        $result.RequestsInHour = $requestsInHour
-        return $result
-    }
-
-    # Add current request timestamp
-    $state.RequestTimestamps.Add($now)
-
-    $result.RequestsInMinute = $requestsInMinute + 1
-    $result.RequestsInHour = $requestsInHour + 1
 
     return $result
 }
@@ -916,6 +923,124 @@ function Get-RequiredPermission {
 
 # === ENDPOINT REGISTRATION ===
 
+# Security: Dangerous patterns that should not appear in API handlers
+$script:DangerousHandlerPatterns = @(
+    'Invoke-Expression',
+    'iex\s',
+    '\$ExecutionContext',
+    'Add-Type.*-TypeDefinition',
+    '\[System\.Reflection',
+    'Start-Process.*-Verb\s+RunAs',
+    'New-Object.*Net\.WebClient',
+    'DownloadString',
+    'DownloadFile',
+    '\$env:.*=',                      # Environment variable modification
+    'Set-ExecutionPolicy',
+    'Remove-Item.*-Recurse.*-Force',  # Dangerous recursive delete
+    '\[scriptblock\]::Create'         # Recursive scriptblock creation
+)
+
+function Test-SafeHandlerScriptblock {
+    <#
+    .SYNOPSIS
+        Validates that a handler scriptblock doesn't contain dangerous patterns.
+
+    .DESCRIPTION
+        Security validation for API endpoint handlers to prevent code injection.
+        Uses both regex pattern matching AND AST analysis for comprehensive security.
+
+    .PARAMETER Handler
+        The scriptblock to validate.
+
+    .OUTPUTS
+        [bool] True if safe, throws exception if dangerous pattern found.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [scriptblock]$Handler
+    )
+
+    $handlerText = $Handler.ToString()
+
+    # Phase 1: Regex-based pattern matching (fast initial check)
+    foreach ($pattern in $script:DangerousHandlerPatterns) {
+        if ($handlerText -match $pattern) {
+            throw "SECURITY: Handler contains dangerous pattern '$pattern'. Handler registration denied."
+        }
+    }
+
+    # Phase 2: AST-based validation (deep security analysis)
+    try {
+        $tokens = $null
+        $parseErrors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput(
+            $handlerText,
+            [ref]$tokens,
+            [ref]$parseErrors
+        )
+
+        if ($parseErrors.Count -gt 0) {
+            throw "SECURITY: Handler has syntax errors: $($parseErrors[0].Message)"
+        }
+
+        # Check for dangerous command invocations
+        $dangerousCommands = @(
+            'Invoke-Expression', 'iex', 'Add-Type', 'Start-Process',
+            'Set-ExecutionPolicy', 'Invoke-Command', 'Enter-PSSession',
+            'New-PSSession', 'Register-ScheduledTask'
+        )
+
+        $commandAsts = $ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst]
+        }, $true)
+
+        foreach ($cmdAst in $commandAsts) {
+            $commandName = $cmdAst.GetCommandName()
+            if ($commandName -and $commandName -in $dangerousCommands) {
+                throw "SECURITY: Handler contains dangerous command '$commandName'. Handler registration denied."
+            }
+        }
+
+        # Check for dangerous type usage
+        $typeAsts = $ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.TypeExpressionAst]
+        }, $true)
+
+        foreach ($typeAst in $typeAsts) {
+            $typeName = $typeAst.TypeName.FullName
+            if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
+                throw "SECURITY: Handler uses dangerous type '$typeName'. Handler registration denied."
+            }
+        }
+
+        # Check for static method invocations like [scriptblock]::Create
+        $memberAsts = $ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.InvokeMemberExpressionAst]
+        }, $true)
+
+        foreach ($memberAst in $memberAsts) {
+            $memberText = $memberAst.Extent.Text.ToLower()
+            if ($memberText -match 'scriptblock.*::create|assembly.*::load') {
+                throw "SECURITY: Handler uses dangerous static method. Handler registration denied."
+            }
+        }
+
+    } catch {
+        if ($_.Exception.Message -like 'SECURITY:*') {
+            throw
+        }
+        # Log but don't block on AST parsing failures (fall back to regex-only)
+        Write-Verbose "AST validation warning: $($_.Exception.Message)"
+    }
+
+    return $true
+}
+
 function Register-ApiEndpoint {
     <#
     .SYNOPSIS
@@ -954,6 +1079,9 @@ function Register-ApiEndpoint {
         [Parameter()]
         [string]$Description = ''
     )
+
+    # Security: Validate handler doesn't contain dangerous patterns
+    $null = Test-SafeHandlerScriptblock -Handler $Handler
 
     $key = "$Method`:$Path"
     $script:ServerState.Endpoints[$key] = @{
@@ -1123,7 +1251,7 @@ function Start-ApiServer {
 
                         if ($state.MinuteCount -ge $config.MaxRequestsPerMinute -or $state.HourCount -ge $config.MaxRequestsPerHour) {
                             $response.StatusCode = 429
-                            $response.Headers.Add('Retry-After', '60')
+                            $response.Headers.Add('Retry-After', $script:RATE_LIMIT_RETRY_SECONDS.ToString())
                             $buffer = [System.Text.Encoding]::UTF8.GetBytes('{"error":"Rate limit exceeded"}')
                             $response.ContentLength64 = $buffer.Length
                             $response.OutputStream.Write($buffer, 0, $buffer.Length)
@@ -1166,7 +1294,9 @@ function Start-ApiServer {
 
                             if ($authError) {
                                 $response.StatusCode = 401
-                                $errorJson = "{`"error`":`"$authError`",`"code`":`"UNAUTHORIZED`"}"
+                                # Security: Use ConvertTo-Json to prevent JSON injection (special chars in $authError)
+                                $errorObj = @{ error = $authError; code = 'UNAUTHORIZED' }
+                                $errorJson = $errorObj | ConvertTo-Json -Compress
                                 $buffer = [System.Text.Encoding]::UTF8.GetBytes($errorJson)
                                 $response.ContentLength64 = $buffer.Length
                                 $response.ContentType = 'application/json'
@@ -1180,7 +1310,62 @@ function Start-ApiServer {
                         $key = "${method}:${path}"
                         $reader = $null
                         if ($endpoints.ContainsKey($key)) {
-                            $handler = [scriptblock]::Create($endpoints[$key].Handler)
+                            # Security: Runtime AST validation before handler execution
+                            $handlerText = $endpoints[$key].Handler
+                            $isDangerous = $false
+                            $securityError = $null
+
+                            # Phase 1: Regex pattern check (fast)
+                            $dangerousPatterns = @('Invoke-Expression', 'iex\s', '\$ExecutionContext', 'Add-Type.*-TypeDefinition', '\[System\.Reflection', 'DownloadString', 'DownloadFile', '\[scriptblock\]::Create')
+                            foreach ($pattern in $dangerousPatterns) {
+                                if ($handlerText -match $pattern) {
+                                    $isDangerous = $true
+                                    $securityError = "Pattern match: $pattern"
+                                    break
+                                }
+                            }
+
+                            # Phase 2: AST validation (deep analysis)
+                            if (-not $isDangerous) {
+                                try {
+                                    $tokens = $null
+                                    $parseErrors = $null
+                                    $ast = [System.Management.Automation.Language.Parser]::ParseInput($handlerText, [ref]$tokens, [ref]$parseErrors)
+
+                                    if ($parseErrors.Count -gt 0) {
+                                        $isDangerous = $true
+                                        $securityError = "Parse error"
+                                    } else {
+                                        # Check commands
+                                        $blockedCmds = @('Invoke-Expression', 'iex', 'Add-Type', 'Start-Process', 'Invoke-Command')
+                                        $cmdAsts = $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true)
+                                        foreach ($cmdAst in $cmdAsts) {
+                                            $cmdName = $cmdAst.GetCommandName()
+                                            if ($cmdName -and $cmdName -in $blockedCmds) {
+                                                $isDangerous = $true
+                                                $securityError = "Blocked command: $cmdName"
+                                                break
+                                            }
+                                        }
+                                    }
+                                } catch {
+                                    # Log but continue on AST errors
+                                    Write-Verbose "AST validation error: $_"
+                                }
+                            }
+
+                            if ($isDangerous) {
+                                $response.StatusCode = 500
+                                $errorJson = '{"error":"Handler validation failed","code":"SECURITY_ERROR"}'
+                                $buffer = [System.Text.Encoding]::UTF8.GetBytes($errorJson)
+                                $response.ContentLength64 = $buffer.Length
+                                $response.ContentType = 'application/json'
+                                $response.OutputStream.Write($buffer, 0, $buffer.Length)
+                                $response.Close()
+                                continue
+                            }
+
+                            $handler = [scriptblock]::Create($handlerText)
                             try {
                                 $requestBody = $null
                                 if ($request.HasEntityBody) {
@@ -1615,9 +1800,9 @@ function New-ApiKey {
         [int]$ExpiresInDays
     )
 
-    # Generate a secure random key with full entropy (256 bits)
+    # Generate a secure random key using defined entropy constant
     # Use hex encoding to preserve full entropy (no character filtering needed)
-    $bytes = [byte[]]::new(32)
+    $bytes = [byte[]]::new($script:API_KEY_ENTROPY_BYTES)
     $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
     $rng.GetBytes($bytes)
     # Convert to hex string (64 chars) - preserves full 256-bit entropy

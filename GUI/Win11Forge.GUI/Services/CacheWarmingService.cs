@@ -27,9 +27,12 @@ namespace Win11Forge.GUI.Services;
 public class CacheWarmingService : IDisposable
 {
     private readonly IApplicationDetectionService _detectionService;
+    private readonly ILoggingService _logger;
     private readonly CancellationTokenSource _cts = new();
+    private readonly object _startLock = new();
     private Task? _warmingTask;
     private bool _disposed;
+    private int _isStarted;
 
     /// <summary>
     /// Interval between background cache refreshes.
@@ -46,18 +49,24 @@ public class CacheWarmingService : IDisposable
     /// </summary>
     public event EventHandler<CacheWarmingCompletedEventArgs>? WarmingCompleted;
 
-    public CacheWarmingService(IApplicationDetectionService detectionService)
+    public CacheWarmingService(IApplicationDetectionService detectionService, ILoggerFactory loggerFactory)
     {
         _detectionService = detectionService ?? throw new ArgumentNullException(nameof(detectionService));
+        _logger = loggerFactory?.CreateLogger<CacheWarmingService>() ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 
     /// <summary>
     /// Starts the cache warming process.
     /// Call this during application startup.
+    /// Thread-safe - only starts once.
     /// </summary>
     public void Start()
     {
-        if (_warmingTask != null) return;
+        // Use Interlocked to prevent race conditions
+        if (Interlocked.CompareExchange(ref _isStarted, 1, 0) != 0)
+        {
+            return; // Already started
+        }
 
         _warmingTask = Task.Run(async () =>
         {
@@ -67,11 +76,11 @@ public class CacheWarmingService : IDisposable
             }
             catch (OperationCanceledException)
             {
-                Debug.WriteLine("Cache warming service stopped.");
+                _logger.LogInfo("Cache warming service stopped.");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Cache warming service error: {ex.Message}");
+                _logger.LogError("Cache warming service error", ex);
             }
         });
     }
@@ -90,18 +99,18 @@ public class CacheWarmingService : IDisposable
     private async Task WarmCacheLoopAsync(CancellationToken cancellationToken)
     {
         // Initial warm-up
-        Debug.WriteLine("Starting initial cache warming...");
+        _logger.LogInfo("Starting initial cache warming...");
         WarmingStarted?.Invoke(this, EventArgs.Empty);
 
         var stopwatch = Stopwatch.StartNew();
 
         try
         {
-            await _detectionService.WarmCacheAsync();
+            await _detectionService.WarmCacheAsync().ConfigureAwait(false);
             stopwatch.Stop();
 
             var stats = _detectionService.GetCacheStatistics();
-            Debug.WriteLine($"Initial cache warming completed: {stats.PackageCount} packages in {stopwatch.ElapsedMilliseconds}ms");
+            _logger.LogInfo($"Initial cache warming completed: {stats.PackageCount} packages in {stopwatch.ElapsedMilliseconds}ms");
 
             WarmingCompleted?.Invoke(this, new CacheWarmingCompletedEventArgs
             {
@@ -113,7 +122,7 @@ public class CacheWarmingService : IDisposable
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Initial cache warming failed: {ex.Message}");
+            _logger.LogWarning($"Initial cache warming failed: {ex.Message}");
 
             WarmingCompleted?.Invoke(this, new CacheWarmingCompletedEventArgs
             {
@@ -129,19 +138,19 @@ public class CacheWarmingService : IDisposable
         {
             try
             {
-                await Task.Delay(RefreshInterval, cancellationToken);
+                await Task.Delay(RefreshInterval, cancellationToken).ConfigureAwait(false);
 
                 if (cancellationToken.IsCancellationRequested) break;
 
-                Debug.WriteLine("Starting periodic cache refresh...");
+                _logger.LogDebug("Starting periodic cache refresh...");
                 stopwatch.Restart();
 
                 // Force refresh to get latest data
-                await _detectionService.GetInstalledPackagesAsync(forceRefresh: true);
+                await _detectionService.GetInstalledPackagesAsync(forceRefresh: true).ConfigureAwait(false);
                 stopwatch.Stop();
 
                 var stats = _detectionService.GetCacheStatistics();
-                Debug.WriteLine($"Periodic cache refresh completed: {stats.PackageCount} packages in {stopwatch.ElapsedMilliseconds}ms");
+                _logger.LogDebug($"Periodic cache refresh completed: {stats.PackageCount} packages in {stopwatch.ElapsedMilliseconds}ms");
 
                 WarmingCompleted?.Invoke(this, new CacheWarmingCompletedEventArgs
                 {
@@ -157,7 +166,7 @@ public class CacheWarmingService : IDisposable
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Periodic cache refresh failed: {ex.Message}");
+                _logger.LogWarning($"Periodic cache refresh failed: {ex.Message}");
                 // Continue loop, will retry after interval
             }
         }
@@ -202,11 +211,51 @@ public class CacheWarmingService : IDisposable
     public void Dispose()
     {
         if (_disposed) return;
-
-        _cts.Cancel();
-        _cts.Dispose();
-        _warmingTask?.Wait(TimeSpan.FromSeconds(2));
         _disposed = true;
+
+        // Cancel the token - this will cause the warming task to exit gracefully
+        try
+        {
+            _cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Already disposed
+        }
+
+        // Wait for the warming task to complete with a short timeout
+        // This prevents accessing disposed resources
+        if (_warmingTask is { IsCompleted: false })
+        {
+            _logger.LogDebug("Dispose called, waiting for warming task to complete...");
+            try
+            {
+                // Wait up to 2 seconds for graceful shutdown
+                if (!_warmingTask.Wait(TimeSpan.FromSeconds(2)))
+                {
+                    _logger.LogDebug("Warming task did not complete in time, proceeding with disposal");
+                }
+            }
+            catch (AggregateException ex)
+            {
+                // Task was cancelled or failed - this is expected
+                _logger.LogDebug($"Task completed with exception: {ex.InnerException?.Message}");
+            }
+            catch (ObjectDisposedException)
+            {
+                // Task already disposed
+            }
+        }
+
+        // Dispose the CTS
+        try
+        {
+            _cts.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Already disposed
+        }
     }
 }
 

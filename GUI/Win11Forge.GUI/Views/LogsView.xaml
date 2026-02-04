@@ -130,8 +130,7 @@
                 <!-- Clear Old Logs -->
                 <Button Grid.Column="4"
                         Command="{Binding ClearOldLogsCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
+                        Style="{StaticResource DestructiveOutlinedButton}"
                         ToolTip="{loc:Loc Logs_ClearOld}"
                         Margin="8,0,0,0">
                     <materialDesign:PackIcon Kind="DeleteClock" Width="20" Height="20"/>

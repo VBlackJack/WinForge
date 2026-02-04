@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "Rollback system configuration for Win11Forge",
-    "version": "3.5.2",
+    "version": "3.5.9",
     "author": "Julien Bombled",
     "lastUpdated": "2026-01-19"
   },
@@ -10,13 +10,15 @@
   "requireConfirmation": true,
   "confirmationTimeoutSeconds": 30,
   "criticalFailurePatterns": [
-    "system32",
-    "registry corruption",
-    "boot",
-    "driver",
-    "kernel",
-    "access denied.*system",
-    "permission denied.*windows"
+    "\\bsystem32\\b",
+    "\\bregistry\\s+corruption\\b",
+    "\\bboot\\s*(failure|error|corrupt)\\b",
+    "\\bdriver\\s*(failure|error|missing|corrupt)\\b",
+    "\\bkernel\\s*(panic|error|fault)\\b",
+    "\\baccess\\s+denied\\b.*\\bsystem\\b",
+    "\\bpermission\\s+denied\\b.*\\bwindows\\b",
+    "\\bbsod\\b",
+    "\\bblue\\s+screen\\b"
   ],
   "rollbackMethods": {
     "supported": [

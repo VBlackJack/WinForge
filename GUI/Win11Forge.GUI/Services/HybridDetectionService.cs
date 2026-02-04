@@ -17,6 +17,7 @@
 using System.Diagnostics;
 using System.Management.Automation;
 using Win11Forge.GUI.Models;
+using PS = System.Management.Automation.PowerShell;
 
 namespace Win11Forge.GUI.Services;
 
@@ -35,6 +36,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
 {
     private readonly RegistryDetectionService _registryService;
     private readonly JsonApplicationDetectionService _jsonDetectionService;
+    private readonly ILoggingService _logger;
     private readonly object _cacheLock = new();
     private readonly SemaphoreSlim _refreshSemaphore = new(1, 1);
 
@@ -57,6 +59,9 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     private bool? _winGetModuleAvailable;
     private readonly object _winGetCheckLock = new();
 
+    // Disposal flag
+    private bool _disposed;
+
     /// <summary>
     /// Event raised when the cache is refreshed.
     /// </summary>
@@ -67,10 +72,11 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     /// </summary>
     public event EventHandler<CacheInvalidatedEventArgs>? CacheInvalidated;
 
-    public HybridDetectionService()
+    public HybridDetectionService(ILoggerFactory loggerFactory)
     {
         _registryService = new RegistryDetectionService();
         _jsonDetectionService = new JsonApplicationDetectionService();
+        _logger = loggerFactory?.CreateLogger<HybridDetectionService>() ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 
     /// <summary>
@@ -104,7 +110,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             Timestamp = DateTime.UtcNow
         });
 
-        Debug.WriteLine($"Cache invalidated for {appId}: {reason}");
+        _logger.LogDebug($"Cache invalidated for {appId}: {reason}");
     }
 
     /// <summary>
@@ -126,7 +132,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             Timestamp = DateTime.UtcNow
         });
 
-        Debug.WriteLine($"Full cache invalidated: {reason}");
+        _logger.LogDebug($"Full cache invalidated: {reason}");
     }
 
     /// <inheritdoc/>
@@ -199,11 +205,11 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             {
                 allPackages[kvp.Key] = kvp.Value;
             }
-            Debug.WriteLine($"Registry scan: {registryPackages.Count} packages");
+            _logger.LogDebug($"Registry scan: {registryPackages.Count} packages");
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Registry scan failed: {ex.Message}");
+            _logger.LogWarning($"Registry scan failed: {ex.Message}");
         }
 
         // Step 2: WinGet PowerShell module (if available, ~500ms)
@@ -237,11 +243,11 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
                         allPackages[pkg.Id] = pkg;
                     }
                 }
-                Debug.WriteLine($"WinGet scan: {wingetPackages.Count} packages");
+                _logger.LogDebug($"WinGet scan: {wingetPackages.Count} packages");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"WinGet scan failed: {ex.Message}");
+                _logger.LogWarning($"WinGet scan failed: {ex.Message}");
             }
         }
 
@@ -256,11 +262,11 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
                     allPackages[pkg.Id] = pkg;
                 }
             }
-            Debug.WriteLine($"AppX scan: {appxPackages.Count} packages");
+            _logger.LogDebug($"AppX scan: {appxPackages.Count} packages");
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"AppX scan failed: {ex.Message}");
+            _logger.LogWarning($"AppX scan failed: {ex.Message}");
         }
 
         // Step 4: JSON database detection (for runtimes with Command/custom Registry detection)
@@ -274,11 +280,11 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
                 // because it uses the correct detection method from applications.json
                 allPackages[kvp.Key] = kvp.Value;
             }
-            Debug.WriteLine($"JSON database scan: {jsonPackages.Count} packages");
+            _logger.LogDebug($"JSON database scan: {jsonPackages.Count} packages");
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"JSON database scan failed: {ex.Message}");
+            _logger.LogWarning($"JSON database scan failed: {ex.Message}");
         }
 
         stopwatch.Stop();
@@ -301,7 +307,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
                 _detectionTimes.RemoveAt(0);
         }
 
-        Debug.WriteLine($"Total detection: {allPackages.Count} packages in {stopwatch.ElapsedMilliseconds}ms");
+        _logger.LogInfo($"Total detection: {allPackages.Count} packages in {stopwatch.ElapsedMilliseconds}ms");
 
         // Raise event
         CacheRefreshed?.Invoke(this, new CacheRefreshedEventArgs
@@ -350,7 +356,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"WinGet update check failed: {ex.Message}");
+                _logger.LogWarning($"WinGet update check failed: {ex.Message}");
             }
         }
 
@@ -367,7 +373,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     /// <inheritdoc/>
     public async Task WarmCacheAsync()
     {
-        Debug.WriteLine("Starting cache pre-warming...");
+        _logger.LogInfo("Starting cache pre-warming...");
         var stopwatch = Stopwatch.StartNew();
 
         // Warm main detection cache
@@ -382,12 +388,12 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Update pre-fetch failed: {ex.Message}");
+                _logger.LogWarning($"Update pre-fetch failed: {ex.Message}");
             }
         });
 
         stopwatch.Stop();
-        Debug.WriteLine($"Cache pre-warming completed in {stopwatch.ElapsedMilliseconds}ms");
+        _logger.LogInfo($"Cache pre-warming completed in {stopwatch.ElapsedMilliseconds}ms");
     }
 
     /// <inheritdoc/>
@@ -439,7 +445,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
         {
             try
             {
-                using var ps = PowerShell.Create();
+                using var ps = PS.Create();
                 ps.AddCommand("Get-Module")
                   .AddParameter("ListAvailable")
                   .AddParameter("Name", "Microsoft.WinGet.Client");
@@ -458,7 +464,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             _winGetModuleAvailable = isAvailable;
         }
 
-        Debug.WriteLine($"WinGet module available: {isAvailable}");
+        _logger.LogDebug($"WinGet module available: {isAvailable}");
         return isAvailable;
     }
 
@@ -474,7 +480,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
 
             try
             {
-                using var ps = PowerShell.Create();
+                using var ps = PS.Create();
 
                 // Import module and get packages
                 ps.AddScript(@"
@@ -505,7 +511,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"WinGet module error: {ex.Message}");
+                _logger.LogWarning($"WinGet module error: {ex.Message}");
             }
 
             return packages;
@@ -524,7 +530,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
 
             try
             {
-                using var ps = PowerShell.Create();
+                using var ps = PS.Create();
 
                 // Get packages with updates available
                 ps.AddScript(@"
@@ -555,7 +561,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"WinGet update check error: {ex.Message}");
+                _logger.LogWarning($"WinGet update check error: {ex.Message}");
             }
 
             return updates;
@@ -573,7 +579,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
 
             try
             {
-                using var ps = PowerShell.Create();
+                using var ps = PS.Create();
                 ps.AddCommand("Get-AppxPackage")
                   .AddParameter("ErrorAction", "SilentlyContinue");
 
@@ -613,7 +619,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AppX scan error: {ex.Message}");
+                _logger.LogWarning($"AppX scan error: {ex.Message}");
             }
 
             return packages;
@@ -622,6 +628,34 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
 
     public void Dispose()
     {
-        _refreshSemaphore.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases the unmanaged resources and optionally releases managed resources.
+    /// </summary>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing)
+        {
+            _refreshSemaphore.Dispose();
+
+            // Clear event handlers to prevent memory leaks
+            CacheRefreshed = null;
+            CacheInvalidated = null;
+
+            // Clear caches
+            lock (_cacheLock)
+            {
+                _cache = null;
+                _updateCache = null;
+                _detectionTimes.Clear();
+            }
+        }
+
+        _disposed = true;
     }
 }

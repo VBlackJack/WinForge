@@ -45,7 +45,11 @@ if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
 }
 
 if (Test-Path -Path $script:TimeoutSettingsPath) {
-    Import-Module -Name $script:TimeoutSettingsPath -Force -ErrorAction SilentlyContinue
+    try {
+        Import-Module -Name $script:TimeoutSettingsPath -Force -ErrorAction Stop
+    } catch {
+        Write-Warning "Failed to load TimeoutSettings module: $($_.Exception.Message)"
+    }
 }
 
 # === SANDBOX CONFIGURATION ===
@@ -56,6 +60,139 @@ $script:SandboxDefaults = @{
     AllowNetworkAccess = $false
     AllowFileSystemWrite = $false
     AllowedWritePaths = @()
+}
+
+# === SECURITY: DANGEROUS COMMANDS LIST ===
+$script:DangerousCommands = @(
+    'Invoke-Expression', 'iex',
+    'Add-Type',
+    'New-Object',
+    'Start-Process',
+    '[System.Reflection',
+    '[System.Runtime.InteropServices',
+    'Set-ExecutionPolicy',
+    'Remove-Item',
+    'Clear-Content',
+    'Set-Content',
+    'Out-File',
+    '[scriptblock]::Create',
+    'Invoke-Command',
+    'Enter-PSSession',
+    'New-PSSession',
+    'Register-ScheduledTask',
+    'Set-Service',
+    'Stop-Service',
+    'Restart-Service',
+    'net.webclient',
+    'downloadstring',
+    'downloadfile',
+    'Invoke-WebRequest',
+    'Invoke-RestMethod',
+    'ConvertTo-SecureString',
+    'Get-Credential'
+)
+
+# === AST VALIDATION ===
+
+function Test-ScriptblockSafe {
+    <#
+    .SYNOPSIS
+        Validates a scriptblock string using AST analysis.
+    .DESCRIPTION
+        Parses the scriptblock and checks for dangerous commands or patterns
+        that could compromise system security.
+    .PARAMETER ScriptText
+        The scriptblock text to validate.
+    .OUTPUTS
+        [hashtable] With IsValid and Errors properties.
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ScriptText
+    )
+
+    $result = @{
+        IsValid = $true
+        Errors = @()
+    }
+
+    try {
+        # Parse the script using AST
+        $tokens = $null
+        $errors = $null
+        $ast = [System.Management.Automation.Language.Parser]::ParseInput(
+            $ScriptText,
+            [ref]$tokens,
+            [ref]$errors
+        )
+
+        # Check for parse errors
+        if ($errors.Count -gt 0) {
+            $result.IsValid = $false
+            $result.Errors += "Script has parse errors: $($errors[0].Message)"
+            return $result
+        }
+
+        # Find all command AST nodes
+        $commandAsts = $ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.CommandAst]
+        }, $true)
+
+        foreach ($cmdAst in $commandAsts) {
+            $commandName = $cmdAst.GetCommandName()
+            if ($commandName) {
+                foreach ($dangerous in $script:DangerousCommands) {
+                    if ($commandName -like "*$dangerous*") {
+                        $result.IsValid = $false
+                        $result.Errors += "Dangerous command blocked: $commandName"
+                    }
+                }
+            }
+        }
+
+        # Find all type expression AST nodes (like [System.Reflection.Assembly])
+        $typeAsts = $ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.TypeExpressionAst] -or
+            $node -is [System.Management.Automation.Language.TypeConstraintAst]
+        }, $true)
+
+        foreach ($typeAst in $typeAsts) {
+            $typeName = $typeAst.TypeName.FullName
+            if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
+                $result.IsValid = $false
+                $result.Errors += "Dangerous type blocked: $typeName"
+            }
+        }
+
+        # Find all member expression AST nodes (like ::Create, .DownloadString)
+        $memberAsts = $ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.InvokeMemberExpressionAst] -or
+            $node -is [System.Management.Automation.Language.MemberExpressionAst]
+        }, $true)
+
+        foreach ($memberAst in $memberAsts) {
+            $memberName = $memberAst.Member.Value
+            if ($memberName -in @('Create', 'DownloadString', 'DownloadFile', 'Load', 'LoadFile', 'Invoke')) {
+                # Check if it's a potentially dangerous invocation
+                $expressionText = $memberAst.Extent.Text
+                if ($expressionText -match 'scriptblock|webclient|assembly|reflection') {
+                    $result.IsValid = $false
+                    $result.Errors += "Dangerous member invocation blocked: $expressionText"
+                }
+            }
+        }
+
+    } catch {
+        $result.IsValid = $false
+        $result.Errors += "AST validation error: $($_.Exception.Message)"
+    }
+
+    return $result
 }
 
 # === SANDBOXED EXECUTION ===
@@ -128,16 +265,59 @@ function Invoke-PluginSandboxed {
     try {
         Write-Status -Message "Executing plugin '$PluginName' in sandbox (timeout: ${TimeoutSeconds}s)" -Level 'Verbose' -Category 'Plugin'
 
-        # Create a job for isolated execution
-        $job = Start-Job -ScriptBlock {
-            param($HandlerScript, $ContextData)
+        # Security: Validate handler scriptblock using AST analysis
+        $handlerText = $Handler.ToString()
+        $validation = Test-ScriptblockSafe -ScriptText $handlerText
+        if (-not $validation.IsValid) {
+            $result.Error = "Plugin handler blocked by security validation: $($validation.Errors -join '; ')"
+            Write-Status -Message "Plugin '$PluginName' blocked: $($result.Error)" -Level 'Error' -Category 'Plugin'
+            $result.ExecutionTimeMs = ((Get-Date) - $startTime).TotalMilliseconds
+            return $result
+        }
 
-            # Reconstruct handler in job scope
+        # Create a job for isolated execution
+        # Security: Pass dangerous commands list to job for re-validation (TOCTOU prevention)
+        $dangerousCmds = $script:DangerousCommands
+        $job = Start-Job -ScriptBlock {
+            param($HandlerScript, $ContextData, $DangerousCommands)
+
+            # Security: Re-validate handler inside job scope before execution (TOCTOU prevention)
+            $tokens = $null
+            $errors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseInput($HandlerScript, [ref]$tokens, [ref]$errors)
+
+            if ($errors.Count -gt 0) {
+                throw "Security: Handler has parse errors in job context"
+            }
+
+            # Re-check for dangerous commands
+            $commandAsts = $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true)
+            foreach ($cmdAst in $commandAsts) {
+                $cmdName = $cmdAst.GetCommandName()
+                if ($cmdName) {
+                    foreach ($dangerous in $DangerousCommands) {
+                        if ($cmdName -like "*$dangerous*") {
+                            throw "Security: Blocked command detected in job context: $cmdName"
+                        }
+                    }
+                }
+            }
+
+            # Re-check for dangerous types
+            $typeAsts = $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.TypeExpressionAst] -or $n -is [System.Management.Automation.Language.TypeConstraintAst] }, $true)
+            foreach ($typeAst in $typeAsts) {
+                $typeName = $typeAst.TypeName.FullName
+                if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
+                    throw "Security: Blocked type detected in job context: $typeName"
+                }
+            }
+
+            # Reconstruct handler in job scope (after re-validation)
             $handler = [scriptblock]::Create($HandlerScript)
 
             # Execute handler with context
             & $handler $ContextData
-        } -ArgumentList $Handler.ToString(), $Context
+        } -ArgumentList $Handler.ToString(), $Context, $dangerousCmds
 
         # Wait for job with timeout
         $completed = $job | Wait-Job -Timeout $TimeoutSeconds
@@ -152,18 +332,28 @@ function Invoke-PluginSandboxed {
 
             Write-Status -Message "Plugin '$PluginName' timed out after ${TimeoutSeconds}s" -Level 'Warning' -Category 'Plugin'
         } else {
-            # Job completed
-            $jobResult = Receive-Job -Job $job -ErrorAction SilentlyContinue
+            # Job completed - receive output
+            # Safety: Use -Wait to ensure all output is received, with -ErrorAction
+            # to prevent exceptions if output stream has issues
+            try {
+                # Receive-Job should be instant for completed jobs
+                # Add -Wait to ensure all streams are fully read
+                $jobResult = Receive-Job -Job $job -Wait -ErrorAction Stop
 
-            if ($job.State -eq 'Failed') {
-                $result.Error = $job.ChildJobs[0].JobStateInfo.Reason.Message
-                Write-Status -Message "Plugin '$PluginName' failed: $($result.Error)" -Level 'Warning' -Category 'Plugin'
-            } else {
-                $result.Success = $true
-                $result.Result = $jobResult
+                if ($job.State -eq 'Failed') {
+                    $result.Error = $job.ChildJobs[0].JobStateInfo.Reason.Message
+                    Write-Status -Message "Plugin '$PluginName' failed: $($result.Error)" -Level 'Warning' -Category 'Plugin'
+                } else {
+                    $result.Success = $true
+                    $result.Result = $jobResult
+                }
+            } catch {
+                $result.Error = "Failed to retrieve job output: $($_.Exception.Message)"
+                Write-Status -Message "Plugin '$PluginName' output error: $($result.Error)" -Level 'Warning' -Category 'Plugin'
+            } finally {
+                # Always clean up job
+                Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
             }
-
-            Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
         }
     } catch {
         $result.Error = $_.Exception.Message
@@ -387,5 +577,6 @@ Export-ModuleMember -Function @(
     'Invoke-PluginHookSandboxed',
     'Invoke-PluginLoadSandboxed',
     'Test-PluginSandboxAvailable',
-    'Get-SandboxStatus'
+    'Get-SandboxStatus',
+    'Test-ScriptblockSafe'
 )

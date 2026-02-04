@@ -24,6 +24,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using MaterialDesignThemes.Wpf;
 using Win11Forge.GUI.Controls;
+using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Messages;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
@@ -262,6 +263,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
         // Dispose ViewModels that implement IDisposable
         (_deploymentViewModel as IDisposable)?.Dispose();
         (_appsViewModel as IDisposable)?.Dispose();
+        (_settingsViewModel as IDisposable)?.Dispose();
+        (_applicationsViewModel as IDisposable)?.Dispose();
     }
 
     /// <summary>
@@ -352,23 +355,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
 
             // Start cache pre-warming in background (non-blocking)
             // This makes subsequent app scanning 10-50x faster
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    if (_powerShellBridge is PowerShellBridge bridge)
-                    {
-                        System.Diagnostics.Debug.WriteLine("Starting detection cache pre-warming...");
-                        await bridge.WarmDetectionCacheAsync();
-                        var stats = bridge.GetDetectionCacheStatistics();
-                        System.Diagnostics.Debug.WriteLine($"Cache warmed: {stats.PackageCount} packages in {stats.AverageDetectionTime.TotalMilliseconds:F0}ms");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Cache pre-warming failed (non-critical): {ex.Message}");
-                }
-            });
+            WarmCacheAsync().SafeFireAndForget(
+                onException: ex => System.Diagnostics.Debug.WriteLine($"Cache pre-warming failed (non-critical): {ex.Message}"));
 
             // Check for first run and show onboarding
             var settings = _settingsService?.LoadSettings();
@@ -410,10 +398,25 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
             var version = await _powerShellBridge.GetWin11ForgeVersionAsync();
             Title = string.Format(Loc.App_Title, version);
         }
-        catch
+        catch (Exception ex)
         {
             // Fallback to static title if version retrieval fails
+            System.Diagnostics.Debug.WriteLine($"Failed to retrieve version for title: {ex.Message}");
             Title = string.Format(Loc.App_Title, "?");
+        }
+    }
+
+    /// <summary>
+    /// Warms the detection cache in the background for faster subsequent scans.
+    /// </summary>
+    private async Task WarmCacheAsync()
+    {
+        if (_powerShellBridge is PowerShellBridgeFacade facade)
+        {
+            System.Diagnostics.Debug.WriteLine("Starting detection cache pre-warming...");
+            await facade.WarmDetectionCacheAsync();
+            var stats = facade.GetDetectionCacheStatistics();
+            System.Diagnostics.Debug.WriteLine($"Cache warmed: {stats.PackageCount} packages in {stats.AverageDetectionTime.TotalMilliseconds:F0}ms");
         }
     }
 
@@ -436,36 +439,37 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
         ApplicationsViewControl.Visibility = Visibility.Collapsed;
 
         // Show selected view and initialize if needed
-        switch (selectedIndex)
+        // Use SafeFireAndForget for consistent exception handling on fire-and-forget tasks
+        switch ((ViewIndex)selectedIndex)
         {
-            case 0: // Dashboard
+            case ViewIndex.Dashboard:
                 DashboardViewControl.Visibility = Visibility.Visible;
-                _ = SafeInitializeAsync(InitializeDashboardAsync, "Dashboard");
+                SafeInitializeAsync(InitializeDashboardAsync, "Dashboard").SafeFireAndForget();
                 break;
 
-            case 1: // Prerequisites
+            case ViewIndex.Prerequisites:
                 PrerequisitesViewControl.Visibility = Visibility.Visible;
-                _ = SafeInitializeAsync(InitializePrerequisitesAsync, "Prerequisites");
+                SafeInitializeAsync(InitializePrerequisitesAsync, "Prerequisites").SafeFireAndForget();
                 break;
 
-            case 2: // Apps
+            case ViewIndex.Apps:
                 AppsViewControl.Visibility = Visibility.Visible;
-                _ = SafeInitializeAsync(InitializeAppsAsync, "Apps");
+                SafeInitializeAsync(InitializeAppsAsync, "Apps").SafeFireAndForget();
                 break;
 
-            case 3: // Deployment
+            case ViewIndex.Deployment:
                 DeploymentViewControl.Visibility = Visibility.Visible;
-                _ = SafeInitializeAsync(InitializeDeploymentAsync, "Deployment");
+                SafeInitializeAsync(InitializeDeploymentAsync, "Deployment").SafeFireAndForget();
                 break;
 
-            case 4: // Settings
+            case ViewIndex.Settings:
                 SettingsViewControl.Visibility = Visibility.Visible;
-                _ = SafeInitializeAsync(InitializeSettingsAsync, "Settings");
+                SafeInitializeAsync(InitializeSettingsAsync, "Settings").SafeFireAndForget();
                 break;
 
-            case 5: // Applications Database
+            case ViewIndex.Applications:
                 ApplicationsViewControl.Visibility = Visibility.Visible;
-                _ = SafeInitializeAsync(InitializeApplicationsAsync, "Applications");
+                SafeInitializeAsync(InitializeApplicationsAsync, "Applications").SafeFireAndForget();
                 break;
         }
     }
@@ -571,9 +575,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
                 settings.LastNavigationIndex = viewIndex;
                 _settingsService.SaveSettings(settings);
             }
-            catch
+            catch (Exception ex)
             {
-                // State saving is non-critical
+                // State saving is non-critical, but log for diagnostics
+                System.Diagnostics.Debug.WriteLine($"Failed to save navigation state: {ex.Message}");
             }
         }
     }
@@ -668,6 +673,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
             (_dashboardViewModel as IDisposable)?.Dispose();
             (_settingsViewModel as IDisposable)?.Dispose();
             (_prerequisitesViewModel as IDisposable)?.Dispose();
+            (_applicationsViewModel as IDisposable)?.Dispose();
         }
 
         _disposed = true;

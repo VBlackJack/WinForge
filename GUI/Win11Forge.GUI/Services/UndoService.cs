@@ -252,9 +252,10 @@ public class UndoService : IUndoService
             OnStateChanged();
             return true;
         }
-        catch
+        catch (Exception ex)
         {
-            // If undo fails, put action back
+            // If undo fails, put action back and log for debugging
+            System.Diagnostics.Debug.WriteLine($"[UndoService] Undo failed: {ex.Message}");
             lock (_lock)
             {
                 _undoStack.Push(action);
@@ -299,9 +300,10 @@ public class UndoService : IUndoService
             OnStateChanged();
             return true;
         }
-        catch
+        catch (Exception ex)
         {
-            // If redo fails, put action back
+            // If redo fails, put action back and log for debugging
+            System.Diagnostics.Debug.WriteLine($"[UndoService] Redo failed: {ex.Message}");
             lock (_lock)
             {
                 _redoStack.Push(action);
@@ -378,8 +380,10 @@ public class UndoService : IUndoService
             var localized = resourceManager.GetString(key);
             return localized ?? key;
         }
-        catch
+        catch (Exception ex)
         {
+            // Resource lookup failed - fall back to key
+            System.Diagnostics.Debug.WriteLine($"[UndoService] Resource lookup failed for '{key}': {ex.Message}");
             return key;
         }
     }

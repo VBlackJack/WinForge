@@ -149,11 +149,13 @@ internal class MockDeploymentStateServiceForTests : IDeploymentStateService
 {
     public bool MockIsDeploying { get; set; }
     public bool MockIsPaused { get; set; }
+    public bool MockIsCancelled { get; set; }
     public double MockProgressPercentage { get; set; }
     public bool CancelRequestedFlag { get; private set; }
 
     public bool IsDeploying => MockIsDeploying;
     public bool IsPaused => MockIsPaused;
+    public bool IsCancelled => MockIsCancelled;
     public string? StatusMessage => "Test Status";
     public string? CurrentAppName => "TestApp";
     public int CompletedCount => 5;
@@ -173,12 +175,14 @@ internal class MockDeploymentStateServiceForTests : IDeploymentStateService
     public void UpdateTime(string? elapsed, string? remaining) { }
     public void SetPaused(bool isPaused) => MockIsPaused = isPaused;
     public void EndDeployment() => MockIsDeploying = false;
+    public void ClearApplicationLogs() { }
 
     public void RequestPause() => PauseRequested?.Invoke(this, EventArgs.Empty);
     public void RequestResume() => ResumeRequested?.Invoke(this, EventArgs.Empty);
     public void RequestCancel()
     {
         CancelRequestedFlag = true;
+        MockIsCancelled = true;
         CancelRequested?.Invoke(this, EventArgs.Empty);
     }
 

@@ -147,10 +147,15 @@
                                                   Margin="0,0,12,0"/>
                         <StackPanel>
                             <TextBlock Text="{Binding DeploymentStatusMessage}"
-                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"/>
+                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="400"/>
                             <TextBlock Text="{Binding CurrentAppName}"
                                        Style="{StaticResource MaterialDesignBody2TextBlock}"
                                        Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="400"
+                                       ToolTip="{Binding CurrentAppName}"
                                        Visibility="{Binding CurrentAppName, Converter={StaticResource NullableToVisibilityConverter}}"/>
                         </StackPanel>
                     </StackPanel>
@@ -260,7 +265,8 @@
                 <materialDesign:PackIcon Kind="MonitorDashboard"
                                           Width="64" Height="64"
                                           HorizontalAlignment="Center"
-                                          Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                          Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                          AutomationProperties.Name="{loc:Loc A11y_NoDeploymentIcon}"/>
                 <TextBlock Text="{loc:Loc Monitoring_NoDeployment}"
                            Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                            HorizontalAlignment="Center"
@@ -272,11 +278,124 @@
             </StackPanel>
         </materialDesign:Card>
 
-        <!-- Applications List (status only) -->
+        <!-- Deployment Result Banner -->
+        <Border Grid.Row="2"
+                Margin="0,0,0,16"
+                Padding="16"
+                CornerRadius="8"
+                Visibility="{Binding IsDeploymentComplete, Converter={StaticResource BooleanToVisibilityConverter}}"
+                AutomationProperties.LiveSetting="Polite">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="{DynamicResource SuccessBackgroundBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding DeploymentResult}" Value="Success">
+                            <Setter Property="Background" Value="{DynamicResource SuccessBackgroundBrush}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding DeploymentResult}" Value="Partial">
+                            <Setter Property="Background" Value="{DynamicResource WarningBackgroundBrush}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding DeploymentResult}" Value="Failed">
+                            <Setter Property="Background" Value="{DynamicResource ErrorBackgroundBrush}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding DeploymentResult}" Value="Cancelled">
+                            <Setter Property="Background" Value="{DynamicResource MaterialDesignToolBarBackground}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!-- Result Icon -->
+                <materialDesign:PackIcon Grid.Column="0"
+                                          Width="32" Height="32"
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,16,0">
+                    <materialDesign:PackIcon.Style>
+                        <Style TargetType="materialDesign:PackIcon">
+                            <Setter Property="Kind" Value="CheckCircle"/>
+                            <Setter Property="Foreground" Value="{DynamicResource SuccessIconBrush}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DeploymentResult}" Value="Partial">
+                                    <Setter Property="Kind" Value="AlertCircle"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource WarningIconBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding DeploymentResult}" Value="Failed">
+                                    <Setter Property="Kind" Value="CloseCircle"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource ErrorIconBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding DeploymentResult}" Value="Cancelled">
+                                    <Setter Property="Kind" Value="Cancel"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </materialDesign:PackIcon.Style>
+                </materialDesign:PackIcon>
+                <!-- Result Text -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignHeadline6TextBlock}">
+                                <Setter Property="Text" Value="{loc:Loc Deployment_Result_Success}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding DeploymentResult}" Value="Partial">
+                                        <Setter Property="Text" Value="{loc:Loc Deployment_Result_Partial}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding DeploymentResult}" Value="Failed">
+                                        <Setter Property="Text" Value="{loc:Loc Deployment_Result_Failed}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding DeploymentResult}" Value="Cancelled">
+                                        <Setter Property="Text" Value="{loc:Loc Deployment_Result_Cancelled}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               Margin="0,4,0,0">
+                        <Run Text="{Binding SuccessCount, Mode=OneWay}"/>
+                        <Run Text="{loc:Loc Deployment_Summary_Installed}"/>
+                        <Run Text="{Binding FailureCount, Mode=OneWay}"/>
+                        <Run Text="{loc:Loc Deployment_Summary_Failed}"/>
+                        <Run Text="{Binding SkippedCount, Mode=OneWay}"/>
+                        <Run Text="{loc:Loc Deployment_Summary_Skipped}"/>
+                    </TextBlock>
+                </StackPanel>
+                <!-- Elapsed Time -->
+                <TextBlock Grid.Column="2"
+                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           VerticalAlignment="Center">
+                    <Run Text="{Binding ElapsedTime, Mode=OneWay}"/>
+                </TextBlock>
+            </Grid>
+        </Border>
+
+        <!-- Applications List (status only) - visible during deployment and after completion -->
         <materialDesign:Card Grid.Row="2"
                               Padding="0"
-                              materialDesign:ElevationAssist.Elevation="Dp2"
-                              Visibility="{Binding IsDeploying, Converter={StaticResource BooleanToVisibilityConverter}}">
+                              materialDesign:ElevationAssist.Elevation="Dp2">
+            <materialDesign:Card.Style>
+                <Style TargetType="materialDesign:Card" BasedOn="{StaticResource {x:Type materialDesign:Card}}">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Setter Property="Margin" Value="0"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsDeploying}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsDeploymentComplete}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Setter Property="Margin" Value="0,80,0,0"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </materialDesign:Card.Style>
             <DataGrid ItemsSource="{Binding DeploymentApplications}"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
@@ -293,7 +412,10 @@
                       VirtualizingPanel.ScrollUnit="Pixel"
                       EnableRowVirtualization="True"
                       materialDesign:DataGridAssist.CellPadding="12 8"
-                      materialDesign:DataGridAssist.ColumnHeaderPadding="12 10">
+                      materialDesign:DataGridAssist.ColumnHeaderPadding="12 10"
+                      RowStyle="{StaticResource EnhancedDataGridRowStyle}"
+                      CellStyle="{StaticResource EnhancedDataGridCellStyle}"
+                      AutomationProperties.Name="Deployment applications list">
                 <DataGrid.Columns>
                     <!-- Status Icon -->
                     <DataGridTemplateColumn Width="50">

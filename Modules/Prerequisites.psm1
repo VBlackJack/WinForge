@@ -301,11 +301,13 @@ function Install-Chocolatey {
             # Download latest Chocolatey nupkg
             Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.downloading') -Level 'Info'
             $chocoNupkg = Join-Path $chocoTempPath 'chocolatey.nupkg'
-            $webClient = New-Object System.Net.WebClient
             $sources = Get-DownloadSources
             $chocoUrl = $sources.prerequisites.chocolatey.downloadUrl
-            $webClient.DownloadFile($chocoUrl, $chocoNupkg)
-            $webClient.Dispose()
+
+            # Use Invoke-WebRequest instead of deprecated WebClient for better security
+            [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+            $ProgressPreference = 'SilentlyContinue'  # Disable progress bar for faster download
+            Invoke-WebRequest -Uri $chocoUrl -OutFile $chocoNupkg -UseBasicParsing -ErrorAction Stop
 
             # Extract nupkg (it's just a ZIP file)
             Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.extracting') -Level 'Info'

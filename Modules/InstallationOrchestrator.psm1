@@ -446,6 +446,16 @@ function Test-ValidStateData {
     $profileNameProp = $StateData.PSObject.Properties['ProfileName']
     $profileName = if ($profileNameProp) { $profileNameProp.Value } else { $null }
     if ($profileName) {
+        # Security: Check for NUL byte (can cause issues with file paths)
+        if ($profileName.Contains([char]0)) {
+            Write-Status -Message "Invalid ProfileName in state file (contains NUL byte)" -Level 'Warning'
+            return $false
+        }
+        # Security: Check for control characters (0x00-0x1F) which can cause display/logging issues
+        if ($profileName -match '[\x00-\x1f]') {
+            Write-Status -Message "Invalid ProfileName in state file (contains control characters)" -Level 'Warning'
+            return $false
+        }
         if ($profileName -match '\.\.|[/\\|<>:"|?*]') {
             Write-Status -Message "Invalid ProfileName in state file (contains forbidden characters)" -Level 'Warning'
             return $false
@@ -1192,6 +1202,38 @@ function Test-AppInstalledParallel {
             $expandedPath = [Environment]::ExpandEnvironmentVariables($rawPath)
             if ($expandedPath -match '\.\.' -or $expandedPath -match '[\\/]\.\.[\\/]?' -or $expandedPath -match '^\.\.') { return $false }
             if ($expandedPath -notmatch '^[A-Za-z]:[\\/]') { return $false }
+
+            # Security: Normalize path and validate against allowed root directories
+            try {
+                $normalizedPath = [System.IO.Path]::GetFullPath($expandedPath)
+                # Ensure no traversal remains after normalization
+                if ($normalizedPath -match '\.\.') { return $false }
+
+                # Validate against allowed roots (Program Files, AppData, User profile, System drive)
+                $allowedRoots = @(
+                    $env:ProgramFiles,
+                    ${env:ProgramFiles(x86)},
+                    $env:LOCALAPPDATA,
+                    $env:APPDATA,
+                    $env:USERPROFILE,
+                    $env:SystemDrive + '\'
+                ) | Where-Object { $_ }
+
+                $isAllowed = $false
+                foreach ($root in $allowedRoots) {
+                    if ($normalizedPath.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
+                        $isAllowed = $true
+                        break
+                    }
+                }
+                if (-not $isAllowed) {
+                    Write-Verbose "Security: Path outside allowed roots blocked in parallel detection"
+                    return $false
+                }
+            } catch {
+                return $false
+            }
+
             if ($expandedPath -match '\*') {
                 return (Get-ChildItem -Path $expandedPath -ErrorAction SilentlyContinue).Count -gt 0
             }
@@ -1582,30 +1624,17 @@ function Test-AppInstalledParallel {
 
                     $downloadSuccess = $false
 
-                    # Method 1: WebClient
+                    # Method 1: Invoke-WebRequest (modern, secure, replaces deprecated WebClient)
                     try {
-                        $webClient = New-Object System.Net.WebClient
-                        $webClient.Headers.Add("User-Agent", "Win11Forge/3.2.0 (Windows NT; PowerShell)")
-                        $downloadTask = $webClient.DownloadFileTaskAsync($sources.DirectUrl, $tempFile)
-                        $downloadTask.Wait()
-                        $webClient.Dispose()
+                        $ProgressPreference = 'SilentlyContinue'
+                        $headers = @{
+                            'User-Agent' = 'Win11Forge/3.5.0 (Windows NT; PowerShell)'
+                        }
+                        Invoke-WebRequest -Uri $sources.DirectUrl -OutFile $tempFile -Headers $headers -UseBasicParsing -TimeoutSec 600 -ErrorAction Stop
                         if ((Test-Path -Path $tempFile) -and (Get-Item -Path $tempFile).Length -gt 0) { $downloadSuccess = $true }
                     } catch {
-                        Write-ParallelLog "WebClient failed: $($_.Exception.Message)" 'Verbose'
-                        if ($webClient) { $webClient.Dispose() }
+                        Write-ParallelLog "Invoke-WebRequest failed: $($_.Exception.Message)" 'Verbose'
                         if (Test-Path -Path $tempFile) { Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue }
-                    }
-
-                    # Method 2: Invoke-WebRequest
-                    if (-not $downloadSuccess) {
-                        if (Test-Path -Path $tempFile) { Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue }
-                        try {
-                            $ProgressPreference = 'SilentlyContinue'
-                            Invoke-WebRequest -Uri $sources.DirectUrl -OutFile $tempFile -UseBasicParsing -TimeoutSec 600 -ErrorAction Stop
-                            if ((Test-Path -Path $tempFile) -and (Get-Item -Path $tempFile).Length -gt 0) { $downloadSuccess = $true }
-                        } catch {
-                            Write-ParallelLog "Invoke-WebRequest failed: $($_.Exception.Message)" 'Verbose'
-                        }
                     }
 
                     # Method 3: BITS transfer
@@ -1650,8 +1679,22 @@ function Test-AppInstalledParallel {
                     switch ($installerType) {
                         'msi' {
                             $msiArgs = @('/i', "`"$tempFile`"", '/qn', '/norestart')
-                            if ($app.PSObject.Properties['InstallArguments']) {
-                                $msiArgs += $app.InstallArguments -split ' '
+                            if ($app.PSObject.Properties['InstallArguments'] -and $app.InstallArguments) {
+                                # Security: Validate InstallArguments against whitelist pattern
+                                # Allow only safe MSI property patterns: PROPERTY=value, /flag, -flag
+                                $safeArgsPattern = '^[A-Za-z0-9_]+=[A-Za-z0-9_.:\\/"-]*$|^[/-][A-Za-z0-9_]+$'
+                                $argParts = $app.InstallArguments -split '\s+' | Where-Object { $_ -ne '' }
+                                $validatedArgs = @()
+                                foreach ($argPart in $argParts) {
+                                    if ($argPart -match $safeArgsPattern) {
+                                        $validatedArgs += $argPart
+                                    } else {
+                                        Write-ParallelLog "Security: Skipping unsafe MSI argument: $argPart" 'Warning'
+                                    }
+                                }
+                                if ($validatedArgs.Count -gt 0) {
+                                    $msiArgs += $validatedArgs
+                                }
                             }
                             $process = Start-Process -FilePath 'msiexec.exe' -ArgumentList $msiArgs -Wait -NoNewWindow -PassThru
                             $processExitCode = $process.ExitCode
@@ -1659,14 +1702,34 @@ function Test-AppInstalledParallel {
                         'zip' {
                             Write-ParallelLog "Extracting ZIP archive" 'Info'
                             $extractPath = Join-Path $tempDir "extracted"
-                            Expand-Archive -Path $tempFile -DestinationPath $extractPath -Force
+                            # Security: Use safe archive extraction with validation
+                            # AllowDangerousExtensions is required because installers may contain .exe files
+                            if (Get-Command -Name Expand-ArchiveSafe -ErrorAction SilentlyContinue) {
+                                $expandResult = Expand-ArchiveSafe -Path $tempFile -DestinationPath $extractPath -AllowDangerousExtensions
+                                if (-not $expandResult) {
+                                    Write-ParallelLog "Archive extraction blocked by security validation" 'Error'
+                                    throw "Archive security validation failed"
+                                }
+                            } else {
+                                Expand-Archive -Path $tempFile -DestinationPath $extractPath -Force
+                            }
 
                             $setupExe = Get-ChildItem -Path $extractPath -Filter *.exe -Recurse |
                                 Where-Object { $_.Name -match 'setup|install' } |
                                 Select-Object -First 1
 
                             if ($setupExe) {
-                                $zipArgs = if ($app.PSObject.Properties['InstallArguments']) { $app.InstallArguments } else { '/S' }
+                                $zipArgs = '/S'
+                                if ($app.PSObject.Properties['InstallArguments'] -and $app.InstallArguments) {
+                                    # Security: Validate InstallArguments - allow common silent switches
+                                    $safeExeArgsPattern = '^[/-][A-Za-z0-9_=]+$|^--[A-Za-z0-9_-]+(=[A-Za-z0-9_.:\\/"-]*)?$'
+                                    if ($app.InstallArguments -match $safeExeArgsPattern -or
+                                        $app.InstallArguments -match '^[/-][Ss](ilent)?$') {
+                                        $zipArgs = $app.InstallArguments
+                                    } else {
+                                        Write-ParallelLog "Security: Using default /S - unsafe arguments blocked" 'Warning'
+                                    }
+                                }
                                 $process = Start-Process -FilePath $setupExe.FullName -ArgumentList $zipArgs -Wait -NoNewWindow -PassThru
                                 $processExitCode = $process.ExitCode
                             } else {
@@ -1690,7 +1753,17 @@ function Test-AppInstalledParallel {
                             }
                         }
                         'exe' {
-                            $exeArgs = if ($app.PSObject.Properties['InstallArguments']) { $app.InstallArguments } else { '/S' }
+                            $exeArgs = '/S'
+                            if ($app.PSObject.Properties['InstallArguments'] -and $app.InstallArguments) {
+                                # Security: Validate InstallArguments - allow common silent switches
+                                $safeExeArgsPattern = '^[/-][A-Za-z0-9_=]+$|^--[A-Za-z0-9_-]+(=[A-Za-z0-9_.:\\/"-]*)?$'
+                                if ($app.InstallArguments -match $safeExeArgsPattern -or
+                                    $app.InstallArguments -match '^[/-][Ss](ilent)?$') {
+                                    $exeArgs = $app.InstallArguments
+                                } else {
+                                    Write-ParallelLog "Security: Using default /S - unsafe arguments blocked" 'Warning'
+                                }
+                            }
                             $process = Start-Process -FilePath $tempFile -ArgumentList $exeArgs -Wait -NoNewWindow -PassThru
                             $processExitCode = $process.ExitCode
                         }

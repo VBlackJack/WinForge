@@ -34,9 +34,10 @@ public class DashboardViewModelTests
         // Arrange
         var powerShellBridge = new MockPowerShellBridge();
         var historyService = new MockDashboardHistoryService();
+        var settingsService = new MockDashboardAppSettingsService();
 
         // Act
-        var viewModel = new DashboardViewModel(powerShellBridge, historyService);
+        var viewModel = new DashboardViewModel(powerShellBridge, historyService, settingsService);
 
         // Assert
         Assert.Equal(DashboardState.Checking, viewModel.CurrentState);
@@ -53,9 +54,10 @@ public class DashboardViewModelTests
         // Arrange
         var powerShellBridge = new MockPowerShellBridge();
         var historyService = new MockDashboardHistoryService();
+        var settingsService = new MockDashboardAppSettingsService();
 
         // Act
-        var viewModel = new DashboardViewModel(powerShellBridge, historyService);
+        var viewModel = new DashboardViewModel(powerShellBridge, historyService, settingsService);
 
         // Assert - Version is empty until InitializeAsync completes
         Assert.Equal(string.Empty, viewModel.AppVersion);
@@ -70,9 +72,10 @@ public class DashboardViewModelTests
         // Arrange
         var powerShellBridge = new MockPowerShellBridge();
         var historyService = new MockDashboardHistoryService();
+        var settingsService = new MockDashboardAppSettingsService();
 
         // Act
-        var viewModel = new DashboardViewModel(powerShellBridge, historyService);
+        var viewModel = new DashboardViewModel(powerShellBridge, historyService, settingsService);
 
         // Assert - Should not be ready while in Checking state
         Assert.False(viewModel.IsReady);
@@ -88,7 +91,8 @@ public class DashboardViewModelTests
         // Arrange
         var powerShellBridge = new MockPowerShellBridge();
         var historyService = new MockDashboardHistoryService();
-        var viewModel = new DashboardViewModel(powerShellBridge, historyService);
+        var settingsService = new MockDashboardAppSettingsService();
+        var viewModel = new DashboardViewModel(powerShellBridge, historyService, settingsService);
 
         // Assert - Should have a title in checking state
         Assert.NotNull(viewModel.HeroTitle);
@@ -103,7 +107,8 @@ public class DashboardViewModelTests
         // Arrange
         var powerShellBridge = new MockPowerShellBridge();
         var historyService = new MockDashboardHistoryService();
-        var viewModel = new DashboardViewModel(powerShellBridge, historyService);
+        var settingsService = new MockDashboardAppSettingsService();
+        var viewModel = new DashboardViewModel(powerShellBridge, historyService, settingsService);
 
         // Assert
         Assert.False(viewModel.CanStartDeployment);
@@ -118,6 +123,7 @@ public class DashboardViewModelTests
         // Arrange
         var powerShellBridge = new MockPowerShellBridge();
         var historyService = new MockDashboardHistoryService();
+        var settingsService = new MockDashboardAppSettingsService();
         historyService.HistoryEntries.Add(new DeploymentHistoryEntry
         {
             ProfileName = "TestProfile",
@@ -127,7 +133,7 @@ public class DashboardViewModelTests
         });
 
         // Act
-        var viewModel = new DashboardViewModel(powerShellBridge, historyService);
+        var viewModel = new DashboardViewModel(powerShellBridge, historyService, settingsService);
 
         // Assert - Collection is empty until InitializeAsync completes
         Assert.Empty(viewModel.RecentDeployments);
@@ -143,9 +149,10 @@ public class DashboardViewModelTests
         // Arrange
         var powerShellBridge = new MockPowerShellBridge();
         var historyService = new MockDashboardHistoryService();
+        var settingsService = new MockDashboardAppSettingsService();
 
         // Act
-        var viewModel = new DashboardViewModel(powerShellBridge, historyService);
+        var viewModel = new DashboardViewModel(powerShellBridge, historyService, settingsService);
 
         // Assert
         Assert.False(viewModel.IsLoading);
@@ -176,4 +183,27 @@ internal class MockDashboardHistoryService : IDeploymentHistoryService
         HistoryEntries.Clear();
         return Task.CompletedTask;
     }
+}
+
+/// <summary>
+/// Mock implementation of IAppSettingsService for Dashboard tests.
+/// </summary>
+internal class MockDashboardAppSettingsService : IAppSettingsService
+{
+    public AppSettings Settings { get; set; } = new();
+
+    public AppSettings LoadSettings() => Settings;
+
+    public Task<AppSettings> LoadSettingsAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(Settings);
+
+    public void SaveSettings(AppSettings settings) => Settings = settings;
+
+    public Task SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
+    {
+        Settings = settings;
+        return Task.CompletedTask;
+    }
+
+    public void ApplySettings(AppSettings settings) => Settings = settings;
 }

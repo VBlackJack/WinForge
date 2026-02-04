@@ -175,10 +175,36 @@ public class ProfileBridge : IProfileBridge
 
     /// <summary>
     /// Gets the full path for a profile JSON file.
+    /// Validates the path stays within the profiles directory.
     /// </summary>
     private string GetProfilePath(string profileName)
     {
-        return Path.Combine(_profilesDirectory, $"{profileName}.json");
+        var profilePath = Path.Combine(_profilesDirectory, $"{profileName}.json");
+
+        // Defense-in-depth: verify the resolved path stays within profiles directory
+        return ValidatePathWithinDirectory(profilePath, _profilesDirectory);
+    }
+
+    /// <summary>
+    /// Validates that a file path is within the expected directory to prevent path traversal.
+    /// </summary>
+    private static string ValidatePathWithinDirectory(string filePath, string expectedBaseDir)
+    {
+        var fullPath = Path.GetFullPath(filePath);
+        var fullBaseDir = Path.GetFullPath(expectedBaseDir);
+
+        // Ensure the base directory ends with a separator for proper prefix checking
+        if (!fullBaseDir.EndsWith(Path.DirectorySeparatorChar.ToString()))
+        {
+            fullBaseDir += Path.DirectorySeparatorChar;
+        }
+
+        if (!fullPath.StartsWith(fullBaseDir, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException($"Path traversal detected: path is outside of allowed directory", nameof(filePath));
+        }
+
+        return fullPath;
     }
 
     /// <summary>

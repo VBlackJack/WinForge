@@ -84,7 +84,7 @@ public class ToastService : IToastService
     /// <inheritdoc/>
     public void ShowSuccess(string message)
     {
-        Show(message, ToastLevel.Success, 2000);
+        Show(message, ToastLevel.Success, 3500);
     }
 
     /// <inheritdoc/>

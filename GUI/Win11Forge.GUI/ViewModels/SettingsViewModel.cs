@@ -30,12 +30,14 @@ namespace Win11Forge.GUI.ViewModels;
 /// ViewModel for the Settings view.
 /// Handles theme and language configuration with persistence.
 /// </summary>
-public partial class SettingsViewModel : ViewModelBase
+public partial class SettingsViewModel : ViewModelBase, IDisposable
 {
     private readonly PaletteHelper _paletteHelper = new();
     private readonly IAppSettingsService _settingsService;
     private readonly IDeploymentHistoryService _historyService;
     private readonly IPowerShellBridge _powerShellBridge;
+    private readonly IErrorHistoryService? _errorHistoryService;
+    private readonly IApplicationDetectionService? _detectionService;
     private readonly ToastService? _toastService;
     private string _initialLanguageCode = string.Empty;
 
@@ -88,6 +90,12 @@ public partial class SettingsViewModel : ViewModelBase
     private int _maxParallelScans = 8;
 
     /// <summary>
+    /// Update scan timeout in minutes (1-30).
+    /// </summary>
+    [ObservableProperty]
+    private int _updateScanTimeoutMinutes = 5;
+
+    /// <summary>
     /// Whether reduced motion is enabled for accessibility.
     /// </summary>
     [ObservableProperty]
@@ -102,6 +110,11 @@ public partial class SettingsViewModel : ViewModelBase
     /// Available parallel scan options.
     /// </summary>
     public int[] ParallelScanOptions { get; } = [1, 2, 4, 6, 8, 10, 12, 16, 20];
+
+    /// <summary>
+    /// Available update scan timeout options in minutes.
+    /// </summary>
+    public int[] UpdateScanTimeoutOptions { get; } = [1, 2, 3, 5, 10, 15, 20, 30];
 
     /// <summary>
     /// Collection of scheduled deployments.
@@ -163,23 +176,143 @@ public partial class SettingsViewModel : ViewModelBase
         ScheduledTriggerType.AtLogon
     ];
 
+    #region Error History
+
+    /// <summary>
+    /// Recent errors from the error history service.
+    /// </summary>
+    public ObservableCollection<ErrorHistoryEntry>? RecentErrors => _errorHistoryService?.Errors;
+
+    /// <summary>
+    /// Whether there are any errors in history.
+    /// </summary>
+    [ObservableProperty]
+    private bool _hasErrors;
+
+    /// <summary>
+    /// Number of errors in history.
+    /// </summary>
+    [ObservableProperty]
+    private int _errorCount;
+
+    /// <summary>
+    /// Clears the error history.
+    /// </summary>
+    [RelayCommand]
+    private void ClearErrorHistory()
+    {
+        _errorHistoryService?.ClearErrors();
+        _toastService?.ShowSuccess(Resources.Resources.Settings_ErrorsCleared);
+    }
+
+    #endregion
+
+    #region Cache Statistics
+
+    /// <summary>
+    /// Number of cached packages.
+    /// </summary>
+    [ObservableProperty]
+    private int _cachePackageCount;
+
+    /// <summary>
+    /// Number of cache hits.
+    /// </summary>
+    [ObservableProperty]
+    private int _cacheHits;
+
+    /// <summary>
+    /// Number of cache misses.
+    /// </summary>
+    [ObservableProperty]
+    private int _cacheMisses;
+
+    /// <summary>
+    /// Cache hit rate as percentage string.
+    /// </summary>
+    [ObservableProperty]
+    private string _cacheHitRate = "0%";
+
+    /// <summary>
+    /// Last cache refresh time.
+    /// </summary>
+    [ObservableProperty]
+    private string _lastCacheRefresh = Resources.Resources.Common_NotAvailable;
+
+    /// <summary>
+    /// Average detection time.
+    /// </summary>
+    [ObservableProperty]
+    private string _averageDetectionTime = "0 ms";
+
+    /// <summary>
+    /// Refreshes cache statistics.
+    /// </summary>
+    [RelayCommand]
+    private void RefreshCacheStatistics()
+    {
+        if (_detectionService == null) return;
+
+        var stats = _detectionService.GetCacheStatistics();
+        CachePackageCount = stats.PackageCount;
+        CacheHits = stats.Hits;
+        CacheMisses = stats.Misses;
+
+        var total = stats.Hits + stats.Misses;
+        CacheHitRate = total > 0
+            ? $"{(stats.Hits * 100.0 / total):F1}%"
+            : "0%";
+
+        LastCacheRefresh = stats.LastRefresh.HasValue
+            ? stats.LastRefresh.Value.ToLocalTime().ToString("g")
+            : Resources.Resources.Common_NotAvailable;
+
+        AverageDetectionTime = stats.AverageDetectionTime.TotalMilliseconds > 0
+            ? $"{stats.AverageDetectionTime.TotalMilliseconds:F0} ms"
+            : "0 ms";
+    }
+
+    /// <summary>
+    /// Clears the detection cache.
+    /// </summary>
+    [RelayCommand]
+    private void ClearCache()
+    {
+        _detectionService?.ClearCache();
+        RefreshCacheStatistics();
+        _toastService?.ShowSuccess(Resources.Resources.Settings_CacheCleared);
+    }
+
+    #endregion
+
     /// <summary>
     /// Initializes a new instance of SettingsViewModel with default services.
+    /// Used for XAML design-time support only.
     /// </summary>
     public SettingsViewModel()
-        : this(new AppSettingsService(), new DeploymentHistoryService(), new PowerShellBridge(), null)
+        : this(new AppSettingsService(), new DeploymentHistoryService(), new DesignTimePowerShellBridge(), null, null, null)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of SettingsViewModel with injected services.
     /// </summary>
-    public SettingsViewModel(IAppSettingsService settingsService, IDeploymentHistoryService historyService, IPowerShellBridge powerShellBridge, ToastService? toastService = null)
+    public SettingsViewModel(IAppSettingsService settingsService, IDeploymentHistoryService historyService, IPowerShellBridge powerShellBridge, ToastService? toastService = null, IErrorHistoryService? errorHistoryService = null, IApplicationDetectionService? detectionService = null)
     {
         _settingsService = settingsService;
         _historyService = historyService;
         _powerShellBridge = powerShellBridge;
         _toastService = toastService;
+        _errorHistoryService = errorHistoryService;
+        _detectionService = detectionService;
+
+        // Subscribe to error history changes
+        if (_errorHistoryService != null)
+        {
+            _errorHistoryService.ErrorCountChanged += OnErrorCountChanged;
+            HasErrors = _errorHistoryService.HasErrors;
+            ErrorCount = _errorHistoryService.ErrorCount;
+        }
 
         // Initialize available languages
         AvailableLanguages =
@@ -193,6 +326,13 @@ public partial class SettingsViewModel : ViewModelBase
 
         // Load current settings
         LoadCurrentSettings();
+    }
+
+    private void OnErrorCountChanged(object? sender, EventArgs e)
+    {
+        if (_errorHistoryService == null) return;
+        HasErrors = _errorHistoryService.HasErrors;
+        ErrorCount = _errorHistoryService.ErrorCount;
     }
 
     /// <inheritdoc/>
@@ -226,6 +366,7 @@ public partial class SettingsViewModel : ViewModelBase
         // Get parallel installs setting
         MaxParallelInstalls = Math.Clamp(settings.MaxParallelInstalls, 1, 10);
         MaxParallelScans = Math.Clamp(settings.MaxParallelScans, 1, 20);
+        UpdateScanTimeoutMinutes = Math.Clamp(settings.UpdateScanTimeoutMinutes, 1, 30);
 
         // Apply theme immediately
         ApplyThemeInternal(IsDarkTheme);
@@ -248,6 +389,16 @@ public partial class SettingsViewModel : ViewModelBase
     {
         SaveSettings();
         StatusMessage = Resources.Resources.Settings_ParallelScansApplied;
+        _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
+    }
+
+    /// <summary>
+    /// Called when UpdateScanTimeoutMinutes changes.
+    /// </summary>
+    partial void OnUpdateScanTimeoutMinutesChanged(int value)
+    {
+        SaveSettings();
+        StatusMessage = Resources.Resources.Settings_ScanTimeoutApplied;
         _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
     }
 
@@ -380,7 +531,8 @@ public partial class SettingsViewModel : ViewModelBase
             IsDarkTheme = IsDarkTheme,
             LanguageCode = SelectedLanguage?.Code ?? "en",
             MaxParallelInstalls = MaxParallelInstalls,
-            MaxParallelScans = MaxParallelScans
+            MaxParallelScans = MaxParallelScans,
+            UpdateScanTimeoutMinutes = UpdateScanTimeoutMinutes
         };
 
         _settingsService.SaveSettings(settings);
@@ -427,7 +579,7 @@ public partial class SettingsViewModel : ViewModelBase
             }
 
             // Open in Windows Explorer
-            Process.Start(new ProcessStartInfo
+            using var process = Process.Start(new ProcessStartInfo
             {
                 FileName = logFolderPath,
                 UseShellExecute = true
@@ -447,15 +599,15 @@ public partial class SettingsViewModel : ViewModelBase
     {
         try
         {
-            Process.Start(new ProcessStartInfo
+            using var process = Process.Start(new ProcessStartInfo
             {
                 FileName = "https://github.com/VBlackJack/Win11Forge",
                 UseShellExecute = true
             });
         }
-        catch
+        catch (Exception ex)
         {
-            // Browser launch is non-critical
+            System.Diagnostics.Debug.WriteLine($"Failed to open GitHub: {ex.Message}");
         }
     }
 
@@ -838,6 +990,41 @@ public partial class SettingsViewModel : ViewModelBase
         public string? LastRunTime { get; set; }
         public string? LastRunResult { get; set; }
     }
+
+    #region IDisposable
+
+    private bool _disposed;
+
+    /// <summary>
+    /// Releases all resources used by the SettingsViewModel.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases managed and unmanaged resources.
+    /// </summary>
+    /// <param name="disposing">True if disposing managed resources.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+
+        if (disposing)
+        {
+            // Unsubscribe from error history events
+            if (_errorHistoryService != null)
+            {
+                _errorHistoryService.ErrorCountChanged -= OnErrorCountChanged;
+            }
+        }
+
+        _disposed = true;
+    }
+
+    #endregion
 }
 
 /// <summary>

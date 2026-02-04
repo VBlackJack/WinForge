@@ -297,18 +297,20 @@ class CommandInjectionException : SecurityException {
 }
 
 class AuthenticationException : SecurityException {
-    [string]$ApiKey
+    # Security: Removed ApiKey property to prevent sensitive data exposure in exceptions
+    # Use KeyId (non-sensitive identifier) instead if key identification is needed
+    [string]$KeyId
     [string]$ClientIp
 
     AuthenticationException([string]$message) : base($message) {
         $this.Category = 'Authentication'
-        $this.ApiKey = $null
+        $this.KeyId = $null
         $this.ClientIp = $null
     }
 
     AuthenticationException([string]$message, [string]$clientIp) : base($message) {
         $this.Category = 'Authentication'
-        $this.ApiKey = $null
+        $this.KeyId = $null
         $this.ClientIp = $clientIp
     }
 }

@@ -187,8 +187,9 @@
         },
         "key": {
           "type": "string",
-          "description": "The API key value (should be 32+ characters)",
-          "minLength": 1
+          "description": "The API key value (must be 32+ characters for security)",
+          "minLength": 32,
+          "maxLength": 256
         },
         "description": {
           "type": "string",

@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "External download sources configuration for Win11Forge",
-    "version": "3.5.2",
+    "version": "3.5.9",
     "author": "Julien Bombled",
     "lastUpdated": "2026-01-19"
   },
@@ -115,8 +115,8 @@
       },
       "BattleNet": {
         "url": "https://downloader.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP&version=Live",
-        "silentArgs": "--lang=enUS --installpath=\"C:\\Program Files (x86)\\Battle.net\"",
-        "notes": "Blizzard Battle.net launcher"
+        "silentArgs": "--lang=enUS --installpath=\"%ProgramFiles(x86)%\\Battle.net\"",
+        "notes": "Blizzard Battle.net launcher - uses %ProgramFiles(x86)% for portability"
       },
       "VLC": {
         "url": "https://get.videolan.org/vlc/last/win64/",

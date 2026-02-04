@@ -18,25 +18,35 @@ using System.IO;
 using Moq;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
+using Win11Forge.GUI.Services.PowerShell;
+using Win11Forge.GUI.Services.Implementations;
 
 namespace Win11Forge.GUI.Tests;
 
 /// <summary>
-/// Tests for PowerShellBridge - the critical C# to PowerShell bridge.
-/// These tests ensure the GUI can locate and interact with PowerShell scripts.
+/// Integration tests for the PowerShell services.
+/// These tests verify that the services can locate and interact with the repository.
 /// </summary>
-public class PowerShellBridgeTests
+public class PowerShellServicesIntegrationTests
 {
+    private readonly IRepositoryPathService _pathService;
+    private readonly IPowerShellExecutionService _executionService;
+
+    public PowerShellServicesIntegrationTests()
+    {
+        _pathService = new RepositoryPathService();
+        _executionService = new PowerShellExecutionService(_pathService);
+    }
+
     /// <summary>
-    /// Verifies that the PowerShellBridge can locate the repository root.
+    /// Verifies that the RepositoryPathService can locate the repository root.
     /// This is the most critical test - if this fails, nothing works.
     /// </summary>
     [Fact]
-    public void ResolveRepositoryRoot_ShouldFindRoot()
+    public void RepositoryPathService_ShouldFindRoot()
     {
         // Arrange & Act
-        var bridge = new PowerShellBridge();
-        var repositoryRoot = bridge.RepositoryRoot;
+        var repositoryRoot = _pathService.RepositoryRoot;
 
         // Assert - Root should not be null or empty
         Assert.False(string.IsNullOrEmpty(repositoryRoot),
@@ -47,11 +57,10 @@ public class PowerShellBridgeTests
     /// Verifies that the repository root contains the expected Config/version.json file.
     /// </summary>
     [Fact]
-    public void ResolveRepositoryRoot_ShouldContainVersionFile()
+    public void RepositoryPathService_ShouldContainVersionFile()
     {
         // Arrange
-        var bridge = new PowerShellBridge();
-        var repositoryRoot = bridge.RepositoryRoot;
+        var repositoryRoot = _pathService.RepositoryRoot;
 
         // Act
         var versionFilePath = Path.Combine(repositoryRoot, "Config", "version.json");
@@ -66,11 +75,10 @@ public class PowerShellBridgeTests
     /// Verifies that the repository root contains the Modules directory.
     /// </summary>
     [Fact]
-    public void ResolveRepositoryRoot_ShouldContainModulesDirectory()
+    public void RepositoryPathService_ShouldContainModulesDirectory()
     {
         // Arrange
-        var bridge = new PowerShellBridge();
-        var repositoryRoot = bridge.RepositoryRoot;
+        var repositoryRoot = _pathService.RepositoryRoot;
 
         // Act
         var modulesPath = Path.Combine(repositoryRoot, "Modules");
@@ -85,11 +93,10 @@ public class PowerShellBridgeTests
     /// Verifies that the repository root contains the Profiles directory.
     /// </summary>
     [Fact]
-    public void ResolveRepositoryRoot_ShouldContainProfilesDirectory()
+    public void RepositoryPathService_ShouldContainProfilesDirectory()
     {
         // Arrange
-        var bridge = new PowerShellBridge();
-        var repositoryRoot = bridge.RepositoryRoot;
+        var repositoryRoot = _pathService.RepositoryRoot;
 
         // Act
         var profilesPath = Path.Combine(repositoryRoot, "Profiles");
@@ -101,21 +108,64 @@ public class PowerShellBridgeTests
     }
 
     /// <summary>
+    /// Verifies that GetPath returns correct combined paths.
+    /// </summary>
+    [Fact]
+    public void RepositoryPathService_GetPath_ShouldCombinePaths()
+    {
+        // Arrange & Act
+        var configPath = _pathService.GetPath("Config", "version.json");
+
+        // Assert
+        Assert.EndsWith("version.json", configPath);
+        Assert.Contains("Config", configPath);
+    }
+}
+
+/// <summary>
+/// Integration tests for VersionService.
+/// </summary>
+public class VersionServiceIntegrationTests
+{
+    private readonly IVersionService _versionService;
+
+    public VersionServiceIntegrationTests()
+    {
+        var pathService = new RepositoryPathService();
+        var executionService = new PowerShellExecutionService(pathService);
+        _versionService = new VersionServiceImpl(pathService, executionService);
+    }
+
+    /// <summary>
     /// Verifies that GetWin11ForgeVersionAsync returns a valid version string.
     /// </summary>
     [Fact]
     public async Task GetWin11ForgeVersionAsync_ShouldReturnVersion()
     {
-        // Arrange
-        var bridge = new PowerShellBridge();
-
         // Act
-        var version = await bridge.GetWin11ForgeVersionAsync();
+        var version = await _versionService.GetWin11ForgeVersionAsync();
 
         // Assert
         Assert.False(string.IsNullOrEmpty(version),
             "Version should not be null or empty");
         Assert.Matches(@"^\d+\.\d+\.\d+", version);
+    }
+}
+
+/// <summary>
+/// Integration tests for ProfileManagementService.
+/// </summary>
+public class ProfileManagementServiceIntegrationTests
+{
+    private readonly IProfileManagementService _profileService;
+
+    public ProfileManagementServiceIntegrationTests()
+    {
+        var pathService = new RepositoryPathService();
+        var executionService = new PowerShellExecutionService(pathService);
+        var cacheService = new ApplicationCacheService(pathService);
+        var versionService = new VersionServiceImpl(pathService, executionService);
+        _profileService = new ProfileManagementServiceImpl(pathService, executionService, cacheService, versionService);
     }
 
     /// <summary>
@@ -124,11 +174,8 @@ public class PowerShellBridgeTests
     [Fact]
     public async Task GetAvailableProfilesAsync_ShouldReturnProfiles()
     {
-        // Arrange
-        var bridge = new PowerShellBridge();
-
         // Act
-        var profiles = await bridge.GetAvailableProfilesAsync();
+        var profiles = await _profileService.GetAvailableProfilesAsync();
 
         // Assert
         Assert.NotNull(profiles);
@@ -142,17 +189,32 @@ public class PowerShellBridgeTests
     [Fact]
     public async Task LoadProfileAsync_Base_ShouldLoadSuccessfully()
     {
-        // Arrange
-        var bridge = new PowerShellBridge();
-
         // Act
-        var profile = await bridge.LoadProfileAsync("Base");
+        var profile = await _profileService.LoadProfileAsync("Base");
 
         // Assert
         Assert.NotNull(profile);
         Assert.Equal("Base", profile.Name);
         Assert.NotNull(profile.Applications);
         Assert.NotEmpty(profile.Applications);
+    }
+}
+
+/// <summary>
+/// Integration tests for ApplicationManagementService.
+/// </summary>
+public class ApplicationManagementServiceIntegrationTests
+{
+    private readonly IApplicationManagementService _appService;
+
+    public ApplicationManagementServiceIntegrationTests()
+    {
+        var loggerFactory = new LoggerFactory();
+        var pathService = new RepositoryPathService();
+        var executionService = new PowerShellExecutionService(pathService);
+        var cacheService = new ApplicationCacheService(pathService);
+        var detectionService = new HybridDetectionService(loggerFactory);
+        _appService = new ApplicationManagementServiceImpl(pathService, executionService, cacheService, detectionService);
     }
 
     /// <summary>
@@ -161,11 +223,8 @@ public class PowerShellBridgeTests
     [Fact]
     public async Task GetAllApplicationsAsync_ShouldReturnApplications()
     {
-        // Arrange
-        var bridge = new PowerShellBridge();
-
         // Act
-        var apps = await bridge.GetAllApplicationsAsync();
+        var apps = await _appService.GetAllApplicationsAsync();
 
         // Assert
         Assert.NotNull(apps);
@@ -394,11 +453,11 @@ public class PowerShellBridgeMockTests
     {
         // Arrange
         var mockBridge = new Mock<IPowerShellBridge>();
-        mockBridge.Setup(b => b.InstallPrerequisitesAsync(It.IsAny<Action<string>?>()))
+        mockBridge.Setup(b => b.InstallPrerequisitesAsync(It.IsAny<Action<string>?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         // Act
-        var result = await mockBridge.Object.InstallPrerequisitesAsync();
+        var result = await mockBridge.Object.InstallPrerequisitesAsync(null, CancellationToken.None);
 
         // Assert
         Assert.True(result);

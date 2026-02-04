@@ -319,8 +319,19 @@ function Import-Plugin {
     $canonicalPluginPath = [System.IO.Path]::GetFullPath($plugin.Path).TrimEnd([System.IO.Path]::DirectorySeparatorChar)
     $canonicalEntryPath = [System.IO.Path]::GetFullPath($entryPointPath)
 
-    if (-not $canonicalEntryPath.StartsWith($canonicalPluginPath + [System.IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "Security: Plugin entry point escapes plugin directory: $($plugin.EntryPoint)"
+    # Security: Resolve symlinks before validation
+    if (Test-Path $canonicalEntryPath) {
+        $resolvedEntryPath = (Get-Item -LiteralPath $canonicalEntryPath -Force).FullName
+        if ($resolvedEntryPath -ne $canonicalEntryPath) {
+            Write-Status -Message "Security: Plugin entry point is a symlink, validating resolved target" -Level 'Verbose' -Category 'Plugin'
+            $canonicalEntryPath = $resolvedEntryPath
+        }
+    }
+
+    # Ensure plugin directory path ends with separator for proper prefix matching
+    $canonicalPluginPathWithSep = $canonicalPluginPath + [System.IO.Path]::DirectorySeparatorChar
+    if (-not $canonicalEntryPath.StartsWith($canonicalPluginPathWithSep, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Security: Plugin entry point escapes plugin directory (possible symlink attack): $($plugin.EntryPoint)"
     }
 
     if (-not (Test-Path $entryPointPath)) {
@@ -697,9 +708,25 @@ function Test-PluginManifest {
             return $false
         }
 
-        # Security: Validate entryPoint characters (only allow safe characters)
-        if ($manifest.entryPoint -notmatch '^[a-zA-Z0-9_\-./\\]+\.psm1$') {
-            Write-Verbose "Security: Invalid entryPoint format (must be .psm1 file)"
+        # Security: Validate entryPoint characters (strict validation)
+        # Only allow alphanumeric, underscores, hyphens, and single forward slashes
+        # Block: consecutive dots (..), consecutive slashes, backslashes (normalized later)
+        if ($manifest.entryPoint -notmatch '^[a-zA-Z0-9_\-][a-zA-Z0-9_\-/]*\.psm1$') {
+            Write-Verbose "Security: Invalid entryPoint format (must be .psm1 file with safe characters)"
+            return $false
+        }
+
+        # Security: Block path traversal patterns explicitly
+        if ($manifest.entryPoint -match '\.\.|\/{2,}|\\') {
+            Write-Verbose "Security: EntryPoint contains path traversal characters"
+            return $false
+        }
+
+        # Security: Validate file extension (only PowerShell modules allowed)
+        $validExtensions = @('.psm1', '.ps1')
+        $entryPointExtension = [System.IO.Path]::GetExtension($manifest.entryPoint).ToLower()
+        if ($entryPointExtension -notin $validExtensions) {
+            Write-Verbose "Security: EntryPoint has invalid extension '$entryPointExtension' (allowed: $($validExtensions -join ', '))"
             return $false
         }
 
@@ -708,9 +735,35 @@ function Test-PluginManifest {
             $pluginDir = [System.IO.Path]::GetFullPath([System.IO.Path]::GetDirectoryName($ManifestPath))
             $entryPointFull = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($pluginDir, $manifest.entryPoint))
 
+            # Security: Resolve symlinks by getting the actual target path
+            if (Test-Path $entryPointFull) {
+                $resolvedPath = (Get-Item -LiteralPath $entryPointFull -Force).FullName
+                # If symlink, use resolved target for validation
+                if ($resolvedPath -ne $entryPointFull) {
+                    Write-Verbose "Security: EntryPoint is a symlink, validating resolved target"
+                    $entryPointFull = $resolvedPath
+                }
+            }
+
             # Verify the resolved path is within the plugin directory
-            if (-not $entryPointFull.StartsWith($pluginDir, [System.StringComparison]::OrdinalIgnoreCase)) {
-                Write-Verbose "Security: EntryPoint escapes plugin directory (path traversal attempt)"
+            # Ensure plugin directory ends with separator for proper prefix matching
+            $pluginDirNormalized = $pluginDir.TrimEnd([System.IO.Path]::DirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
+            if (-not $entryPointFull.StartsWith($pluginDirNormalized, [System.StringComparison]::OrdinalIgnoreCase)) {
+                Write-Verbose "Security: EntryPoint escapes plugin directory (path traversal or symlink attack)"
+                return $false
+            }
+
+            # Security: Verify entry point exists and is a file (not a directory)
+            if (-not (Test-Path -Path $entryPointFull -PathType Leaf)) {
+                Write-Verbose "Security: EntryPoint does not exist or is not a file: $entryPointFull"
+                return $false
+            }
+
+            # Security: Verify file size is reasonable (max 1MB to prevent DoS)
+            $fileInfo = Get-Item -LiteralPath $entryPointFull -Force
+            $maxPluginSizeBytes = 1MB
+            if ($fileInfo.Length -gt $maxPluginSizeBytes) {
+                Write-Verbose "Security: EntryPoint file too large ($($fileInfo.Length) bytes, max: $maxPluginSizeBytes)"
                 return $false
             }
         } catch {

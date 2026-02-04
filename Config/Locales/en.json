@@ -2,7 +2,7 @@
   "_meta": {
     "locale": "en",
     "name": "English",
-    "version": "3.5.2",
+    "version": "3.5.9",
     "author": "Julien Bombled"
   },
   "common": {
@@ -27,7 +27,7 @@
     "next": "Next",
     "exit": "Exit",
     "retry": "Retry",
-    "version": "3.5.2"
+    "version": "3.5.9"
   },
   "core": {
     "admin_required": "Administrator privileges required",

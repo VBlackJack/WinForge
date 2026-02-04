@@ -51,9 +51,10 @@ public class AppSettingsService : IAppSettingsService
                 Directory.CreateDirectory(win11ForgePath);
             }
         }
-        catch
+        catch (Exception ex)
         {
             // Fallback to temp if creation fails
+            System.Diagnostics.Debug.WriteLine($"Failed to create settings directory in AppData: {ex.Message}");
             win11ForgePath = Path.Combine(Path.GetTempPath(), "Win11Forge");
             try
             {
@@ -62,9 +63,10 @@ public class AppSettingsService : IAppSettingsService
                     Directory.CreateDirectory(win11ForgePath);
                 }
             }
-            catch
+            catch (Exception innerEx)
             {
                 // Use temp directly
+                System.Diagnostics.Debug.WriteLine($"Failed to create fallback settings directory: {innerEx.Message}");
                 win11ForgePath = Path.GetTempPath();
             }
         }
@@ -104,9 +106,10 @@ public class AppSettingsService : IAppSettingsService
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // If file is corrupted, return defaults
+                System.Diagnostics.Debug.WriteLine($"Failed to load settings (using defaults): {ex.Message}");
             }
 
             // Return default settings
@@ -132,9 +135,10 @@ public class AppSettingsService : IAppSettingsService
                 File.WriteAllText(SettingsFilePath, json);
                 _cachedSettings = settings;
             }
-            catch
+            catch (Exception ex)
             {
-                // Silently fail - settings persistence is non-critical
+                // Settings persistence is non-critical, but log for diagnostics
+                System.Diagnostics.Debug.WriteLine($"Failed to save settings: {ex.Message}");
             }
         }
     }
@@ -174,9 +178,10 @@ public class AppSettingsService : IAppSettingsService
         {
             throw;
         }
-        catch
+        catch (Exception ex)
         {
             // If file is corrupted, return defaults
+            System.Diagnostics.Debug.WriteLine($"Failed to load settings async (using defaults): {ex.Message}");
         }
 
         // Return and cache default settings
@@ -211,9 +216,10 @@ public class AppSettingsService : IAppSettingsService
         {
             throw;
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently fail - settings persistence is non-critical
+            // Settings persistence is non-critical, but log for diagnostics
+            System.Diagnostics.Debug.WriteLine($"Failed to save settings async: {ex.Message}");
         }
     }
 
@@ -228,9 +234,10 @@ public class AppSettingsService : IAppSettingsService
             theme.SetBaseTheme(settings.IsDarkTheme ? BaseTheme.Dark : BaseTheme.Light);
             paletteHelper.SetTheme(theme);
         }
-        catch
+        catch (Exception ex)
         {
-            // Theme application is non-critical
+            // Theme application is non-critical, but log for diagnostics
+            System.Diagnostics.Debug.WriteLine($"Failed to apply theme: {ex.Message}");
         }
 
         // Apply high contrast mode
@@ -238,9 +245,10 @@ public class AppSettingsService : IAppSettingsService
         {
             ApplyHighContrastMode(settings.IsHighContrastEnabled);
         }
-        catch
+        catch (Exception ex)
         {
-            // High contrast application is non-critical
+            // High contrast application is non-critical, but log for diagnostics
+            System.Diagnostics.Debug.WriteLine($"Failed to apply high contrast mode: {ex.Message}");
         }
 
         // Apply language/culture
@@ -256,9 +264,10 @@ public class AppSettingsService : IAppSettingsService
                 Resources.Resources.Culture = culture;
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Language application is non-critical
+            // Language application is non-critical, but log for diagnostics
+            System.Diagnostics.Debug.WriteLine($"Failed to apply language setting: {ex.Message}");
         }
     }
 
@@ -296,9 +305,10 @@ public class AppSettingsService : IAppSettingsService
                 var highContrastDict = new ResourceDictionary { Source = highContrastUri };
                 app.Resources.MergedDictionaries.Add(highContrastDict);
             }
-            catch
+            catch (Exception ex)
             {
                 // High contrast resources may not be available
+                System.Diagnostics.Debug.WriteLine($"Failed to load high contrast resources: {ex.Message}");
             }
         }
     }
@@ -389,6 +399,12 @@ public class AppSettings : System.ComponentModel.DataAnnotations.IValidatableObj
     public int MaxParallelScans { get; set; } = 8;
 
     /// <summary>
+    /// Timeout in minutes for update scan operations (1-30, default 5).
+    /// </summary>
+    [System.ComponentModel.DataAnnotations.Range(1, 30, ErrorMessage = "Update scan timeout must be between 1 and 30 minutes")]
+    public int UpdateScanTimeoutMinutes { get; set; } = 5;
+
+    /// <summary>
     /// Whether this is the first run of the application.
     /// </summary>
     public bool IsFirstRun { get; set; } = true;
@@ -409,6 +425,59 @@ public class AppSettings : System.ComponentModel.DataAnnotations.IValidatableObj
     /// Whether enhanced tooltips are enabled.
     /// </summary>
     public bool EnhancedTooltipsEnabled { get; set; } = true;
+
+    #region Apps Filter State (persisted across navigation)
+
+    /// <summary>
+    /// Last search text in the Apps view.
+    /// </summary>
+    public string AppsLastSearchText { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Last selected category filter in the Apps view.
+    /// </summary>
+    public string AppsLastSelectedCategory { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Last selected status filter in the Apps view (0=All, 1=Installed, 2=NotInstalled, 3=Selected, 4=Favorites, 5=HasUpdates).
+    /// </summary>
+    [System.ComponentModel.DataAnnotations.Range(0, 5, ErrorMessage = "Status filter must be between 0 and 5")]
+    public int AppsLastStatusFilter { get; set; } = 0;
+
+    /// <summary>
+    /// Whether the Favorites column is visible in the Apps view.
+    /// </summary>
+    public bool AppsShowFavoritesColumn { get; set; } = true;
+
+    /// <summary>
+    /// Whether the Version column is visible in the Apps view.
+    /// Hidden by default to reduce visual density.
+    /// </summary>
+    public bool AppsShowVersionColumn { get; set; } = false;
+
+    /// <summary>
+    /// Whether the Status column is visible in the Apps view.
+    /// </summary>
+    public bool AppsShowStatusColumn { get; set; } = true;
+
+    /// <summary>
+    /// Whether the Category column is visible in the Apps view.
+    /// </summary>
+    public bool AppsShowCategoryColumn { get; set; } = true;
+
+    /// <summary>
+    /// Whether the Sources column is visible in the Apps view.
+    /// Hidden by default to reduce visual density.
+    /// </summary>
+    public bool AppsShowSourcesColumn { get; set; } = false;
+
+    /// <summary>
+    /// Whether the Logs column is visible in the Apps view.
+    /// Hidden by default, shown after operations.
+    /// </summary>
+    public bool AppsShowLogsColumn { get; set; } = false;
+
+    #endregion
 
     /// <summary>
     /// Validates the settings model.

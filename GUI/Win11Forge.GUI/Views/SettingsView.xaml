@@ -122,11 +122,27 @@
                                 <Border Background="{DynamicResource MaterialDesignToolBarBackground}"
                                         CornerRadius="4" Padding="12"
                                         Visibility="{Binding RestartRequired, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="AlertCircle" Width="20" Height="20" VerticalAlignment="Center"
-                                                                  Foreground="{DynamicResource MaterialDesignValidationErrorBrush}" Margin="0,0,8,0"/>
-                                        <TextBlock Text="{loc:Loc Settings_RestartRequired}" Style="{StaticResource MaterialDesignBody2TextBlock}" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="AlertCircle" Width="20" Height="20" VerticalAlignment="Center"
+                                                                      Foreground="{DynamicResource MaterialDesignValidationErrorBrush}" Margin="0,0,8,0"/>
+                                            <TextBlock Text="{loc:Loc Settings_RestartRequired}" Style="{StaticResource MaterialDesignBody2TextBlock}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="1"
+                                                Command="{Binding RestartApplicationCommand}"
+                                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                                Margin="12,0,0,0"
+                                                AutomationProperties.Name="Restart application now">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="Restart" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                <TextBlock Text="{loc:Loc Settings_RestartNow}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
                                 </Border>
                             </StackPanel>
                         </materialDesign:Card>
@@ -205,6 +221,7 @@
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
+                    <StackPanel>
                     <materialDesign:Card Padding="16" materialDesign:ElevationAssist.Elevation="Dp2">
                     <StackPanel>
                         <!-- Section Header -->
@@ -298,8 +315,7 @@
                             <Button Grid.Column="1"
                                     Content="{loc:Loc Settings_ClearBtn}"
                                     Command="{Binding ClearHistoryCommand}"
-                                    Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                                    Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"/>
+                                    Style="{StaticResource DestructiveOutlinedButton}"/>
                         </Grid>
 
                         <!-- Open Log Folder -->
@@ -329,6 +345,96 @@
                         </Grid>
                     </StackPanel>
                     </materialDesign:Card>
+
+                    <!-- Error History Section -->
+                    <materialDesign:Card Padding="16" Margin="0,16,0,0" materialDesign:ElevationAssist.Elevation="Dp2">
+                        <Expander IsExpanded="{Binding HasErrors}" materialDesign:ExpanderAssist.HorizontalHeaderPadding="0">
+                            <Expander.Header>
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="AlertCircleOutline"
+                                                              Width="24" Height="24"
+                                                              VerticalAlignment="Center"
+                                                              Margin="0,0,12,0"/>
+                                    <TextBlock Text="{loc:Loc Settings_ErrorHistory}"
+                                               Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                               VerticalAlignment="Center"/>
+                                    <Border Background="{DynamicResource ErrorBorderBrush}"
+                                            CornerRadius="12"
+                                            Padding="8,2"
+                                            Margin="12,0,0,0"
+                                            Visibility="{Binding HasErrors, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Text="{Binding ErrorCount}"
+                                                   Foreground="White"
+                                                   FontWeight="Bold"
+                                                   FontSize="12"/>
+                                    </Border>
+                                </StackPanel>
+                            </Expander.Header>
+                            <StackPanel Margin="0,12,0,0">
+                                <!-- Clear Errors Button -->
+                                <Button Content="{loc:Loc Settings_ClearErrors}"
+                                        Command="{Binding ClearErrorHistoryCommand}"
+                                        Style="{StaticResource DestructiveOutlinedButton}"
+                                        HorizontalAlignment="Right"
+                                        Margin="0,0,0,12"
+                                        Visibility="{Binding HasErrors, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                <!-- Error List -->
+                                <ItemsControl ItemsSource="{Binding RecentErrors}"
+                                              MaxHeight="300">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                                    BorderThickness="0,0,0,1"
+                                                    Padding="0,8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <materialDesign:PackIcon Kind="AlertCircle"
+                                                                              Grid.Column="0"
+                                                                              Width="20" Height="20"
+                                                                              Foreground="{DynamicResource ErrorBorderBrush}"
+                                                                              VerticalAlignment="Top"
+                                                                              Margin="0,2,12,0"/>
+
+                                                    <StackPanel Grid.Column="1">
+                                                        <TextBlock Text="{Binding Message}"
+                                                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                                                   TextWrapping="Wrap"/>
+                                                        <TextBlock Text="{Binding Source}"
+                                                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                                   Visibility="{Binding Source, Converter={StaticResource NullableToVisibilityConverter}}"
+                                                                   Margin="0,4,0,0"/>
+                                                    </StackPanel>
+
+                                                    <TextBlock Grid.Column="2"
+                                                               Text="{Binding FormattedTimestamp}"
+                                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                               VerticalAlignment="Top"
+                                                               Margin="12,2,0,0"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <!-- Empty State -->
+                                <TextBlock Text="{loc:Loc Settings_NoErrors}"
+                                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,16"
+                                           Visibility="{Binding HasErrors, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                            </StackPanel>
+                        </Expander>
+                    </materialDesign:Card>
+                    </StackPanel>
                 </ScrollViewer>
             </TabItem>
 
@@ -514,8 +620,7 @@
                                         </StackPanel>
                                     </Button>
                                     <Button Command="{Binding RemoveScheduledDeploymentCommand}"
-                                            Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                                            Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
+                                            Style="{StaticResource DestructiveOutlinedButton}"
                                             IsEnabled="{Binding SelectedScheduledDeployment, Converter={StaticResource NullableToBooleanConverter}}">
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>

@@ -2,7 +2,7 @@
   "_meta": {
     "$schema": "https://json-schema.org/draft-07/schema#",
     "description": "Global optimizations applied to all profiles - Safe for all users",
-    "version": "3.5.2",
+    "version": "3.5.9",
     "author": "Julien Bombled",
     "lastUpdated": "2026-02-03"
   },
@@ -43,7 +43,8 @@
     },
 
     "Network": {
-      "DnsServers": ["9.9.9.9", "1.1.1.1"]
+      "DnsServers": ["9.9.9.9", "1.1.1.1", "8.8.8.8"],
+      "DnsNotes": "Primary: Quad9 (9.9.9.9), Secondary: Cloudflare (1.1.1.1), Fallback: Google (8.8.8.8)"
     }
   },
 
@@ -54,6 +55,7 @@
     "Cortana is disabled as it's obsolete with modern AI",
     "Bloatware suggestions and tips are disabled",
     "Privacy-focused: telemetry and tracking disabled",
-    "Security: Defender and Firewall remain active"
+    "Security: Defender and Firewall remain active",
+    "DNS: 3 providers for redundancy (Quad9, Cloudflare, Google)"
   ]
 }

@@ -51,6 +51,77 @@ $script:EntropyMutexName = "Local\Win11Forge_Entropy_$($env:USERNAME)"
 
 # === ENTROPY MANAGEMENT ===
 
+function Set-SecureFileAcl {
+    <#
+    .SYNOPSIS
+        Sets restrictive ACL on a file (user-only access).
+    .DESCRIPTION
+        Removes inherited permissions and grants only the current user full control.
+        This prevents other processes running as the same user from reading the file
+        through inherited directory permissions.
+    .PARAMETER Path
+        The file path to secure.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    if (-not (Test-Path $Path)) {
+        return
+    }
+
+    try {
+        $acl = Get-Acl -Path $Path
+        # Disable inheritance and remove inherited rules
+        $acl.SetAccessRuleProtection($true, $false)
+        # Clear all existing rules
+        $acl.Access | ForEach-Object { $acl.RemoveAccessRule($_) } | Out-Null
+        # Add only current user with FullControl
+        $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+            $currentUser,
+            [System.Security.AccessControl.FileSystemRights]::FullControl,
+            [System.Security.AccessControl.AccessControlType]::Allow
+        )
+        $acl.AddAccessRule($rule)
+        Set-Acl -Path $Path -AclObject $acl -ErrorAction Stop
+        Write-Verbose "Set restrictive ACL on: $Path"
+    } catch {
+        Write-Verbose "Could not set ACL on $Path : $($_.Exception.Message)"
+    }
+}
+
+function Ensure-SecureStoragePermissions {
+    <#
+    .SYNOPSIS
+        Ensures all secure storage files have proper restrictive permissions.
+    .DESCRIPTION
+        Called at module load to verify and fix permissions on existing secure files.
+    #>
+    [CmdletBinding()]
+    param()
+
+    # Secure entropy file
+    if (Test-Path $script:EntropyPath) {
+        Set-SecureFileAcl -Path $script:EntropyPath
+    }
+
+    # Secure API keys file
+    if (Test-Path $script:SecureApiKeysPath) {
+        Set-SecureFileAcl -Path $script:SecureApiKeysPath
+    }
+
+    # Secure generic storage file
+    if (Test-Path $script:SecureStoragePath) {
+        Set-SecureFileAcl -Path $script:SecureStoragePath
+    }
+}
+
+# Ensure permissions on module load
+Ensure-SecureStoragePermissions
+
 function Get-DpapiEntropy {
     <#
     .SYNOPSIS
@@ -119,22 +190,36 @@ function Get-DpapiEntropy {
             }
 
             # Use a temporary file and atomic rename for safe writes
+            # Security: Create file with restrictive ACL BEFORE writing sensitive data
             $tempPath = "$script:EntropyPath.tmp.$PID"
             try {
-                # Write to temp file first
-                [System.IO.File]::WriteAllBytes($tempPath, $entropyBytes)
-
-                # Set restrictive permissions on temp file before renaming
-                $acl = Get-Acl -Path $tempPath
-                $acl.SetAccessRuleProtection($true, $false)
+                # Create empty file first with restrictive permissions to avoid TOCTOU
                 $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-                $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
-                    $currentUser,
-                    [System.Security.AccessControl.FileSystemRights]::FullControl,
-                    [System.Security.AccessControl.AccessControlType]::Allow
-                )
-                $acl.AddAccessRule($rule)
-                Set-Acl -Path $tempPath -AclObject $acl -ErrorAction SilentlyContinue
+                $fileStream = $null
+                try {
+                    # Create file with explicit access control - only current user can access
+                    $fileSecurity = New-Object System.Security.AccessControl.FileSecurity
+                    $fileSecurity.SetAccessRuleProtection($true, $false)
+                    $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+                        $currentUser,
+                        [System.Security.AccessControl.FileSystemRights]::FullControl,
+                        [System.Security.AccessControl.AccessControlType]::Allow
+                    )
+                    $fileSecurity.AddAccessRule($rule)
+
+                    # Create file with ACL already applied (no TOCTOU window)
+                    $fileStream = [System.IO.File]::Create(
+                        $tempPath,
+                        4096,
+                        [System.IO.FileOptions]::WriteThrough,
+                        $fileSecurity
+                    )
+                    # Write entropy bytes to secured file
+                    $fileStream.Write($entropyBytes, 0, $entropyBytes.Length)
+                    $fileStream.Flush()
+                } finally {
+                    if ($fileStream) { $fileStream.Dispose() }
+                }
 
                 # Atomic move (rename) to final path
                 [System.IO.File]::Move($tempPath, $script:EntropyPath, $true)

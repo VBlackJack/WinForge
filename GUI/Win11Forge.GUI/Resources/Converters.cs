@@ -548,6 +548,25 @@ public class ThemeAdaptiveBrushConverter : IValueConverter
 }
 
 /// <summary>
+/// Converts a boolean (IsNew) to the appropriate Material Design icon.
+/// True (new) = Plus icon, False (edit) = Pencil icon.
+/// </summary>
+public class BoolToAddEditIconConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value is true
+            ? MaterialDesignThemes.Wpf.PackIconKind.Plus
+            : MaterialDesignThemes.Wpf.PackIconKind.Pencil;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
 /// Converts a nullable value to boolean (true if not null, false if null).
 /// Used to enable/disable controls based on selection state.
 /// </summary>

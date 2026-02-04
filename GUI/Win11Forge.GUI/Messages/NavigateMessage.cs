@@ -19,13 +19,27 @@ using Win11Forge.GUI.ViewModels;
 namespace Win11Forge.GUI.Messages;
 
 /// <summary>
+/// Navigation view indices.
+/// </summary>
+public enum ViewIndex
+{
+    Dashboard = 0,
+    Prerequisites = 1,
+    Apps = 2,
+    Deployment = 3,
+    Settings = 4,
+    Applications = 5
+}
+
+/// <summary>
 /// Message to request navigation to a specific view.
 /// </summary>
 public class NavigateMessage
 {
     /// <summary>
-    /// Navigation view indices.
+    /// Alias for ViewIndex enum for backward compatibility.
     /// </summary>
+    [Obsolete("Use Win11Forge.GUI.Messages.ViewIndex enum directly")]
     public static class ViewIndex
     {
         public const int Dashboard = 0;
@@ -33,6 +47,7 @@ public class NavigateMessage
         public const int Apps = 2;
         public const int Deployment = 3;
         public const int Settings = 4;
+        public const int Applications = 5;
     }
 
     /// <summary>
@@ -41,8 +56,17 @@ public class NavigateMessage
     public int TargetViewIndex { get; }
 
     /// <summary>
-    /// Initializes a new instance of NavigateMessage.
+    /// Initializes a new instance of NavigateMessage with enum.
     /// </summary>
+    public NavigateMessage(Messages.ViewIndex targetView)
+    {
+        TargetViewIndex = (int)targetView;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of NavigateMessage with integer index.
+    /// </summary>
+    [Obsolete("Use NavigateMessage(ViewIndex) constructor instead")]
     public NavigateMessage(int targetViewIndex)
     {
         TargetViewIndex = targetViewIndex;

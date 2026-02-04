@@ -56,9 +56,6 @@ public static class ServiceCollectionExtensions
         // New components should depend on the focused interfaces directly
         services.AddSingleton<IPowerShellBridge, PowerShellBridgeFacade>();
 
-        // Keep legacy PowerShellBridge available during transition period
-        services.AddSingleton<PowerShellBridge>();
-
         // Register other application services
         services.AddSingleton<IDeploymentHistoryService, DeploymentHistoryService>();
         services.AddSingleton<IAppSettingsService, AppSettingsService>();

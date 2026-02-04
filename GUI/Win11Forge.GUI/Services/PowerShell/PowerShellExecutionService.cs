@@ -76,9 +76,10 @@ public class PowerShellExecutionService : IPowerShellExecutionService
                         }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
                     // Directory enumeration failed, try direct path
+                    System.Diagnostics.Debug.WriteLine($"[PowerShellExecutionService] Directory enumeration failed: {ex.Message}");
                 }
 
                 // Direct path fallback
@@ -112,9 +113,10 @@ public class PowerShellExecutionService : IPowerShellExecutionService
                 return _powerShellPath;
             }
         }
-        catch
+        catch (Exception ex)
         {
             // PATH search failed
+            System.Diagnostics.Debug.WriteLine($"[PowerShellExecutionService] PATH search failed: {ex.Message}");
         }
 
         // Try Windows PowerShell as last resort
@@ -129,7 +131,29 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             }
         }
 
-        // Final fallback
+        // Final fallback with validation warning
+        // Try 'powershell' first (more commonly available), then 'pwsh'
+        foreach (var candidate in new[] { "powershell", "pwsh" })
+        {
+            try
+            {
+                var foundPath = FindExecutableInPath($"{candidate}.exe");
+                if (!string.IsNullOrEmpty(foundPath))
+                {
+                    _powerShellPath = foundPath;
+                    System.Diagnostics.Debug.WriteLine($"[PowerShellExecutionService] Using fallback PowerShell: {_powerShellPath}");
+                    return _powerShellPath;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Continue to next candidate
+                System.Diagnostics.Debug.WriteLine($"[PowerShellExecutionService] Candidate {candidate} failed: {ex.Message}");
+            }
+        }
+
+        // Last resort - may fail at runtime if not in PATH
+        System.Diagnostics.Debug.WriteLine("[PowerShellExecutionService] WARNING: No PowerShell installation found. Using 'pwsh' and hoping it's in PATH.");
         _powerShellPath = "pwsh";
         return _powerShellPath;
     }
@@ -153,9 +177,10 @@ public class PowerShellExecutionService : IPowerShellExecutionService
                     return fullPath;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Invalid path, skip
+                // Invalid path, skip - this is expected for some PATH entries
+                System.Diagnostics.Debug.WriteLine($"[PowerShellExecutionService] Invalid PATH entry skipped: {ex.Message}");
             }
         }
         return null;
@@ -193,41 +218,59 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             CreateNoWindow = true
         };
 
-        using var process = new Process { StartInfo = startInfo };
-        process.Start();
-
-        // Read stdout and stderr concurrently to prevent deadlocks
-        var outputTask = process.StandardOutput.ReadToEndAsync();
-        var errorTask = process.StandardError.ReadToEndAsync();
-
-        // Wait for both streams AND the process to complete with timeout
-        using var timeoutCts = new CancellationTokenSource(DefaultQueryTimeoutMs);
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, cancellationToken);
+        var process = new Process { StartInfo = startInfo };
         try
         {
-            await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(linkedCts.Token));
-        }
-        catch (OperationCanceledException)
-        {
-            try { process.Kill(entireProcessTree: true); } catch (Exception ex) { Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
+            process.Start();
 
-            if (cancellationToken.IsCancellationRequested)
+            // Read stdout and stderr concurrently to prevent deadlocks
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+            var errorTask = process.StandardError.ReadToEndAsync();
+
+            // Wait for both streams AND the process to complete with timeout
+            using var timeoutCts = new CancellationTokenSource(DefaultQueryTimeoutMs);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, cancellationToken);
+            try
             {
-                throw;
+                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(linkedCts.Token));
+            }
+            catch (OperationCanceledException)
+            {
+                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+
+                throw new TimeoutException($"PowerShell script execution timed out after {DefaultQueryTimeoutMs / 1000} seconds");
             }
 
-            throw new TimeoutException($"PowerShell script execution timed out after {DefaultQueryTimeoutMs / 1000} seconds");
+            var output = await outputTask;
+            var error = await errorTask;
+
+            if (process.ExitCode != 0 && !string.IsNullOrEmpty(error))
+            {
+                throw new InvalidOperationException($"PowerShell error: {error}");
+            }
+
+            return output;
         }
-
-        var output = await outputTask;
-        var error = await errorTask;
-
-        if (process.ExitCode != 0 && !string.IsNullOrEmpty(error))
+        finally
         {
-            throw new InvalidOperationException($"PowerShell error: {error}");
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Process cleanup failed: {ex.Message}");
+            }
+            process.Dispose();
         }
-
-        return output;
     }
 
     /// <inheritdoc/>
@@ -254,130 +297,147 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             CreateNoWindow = true
         };
 
-        using var process = new Process { StartInfo = startInfo };
-
+        var process = new Process { StartInfo = startInfo };
         var success = false;
         var errorMessage = string.Empty;
 
-        // Handle stdout line by line
-        process.OutputDataReceived += (sender, e) =>
-        {
-            if (e.Data != null)
-            {
-                var line = e.Data.Trim();
-
-                if (line == "___SUCCESS___")
-                {
-                    success = true;
-                }
-                else if (line.StartsWith("___ERROR___:"))
-                {
-                    errorMessage = line.Substring("___ERROR___:".Length).Trim();
-                }
-                else if (!string.IsNullOrWhiteSpace(line))
-                {
-                    // Filter out CLIXML serialized data and extract readable messages
-                    var cleanLine = ExtractReadableMessage(line);
-                    if (!string.IsNullOrWhiteSpace(cleanLine))
-                    {
-                        outputCallback?.Invoke(cleanLine);
-                    }
-                }
-            }
-        };
-
-        // Handle stderr - filter out CLIXML serialization noise
-        process.ErrorDataReceived += (sender, e) =>
-        {
-            if (!string.IsNullOrWhiteSpace(e.Data))
-            {
-                var data = e.Data.Trim();
-
-                // Skip CLIXML header and serialized data
-                if (data.StartsWith("#< CLIXML") ||
-                    data.StartsWith("<Objs") ||
-                    data.StartsWith("</Objs") ||
-                    data.StartsWith("<Obj ") ||
-                    data.StartsWith("</Obj>") ||
-                    data.StartsWith("<TNRef") ||
-                    data.StartsWith("<TN ") ||
-                    data.StartsWith("</TN>") ||
-                    data.StartsWith("<T>") ||
-                    data.StartsWith("<MS>") ||
-                    data.StartsWith("</MS>") ||
-                    data.StartsWith("<Props>") ||
-                    data.StartsWith("</Props>") ||
-                    data.StartsWith("<I64 ") ||
-                    data.StartsWith("<PR ") ||
-                    data.StartsWith("<LST>") ||
-                    data.StartsWith("</LST>") ||
-                    data.StartsWith("<S ") ||
-                    data.StartsWith("<B ") ||
-                    data.StartsWith("<U32 ") ||
-                    data.StartsWith("<DT ") ||
-                    data.StartsWith("<AV>") ||
-                    data.StartsWith("<AI>") ||
-                    data.StartsWith("<Nil") ||
-                    data.Contains("S=\"progress\"") ||
-                    data.Contains("S=\"information\"") ||
-                    data.Contains("S=\"warning\""))
-                {
-                    // Skip CLIXML noise, but try to extract readable content if present
-                    var cleanLine = ExtractReadableMessage(data);
-                    if (!string.IsNullOrWhiteSpace(cleanLine))
-                    {
-                        outputCallback?.Invoke(cleanLine);
-                    }
-                    return;
-                }
-
-                // Only prefix with [ERROR] for actual error content
-                outputCallback?.Invoke($"[ERROR] {data}");
-            }
-        };
-
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-
-        // Wait with installation timeout, linked with external cancellation
-        using var prereqTimeoutCts = new CancellationTokenSource(InstallationTimeoutMs);
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(prereqTimeoutCts.Token, cancellationToken);
         try
         {
-            await process.WaitForExitAsync(linkedCts.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            try { process.Kill(entireProcessTree: true); } catch (Exception ex) { Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
-
-            if (cancellationToken.IsCancellationRequested)
+            // Handle stdout line by line
+            process.OutputDataReceived += (sender, e) =>
             {
-                throw;
+                if (e.Data != null)
+                {
+                    var line = e.Data.Trim();
+
+                    if (line == "___SUCCESS___")
+                    {
+                        success = true;
+                    }
+                    else if (line.StartsWith("___ERROR___:"))
+                    {
+                        errorMessage = line.Substring("___ERROR___:".Length).Trim();
+                    }
+                    else if (!string.IsNullOrWhiteSpace(line))
+                    {
+                        // Filter out CLIXML serialized data and extract readable messages
+                        var cleanLine = ExtractReadableMessage(line);
+                        if (!string.IsNullOrWhiteSpace(cleanLine))
+                        {
+                            outputCallback?.Invoke(cleanLine);
+                        }
+                    }
+                }
+            };
+
+            // Handle stderr - filter out CLIXML serialization noise
+            process.ErrorDataReceived += (sender, e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    var data = e.Data.Trim();
+
+                    // Skip CLIXML header and serialized data
+                    if (data.StartsWith("#< CLIXML") ||
+                        data.StartsWith("<Objs") ||
+                        data.StartsWith("</Objs") ||
+                        data.StartsWith("<Obj ") ||
+                        data.StartsWith("</Obj>") ||
+                        data.StartsWith("<TNRef") ||
+                        data.StartsWith("<TN ") ||
+                        data.StartsWith("</TN>") ||
+                        data.StartsWith("<T>") ||
+                        data.StartsWith("<MS>") ||
+                        data.StartsWith("</MS>") ||
+                        data.StartsWith("<Props>") ||
+                        data.StartsWith("</Props>") ||
+                        data.StartsWith("<I64 ") ||
+                        data.StartsWith("<PR ") ||
+                        data.StartsWith("<LST>") ||
+                        data.StartsWith("</LST>") ||
+                        data.StartsWith("<S ") ||
+                        data.StartsWith("<B ") ||
+                        data.StartsWith("<U32 ") ||
+                        data.StartsWith("<DT ") ||
+                        data.StartsWith("<AV>") ||
+                        data.StartsWith("<AI>") ||
+                        data.StartsWith("<Nil") ||
+                        data.Contains("S=\"progress\"") ||
+                        data.Contains("S=\"information\"") ||
+                        data.Contains("S=\"warning\""))
+                    {
+                        // Skip CLIXML noise, but try to extract readable content if present
+                        var cleanLine = ExtractReadableMessage(data);
+                        if (!string.IsNullOrWhiteSpace(cleanLine))
+                        {
+                            outputCallback?.Invoke(cleanLine);
+                        }
+                        return;
+                    }
+
+                    // Only prefix with [ERROR] for actual error content
+                    outputCallback?.Invoke($"[ERROR] {data}");
+                }
+            };
+
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            // Wait with installation timeout, linked with external cancellation
+            using var prereqTimeoutCts = new CancellationTokenSource(InstallationTimeoutMs);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(prereqTimeoutCts.Token, cancellationToken);
+            try
+            {
+                await process.WaitForExitAsync(linkedCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+
+                return (false, $"Operation timed out after {InstallationTimeoutMs / 60000} minutes");
             }
 
-            return (false, $"Operation timed out after {InstallationTimeoutMs / 60000} minutes");
-        }
+            // If process exited with 0 and we saw success marker, it's successful
+            if (process.ExitCode == 0 && success)
+            {
+                return (true, string.Empty);
+            }
 
-        // If process exited with 0 and we saw success marker, it's successful
-        if (process.ExitCode == 0 && success)
+            // If we have an error message, return it
+            if (!string.IsNullOrEmpty(errorMessage))
+            {
+                return (false, errorMessage);
+            }
+
+            // Fallback: check exit code
+            if (process.ExitCode == 0)
+            {
+                return (true, string.Empty);
+            }
+
+            return (false, $"Process exited with code {process.ExitCode}");
+        }
+        finally
         {
-            return (true, string.Empty);
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Process cleanup failed: {ex.Message}");
+            }
+            process.Dispose();
         }
-
-        // If we have an error message, return it
-        if (!string.IsNullOrEmpty(errorMessage))
-        {
-            return (false, errorMessage);
-        }
-
-        // Fallback: check exit code
-        if (process.ExitCode == 0)
-        {
-            return (true, string.Empty);
-        }
-
-        return (false, $"Process exited with code {process.ExitCode}");
     }
 
     /// <summary>

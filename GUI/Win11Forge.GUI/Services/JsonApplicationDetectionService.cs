@@ -525,18 +525,24 @@ public class JsonApplicationDetectionService
                 return null;
             }
 
-            if (!File.Exists(expandedPath)) return null;
-
+            // Security: Removed File.Exists check to prevent TOCTOU race condition
+            // FileVersionInfo.GetVersionInfo will throw if file doesn't exist, which is caught below
             string? version = null;
 
-            // Try to get file version
+            // Try to get file version - handles file not found atomically
             try
             {
                 var versionInfo = FileVersionInfo.GetVersionInfo(expandedPath);
                 version = versionInfo.FileVersion ?? versionInfo.ProductVersion;
             }
+            catch (FileNotFoundException)
+            {
+                // File doesn't exist - not installed
+                return null;
+            }
             catch
             {
+                // File exists but version info unavailable
                 version = Loc.Status_Installed;
             }
 
@@ -569,12 +575,64 @@ public class JsonApplicationDetectionService
         // Block unexpanded environment variables (indicates potential attack or misconfiguration)
         if (path.Contains('%')) return false;
 
+        // Security: Block path traversal sequences before and after normalization
+        if (path.Contains(".."))
+        {
+            Debug.WriteLine($"Security: Path traversal blocked in pre-normalized path");
+            return false;
+        }
+
         // Block command injection characters
         var dangerousChars = new[] { ';', '&', '|', '`', '$', '(', ')', '<', '>', '"', '\'' };
         if (path.IndexOfAny(dangerousChars) >= 0) return false;
 
         // Validate it's a plausible file path (contains drive letter or UNC path)
         if (!Path.IsPathRooted(path)) return false;
+
+        // Security: Normalize the path and verify it doesn't escape to unexpected locations
+        try
+        {
+            var normalizedPath = Path.GetFullPath(path);
+
+            // After normalization, ensure no path traversal remains
+            if (normalizedPath.Contains(".."))
+            {
+                Debug.WriteLine($"Security: Path traversal blocked in normalized path");
+                return false;
+            }
+
+            // Ensure normalized path starts with expected root (system drive or Program Files)
+            var windowsPath = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            var systemDrive = windowsPath?.Length >= 3 ? windowsPath.Substring(0, 3) : "C:\\";
+            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            var allowedRoots = new[] { programFiles, programFilesX86, localAppData, appData, userProfile, systemDrive };
+
+            bool isAllowed = false;
+            foreach (var root in allowedRoots)
+            {
+                if (!string.IsNullOrEmpty(root) && normalizedPath.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+                {
+                    isAllowed = true;
+                    break;
+                }
+            }
+
+            if (!isAllowed)
+            {
+                Debug.WriteLine($"Security: Path outside allowed roots blocked: {normalizedPath}");
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Security: Path normalization failed: {ex.Message}");
+            return false;
+        }
 
         return true;
     }
@@ -596,14 +654,18 @@ public class JsonApplicationDetectionService
 
         try
         {
-            // Escape single quotes in feature name (double them for PowerShell)
-            var escapedFeatureName = config.FeatureName.Replace("'", "''");
+            // Security: Use -EncodedCommand with Base64 encoding to prevent command injection
+            // This is more secure than escaping quotes in string interpolation
+            var command = $"(Get-WindowsOptionalFeature -Online -FeatureName '{config.FeatureName}').State";
+            var commandBytes = System.Text.Encoding.Unicode.GetBytes(command);
+            var encodedCommand = Convert.ToBase64String(commandBytes);
 
             var psi = new ProcessStartInfo
             {
                 FileName = "powershell.exe",
-                Arguments = $"-NoProfile -Command \"(Get-WindowsOptionalFeature -Online -FeatureName '{escapedFeatureName}').State\"",
+                Arguments = $"-NoProfile -EncodedCommand {encodedCommand}",
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,  // Security: Redirect stderr to prevent deadlock
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
@@ -611,8 +673,26 @@ public class JsonApplicationDetectionService
             using var process = Process.Start(psi);
             if (process == null) return null;
 
-            var output = await process.StandardOutput.ReadToEndAsync();
-            process.WaitForExit(CommandTimeoutMs);
+            // Read both stdout and stderr to prevent deadlock
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+            var errorTask = process.StandardError.ReadToEndAsync();
+
+            // Wait for both streams with timeout
+            var completedInTime = process.WaitForExit(CommandTimeoutMs);
+
+            var output = await outputTask;
+            var error = await errorTask;  // Consume stderr even if not used
+
+            if (!completedInTime)
+            {
+                Debug.WriteLine($"Windows feature detection timed out for {appId}");
+                return null;
+            }
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                Debug.WriteLine($"Windows feature detection stderr for {appId}: {error}");
+            }
 
             if (output.Trim().Equals("Enabled", StringComparison.OrdinalIgnoreCase))
             {

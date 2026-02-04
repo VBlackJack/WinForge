@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "Plugin system configuration for Win11Forge",
-    "version": "3.5.2",
+    "version": "3.5.9",
     "author": "Julien Bombled",
     "lastUpdated": "2026-01-19"
   },
@@ -21,8 +21,8 @@
   ],
   "pluginTimeout": 30,
   "sandboxing": {
-    "enabled": false,
-    "notes": "Plugin sandboxing is planned for future versions"
+    "enabled": true,
+    "notes": "Plugin sandboxing enabled with AST validation and job isolation (v3.5.9)"
   },
   "trustedPublishers": [],
   "pluginRegistry": {

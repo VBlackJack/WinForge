@@ -48,22 +48,25 @@ public interface IPowerShellBridge :
     /// Installs missing system prerequisites.
     /// </summary>
     /// <param name="progressCallback">Optional callback for progress updates</param>
+    /// <param name="cancellationToken">Cancellation token for operation cancellation</param>
     /// <returns>True if installation succeeded</returns>
-    Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null);
+    Task<bool> InstallPrerequisitesAsync(Action<string>? progressCallback = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes a PowerShell script from the repository.
     /// </summary>
     /// <param name="relativePath">Relative path to script from repository root</param>
+    /// <param name="cancellationToken">Cancellation token for operation cancellation</param>
     /// <returns>Script output</returns>
-    Task<string> ExecuteScriptAsync(string relativePath);
+    Task<string> ExecuteScriptAsync(string relativePath, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Executes a PowerShell command/script inline.
     /// </summary>
     /// <param name="command">PowerShell command or script to execute</param>
+    /// <param name="cancellationToken">Cancellation token for operation cancellation</param>
     /// <returns>Command output</returns>
-    Task<string> ExecuteCommandAsync(string command);
+    Task<string> ExecuteCommandAsync(string command, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

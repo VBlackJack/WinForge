@@ -2,7 +2,7 @@
   "_meta": {
     "$schema": "Win11Forge-FeatureFlags-v1.0",
     "description": "Feature flags for Win11Forge framework",
-    "version": "3.5.2",
+    "version": "3.5.9",
     "author": "Julien Bombled",
     "lastUpdated": "2026-02-03"
   },

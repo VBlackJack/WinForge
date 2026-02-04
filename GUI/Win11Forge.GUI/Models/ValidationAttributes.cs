@@ -44,42 +44,31 @@ public sealed class ValidUrlAttribute : ValidationAttribute
         }
 
         var url = value.ToString()!;
+        var memberNames = validationContext.MemberName != null ? new[] { validationContext.MemberName } : null;
 
         // Check if it's a well-formed URI
         if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
         {
-            return new ValidationResult(
-                ErrorMessage ?? "The URL is not well-formed.",
-                validationContext.MemberName != null ? new[] { validationContext.MemberName } : null);
+            return new ValidationResult(FormatErrorMessage(validationContext.DisplayName), memberNames);
         }
 
         // Parse and validate scheme
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
         {
-            return new ValidationResult(
-                ErrorMessage ?? "The URL could not be parsed.",
-                validationContext.MemberName != null ? new[] { validationContext.MemberName } : null);
+            return new ValidationResult(FormatErrorMessage(validationContext.DisplayName), memberNames);
         }
 
         // Validate scheme (HTTP/HTTPS)
         var scheme = uri.Scheme.ToLowerInvariant();
         if (scheme != "https" && (scheme != "http" || !AllowHttp))
         {
-            var message = AllowHttp
-                ? ErrorMessage ?? "URL must use HTTP or HTTPS protocol."
-                : ErrorMessage ?? "URL must use HTTPS protocol.";
-
-            return new ValidationResult(
-                message,
-                validationContext.MemberName != null ? new[] { validationContext.MemberName } : null);
+            return new ValidationResult(FormatErrorMessage(validationContext.DisplayName), memberNames);
         }
 
         // Validate that host is present
         if (string.IsNullOrWhiteSpace(uri.Host))
         {
-            return new ValidationResult(
-                ErrorMessage ?? "URL must include a valid host.",
-                validationContext.MemberName != null ? new[] { validationContext.MemberName } : null);
+            return new ValidationResult(FormatErrorMessage(validationContext.DisplayName), memberNames);
         }
 
         return ValidationResult.Success;

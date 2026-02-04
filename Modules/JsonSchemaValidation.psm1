@@ -57,6 +57,10 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
 $script:ProfileSchemaPath = Join-Path $script:SchemasDirectory 'deployment-profile.schema.json'
 $script:DatabaseSchemaPath = Join-Path $script:SchemasDirectory 'applications-database.schema.json'
 
+# === SECURITY LIMITS ===
+# Maximum JSON file size to prevent DoS via large payloads (10 MB)
+$script:MaxJsonFileSizeBytes = 10 * 1024 * 1024
+
 # === VALIDATION RESULT CLASS ===
 
 class JsonValidationResult {
@@ -107,6 +111,13 @@ function Test-JsonSyntax {
 
     if (-not (Test-Path $Path)) {
         $result.AddError("File not found: $Path")
+        return $result
+    }
+
+    # Security: Check file size before reading to prevent DoS
+    $fileInfo = Get-Item -Path $Path -ErrorAction SilentlyContinue
+    if ($fileInfo -and $fileInfo.Length -gt $script:MaxJsonFileSizeBytes) {
+        $result.AddError("File exceeds maximum allowed size of $($script:MaxJsonFileSizeBytes / 1MB) MB: $Path")
         return $result
     }
 
@@ -165,6 +176,19 @@ function Test-JsonAgainstSchema {
 
     if (-not (Test-Path $SchemaPath)) {
         $result.AddError("Schema file not found: $SchemaPath")
+        return $result
+    }
+
+    # Security: Check file sizes before reading to prevent DoS
+    $jsonFileInfo = Get-Item -Path $JsonPath -ErrorAction SilentlyContinue
+    if ($jsonFileInfo -and $jsonFileInfo.Length -gt $script:MaxJsonFileSizeBytes) {
+        $result.AddError("JSON file exceeds maximum allowed size of $($script:MaxJsonFileSizeBytes / 1MB) MB: $JsonPath")
+        return $result
+    }
+
+    $schemaFileInfo = Get-Item -Path $SchemaPath -ErrorAction SilentlyContinue
+    if ($schemaFileInfo -and $schemaFileInfo.Length -gt $script:MaxJsonFileSizeBytes) {
+        $result.AddError("Schema file exceeds maximum allowed size of $($script:MaxJsonFileSizeBytes / 1MB) MB: $SchemaPath")
         return $result
     }
 

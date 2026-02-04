@@ -209,15 +209,15 @@ public partial class ErrorDialog : UserControl
         {
             try
             {
-                Process.Start(new ProcessStartInfo
+                using var process = Process.Start(new ProcessStartInfo
                 {
                     FileName = _helpUrl,
                     UseShellExecute = true
                 });
             }
-            catch
+            catch (Exception ex)
             {
-                // Silently fail
+                System.Diagnostics.Debug.WriteLine($"Failed to open help URL: {ex.Message}");
             }
         }
         ActionSelected?.Invoke(this, DialogAction.Help);
@@ -273,9 +273,9 @@ public partial class ErrorDialog : UserControl
                 timer.Start();
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently fail
+            System.Diagnostics.Debug.WriteLine($"Failed to copy error details: {ex.Message}");
         }
     }
 
@@ -299,26 +299,27 @@ public partial class ErrorDialog : UserControl
 
             var url = $"{GitHubIssuesUrl}?title={issueTitle}&body={issueBody}";
 
-            Process.Start(new ProcessStartInfo
+            using var process = Process.Start(new ProcessStartInfo
             {
                 FileName = url,
                 UseShellExecute = true
             });
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently fail - fallback to just opening issues page
+            System.Diagnostics.Debug.WriteLine($"Failed to open report issue URL: {ex.Message}");
+            // Fallback to just opening issues page
             try
             {
-                Process.Start(new ProcessStartInfo
+                using var fallbackProcess = Process.Start(new ProcessStartInfo
                 {
                     FileName = "https://github.com/VBlackJack/Win11Forge/issues",
                     UseShellExecute = true
                 });
             }
-            catch
+            catch (Exception fallbackEx)
             {
-                // Silently fail
+                System.Diagnostics.Debug.WriteLine($"Failed to open issues page: {fallbackEx.Message}");
             }
         }
     }

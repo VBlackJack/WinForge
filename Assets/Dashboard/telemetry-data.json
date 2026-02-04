@@ -1,57 +1,77 @@
-{
-  "summary": {
-    "DataVersion": "1.0",
-    "CreatedAt": "2026-01-21T18:09:39.9233709+01:00",
-    "LastUpdated": "2026-01-21T18:09:39.9234438+01:00",
-    "Deployments": {
-      "Failed": 0,
-      "Successful": 0,
-      "Total": 0,
-      "SuccessRate": "0%",
-      "RolledBack": 0
-    },
-    "Applications": {
-      "ByCategory": {},
-      "TotalFailed": 0.0,
-      "TopInstalled": [],
-      "TotalInstalled": 0,
-      "ByMethod": {}
-    },
-    "Performance": {
-      "TotalDeploymentHours": 0.0,
-      "AverageDeploymentMinutes": 0.0,
-      "AverageDeploymentSeconds": 0
-    },
-    "Profiles": {
-      "MostUsed": "N/A",
-      "UsageStats": {}
-    }
-  },
-  "charts": {
-    "categoryBar": {
-      "labels": [],
-      "data": []
-    },
-    "deploymentPie": {
-      "labels": [
-        "Successful",
-        "Failed",
-        "Rolled Back"
-      ],
-      "data": [
-        0,
-        0,
-        0
-      ]
-    },
-    "methodBar": {
-      "labels": [],
-      "data": []
-    },
-    "topAppsBar": {
-      "labels": [],
-      "data": []
-    }
-  },
-  "generatedAt": "2026-01-21T18:09:39.9703533+01:00"
+﻿{
+    "summary":  {
+                    "DataVersion":  "1.0",
+                    "CreatedAt":  "2026-02-04T09:28:35.1509918+01:00",
+                    "LastUpdated":  "2026-02-04T09:28:35.1509918+01:00",
+                    "Deployments":  {
+                                        "SuccessRate":  "0%",
+                                        "Failed":  0,
+                                        "Successful":  0,
+                                        "Total":  0,
+                                        "RolledBack":  0
+                                    },
+                    "Applications":  {
+                                         "ByCategory":  {
+
+                                                        },
+                                         "TotalInstalled":  0,
+                                         "ByMethod":  {
+
+                                                      },
+                                         "TopInstalled":  [
+
+                                                          ],
+                                         "TotalFailed":  0
+                                     },
+                    "Performance":  {
+                                        "AverageDeploymentSeconds":  0,
+                                        "AverageDeploymentMinutes":  0,
+                                        "TotalDeploymentHours":  0
+                                    },
+                    "Profiles":  {
+                                     "UsageStats":  {
+
+                                                    },
+                                     "MostUsed":  "N/A"
+                                 }
+                },
+    "charts":  {
+                   "categoryBar":  {
+                                       "labels":  [
+
+                                                  ],
+                                       "data":  [
+
+                                                ]
+                                   },
+                   "topAppsBar":  {
+                                      "labels":  [
+
+                                                 ],
+                                      "data":  [
+
+                                               ]
+                                  },
+                   "methodBar":  {
+                                     "labels":  [
+
+                                                ],
+                                     "data":  [
+
+                                              ]
+                                 },
+                   "deploymentPie":  {
+                                         "labels":  [
+                                                        "Successful",
+                                                        "Failed",
+                                                        "Rolled Back"
+                                                    ],
+                                         "data":  [
+                                                      0,
+                                                      0,
+                                                      0
+                                                  ]
+                                     }
+               },
+    "generatedAt":  "2026-02-04T09:28:35.1962322+01:00"
 }

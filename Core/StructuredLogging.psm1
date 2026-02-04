@@ -47,6 +47,7 @@ $script:LoggingState = @{
     LogBuffer = @()
     BufferSize = 10
     Config = $null
+    CurrentRequestId = $null
 }
 
 # === DEFAULT CONFIGURATION ===
@@ -61,6 +62,7 @@ $script:DefaultConfig = @{
         Directory = Join-Path $env:LOCALAPPDATA 'Win11Forge\Logs\json'
         BufferSize = 10
         PrettyPrint = $false
+        MaxFileSizeMB = 10  # Rotate log when file exceeds this size
     }
     Categories = @(
         'Installation',
@@ -210,7 +212,7 @@ function Write-StructuredLog {
         Writes a structured log entry to JSON log file.
 
     .DESCRIPTION
-        Creates a JSON log entry with timestamp, session ID, level, category,
+        Creates a JSON log entry with timestamp, session ID, request ID, level, category,
         message, and optional structured data. Entries are buffered and flushed
         periodically for performance.
 
@@ -223,6 +225,10 @@ function Write-StructuredLog {
     .PARAMETER Message
         The log message.
 
+    .PARAMETER RequestId
+        Optional request ID for correlating related log entries.
+        If not specified, uses the current request ID from Set-LogRequestId.
+
     .PARAMETER Data
         Optional hashtable of structured data to include.
 
@@ -232,6 +238,7 @@ function Write-StructuredLog {
     .EXAMPLE
         Write-StructuredLog -Level 'Info' -Category 'Installation' -Message 'Installing VSCode'
         Write-StructuredLog -Level 'Error' -Category 'Installation' -Message 'Install failed' -Data @{AppName='VSCode'; ErrorCode=1603}
+        Write-StructuredLog -Level 'Info' -Category 'Installation' -Message 'Starting operation' -RequestId 'req-12345'
     #>
     [CmdletBinding()]
     param(
@@ -244,6 +251,9 @@ function Write-StructuredLog {
 
         [Parameter(Mandatory)]
         [string]$Message,
+
+        [Parameter()]
+        [string]$RequestId,
 
         [Parameter()]
         [hashtable]$Data,
@@ -262,6 +272,9 @@ function Write-StructuredLog {
         return
     }
 
+    # Determine request ID (parameter takes precedence over current)
+    $effectiveRequestId = if ($RequestId) { $RequestId } else { $script:LoggingState.CurrentRequestId }
+
     # Build log entry
     $logEntry = [ordered]@{
         timestamp = (Get-Date).ToString('o')
@@ -269,6 +282,11 @@ function Write-StructuredLog {
         level = $Level
         category = $Category
         message = $Message
+    }
+
+    # Add request ID if available
+    if ($effectiveRequestId) {
+        $logEntry.requestId = $effectiveRequestId
     }
 
     # Add structured data
@@ -334,9 +352,155 @@ function Clear-LogBuffer {
 
         # Clear buffer
         $script:LoggingState.LogBuffer = @()
+
+        # Check if log rotation is needed
+        Invoke-LogRotationIfNeeded
     } catch {
         Write-Verbose "Failed to flush log buffer: $($_.Exception.Message)"
     }
+}
+
+function Invoke-LogRotationIfNeeded {
+    <#
+    .SYNOPSIS
+        Rotates the log file if it exceeds the maximum size.
+
+    .DESCRIPTION
+        Checks the current log file size and rotates to a new file if it
+        exceeds the configured MaxFileSizeMB threshold.
+    #>
+    [CmdletBinding()]
+    param()
+
+    if (-not $script:LoggingState.JsonLogPath) {
+        return
+    }
+
+    if (-not (Test-Path -Path $script:LoggingState.JsonLogPath)) {
+        return
+    }
+
+    # Get max file size from config (default 10 MB)
+    $maxSizeMB = $script:LoggingState.Config.JsonLogging.MaxFileSizeMB
+    if (-not $maxSizeMB) {
+        $maxSizeMB = 10
+    }
+    $maxSizeBytes = $maxSizeMB * 1MB
+
+    try {
+        $fileInfo = Get-Item -Path $script:LoggingState.JsonLogPath -ErrorAction SilentlyContinue
+        if ($fileInfo -and $fileInfo.Length -gt $maxSizeBytes) {
+            # Log rotation needed
+            Write-Verbose "Log file exceeded $maxSizeMB MB, rotating..."
+
+            # Generate new log file path
+            $jsonDir = $script:LoggingState.Config.JsonLogging.Directory
+            $timestamp = (Get-Date).ToString('yyyy-MM-dd_HH-mm-ss')
+            $newLogPath = Join-Path $jsonDir "$timestamp`_$($script:LoggingState.SessionId)_rotated.jsonl"
+
+            # Write rotation notice to old file
+            $rotationEntry = [ordered]@{
+                timestamp = (Get-Date).ToString('o')
+                sessionId = $script:LoggingState.SessionId
+                level = 'Info'
+                category = 'System'
+                message = "Log rotated due to size limit ($maxSizeMB MB)"
+                data = @{
+                    previousLogSize = $fileInfo.Length
+                    newLogPath = $newLogPath
+                }
+            }
+            ($rotationEntry | ConvertTo-Json -Depth 10 -Compress) | Add-Content -Path $script:LoggingState.JsonLogPath -Encoding UTF8
+
+            # Switch to new log file
+            $script:LoggingState.JsonLogPath = $newLogPath
+
+            # Write initialization entry to new file
+            Write-StructuredLog -Level 'Info' -Category 'System' -Message 'Log file rotated' -Data @{
+                reason = 'Size limit exceeded'
+                previousLogSize = $fileInfo.Length
+            }
+        }
+    } catch {
+        Write-Verbose "Failed to check/perform log rotation: $($_.Exception.Message)"
+    }
+}
+
+# === REQUEST ID FUNCTIONS ===
+
+function Set-LogRequestId {
+    <#
+    .SYNOPSIS
+        Sets the current request ID for log correlation.
+
+    .DESCRIPTION
+        Sets a request ID that will be automatically included in all subsequent
+        log entries until cleared. Use this to correlate logs for a specific
+        operation like installing an application.
+
+    .PARAMETER RequestId
+        The request ID to set. If not provided, generates a new GUID.
+
+    .OUTPUTS
+        [string] The request ID that was set.
+
+    .EXAMPLE
+        $requestId = Set-LogRequestId
+        # ... do work ...
+        Clear-LogRequestId
+
+    .EXAMPLE
+        Set-LogRequestId -RequestId "install-vscode-12345"
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter()]
+        [string]$RequestId
+    )
+
+    if (-not $RequestId) {
+        $RequestId = [System.Guid]::NewGuid().ToString('N').Substring(0, 12)
+    }
+
+    $script:LoggingState.CurrentRequestId = $RequestId
+    return $RequestId
+}
+
+function Clear-LogRequestId {
+    <#
+    .SYNOPSIS
+        Clears the current request ID.
+
+    .DESCRIPTION
+        Clears the request ID so subsequent log entries will not have a request ID
+        unless one is explicitly provided.
+
+    .EXAMPLE
+        Clear-LogRequestId
+    #>
+    [CmdletBinding()]
+    param()
+
+    $script:LoggingState.CurrentRequestId = $null
+}
+
+function Get-LogRequestId {
+    <#
+    .SYNOPSIS
+        Gets the current request ID.
+
+    .OUTPUTS
+        [string] The current request ID, or $null if not set.
+
+    .EXAMPLE
+        $currentId = Get-LogRequestId
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param()
+
+    return $script:LoggingState.CurrentRequestId
 }
 
 # === EXPORT FUNCTIONS ===
@@ -826,6 +990,9 @@ Export-ModuleMember -Function @(
     'Get-LoggingConfig',
     'Write-StructuredLog',
     'Clear-LogBuffer',
+    'Set-LogRequestId',
+    'Clear-LogRequestId',
+    'Get-LogRequestId',
     'Export-LogsToJson',
     'Get-StructuredLogs',
     'Invoke-LogRetentionCleanup',

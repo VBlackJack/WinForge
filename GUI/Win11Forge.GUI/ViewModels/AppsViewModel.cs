@@ -25,6 +25,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Win32;
+using Win11Forge.GUI.Exceptions;
 using Win11Forge.GUI.Messages;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
@@ -312,6 +313,12 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private double _batchProgressPercent;
 
     /// <summary>
+    /// Name of the application currently being processed in batch operation.
+    /// </summary>
+    [ObservableProperty]
+    private string? _currentBatchAppName;
+
+    /// <summary>
     /// Whether batch operation is paused.
     /// </summary>
     [ObservableProperty]
@@ -368,6 +375,21 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// </summary>
     [ObservableProperty]
     private bool _showLogsColumn = true;
+
+    /// <summary>
+    /// Resets column visibility to defaults (shows essential columns only).
+    /// </summary>
+    [RelayCommand]
+    private void ResetColumnsToDefaults()
+    {
+        ShowFavoritesColumn = true;
+        ShowVersionColumn = false;
+        ShowStatusColumn = true;
+        ShowCategoryColumn = true;
+        ShowSourcesColumn = false;
+        ShowLogsColumn = false;
+        SaveFilterState();
+    }
 
     #endregion
 
@@ -612,12 +634,33 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             // Apply initial filter
             ApplyFilter();
 
+            // If persisted filter results in no apps visible but we have apps,
+            // reset to "All" to avoid confusing empty state
+            if (FilteredCount == 0 && TotalApplicationsCount > 0)
+            {
+                SelectedStatusFilter = StatusFilterOption.All;
+                SelectedCategory = Categories[0]; // Reset to "All Categories"
+                SearchText = string.Empty;
+                ApplyFilter();
+            }
+
             // Notify that Scan command can now execute (applications loaded)
             ScanCommand.NotifyCanExecuteChanged();
+        }
+        catch (PowerShellBridgeException ex)
+        {
+            ErrorMessage = $"PowerShell error: {ex.Message}";
+            Debug.WriteLine($"PowerShellBridgeException in InitializeAsync: {ex}");
+        }
+        catch (ApplicationDatabaseException ex)
+        {
+            ErrorMessage = $"Database error: {ex.Message}";
+            Debug.WriteLine($"ApplicationDatabaseException in InitializeAsync: {ex}");
         }
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
+            Debug.WriteLine($"Unexpected exception in InitializeAsync: {ex}");
         }
         finally
         {
@@ -955,9 +998,20 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             ApplyFilter();
             UpdateSelectedCount();
         }
+        catch (ProfileException ex)
+        {
+            ErrorMessage = $"Failed to load profile '{ex.ProfileName}': {ex.Message}";
+            Debug.WriteLine($"ProfileException in OnSelectedProfileChanged: {ex}");
+        }
+        catch (PowerShellBridgeException ex)
+        {
+            ErrorMessage = $"Failed to load profile (PowerShell error): {ex.Message}";
+            Debug.WriteLine($"PowerShellBridgeException in OnSelectedProfileChanged: {ex}");
+        }
         catch (Exception ex)
         {
             ErrorMessage = $"Failed to load profile: {ex.Message}";
+            Debug.WriteLine($"Unexpected exception in OnSelectedProfileChanged: {ex}");
         }
     }
 
@@ -1266,20 +1320,12 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
 
         try
         {
-            Dictionary<string, BatchAppStatus>? batchResults = null;
-
-            // Try fast registry-first detection (10-50x faster than PowerShell)
-            if (_powerShellBridge is PowerShellBridge bridge)
+            // Use batch detection which internally uses fast registry-first detection
+            var batchResults = await _powerShellBridge.GetBatchApplicationStatusAsync(appsToScan);
+            if (batchResults != null)
             {
-                batchResults = await bridge.GetBatchApplicationStatusFastAsync(appsToScan);
-                if (batchResults != null)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Fast detection succeeded: {batchResults.Count} apps checked");
-                }
+                System.Diagnostics.Debug.WriteLine($"Batch detection succeeded: {batchResults.Count} apps checked");
             }
-
-            // Fall back to PowerShell-based batch detection if fast method unavailable or failed
-            batchResults ??= await _powerShellBridge.GetBatchApplicationStatusAsync(appsToScan);
 
             if (batchResults != null)
             {
@@ -1391,9 +1437,9 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         try
         {
             // Try batch update detection first (single call, ~500ms total)
-            if (_powerShellBridge is PowerShellBridge bridge)
+            if (_powerShellBridge is PowerShellBridgeFacade facade)
             {
-                var batchUpdates = await bridge.GetAvailableUpdatesAsync();
+                var batchUpdates = await facade.GetAvailableUpdatesAsync();
 
                 if (batchUpdates.Count > 0)
                 {
@@ -1598,10 +1644,23 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             // Update counters
             UpdateCounters();
         }
+        catch (DetectionException ex)
+        {
+            app.Status = ApplicationStatus.Failed;
+            app.StatusMessage = $"Detection failed: {ex.Message}";
+            Debug.WriteLine($"DetectionException in ScanApplicationAsync for {ex.ApplicationId}: {ex}");
+        }
+        catch (PowerShellBridgeException ex)
+        {
+            app.Status = ApplicationStatus.Failed;
+            app.StatusMessage = $"PowerShell error: {ex.Message}";
+            Debug.WriteLine($"PowerShellBridgeException in ScanApplicationAsync: {ex}");
+        }
         catch (Exception ex)
         {
             app.Status = ApplicationStatus.Failed;
             app.StatusMessage = ex.Message;
+            Debug.WriteLine($"Unexpected exception in ScanApplicationAsync: {ex}");
         }
     }
 
@@ -1633,16 +1692,8 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
 
         try
         {
-            Dictionary<string, BatchAppStatus>? batchResults = null;
-
-            // Try fast registry-first detection (10-50x faster than PowerShell)
-            if (_powerShellBridge is PowerShellBridge bridge)
-            {
-                batchResults = await bridge.GetBatchApplicationStatusFastAsync(selectedApps);
-            }
-
-            // Fall back to PowerShell-based batch detection if fast method unavailable or failed
-            batchResults ??= await _powerShellBridge.GetBatchApplicationStatusAsync(selectedApps);
+            // Use batch detection which internally uses fast registry-first detection
+            var batchResults = await _powerShellBridge.GetBatchApplicationStatusAsync(selectedApps);
 
             if (batchResults != null)
             {
@@ -2035,6 +2086,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         BatchProgressCurrent = 0;
         BatchProgressTotal = selectedApps.Count;
         BatchProgressPercent = 0;
+        CurrentBatchAppName = null;
         SuccessCount = 0;
         FailedCount = 0;
         SkippedCount = 0;
@@ -2134,6 +2186,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
 
             app.Status = ApplicationStatus.Installing;
             app.StatusMessage = Resources.Resources.Status_Installing;
+            CurrentBatchAppName = app.Name;
 
             // Update shared deployment state
             _deploymentStateService.UpdateProgress(
@@ -2298,15 +2351,15 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
 
         try
         {
-            Process.Start(new ProcessStartInfo
+            using var process = Process.Start(new ProcessStartInfo
             {
                 FileName = app.OfficialUrl,
                 UseShellExecute = true
             });
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently fail if browser can't be opened
+            System.Diagnostics.Debug.WriteLine($"Failed to open website: {ex.Message}");
         }
     }
 
@@ -2421,6 +2474,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         BatchProgressCurrent = 0;
         BatchProgressTotal = selectedApps.Count;
         BatchProgressPercent = 0;
+        CurrentBatchAppName = null;
         SuccessCount = 0;
         FailedCount = 0;
         SkippedCount = 0;
@@ -2514,6 +2568,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
 
             app.Status = ApplicationStatus.Uninstalling;
             app.StatusMessage = Resources.Resources.Status_Uninstalling;
+            CurrentBatchAppName = app.Name;
 
             var result = await _powerShellBridge.UninstallApplicationAsync(
                 app,

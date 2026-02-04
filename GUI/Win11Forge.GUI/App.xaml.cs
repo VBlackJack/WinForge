@@ -36,8 +36,21 @@ public partial class App : Application
 
     /// <summary>
     /// Gets the service provider for dependency injection.
+    /// Thread-safe initialization with defensive null check.
     /// </summary>
-    public static IServiceProvider Services { get; private set; } = null!;
+    private static IServiceProvider? _services;
+    public static IServiceProvider Services
+    {
+        get => _services ?? throw new InvalidOperationException(
+            "Services not initialized. Ensure OnStartup has completed before accessing Services.");
+        private set => _services = value;
+    }
+
+    /// <summary>
+    /// Gets whether services have been initialized.
+    /// Use this to safely check before accessing Services during startup.
+    /// </summary>
+    public static bool IsServicesInitialized => _services != null;
 
     /// <summary>
     /// Gets whether the user prefers reduced motion (accessibility setting).
@@ -46,8 +59,17 @@ public partial class App : Application
 
     /// <summary>
     /// Gets a service from the DI container.
+    /// Throws InvalidOperationException if services are not yet initialized.
     /// </summary>
-    public static T GetService<T>() where T : class => Services.GetRequiredService<T>();
+    public static T GetService<T>() where T : class
+    {
+        if (_services == null)
+        {
+            throw new InvalidOperationException(
+                $"Cannot resolve service {typeof(T).Name}: Services not initialized.");
+        }
+        return _services.GetRequiredService<T>();
+    }
 
     private static IServiceProvider ConfigureServices()
     {

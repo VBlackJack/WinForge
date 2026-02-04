@@ -30,29 +30,29 @@ public partial class ApplicationModel : ObservableValidator
 {
     /// <summary>Unique identifier for the application.</summary>
     [ObservableProperty]
-    [Required(ErrorMessage = "Application ID is required")]
-    [StringLength(256, MinimumLength = 1, ErrorMessage = "Application ID must be between 1 and 256 characters")]
+    [Required(ErrorMessageResourceName = "Validation_AppId_Required", ErrorMessageResourceType = typeof(Resources.Resources))]
+    [StringLength(256, MinimumLength = 1, ErrorMessageResourceName = "Validation_AppId_Length", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _appId = string.Empty;
 
     /// <summary>Display name of the application.</summary>
     [ObservableProperty]
-    [Required(ErrorMessage = "Application name is required")]
-    [StringLength(512, MinimumLength = 1, ErrorMessage = "Application name must be between 1 and 512 characters")]
+    [Required(ErrorMessageResourceName = "Validation_AppName_Required", ErrorMessageResourceType = typeof(Resources.Resources))]
+    [StringLength(512, MinimumLength = 1, ErrorMessageResourceName = "Validation_AppName_Length", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _name = string.Empty;
 
     /// <summary>Application category (e.g., Browser, Utility).</summary>
     [ObservableProperty]
-    [StringLength(128, ErrorMessage = "Category must not exceed 128 characters")]
+    [StringLength(128, ErrorMessageResourceName = "Validation_StringTooLong", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _category = string.Empty;
 
     /// <summary>Description of the application.</summary>
     [ObservableProperty]
-    [StringLength(2048, ErrorMessage = "Description must not exceed 2048 characters")]
+    [StringLength(2048, ErrorMessageResourceName = "Validation_StringTooLong", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _description = string.Empty;
 
     /// <summary>Installation priority (lower = installed first). 0 is reserved for system-critical apps.</summary>
     [ObservableProperty]
-    [Range(0, 100, ErrorMessage = "Priority must be between 0 and 100")]
+    [Range(0, 100, ErrorMessageResourceName = "Validation_RangeError", ErrorMessageResourceType = typeof(Resources.Resources))]
     private int _priority;
 
     /// <summary>Whether this application is required.</summary>
@@ -65,7 +65,7 @@ public partial class ApplicationModel : ObservableValidator
 
     /// <summary>Error message if installation failed.</summary>
     [ObservableProperty]
-    [StringLength(4096, ErrorMessage = "Error message must not exceed 4096 characters")]
+    [StringLength(4096, ErrorMessageResourceName = "Validation_StringTooLong", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string? _errorMessage;
 
     /// <summary>Whether the application is selected for installation.</summary>
@@ -74,22 +74,22 @@ public partial class ApplicationModel : ObservableValidator
 
     /// <summary>Installation log output for this application.</summary>
     [ObservableProperty]
-    [StringLength(1048576, ErrorMessage = "Log output must not exceed 1MB")]
+    [StringLength(262144, ErrorMessageResourceName = "Validation_StringTooLong", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _logOutput = string.Empty;
 
     /// <summary>Installation progress (0-100).</summary>
     [ObservableProperty]
-    [Range(0, 100, ErrorMessage = "Progress must be between 0 and 100")]
+    [Range(0, 100, ErrorMessageResourceName = "Validation_RangeError", ErrorMessageResourceType = typeof(Resources.Resources))]
     private double _progressValue;
 
     /// <summary>Status message displayed during installation.</summary>
     [ObservableProperty]
-    [StringLength(1024, ErrorMessage = "Status message must not exceed 1024 characters")]
+    [StringLength(1024, ErrorMessageResourceName = "Validation_StringTooLong", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _statusMessage = string.Empty;
 
     /// <summary>Available installation sources (e.g., "Winget, Chocolatey").</summary>
     [ObservableProperty]
-    [StringLength(256, ErrorMessage = "Sources must not exceed 256 characters")]
+    [StringLength(256, ErrorMessageResourceName = "Validation_StringTooLong", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _sources = string.Empty;
 
     /// <summary>Whether this application requires manual installation.</summary>
@@ -98,13 +98,13 @@ public partial class ApplicationModel : ObservableValidator
 
     /// <summary>Official download URL for manual installation.</summary>
     [ObservableProperty]
-    [StringLength(2048, ErrorMessage = "URL must not exceed 2048 characters")]
-    [ValidUrl(ErrorMessage = "URL must be a valid HTTP or HTTPS URL")]
+    [StringLength(2048, ErrorMessageResourceName = "Validation_StringTooLong", ErrorMessageResourceType = typeof(Resources.Resources))]
+    [ValidUrl(ErrorMessageResourceName = "Validation_InvalidUrl", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _officialUrl = string.Empty;
 
     /// <summary>Installation notes or warnings.</summary>
     [ObservableProperty]
-    [StringLength(2048, ErrorMessage = "Install notes must not exceed 2048 characters")]
+    [StringLength(2048, ErrorMessageResourceName = "Validation_StringTooLong", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _installNotes = string.Empty;
 
     /// <summary>Whether this application is marked as favorite.</summary>
@@ -113,16 +113,16 @@ public partial class ApplicationModel : ObservableValidator
 
     /// <summary>Current installed version of the application.</summary>
     [ObservableProperty]
-    [StringLength(128, ErrorMessage = "Version must not exceed 128 characters")]
+    [StringLength(128, ErrorMessageResourceName = "Validation_StringTooLong", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _currentVersion = string.Empty;
 
     /// <summary>Available version for update (when update is available).</summary>
     [ObservableProperty]
-    [StringLength(128, ErrorMessage = "Version must not exceed 128 characters")]
+    [StringLength(128, ErrorMessageResourceName = "Validation_StringTooLong", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _availableVersion = string.Empty;
 
     /// <summary>Profile tier this app belongs to (e.g., "Base", "Office", "Gaming").</summary>
     [ObservableProperty]
-    [StringLength(64, ErrorMessage = "Profile tier must not exceed 64 characters")]
+    [StringLength(64, ErrorMessageResourceName = "Validation_StringTooLong", ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _profileTier = string.Empty;
 }

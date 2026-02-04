@@ -17,7 +17,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
+using Win11Forge.GUI.Exceptions;
 using Win11Forge.GUI.Messages;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
@@ -34,6 +36,7 @@ public partial class DashboardViewModel : ViewModelBase
 
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IDeploymentHistoryService _historyService;
+    private readonly IAppSettingsService _settingsService;
 
     #region Hero Section Properties
 
@@ -292,17 +295,21 @@ public partial class DashboardViewModel : ViewModelBase
     /// <summary>
     /// Initializes a new instance of DashboardViewModel.
     /// </summary>
-    public DashboardViewModel(IPowerShellBridge powerShellBridge, IDeploymentHistoryService historyService)
+    public DashboardViewModel(
+        IPowerShellBridge powerShellBridge,
+        IDeploymentHistoryService historyService,
+        IAppSettingsService settingsService)
     {
         _powerShellBridge = powerShellBridge;
         _historyService = historyService;
+        _settingsService = settingsService;
     }
 
     /// <summary>
     /// Initializes a new instance with just the PowerShell bridge.
     /// </summary>
     public DashboardViewModel(IPowerShellBridge powerShellBridge)
-        : this(powerShellBridge, new DeploymentHistoryService())
+        : this(powerShellBridge, new DeploymentHistoryService(), new AppSettingsService())
     {
     }
 
@@ -360,10 +367,23 @@ public partial class DashboardViewModel : ViewModelBase
                 await ScanForUpdatesAsync();
             }
         }
+        catch (PowerShellBridgeException ex)
+        {
+            ErrorMessage = $"PowerShell error: {ex.Message}";
+            CurrentState = DashboardState.Ready;
+            Debug.WriteLine($"PowerShellBridgeException in InitializeAsync: {ex}");
+        }
+        catch (DetectionException ex)
+        {
+            ErrorMessage = $"Detection error: {ex.Message}";
+            CurrentState = DashboardState.Ready;
+            Debug.WriteLine($"DetectionException in InitializeAsync: {ex}");
+        }
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
             CurrentState = DashboardState.Ready;
+            Debug.WriteLine($"Unexpected exception in InitializeAsync: {ex}");
         }
         finally
         {
@@ -479,7 +499,8 @@ public partial class DashboardViewModel : ViewModelBase
 
         try
         {
-            var resultCount = await tcs.Task.WaitAsync(TimeSpan.FromMinutes(5));
+            var timeoutMinutes = _settingsService.LoadSettings()?.UpdateScanTimeoutMinutes ?? 5;
+            var resultCount = await tcs.Task.WaitAsync(TimeSpan.FromMinutes(timeoutMinutes));
             UpdateCount = resultCount;
             LastScanTime = DateTime.Now;
             OnPropertyChanged(nameof(LastScanDisplay));
@@ -538,7 +559,7 @@ public partial class DashboardViewModel : ViewModelBase
     [RelayCommand]
     private void NavigateToPrerequisites()
     {
-        WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Prerequisites));
+        WeakReferenceMessenger.Default.Send(new NavigateMessage(ViewIndex.Prerequisites));
     }
 
     /// <summary>
@@ -547,7 +568,7 @@ public partial class DashboardViewModel : ViewModelBase
     [RelayCommand]
     private void NavigateToApps()
     {
-        WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Apps));
+        WeakReferenceMessenger.Default.Send(new NavigateMessage(ViewIndex.Apps));
     }
 
     /// <summary>
@@ -556,7 +577,7 @@ public partial class DashboardViewModel : ViewModelBase
     [RelayCommand]
     private void NavigateToProfiles()
     {
-        WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Deployment));
+        WeakReferenceMessenger.Default.Send(new NavigateMessage(ViewIndex.Deployment));
     }
 
     /// <summary>
@@ -565,7 +586,7 @@ public partial class DashboardViewModel : ViewModelBase
     [RelayCommand]
     private void ViewUpdates()
     {
-        WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Apps));
+        WeakReferenceMessenger.Default.Send(new NavigateMessage(ViewIndex.Apps));
         WeakReferenceMessenger.Default.Send(new ApplyFilterMessage(StatusFilterOption.HasUpdates, triggerScan: true));
     }
 
@@ -575,6 +596,6 @@ public partial class DashboardViewModel : ViewModelBase
     [RelayCommand]
     private void StartDeployment()
     {
-        WeakReferenceMessenger.Default.Send(new NavigateMessage(NavigateMessage.ViewIndex.Apps));
+        WeakReferenceMessenger.Default.Send(new NavigateMessage(ViewIndex.Apps));
     }
 }

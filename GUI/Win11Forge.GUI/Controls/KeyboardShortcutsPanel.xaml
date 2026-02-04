@@ -124,6 +124,57 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
+                    <!-- Data Grid Section -->
+                    <TextBlock Text="{loc:Loc Help_Section_DataGrid}"
+                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               Opacity="0.7"
+                               Margin="0,16,0,8"/>
+
+                    <ItemsControl x:Name="DataGridShortcuts">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" MinWidth="100"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0"
+                                            Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                            CornerRadius="4"
+                                            Padding="8,4"
+                                            HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding Key}"
+                                                   FontFamily="Consolas"
+                                                   FontWeight="Medium"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Description}"
+                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                               VerticalAlignment="Center"
+                                               Margin="12,0,0,0"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Hint for DataGrid -->
+                    <Border Background="{DynamicResource MaterialDesignToolBarBackground}"
+                            CornerRadius="4"
+                            Padding="12"
+                            Margin="0,16,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="InformationOutline"
+                                                      Width="18" Height="18"
+                                                      VerticalAlignment="Center"
+                                                      Opacity="0.7"
+                                                      Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Help_Shortcut_DataGrid}"
+                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       TextWrapping="Wrap"
+                                       Opacity="0.8"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
 

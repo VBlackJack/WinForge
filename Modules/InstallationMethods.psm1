@@ -279,11 +279,14 @@ function Expand-ArchiveSafe {
         Safely extracts a ZIP archive with Zip Slip protection.
     .DESCRIPTION
         Extracts files while validating each extracted path to prevent
-        path traversal attacks. Rejects archives containing malicious entries.
+        path traversal attacks. Blocks dangerous file types by default.
     .PARAMETER Path
         Path to the ZIP archive.
     .PARAMETER DestinationPath
         Target extraction directory.
+    .PARAMETER AllowDangerousExtensions
+        If specified, allows extraction of potentially dangerous file types.
+        WARNING: Use only for trusted archives.
     .OUTPUTS
         Boolean indicating successful extraction.
     #>
@@ -294,8 +297,14 @@ function Expand-ArchiveSafe {
         [string]$Path,
 
         [Parameter(Mandatory)]
-        [string]$DestinationPath
+        [string]$DestinationPath,
+
+        [Parameter()]
+        [switch]$AllowDangerousExtensions
     )
+
+    # Security: List of extensions that can execute code
+    $dangerousExtensions = @('.ps1', '.psm1', '.psd1', '.bat', '.cmd', '.vbs', '.js', '.dll', '.exe', '.msi', '.scr', '.hta')
 
     try {
         # Create destination if not exists
@@ -310,32 +319,65 @@ function Expand-ArchiveSafe {
 
         $archive = [System.IO.Compression.ZipFile]::OpenRead($Path)
         try {
+            # Security: PRE-EXTRACTION VALIDATION - Check ALL entries before extracting ANY
+            $entriesToExtract = @()
+
             foreach ($entry in $archive.Entries) {
                 # Skip directories
                 if ($entry.FullName.EndsWith('/') -or $entry.FullName.EndsWith('\')) {
                     continue
                 }
 
+                # Security: Check for symlink/reparse point indicators in external attributes
+                # Unix symlinks have mode 0xA000 in upper 16 bits of ExternalAttributes
+                $unixMode = ($entry.ExternalAttributes -shr 16) -band 0xFFFF
+                $isSymlink = ($unixMode -band 0xA000) -eq 0xA000
+                if ($isSymlink) {
+                    Write-Status -Message "Security: Symlink detected in archive (blocked): $($entry.FullName)" -Level 'Error'
+                    return $false
+                }
+
                 # Calculate intended extraction path
                 $entryPath = Join-Path $canonicalDest $entry.FullName
                 $entryFullPath = [System.IO.Path]::GetFullPath($entryPath)
 
-                # Validate path doesn't escape destination
+                # Validate path doesn't escape destination (Zip Slip prevention)
                 if (-not $entryFullPath.StartsWith($canonicalDest + [System.IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
                     Write-Status -Message "Security: Zip Slip attack detected in entry: $($entry.FullName)" -Level 'Error'
                     return $false
                 }
 
                 # Check for dangerous file extensions
-                $dangerousExtensions = @('.ps1', '.psm1', '.psd1', '.bat', '.cmd', '.vbs', '.js', '.dll')
                 $extension = [System.IO.Path]::GetExtension($entry.FullName).ToLower()
                 if ($extension -in $dangerousExtensions) {
-                    Write-Status -Message "Security: Potentially dangerous file type in archive: $($entry.FullName)" -Level 'Warning'
+                    if (-not $AllowDangerousExtensions) {
+                        Write-Status -Message "Security: Blocked dangerous file type in archive: $($entry.FullName) (use -AllowDangerousExtensions to override)" -Level 'Error'
+                        return $false
+                    }
+                    Write-Status -Message "Security: Warning - extracting dangerous file type: $($entry.FullName)" -Level 'Warning'
                 }
+
+                # Entry passed all security checks - add to extraction list
+                $entriesToExtract += @{ Entry = $entry; DestPath = $entryFullPath }
             }
 
             # All entries validated - proceed with extraction
-            [System.IO.Compression.ZipFile]::ExtractToDirectory($Path, $canonicalDest)
+            foreach ($item in $entriesToExtract) {
+                $entryDir = [System.IO.Path]::GetDirectoryName($item.DestPath)
+                if (-not (Test-Path $entryDir)) {
+                    New-Item -Path $entryDir -ItemType Directory -Force | Out-Null
+                }
+                [System.IO.Compression.ZipFileExtensions]::ExtractToFile($item.Entry, $item.DestPath, $true)
+
+                # Post-extraction: Verify no symlink was created (defense in depth)
+                if (Test-Path $item.DestPath) {
+                    $fileAttribs = (Get-Item $item.DestPath -Force).Attributes
+                    if ($fileAttribs -band [System.IO.FileAttributes]::ReparsePoint) {
+                        Remove-Item $item.DestPath -Force -ErrorAction SilentlyContinue
+                        Write-Status -Message "Security: Removed symlink created during extraction: $($item.DestPath)" -Level 'Warning'
+                    }
+                }
+            }
             return $true
         } finally {
             $archive.Dispose()
@@ -603,65 +645,73 @@ function Invoke-FileDownloadWithProgress {
     [OutputType([bool])]
     param(
         [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
         [string]$Url,
 
         [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
         [string]$OutputPath,
 
         [Parameter()]
+        [ValidateRange(1, 7200)]
         [int]$TimeoutSeconds = 1800,  # 30 minutes for large files
 
         [Parameter()]
         [string]$ExpectedSHA256 = $null  # Optional SHA256 checksum for validation
     )
 
+    # Security: Validate URL format before any processing
+    # Block command injection characters that could be dangerous in URLs passed to external tools
+    $dangerousChars = @(';', '&', '|', '`', '$', '(', ')', '<', '>', '"', "'", "`n", "`r", [char]0)
+    foreach ($char in $dangerousChars) {
+        if ($Url.Contains($char)) {
+            Write-Status -Message "Security: URL contains potentially dangerous character: $char" -Level 'Error'
+            return $false
+        }
+    }
+
+    # Validate URL structure
+    try {
+        $uri = [System.Uri]$Url
+        if ($uri.Scheme -notin @('http', 'https')) {
+            Write-Status -Message "Security: Invalid URL scheme (must be http or https): $($uri.Scheme)" -Level 'Error'
+            return $false
+        }
+    } catch {
+        Write-Status -Message "Security: Malformed URL: $Url" -Level 'Error'
+        return $false
+    }
+
     # Ensure TLS 1.2 is enabled (required by many modern servers)
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
     $downloadSuccess = $false
 
-    # Method 1: Try WebClient (fast, efficient for most URLs)
+    # Method 1: Try Invoke-WebRequest (modern, secure, better redirect handling)
     try {
-        Write-Output "[INFO] Attempting download via WebClient..."
-        Write-Status -Message "Attempting download via WebClient..." -Level 'Verbose'
-        $webClient = New-Object System.Net.WebClient
-        # Use browser-like headers to avoid blocks
-        $webClient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-        $webClient.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
-        $webClient.Headers.Add("Accept-Language", "en-US,en;q=0.5")
+        Write-Output "[INFO] Attempting download via Invoke-WebRequest..."
+        Write-Status -Message "Attempting download via Invoke-WebRequest..." -Level 'Verbose'
 
-        # Progress reporting (optional)
-        $script:lastReportedPercent = -10
-        $progressHandler = {
-            param($eventSender, $e)
-            if ($e.TotalBytesToReceive -gt 0) {
-                $percent = [int](($e.BytesReceived / $e.TotalBytesToReceive) * 100)
-                if ($percent -ge ($script:lastReportedPercent + 10)) {
-                    $script:lastReportedPercent = $percent
-                    Write-Output "[INFO] Download progress: $percent%"
-                    Write-Status -Message "Download progress: $percent% ($($e.BytesReceived) / $($e.TotalBytesToReceive) bytes)" -Level 'Verbose'
-                }
-            }
+        # Disable progress bar for faster download
+        $ProgressPreference = 'SilentlyContinue'
+
+        # Use browser-like headers to avoid blocks
+        $headers = @{
+            'User-Agent' = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'Accept' = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+            'Accept-Language' = 'en-US,en;q=0.5'
         }
 
-        Register-ObjectEvent -InputObject $webClient -EventName DownloadProgressChanged -Action $progressHandler | Out-Null
-
-        $downloadTask = $webClient.DownloadFileTaskAsync($Url, $OutputPath)
-        $downloadTask.Wait()
-
-        $webClient.Dispose()
-        Get-EventSubscriber | Where-Object { $_.SourceObject -eq $webClient } | Unregister-Event -ErrorAction SilentlyContinue
+        Invoke-WebRequest -Uri $Url -OutFile $OutputPath -Headers $headers -UseBasicParsing -ErrorAction Stop
 
         if ((Test-Path -Path $OutputPath) -and (Get-Item -Path $OutputPath).Length -gt 0) {
             $downloadSuccess = $true
             Write-Output "[SUCCESS] Download completed"
-            Write-Status -Message "WebClient download succeeded" -Level 'Verbose'
+            Write-Status -Message "Invoke-WebRequest download succeeded" -Level 'Verbose'
         }
     } catch {
-        Write-Output "[WARNING] WebClient download failed, trying fallback method..."
-        Write-Status -Message "WebClient download failed: $($_.Exception.Message)" -Level 'Verbose'
-        if ($webClient) { $webClient.Dispose() }
-        Get-EventSubscriber | Where-Object { $_.SourceObject -eq $webClient } | Unregister-Event -ErrorAction SilentlyContinue
+        Write-Output "[WARNING] Invoke-WebRequest download failed, trying fallback method..."
+        Write-Status -Message "Invoke-WebRequest download failed: $($_.Exception.Message)" -Level 'Verbose'
         # Clean up any partial file
         if (Test-Path -Path $OutputPath) {
             Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
@@ -682,13 +732,25 @@ function Invoke-FileDownloadWithProgress {
                 "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                 "Accept" = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
             }
-            Invoke-WebRequest -Uri $Url -OutFile $OutputPath -UseBasicParsing -TimeoutSec $TimeoutSeconds -Headers $headers -ErrorAction Stop
-            if ((Test-Path -Path $OutputPath) -and (Get-Item -Path $OutputPath).Length -gt 0) {
+            $response = Invoke-WebRequest -Uri $Url -OutFile $OutputPath -UseBasicParsing -TimeoutSec $TimeoutSeconds -Headers $headers -ErrorAction Stop -PassThru
+
+            # Security: Explicitly validate HTTP status code (defensive check)
+            if ($response.StatusCode -ge 400) {
+                Write-Output "[WARNING] HTTP status code indicates failure: $($response.StatusCode)"
+                Write-Status -Message "HTTP error status: $($response.StatusCode)" -Level 'Warning'
+                if (Test-Path -Path $OutputPath) {
+                    Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
+                }
+            }
+            elseif ((Test-Path -Path $OutputPath) -and (Get-Item -Path $OutputPath).Length -gt 0) {
                 $downloadSuccess = $true
-                Write-Output "[SUCCESS] Download completed"
+                Write-Output "[SUCCESS] Download completed (HTTP $($response.StatusCode))"
+            }
+            else {
+                Write-Output "[WARNING] Download completed but file is empty or missing"
             }
         } catch {
-            Write-Output "[WARNING] Invoke-WebRequest failed, trying BITS transfer..."
+            Write-Output "[WARNING] Invoke-WebRequest failed, trying curl..."
             Write-Status -Message "Invoke-WebRequest download failed: $($_.Exception.Message)" -Level 'Verbose'
         }
     }
@@ -699,17 +761,29 @@ function Invoke-FileDownloadWithProgress {
             Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
         }
         try {
-            $curlPath = "$env:SystemRoot\System32\curl.exe"
+            $curlPath = [System.IO.Path]::Combine($env:SystemRoot, 'System32', 'curl.exe')
             if (Test-Path $curlPath) {
                 Write-Output "[INFO] Attempting download via curl.exe..."
                 Write-Status -Message "Attempting download via curl.exe..." -Level 'Verbose'
-                # Use & operator with proper argument handling
-                $curlOutput = & $curlPath -L -o "$OutputPath" -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0" --connect-timeout 30 --max-time $TimeoutSeconds "$Url" 2>&1
-                if ($LASTEXITCODE -eq 0 -and (Test-Path -Path $OutputPath) -and (Get-Item -Path $OutputPath).Length -gt 0) {
+                # Security: Use Start-Process with ArgumentList array to prevent command injection
+                # Each argument is passed separately, preventing shell interpretation
+                $curlArgs = @(
+                    '-L'                          # Follow redirects
+                    '-o', $OutputPath             # Output file
+                    '-A', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0'  # User agent
+                    '--connect-timeout', '30'     # Connection timeout
+                    '--max-time', $TimeoutSeconds.ToString()  # Max total time
+                    '--fail'                      # Fail on HTTP errors
+                    '--silent'                    # Silent mode
+                    '--show-error'                # But show errors
+                    $Url                          # The URL (safely passed as single argument)
+                )
+                $curlProcess = Start-Process -FilePath $curlPath -ArgumentList $curlArgs -NoNewWindow -Wait -PassThru
+                if ($curlProcess.ExitCode -eq 0 -and (Test-Path -Path $OutputPath) -and (Get-Item -Path $OutputPath).Length -gt 0) {
                     $downloadSuccess = $true
                     Write-Output "[SUCCESS] Download completed via curl"
                 } else {
-                    Write-Output "[WARNING] curl exit code: $LASTEXITCODE"
+                    Write-Output "[WARNING] curl exit code: $($curlProcess.ExitCode)"
                 }
             }
         } catch {
