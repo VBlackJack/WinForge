@@ -662,7 +662,8 @@ function Invoke-FileDownloadWithProgress {
 
     # Security: Validate URL format before any processing
     # Block command injection characters that could be dangerous in URLs passed to external tools
-    $dangerousChars = @(';', '&', '|', '`', '$', '(', ')', '<', '>', '"', "'", "`n", "`r", [char]0)
+    # Note: '&' is allowed as it's a valid query string separator in URLs
+    $dangerousChars = @(';', '|', '`', '$', '(', ')', '<', '>', '"', "'", "`n", "`r", [char]0)
     foreach ($char in $dangerousChars) {
         if ($Url.Contains($char)) {
             Write-Status -Message "Security: URL contains potentially dangerous character: $char" -Level 'Error'
