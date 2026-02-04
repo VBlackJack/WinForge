@@ -48,15 +48,12 @@ if (-not $version) {
 }
 
 # Files to check and simple patterns that should contain the version
+# Note: PS1/PSM1 files read version dynamically from Config/version.json at runtime
+# We only verify static files (batch launchers) that have hardcoded version references
 $files = @(
-    @{ Path = Join-Path $repoRoot 'Start-Win11ForgeGUI.ps1'; Pattern = "Version\s*[:=]?\s*%version%" },
-    @{ Path = Join-Path $repoRoot 'Deploy-Win11Environment.ps1'; Pattern = "Version\s*[:=]?\s*%version%" },
-    @{ Path = Join-Path $repoRoot 'Modules\\InstallationEngine.psm1'; Pattern = "Version\s*[:=]?\s*%version%" },
-    @{ Path = Join-Path $repoRoot 'Modules\\ProfileManager.psm1'; Pattern = "Version\s*[:=]?\s*%version%" },
-    @{ Path = Join-Path $repoRoot 'Modules\\ApplicationDatabase.psm1'; Pattern = "Version\s*[:=]?\s*%version%" },
-    @{ Path = Join-Path $repoRoot 'Modules\\EnvironmentDetection.psm1'; Pattern = "Version\s*[:=]?\s*%version%" },
     @{ Path = Join-Path $repoRoot 'Deploy-Win11Forge.bat'; Pattern = "Win11Forge Framework v%FRAMEWORK_VERSION%" },
-    @{ Path = Join-Path $repoRoot 'Start-Win11ForgeGUI-Admin.bat'; Pattern = "GUI Launcher v%FRAMEWORK_VERSION%" }
+    @{ Path = Join-Path $repoRoot 'Start-Win11ForgeGUI-Admin.bat'; Pattern = "GUI Launcher v%FRAMEWORK_VERSION%" },
+    @{ Path = Join-Path $repoRoot 'Config\version.json'; Pattern = '"Version"\s*:\s*"%version%"' }
 )
 
 $fail = $false
