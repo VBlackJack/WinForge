@@ -15,6 +15,8 @@
  */
 
 using Microsoft.Extensions.DependencyInjection;
+using Win11Forge.GUI.Services.Implementations;
+using Win11Forge.GUI.Services.PowerShell;
 using Win11Forge.GUI.ViewModels;
 
 namespace Win11Forge.GUI.Services;
@@ -29,18 +31,35 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddWin11ForgeServices(this IServiceCollection services)
     {
-        // Register detection service (used by PowerShellBridge)
-        services.AddSingleton<IApplicationDetectionService, HybridDetectionService>();
+        // Register logging service
+        services.AddSingleton<ILoggerFactory, LoggerFactory>();
+        services.AddSingleton<ILoggingService, LoggingService>();
 
-        // Register services as singletons (shared state across the application)
-        // PowerShellBridge is registered as the composite interface and its focused interfaces
-        // This follows ISP - consumers can depend on the smallest interface they need
+        // Register detection service (used by application management)
+        services.AddSingleton<IApplicationDetectionService, HybridDetectionService>();
+        services.AddSingleton<CacheWarmingService>();
+
+        // Register PowerShell support services (ISP compliant, specialized services)
+        services.AddSingleton<IRepositoryPathService, RepositoryPathService>();
+        services.AddSingleton<IPowerShellExecutionService, PowerShellExecutionService>();
+        services.AddSingleton<IApplicationCacheService, ApplicationCacheService>();
+
+        // Register focused service implementations (ISP compliant)
+        services.AddSingleton<IVersionService, VersionServiceImpl>();
+        services.AddSingleton<ISystemInfoService, SystemInfoServiceImpl>();
+        services.AddSingleton<IProfileManagementService, ProfileManagementServiceImpl>();
+        services.AddSingleton<IApplicationManagementService, ApplicationManagementServiceImpl>();
+        services.AddSingleton<IPrerequisitesService, PrerequisitesServiceImpl>();
+
+        // Register PowerShellBridge facade for backward compatibility
+        // Components that still depend on IPowerShellBridge can use the facade
+        // New components should depend on the focused interfaces directly
+        services.AddSingleton<IPowerShellBridge, PowerShellBridgeFacade>();
+
+        // Keep legacy PowerShellBridge available during transition period
         services.AddSingleton<PowerShellBridge>();
-        services.AddSingleton<IPowerShellBridge>(sp => sp.GetRequiredService<PowerShellBridge>());
-        services.AddSingleton<IVersionService>(sp => sp.GetRequiredService<PowerShellBridge>());
-        services.AddSingleton<IProfileManagementService>(sp => sp.GetRequiredService<PowerShellBridge>());
-        services.AddSingleton<IApplicationManagementService>(sp => sp.GetRequiredService<PowerShellBridge>());
-        services.AddSingleton<ISystemInfoService>(sp => sp.GetRequiredService<PowerShellBridge>());
+
+        // Register other application services
         services.AddSingleton<IDeploymentHistoryService, DeploymentHistoryService>();
         services.AddSingleton<IAppSettingsService, AppSettingsService>();
         services.AddSingleton<IProfileExportService, ProfileExportService>();
@@ -50,15 +69,20 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IProfileValidationService, ProfileValidationService>();
         services.AddSingleton<IProfileBridge, ProfileBridge>();
         services.AddSingleton<IApplicationBridge, ApplicationBridge>();
-        services.AddSingleton<IPrerequisitesService, PrerequisitesService>();
+        services.AddSingleton<IApplicationDatabaseService, ApplicationDatabaseService>();
+        services.AddSingleton<IPackageVerificationService, PackageVerificationService>();
         services.AddSingleton<ToastService>();
+        services.AddSingleton<IErrorHistoryService, ErrorHistoryService>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IAccessibilityService, AccessibilityService>();
+        services.AddSingleton<IDialogService, DialogService>();
 
         // Register ViewModels as transient (new instance per request)
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<DeploymentViewModel>();
         services.AddTransient<AppsViewModel>();
+        services.AddTransient<ApplicationsViewModel>();
+        services.AddTransient<ApplicationEditorViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<PrerequisitesViewModel>();
 

@@ -16,6 +16,7 @@
 
 using System.Windows;
 using MaterialDesignThemes.Wpf;
+using Win11Forge.GUI.Controls;
 
 namespace Win11Forge.GUI.Services;
 
@@ -130,13 +131,13 @@ public class DialogService : IDialogService
     {
         var result = false;
 
-        var dialog = new ConfirmDialogContent
-        {
-            Title = title,
-            Message = message,
-            ConfirmText = confirmText ?? Resources.Resources.Common_OK,
-            CancelText = cancelText ?? Resources.Resources.Common_Cancel
-        };
+        var dialog = new ConfirmDialog();
+        dialog.Configure(
+            title,
+            message,
+            confirmText ?? Resources.Resources.Common_OK,
+            cancelText ?? Resources.Resources.Common_Cancel,
+            ConfirmDialogType.Question);
 
         dialog.ResultSelected += (_, confirmed) => result = confirmed;
 

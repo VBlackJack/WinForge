@@ -17,7 +17,7 @@
             <SolidColorBrush x:Key="StatusInstallingBrush" Color="#2196F3"/>
             <SolidColorBrush x:Key="StatusInstalledBrush" Color="#4CAF50"/>
             <SolidColorBrush x:Key="StatusFailedBrush" Color="#F44336"/>
-            <SolidColorBrush x:Key="StatusSkippedBrush" Color="#FF9800"/>
+            <SolidColorBrush x:Key="StatusSkippedBrush" Color="#F57C00"/>
             <SolidColorBrush x:Key="StatusAlreadyInstalledBrush" Color="#8BC34A"/>
             <SolidColorBrush x:Key="StatusUninstallingBrush" Color="#9C27B0"/>
             <SolidColorBrush x:Key="StatusUninstalledBrush" Color="#7986CB"/>
@@ -27,7 +27,7 @@
             <SolidColorBrush x:Key="RowFailedBackground" Color="#1EF44336"/>
             <SolidColorBrush x:Key="RowInstallingBackground" Color="#1E2196F3"/>
             <SolidColorBrush x:Key="RowUninstalledBackground" Color="#1E7986CB"/>
-            <SolidColorBrush x:Key="RowUpdateAvailableBackground" Color="#28FF9800"/>
+            <SolidColorBrush x:Key="RowUpdateAvailableBackground" Color="#28F57C00"/>
 
             <!-- Accent Colors -->
             <SolidColorBrush x:Key="FavoriteActiveBrush" Color="#FFD700"/>
@@ -36,6 +36,7 @@
             <SolidColorBrush x:Key="RequiredBrush" Color="#FFC107"/>
             <SolidColorBrush x:Key="OptionalBrush" Color="#9E9E9E"/>
             <SolidColorBrush x:Key="AccentGreenTextBrush" Color="#2E7D32"/>
+            <SolidColorBrush x:Key="AccentOrangeTextBrush" Color="#E65100"/>
             <SolidColorBrush x:Key="ManualInstallBadgeBrush" Color="#FF8A00"/>
 
             <!-- Secondary/Muted Icon Colors (use instead of Opacity for WCAG compliance) -->
@@ -62,10 +63,16 @@
 
             <!-- Warning Display Colors (for dry run, caution banners) -->
             <!-- Using semi-transparent colors for theme compatibility -->
-            <SolidColorBrush x:Key="WarningBackgroundBrush" Color="#33FF9800"/>
-            <SolidColorBrush x:Key="WarningBorderBrush" Color="#FF9800"/>
+            <SolidColorBrush x:Key="WarningBackgroundBrush" Color="#33F57C00"/>
+            <SolidColorBrush x:Key="WarningBorderBrush" Color="#F57C00"/>
             <SolidColorBrush x:Key="WarningTextBrush" Color="#FFB74D"/>
             <SolidColorBrush x:Key="WarningIconBrush" Color="#FFB74D"/>
+
+            <!-- Success Display Colors (for deployment complete, validation success) -->
+            <SolidColorBrush x:Key="SuccessBackgroundBrush" Color="#334CAF50"/>
+            <SolidColorBrush x:Key="SuccessBorderBrush" Color="#4CAF50"/>
+            <SolidColorBrush x:Key="SuccessTextBrush" Color="#81C784"/>
+            <SolidColorBrush x:Key="SuccessIconBrush" Color="#81C784"/>
 
             <!-- Skeleton Loader Colors (theme-aware with transparency) -->
             <SolidColorBrush x:Key="SkeletonBaseBrush" Color="#1AFFFFFF"/>
@@ -467,6 +474,38 @@
             <!-- Touch-friendly TextBox -->
             <Style x:Key="TouchFriendlyTextBox" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}">
                 <Setter Property="MinHeight" Value="44"/>
+            </Style>
+
+            <!-- Enhanced DataGrid Row Style with visible hover effect -->
+            <Style x:Key="EnhancedDataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource MaterialDesignDataGridRow}">
+                <Setter Property="Background" Value="Transparent"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}"/>
+                    </Trigger>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Primary.Foreground}"/>
+                    </Trigger>
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="IsSelected" Value="True"/>
+                            <Condition Property="IsMouseOver" Value="True"/>
+                        </MultiTrigger.Conditions>
+                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Dark}"/>
+                    </MultiTrigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- DataGrid Cell Style with improved focus visibility -->
+            <Style x:Key="EnhancedDataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource MaterialDesignDataGridCell}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Style.Triggers>
+                    <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter Property="BorderBrush" Value="{DynamicResource SecondaryHueMidBrush}"/>
+                        <Setter Property="BorderThickness" Value="2"/>
+                    </Trigger>
+                </Style.Triggers>
             </Style>
 
             <!-- Micro-animation Styles for Enhanced UX Feedback -->

@@ -461,6 +461,52 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Settings_HistoryCleared" xml:space="preserve">
     <value>Historique efface</value>
   </data>
+  <!-- Error History -->
+  <data name="Settings_ErrorHistory" xml:space="preserve">
+    <value>Erreurs recentes</value>
+  </data>
+  <data name="Settings_ClearErrors" xml:space="preserve">
+    <value>Effacer les erreurs</value>
+  </data>
+  <data name="Settings_ErrorsCleared" xml:space="preserve">
+    <value>Historique des erreurs efface</value>
+  </data>
+  <data name="Settings_NoErrors" xml:space="preserve">
+    <value>Aucune erreur enregistree</value>
+  </data>
+  <data name="Settings_CacheStatistics" xml:space="preserve">
+    <value>Statistiques du cache</value>
+  </data>
+  <data name="Settings_CachePackages" xml:space="preserve">
+    <value>Paquets en cache</value>
+  </data>
+  <data name="Settings_CacheHits" xml:space="preserve">
+    <value>Requetes servies</value>
+  </data>
+  <data name="Settings_CacheMisses" xml:space="preserve">
+    <value>Echecs du cache</value>
+  </data>
+  <data name="Settings_CacheHitRate" xml:space="preserve">
+    <value>Taux de reussite</value>
+  </data>
+  <data name="Settings_LastRefresh" xml:space="preserve">
+    <value>Derniere actualisation</value>
+  </data>
+  <data name="Settings_AvgDetectionTime" xml:space="preserve">
+    <value>Temps de detection moy.</value>
+  </data>
+  <data name="Settings_ClearCache" xml:space="preserve">
+    <value>Vider le cache</value>
+  </data>
+  <data name="Settings_RefreshStats" xml:space="preserve">
+    <value>Actualiser</value>
+  </data>
+  <data name="Settings_CacheCleared" xml:space="preserve">
+    <value>Cache de detection vide</value>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>N/D</value>
+  </data>
   <data name="Settings_ParallelInstalls" xml:space="preserve">
     <value>Installations paralleles</value>
   </data>
@@ -478,6 +524,15 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <data name="Settings_ParallelScansApplied" xml:space="preserve">
     <value>Parametre applique (redemarrer les vues pour effet)</value>
+  </data>
+  <data name="Settings_ScanTimeoutApplied" xml:space="preserve">
+    <value>Delai d'analyse des mises a jour applique</value>
+  </data>
+  <data name="Settings_ScanTimeout" xml:space="preserve">
+    <value>Delai d'analyse des mises a jour</value>
+  </data>
+  <data name="Settings_ScanTimeout_Hint" xml:space="preserve">
+    <value>Temps maximum d'attente pour l'analyse des mises a jour (en minutes)</value>
   </data>
   <data name="Settings_Section_Performance" xml:space="preserve">
     <value>Performance</value>
@@ -562,6 +617,9 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Apps_ColumnVisibility" xml:space="preserve">
     <value>Colonnes</value>
   </data>
+  <data name="Apps_ResetColumns" xml:space="preserve">
+    <value>Reinitialiser</value>
+  </data>
   <data name="Status_ManualRequired" xml:space="preserve">
     <value>Installation manuelle requise</value>
   </data>
@@ -644,6 +702,15 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <data name="Prerequisites_Complete" xml:space="preserve">
     <value>Installation des prérequis terminée</value>
+  </data>
+  <data name="Prerequisites_RestartRequired" xml:space="preserve">
+    <value>Certains prérequis nécessitent un redémarrage de l'application pour être détectés. La variable d'environnement PATH a été mise à jour mais ne sera effective qu'après le redémarrage.</value>
+  </data>
+  <data name="Prerequisites_RestartApp" xml:space="preserve">
+    <value>Redémarrer l'application</value>
+  </data>
+  <data name="Prerequisites_DismissRestart" xml:space="preserve">
+    <value>Plus tard</value>
   </data>
   <data name="Prerequisites_PowerShell7" xml:space="preserve">
     <value>PowerShell 7</value>
@@ -899,6 +966,35 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <data name="Help_Shortcut_ProfileEditor" xml:space="preserve">
     <value>Aller a l'editeur de profil</value>
+  </data>
+  <!-- DataGrid Navigation Section -->
+  <data name="Help_Section_DataGrid" xml:space="preserve">
+    <value>Navigation dans les grilles</value>
+  </data>
+  <data name="Help_Shortcut_GridNavigate" xml:space="preserve">
+    <value>Naviguer entre les lignes et colonnes</value>
+  </data>
+  <data name="Help_Shortcut_GridPage" xml:space="preserve">
+    <value>Monter ou descendre d'une page</value>
+  </data>
+  <data name="Help_Shortcut_GridHomeEnd" xml:space="preserve">
+    <value>Aller a la premiere ou derniere ligne</value>
+  </data>
+  <data name="Help_Shortcut_GridSelect" xml:space="preserve">
+    <value>Selectionner la ligne courante</value>
+  </data>
+  <data name="Help_Shortcut_GridSelectAll" xml:space="preserve">
+    <value>Selectionner toutes les lignes</value>
+  </data>
+  <!-- Deployment Summary Counts -->
+  <data name="Deployment_Summary_Installed" xml:space="preserve">
+    <value> installee(s), </value>
+  </data>
+  <data name="Deployment_Summary_Failed" xml:space="preserve">
+    <value> echouee(s), </value>
+  </data>
+  <data name="Deployment_Summary_Skipped" xml:space="preserve">
+    <value> ignoree(s)</value>
   </data>
   <!-- Onboarding -->
   <data name="Onboarding_Welcome" xml:space="preserve">
@@ -1277,6 +1373,21 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <data name="Dashboard_Stats_UpdatesHint" xml:space="preserve">
     <value>Cliquez pour voir les mises a jour</value>
+  </data>
+  <data name="Dashboard_ScanBtn_Hint" xml:space="preserve">
+    <value>Analyser vos applications installees pour les mises a jour disponibles</value>
+  </data>
+  <data name="Dashboard_Nav_PrereqsHint" xml:space="preserve">
+    <value>Verifier et installer les composants requis (Winget, Chocolatey)</value>
+  </data>
+  <data name="Dashboard_Nav_AppsHint" xml:space="preserve">
+    <value>Parcourir, rechercher et gerer les installations d'applications</value>
+  </data>
+  <data name="Dashboard_StartDeployment_Hint" xml:space="preserve">
+    <value>Demarrer le deploiement de votre profil d'applications selectionne</value>
+  </data>
+  <data name="Dashboard_ViewUpdates_Hint" xml:space="preserve">
+    <value>Voir et installer les mises a jour d'applications disponibles</value>
   </data>
   <data name="Dashboard_Title" xml:space="preserve">
     <value>Tableau de bord</value>
@@ -1942,5 +2053,87 @@ Non = Ignorer les doublons</value>
   </data>
   <data name="Detection_StoreAppCheckNotSupported" xml:space="preserve">
     <value>La detection d'application Store necessite PowerShell</value>
+  </data>
+  <!-- UX Improvements - Bulk Delete -->
+  <data name="AppDb_DeleteMultipleConfirm" xml:space="preserve">
+    <value>Etes-vous sur de vouloir supprimer {0} applications ?
+
+Cette action est irreversible.</value>
+  </data>
+  <data name="AppDb_DeleteMultipleTitle" xml:space="preserve">
+    <value>Supprimer plusieurs applications</value>
+  </data>
+  <!-- UX Improvements - Deployment Result Banner -->
+  <data name="Deployment_Result_Success" xml:space="preserve">
+    <value>Deploiement termine avec succes</value>
+  </data>
+  <data name="Deployment_Result_Partial" xml:space="preserve">
+    <value>Deploiement termine avec {0} echec(s)</value>
+  </data>
+  <data name="Deployment_Result_Failed" xml:space="preserve">
+    <value>Echec du deploiement</value>
+  </data>
+  <data name="Deployment_Result_Cancelled" xml:space="preserve">
+    <value>Deploiement annule</value>
+  </data>
+  <data name="Deployment_Stats" xml:space="preserve">
+    <value>{0} installe(s), {1} echec(s), {2} ignore(s)</value>
+  </data>
+  <!-- UX Improvements - Network Error Messages -->
+  <data name="Recovery_NetworkTimeout" xml:space="preserve">
+    <value>La connexion a expire. Essayez d'augmenter les parametres de delai ou verifiez votre vitesse reseau.</value>
+  </data>
+  <data name="Recovery_DnsResolution" xml:space="preserve">
+    <value>Impossible de resoudre l'adresse du serveur. Verifiez vos parametres DNS ou essayez un autre reseau.</value>
+  </data>
+  <data name="Recovery_ProxySettings" xml:space="preserve">
+    <value>Si vous etes derriere un proxy, verifiez que vos parametres proxy sont correctement configures.</value>
+  </data>
+  <data name="Recovery_SslCertificate" xml:space="preserve">
+    <value>Il peut y avoir un probleme de certificat SSL. Verifiez la date/heure de votre systeme et votre logiciel de securite.</value>
+  </data>
+  <!-- UX Improvements - Empty State Accessibility -->
+  <data name="A11y_EmptyStateIcon" xml:space="preserve">
+    <value>Icone decorative</value>
+  </data>
+  <data name="A11y_NoHistoryIcon" xml:space="preserve">
+    <value>Icone aucun historique de deploiement</value>
+  </data>
+  <data name="A11y_NoDatabaseIcon" xml:space="preserve">
+    <value>Icone base de donnees vide</value>
+  </data>
+  <data name="A11y_NoDeploymentIcon" xml:space="preserve">
+    <value>Icone aucun deploiement actif</value>
+  </data>
+  <!-- UX Improvements - Loading Progress -->
+  <data name="Loading_ItemsCount" xml:space="preserve">
+    <value>Chargement de {0} elements...</value>
+  </data>
+  <data name="Loading_Database" xml:space="preserve">
+    <value>Chargement de la base de donnees d'applications...</value>
+  </data>
+  <!-- UX Improvements - Copy Feedback -->
+  <data name="Toast_CopiedToClipboard" xml:space="preserve">
+    <value>Copie dans le presse-papiers</value>
+  </data>
+  <!-- UX Improvements - Keyboard Shortcuts Help -->
+  <data name="Help_KeyboardShortcuts" xml:space="preserve">
+    <value>Raccourcis clavier</value>
+  </data>
+  <data name="Help_Shortcut_Navigation" xml:space="preserve">
+    <value>Navigation</value>
+  </data>
+  <data name="Help_Shortcut_Actions" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="Help_Shortcut_DataGrid" xml:space="preserve">
+    <value>Dans les grilles, utilisez les fleches pour naviguer, Entree pour selectionner, et Ctrl+A pour tout selectionner.</value>
+  </data>
+  <!-- UX Improvements - Cancel Feedback -->
+  <data name="Cancel_InProgress" xml:space="preserve">
+    <value>Annulation en cours...</value>
+  </data>
+  <data name="Cancel_Complete" xml:space="preserve">
+    <value>Operation annulee</value>
   </data>
 </root>

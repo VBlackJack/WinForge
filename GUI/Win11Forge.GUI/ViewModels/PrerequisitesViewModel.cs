@@ -15,6 +15,7 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -30,6 +31,7 @@ namespace Win11Forge.GUI.ViewModels;
 public partial class PrerequisitesViewModel : ViewModelBase
 {
     private readonly IPowerShellBridge _powerShellBridge;
+    private readonly IDialogService _dialogService;
 
     /// <summary>
     /// Prerequisites status.
@@ -64,9 +66,10 @@ public partial class PrerequisitesViewModel : ViewModelBase
     /// <summary>
     /// Initializes a new instance of PrerequisitesViewModel.
     /// </summary>
-    public PrerequisitesViewModel(IPowerShellBridge powerShellBridge)
+    public PrerequisitesViewModel(IPowerShellBridge powerShellBridge, IDialogService dialogService)
     {
         _powerShellBridge = powerShellBridge;
+        _dialogService = dialogService;
     }
 
     /// <inheritdoc/>
@@ -134,6 +137,21 @@ public partial class PrerequisitesViewModel : ViewModelBase
             if (success)
             {
                 await CheckPrerequisitesAsync();
+
+                // Show restart dialog if some prerequisites still show as not installed
+                // This happens because the current process doesn't have the updated PATH
+                LogOutput += Environment.NewLine + Resources.Resources.Prerequisites_RestartRequired + Environment.NewLine;
+
+                var shouldRestart = await _dialogService.ShowConfirmAsync(
+                    Resources.Resources.Prerequisites_Complete,
+                    Resources.Resources.Prerequisites_RestartRequired,
+                    Resources.Resources.Prerequisites_RestartApp,
+                    Resources.Resources.Prerequisites_DismissRestart);
+
+                if (shouldRestart)
+                {
+                    RestartApplication();
+                }
             }
         }
         catch (Exception ex)
@@ -154,5 +172,34 @@ public partial class PrerequisitesViewModel : ViewModelBase
     private void ClearLog()
     {
         LogOutput = string.Empty;
+    }
+
+    /// <summary>
+    /// Restarts the application to apply environment changes.
+    /// </summary>
+    private void RestartApplication()
+    {
+        try
+        {
+            var exePath = Environment.ProcessPath;
+            if (!string.IsNullOrEmpty(exePath))
+            {
+                // Start new instance
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    UseShellExecute = true,
+                    Verb = "runas" // Run as admin
+                };
+                Process.Start(startInfo);
+
+                // Shutdown current instance
+                Application.Current.Shutdown();
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
     }
 }

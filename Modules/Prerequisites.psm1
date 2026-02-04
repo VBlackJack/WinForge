@@ -504,6 +504,18 @@ function Install-DotNetRuntime {
             WingetId = 'Microsoft.DotNet.DesktopRuntime.8'
             ChocolateyId = 'dotnet-8.0-desktopruntime'
             Type = 'Core'
+        },
+        @{
+            Name = '.NET 9 Runtime'
+            WingetId = 'Microsoft.DotNet.Runtime.9'
+            ChocolateyId = 'dotnet-9.0-runtime'
+            Type = 'Core'
+        },
+        @{
+            Name = '.NET 9 Desktop Runtime'
+            WingetId = 'Microsoft.DotNet.DesktopRuntime.9'
+            ChocolateyId = 'dotnet-9.0-desktopruntime'
+            Type = 'Core'
         }
     )
 

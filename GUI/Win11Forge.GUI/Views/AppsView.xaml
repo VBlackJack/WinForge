@@ -433,6 +433,12 @@
                                   IsChecked="{Binding ShowLogsColumn, Mode=TwoWay}"
                                   Style="{StaticResource MaterialDesignCheckBox}"
                                   Margin="8,4"/>
+                        <Separator Margin="8,8"/>
+                        <Button Content="{loc:Loc Apps_ResetColumns}"
+                                Command="{Binding ResetColumnsToDefaultsCommand}"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                HorizontalAlignment="Stretch"
+                                Margin="4,0"/>
                     </StackPanel>
                 </materialDesign:PopupBox>
 
@@ -719,11 +725,22 @@
                         </TextBlock.Style>
                     </TextBlock>
                     <!-- Progress Text -->
-                    <TextBlock VerticalAlignment="Center" Margin="0,0,12,0">
+                    <TextBlock VerticalAlignment="Center" Margin="0,0,8,0">
                         <Run Text="{Binding BatchProgressCurrent, Mode=OneWay}"/>
                         <Run Text="/"/>
                         <Run Text="{Binding BatchProgressTotal, Mode=OneWay}"/>
                     </TextBlock>
+                    <!-- Current App Name -->
+                    <TextBlock Text="{Binding CurrentBatchAppName}"
+                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               Foreground="{DynamicResource PrimaryHueMidBrush}"
+                               FontWeight="Medium"
+                               VerticalAlignment="Center"
+                               MaxWidth="200"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip="{Binding CurrentBatchAppName}"
+                               Margin="0,0,12,0"
+                               Visibility="{Binding CurrentBatchAppName, Converter={StaticResource NullableToVisibilityConverter}}"/>
                     <!-- Progress Bar -->
                     <ProgressBar Value="{Binding BatchProgressPercent}"
                                  Width="150"
@@ -1125,15 +1142,16 @@
                         </DataGridTemplateColumn>
 
                         <!-- Logs Column -->
-                        <DataGridTemplateColumn Width="Auto" MinWidth="50" SortMemberPath="LogOutput"
+                        <DataGridTemplateColumn Width="60" MinWidth="60" SortMemberPath="LogOutput"
                                                 Visibility="{Binding DataContext.ShowLogsColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <DataGridTemplateColumn.Header>
-                                <TextBlock Text="{loc:Loc Col_Logs}"/>
+                                <TextBlock Text="{loc:Loc Col_Logs}" HorizontalAlignment="Center"/>
                             </DataGridTemplateColumn.Header>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                     <Button Style="{StaticResource HoverScaleIconButton}"
                                             Width="44" Height="44"
+                                            HorizontalAlignment="Center"
                                             ToolTip="{loc:Loc Btn_ViewLogs}"
                                             Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}"

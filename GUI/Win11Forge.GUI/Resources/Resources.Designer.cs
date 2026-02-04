@@ -116,6 +116,7 @@ public class Resources
     public static string Apps_CategoryAll => ResourceManager.GetString("Apps_CategoryAll", resourceCulture);
     public static string Apps_ClearFilters => ResourceManager.GetString("Apps_ClearFilters", resourceCulture);
     public static string Apps_ColumnVisibility => ResourceManager.GetString("Apps_ColumnVisibility", resourceCulture);
+    public static string Apps_ResetColumns => ResourceManager.GetString("Apps_ResetColumns", resourceCulture);
     public static string Apps_EmptyFilterResults => ResourceManager.GetString("Apps_EmptyFilterResults", resourceCulture);
     public static string Apps_EmptyFilterResultsHint => ResourceManager.GetString("Apps_EmptyFilterResultsHint", resourceCulture);
     public static string Apps_Col_Sources => ResourceManager.GetString("Apps_Col_Sources", resourceCulture);
@@ -223,6 +224,23 @@ public class Resources
     public static string Settings_ClearHistory_Desc => ResourceManager.GetString("Settings_ClearHistory_Desc", resourceCulture);
     public static string Settings_ClearBtn => ResourceManager.GetString("Settings_ClearBtn", resourceCulture);
     public static string Settings_HistoryCleared => ResourceManager.GetString("Settings_HistoryCleared", resourceCulture);
+    public static string Settings_ErrorHistory => ResourceManager.GetString("Settings_ErrorHistory", resourceCulture);
+    public static string Settings_ClearErrors => ResourceManager.GetString("Settings_ClearErrors", resourceCulture);
+    public static string Settings_ErrorsCleared => ResourceManager.GetString("Settings_ErrorsCleared", resourceCulture);
+    public static string Settings_NoErrors => ResourceManager.GetString("Settings_NoErrors", resourceCulture);
+
+    // Cache Statistics
+    public static string Settings_CacheStatistics => ResourceManager.GetString("Settings_CacheStatistics", resourceCulture);
+    public static string Settings_CachePackages => ResourceManager.GetString("Settings_CachePackages", resourceCulture);
+    public static string Settings_CacheHits => ResourceManager.GetString("Settings_CacheHits", resourceCulture);
+    public static string Settings_CacheMisses => ResourceManager.GetString("Settings_CacheMisses", resourceCulture);
+    public static string Settings_CacheHitRate => ResourceManager.GetString("Settings_CacheHitRate", resourceCulture);
+    public static string Settings_LastRefresh => ResourceManager.GetString("Settings_LastRefresh", resourceCulture);
+    public static string Settings_AvgDetectionTime => ResourceManager.GetString("Settings_AvgDetectionTime", resourceCulture);
+    public static string Settings_ClearCache => ResourceManager.GetString("Settings_ClearCache", resourceCulture);
+    public static string Settings_RefreshStats => ResourceManager.GetString("Settings_RefreshStats", resourceCulture);
+    public static string Settings_CacheCleared => ResourceManager.GetString("Settings_CacheCleared", resourceCulture);
+    public static string Common_NotAvailable => ResourceManager.GetString("Common_NotAvailable", resourceCulture);
 
     // Package Managers
     public static string Dashboard_Sys_Winget => ResourceManager.GetString("Dashboard_Sys_Winget", resourceCulture);
@@ -270,6 +288,9 @@ public class Resources
     public static string Prerequisites_LoadingModules => ResourceManager.GetString("Prerequisites_LoadingModules", resourceCulture);
     public static string Prerequisites_Installing => ResourceManager.GetString("Prerequisites_Installing", resourceCulture);
     public static string Prerequisites_Complete => ResourceManager.GetString("Prerequisites_Complete", resourceCulture);
+    public static string Prerequisites_RestartRequired => ResourceManager.GetString("Prerequisites_RestartRequired", resourceCulture);
+    public static string Prerequisites_RestartApp => ResourceManager.GetString("Prerequisites_RestartApp", resourceCulture);
+    public static string Prerequisites_DismissRestart => ResourceManager.GetString("Prerequisites_DismissRestart", resourceCulture);
     public static string Prerequisites_PowerShell7 => ResourceManager.GetString("Prerequisites_PowerShell7", resourceCulture);
     public static string Prerequisites_Winget => ResourceManager.GetString("Prerequisites_Winget", resourceCulture);
     public static string Prerequisites_Chocolatey => ResourceManager.GetString("Prerequisites_Chocolatey", resourceCulture);
@@ -315,6 +336,9 @@ public class Resources
     public static string Settings_ParallelScans => ResourceManager.GetString("Settings_ParallelScans", resourceCulture);
     public static string Settings_ParallelScans_Desc => ResourceManager.GetString("Settings_ParallelScans_Desc", resourceCulture);
     public static string Settings_ParallelScansApplied => ResourceManager.GetString("Settings_ParallelScansApplied", resourceCulture);
+    public static string Settings_ScanTimeoutApplied => ResourceManager.GetString("Settings_ScanTimeoutApplied", resourceCulture);
+    public static string Settings_ScanTimeout => ResourceManager.GetString("Settings_ScanTimeout", resourceCulture);
+    public static string Settings_ScanTimeout_Hint => ResourceManager.GetString("Settings_ScanTimeout_Hint", resourceCulture);
     public static string Settings_Section_Performance => ResourceManager.GetString("Settings_Section_Performance", resourceCulture);
 
     // Dialog System
@@ -346,6 +370,18 @@ public class Resources
     public static string Help_Shortcut_Apps => ResourceManager.GetString("Help_Shortcut_Apps", resourceCulture);
     public static string Help_Shortcut_Deployment => ResourceManager.GetString("Help_Shortcut_Deployment", resourceCulture);
     public static string Help_Shortcut_ProfileEditor => ResourceManager.GetString("Help_Shortcut_ProfileEditor", resourceCulture);
+    public static string Help_Section_DataGrid => ResourceManager.GetString("Help_Section_DataGrid", resourceCulture);
+    public static string Help_Shortcut_DataGrid => ResourceManager.GetString("Help_Shortcut_DataGrid", resourceCulture);
+    public static string Help_Shortcut_GridNavigate => ResourceManager.GetString("Help_Shortcut_GridNavigate", resourceCulture);
+    public static string Help_Shortcut_GridPage => ResourceManager.GetString("Help_Shortcut_GridPage", resourceCulture);
+    public static string Help_Shortcut_GridHomeEnd => ResourceManager.GetString("Help_Shortcut_GridHomeEnd", resourceCulture);
+    public static string Help_Shortcut_GridSelect => ResourceManager.GetString("Help_Shortcut_GridSelect", resourceCulture);
+    public static string Help_Shortcut_GridSelectAll => ResourceManager.GetString("Help_Shortcut_GridSelectAll", resourceCulture);
+
+    // Deployment Summary
+    public static string Deployment_Summary_Installed => ResourceManager.GetString("Deployment_Summary_Installed", resourceCulture);
+    public static string Deployment_Summary_Failed => ResourceManager.GetString("Deployment_Summary_Failed", resourceCulture);
+    public static string Deployment_Summary_Skipped => ResourceManager.GetString("Deployment_Summary_Skipped", resourceCulture);
 
     // Onboarding
     public static string Onboarding_Welcome => ResourceManager.GetString("Onboarding_Welcome", resourceCulture);

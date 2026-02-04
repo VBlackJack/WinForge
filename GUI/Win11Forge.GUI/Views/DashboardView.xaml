@@ -109,7 +109,8 @@
                                     Background="{DynamicResource AccentOrangeTextBrush}"
                                     Foreground="White"
                                     materialDesign:ButtonAssist.CornerRadius="8"
-                                    Padding="24,12"
+                                    Padding="24,14"
+                                    MinHeight="48"
                                     HorizontalAlignment="Left">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="Wrench"
@@ -147,6 +148,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <Button Command="{Binding StartDeploymentCommand}"
                                         Style="{StaticResource HeroCtaButton}"
+                                        ToolTip="{loc:Loc Dashboard_StartDeployment_Hint}"
                                         Margin="0,0,12,0">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="RocketLaunch"
@@ -158,6 +160,7 @@
                                 </Button>
                                 <Button Command="{Binding ViewUpdatesCommand}"
                                         Style="{StaticResource MaterialDesignOutlinedButton}"
+                                        ToolTip="{loc:Loc Dashboard_ViewUpdates_Hint}"
                                         materialDesign:ButtonAssist.CornerRadius="8"
                                         Height="56"
                                         Padding="24,0"
@@ -448,6 +451,7 @@
                             <!-- Scan Button -->
                             <Button Command="{Binding ScanUpdatesCommand}"
                                     Style="{StaticResource MaterialDesignRaisedButton}"
+                                    ToolTip="{loc:Loc Dashboard_ScanBtn_Hint}"
                                     materialDesign:ButtonAssist.CornerRadius="8"
                                     HorizontalAlignment="Stretch"
                                     IsEnabled="{Binding IsNotScanning}">
@@ -485,7 +489,8 @@
 
                             <!-- Prerequisites Button -->
                             <Button Command="{Binding NavigateToPrerequisitesCommand}"
-                                    Style="{StaticResource QuickActionButtonStyle}">
+                                    Style="{StaticResource QuickActionButtonStyle}"
+                                    ToolTip="{loc:Loc Dashboard_Nav_PrereqsHint}">
                                 <Grid Width="240">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -511,6 +516,7 @@
                             <!-- Applications Button -->
                             <Button Command="{Binding NavigateToAppsCommand}"
                                     Style="{StaticResource QuickActionButtonStyle}"
+                                    ToolTip="{loc:Loc Dashboard_Nav_AppsHint}"
                                     Margin="0">
                                 <Grid Width="240">
                                     <Grid.ColumnDefinitions>
@@ -632,7 +638,8 @@
                                                   Width="48" Height="48"
                                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
                                                   HorizontalAlignment="Center"
-                                                  Margin="0,0,0,12"/>
+                                                  Margin="0,0,0,12"
+                                                  AutomationProperties.Name="{loc:Loc A11y_NoHistoryIcon}"/>
                         <TextBlock Text="{loc:Loc Dashboard_History_Empty}"
                                    Style="{StaticResource MaterialDesignBody1TextBlock}"
                                    Foreground="{DynamicResource MaterialDesignBodyLight}"

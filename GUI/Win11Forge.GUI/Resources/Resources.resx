@@ -641,6 +641,67 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>History cleared</value>
     <comment>Status message after clearing history</comment>
   </data>
+  <!-- Error History -->
+  <data name="Settings_ErrorHistory" xml:space="preserve">
+    <value>Recent Errors</value>
+    <comment>Error history section title</comment>
+  </data>
+  <data name="Settings_ClearErrors" xml:space="preserve">
+    <value>Clear Errors</value>
+    <comment>Button to clear error history</comment>
+  </data>
+  <data name="Settings_ErrorsCleared" xml:space="preserve">
+    <value>Error history cleared</value>
+    <comment>Status message after clearing errors</comment>
+  </data>
+  <data name="Settings_NoErrors" xml:space="preserve">
+    <value>No errors recorded</value>
+    <comment>Empty state when no errors in history</comment>
+  </data>
+  <data name="Settings_CacheStatistics" xml:space="preserve">
+    <value>Cache Statistics</value>
+    <comment>Section header for cache statistics</comment>
+  </data>
+  <data name="Settings_CachePackages" xml:space="preserve">
+    <value>Cached Packages</value>
+    <comment>Label for number of cached packages</comment>
+  </data>
+  <data name="Settings_CacheHits" xml:space="preserve">
+    <value>Cache Hits</value>
+    <comment>Label for cache hit count</comment>
+  </data>
+  <data name="Settings_CacheMisses" xml:space="preserve">
+    <value>Cache Misses</value>
+    <comment>Label for cache miss count</comment>
+  </data>
+  <data name="Settings_CacheHitRate" xml:space="preserve">
+    <value>Hit Rate</value>
+    <comment>Label for cache hit rate percentage</comment>
+  </data>
+  <data name="Settings_LastRefresh" xml:space="preserve">
+    <value>Last Refresh</value>
+    <comment>Label for last cache refresh time</comment>
+  </data>
+  <data name="Settings_AvgDetectionTime" xml:space="preserve">
+    <value>Avg. Detection Time</value>
+    <comment>Label for average detection time</comment>
+  </data>
+  <data name="Settings_ClearCache" xml:space="preserve">
+    <value>Clear Cache</value>
+    <comment>Button to clear detection cache</comment>
+  </data>
+  <data name="Settings_RefreshStats" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>Button to refresh cache statistics</comment>
+  </data>
+  <data name="Settings_CacheCleared" xml:space="preserve">
+    <value>Detection cache cleared</value>
+    <comment>Status message after clearing cache</comment>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>N/A</value>
+    <comment>Displayed when data is not available</comment>
+  </data>
   <data name="Settings_ParallelInstalls" xml:space="preserve">
     <value>Parallel Installations</value>
     <comment>Parallel installations setting label</comment>
@@ -664,6 +725,18 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   <data name="Settings_ParallelScansApplied" xml:space="preserve">
     <value>Parallel scans setting applied (restart views for effect)</value>
     <comment>Status message after changing parallel scans</comment>
+  </data>
+  <data name="Settings_ScanTimeoutApplied" xml:space="preserve">
+    <value>Update scan timeout applied</value>
+    <comment>Status message after changing scan timeout</comment>
+  </data>
+  <data name="Settings_ScanTimeout" xml:space="preserve">
+    <value>Update Scan Timeout</value>
+    <comment>Label for scan timeout setting</comment>
+  </data>
+  <data name="Settings_ScanTimeout_Hint" xml:space="preserve">
+    <value>Maximum time to wait for update scans (in minutes)</value>
+    <comment>Hint text for scan timeout setting</comment>
   </data>
   <data name="Settings_Section_Performance" xml:space="preserve">
     <value>Performance</value>
@@ -775,6 +848,10 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Columns</value>
     <comment>Column visibility menu title</comment>
   </data>
+  <data name="Apps_ResetColumns" xml:space="preserve">
+    <value>Reset to defaults</value>
+    <comment>Reset column visibility to default settings</comment>
+  </data>
   <data name="Status_ManualRequired" xml:space="preserve">
     <value>Manual installation required</value>
     <comment>Status message for manual install apps</comment>
@@ -883,6 +960,18 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   <data name="Prerequisites_Complete" xml:space="preserve">
     <value>Prerequisites installation complete</value>
     <comment>Prerequisites installation completed</comment>
+  </data>
+  <data name="Prerequisites_RestartRequired" xml:space="preserve">
+    <value>Some prerequisites require an application restart to be detected. The PATH environment variable has been updated but will only take effect after restarting.</value>
+    <comment>Message shown when restart is required after prerequisites installation</comment>
+  </data>
+  <data name="Prerequisites_RestartApp" xml:space="preserve">
+    <value>Restart Application</value>
+    <comment>Button text to restart the application</comment>
+  </data>
+  <data name="Prerequisites_DismissRestart" xml:space="preserve">
+    <value>Later</value>
+    <comment>Button text to dismiss restart prompt</comment>
   </data>
   <data name="Prerequisites_PowerShell7" xml:space="preserve">
     <value>PowerShell 7</value>
@@ -1194,6 +1283,44 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   <data name="Help_Shortcut_Settings" xml:space="preserve">
     <value>Go to Settings</value>
     <comment>Ctrl+6 shortcut description</comment>
+  </data>
+  <!-- DataGrid Navigation Section -->
+  <data name="Help_Section_DataGrid" xml:space="preserve">
+    <value>Data Grid Navigation</value>
+    <comment>DataGrid shortcuts section</comment>
+  </data>
+  <data name="Help_Shortcut_GridNavigate" xml:space="preserve">
+    <value>Navigate between rows and columns</value>
+    <comment>Arrow keys shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_GridPage" xml:space="preserve">
+    <value>Move one page up or down</value>
+    <comment>Page Up/Down shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_GridHomeEnd" xml:space="preserve">
+    <value>Jump to first or last row</value>
+    <comment>Home/End shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_GridSelect" xml:space="preserve">
+    <value>Select current row</value>
+    <comment>Enter shortcut in grid description</comment>
+  </data>
+  <data name="Help_Shortcut_GridSelectAll" xml:space="preserve">
+    <value>Select all rows</value>
+    <comment>Ctrl+A shortcut in grid description</comment>
+  </data>
+  <!-- Deployment Summary Counts -->
+  <data name="Deployment_Summary_Installed" xml:space="preserve">
+    <value> installed, </value>
+    <comment>Result summary suffix for installed count</comment>
+  </data>
+  <data name="Deployment_Summary_Failed" xml:space="preserve">
+    <value> failed, </value>
+    <comment>Result summary suffix for failed count</comment>
+  </data>
+  <data name="Deployment_Summary_Skipped" xml:space="preserve">
+    <value> skipped</value>
+    <comment>Result summary suffix for skipped count</comment>
   </data>
   <!-- Onboarding -->
   <data name="Onboarding_Welcome" xml:space="preserve">
@@ -1990,6 +2117,26 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   <data name="Dashboard_Stats_UpdatesHint" xml:space="preserve">
     <value>Click to view available updates</value>
     <comment>Tooltip for updates stat card</comment>
+  </data>
+  <data name="Dashboard_ScanBtn_Hint" xml:space="preserve">
+    <value>Scan your installed applications for available updates</value>
+    <comment>Tooltip for scan updates button</comment>
+  </data>
+  <data name="Dashboard_Nav_PrereqsHint" xml:space="preserve">
+    <value>Verify and install required components (Winget, Chocolatey)</value>
+    <comment>Tooltip for prerequisites navigation button</comment>
+  </data>
+  <data name="Dashboard_Nav_AppsHint" xml:space="preserve">
+    <value>Browse, search, and manage application installations</value>
+    <comment>Tooltip for apps navigation button</comment>
+  </data>
+  <data name="Dashboard_StartDeployment_Hint" xml:space="preserve">
+    <value>Start deploying your selected application profile</value>
+    <comment>Tooltip for start deployment button</comment>
+  </data>
+  <data name="Dashboard_ViewUpdates_Hint" xml:space="preserve">
+    <value>View and install available application updates</value>
+    <comment>Tooltip for view updates button</comment>
   </data>
   <data name="Dashboard_Title" xml:space="preserve">
     <value>Dashboard</value>
@@ -2888,5 +3035,111 @@ No = Skip duplicates</value>
   <data name="Detection_StoreAppCheckNotSupported" xml:space="preserve">
     <value>Store App detection requires PowerShell</value>
     <comment>Store app check not supported message</comment>
+  </data>
+  <!-- UX Improvements - Bulk Delete -->
+  <data name="AppDb_DeleteMultipleConfirm" xml:space="preserve">
+    <value>Are you sure you want to delete {0} applications?
+
+This action cannot be undone.</value>
+    <comment>Bulk delete confirmation message (0=count)</comment>
+  </data>
+  <data name="AppDb_DeleteMultipleTitle" xml:space="preserve">
+    <value>Delete Multiple Applications</value>
+    <comment>Bulk delete confirmation title</comment>
+  </data>
+  <!-- UX Improvements - Deployment Result Banner -->
+  <data name="Deployment_Result_Success" xml:space="preserve">
+    <value>Deployment completed successfully</value>
+    <comment>Deployment success banner message</comment>
+  </data>
+  <data name="Deployment_Result_Partial" xml:space="preserve">
+    <value>Deployment completed with {0} failures</value>
+    <comment>Deployment partial success banner (0=failure count)</comment>
+  </data>
+  <data name="Deployment_Result_Failed" xml:space="preserve">
+    <value>Deployment failed</value>
+    <comment>Deployment failed banner message</comment>
+  </data>
+  <data name="Deployment_Result_Cancelled" xml:space="preserve">
+    <value>Deployment was cancelled</value>
+    <comment>Deployment cancelled banner message</comment>
+  </data>
+  <data name="Deployment_Stats" xml:space="preserve">
+    <value>{0} installed, {1} failed, {2} skipped</value>
+    <comment>Deployment statistics (0=success, 1=failed, 2=skipped)</comment>
+  </data>
+  <!-- UX Improvements - Network Error Messages -->
+  <data name="Recovery_NetworkTimeout" xml:space="preserve">
+    <value>The connection timed out. Try increasing timeout settings or check your network speed.</value>
+    <comment>Network timeout recovery suggestion</comment>
+  </data>
+  <data name="Recovery_DnsResolution" xml:space="preserve">
+    <value>Could not resolve the server address. Check your DNS settings or try a different network.</value>
+    <comment>DNS resolution recovery suggestion</comment>
+  </data>
+  <data name="Recovery_ProxySettings" xml:space="preserve">
+    <value>If you're behind a proxy, verify your proxy settings are correctly configured.</value>
+    <comment>Proxy settings recovery suggestion</comment>
+  </data>
+  <data name="Recovery_SslCertificate" xml:space="preserve">
+    <value>There may be an SSL certificate issue. Check your system date/time and security software.</value>
+    <comment>SSL certificate recovery suggestion</comment>
+  </data>
+  <!-- UX Improvements - Empty State Accessibility -->
+  <data name="A11y_EmptyStateIcon" xml:space="preserve">
+    <value>Decorative icon</value>
+    <comment>Accessibility label for empty state icons</comment>
+  </data>
+  <data name="A11y_NoHistoryIcon" xml:space="preserve">
+    <value>No deployment history icon</value>
+    <comment>Accessibility label for no history icon</comment>
+  </data>
+  <data name="A11y_NoDatabaseIcon" xml:space="preserve">
+    <value>Empty database icon</value>
+    <comment>Accessibility label for empty database icon</comment>
+  </data>
+  <data name="A11y_NoDeploymentIcon" xml:space="preserve">
+    <value>No active deployment icon</value>
+    <comment>Accessibility label for no deployment icon</comment>
+  </data>
+  <!-- UX Improvements - Loading Progress -->
+  <data name="Loading_ItemsCount" xml:space="preserve">
+    <value>Loading {0} items...</value>
+    <comment>Loading progress with count (0=count)</comment>
+  </data>
+  <data name="Loading_Database" xml:space="preserve">
+    <value>Loading application database...</value>
+    <comment>Database loading message</comment>
+  </data>
+  <!-- UX Improvements - Copy Feedback -->
+  <data name="Toast_CopiedToClipboard" xml:space="preserve">
+    <value>Copied to clipboard</value>
+    <comment>Clipboard copy success toast</comment>
+  </data>
+  <!-- UX Improvements - Keyboard Shortcuts Help -->
+  <data name="Help_KeyboardShortcuts" xml:space="preserve">
+    <value>Keyboard Shortcuts</value>
+    <comment>Keyboard shortcuts help section title</comment>
+  </data>
+  <data name="Help_Shortcut_Navigation" xml:space="preserve">
+    <value>Navigation</value>
+    <comment>Navigation shortcuts category</comment>
+  </data>
+  <data name="Help_Shortcut_Actions" xml:space="preserve">
+    <value>Actions</value>
+    <comment>Action shortcuts category</comment>
+  </data>
+  <data name="Help_Shortcut_DataGrid" xml:space="preserve">
+    <value>In data grids, use Arrow keys to navigate, Enter to select, and Ctrl+A to select all.</value>
+    <comment>DataGrid navigation hint</comment>
+  </data>
+  <!-- UX Improvements - Cancel Feedback -->
+  <data name="Cancel_InProgress" xml:space="preserve">
+    <value>Cancelling operation...</value>
+    <comment>Cancellation in progress message</comment>
+  </data>
+  <data name="Cancel_Complete" xml:space="preserve">
+    <value>Operation cancelled</value>
+    <comment>Cancellation complete message</comment>
   </data>
 </root>
