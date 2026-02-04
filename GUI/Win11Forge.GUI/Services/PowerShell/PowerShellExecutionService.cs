@@ -28,6 +28,11 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     private readonly IRepositoryPathService _pathService;
     private static string? _powerShellPath;
 
+    /// <summary>
+    /// Maximum allowed output size in bytes (100 MB) to prevent DoS via memory exhaustion.
+    /// </summary>
+    private const int MaxOutputSizeBytes = 100 * 1024 * 1024;
+
     /// <inheritdoc/>
     public int DefaultQueryTimeoutMs => 300000; // 5 minutes
 
@@ -223,9 +228,9 @@ public class PowerShellExecutionService : IPowerShellExecutionService
         {
             process.Start();
 
-            // Read stdout and stderr concurrently to prevent deadlocks
-            var outputTask = process.StandardOutput.ReadToEndAsync();
-            var errorTask = process.StandardError.ReadToEndAsync();
+            // Read stdout and stderr concurrently with size limits to prevent DoS
+            var outputTask = ReadStreamWithLimitAsync(process.StandardOutput, MaxOutputSizeBytes);
+            var errorTask = ReadStreamWithLimitAsync(process.StandardError, MaxOutputSizeBytes);
 
             // Wait for both streams AND the process to complete with timeout
             using var timeoutCts = new CancellationTokenSource(DefaultQueryTimeoutMs);
@@ -488,5 +493,54 @@ public class PowerShellExecutionService : IPowerShellExecutionService
 
         // Pass through normal text lines
         return line;
+    }
+
+    /// <summary>
+    /// Reads from a stream with a maximum size limit to prevent DoS via memory exhaustion.
+    /// </summary>
+    /// <param name="reader">The stream reader to read from.</param>
+    /// <param name="maxBytes">Maximum bytes to read before truncating.</param>
+    /// <returns>The content read from the stream, potentially truncated.</returns>
+    private static async Task<string> ReadStreamWithLimitAsync(StreamReader reader, int maxBytes)
+    {
+        var buffer = new char[8192];
+        var result = new System.Text.StringBuilder();
+        var totalBytesRead = 0;
+        var truncated = false;
+
+        while (!reader.EndOfStream)
+        {
+            var charsRead = await reader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+            if (charsRead == 0) break;
+
+            // Estimate byte count (UTF-16 chars can be 2-4 bytes in UTF-8)
+            var estimatedBytes = charsRead * 2;
+
+            if (totalBytesRead + estimatedBytes > maxBytes)
+            {
+                // Calculate how many chars we can still accept
+                var remainingBytes = maxBytes - totalBytesRead;
+                var charsToTake = Math.Max(0, remainingBytes / 2);
+
+                if (charsToTake > 0)
+                {
+                    result.Append(buffer, 0, Math.Min(charsRead, charsToTake));
+                }
+
+                truncated = true;
+                break;
+            }
+
+            result.Append(buffer, 0, charsRead);
+            totalBytesRead += estimatedBytes;
+        }
+
+        if (truncated)
+        {
+            result.AppendLine();
+            result.AppendLine($"[OUTPUT TRUNCATED: Exceeded {maxBytes / (1024 * 1024)} MB limit]");
+        }
+
+        return result.ToString();
     }
 }

@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "External download sources configuration for Win11Forge",
-    "version": "3.5.9",
+    "version": "3.6.0",
     "author": "Julien Bombled",
     "lastUpdated": "2026-01-19"
   },
@@ -21,6 +21,13 @@
       "checksumUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/hashes.sha256",
       "sha256": "D12B63D2CA67765FF91D30BA5EA5C01956F36CE8C04C2DB71795CB56A90D7912",
       "notes": "Update version, URL and SHA256 when new stable release is available"
+    },
+    "java": {
+      "description": "Eclipse Temurin JRE (Java Runtime Environment)",
+      "wingetId": "EclipseAdoptium.Temurin.21.JRE",
+      "version": "21",
+      "homepage": "https://adoptium.net/",
+      "notes": "LTS version - update wingetId when changing major version"
     }
   },
   "trustedDomains": {

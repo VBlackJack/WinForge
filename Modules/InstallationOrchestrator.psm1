@@ -1041,13 +1041,11 @@ function Install-Application {
         $isInstalled = Test-ApplicationInstalled -Application $Application
         if ($isInstalled) {
             if ($ForceUpdate) {
-                Write-Output "[INFO] Checking for updates: $($Application.Name)"
                 Write-Status -Message "Checking for updates: $($Application.Name)" -Level 'Info'
                 $upgradeResult = Invoke-ApplicationUpgrade -Application $Application
                 if ($upgradeResult.Success) {
                     return $upgradeResult
                 }
-                Write-Output "[INFO] No update available or upgrade not supported for: $($Application.Name)"
                 Write-Status -Message "No update available or upgrade not supported for: $($Application.Name)" -Level 'Info'
                 $result.AlreadyInstalled = $true
                 $result.Success = $true
@@ -1055,7 +1053,6 @@ function Install-Application {
                 return $result
             }
 
-            Write-Output "[SUCCESS] Already installed: $($Application.Name)"
             Write-Status -Message "Already installed: $($Application.Name)" -Level 'Success'
             $result.AlreadyInstalled = $true
             $result.Success = $true
@@ -1064,7 +1061,6 @@ function Install-Application {
         }
     }
 
-    Write-Output "[INFO] Installing: $($Application.Name)"
     Write-Status -Message "Installing: $($Application.Name)" -Level 'Info'
 
     # 3. Handle custom install methods (WindowsFeature, WindowsCapability)

@@ -619,7 +619,8 @@ function Install-VCRedist {
 function Install-JavaRuntime {
     <#
     .SYNOPSIS
-        Installs Java runtime environment (Temurin JRE 21).
+        Installs Java runtime environment (Eclipse Temurin JRE).
+        Version is configured in Config/download-sources.json.
     #>
     [CmdletBinding()]
     param([switch]$Force)
@@ -641,17 +642,24 @@ function Install-JavaRuntime {
     Write-Status -Message (Get-LocalizedString -Key 'prerequisites.java.installing') -Level 'Info'
     $installed = $false
 
+    # Get Java configuration from download-sources.json
+    $sources = Get-DownloadSources
+    $javaConfig = $sources.prerequisites.java
+    $javaWingetId = if ($javaConfig -and $javaConfig.wingetId) { $javaConfig.wingetId } else { 'EclipseAdoptium.Temurin.21.JRE' }
+    $javaVersion = if ($javaConfig -and $javaConfig.version) { $javaConfig.version } else { '21' }
+
     # Try Winget first
     if (Test-CommandAvailable -Name 'winget') {
-        $arguments = @('install', '--id', 'EclipseAdoptium.Temurin.21.JRE', '--silent', '--accept-package-agreements', '--accept-source-agreements')
+        $arguments = @('install', '--id', $javaWingetId, '--silent', '--accept-package-agreements', '--accept-source-agreements')
         if ($Force) { $arguments += '--force' }
 
         $installed = Invoke-ExternalProcess -FilePath 'winget' -ArgumentList $arguments -RefreshEnvironment
     }
 
-    # Try Chocolatey as fallback
+    # Try Chocolatey as fallback (using version from config)
     if ((-not $installed) -and (Test-CommandAvailable -Name 'choco')) {
-        $arguments = @('install', 'temurin21jre', '-y', '--no-progress')
+        $chocoPackage = "temurin${javaVersion}jre"
+        $arguments = @('install', $chocoPackage, '-y', '--no-progress')
         if ($Force) { $arguments += '--force' }
 
         $installed = Invoke-ExternalProcess -FilePath 'choco' -ArgumentList $arguments -RefreshEnvironment

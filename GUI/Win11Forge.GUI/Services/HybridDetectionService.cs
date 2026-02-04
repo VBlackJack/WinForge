@@ -457,7 +457,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             {
                 return false;
             }
-        });
+        }).ConfigureAwait(false);
 
         lock (_winGetCheckLock)
         {
@@ -515,7 +515,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             }
 
             return packages;
-        });
+        }).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -565,7 +565,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             }
 
             return updates;
-        });
+        }).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -623,7 +623,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             }
 
             return packages;
-        });
+        }).ConfigureAwait(false);
     }
 
     public void Dispose()

@@ -850,28 +850,8 @@ function Invoke-FileDownloadWithProgress {
     return $true
 }
 
-function Format-FileSize {
-    <#
-    .SYNOPSIS
-        Formats bytes into human-readable file size.
-    #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory)]
-        [long]$Bytes
-    )
-
-    if ($Bytes -ge 1GB) {
-        return "{0:N2} GB" -f ($Bytes / 1GB)
-    } elseif ($Bytes -ge 1MB) {
-        return "{0:N2} MB" -f ($Bytes / 1MB)
-    } elseif ($Bytes -ge 1KB) {
-        return "{0:N2} KB" -f ($Bytes / 1KB)
-    } else {
-        return "$Bytes bytes"
-    }
-}
+# Note: Format-FileSize is provided by Core.psm1 (imported above)
+# This module uses the centralized version that supports TB formatting
 
 # === PACKAGE MANAGER INSTALLATION METHODS ===
 

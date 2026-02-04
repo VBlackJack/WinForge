@@ -225,14 +225,26 @@ function Get-ProfilePath {
         [string]$ProfilesDirectory
     )
 
-    # Security: Validate profile name doesn't contain path traversal attempts
-    if ($ProfileName -match '\.\.|[/\\]' -and -not [System.IO.Path]::IsPathRooted($ProfileName)) {
-        throw "Invalid profile name: contains path traversal characters"
+    # Handle full paths: if it's already a valid file path, return it directly
+    if ([System.IO.Path]::IsPathRooted($ProfileName) -and (Test-Path -Path $ProfileName -PathType Leaf)) {
+        return $ProfileName
     }
 
-    # If ProfileName is already a full path
-    if (Test-Path -Path $ProfileName -PathType Leaf) {
-        return $ProfileName
+    # Strip .json extension if present for name validation
+    $nameToValidate = $ProfileName
+    if ($nameToValidate.EndsWith('.json', [StringComparison]::OrdinalIgnoreCase)) {
+        $nameToValidate = $nameToValidate.Substring(0, $nameToValidate.Length - 5)
+    }
+
+    # Security: Validate profile name is safe (alphanumeric, dash, underscore only)
+    # This prevents path traversal attacks
+    if ($nameToValidate -notmatch '^[a-zA-Z0-9_-]+$') {
+        throw "Invalid profile name '$ProfileName': must contain only alphanumeric characters, dashes, and underscores"
+    }
+
+    # Security: Limit profile name length to prevent DoS
+    if ($nameToValidate.Length -gt 64) {
+        throw "Invalid profile name: exceeds maximum length of 64 characters"
     }
 
     # Try to find in Profiles directory
@@ -244,20 +256,7 @@ function Get-ProfilePath {
     $canonicalBase = [System.IO.Path]::GetFullPath($ProfilesDirectory)
 
     # Try with .json extension
-    $profilePath = Join-Path -Path $ProfilesDirectory -ChildPath "$ProfileName.json"
-    $canonicalPath = [System.IO.Path]::GetFullPath($profilePath)
-
-    # Security: Verify resolved path stays within profiles directory
-    if (-not $canonicalPath.StartsWith($canonicalBase, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "Security violation: Path traversal attempt detected for profile '$ProfileName'"
-    }
-
-    if (Test-Path -Path $profilePath) {
-        return $profilePath
-    }
-
-    # Try without extension (maybe user provided it)
-    $profilePath = Join-Path -Path $ProfilesDirectory -ChildPath $ProfileName
+    $profilePath = Join-Path -Path $ProfilesDirectory -ChildPath "$nameToValidate.json"
     $canonicalPath = [System.IO.Path]::GetFullPath($profilePath)
 
     # Security: Verify resolved path stays within profiles directory
