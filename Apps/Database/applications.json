@@ -1076,7 +1076,7 @@
       "Category": "Gaming",
       "Description": "Blizzard Entertainment's gaming platform",
       "Sources": {
-        "Winget": "Blizzard.BattleNet",
+        "Winget": null,
         "Chocolatey": null,
         "Store": null,
         "DirectUrl": "https://downloader.battle.net/download/getInstaller?os=win&installer=Battle.net-Setup.exe"
