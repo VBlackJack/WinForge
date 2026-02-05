@@ -2,6 +2,33 @@
 
 Note: la source de vérité de la version du framework est `Config/version.json`. Les lanceurs et la GUI lisent dynamiquement cette valeur.
 
+## [3.6.7] - 2026-02-05
+
+### Bug Fixes
+
+#### Office Installation Detection
+- **Fixed**: `Wait-ForOfficeInstallation` stuck in infinite loop
+  - The function was only checking if Office was installed when no Office processes were found
+  - But `OfficeClickToRun.exe` is a permanent Windows service, not just an installation process
+  - Fix: Always check if Office is installed first (registry/files) on each iteration
+  - Only monitor installation-specific processes (`setup`, `OfficeC2RClient`), not the permanent service
+
+#### GUI Timeout
+- **Fixed**: Increased installation timeout from 30 to 47.5 minutes
+  - Must exceed Office Click-to-Run 45 minute timeout to prevent premature cancellation
+
+#### DirectDownload (v3.6.4)
+- **Fixed**: URL query parameter handling for filenames
+  - URLs like `?installer=Battle.net-Setup.exe` now correctly extract the filename
+  - Added proper parsing of query parameters instead of using raw URL path
+
+#### GUI Stability (v3.6.3)
+- **Fixed**: Binary content filter in log viewer to prevent GUI freeze
+  - Filters out DOS executable headers (MZ) and high ratio of non-printable characters
+  - Prevents crash when viewing Battle.net installation logs
+
+---
+
 ## [3.5.2] - 2026-01-28
 
 ### Bug Fixes & Test Improvements
