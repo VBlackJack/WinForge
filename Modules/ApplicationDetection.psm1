@@ -439,6 +439,10 @@ function Wait-ForOfficeInstallation {
         Office installations via winget can take a long time due to Click-to-Run
         streaming technology. This function monitors the installation progress
         and waits until completion or timeout.
+
+        Note: OfficeClickToRun.exe is a Windows service that runs permanently,
+        not just during installation. We must check for Office installation
+        first, regardless of whether processes are running.
     .PARAMETER TimeoutSeconds
         Maximum time to wait for installation in seconds (default: 2700 = 45 minutes for Office).
     .PARAMETER CheckIntervalSeconds
@@ -459,47 +463,50 @@ function Wait-ForOfficeInstallation {
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $timeoutMs = $TimeoutSeconds * 1000
 
-    $officeProcesses = @('OfficeClickToRun', 'OfficeC2RClient', 'setup', 'officeclicktorun')
+    # Registry paths that indicate Office is installed
+    $officeRegistryPaths = @(
+        'HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration',
+        'HKLM:\SOFTWARE\Microsoft\Office\16.0\Common\InstallRoot'
+    )
+
+    # Office executable paths
+    $officePaths = @(
+        "${env:ProgramFiles}\Microsoft Office\root\Office16\WINWORD.EXE",
+        "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\WINWORD.EXE"
+    )
+
+    # Installation-specific processes (not the permanent C2R service)
+    $installProcesses = @('setup', 'OfficeC2RClient')
 
     while ($stopwatch.ElapsedMilliseconds -lt $timeoutMs) {
-        # Check if Office setup processes are running
-        $runningProcesses = Get-Process -Name $officeProcesses -ErrorAction SilentlyContinue
+        # ALWAYS check if Office is installed first (registry or files)
+        # This is critical because OfficeClickToRun.exe runs as a permanent service
+        foreach ($regPath in $officeRegistryPaths) {
+            if (Test-Path $regPath -ErrorAction SilentlyContinue) {
+                $elapsed = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1)
+                Write-Status -Message "Office installation completed after $elapsed minutes (registry detected)" -Level 'Success'
+                return $true
+            }
+        }
 
-        if ($runningProcesses) {
-            $processNames = ($runningProcesses | Select-Object -ExpandProperty Name -Unique) -join ', '
+        foreach ($officePath in $officePaths) {
+            if (Test-Path $officePath -ErrorAction SilentlyContinue) {
+                $elapsed = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1)
+                Write-Status -Message "Office installation completed after $elapsed minutes (executable detected)" -Level 'Success'
+                return $true
+            }
+        }
+
+        # Check if installation-specific processes are running (not the permanent service)
+        $runningInstallProcesses = Get-Process -Name $installProcesses -ErrorAction SilentlyContinue
+
+        if ($runningInstallProcesses) {
+            $processNames = ($runningInstallProcesses | Select-Object -ExpandProperty Name -Unique) -join ', '
             Write-Status -Message "Office installation in progress ($processNames)... Elapsed: $([math]::Round($stopwatch.Elapsed.TotalMinutes, 1)) min" -Level 'Verbose'
         } else {
-            # No Office processes - check if Office is now installed
-            $officeRegistryPaths = @(
-                'HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration',
-                'HKLM:\SOFTWARE\Microsoft\Office\16.0\Common\InstallRoot'
-            )
-
-            foreach ($regPath in $officeRegistryPaths) {
-                if (Test-Path $regPath -ErrorAction SilentlyContinue) {
-                    $elapsed = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1)
-                    Write-Status -Message "Office installation completed after $elapsed minutes" -Level 'Success'
-                    return $true
-                }
-            }
-
-            # Check for Office executable
-            $officePaths = @(
-                "${env:ProgramFiles}\Microsoft Office\root\Office16\WINWORD.EXE",
-                "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\WINWORD.EXE"
-            )
-
-            foreach ($officePath in $officePaths) {
-                if (Test-Path $officePath -ErrorAction SilentlyContinue) {
-                    $elapsed = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1)
-                    Write-Status -Message "Office installation completed after $elapsed minutes" -Level 'Success'
-                    return $true
-                }
-            }
-
-            # No processes and no Office detected - might have failed or not started yet
+            # No install processes and Office not detected yet
             if ($stopwatch.ElapsedMilliseconds -gt 120000) {  # After 2 minutes
-                Write-Status -Message "No Office installation processes detected" -Level 'Warning'
+                Write-Status -Message "No Office installation processes detected and Office not found" -Level 'Warning'
                 return $false
             }
         }
