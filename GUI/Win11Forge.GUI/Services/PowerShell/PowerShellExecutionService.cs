@@ -37,7 +37,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     public int DefaultQueryTimeoutMs => 300000; // 5 minutes
 
     /// <inheritdoc/>
-    public int InstallationTimeoutMs => 1800000; // 30 minutes
+    public int InstallationTimeoutMs => 2850000; // 47.5 minutes (must exceed Office C2R 45 min timeout)
 
     /// <summary>
     /// Initializes a new instance of the PowerShellExecutionService.
