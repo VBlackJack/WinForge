@@ -1262,9 +1262,33 @@ try {{
 
     /// <summary>
     /// Extracts readable messages from PowerShell output.
+    /// Filters out binary content and CLIXML serialization artifacts.
     /// </summary>
     private static string ExtractReadableMessage(string line)
     {
+        // Filter out binary content (non-printable characters indicate binary data)
+        // Check for common binary signatures: MZ (DOS exe), PK (ZIP), etc.
+        if (line.Length > 0 && (line[0] == 'M' && line.Length > 1 && line[1] == 'Z'))
+        {
+            return string.Empty; // DOS executable header - skip binary content
+        }
+
+        // Check for high ratio of non-printable characters (indicates binary data)
+        int nonPrintable = 0;
+        int checkLength = Math.Min(line.Length, 100); // Check first 100 chars
+        for (int i = 0; i < checkLength; i++)
+        {
+            char c = line[i];
+            if (c < 32 && c != '\t' && c != '\n' && c != '\r')
+            {
+                nonPrintable++;
+            }
+        }
+        if (checkLength > 0 && nonPrintable > checkLength / 4) // More than 25% non-printable
+        {
+            return string.Empty; // Likely binary data
+        }
+
         if (line.Contains("<Objs") || line.Contains("<ToString>"))
         {
             var messages = new List<string>();

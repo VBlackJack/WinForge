@@ -74,6 +74,9 @@ if (-not (Get-Command -Name Get-InstalledAppVersion -ErrorAction SilentlyContinu
 }
 
 # === TIMEOUT CONFIGURATION ===
+# Default timeout for installation processes (30 minutes)
+$script:DefaultInstallTimeoutSeconds = 1800
+
 # Import TimeoutSettings module for centralized timeout configuration
 $script:TimeoutSettingsPath = Join-Path $script:RepositoryRoot 'Core\TimeoutSettings.psm1'
 if (Test-Path -Path $script:TimeoutSettingsPath) {
@@ -768,16 +771,18 @@ function Invoke-FileDownloadWithProgress {
                 Write-Status -Message "Attempting download via curl.exe..." -Level 'Verbose'
                 # Security: Use Start-Process with ArgumentList array to prevent command injection
                 # Each argument is passed separately, preventing shell interpretation
+                # Build curl arguments - User-Agent must be quoted due to spaces
+                $userAgent = '"Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"'
                 $curlArgs = @(
                     '-L'                          # Follow redirects
-                    '-o', $OutputPath             # Output file
-                    '-A', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0'  # User agent
+                    '-o', "`"$OutputPath`""       # Output file (quoted for paths with spaces)
+                    '-A', $userAgent              # User agent (pre-quoted)
                     '--connect-timeout', '30'     # Connection timeout
                     '--max-time', $TimeoutSeconds.ToString()  # Max total time
                     '--fail'                      # Fail on HTTP errors
                     '--silent'                    # Silent mode
                     '--show-error'                # But show errors
-                    $Url                          # The URL (safely passed as single argument)
+                    "`"$Url`""                    # The URL (quoted for special characters)
                 )
                 $curlProcess = Start-Process -FilePath $curlPath -ArgumentList $curlArgs -NoNewWindow -Wait -PassThru
                 if ($curlProcess.ExitCode -eq 0 -and (Test-Path -Path $OutputPath) -and (Get-Item -Path $OutputPath).Length -gt 0) {
@@ -1209,18 +1214,20 @@ function Install-ExePackage {
 
     if ($CustomArguments) {
         Write-Output "[INFO] Running installer with custom arguments: $CustomArguments"
-        Write-Status -Message "Using custom install arguments: $CustomArguments" -Level 'Verbose'
+        Write-Status -Message "Executing: $InstallerPath $CustomArguments" -Level 'Info'
         try {
             $process = Start-ProcessWithTimeout -FilePath $InstallerPath -ArgumentList $CustomArguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
+            Write-Status -Message "Process completed with exit code: $($process.ExitCode)" -Level 'Info'
             if ($process.ExitCode -eq 0) {
                 Write-Output "[SUCCESS] Installation completed"
             } else {
                 Write-Output "[WARNING] Installer returned exit code: $($process.ExitCode)"
+                Write-Status -Message "Installer returned non-zero exit code: $($process.ExitCode)" -Level 'Warning'
             }
             return ($process.ExitCode -eq 0)
         } catch {
             Write-Output "[ERROR] EXE installation failed: $($_.Exception.Message)"
-            Write-Status -Message "EXE installation with custom args failed: $($_.Exception.Message)" -Level 'Verbose'
+            Write-Status -Message "EXE installation failed: $($_.Exception.Message)" -Level 'Error'
             return $false
         }
     }
@@ -1337,6 +1344,10 @@ function Install-ViaDirectDownload {
         [string]$ExpectedSHA256 = $null  # Optional SHA256 checksum
     )
 
+    Write-Output "=== Install-ViaDirectDownload CALLED ==="
+    Write-Output "URL: $Url"
+    Write-Output "CustomArguments: $CustomArguments"
+
     try {
         # Validate URL before download
         if (-not (Test-ValidDownloadUrl -Url $Url)) {
@@ -1350,13 +1361,57 @@ function Install-ViaDirectDownload {
 
         $tempDir = Join-Path -Path $env:TEMP -ChildPath "Win11Forge_$([guid]::NewGuid().ToString('N'))"
         New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
+        Write-Output "[DEBUG] TempDir created: $tempDir"
 
-        $filename = [System.IO.Path]::GetFileName($Url)
-        if ([string]::IsNullOrWhiteSpace($filename) -or $filename -notmatch '\.[a-z]{3,4}$') {
+        # Extract filename from URL, handling query parameters properly
+        # URLs like: https://example.com/getInstaller?os=win&installer=Setup.exe
+        $filename = $null
+        Write-Output "[DEBUG] Starting filename extraction from URL"
+        try {
+            $uri = [System.Uri]::new($Url)
+            Write-Output "[DEBUG] URI parsed, Query: $($uri.Query)"
+
+            # First try: parse query string for common filename parameters
+            if ($uri.Query) {
+                # Manual query string parsing (no dependency on System.Web)
+                $queryString = $uri.Query.TrimStart('?')
+                $queryPairs = $queryString -split '&'
+                foreach ($pair in $queryPairs) {
+                    $parts = $pair -split '=', 2
+                    if ($parts.Count -eq 2) {
+                        $paramName = [System.Uri]::UnescapeDataString($parts[0]).ToLower()
+                        $paramValue = [System.Uri]::UnescapeDataString($parts[1])
+                        if ($paramName -in @('installer', 'file', 'filename', 'name', 'download')) {
+                            if ($paramValue -match '\.(exe|msi|zip)$') {
+                                $filename = [System.IO.Path]::GetFileName($paramValue)
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+
+            # Second try: use the last path segment (without query string)
+            if (-not $filename) {
+                $pathSegment = $uri.Segments[-1]
+                if ($pathSegment -and $pathSegment -match '\.(exe|msi|zip)$') {
+                    $filename = $pathSegment
+                }
+            }
+        } catch {
+            # Fallback: simple string parsing - remove everything after ?
+            $filename = ($Url -split '\?')[0]
+            $filename = $filename.Substring($filename.LastIndexOf('/') + 1)
+        }
+
+        # Final fallback: generate a unique filename if extraction failed or contains invalid chars
+        if ([string]::IsNullOrWhiteSpace($filename) -or $filename -notmatch '\.(exe|msi|zip)$' -or $filename -match '[?&=<>:"|*]') {
             $filename = "installer_$([guid]::NewGuid().ToString('N')).exe"
         }
 
         $installerPath = Join-Path -Path $tempDir -ChildPath $filename
+        Write-Output "[INFO] Installer filename: $filename"
+        Write-Output "[DEBUG] InstallerPath: $installerPath"
 
         # Use streaming download with optional checksum validation
         $downloadParams = @{
@@ -1391,18 +1446,35 @@ function Install-ViaDirectDownload {
         }
 
         Write-Output "[INFO] Running $InstallerType installer..."
+        Write-Status -Message "Running $InstallerType installer: $filename" -Level 'Info'
+        Write-Status -Message "CustomArguments: $CustomArguments" -Level 'Verbose'
+        Write-Status -Message "InstallerPath exists: $(Test-Path $installerPath)" -Level 'Verbose'
 
         # Install using appropriate method (delegated to helper functions)
-        $installed = switch ($InstallerType) {
+        # Note: Helper functions output strings AND return boolean, so we must extract the boolean
+        $installOutput = switch ($InstallerType) {
             'msi' { Install-MsiPackage -InstallerPath $installerPath }
             'exe' { Install-ExePackage -InstallerPath $installerPath -CustomArguments $CustomArguments }
             'zip' { Install-ZipPackage -InstallerPath $installerPath -TempDir $tempDir -CustomArguments $CustomArguments -DetectionPath $DetectionPath }
             default { $false }
         }
 
+        # Extract the boolean return value from the output (last boolean in the stream)
+        Write-Status -Message "Install output type: $($installOutput.GetType().Name), count: $(if ($installOutput -is [array]) { $installOutput.Count } else { 1 })" -Level 'Info'
+        $installed = if ($installOutput -is [bool]) {
+            $installOutput
+        } elseif ($installOutput -is [array]) {
+            $boolResult = $installOutput | Where-Object { $_ -is [bool] } | Select-Object -Last 1
+            Write-Status -Message "Extracted boolean: $boolResult" -Level 'Info'
+            if ($null -ne $boolResult) { $boolResult } else { $false }
+        } else {
+            $false
+        }
+        Write-Status -Message "Final installed result: $installed" -Level 'Info'
+
         Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
 
-        if ($installed) {
+        if ($installed -eq $true) {
             Write-Output "[SUCCESS] Installed successfully via direct download"
             Write-Status -Message "Installed successfully via direct download" -Level 'Success'
         } else {

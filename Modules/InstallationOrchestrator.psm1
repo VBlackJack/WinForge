@@ -842,7 +842,11 @@ function Invoke-InstallationMethodSequence {
             $installParams['ExpectedSHA256'] = $sources.SHA256
         }
 
+        Write-Output "=== ORCHESTRATOR: Calling Install-ViaDirectDownload ==="
+        Write-Output "installParams: $($installParams | ConvertTo-Json -Compress)"
         $downloadOutput = @(Install-ViaDirectDownload @installParams)
+        Write-Output "=== ORCHESTRATOR: Install-ViaDirectDownload returned ==="
+        Write-Output "downloadOutput count: $($downloadOutput.Count)"
         if (& $getInstallResult $downloadOutput) {
             $result.Success = $true
             $result.Method = 'DirectDownload'
@@ -1605,10 +1609,45 @@ function Test-AppInstalledParallel {
                 Write-ParallelLog "Attempting direct download installation: $($sources.DirectUrl)" 'Info'
 
                 try {
-                    $filename = [System.IO.Path]::GetFileName($sources.DirectUrl)
-                    if ([string]::IsNullOrWhiteSpace($filename) -or $filename -notmatch '\.[a-z]{3,4}$') {
+                    # Extract filename from URL, handling query parameters properly
+                    $filename = $null
+                    $dlUrl = $sources.DirectUrl
+                    try {
+                        $uri = [System.Uri]::new($dlUrl)
+                        # First try: parse query string for filename parameters
+                        if ($uri.Query) {
+                            $queryString = $uri.Query.TrimStart('?')
+                            $queryPairs = $queryString -split '&'
+                            foreach ($pair in $queryPairs) {
+                                $parts = $pair -split '=', 2
+                                if ($parts.Count -eq 2) {
+                                    $paramName = [System.Uri]::UnescapeDataString($parts[0]).ToLower()
+                                    $paramValue = [System.Uri]::UnescapeDataString($parts[1])
+                                    if ($paramName -in @('installer', 'file', 'filename', 'name', 'download')) {
+                                        if ($paramValue -match '\.(exe|msi|zip)$') {
+                                            $filename = [System.IO.Path]::GetFileName($paramValue)
+                                            break
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        # Second try: use the last path segment
+                        if (-not $filename) {
+                            $pathSegment = $uri.Segments[-1]
+                            if ($pathSegment -and $pathSegment -match '\.(exe|msi|zip)$') {
+                                $filename = $pathSegment
+                            }
+                        }
+                    } catch {
+                        $filename = ($dlUrl -split '\?')[0]
+                        $filename = $filename.Substring($filename.LastIndexOf('/') + 1)
+                    }
+                    # Final fallback
+                    if ([string]::IsNullOrWhiteSpace($filename) -or $filename -notmatch '\.(exe|msi|zip)$' -or $filename -match '[?&=<>:"|*]') {
                         $filename = "installer_$([guid]::NewGuid().ToString('N')).exe"
                     }
+                    Write-ParallelLog "Installer filename: $filename" 'Info'
 
                     $tempDir = Join-Path $env:TEMP "Win11Forge_$([guid]::NewGuid().ToString('N'))"
                     New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
