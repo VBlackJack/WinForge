@@ -288,7 +288,7 @@ function Invoke-PluginSandboxed {
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($handlerText, [ref]$tokens, [ref]$errors)
 
             if ($errors.Count -gt 0) {
-                throw "Security: Handler has parse errors in job context"
+                throw (New-SecurityException -Message "Security: Handler has parse errors in job context")
             }
 
             # Re-check for dangerous commands
@@ -298,7 +298,7 @@ function Invoke-PluginSandboxed {
                 if ($cmdName) {
                     foreach ($dangerous in $DangerousCommands) {
                         if ($cmdName -match [regex]::Escape($dangerous)) {
-                            throw "Security: Blocked command detected in job context: $cmdName"
+                            throw (New-SecurityException -Message "Security: Blocked command detected in job context: $cmdName")
                         }
                     }
                 }
@@ -309,7 +309,7 @@ function Invoke-PluginSandboxed {
             foreach ($typeAst in $typeAsts) {
                 $typeName = $typeAst.TypeName.FullName
                 if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
-                    throw "Security: Blocked type detected in job context: $typeName"
+                    throw (New-SecurityException -Message "Security: Blocked type detected in job context: $typeName")
                 }
             }
 
@@ -558,7 +558,7 @@ function Invoke-PluginLoadSandboxed {
             $ast = [System.Management.Automation.Language.Parser]::ParseInput($ModuleContent, [ref]$tokens, [ref]$parseErrors)
 
             if ($parseErrors.Count -gt 0) {
-                throw "Security: Module has parse errors in job context"
+                throw (New-SecurityException -Message "Security: Module has parse errors in job context")
             }
 
             # Check for dangerous commands
@@ -568,7 +568,7 @@ function Invoke-PluginLoadSandboxed {
                 if ($cmdName) {
                     foreach ($dangerous in $DangerousCommands) {
                         if ($cmdName -match [regex]::Escape($dangerous)) {
-                            throw "Security: Blocked command detected in module: $cmdName"
+                            throw (New-SecurityException -Message "Security: Blocked command detected in module: $cmdName")
                         }
                     }
                 }
@@ -579,7 +579,7 @@ function Invoke-PluginLoadSandboxed {
             foreach ($typeAst in $typeAsts) {
                 $typeName = $typeAst.TypeName.FullName
                 if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
-                    throw "Security: Blocked type detected in module: $typeName"
+                    throw (New-SecurityException -Message "Security: Blocked type detected in module: $typeName")
                 }
             }
 
@@ -590,7 +590,7 @@ function Invoke-PluginLoadSandboxed {
                 if ($memberName -in @('Create', 'DownloadString', 'DownloadFile', 'Load', 'LoadFile', 'Invoke')) {
                     $expressionText = $memberAst.Extent.Text
                     if ($expressionText -match 'scriptblock|webclient|assembly|reflection') {
-                        throw "Security: Blocked member invocation in module: $expressionText"
+                        throw (New-SecurityException -Message "Security: Blocked member invocation in module: $expressionText")
                     }
                 }
             }
@@ -645,3 +645,4 @@ Export-ModuleMember -Function @(
     'Get-SandboxStatus',
     'Test-ScriptblockSafe'
 )
+

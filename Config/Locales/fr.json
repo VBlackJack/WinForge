@@ -239,19 +239,40 @@
   "profile": {
     "loading": "Chargement du profil : {Name}",
     "loaded": "Profil chargé : {Name} ({AppCount} applications)",
+    "loaded_successfully": "Profil chargé avec succès",
+    "load_failed": "Échec du chargement du profil de déploiement : {Error}",
     "not_found": "Profil non trouvé : {Name}",
     "invalid": "Format de profil invalide : {Name}",
     "inheritance": {
       "resolving": "Résolution de l'héritage du profil...",
-      "cycle_detected": "Héritage circulaire détecté : {Cycle}",
+      "cycle_detected": "Héritage circulaire détecté dans le profil '{ProfileName}' : {Details}",
+      "cycle_detected_compact": "Héritage circulaire détecté : {Cycle}",
+      "checking_cycles": "Vérification des dépendances circulaires...",
+      "resolving_chain": "Résolution de la chaîne d'héritage...",
+      "chain": "Chaîne d'héritage : {Chain}",
       "inherits_from": "Hérite de : {Parent}",
       "parent_load_failed": "Échec du chargement du profil parent '{Parent}' : {Error}",
       "merged": "{Count} applications fusionnées depuis les profils parents"
+    },
+    "merge": {
+      "applications": "Fusion des applications...",
+      "system_configuration": "Fusion de la configuration système..."
+    },
+    "summary": {
+      "total_applications": "  Total des applications : {Count}",
+      "configuration_sections": "  Sections de configuration : {Count}"
     },
     "applications": {
       "total": "Applications totales : {Count}",
       "required": "Requises : {Count}",
       "optional": "Optionnelles : {Count}"
+    },
+    "validation": {
+      "invalid_appids": "Le profil contient {Count} AppId(s) invalide(s) : {AppIds}",
+      "all_appids_valid": "Les {Count} AppIds ont été validés avec succès",
+      "validating_profile": "Validation du profil : {Name}",
+      "complete": "Validation des profils terminée : {Valid}/{Total} valides",
+      "failed": "Échec de la validation du profil : {Error}"
     }
   },
   "system": {

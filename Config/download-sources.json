@@ -1,4 +1,4 @@
-﻿{
+{
   "_meta": {
     "description": "External download sources configuration for Win11Forge",
     "version": "3.6.8",
@@ -15,7 +15,7 @@
     },
     "powershell7": {
       "description": "PowerShell 7 MSI installer",
-      "version": "3.6.8",
+      "version": "7.5.0",
       "downloadUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/PowerShell-7.5.0-win-x64.msi",
       "homepage": "https://github.com/PowerShell/PowerShell",
       "checksumUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/hashes.sha256",
@@ -179,3 +179,4 @@
     }
   }
 }
+

@@ -550,7 +550,7 @@ function Resolve-ProfileInheritance {
         $cyclePath += $InputProfile.Name
         $cycleString = $cyclePath -join ' -> '
 
-        $errorMsg = Get-LocalizedString -Key 'profile.inheritance.cycle_detected' -Parameters @{ Cycle = $cycleString }
+        $errorMsg = Get-LocalizedString -Key 'profile.inheritance.cycle_detected_compact' -Parameters @{ Cycle = $cycleString }
         Write-Status -Message $errorMsg -Level 'Error'
         throw [System.InvalidOperationException]::new($errorMsg)
     }
@@ -865,12 +865,12 @@ function Get-DeploymentProfile {
         $profilePath = Get-ProfilePath -ProfileName $ProfileName -ProfilesDirectory $ProfilesDirectory
 
         # Security: Runtime cycle detection before loading
-        Write-Status -Message "Checking for circular dependencies..." -Level 'Verbose'
+        Write-Status -Message (Get-LocalizedString -Key 'profile.inheritance.checking_cycles') -Level 'Verbose'
         $cycleCheck = Test-ProfileCycles -ProfileName $ProfileName -ProfilesDirectory $ProfilesDirectory
         if ($cycleCheck.HasCycles) {
             $cycleDetails = $cycleCheck.Cycles -join '; '
             throw [System.InvalidOperationException]::new(
-                "Circular inheritance detected in profile '$ProfileName': $cycleDetails"
+                (Get-LocalizedString -Key 'profile.inheritance.cycle_detected' -Parameters @{ ProfileName = $ProfileName; Details = $cycleDetails })
             )
         }
 
@@ -878,17 +878,17 @@ function Get-DeploymentProfile {
         $baseProfile = Import-ProfileJson -Path $profilePath
 
         # Resolve inheritance
-        Write-Status -Message "Resolving inheritance chain..." -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'profile.inheritance.resolving_chain') -Level 'Info'
         $profileChain = Resolve-ProfileInheritance -InputProfile $baseProfile -ProfilesDirectory $ProfilesDirectory
 
-        Write-Status -Message "Inheritance chain: $($profileChain.Name -join ' -> ')" -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'profile.inheritance.chain' -Parameters @{ Chain = ($profileChain.Name -join ' -> ') }) -Level 'Info'
 
         # Merge applications
-        Write-Status -Message "Merging applications..." -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'profile.merge.applications') -Level 'Info'
         $mergedApplications = @(Merge-ProfileApplications -Profiles $profileChain)
 
         # Merge system configuration
-        Write-Status -Message "Merging system configuration..." -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'profile.merge.system_configuration') -Level 'Info'
         $mergedConfig = Merge-ProfileSystemConfig -Profiles $profileChain
 
         # Create final profile
@@ -902,14 +902,15 @@ function Get-DeploymentProfile {
             ProfilePath = $profilePath
         }
 
-        Write-Status -Message "Profile loaded successfully" -Level 'Success'
-        Write-Status -Message "  Total applications: $($mergedApplications.Count)" -Level 'Info'
-        Write-Status -Message "  Configuration sections: $(if ($mergedConfig) { $mergedConfig.Keys.Count } else { 0 })" -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'profile.loaded_successfully') -Level 'Success'
+        Write-Status -Message (Get-LocalizedString -Key 'profile.summary.total_applications' -Parameters @{ Count = $mergedApplications.Count }) -Level 'Info'
+        $configSectionCount = if ($mergedConfig) { $mergedConfig.Keys.Count } else { 0 }
+        Write-Status -Message (Get-LocalizedString -Key 'profile.summary.configuration_sections' -Parameters @{ Count = $configSectionCount }) -Level 'Info'
 
         return $finalProfile
 
     } catch {
-        Write-Status -Message "Failed to load deployment profile: $($_.Exception.Message)" -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'profile.load_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         throw
     }
 }
@@ -1206,14 +1207,14 @@ function Test-ProfileAppIds {
         }
 
         if ($result.InvalidAppIds.Count -gt 0) {
-            Write-Status -Message "Profile contains $($result.InvalidAppIds.Count) invalid AppId(s): $($result.InvalidAppIds -join ', ')" -Level 'Warning'
+            Write-Status -Message (Get-LocalizedString -Key 'profile.validation.invalid_appids' -Parameters @{ Count = $result.InvalidAppIds.Count; AppIds = ($result.InvalidAppIds -join ', ') }) -Level 'Warning'
         } else {
-            Write-Status -Message "All $($result.TotalAppIds) AppIds validated successfully" -Level 'Success'
+            Write-Status -Message (Get-LocalizedString -Key 'profile.validation.all_appids_valid' -Parameters @{ Count = $result.TotalAppIds }) -Level 'Success'
         }
 
     } catch {
         $result.Valid = $false
-        $result.Errors += "Failed to validate profile: $($_.Exception.Message)"
+        $result.Errors += (Get-LocalizedString -Key 'profile.validation.failed' -Parameters @{ Error = $_.Exception.Message })
     }
 
     return $result
@@ -1262,7 +1263,7 @@ function Test-AllProfilesAppIds {
         $summary.TotalProfiles++
         $profileName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
 
-        Write-Status -Message "Validating profile: $profileName" -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'profile.validation.validating_profile' -Parameters @{ Name = $profileName }) -Level 'Info'
         $result = Test-ProfileAppIds -ProfilePath $file.FullName
 
         $summary.Results[$profileName] = $result
@@ -1278,7 +1279,7 @@ function Test-AllProfilesAppIds {
     # Deduplicate invalid AppIds
     $summary.AllInvalidAppIds = $summary.AllInvalidAppIds | Select-Object -Unique
 
-    Write-Status -Message "Profile validation complete: $($summary.ValidProfiles)/$($summary.TotalProfiles) valid" -Level $(if ($summary.InvalidProfiles -eq 0) { 'Success' } else { 'Warning' })
+    Write-Status -Message (Get-LocalizedString -Key 'profile.validation.complete' -Parameters @{ Valid = $summary.ValidProfiles; Total = $summary.TotalProfiles }) -Level $(if ($summary.InvalidProfiles -eq 0) { 'Success' } else { 'Warning' })
 
     return $summary
 }

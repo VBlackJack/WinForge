@@ -186,7 +186,7 @@ function Get-ApplicationDatabase {
         }
 
         if (-not (Test-Path $Script:DatabasePath)) {
-            throw "Application database not found at: $Script:DatabasePath"
+            throw (New-ValidationException -Message "Application database not found at: $Script:DatabasePath")
         }
 
         $jsonContent = Get-Content -Path $Script:DatabasePath -Raw -Encoding UTF8
@@ -381,7 +381,7 @@ function ConvertTo-ProfileApplication {
             try {
                 $Priority = [int]$Priority
             } catch {
-                throw "Priority must be a valid integer, got: $Priority ($($Priority.GetType().Name))"
+                throw (New-ValidationException -Message "Priority must be a valid integer, got: $Priority ($($Priority.GetType().Name))")
             }
         }
     }
@@ -403,7 +403,7 @@ function ConvertTo-ProfileApplication {
                         $Required = [bool]::Parse($Required)
                     }
                 } catch {
-                    throw "Required must be a valid boolean (true/false/0/1), got: $Required ($($Required.GetType().Name))"
+                    throw (New-ValidationException -Message "Required must be a valid boolean (true/false/0/1), got: $Required ($($Required.GetType().Name))")
                 }
             }
         }
@@ -1543,4 +1543,5 @@ Export-ModuleMember -Function @(
     'Disable-DatabaseFileWatcher',
     'Clear-DatabaseCache'
 )
+
 

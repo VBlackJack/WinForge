@@ -233,7 +233,7 @@ function Import-CoreDependencies {
     }
 
     if (-not $allSuccess -and $ThrowOnFailure) {
-        throw "Failed to import required dependencies: $($failedCommands -join ', ')"
+        throw (New-ValidationException -Message "Failed to import required dependencies: $($failedCommands -join ', ')")
     }
 
     return $allSuccess
@@ -331,3 +331,4 @@ Export-ModuleMember -Function @(
     'Initialize-Win11ForgeModule',
     'Get-ModuleLoadStatus'
 )
+

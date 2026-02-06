@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Core', 'Timeout', 'Configuration')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.6.7'
+            ReleaseNotes = 'Win11Forge v3.6.8'
         }
     }
 }

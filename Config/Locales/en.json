@@ -239,19 +239,40 @@
   "profile": {
     "loading": "Loading profile: {Name}",
     "loaded": "Profile loaded: {Name} ({AppCount} applications)",
+    "loaded_successfully": "Profile loaded successfully",
+    "load_failed": "Failed to load deployment profile: {Error}",
     "not_found": "Profile not found: {Name}",
     "invalid": "Invalid profile format: {Name}",
     "inheritance": {
       "resolving": "Resolving profile inheritance...",
-      "cycle_detected": "Circular inheritance detected: {Cycle}",
+      "cycle_detected": "Circular inheritance detected in profile '{ProfileName}': {Details}",
+      "cycle_detected_compact": "Circular inheritance detected: {Cycle}",
+      "checking_cycles": "Checking for circular dependencies...",
+      "resolving_chain": "Resolving inheritance chain...",
+      "chain": "Inheritance chain: {Chain}",
       "inherits_from": "Inherits from: {Parent}",
       "parent_load_failed": "Failed to load parent profile '{Parent}': {Error}",
       "merged": "Merged {Count} applications from parent profiles"
+    },
+    "merge": {
+      "applications": "Merging applications...",
+      "system_configuration": "Merging system configuration..."
+    },
+    "summary": {
+      "total_applications": "  Total applications: {Count}",
+      "configuration_sections": "  Configuration sections: {Count}"
     },
     "applications": {
       "total": "Total applications: {Count}",
       "required": "Required: {Count}",
       "optional": "Optional: {Count}"
+    },
+    "validation": {
+      "invalid_appids": "Profile contains {Count} invalid AppId(s): {AppIds}",
+      "all_appids_valid": "All {Count} AppIds validated successfully",
+      "validating_profile": "Validating profile: {Name}",
+      "complete": "Profile validation complete: {Valid}/{Total} valid",
+      "failed": "Failed to validate profile: {Error}"
     }
   },
   "system": {

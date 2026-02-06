@@ -55,7 +55,7 @@ if (Test-Path -Path $script:ModuleLoaderPath) {
         if (Test-Path -Path $script:CoreModulePath) {
             Import-Module -Name $script:CoreModulePath -Force
         } else {
-            throw 'Core module is required before loading Prerequisites.psm1'
+            throw (New-InstallationException -Message 'Core module is required before loading Prerequisites.psm1')
         }
     }
 }
@@ -318,7 +318,7 @@ function Install-Chocolatey {
             # Find and run chocolateyInstall.ps1
             $installScript = Join-Path $chocoExtractPath 'tools\chocolateyInstall.ps1'
             if (-not (Test-Path $installScript)) {
-                throw "chocolateyInstall.ps1 not found in package"
+                throw (New-InstallationException -Message "chocolateyInstall.ps1 not found in package")
             }
 
             # Set environment variable for Chocolatey install path
@@ -363,7 +363,7 @@ function Install-Chocolatey {
 
     } catch {
         Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.install_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
-        throw "Chocolatey installation failed: $($_.Exception.Message)"
+        throw (New-InstallationException -Message "Chocolatey installation failed: $($_.Exception.Message)")
     }
 
     if (Test-CommandAvailable -Name 'choco') {
@@ -445,7 +445,7 @@ function Install-PowerShell7 {
             if ($actualHash -ne $expectedHash) {
                 Write-Status -Message "SHA256 verification failed! Expected: $expectedHash, Got: $actualHash" -Level 'Error'
                 Remove-Item -Path $tempPath -Force -ErrorAction SilentlyContinue
-                throw "SHA256 checksum mismatch - download may be corrupted or tampered"
+                throw (New-InstallationException -Message "SHA256 checksum mismatch - download may be corrupted or tampered")
             }
             Write-Status -Message 'SHA256 checksum verified successfully' -Level 'Success'
         }
@@ -874,3 +874,4 @@ Export-ModuleMember -Function @(
     'Update-EnvironmentPath',
     'Invoke-EnvironmentRefresh'
 )
+

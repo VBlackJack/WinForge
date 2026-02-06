@@ -298,7 +298,7 @@ function Protect-Data {
 
             return [Convert]::ToBase64String($encryptedBytes)
         } catch {
-            throw "Failed to encrypt data: $($_.Exception.Message)"
+            throw (New-SecurityException -Message "Failed to encrypt data: $($_.Exception.Message)")
         }
     }
 }
@@ -354,7 +354,7 @@ function Unprotect-Data {
 
             return [System.Text.Encoding]::UTF8.GetString($decryptedBytes)
         } catch {
-            throw "Failed to decrypt data: $($_.Exception.Message)"
+            throw (New-SecurityException -Message "Failed to decrypt data: $($_.Exception.Message)")
         }
     }
 }
@@ -770,3 +770,4 @@ Export-ModuleMember -Function @(
     # Utility
     'Test-SecureStorageAvailable'
 )
+

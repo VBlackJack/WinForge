@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Win11Forge - Scheduled Deployment Manager v3.6.8
 
@@ -161,6 +161,7 @@ function New-ScheduledDeployment {
     param(
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
+        [ValidatePattern('^[a-zA-Z0-9_-]+$')]
         [string]$ProfileName,
 
         [Parameter(Mandatory)]

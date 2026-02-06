@@ -45,8 +45,8 @@ $script:FrameworkVersion = try {
     if (Test-Path $versionPath) {
         $versionData = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
         $versionData.Version
-    } else { '3.1.2' }
-} catch { '3.1.2' }
+    } else { '3.6.8' }
+} catch { '3.6.8' }
 
 # ============================================================================
 # INITIALIZATION
@@ -57,6 +57,9 @@ function Initialize-GUIModules {
     .SYNOPSIS
         Initialize required modules for GUI
     #>
+    [CmdletBinding()]
+    param()
+
     try {
         # Load Core module
         $coreModule = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
@@ -144,6 +147,7 @@ function Get-DatabaseApps {
     .SYNOPSIS
         Get all apps from database as array
     #>
+    [CmdletBinding()]
     param(
         [string]$Category,
         [string]$Tag
@@ -192,6 +196,9 @@ function Get-DatabaseCategories {
     .SYNOPSIS
         Get all unique categories from database
     #>
+    [CmdletBinding()]
+    param()
+
     $categories = @()
     foreach ($key in $script:AppDatabase.Keys) {
         $app = $script:AppDatabase[$key]
@@ -208,6 +215,7 @@ function Get-DatabaseAppById {
     .SYNOPSIS
         Get app by ID from database
     #>
+    [CmdletBinding()]
     param([string]$AppId)
 
     if ($script:AppDatabase.ContainsKey($AppId)) {
@@ -232,6 +240,7 @@ function Search-DatabaseApps {
     .SYNOPSIS
         Search apps in database
     #>
+    [CmdletBinding()]
     param([string]$SearchTerm)
 
     $results = @()
@@ -261,6 +270,9 @@ function Get-DatabaseStats {
     .SYNOPSIS
         Get database statistics
     #>
+    [CmdletBinding()]
+    param()
+
     $total = $script:AppDatabase.Keys.Count
     $verified = 0
     $withWinget = 0
@@ -310,6 +322,7 @@ function Show-Header {
     .SYNOPSIS
         Display GUI header
     #>
+    [CmdletBinding()]
     param(
         [string]$Title = "Win11Forge v$script:FrameworkVersion"
     )
@@ -327,6 +340,7 @@ function Show-Footer {
     .SYNOPSIS
         Display GUI footer
     #>
+    [CmdletBinding()]
     param()
 
     Write-Host ""
@@ -338,6 +352,7 @@ function Read-Choice {
     .SYNOPSIS
         Read user choice with validation
     #>
+    [CmdletBinding()]
     param(
         [string]$Prompt = "Choice",
         [string[]]$ValidChoices,
@@ -375,6 +390,7 @@ function Show-ProgressBar {
     .SYNOPSIS
         Display a simple progress bar
     #>
+    [CmdletBinding()]
     param(
         [int]$Current,
         [int]$Total,
@@ -403,6 +419,9 @@ function Show-MainMenu {
     .SYNOPSIS
         Display main menu and handle user selection
     #>
+
+    [CmdletBinding()]
+    param()
 
     while ($true) {
         Show-Header -Title "Win11Forge v$script:FrameworkVersion - $(Get-LocalizedString -Key 'gui.menu.main_title' -DefaultValue 'Main Menu')"
@@ -445,6 +464,9 @@ function Show-DeployProfileMenu {
     .SYNOPSIS
         Display profile deployment menu
     #>
+
+    [CmdletBinding()]
+    param()
 
     Show-Header -Title (Get-LocalizedString -Key 'gui.deploy.title')
 
@@ -549,6 +571,9 @@ function Show-ApplicationBrowser {
         Browse applications in database
     #>
 
+    [CmdletBinding()]
+    param()
+
     while ($true) {
         Show-Header -Title (Get-LocalizedString -Key 'gui.apps.browse_title' -Parameters @{ Count = $script:AppDatabase.Count })
 
@@ -581,6 +606,9 @@ function Show-AllApplications {
     .SYNOPSIS
         Display all applications with pagination
     #>
+
+    [CmdletBinding()]
+    param()
 
     Show-Header -Title (Get-LocalizedString -Key 'gui.apps.all_apps_title')
 
@@ -630,6 +658,9 @@ function Show-ApplicationsByCategory {
         Browse applications by category
     #>
 
+    [CmdletBinding()]
+    param()
+
     Show-Header -Title (Get-LocalizedString -Key 'gui.apps.category_title')
 
     $categories = Get-DatabaseCategories | Sort-Object
@@ -674,6 +705,9 @@ function Show-ApplicationsByTag {
     .SYNOPSIS
         Browse applications by tag
     #>
+
+    [CmdletBinding()]
+    param()
 
     Show-Header -Title (Get-LocalizedString -Key 'gui.apps.tag_title')
 
@@ -722,6 +756,9 @@ function Show-ApplicationSearch {
         Search applications by name
     #>
 
+    [CmdletBinding()]
+    param()
+
     Show-Header -Title (Get-LocalizedString -Key 'gui.apps.search_title')
 
     Write-Host (Get-LocalizedString -Key 'gui.apps.search_prompt') -ForegroundColor Yellow
@@ -755,6 +792,9 @@ function Show-ApplicationDetails {
     .SYNOPSIS
         Display detailed information about an application
     #>
+
+    [CmdletBinding()]
+    param()
 
     Show-Header -Title (Get-LocalizedString -Key 'gui.apps.details_title')
 
@@ -848,6 +888,9 @@ function Show-ProfileBrowser {
         Browse available profiles
     #>
 
+    [CmdletBinding()]
+    param()
+
     Show-Header -Title (Get-LocalizedString -Key 'gui.profiles.browse_title')
 
     $profilesPath = Join-Path $script:RepositoryRoot 'Profiles'
@@ -884,6 +927,7 @@ function Show-ProfileDetails {
     .SYNOPSIS
         Display detailed profile information
     #>
+    [CmdletBinding()]
     param(
         [string]$ProfilePath
     )
@@ -933,6 +977,9 @@ function Show-ProfileCreator {
     .SYNOPSIS
         Interactive profile creation wizard
     #>
+
+    [CmdletBinding()]
+    param()
 
     Show-Header -Title (Get-LocalizedString -Key 'gui.creator.title')
 
@@ -1039,6 +1086,9 @@ function Select-ApplicationsFromDatabase {
         Interactive application selection from database
     #>
 
+    [CmdletBinding()]
+    param()
+
     $selected = @()
 
     while ($true) {
@@ -1133,6 +1183,9 @@ function Show-DatabaseStatistics {
         Display database statistics
     #>
 
+    [CmdletBinding()]
+    param()
+
     Show-Header -Title (Get-LocalizedString -Key 'gui.statistics.title')
 
     $stats = Get-DatabaseStats
@@ -1175,6 +1228,9 @@ function Start-DatabaseValidation {
         Run database validation
     #>
 
+    [CmdletBinding()]
+    param()
+
     Show-Header -Title (Get-LocalizedString -Key 'gui.validation.title')
 
     Write-Host (Get-LocalizedString -Key 'gui.validation.intro') -ForegroundColor Yellow
@@ -1212,6 +1268,9 @@ function Show-SettingsMenu {
         Display settings and options
     #>
 
+    [CmdletBinding()]
+    param()
+
     Show-Header -Title (Get-LocalizedString -Key 'gui.settings.title')
 
     Write-Host "  1. $(Get-LocalizedString -Key 'gui.settings.view_info')" -ForegroundColor White
@@ -1234,6 +1293,9 @@ function Show-SettingsMenu {
 }
 
 function Show-FrameworkInfo {
+    [CmdletBinding()]
+    param()
+
     Show-Header -Title (Get-LocalizedString -Key 'gui.info.title')
 
     Write-Host "$(Get-LocalizedString -Key 'gui.info.version')      " -NoNewline -ForegroundColor Yellow
@@ -1253,6 +1315,9 @@ function Show-FrameworkInfo {
 }
 
 function Show-LogsDirectory {
+    [CmdletBinding()]
+    param()
+
     $logsPath = Join-Path $script:RepositoryRoot 'Logs'
 
     Show-Header -Title (Get-LocalizedString -Key 'gui.logs.title')
@@ -1282,6 +1347,9 @@ function Show-LogsDirectory {
 }
 
 function Test-Updates {
+    [CmdletBinding()]
+    param()
+
     Show-Header -Title (Get-LocalizedString -Key 'gui.updates.title')
 
     Write-Host (Get-LocalizedString -Key 'gui.updates.current_version' -Parameters @{ Version = $script:FrameworkVersion }) -ForegroundColor Yellow
@@ -1293,6 +1361,9 @@ function Test-Updates {
 }
 
 function Show-About {
+    [CmdletBinding()]
+    param()
+
     Show-Header -Title (Get-LocalizedString -Key 'gui.about.title')
 
     Write-Host "Win11Forge v$script:FrameworkVersion" -ForegroundColor Cyan
@@ -1321,6 +1392,9 @@ function Show-AddApplicationMenu {
     .SYNOPSIS
         Interactive menu to add a new application to the database
     #>
+
+    [CmdletBinding()]
+    param()
 
     Show-Header -Title (Get-LocalizedString -Key 'gui.add_app.title')
 

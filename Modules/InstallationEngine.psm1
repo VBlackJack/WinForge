@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Win11Forge - Installation Engine v3.6.8 (Modular Architecture)
 
@@ -159,8 +159,19 @@ if (-not (Get-Command -Name Install-Application -ErrorAction SilentlyContinue)) 
 }
 
 # === CONFIGURATION (shared across modules) ===
-$script:MaxParallelJobs = 5
+$maxParallelJobs = $null
+if (Get-Command -Name Get-TimeoutSetting -ErrorAction SilentlyContinue) {
+    $maxParallelJobs = Get-TimeoutSetting -Name 'MaxParallelJobs' -ErrorAction SilentlyContinue
+}
+$script:MaxParallelJobs = if ($null -ne $maxParallelJobs) { [int]$maxParallelJobs } else { 5 }
+
+$defaultInstallTimeoutSeconds = $null
+if (Get-Command -Name Get-TimeoutSetting -ErrorAction SilentlyContinue) {
+    $defaultInstallTimeoutSeconds = Get-TimeoutSetting -Name 'DefaultInstallTimeoutSeconds' -ErrorAction SilentlyContinue
+}
+$script:DefaultInstallTimeoutSeconds = if ($null -ne $defaultInstallTimeoutSeconds) { [int]$defaultInstallTimeoutSeconds } else { 1800 }
+
 $script:JobCheckInterval = 2
-$script:DefaultInstallTimeoutSeconds = 1800
 $script:OfficeInstallTimeoutSeconds = 2700
 $script:ParallelInstallTimeoutMs = 600000
+

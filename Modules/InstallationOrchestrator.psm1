@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Win11Forge - Installation Orchestrator v3.6.8
 
@@ -1135,7 +1135,7 @@ function Test-AppInstalledParallel {
                     $timeoutMs = $installTimeoutMs
 
                     if (-not $process.WaitForExit($timeoutMs)) {
-                        Write-ParallelLog "Process timed out after 600 seconds - terminating" 'Warning'
+                        Write-ParallelLog "Process timed out after $([math]::Round($timeoutMs / 1000)) seconds - terminating" 'Warning'
                         $process.Kill()
                         Write-ParallelLog "Winget installation failed (timeout)" 'Warning'
                         break
@@ -1189,7 +1189,7 @@ function Test-AppInstalledParallel {
                     $timeoutMs = $installTimeoutMs
 
                     if (-not $process.WaitForExit($timeoutMs)) {
-                        Write-ParallelLog "Process timed out after 600 seconds - terminating" 'Warning'
+                        Write-ParallelLog "Process timed out after $([math]::Round($timeoutMs / 1000)) seconds - terminating" 'Warning'
                         $process.Kill()
                         Write-ParallelLog "Chocolatey installation failed (timeout)" 'Warning'
                         break
@@ -1235,7 +1235,7 @@ function Test-AppInstalledParallel {
                     $timeoutMs = $installTimeoutMs
 
                     if (-not $process.WaitForExit($timeoutMs)) {
-                        Write-ParallelLog "Process timed out after 600 seconds - terminating" 'Warning'
+                        Write-ParallelLog "Process timed out after $([math]::Round($timeoutMs / 1000)) seconds - terminating" 'Warning'
                         $process.Kill()
                         Write-ParallelLog "Microsoft Store installation failed (timeout)" 'Warning'
                     } elseif ($process.ExitCode -eq 0) {
@@ -1549,3 +1549,4 @@ Export-ModuleMember -Function @(
     'Install-Application',
     'Install-ApplicationsParallel'
 )
+

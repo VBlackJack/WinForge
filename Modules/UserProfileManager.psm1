@@ -527,7 +527,7 @@ function Copy-UserProfile {
 
     $sourceProfile = Get-UserProfile -Name $SourceName
     if (-not $sourceProfile) {
-        throw "Source profile not found: $SourceName"
+        throw (New-ValidationException -Message "Source profile not found: $SourceName")
     }
 
     return Save-UserProfile -Name $DestinationName `
@@ -657,3 +657,4 @@ Export-ModuleMember -Function @(
     'Merge-UserProfiles',
     'Get-UserProfileStatistics'
 )
+
