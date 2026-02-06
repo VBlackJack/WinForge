@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Application Detection Module v3.1.4
+    Win11Forge - Application Detection v3.6.8
 
 .DESCRIPTION
     Application detection and installation verification functions:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 
     Changelog v3.1.4:
     - Extracted from InstallationEngine.psm1 for modularity
@@ -325,7 +325,7 @@ function Test-RegistryKey {
 
     # Security: Validate path is allowed
     if (-not (Test-RegistryPathAllowed -Path $Path)) {
-        Write-Status -Message "Registry path not allowed: $Path" -Level 'Warning'
+        Write-Status -Message (Get-LocalizedString -Key 'detect.security.registry_path_blocked' -Parameters @{ Path = $Path }) -Level 'Warning'
         return $false
     }
 
@@ -350,7 +350,7 @@ function Expand-DetectionPath {
 
     # Security: Block path traversal attempts in input
     if ($Path -match '\.\.' -or $Path -match '[\\/]\.\.[\\/]?' -or $Path -match '^\.\.') {
-        Write-Status -Message "Path traversal attempt blocked in detection path: $Path" -Level 'Warning'
+        Write-Status -Message (Get-LocalizedString -Key 'detect.security.path_traversal_blocked' -Parameters @{ Path = $Path }) -Level 'Warning'
         return $null
     }
 
@@ -361,13 +361,13 @@ function Expand-DetectionPath {
 
     # Security: Block $env: or $() syntax in detection paths - these indicate potential injection
     if ($expanded -match '\$env:|\$\(') {
-        Write-Status -Message "Security: PowerShell variable syntax not allowed in detection paths: $Path" -Level 'Warning'
+        Write-Status -Message (Get-LocalizedString -Key 'detect.security.variable_syntax_blocked' -Parameters @{ Path = $Path }) -Level 'Warning'
         return $null
     }
 
     # Security: Block path traversal attempts after expansion
     if ($expanded -match '\.\.' -or $expanded -match '[\\/]\.\.[\\/]?' -or $expanded -match '^\.\.') {
-        Write-Status -Message "Path traversal attempt blocked after expansion: $expanded" -Level 'Warning'
+        Write-Status -Message (Get-LocalizedString -Key 'detect.security.path_traversal_after_expansion' -Parameters @{ Path = $expanded }) -Level 'Warning'
         return $null
     }
 
@@ -375,7 +375,7 @@ function Expand-DetectionPath {
     if (-not [System.IO.Path]::IsPathRooted($expanded)) {
         # Allow wildcards in detection paths (e.g., "C:\Program Files\*\app.exe")
         if ($expanded -notmatch '^[A-Za-z]:[\\/]') {
-            Write-Status -Message "Relative path not allowed in detection: $expanded" -Level 'Warning'
+            Write-Status -Message (Get-LocalizedString -Key 'detect.security.relative_path_blocked' -Parameters @{ Path = $expanded }) -Level 'Warning'
             return $null
         }
     }
@@ -458,7 +458,7 @@ function Wait-ForOfficeInstallation {
         [int]$CheckIntervalSeconds = 30
     )
 
-    Write-Status -Message "Monitoring Office installation progress..." -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'office.monitoring') -Level 'Info'
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $timeoutMs = $TimeoutSeconds * 1000
@@ -484,7 +484,7 @@ function Wait-ForOfficeInstallation {
         foreach ($regPath in $officeRegistryPaths) {
             if (Test-Path $regPath -ErrorAction SilentlyContinue) {
                 $elapsed = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1)
-                Write-Status -Message "Office installation completed after $elapsed minutes (registry detected)" -Level 'Success'
+                Write-Status -Message (Get-LocalizedString -Key 'office.completed_registry' -Parameters @{ Minutes = $elapsed }) -Level 'Success'
                 return $true
             }
         }
@@ -492,7 +492,7 @@ function Wait-ForOfficeInstallation {
         foreach ($officePath in $officePaths) {
             if (Test-Path $officePath -ErrorAction SilentlyContinue) {
                 $elapsed = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1)
-                Write-Status -Message "Office installation completed after $elapsed minutes (executable detected)" -Level 'Success'
+                Write-Status -Message (Get-LocalizedString -Key 'office.completed_executable' -Parameters @{ Minutes = $elapsed }) -Level 'Success'
                 return $true
             }
         }
@@ -502,11 +502,12 @@ function Wait-ForOfficeInstallation {
 
         if ($runningInstallProcesses) {
             $processNames = ($runningInstallProcesses | Select-Object -ExpandProperty Name -Unique) -join ', '
-            Write-Status -Message "Office installation in progress ($processNames)... Elapsed: $([math]::Round($stopwatch.Elapsed.TotalMinutes, 1)) min" -Level 'Verbose'
+            Write-Status -Message (Get-LocalizedString -Key 'office.in_progress' -Parameters @{ Processes = $processNames; Minutes = [math]::Round($stopwatch.Elapsed.TotalMinutes, 1) }) -Level 'Verbose'
         } else {
             # No install processes and Office not detected yet
-            if ($stopwatch.ElapsedMilliseconds -gt 120000) {  # After 2 minutes
-                Write-Status -Message "No Office installation processes detected and Office not found" -Level 'Warning'
+            $officeDetectionTimeoutMs = (Get-Timeout -TimeoutKey 'OfficeDetection') * 1000
+            if ($stopwatch.ElapsedMilliseconds -gt $officeDetectionTimeoutMs) {
+                Write-Status -Message (Get-LocalizedString -Key 'office.no_process_detected') -Level 'Warning'
                 return $false
             }
         }
@@ -515,7 +516,7 @@ function Wait-ForOfficeInstallation {
     }
 
     $timeoutMinutes = [math]::Round($TimeoutSeconds / 60, 1)
-    Write-Status -Message "Office installation timed out after $timeoutMinutes minutes" -Level 'Warning'
+    Write-Status -Message (Get-LocalizedString -Key 'office.timed_out' -Parameters @{ Minutes = $timeoutMinutes }) -Level 'Warning'
     return $false
 }
 
@@ -538,7 +539,7 @@ function Test-ApplicationByName {
             }
         }
     } catch {
-        Write-Status -Message "Winget detection failed: $($_.Exception.Message)" -Level 'Verbose'
+        Write-Status -Message (Get-LocalizedString -Key 'detect.winget_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
     }
 
     try {
@@ -549,7 +550,7 @@ function Test-ApplicationByName {
             }
         }
     } catch {
-        Write-Status -Message "Chocolatey detection failed: $($_.Exception.Message)" -Level 'Verbose'
+        Write-Status -Message (Get-LocalizedString -Key 'detect.choco_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
     }
 
     $programFiles = @(
@@ -645,12 +646,12 @@ function Test-ApplicationInstalled {
                     # Security: Only allow whitelisted executables for command detection
                     $exeBaseName = [System.IO.Path]::GetFileName($executable).ToLower()
                     if ($exeBaseName -notin $script:AllowedDetectionExecutables) {
-                        Write-Status -Message "Command detection blocked: '$executable' not in allowed executables list" -Level 'Verbose'
+                        Write-Status -Message (Get-LocalizedString -Key 'detect.security.command_not_allowed' -Parameters @{ Executable = $executable }) -Level 'Verbose'
                         $detected = $false
                     }
                     # Security: Sanitize arguments - block dangerous patterns including newlines (command injection)
                     elseif ($arguments -and ($arguments -match '[;&|`$\(\)\r\n]|>>|<<|[\x00-\x1f]')) {
-                        Write-Status -Message "Command detection blocked: arguments contain dangerous characters for '$executable'" -Level 'Warning'
+                        Write-Status -Message (Get-LocalizedString -Key 'detect.security.dangerous_arguments' -Parameters @{ Executable = $executable }) -Level 'Warning'
                         $detected = $false
                     }
                     # Validate executable exists
@@ -1052,7 +1053,7 @@ function Test-ApplicationInstalledFast {
 
                             # Security: Sanitize arguments - block dangerous patterns
                             if ($arguments -and ($arguments -match '[;&|`$\(\)]|>>|<<')) {
-                                Write-Status -Message "Command detection blocked: arguments contain dangerous characters for '$executable'" -Level 'Warning'
+                                Write-Status -Message (Get-LocalizedString -Key 'detect.security.dangerous_arguments' -Parameters @{ Executable = $executable }) -Level 'Warning'
                                 $detected = $false
                             } else {
                                 $output = if ($arguments) {

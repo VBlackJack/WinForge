@@ -28,6 +28,13 @@
 # limitations under the License.
 #
 
+$script:IsAdmin = $false
+try {
+    $script:IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+} catch {
+    $script:IsAdmin = $false
+}
+
 BeforeAll {
     # Import modules under test
     $script:ModuleRoot = Join-Path $PSScriptRoot '..\Modules'
@@ -42,8 +49,12 @@ BeforeAll {
     # Import ScheduledDeployment
     Import-Module $script:ScheduledDeploymentPath -Force -ErrorAction Stop
 
-    # Check if we have admin rights for integration tests
-    $script:IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    # Check if we have admin rights for integration tests (already set, refresh in case context changed)
+    try {
+        $script:IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    } catch {
+        $script:IsAdmin = $false
+    }
 }
 
 Describe 'ScheduledDeployment Module' {

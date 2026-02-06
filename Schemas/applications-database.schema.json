@@ -87,7 +87,7 @@
           "description": "Environments where the app cannot be installed",
           "items": {
             "type": "string",
-            "enum": ["Physical", "Virtual", "Sandbox", "Hyper-V", "VMware", "VirtualBox"]
+            "description": "Environment name, optionally prefixed with '!' for negation (e.g. '!Sandbox')"
           }
         },
         "Tags": {
@@ -117,6 +117,34 @@
           "items": {
             "$ref": "#/$defs/Dependency"
           }
+        },
+        "InstallMethod": {
+          "type": "string",
+          "description": "Override installation method (e.g. WindowsFeature)"
+        },
+        "InstallationOptions": {
+          "type": "object",
+          "description": "Additional installation options (exit codes, flags, etc.)",
+          "additionalProperties": true
+        },
+        "Notes": {
+          "type": "string",
+          "description": "Additional notes about the application"
+        },
+        "Feature": {
+          "type": "string",
+          "description": "Windows feature name when InstallMethod is WindowsFeature"
+        },
+        "Arguments": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" } }
+          ],
+          "description": "Installation arguments (string or array of strings)"
+        },
+        "KnownIssues": {
+          "type": "string",
+          "description": "Known issues or caveats for this application"
         }
       }
     },
@@ -166,7 +194,7 @@
         "Method": {
           "type": "string",
           "description": "Detection method",
-          "enum": ["Registry", "File", "Command", "StoreApp", "Winget"]
+          "enum": ["Registry", "File", "Command", "StoreApp", "WindowsFeature"]
         },
         "Path": {
           "type": "string",
@@ -179,6 +207,26 @@
         "PackageId": {
           "type": "string",
           "description": "Package ID for store app detection"
+        },
+        "PackageName": {
+          "type": "string",
+          "description": "Package name for StoreApp detection"
+        },
+        "Feature": {
+          "type": "string",
+          "description": "Windows feature name for WindowsFeature detection method"
+        },
+        "VersionKey": {
+          "type": "string",
+          "description": "Registry value name to read version from"
+        },
+        "VersionRegex": {
+          "type": "string",
+          "description": "Regex pattern to extract version from command output"
+        },
+        "Arguments": {
+          "type": "string",
+          "description": "Arguments to filter or match in command output"
         }
       }
     },

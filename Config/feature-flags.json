@@ -1,10 +1,40 @@
-{
+﻿{
   "_meta": {
     "$schema": "Win11Forge-FeatureFlags-v1.0",
     "description": "Feature flags for Win11Forge framework",
-    "version": "3.5.9",
+    "version": "3.6.8",
     "author": "Julien Bombled",
-    "lastUpdated": "2026-02-03"
+    "lastUpdated": "2026-02-05",
+    "_integrationStatus": {
+      "description": "Tracks which feature flags are actively checked in code vs planned for future integration",
+      "active": [
+        "pluginSandboxing"
+      ],
+      "planned": [
+        "parallelInstallation",
+        "structuredLogging",
+        "restApi",
+        "apiAuthentication",
+        "pluginSystem",
+        "wingetCache",
+        "autoRollback",
+        "telemetryCollection",
+        "telemetryDashboard",
+        "userProfiles",
+        "autoUpdate",
+        "dryRunMode",
+        "checksumValidation",
+        "urlWhitelisting",
+        "environmentRestrictions",
+        "retryLogic",
+        "officeSpecialHandling"
+      ],
+      "experimental": [
+        "distributedDeployment",
+        "cloudProfiles",
+        "aiRecommendations"
+      ]
+    }
   },
   "features": {
     "parallelInstallation": {

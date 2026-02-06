@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Application Database Module v3.0.0
+    Win11Forge - Application Database v3.6.8
 
 .DESCRIPTION
     Module for interacting with the centralized application database:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
     Last Updated: 2025-10-06
 #>
 
@@ -44,7 +44,7 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
         try {
             Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
         } catch {
-            # Localization is optional, continue without it
+            Write-Verbose ("Localization module import failed: {0}" -f $PSItem.Exception.Message)
         }
     }
 }

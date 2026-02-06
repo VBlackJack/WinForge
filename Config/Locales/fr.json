@@ -1,8 +1,8 @@
-{
+﻿{
   "_meta": {
     "locale": "fr",
     "name": "Français",
-    "version": "3.5.9",
+    "version": "3.6.8",
     "author": "Julien Bombled"
   },
   "common": {
@@ -27,7 +27,7 @@
     "next": "Suivant",
     "exit": "Quitter",
     "retry": "Réessayer",
-    "version": "3.5.9"
+    "version": "3.6.8"
   },
   "core": {
     "admin_required": "Privilèges administrateur requis",
@@ -55,11 +55,77 @@
     },
     "method": {
       "winget": "Installation via Winget : {PackageId}",
+      "winget_unavailable": "Winget non disponible",
+      "winget_success": "Installé avec succès via Winget{Version}{Attempt}",
+      "winget_already_installed": "Déjà installé (Winget){Version}{Attempt}",
+      "winget_verified": "Installé avec succès via Winget{Version} (vérifié post-installation){Attempt}",
+      "winget_failed": "Échec de l'installation Winget (code de sortie : {ExitCode})",
+      "winget_failed_attempts": "Échec de l'installation Winget après {Attempts} tentatives (code de sortie : {ExitCode})",
+      "winget_error_retry": "Erreur Winget : {Error}, nouvelle tentative dans {Delay} secondes...",
+      "winget_error_final": "Erreur d'installation Winget après {Attempts} tentatives : {Error}",
       "chocolatey": "Installation via Chocolatey : {PackageId}",
+      "choco_unavailable": "Chocolatey non disponible",
+      "choco_success": "Installé avec succès via Chocolatey{Version}{Attempt}",
+      "choco_verified": "Installé avec succès via Chocolatey{Version} (vérifié){Attempt}",
+      "choco_failed": "Échec de l'installation Chocolatey (code de sortie : {ExitCode})",
+      "choco_error_retry": "Erreur Chocolatey : {Error}, nouvelle tentative dans {Delay} secondes...",
+      "choco_error_final": "Erreur d'installation Chocolatey après {Attempts} tentatives : {Error}",
       "store": "Installation depuis Microsoft Store : {AppName}",
+      "store_success": "Installé avec succès via Microsoft Store{Version}",
+      "store_error": "Erreur d'installation Store : {Error}",
+      "store_unavailable_sandbox": "Microsoft Store non disponible dans Windows Sandbox : {ProductId}",
+      "store_manual_required": "Installation automatique impossible - page Store ouverte pour installation manuelle",
       "direct": "Installation depuis téléchargement direct : {Url}",
+      "direct_invalid_url": "URL invalide ou non sécurisée : {Url}",
+      "direct_downloading": "Téléchargement depuis : {Url}",
+      "direct_checksum_enabled": "Validation du checksum activée (SHA256)",
+      "direct_downloaded": "Téléchargé : {Size}",
+      "direct_running_installer": "Exécution de l'installeur {Type} : {FileName}",
+      "direct_success": "Installé avec succès via téléchargement direct",
+      "direct_failed": "Échec de l'installation directe",
+      "direct_error": "Erreur de téléchargement direct : {Error}",
+      "transient_error": "Erreur transitoire détectée (code de sortie : {ExitCode}), nouvelle tentative dans {Delay} secondes...",
+      "verifying": "Vérification de l'installation...",
+      "msi_installing": "Installation du package MSI...",
+      "msi_success": "Package MSI installé avec succès",
+      "msi_exit_code": "L'installeur MSI a retourné le code de sortie : {ExitCode}",
+      "exe_custom_args": "Exécution de l'installeur avec des arguments personnalisés : {Arguments}",
+      "exe_executing": "Exécution : {Path} {Arguments}",
+      "exe_exit_code": "Processus terminé avec le code de sortie : {ExitCode}",
+      "exe_nonzero_exit": "L'installeur a retourné un code de sortie non nul : {ExitCode}",
+      "exe_success": "Installation terminée",
+      "exe_failed": "Échec de l'installation EXE : {Error}",
+      "exe_trying_silent": "Essai des commutateurs d'installation silencieuse...",
+      "exe_switch_success": "Installation terminée avec le commutateur : {Switch}",
+      "exe_no_silent_switch": "Aucun commutateur silencieux n'a fonctionné pour cet installeur",
+      "zip_extracting": "Extraction de l'archive ZIP (avec protection Zip Slip)",
+      "zip_security_failed": "L'extraction ZIP a échoué la validation de sécurité",
+      "zip_executing_installer": "Exécution de l'installeur depuis l'archive : {FileName}",
+      "zip_installer_failed": "Échec de l'exécution de l'installeur ZIP : {Error}",
+      "zip_deploying_portable": "Aucun installeur trouvé - déploiement des outils portables",
+      "zip_deploying_to": "Déploiement vers : {Path}",
+      "zip_deployed_success": "Déploiement terminé avec succès",
       "feature": "Activation de la fonctionnalité Windows : {Feature}",
-      "capability": "Ajout de la capacité Windows : {Capability}"
+      "feature_already_enabled": "Fonctionnalité déjà activée : {Feature}",
+      "feature_enabled": "Fonctionnalité activée avec succès : {Feature}",
+      "feature_failed": "Échec de l'activation de la fonctionnalité {Feature} : {Error}",
+      "capability": "Ajout de la capacité Windows : {Capability}",
+      "capability_not_found": "Capacité non trouvée : {Capability}",
+      "capability_already_installed": "Capacité déjà installée : {Capability}",
+      "capability_installing": "Installation de la capacité : {Capability}",
+      "capability_success": "Capacité installée avec succès : {Capability}",
+      "capability_failed": "Échec de l'installation de la capacité {Capability} : {Error}",
+      "custom_installed": "Installé via {Method}",
+      "custom_failed": "Échec de l'installation via {Method}",
+      "custom_unknown": "Méthode d'installation inconnue : {Method}",
+      "process": {
+        "graceful_terminated": "Processus terminé proprement via CloseMainWindow",
+        "force_kill": "Arrêt propre échoué - arrêt forcé du processus",
+        "timed_out": "Le processus a expiré après {Seconds} secondes",
+        "close_failed": "Échec de CloseMainWindow : {Error}",
+        "kill_failed": "Échec de l'arrêt du processus : {Error}",
+        "child_cleanup_failed": "Échec du nettoyage des processus enfants : {Error}"
+      }
     },
     "retry": {
       "attempt": "Tentative {Current} sur {Max}",
@@ -177,7 +243,9 @@
     "invalid": "Format de profil invalide : {Name}",
     "inheritance": {
       "resolving": "Résolution de l'héritage du profil...",
+      "cycle_detected": "Héritage circulaire détecté : {Cycle}",
       "inherits_from": "Hérite de : {Parent}",
+      "parent_load_failed": "Échec du chargement du profil parent '{Parent}' : {Error}",
       "merged": "{Count} applications fusionnées depuis les profils parents"
     },
     "applications": {
@@ -410,7 +478,7 @@
     },
     "info": {
       "title": "Informations du framework",
-      "version": "3.5.0",
+      "version": "3.6.8",
       "ps_version": "Version PowerShell :",
       "repo_path": "Chemin du dépôt :",
       "db_loaded": "Base de données chargée :"
@@ -574,14 +642,6 @@
       "algorithm": "Utilisation de {Algorithm} pour la validation"
     }
   },
-  "cleanup": {
-    "title": "=== Nettoyage ===",
-    "files_archived": "Fichiers archivés : {Count}",
-    "files_relocated": "Fichiers déplacés : {Count}",
-    "files_skipped": "Fichiers ignorés : {Count}",
-    "archive_location": "Emplacement de l'archive : {Path}",
-    "completed": "Nettoyage terminé"
-  },
   "test": {
     "title": "=== Test de validation des profils Win11Forge ===",
     "mode_info": "Test de tous les profils en mode Test + Parallèle",
@@ -714,16 +774,107 @@
     "checksum_failed": "Échec de la validation du checksum ! Attendu : {Expected}, Obtenu : {Got}",
     "removing_corrupted": "Suppression du fichier potentiellement corrompu...",
     "checksum_passed": "Validation du checksum réussie (SHA256 : {Hash})",
-    "download_failed": "Échec du téléchargement : {Error}"
+    "download_failed": "Échec du téléchargement : {Error}",
+    "method": {
+      "invoke_webrequest": "Tentative de téléchargement via Invoke-WebRequest...",
+      "invoke_webrequest_redirects": "Tentative de téléchargement via Invoke-WebRequest (gestion des redirections)...",
+      "completed": "Téléchargement terminé",
+      "completed_size": "Téléchargement terminé ({Size} octets)",
+      "webrequest_failed_fallback": "Échec d'Invoke-WebRequest, tentative de méthode alternative...",
+      "webrequest_failed_curl": "Échec d'Invoke-WebRequest, tentative via curl...",
+      "webrequest_failed": "Échec du téléchargement Invoke-WebRequest : {Error}",
+      "http_error": "Le code d'état HTTP indique un échec : {StatusCode}",
+      "empty_or_missing": "Téléchargement terminé mais le fichier est vide ou manquant",
+      "curl": "Tentative de téléchargement via curl.exe...",
+      "curl_exit_code": "Code de sortie curl : {ExitCode}",
+      "curl_failed": "Échec du téléchargement curl.exe : {Error}",
+      "bits": "Tentative de téléchargement via transfert BITS...",
+      "bits_failed": "Échec du transfert BITS",
+      "bits_failed_detail": "Échec du transfert BITS : {Error}",
+      "all_exhausted": "Échec du téléchargement : toutes les méthodes épuisées"
+    }
   },
   "office": {
     "waiting": "Attente de la fin de l'installation Office Click-to-Run...",
     "detected": "Installation Office détectée : {Path}",
     "c2r_installing": "Office Click-to-Run toujours en cours d'installation... ({Minutes} minutes écoulées)",
-    "c2r_active": "Client Office C2R actif... ({Minutes} minutes écoulées)"
+    "c2r_active": "Client Office C2R actif... ({Minutes} minutes écoulées)",
+    "monitoring": "Surveillance de la progression de l'installation Office...",
+    "completed_registry": "Installation Office terminée après {Minutes} minutes (registre détecté)",
+    "completed_executable": "Installation Office terminée après {Minutes} minutes (exécutable détecté)",
+    "in_progress": "Installation Office en cours ({Processes})... Écoulé : {Minutes} min",
+    "no_process_detected": "Aucun processus d'installation Office détecté et Office non trouvé",
+    "timed_out": "L'installation Office a expiré après {Minutes} minutes"
+  },
+  "detect": {
+    "security": {
+      "registry_path_blocked": "Chemin de registre non autorisé : {Path}",
+      "path_traversal_blocked": "Tentative de traversée de chemin bloquée dans le chemin de détection : {Path}",
+      "variable_syntax_blocked": "Sécurité : syntaxe de variable PowerShell non autorisée dans les chemins de détection : {Path}",
+      "path_traversal_after_expansion": "Tentative de traversée de chemin bloquée après expansion : {Path}",
+      "relative_path_blocked": "Chemin relatif non autorisé dans la détection : {Path}",
+      "command_not_allowed": "Détection de commande bloquée : '{Executable}' n'est pas dans la liste des exécutables autorisés",
+      "dangerous_arguments": "Détection de commande bloquée : les arguments contiennent des caractères dangereux pour '{Executable}'"
+    },
+    "winget_failed": "Échec de la détection Winget : {Error}",
+    "choco_failed": "Échec de la détection Chocolatey : {Error}"
   },
   "engine": {
-    "env_check_failed": "Impossible de vérifier les restrictions d'environnement : {Error}"
+    "env_check_failed": "Impossible de vérifier les restrictions d'environnement : {Error}",
+    "env_restricted": "{AppName} est restreint dans l'environnement {Environment}",
+    "env_not_compatible": "Non compatible avec l'environnement {Environment}"
+  },
+  "orchestrator": {
+    "installing": "Installation : {AppName}",
+    "already_installed": "Déjà installé : {AppName}",
+    "already_installed_no_update": "Déjà installé (aucune mise à jour disponible)",
+    "already_installed_status": "Déjà installé",
+    "checking_updates": "Vérification des mises à jour : {AppName}",
+    "no_update_available": "Aucune mise à jour disponible ou upgrade non supporté pour : {AppName}",
+    "no_sources": "Aucune source d'installation disponible",
+    "no_valid_sources": "Aucune source d'installation valide configurée",
+    "all_methods_failed": "Toutes les méthodes ont échoué : {Reasons}",
+    "install_failed": "Échec de l'installation : {Message}",
+    "failure": {
+      "office_c2r_timeout": "Office Click-to-Run n'a pas terminé dans le délai imparti",
+      "winget": "Échec Winget (ID : {PackageId})",
+      "chocolatey": "Échec Chocolatey (Paquet : {PackageId})",
+      "store": "Échec Store (ID : {ProductId})",
+      "direct_download": "Échec du téléchargement direct"
+    },
+    "result": {
+      "winget": "Installé via Winget",
+      "winget_verified": "Installé via Winget (vérifié par détection de fichier)",
+      "chocolatey": "Installé via Chocolatey",
+      "chocolatey_verified": "Installé via Chocolatey (vérifié par détection de fichier)",
+      "store": "Installé via Microsoft Store",
+      "direct_download": "Installé via téléchargement direct",
+      "windows_feature": "Installé via fonctionnalité Windows",
+      "windows_capability": "Installé via capacité Windows",
+      "invalid_direct_url": "URL directe invalide",
+      "checksum_failed": "Échec de la validation du checksum SHA256",
+      "all_failed": "Toutes les méthodes d'installation ont échoué",
+      "winget_retry": "Installé via Winget (tentative {Attempt})",
+      "already_installed_winget": "Déjà installé (Winget)",
+      "already_installed_winget_retry": "Déjà installé (Winget) (tentative {Attempt})",
+      "chocolatey_retry": "Installé via Chocolatey (tentative {Attempt})",
+      "error": "Erreur : {Error}",
+      "download_exhausted": "Échec du téléchargement - toutes les méthodes épuisées",
+      "archive_security_failed": "Échec de la validation de sécurité de l'archive",
+      "upgraded": "Mis à jour avec succès",
+      "no_upgrade": "Aucune mise à jour disponible ou upgrade non supporté"
+    },
+    "upgrade": {
+      "attempting_winget": "Tentative de mise à jour Winget : {PackageId}",
+      "success_winget": "Mis à jour avec succès : {AppName}",
+      "no_update_winget": "Aucune mise à jour disponible via Winget pour : {AppName}",
+      "exit_code_winget": "Mise à jour Winget retournée avec le code de sortie : {ExitCode}",
+      "error_winget": "Erreur de mise à jour Winget : {Error}",
+      "attempting_choco": "Tentative de mise à jour Chocolatey : {PackageId}",
+      "success_choco": "Mis à jour avec succès via Chocolatey : {AppName}",
+      "exit_code_choco": "Mise à jour Chocolatey retournée avec le code de sortie : {ExitCode}",
+      "error_choco": "Erreur de mise à jour Chocolatey : {Error}"
+    }
   },
   "prereq": {
     "env_refreshed": "Environnement actualisé",
@@ -996,14 +1147,93 @@
     "server_stopped": "Serveur API arrêté",
     "server_already_running": "Le serveur API est déjà en cours d'exécution",
     "server_not_running": "Le serveur API n'est pas en cours d'exécution",
+    "server_started_background": "Serveur API démarré en arrière-plan (ID tâche : {JobId})",
+    "server_start_failed": "Échec du démarrage du serveur API : {Error}",
+    "server_stop_error": "Erreur lors de l'arrêt du serveur API : {Error}",
     "request_received": "Requête API : {Method} {Path}",
     "endpoint_registered": "Endpoint enregistré : {Method} {Path}",
     "endpoint_not_found": "Endpoint non trouvé : {Method} {Path}",
     "request_error": "Erreur de traitement de la requête : {Error}",
+    "cors_blocked": "Origine CORS non autorisée",
+    "auth_blocked": "Trop de tentatives d'authentification échouées",
+    "auth_failed": "Échec d'authentification : {Message} (chemin : {Path}, client : {ClientIp})",
+    "error_logged": "Erreur API [{ErrorCode}] : {Message}",
+    "ip_blocked": "IP client {ClientIp} bloquée pendant {Minutes} minutes après {FailCount} tentatives échouées",
+    "rate_limit_cleanup": "Nettoyage des limites de débit : {Count} entrées obsolètes supprimées",
     "status_running": "Statut du serveur : En cours",
     "status_stopped": "Statut du serveur : Arrêté",
     "uptime": "Temps de fonctionnement : {Duration}",
-    "request_count": "Total des requêtes : {Count}"
+    "request_count": "Total des requêtes : {Count}",
+    "csrf_failed": "Échec de la validation CSRF pour {Path} depuis {ClientIp} : {Message}",
+    "security": {
+      "no_secure_keys": "Clés API trouvées dans la configuration mais pas dans le stockage sécurisé. Les clés ne seront pas chargées en clair.",
+      "use_secure_key_cmdlet": "Utilisez Set-SecureApiKey pour stocker les clés API de manière sécurisée avec le chiffrement DPAPI.",
+      "load_keys_failed": "Échec du chargement des clés API depuis le stockage sécurisé : {Error}",
+      "auth_unavailable": "L'authentification par clé API est temporairement indisponible.",
+      "dpapi_unavailable": "Le stockage sécurisé DPAPI n'est pas disponible. Les clés API en clair ne seront pas chargées.",
+      "use_secure_key_or_disable": "Utilisez Set-SecureApiKey pour stocker les clés de manière sécurisée, ou désactivez l'authentification.",
+      "handler_dangerous_pattern": "SÉCURITÉ : Le handler contient un motif dangereux '{Pattern}'. Enregistrement refusé.",
+      "handler_syntax_errors": "SÉCURITÉ : Le handler contient des erreurs de syntaxe : {Message}",
+      "handler_dangerous_command": "SÉCURITÉ : Le handler contient une commande dangereuse '{Command}'. Enregistrement refusé.",
+      "handler_dangerous_type": "SÉCURITÉ : Le handler utilise un type dangereux '{TypeName}'. Enregistrement refusé.",
+      "handler_dangerous_static_method": "SÉCURITÉ : Le handler utilise une méthode statique dangereuse. Enregistrement refusé.",
+      "handler_validation_failed": "Échec de la validation du handler"
+    },
+    "csrf": {
+      "validation_disabled": "Validation CSRF désactivée",
+      "token_required": "Le jeton CSRF est requis",
+      "token_invalid": "Jeton CSRF invalide",
+      "token_expired": "Le jeton CSRF a expiré",
+      "token_wrong_key": "Le jeton CSRF n'appartient pas à cette clé API",
+      "token_consumed": "Valide (jeton consommé)"
+    },
+    "auth": {
+      "key_required": "La clé API est requise",
+      "key_invalid": "Clé API invalide",
+      "key_expired": "La clé API a expiré",
+      "key_missing_permission": "La clé API n'a pas la permission '{Permission}'",
+      "key_valid": "Valide",
+      "key_disabled": "La clé API est désactivée",
+      "insufficient_permissions": "Permissions insuffisantes : nécessite '{Permission}'"
+    },
+    "rate_limit": {
+      "exceeded_minute": "Limite de débit dépassée : {Limit} requêtes par minute",
+      "exceeded_hour": "Limite de débit dépassée : {Limit} requêtes par heure",
+      "api_key_exceeded": "Limite de débit de la clé API dépassée"
+    },
+    "error": {
+      "invalid_request_parameters": "Paramètres de requête invalides",
+      "access_denied": "Accès refusé",
+      "resource_not_found": "Ressource non trouvée",
+      "operation_timed_out": "L'opération a expiré",
+      "invalid_operation": "Opération invalide",
+      "invalid_json_format": "Format JSON invalide",
+      "internal_error": "Une erreur interne est survenue",
+      "endpoint_not_found": "Endpoint non trouvé",
+      "request_body_too_large": "Corps de la requête trop volumineux (max : {MaxSize} octets)",
+      "rate_limit_exceeded": "Limite de débit dépassée"
+    },
+    "endpoints": {
+      "request_body_validation_failed": "Echec de la validation du corps de la requête : {Error}",
+      "file_not_found": "Fichier non trouvé : {FilePath}",
+      "schema_validation_failed": "Echec de la validation du schéma : {Errors}",
+      "json_parsing_failed": "Echec de l'analyse JSON : {Error}",
+      "profile_parse_failed": "Echec de l'analyse du profil : {Error}",
+      "database_load_failed": "Echec du chargement de la base de données des applications : {Error}",
+      "deployment_already_running": "Un déploiement est déjà en cours",
+      "request_validation_failed": "Echec de la validation de la requête",
+      "profile_name_required": "Le nom du profil est requis dans le corps de la requête",
+      "profile_name_invalid_chars": "Nom de profil invalide : contient des caractères interdits",
+      "profile_name_too_long": "Nom de profil trop long (max {MaxLength} caractères)",
+      "security_invalid_profile_path": "Violation de sécurité : Chemin de profil invalide",
+      "profile_not_found": "Profil non trouvé : {ProfileName}",
+      "deployment_started": "Déploiement démarré pour le profil : {ProfileName}",
+      "no_apps_to_rollback": "Aucune application à restaurer",
+      "rollback_summary_retrieved": "Résumé du rollback récupéré. Définissez force=true pour exécuter.",
+      "rollback_manager_unavailable": "RollbackManager non disponible",
+      "csrf_api_key_required": "Clé API requise pour obtenir un jeton CSRF",
+      "default_endpoints_registered": "{Count} endpoints API par défaut enregistrés"
+    }
   },
   "update": {
     "checking": "Vérification des mises à jour...",
@@ -1081,7 +1311,16 @@
     "available_plugins": "Plugins disponibles : {Count}",
     "loaded_plugins": "Plugins chargés : {Count}",
     "disabled": "Le système de plugins est désactivé",
+    "directory_create_failed": "Échec de la création du répertoire de plugins : {Error}",
+    "load_failed": "Échec du chargement du plugin '{Name}' : {Error}",
+    "not_loaded": "Le plugin '{Name}' n'est pas chargé",
+    "unknown_hook": "Hook inconnu : {Hook}",
     "template_info": "Modèle de plugin disponible dans : Plugins/_template",
+    "security": {
+      "symlink_validation": "Le point d'entrée du plugin est un lien symbolique, validation de la cible résolue",
+      "path_traversal": "Le point d'entrée du plugin sort du répertoire du plugin (traversée de chemin possible) : {EntryPoint}",
+      "entry_point_not_found": "Point d'entrée du plugin non trouvé : {Path}"
+    },
     "sandbox": {
       "executing": "Exécution du plugin '{Name}' en sandbox (timeout : {Timeout}s)",
       "timed_out": "Le plugin '{Name}' a expiré après {Timeout}s",
@@ -1097,9 +1336,12 @@
     "validation": {
       "invalid_session_id": "Format de SessionId invalide dans le fichier d'état",
       "invalid_profile_name": "ProfileName invalide dans le fichier d'état (contient des caractères interdits)",
+      "invalid_profile_name_nul": "ProfileName invalide dans le fichier d'état (contient un octet NUL)",
+      "invalid_profile_name_control": "ProfileName invalide dans le fichier d'état (contient des caractères de contrôle)",
       "profile_name_too_long": "ProfileName trop long dans le fichier d'état",
       "invalid_total_apps": "Valeur TotalApps invalide dans le fichier d'état",
-      "dangerous_app_name": "Nom d'application invalide dans le fichier d'état : contient des métacaractères shell"
+      "dangerous_app_name": "Nom d'application invalide dans le fichier d'état : contient des métacaractères shell",
+      "corrupted_state": "Validation du fichier d'état échouée - état corrompu ignoré"
     },
     "rollback": {
       "session_initialized": "Session de rollback initialisée : {SessionId}",
@@ -1337,6 +1579,26 @@
       "listFailed": "Échec de la liste des déploiements planifiés : {Error}",
       "profileNotFound": "Profil non trouvé : {Name}",
       "invalidTime": "Heure planifiée invalide - doit être dans le futur"
+    }
+  },
+  "security": {
+    "archive": {
+      "path_traversal_blocked": "Sécurité : Tentative de traversée de chemin bloquée : {Path}",
+      "symlink_blocked": "Sécurité : Lien symbolique bloqué dans l'archive : {Path}",
+      "path_validation_error": "Sécurité : Erreur de validation du chemin : {Error}",
+      "symlink_detected": "Sécurité : Lien symbolique détecté dans l'archive (bloqué) : {Entry}",
+      "zip_slip_detected": "Sécurité : Attaque Zip Slip détectée dans l'entrée : {Entry}",
+      "dangerous_filetype_blocked": "Sécurité : Type de fichier dangereux bloqué dans l'archive : {Entry} (utilisez -AllowDangerousExtensions pour autoriser)",
+      "dangerous_filetype_warning": "Sécurité : Avertissement - extraction d'un type de fichier dangereux : {Entry}",
+      "symlink_removed": "Sécurité : Lien symbolique supprimé après extraction : {Path}",
+      "extraction_failed": "Échec de l'extraction de l'archive : {Error}"
+    },
+    "download": {
+      "internal_address_blocked": "Sécurité : Téléchargement bloqué - adresse interne/privée détectée : {Host}",
+      "untrusted_domain_blocked": "Téléchargement bloqué - domaine non approuvé : {Host}. Ajoutez-le dans Config/download-sources.json trustedDomains pour autoriser.",
+      "dangerous_character": "Sécurité : L'URL contient un caractère potentiellement dangereux : {Character}",
+      "invalid_scheme": "Sécurité : Schéma URL invalide (doit être http ou https) : {Scheme}",
+      "malformed_url": "Sécurité : URL malformée : {Url}"
     }
   }
 }

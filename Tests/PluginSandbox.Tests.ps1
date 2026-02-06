@@ -295,11 +295,25 @@ Describe 'PluginSandbox Module' {
         }
 
         It 'Should successfully load valid module' {
-            # Use a known valid module path
-            $corePath = Join-Path $PSScriptRoot '..\Core\Core.psm1'
-            if (Test-Path $corePath) {
-                $result = Invoke-PluginLoadSandboxed -PluginPath $corePath -PluginName 'Core'
+            $testDir = Join-Path $env:TEMP 'Win11ForgePluginSandboxTests'
+            $testModulePath = Join-Path $testDir 'TestPlugin.psm1'
+
+            if (-not (Test-Path $testDir)) {
+                New-Item -Path $testDir -ItemType Directory -Force | Out-Null
+            }
+
+            @"
+function Get-TestValue { 'ok' }
+Export-ModuleMember -Function Get-TestValue
+"@ | Set-Content -Path $testModulePath -Encoding UTF8
+
+            try {
+                $result = Invoke-PluginLoadSandboxed -PluginPath $testModulePath -PluginName 'TestPlugin'
                 $result.Success | Should -Be $true
+            } finally {
+                if (Test-Path $testModulePath) {
+                    Remove-Item -Path $testModulePath -Force -ErrorAction SilentlyContinue
+                }
             }
         }
     }

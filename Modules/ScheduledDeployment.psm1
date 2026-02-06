@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Scheduled Deployment Manager Version: 3.5.0
+    Win11Forge - Scheduled Deployment Manager v3.6.8
 
 .DESCRIPTION
     Module for managing scheduled deployments:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
     Requires: PowerShell 5.1+, Administrator privileges
 #>
 

@@ -34,29 +34,29 @@ public partial class EditableApplicationModel : ObservableValidator, IValidatabl
     /// </summary>
     [ObservableProperty]
     [NotifyDataErrorInfo]
-    [Required(ErrorMessage = "Application ID is required")]
+    [Required(ErrorMessageResourceName = nameof(Resources.Resources.Validation_EditApp_Id_Required), ErrorMessageResourceType = typeof(Resources.Resources))]
     [RegularExpression(@"^[A-Za-z0-9][A-Za-z0-9\.\-_]*$",
-        ErrorMessage = "ID must start with a letter or number and contain only letters, numbers, dots, dashes, and underscores")]
-    [StringLength(128, MinimumLength = 2, ErrorMessage = "ID must be between 2 and 128 characters")]
+        ErrorMessageResourceName = nameof(Resources.Resources.Validation_EditApp_Id_Pattern), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [StringLength(128, MinimumLength = 2, ErrorMessageResourceName = nameof(Resources.Resources.Validation_EditApp_Id_Length), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _appId = string.Empty;
 
     /// <summary>Display name of the application.</summary>
     [ObservableProperty]
     [NotifyDataErrorInfo]
-    [Required(ErrorMessage = "Application name is required")]
-    [StringLength(256, MinimumLength = 1, ErrorMessage = "Name must be between 1 and 256 characters")]
+    [Required(ErrorMessageResourceName = nameof(Resources.Resources.Validation_EditApp_Name_Required), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [StringLength(256, MinimumLength = 1, ErrorMessageResourceName = nameof(Resources.Resources.Validation_EditApp_Name_Length), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _name = string.Empty;
 
     /// <summary>Application category (e.g., "Browser", "Utility", "Development").</summary>
     [ObservableProperty]
     [NotifyDataErrorInfo]
-    [Required(ErrorMessage = "Category is required")]
-    [StringLength(64, MinimumLength = 1, ErrorMessage = "Category must be between 1 and 64 characters")]
+    [Required(ErrorMessageResourceName = nameof(Resources.Resources.Validation_EditApp_Category_Required), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [StringLength(64, MinimumLength = 1, ErrorMessageResourceName = nameof(Resources.Resources.Validation_EditApp_Category_Length), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _category = string.Empty;
 
     /// <summary>Description of the application.</summary>
     [ObservableProperty]
-    [StringLength(1024, ErrorMessage = "Description must not exceed 1024 characters")]
+    [StringLength(1024, ErrorMessageResourceName = nameof(Resources.Resources.Validation_EditApp_Description_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _description = string.Empty;
 
     /// <summary>Installation sources configuration.</summary>
@@ -69,7 +69,7 @@ public partial class EditableApplicationModel : ObservableValidator, IValidatabl
 
     /// <summary>Default installation priority (1-100, lower = higher priority).</summary>
     [ObservableProperty]
-    [Range(1, 100, ErrorMessage = "Priority must be between 1 and 100")]
+    [Range(1, 100, ErrorMessageResourceName = nameof(Resources.Resources.Validation_EditApp_Priority_Range), ErrorMessageResourceType = typeof(Resources.Resources))]
     private int _defaultPriority = 50;
 
     /// <summary>Whether this application is required by default in profiles.</summary>
@@ -94,7 +94,7 @@ public partial class EditableApplicationModel : ObservableValidator, IValidatabl
 
     /// <summary>Official homepage URL.</summary>
     [ObservableProperty]
-    [ValidUrl(ErrorMessage = "Homepage must be a valid URL")]
+    [ValidUrl(ErrorMessageResourceName = nameof(Resources.Resources.Validation_EditApp_Homepage_InvalidUrl), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _homepage = string.Empty;
 
     /// <summary>
@@ -106,7 +106,7 @@ public partial class EditableApplicationModel : ObservableValidator, IValidatabl
         if (Sources is null || !Sources.HasAnySource())
         {
             yield return new ValidationResult(
-                "At least one installation source must be configured",
+                Resources.Resources.Validation_EditApp_Sources_Required,
                 new[] { nameof(Sources) });
         }
     }
@@ -151,22 +151,22 @@ public partial class ApplicationSourcesModel : ObservableValidator
 {
     /// <summary>Winget package identifier (e.g., "Google.Chrome").</summary>
     [ObservableProperty]
-    [StringLength(256, ErrorMessage = "Winget package ID must not exceed 256 characters")]
+    [StringLength(256, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Sources_Winget_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string? _winget;
 
     /// <summary>Chocolatey package name (e.g., "googlechrome").</summary>
     [ObservableProperty]
-    [StringLength(256, ErrorMessage = "Chocolatey package name must not exceed 256 characters")]
+    [StringLength(256, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Sources_Chocolatey_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string? _chocolatey;
 
     /// <summary>Microsoft Store app ID (e.g., "9NBLGGH4NNS1").</summary>
     [ObservableProperty]
-    [RegularExpression(@"^[A-Za-z0-9]{12}$", ErrorMessage = "Store ID must be 12 alphanumeric characters")]
+    [RegularExpression(@"^[A-Za-z0-9]{12}$", ErrorMessageResourceName = nameof(Resources.Resources.Validation_Sources_Store_Pattern), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string? _store;
 
     /// <summary>Direct download URL for the installer.</summary>
     [ObservableProperty]
-    [ValidUrl(ErrorMessage = "Direct URL must be a valid HTTP/HTTPS URL")]
+    [ValidUrl(ErrorMessageResourceName = nameof(Resources.Resources.Validation_Sources_DirectUrl_InvalidUrl), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string? _directUrl;
 
     /// <summary>Extended Winget configuration.</summary>
@@ -287,7 +287,7 @@ public partial class DirectDownloadSourceConfig : ObservableValidator
 {
     /// <summary>Type of installer (exe, msi, msix, zip).</summary>
     [ObservableProperty]
-    [Required(ErrorMessage = "Installer type is required for direct download")]
+    [Required(ErrorMessageResourceName = nameof(Resources.Resources.Validation_DirectDownload_InstallerType_Required), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _installerType = "exe";
 
     /// <summary>Silent installation arguments.</summary>
@@ -297,7 +297,7 @@ public partial class DirectDownloadSourceConfig : ObservableValidator
     /// <summary>Expected file checksum (format: "sha256:hash").</summary>
     [ObservableProperty]
     [RegularExpression(@"^(sha256|sha1|md5):[a-fA-F0-9]+$",
-        ErrorMessage = "Checksum format must be 'algorithm:hash' (e.g., sha256:abc123...)")]
+        ErrorMessageResourceName = nameof(Resources.Resources.Validation_DirectDownload_Checksum_Pattern), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _checksum = string.Empty;
 
     /// <summary>Expected file name after download.</summary>

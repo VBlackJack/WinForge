@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Win11Forge - Centralized Module Loader v1.0.0
 
@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 1.0.0
+    v3.6.8
     This module should be imported first by other modules
 #>
 

@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Parallel Detection Module v3.4.0
+    Win11Forge - Parallel Detection v3.6.8
 
 .DESCRIPTION
     Lightweight detection module optimized for parallel job execution.
@@ -8,7 +8,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 #>
 
 #

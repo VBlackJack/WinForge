@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Structured Logging Module v3.1.4
+    Win11Forge - Structured Logging v3.6.8
 
 .DESCRIPTION
     Provides JSON-based structured logging for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 #>
 
 #

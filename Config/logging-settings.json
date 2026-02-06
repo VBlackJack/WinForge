@@ -1,7 +1,7 @@
-{
+﻿{
   "_meta": {
     "description": "Logging system configuration for Win11Forge",
-    "version": "3.5.9",
+    "version": "3.6.8",
     "author": "Julien Bombled",
     "lastUpdated": "2026-02-04"
   },

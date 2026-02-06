@@ -28,22 +28,22 @@ namespace Win11Forge.GUI.Models;
 public class DeploymentProfileModel : IValidatableObject
 {
     /// <summary>Profile name.</summary>
-    [Required(ErrorMessage = "Profile name is required")]
-    [StringLength(128, MinimumLength = 1, ErrorMessage = "Profile name must be between 1 and 128 characters")]
-    [RegularExpression(@"^[a-zA-Z0-9_-]+$", ErrorMessage = "Profile name can only contain letters, numbers, underscores, and hyphens")]
+    [Required(ErrorMessageResourceName = nameof(Resources.Resources.Validation_Profile_Name_Required), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [StringLength(128, MinimumLength = 1, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Profile_Name_Length), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [RegularExpression(@"^[a-zA-Z0-9_-]+$", ErrorMessageResourceName = nameof(Resources.Resources.Validation_Profile_Name_Pattern), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>Profile description.</summary>
-    [StringLength(2048, ErrorMessage = "Description must not exceed 2048 characters")]
+    [StringLength(2048, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Profile_Description_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string Description { get; set; } = string.Empty;
 
     /// <summary>Profile version.</summary>
-    [StringLength(32, ErrorMessage = "Version must not exceed 32 characters")]
-    [RegularExpression(@"^\d+\.\d+(\.\d+)?$", ErrorMessage = "Version must be in format X.Y or X.Y.Z")]
+    [StringLength(32, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Profile_Version_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [RegularExpression(@"^\d+\.\d+(\.\d+)?$", ErrorMessageResourceName = nameof(Resources.Resources.Validation_Profile_Version_Pattern), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string Version { get; set; } = string.Empty;
 
     /// <summary>List of parent profiles this profile inherits from.</summary>
-    [MaxLength(10, ErrorMessage = "Cannot inherit from more than 10 profiles")]
+    [MaxLength(10, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Profile_InheritedFrom_MaxCount), ErrorMessageResourceType = typeof(Resources.Resources))]
     public List<string> InheritedFrom { get; set; } = [];
 
     /// <summary>Applications included in this profile.</summary>
@@ -64,7 +64,7 @@ public class DeploymentProfileModel : IValidatableObject
         if (InheritedFrom.Contains(Name))
         {
             yield return new ValidationResult(
-                "A profile cannot inherit from itself",
+                Resources.Resources.Validation_Profile_CircularInheritance,
                 new[] { nameof(InheritedFrom) });
         }
 
@@ -73,7 +73,7 @@ public class DeploymentProfileModel : IValidatableObject
         if (distinctParents.Count != InheritedFrom.Count)
         {
             yield return new ValidationResult(
-                "Duplicate parent profiles detected",
+                Resources.Resources.Validation_Profile_DuplicateParents,
                 new[] { nameof(InheritedFrom) });
         }
 
@@ -83,7 +83,7 @@ public class DeploymentProfileModel : IValidatableObject
         if (distinctAppIds.Count != appIds.Count)
         {
             yield return new ValidationResult(
-                "Duplicate application IDs detected in profile",
+                Resources.Resources.Validation_Profile_DuplicateApps,
                 new[] { nameof(Applications) });
         }
     }

@@ -101,6 +101,7 @@
         },
         "Taskbar": {
           "type": "object",
+          "additionalProperties": true,
           "properties": {
             "DisableWidgets": { "type": "boolean" },
             "StartAlignment": {
@@ -128,6 +129,7 @@
         },
         "Privacy": {
           "type": "object",
+          "additionalProperties": true,
           "properties": {
             "DisableTelemetry": { "type": "boolean" },
             "MinimalDataCollection": { "type": "boolean" }
@@ -135,6 +137,7 @@
         },
         "Performance": {
           "type": "object",
+          "additionalProperties": true,
           "properties": {
             "DisableVisualEffects": { "type": "boolean" },
             "OptimizeServices": { "type": "boolean" },
@@ -144,6 +147,7 @@
         },
         "Security": {
           "type": "object",
+          "additionalProperties": true,
           "properties": {
             "WindowsDefender": { "type": "boolean" },
             "Firewall": { "type": "boolean" },

@@ -21,7 +21,7 @@
     RootModule = 'InstallationEngine.psm1'
 
     # Version number of this module
-    ModuleVersion = '3.5.2'
+    ModuleVersion = '3.6.8'
 
     # ID used to uniquely identify this module
     GUID = 'e3a7b0c4-6d5f-4a1b-8c3e-4f5a6b7c8d9e'
@@ -46,6 +46,7 @@
 
     # Nested modules to load
     NestedModules = @(
+        'StateManager.psm1',
         'ApplicationDetection.psm1',
         'InstallationMethods.psm1',
         'InstallationOrchestrator.psm1'
@@ -53,21 +54,28 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
-        # Rollback & Deployment State
+        # State Management (from StateManager)
         'Initialize-RollbackSession',
         'Save-RollbackState',
         'Add-RollbackEntry',
-        'Invoke-Rollback',
-        'Clear-RollbackState',
         'Get-RollbackState',
+        'Get-RollbackEntries',
+        'Clear-RollbackState',
+        'Restore-RollbackState',
+        'Test-ValidStateData',
+        'Test-ValidRollbackEntry',
         'Initialize-DeploymentSession',
         'Save-DeploymentState',
         'Update-DeploymentProgress',
-        'Test-ValidStateData',
         'Get-DeploymentState',
+        'Get-DeploymentProgress',
+        'Clear-DeploymentState',
+        'Test-DeploymentInProgress',
+        'Get-ResumableDeployment',
+        # Rollback & Deployment Orchestration (from InstallationOrchestrator)
+        'Invoke-Rollback',
         'Test-IncompleteDeployment',
         'Resume-Deployment',
-        'Clear-DeploymentState',
         # Detection functions (from ApplicationDetection)
         'Test-ApplicationInstalled',
         'Get-InstalledApplicationsCache',

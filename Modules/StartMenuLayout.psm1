@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Start Menu Layout Manager Version: 3.5.0
+    Win11Forge - Start Menu Layout Manager v3.6.8
 
 .DESCRIPTION
     Module for managing Windows 11 Start Menu layout using LayoutModification.json:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
     Requires: PowerShell 5.1+, Windows 11, Administrator privileges
     Method: LayoutModification.json (official Microsoft method)
 #>
@@ -66,7 +66,7 @@ $script:StartMenuPaths = @{
 
 $script:ProgramsFolder = Join-Path $script:StartMenuPaths.Common 'Programs'
 $script:LayoutPath = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Shell\LayoutModification.json'
-$script:DefaultLayoutPath = 'C:\Users\Default\AppData\Local\Microsoft\Windows\Shell\LayoutModification.json'
+$script:DefaultLayoutPath = "$env:SystemDrive\Users\Default\AppData\Local\Microsoft\Windows\Shell\LayoutModification.json"
 
 # === HELPER FUNCTIONS ===
 

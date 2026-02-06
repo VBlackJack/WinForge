@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Installation Orchestrator Module v3.2.2
+    Win11Forge - Installation Orchestrator v3.6.8
 
 .DESCRIPTION
     High-level orchestration logic for application installation.
@@ -8,7 +8,7 @@
     This module coordinates installation across multiple sources:
     - Sequential installation with fallback (Winget -> Chocolatey -> Store -> DirectDownload)
     - Parallel installation for PowerShell 7+
-    - Rollback and deployment state management
+    - Rollback execution (state tracking delegated to StateManager.psm1)
     - Environment restriction checking
 
     Works in conjunction with:
@@ -17,7 +17,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 
     Changelog v3.2.2:
     - ARCHITECTURE: Extracted from InstallationEngine.psm1 for improved maintainability
@@ -131,100 +131,10 @@ function script:Get-ConfiguredJobCheckInterval {
     return 2  # Fallback default
 }
 
-# === ROLLBACK & RESUME SYSTEM ===
-$script:Win11ForgeDataDir = Join-Path $env:LOCALAPPDATA 'Win11Forge'
-if (-not (Test-Path $script:Win11ForgeDataDir)) {
-    New-Item -Path $script:Win11ForgeDataDir -ItemType Directory -Force | Out-Null
-}
-$script:RollbackStateFile = Join-Path $script:Win11ForgeDataDir 'RollbackState.json'
-$script:DeploymentStateFile = Join-Path $script:Win11ForgeDataDir 'DeploymentState.json'
-
-$script:RollbackState = @{
-    SessionId = $null
-    InstalledApps = @()
-    StartTime = $null
-}
-
-$script:DeploymentState = @{
-    SessionId = $null
-    ProfileName = $null
-    TotalApps = 0
-    CompletedApps = @()
-    FailedApps = @()
-    PendingApps = @()
-    StartTime = $null
-    LastUpdated = $null
-}
-
-# === ROLLBACK FUNCTIONS ===
-
-function Initialize-RollbackSession {
-    <#
-    .SYNOPSIS
-        Initializes a new rollback session to track installed applications.
-    #>
-    [CmdletBinding()]
-    param()
-
-    $script:RollbackState = @{
-        SessionId = [guid]::NewGuid().ToString()
-        InstalledApps = @()
-        StartTime = Get-Date -Format 'o'
-    }
-
-    Save-RollbackState
-    Write-Status -Message "Rollback session initialized: $($script:RollbackState.SessionId)" -Level 'Verbose'
-}
-
-function Save-RollbackState {
-    <#
-    .SYNOPSIS
-        Persists the rollback state to disk.
-    #>
-    [CmdletBinding()]
-    param()
-
-    try {
-        $script:RollbackState | ConvertTo-Json -Depth 5 | Set-Content -Path $script:RollbackStateFile -Encoding UTF8
-    } catch {
-        Write-Status -Message "Could not save rollback state: $($_.Exception.Message)" -Level 'Warning'
-    }
-}
-
-function Add-RollbackEntry {
-    <#
-    .SYNOPSIS
-        Adds an installed application to the rollback registry.
-    .PARAMETER AppName
-        Name of the installed application.
-    .PARAMETER Method
-        Installation method used (Winget, Chocolatey, Store, DirectDownload).
-    .PARAMETER Identifier
-        Package identifier (e.g., Winget ID, Chocolatey package name).
-    #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string]$AppName,
-
-        [Parameter(Mandatory)]
-        [string]$Method,
-
-        [Parameter()]
-        [string]$Identifier = $null
-    )
-
-    $entry = @{
-        AppName = $AppName
-        Method = $Method
-        Identifier = $Identifier
-        InstalledAt = Get-Date -Format 'o'
-    }
-
-    $script:RollbackState.InstalledApps += $entry
-    Save-RollbackState
-    Write-Status -Message "Rollback entry added: $AppName ($Method)" -Level 'Verbose'
-}
+# === STATE MANAGEMENT ===
+# Rollback and deployment state functions are provided by StateManager.psm1
+# (imported above at line 104-106). Only orchestration-specific functions
+# that add UI/coordination logic beyond pure state management are defined here.
 
 function Invoke-Rollback {
     <#
@@ -233,8 +143,11 @@ function Invoke-Rollback {
     .DESCRIPTION
         Uninstalls applications that were installed during the current deployment session.
         Supports Winget and Chocolatey uninstallation methods.
+        Delegates state tracking to StateManager.psm1.
     .PARAMETER Force
         Skip confirmation prompts.
+    .OUTPUTS
+        [hashtable] with Success, RolledBack, and Failed arrays.
     #>
     [CmdletBinding()]
     [OutputType([hashtable])]
@@ -248,14 +161,15 @@ function Invoke-Rollback {
         Failed = @()
     }
 
-    if ($script:RollbackState.InstalledApps.Count -eq 0) {
-        Write-Status -Message "No applications to roll back" -Level 'Info'
+    $rollbackState = Get-RollbackState
+    if ($rollbackState.InstalledApps.Count -eq 0) {
+        Write-Status -Message (Get-LocalizedString -Key 'rollback.no_apps') -Level 'Info'
         return $result
     }
 
-    Write-Status -Message "Rolling back $($script:RollbackState.InstalledApps.Count) application(s)..." -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'rollback.rolling_back' -Parameters @{ Count = $rollbackState.InstalledApps.Count }) -Level 'Info'
 
-    foreach ($app in $script:RollbackState.InstalledApps) {
+    foreach ($app in $rollbackState.InstalledApps) {
         $uninstalled = $false
 
         try {
@@ -275,20 +189,20 @@ function Invoke-Rollback {
                     }
                 }
                 default {
-                    Write-Status -Message "Cannot auto-rollback $($app.AppName) (method: $($app.Method))" -Level 'Warning'
+                    Write-Status -Message (Get-LocalizedString -Key 'rollback.cannot_auto_rollback' -Parameters @{ AppName = $app.AppName; Method = $app.Method }) -Level 'Warning'
                 }
             }
 
             if ($uninstalled) {
-                Write-Status -Message "Rolled back: $($app.AppName)" -Level 'Success'
+                Write-Status -Message (Get-LocalizedString -Key 'rollback.rolled_back' -Parameters @{ AppName = $app.AppName }) -Level 'Success'
                 $result.RolledBack += $app.AppName
             } else {
-                Write-Status -Message "Could not roll back: $($app.AppName)" -Level 'Warning'
+                Write-Status -Message (Get-LocalizedString -Key 'rollback.rollback_failed' -Parameters @{ AppName = $app.AppName }) -Level 'Warning'
                 $result.Failed += $app.AppName
                 $result.Success = $false
             }
         } catch {
-            Write-Status -Message "Rollback error for $($app.AppName): $($_.Exception.Message)" -Level 'Error'
+            Write-Status -Message (Get-LocalizedString -Key 'rollback.rollback_error' -Parameters @{ AppName = $app.AppName; Error = $_.Exception.Message }) -Level 'Error'
             $result.Failed += $app.AppName
             $result.Success = $false
         }
@@ -298,251 +212,12 @@ function Invoke-Rollback {
     return $result
 }
 
-function Clear-RollbackState {
-    <#
-    .SYNOPSIS
-        Clears the rollback state (call after successful deployment or rollback).
-    #>
-    [CmdletBinding()]
-    param()
-
-    $script:RollbackState = @{
-        SessionId = $null
-        InstalledApps = @()
-        StartTime = $null
-    }
-
-    if (Test-Path $script:RollbackStateFile) {
-        Remove-Item $script:RollbackStateFile -Force -ErrorAction SilentlyContinue
-    }
-
-    Write-Status -Message "Rollback state cleared" -Level 'Verbose'
-}
-
-function Get-RollbackState {
-    <#
-    .SYNOPSIS
-        Returns the current rollback state.
-    #>
-    [CmdletBinding()]
-    [OutputType([hashtable])]
-    param()
-
-    return $script:RollbackState
-}
-
-# === DEPLOYMENT RESUME FUNCTIONS ===
-
-function Initialize-DeploymentSession {
-    <#
-    .SYNOPSIS
-        Initializes a deployment session for tracking progress and enabling resume.
-    .PARAMETER ProfileName
-        Name of the profile being deployed.
-    .PARAMETER Applications
-        List of applications to be installed.
-    #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string]$ProfileName,
-
-        [Parameter(Mandatory)]
-        [array]$Applications
-    )
-
-    $script:DeploymentState = @{
-        SessionId = [guid]::NewGuid().ToString()
-        ProfileName = $ProfileName
-        TotalApps = $Applications.Count
-        CompletedApps = @()
-        FailedApps = @()
-        PendingApps = @($Applications | ForEach-Object { $_.Name })
-        StartTime = Get-Date -Format 'o'
-        LastUpdated = Get-Date -Format 'o'
-    }
-
-    Save-DeploymentState
-    Write-Status -Message "Deployment session initialized: $ProfileName ($($Applications.Count) apps)" -Level 'Info'
-}
-
-function Save-DeploymentState {
-    <#
-    .SYNOPSIS
-        Persists deployment state to disk for crash recovery.
-    #>
-    [CmdletBinding()]
-    param()
-
-    try {
-        $script:DeploymentState.LastUpdated = Get-Date -Format 'o'
-        $script:DeploymentState | ConvertTo-Json -Depth 5 | Set-Content -Path $script:DeploymentStateFile -Encoding UTF8
-    } catch {
-        Write-Status -Message "Could not save deployment state: $($_.Exception.Message)" -Level 'Warning'
-    }
-}
-
-function Update-DeploymentProgress {
-    <#
-    .SYNOPSIS
-        Updates deployment progress after an application installation attempt.
-    .PARAMETER AppName
-        Name of the application.
-    .PARAMETER Success
-        Whether installation succeeded.
-    #>
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string]$AppName,
-
-        [Parameter(Mandatory)]
-        [bool]$Success
-    )
-
-    $script:DeploymentState.PendingApps = @($script:DeploymentState.PendingApps | Where-Object { $_ -ne $AppName })
-
-    if ($Success) {
-        $script:DeploymentState.CompletedApps += $AppName
-    } else {
-        $script:DeploymentState.FailedApps += $AppName
-    }
-
-    Save-DeploymentState
-}
-
-function Test-ValidStateData {
-    <#
-    .SYNOPSIS
-        Validates deployment state data for security.
-    .DESCRIPTION
-        Validates SessionId is GUID format, ProfileName has no path traversal,
-        and app names are safe strings.
-    #>
-    [CmdletBinding()]
-    [OutputType([bool])]
-    param(
-        [Parameter(Mandatory)]
-        $StateData
-    )
-
-    # Convert hashtable to PSCustomObject for consistent property access
-    if ($StateData -is [hashtable]) {
-        $StateData = [PSCustomObject]$StateData
-    }
-
-    # Use PS 5.1 compatible property access (no null-conditional operator)
-    $sessionIdProp = $StateData.PSObject.Properties['SessionId']
-    $sessionId = if ($sessionIdProp) { $sessionIdProp.Value } else { $null }
-    if ($sessionId) {
-        try {
-            [guid]::Parse($sessionId) | Out-Null
-        } catch {
-            Write-Status -Message "Invalid SessionId format in state file" -Level 'Warning'
-            return $false
-        }
-    }
-
-    $profileNameProp = $StateData.PSObject.Properties['ProfileName']
-    $profileName = if ($profileNameProp) { $profileNameProp.Value } else { $null }
-    if ($profileName) {
-        # Security: Check for NUL byte (can cause issues with file paths)
-        if ($profileName.Contains([char]0)) {
-            Write-Status -Message "Invalid ProfileName in state file (contains NUL byte)" -Level 'Warning'
-            return $false
-        }
-        # Security: Check for control characters (0x00-0x1F) which can cause display/logging issues
-        if ($profileName -match '[\x00-\x1f]') {
-            Write-Status -Message "Invalid ProfileName in state file (contains control characters)" -Level 'Warning'
-            return $false
-        }
-        if ($profileName -match '\.\.|[/\\|<>:"|?*]') {
-            Write-Status -Message "Invalid ProfileName in state file (contains forbidden characters)" -Level 'Warning'
-            return $false
-        }
-        if ($profileName.Length -gt 100) {
-            Write-Status -Message "ProfileName too long in state file" -Level 'Warning'
-            return $false
-        }
-    }
-
-    $totalAppsProp = $StateData.PSObject.Properties['TotalApps']
-    $totalApps = if ($totalAppsProp) { $totalAppsProp.Value } else { $null }
-    if ($null -ne $totalApps) {
-        if ($totalApps -lt 0 -or $totalApps -gt 1000) {
-            Write-Status -Message "Invalid TotalApps value in state file" -Level 'Warning'
-            return $false
-        }
-    }
-
-    $dangerousPattern = '[;&|`$<>]'
-    $completedAppsProp = $StateData.PSObject.Properties['CompletedApps']
-    $completedApps = if ($completedAppsProp) { $completedAppsProp.Value } else { $null }
-    $failedAppsProp = $StateData.PSObject.Properties['FailedApps']
-    $failedApps = if ($failedAppsProp) { $failedAppsProp.Value } else { $null }
-    $pendingAppsProp = $StateData.PSObject.Properties['PendingApps']
-    $pendingApps = if ($pendingAppsProp) { $pendingAppsProp.Value } else { $null }
-
-    foreach ($appList in @($completedApps, $failedApps, $pendingApps)) {
-        if ($appList) {
-            foreach ($appName in $appList) {
-                if ($appName -match $dangerousPattern) {
-                    Write-Status -Message "Invalid app name in state file: contains shell metacharacters" -Level 'Warning'
-                    return $false
-                }
-            }
-        }
-    }
-
-    return $true
-}
-
-function Get-DeploymentState {
-    <#
-    .SYNOPSIS
-        Returns current deployment state or loads from disk if available.
-    #>
-    [CmdletBinding()]
-    [OutputType([hashtable])]
-    param()
-
-    if ($script:DeploymentState.SessionId) {
-        return $script:DeploymentState
-    }
-
-    if (Test-Path $script:DeploymentStateFile) {
-        try {
-            $loaded = Get-Content $script:DeploymentStateFile -Raw | ConvertFrom-Json
-
-            if (-not (Test-ValidStateData -StateData $loaded)) {
-                Write-Status -Message "State file validation failed - ignoring corrupted state" -Level 'Warning'
-                Remove-Item $script:DeploymentStateFile -Force -ErrorAction SilentlyContinue
-                return $null
-            }
-
-            $script:DeploymentState = @{
-                SessionId = $loaded.SessionId
-                ProfileName = $loaded.ProfileName
-                TotalApps = [int]$loaded.TotalApps
-                CompletedApps = @($loaded.CompletedApps)
-                FailedApps = @($loaded.FailedApps)
-                PendingApps = @($loaded.PendingApps)
-                StartTime = $loaded.StartTime
-                LastUpdated = $loaded.LastUpdated
-            }
-            return $script:DeploymentState
-        } catch {
-            Write-Status -Message "Could not load deployment state: $($_.Exception.Message)" -Level 'Warning'
-        }
-    }
-
-    return $null
-}
-
 function Test-IncompleteDeployment {
     <#
     .SYNOPSIS
         Checks if there is an incomplete deployment that can be resumed.
+    .DESCRIPTION
+        Wrapper around StateManager's Test-DeploymentInProgress for backwards compatibility.
     .OUTPUTS
         Boolean indicating if an incomplete deployment exists.
     #>
@@ -550,10 +225,7 @@ function Test-IncompleteDeployment {
     [OutputType([bool])]
     param()
 
-    $state = Get-DeploymentState
-    if (-not $state) { return $false }
-
-    return ($state.PendingApps.Count -gt 0)
+    return Test-DeploymentInProgress
 }
 
 function Resume-Deployment {
@@ -561,7 +233,8 @@ function Resume-Deployment {
     .SYNOPSIS
         Resumes an incomplete deployment from where it left off.
     .DESCRIPTION
-        Returns the list of pending applications to be installed.
+        Returns the list of pending applications to be installed,
+        displaying progress information to the user.
     .OUTPUTS
         Array of pending application names, or null if no deployment to resume.
     #>
@@ -571,42 +244,16 @@ function Resume-Deployment {
 
     $state = Get-DeploymentState
     if (-not $state -or $state.PendingApps.Count -eq 0) {
-        Write-Status -Message "No incomplete deployment to resume" -Level 'Info'
+        Write-Status -Message (Get-LocalizedString -Key 'deployment.no_incomplete') -Level 'Info'
         return $null
     }
 
-    Write-Status -Message "Resuming deployment: $($state.ProfileName)" -Level 'Info'
-    Write-Status -Message "  Completed: $($state.CompletedApps.Count)" -Level 'Info'
-    Write-Status -Message "  Pending: $($state.PendingApps.Count)" -Level 'Info'
-    Write-Status -Message "  Failed: $($state.FailedApps.Count)" -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'deployment.resuming' -Parameters @{ ProfileName = $state.ProfileName }) -Level 'Info'
+    Write-Status -Message "  $(Get-LocalizedString -Key 'deployment.completed_count' -Parameters @{ Count = $state.CompletedApps.Count })" -Level 'Info'
+    Write-Status -Message "  $(Get-LocalizedString -Key 'deployment.pending_count' -Parameters @{ Count = $state.PendingApps.Count })" -Level 'Info'
+    Write-Status -Message "  $(Get-LocalizedString -Key 'deployment.failed_count' -Parameters @{ Count = $state.FailedApps.Count })" -Level 'Info'
 
     return $state.PendingApps
-}
-
-function Clear-DeploymentState {
-    <#
-    .SYNOPSIS
-        Clears deployment state (call after successful completion).
-    #>
-    [CmdletBinding()]
-    param()
-
-    $script:DeploymentState = @{
-        SessionId = $null
-        ProfileName = $null
-        TotalApps = 0
-        CompletedApps = @()
-        FailedApps = @()
-        PendingApps = @()
-        StartTime = $null
-        LastUpdated = $null
-    }
-
-    if (Test-Path $script:DeploymentStateFile) {
-        Remove-Item $script:DeploymentStateFile -Force -ErrorAction SilentlyContinue
-    }
-
-    Write-Status -Message "Deployment state cleared" -Level 'Verbose'
 }
 
 # === ENVIRONMENT RESTRICTION HELPER ===
@@ -656,11 +303,11 @@ function Test-EnvironmentRestriction {
 
         if ($Application.EnvironmentRestrictions -contains $currentEnv) {
             $result.Restricted = $true
-            $result.Message = "$($Application.Name) is restricted in $currentEnv environment"
+            $result.Message = (Get-LocalizedString -Key 'engine.env_restricted' -Parameters @{ AppName = $Application.Name; Environment = $currentEnv })
             Write-Status -Message $result.Message -Level 'Warning'
         }
     } catch {
-        Write-Status -Message "Could not verify environment restrictions: $($_.Exception.Message)" -Level 'Verbose'
+        Write-Status -Message (Get-LocalizedString -Key 'engine.env_check_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
     }
 
     return $result
@@ -718,7 +365,7 @@ function Invoke-InstallationMethodSequence {
     $sources = $Application.Sources
 
     if (-not $sources) {
-        $result.Message = 'No installation sources available'
+        $result.Message = (Get-LocalizedString -Key 'orchestrator.no_sources')
         return $result
     }
 
@@ -755,22 +402,22 @@ function Invoke-InstallationMethodSequence {
                 $officeTimeout = Get-InstallationTimeout -AppName 'Office'
                 $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $officeTimeout
                 if (-not $officeInstalled) {
-                    $result.FailureReasons += "Office Click-to-Run did not complete in time"
+                    $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.office_c2r_timeout')
                 }
             }
             $result.Success = $true
             $result.Method = 'Winget'
-            $result.Message = 'Installed via Winget'
+            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.winget')
             return $result
         } else {
             if (& $testIgnoreExitCode) {
                 & $writeLog "Installation succeeded despite exit code (files verified)" 'Success'
                 $result.Success = $true
                 $result.Method = 'Winget'
-                $result.Message = 'Installed via Winget (verified by file detection)'
+                $result.Message = (Get-LocalizedString -Key 'orchestrator.result.winget_verified')
                 return $result
             }
-            $result.FailureReasons += "Winget failed (ID: $($sources.Winget))"
+            $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.winget' -Parameters @{ PackageId = $sources.Winget })
         }
     }
 
@@ -786,22 +433,22 @@ function Invoke-InstallationMethodSequence {
                 $officeTimeout = Get-InstallationTimeout -AppName 'Office'
                 $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $officeTimeout
                 if (-not $officeInstalled) {
-                    $result.FailureReasons += "Office Click-to-Run did not complete in time"
+                    $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.office_c2r_timeout')
                 }
             }
             $result.Success = $true
             $result.Method = 'Chocolatey'
-            $result.Message = 'Installed via Chocolatey'
+            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.chocolatey')
             return $result
         } else {
             if (& $testIgnoreExitCode) {
                 & $writeLog "Installation succeeded despite exit code (files verified)" 'Success'
                 $result.Success = $true
                 $result.Method = 'Chocolatey'
-                $result.Message = 'Installed via Chocolatey (verified by file detection)'
+                $result.Message = (Get-LocalizedString -Key 'orchestrator.result.chocolatey_verified')
                 return $result
             }
-            $result.FailureReasons += "Chocolatey failed (Package: $($sources.Chocolatey))"
+            $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.chocolatey' -Parameters @{ PackageId = $sources.Chocolatey })
         }
     }
 
@@ -814,10 +461,10 @@ function Invoke-InstallationMethodSequence {
         if (& $getInstallResult $storeOutput) {
             $result.Success = $true
             $result.Method = 'Store'
-            $result.Message = 'Installed via Microsoft Store'
+            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.store')
             return $result
         } else {
-            $result.FailureReasons += "Store failed (ID: $($sources.Store))"
+            $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.store' -Parameters @{ ProductId = $sources.Store })
         }
     }
 
@@ -842,28 +489,28 @@ function Invoke-InstallationMethodSequence {
             $installParams['ExpectedSHA256'] = $sources.SHA256
         }
 
-        Write-Output "=== ORCHESTRATOR: Calling Install-ViaDirectDownload ==="
-        Write-Output "installParams: $($installParams | ConvertTo-Json -Compress)"
+        Write-Verbose "Calling Install-ViaDirectDownload"
+        Write-Verbose "installParams: $($installParams | ConvertTo-Json -Compress)"
         $downloadOutput = @(Install-ViaDirectDownload @installParams)
-        Write-Output "=== ORCHESTRATOR: Install-ViaDirectDownload returned ==="
-        Write-Output "downloadOutput count: $($downloadOutput.Count)"
+        Write-Verbose "Install-ViaDirectDownload returned"
+        Write-Verbose "downloadOutput count: $($downloadOutput.Count)"
         if (& $getInstallResult $downloadOutput) {
             $result.Success = $true
             $result.Method = 'DirectDownload'
-            $result.Message = 'Installed via direct download'
+            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.direct_download')
             return $result
         } else {
-            $result.FailureReasons += "DirectDownload failed"
+            $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.direct_download')
         }
     }
 
     $result.Message = if ($result.AttemptedMethods.Count -gt 0) {
-        "All methods failed: $($result.FailureReasons -join '; ')"
+        Get-LocalizedString -Key 'orchestrator.all_methods_failed' -Parameters @{ Reasons = ($result.FailureReasons -join '; ') }
     } else {
-        'No valid installation sources configured'
+        Get-LocalizedString -Key 'orchestrator.no_valid_sources'
     }
 
-    & $writeLog "Installation failed: $($result.Message)" 'Warning'
+    & $writeLog (Get-LocalizedString -Key 'orchestrator.install_failed' -Parameters @{ Message = $result.Message }) 'Warning'
     return $result
 }
 
@@ -929,7 +576,7 @@ function Invoke-ApplicationUpgrade {
 
     if ($sources.Winget -and (Test-CommandExists -Name 'winget')) {
         try {
-            Write-Status -Message "Attempting Winget upgrade: $($sources.Winget)" -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.attempting_winget' -Parameters @{ PackageId = $sources.Winget }) -Level 'Info'
 
             $arguments = @(
                 'upgrade',
@@ -942,24 +589,24 @@ function Invoke-ApplicationUpgrade {
             $process = Start-ProcessWithTimeout -FilePath 'winget' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
 
             if ($process.ExitCode -eq 0) {
-                Write-Status -Message "Successfully upgraded: $($Application.Name)" -Level 'Success'
+                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.success_winget' -Parameters @{ AppName = $Application.Name }) -Level 'Success'
                 $result.Success = $true
                 $result.Method = 'Winget'
-                $result.Message = 'Upgraded successfully'
+                $result.Message = (Get-LocalizedString -Key 'orchestrator.result.upgraded')
                 return $result
             } elseif ($process.ExitCode -eq -1978335189) {
-                Write-Status -Message "No update available via Winget for: $($Application.Name)" -Level 'Verbose'
+                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.no_update_winget' -Parameters @{ AppName = $Application.Name }) -Level 'Verbose'
             } else {
-                Write-Status -Message "Winget upgrade returned exit code: $($process.ExitCode)" -Level 'Verbose'
+                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.exit_code_winget' -Parameters @{ ExitCode = $process.ExitCode }) -Level 'Verbose'
             }
         } catch {
-            Write-Status -Message "Winget upgrade error: $($_.Exception.Message)" -Level 'Verbose'
+            Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.error_winget' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
         }
     }
 
     if ($sources.Chocolatey -and (Test-CommandExists -Name 'choco')) {
         try {
-            Write-Status -Message "Attempting Chocolatey upgrade: $($sources.Chocolatey)" -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.attempting_choco' -Parameters @{ PackageId = $sources.Chocolatey }) -Level 'Info'
 
             $arguments = @(
                 'upgrade',
@@ -971,20 +618,20 @@ function Invoke-ApplicationUpgrade {
             $process = Start-ProcessWithTimeout -FilePath 'choco' -ArgumentList $arguments -NoNewWindow -PassThru -TimeoutSeconds $script:DefaultInstallTimeoutSeconds
 
             if ($process.ExitCode -eq 0) {
-                Write-Status -Message "Successfully upgraded via Chocolatey: $($Application.Name)" -Level 'Success'
+                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.success_choco' -Parameters @{ AppName = $Application.Name }) -Level 'Success'
                 $result.Success = $true
                 $result.Method = 'Chocolatey'
-                $result.Message = 'Upgraded successfully'
+                $result.Message = (Get-LocalizedString -Key 'orchestrator.result.upgraded')
                 return $result
             } else {
-                Write-Status -Message "Chocolatey upgrade returned exit code: $($process.ExitCode)" -Level 'Verbose'
+                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.exit_code_choco' -Parameters @{ ExitCode = $process.ExitCode }) -Level 'Verbose'
             }
         } catch {
-            Write-Status -Message "Chocolatey upgrade error: $($_.Exception.Message)" -Level 'Verbose'
+            Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.error_choco' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
         }
     }
 
-    $result.Message = 'No update available or upgrade not supported'
+    $result.Message = (Get-LocalizedString -Key 'orchestrator.result.no_upgrade')
     return $result
 }
 
@@ -1036,7 +683,7 @@ function Install-Application {
     # 1. Check environment restrictions
     $envCheck = Test-EnvironmentRestriction -Application $Application
     if ($envCheck.Restricted) {
-        $result.Message = "Not compatible with $($envCheck.Environment) environment"
+        $result.Message = (Get-LocalizedString -Key 'engine.env_not_compatible' -Parameters @{ Environment = $envCheck.Environment })
         return $result
     }
 
@@ -1045,27 +692,27 @@ function Install-Application {
         $isInstalled = Test-ApplicationInstalled -Application $Application
         if ($isInstalled) {
             if ($ForceUpdate) {
-                Write-Status -Message "Checking for updates: $($Application.Name)" -Level 'Info'
+                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.checking_updates' -Parameters @{ AppName = $Application.Name }) -Level 'Info'
                 $upgradeResult = Invoke-ApplicationUpgrade -Application $Application
                 if ($upgradeResult.Success) {
                     return $upgradeResult
                 }
-                Write-Status -Message "No update available or upgrade not supported for: $($Application.Name)" -Level 'Info'
+                Write-Status -Message (Get-LocalizedString -Key 'orchestrator.no_update_available' -Parameters @{ AppName = $Application.Name }) -Level 'Info'
                 $result.AlreadyInstalled = $true
                 $result.Success = $true
-                $result.Message = 'Already installed (no update available)'
+                $result.Message = (Get-LocalizedString -Key 'orchestrator.already_installed_no_update')
                 return $result
             }
 
-            Write-Status -Message "Already installed: $($Application.Name)" -Level 'Success'
+            Write-Status -Message (Get-LocalizedString -Key 'orchestrator.already_installed' -Parameters @{ AppName = $Application.Name }) -Level 'Success'
             $result.AlreadyInstalled = $true
             $result.Success = $true
-            $result.Message = 'Already installed'
+            $result.Message = (Get-LocalizedString -Key 'orchestrator.already_installed_status')
             return $result
         }
     }
 
-    Write-Status -Message "Installing: $($Application.Name)" -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'orchestrator.installing' -Parameters @{ AppName = $Application.Name }) -Level 'Info'
 
     # 3. Handle custom install methods (WindowsFeature, WindowsCapability)
     $installMethod = if ($Application.PSObject.Properties['InstallMethod']) { $Application.InstallMethod } else { $null }
@@ -1401,6 +1048,11 @@ function Test-AppInstalledParallel {
             Import-Module $coreModulePath -Force -WarningAction SilentlyContinue
         }
 
+        $localizationModulePath = Join-Path $repRoot 'Core\Localization.psm1'
+        if (Test-Path $localizationModulePath) {
+            Import-Module $localizationModulePath -Force -WarningAction SilentlyContinue
+        }
+
         $result = @{
             ApplicationName = $app.Name
             Success = $false
@@ -1416,7 +1068,7 @@ function Test-AppInstalledParallel {
                     Write-ParallelLog "Already installed - skipping" 'Success'
                     $result.AlreadyInstalled = $true
                     $result.Success = $true
-                    $result.Message = 'Already installed'
+                    $result.Message = (Get-LocalizedString -Key 'orchestrator.already_installed_status')
                     return $result
                 }
             }
@@ -1436,7 +1088,7 @@ function Test-AppInstalledParallel {
                         Write-ParallelLog "Windows Feature installed successfully" 'Success'
                         $result.Success = $true
                         $result.Method = 'WindowsFeature'
-                        $result.Message = 'Installed via WindowsFeature'
+                        $result.Message = (Get-LocalizedString -Key 'orchestrator.result.windows_feature')
                         return $result
                     }
                     'WindowsCapability' {
@@ -1450,7 +1102,7 @@ function Test-AppInstalledParallel {
                             Write-ParallelLog "Windows Capability installed successfully" 'Success'
                             $result.Success = $true
                             $result.Method = 'WindowsCapability'
-                            $result.Message = 'Installed via WindowsCapability'
+                            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.windows_capability')
                             return $result
                         }
                     }
@@ -1492,7 +1144,7 @@ function Test-AppInstalledParallel {
                         Write-ParallelLog "Installed successfully via Winget$retryMsg" 'Success'
                         $result.Success = $true
                         $result.Method = 'Winget'
-                        $result.Message = "Installed via Winget$retryMsg"
+                        $result.Message = if ($attempt -gt 1) { Get-LocalizedString -Key 'orchestrator.result.winget_retry' -Parameters @{ Attempt = $attempt } } else { Get-LocalizedString -Key 'orchestrator.result.winget' }
                         return $result
                     } elseif ($process.ExitCode -eq -1978334974) {
                         $retryMsg = if ($attempt -gt 1) { " (attempt $attempt)" } else { "" }
@@ -1500,7 +1152,7 @@ function Test-AppInstalledParallel {
                         $result.Success = $true
                         $result.Method = 'Winget'
                         $result.AlreadyInstalled = $true
-                        $result.Message = "Already installed (Winget)$retryMsg"
+                        $result.Message = if ($attempt -gt 1) { Get-LocalizedString -Key 'orchestrator.result.already_installed_winget_retry' -Parameters @{ Attempt = $attempt } } else { Get-LocalizedString -Key 'orchestrator.result.already_installed_winget' }
                         return $result
                     } elseif ($transientErrors -contains $process.ExitCode -and $attempt -lt $maxRetries) {
                         $delay = $retryDelaySeconds * [Math]::Pow(2, $attempt - 1)
@@ -1546,7 +1198,7 @@ function Test-AppInstalledParallel {
                         Write-ParallelLog "Installed successfully via Chocolatey$retryMsg" 'Success'
                         $result.Success = $true
                         $result.Method = 'Chocolatey'
-                        $result.Message = "Installed via Chocolatey$retryMsg"
+                        $result.Message = if ($attempt -gt 1) { Get-LocalizedString -Key 'orchestrator.result.chocolatey_retry' -Parameters @{ Attempt = $attempt } } else { Get-LocalizedString -Key 'orchestrator.result.chocolatey' }
                         return $result
                     } elseif ($transientErrors -contains $process.ExitCode -and $attempt -lt $maxRetries) {
                         $delay = $retryDelaySeconds * [Math]::Pow(2, $attempt - 1)
@@ -1590,7 +1242,7 @@ function Test-AppInstalledParallel {
                         Write-ParallelLog "Installed successfully via Microsoft Store" 'Success'
                         $result.Success = $true
                         $result.Method = 'Store'
-                        $result.Message = 'Installed via Microsoft Store'
+                        $result.Message = (Get-LocalizedString -Key 'orchestrator.result.store')
                         return $result
                     } else {
                         Write-ParallelLog "Microsoft Store installation failed (exit code: $($process.ExitCode))" 'Warning'
@@ -1602,7 +1254,7 @@ function Test-AppInstalledParallel {
             if ($sources.DirectUrl) {
                 if (-not (Test-ValidDownloadUrl -Url $sources.DirectUrl)) {
                     Write-ParallelLog "Invalid or insecure URL: $($sources.DirectUrl)" 'Error'
-                    $result.Message = 'Invalid DirectUrl'
+                    $result.Message = (Get-LocalizedString -Key 'orchestrator.result.invalid_direct_url')
                     return $result
                 }
 
@@ -1684,7 +1336,7 @@ function Test-AppInstalledParallel {
                     }
 
                     if (-not $downloadSuccess -or -not (Test-Path -Path $tempFile)) {
-                        throw "Download failed - all methods exhausted"
+                        throw (Get-LocalizedString -Key 'orchestrator.result.download_exhausted')
                     }
                     Write-ParallelLog "Download completed" 'Info'
 
@@ -1695,7 +1347,7 @@ function Test-AppInstalledParallel {
                         if ($fileHash -ne $sources.SHA256) {
                             Write-ParallelLog "Checksum FAILED! Expected: $($sources.SHA256), Got: $fileHash" 'Error'
                             Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-                            $result.Message = 'SHA256 checksum validation failed'
+                            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.checksum_failed')
                             return $result
                         }
                         Write-ParallelLog "Checksum validation passed" 'Success'
@@ -1743,7 +1395,7 @@ function Test-AppInstalledParallel {
                                 $expandResult = Expand-ArchiveSafe -Path $tempFile -DestinationPath $extractPath -AllowDangerousExtensions
                                 if (-not $expandResult) {
                                     Write-ParallelLog "Archive extraction blocked by security validation" 'Error'
-                                    throw "Archive security validation failed"
+                                    throw (Get-LocalizedString -Key 'orchestrator.result.archive_security_failed')
                                 }
                             } else {
                                 Expand-Archive -Path $tempFile -DestinationPath $extractPath -Force
@@ -1810,7 +1462,7 @@ function Test-AppInstalledParallel {
                         Write-ParallelLog "Installed successfully via direct download" 'Success'
                         $result.Success = $true
                         $result.Method = 'DirectDownload'
-                        $result.Message = 'Installed via direct download'
+                        $result.Message = (Get-LocalizedString -Key 'orchestrator.result.direct_download')
                         return $result
                     } else {
                         Write-ParallelLog "Direct download installation failed (exit code: $processExitCode)" 'Warning'
@@ -1821,11 +1473,11 @@ function Test-AppInstalledParallel {
             }
 
             Write-ParallelLog "All installation methods failed" 'Error'
-            $result.Message = 'All installation methods failed'
+            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.all_failed')
 
         } catch {
             Write-ParallelException -ErrorRecord $_ -Context 'MainInstallLoop'
-            $result.Message = "Error: $($_.Exception.Message)"
+            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.error' -Parameters @{ Error = $_.Exception.Message })
         }
 
         if ($result.Success -or $result.AlreadyInstalled) {
@@ -1875,24 +1527,17 @@ function Test-AppInstalledParallel {
 }
 
 # === EXPORTS ===
+# State management functions (Initialize-RollbackSession, Save-RollbackState,
+# Add-RollbackEntry, Get-RollbackState, Clear-RollbackState, Initialize-DeploymentSession,
+# Save-DeploymentState, Update-DeploymentProgress, Test-ValidStateData, Get-DeploymentState,
+# Clear-DeploymentState) are exported by StateManager.psm1.
 Export-ModuleMember -Function @(
-    # Rollback functions
-    'Initialize-RollbackSession',
-    'Save-RollbackState',
-    'Add-RollbackEntry',
+    # Rollback orchestration (state functions from StateManager)
     'Invoke-Rollback',
-    'Clear-RollbackState',
-    'Get-RollbackState',
 
-    # Deployment state functions
-    'Initialize-DeploymentSession',
-    'Save-DeploymentState',
-    'Update-DeploymentProgress',
-    'Test-ValidStateData',
-    'Get-DeploymentState',
+    # Deployment wrappers (delegate to StateManager)
     'Test-IncompleteDeployment',
     'Resume-Deployment',
-    'Clear-DeploymentState',
 
     # Environment
     'Test-EnvironmentRestriction',

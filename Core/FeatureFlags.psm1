@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Feature Flags Module v3.1.4
+    Win11Forge - Feature Flags v3.6.8
 
 .DESCRIPTION
     Manages feature flags for conditional feature enablement.
@@ -8,7 +8,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 #>
 
 #

@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - REST API Server Module v3.5.0
+    Win11Forge - REST API Server v3.6.8
 
 .DESCRIPTION
     Provides a local REST API server for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 #>
 
 #
@@ -39,6 +39,14 @@ $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:ModuleRoot 'Core.psm1'
 $script:SecureStoragePath = Join-Path $script:ModuleRoot 'SecureStorage.psm1'
 $script:ConfigPath = Join-Path $script:RepositoryRoot 'Config\api-settings.json'
+
+# Import Localization module for i18n
+$script:LocalizationPath = Join-Path $script:ModuleRoot 'Localization.psm1'
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationPath) {
+        Import-Module -Name $script:LocalizationPath -Force
+    }
+}
 
 # Import Core module for logging
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
@@ -194,17 +202,17 @@ function Test-CsrfToken {
     $config = Get-ApiConfig
     if (-not $config.CsrfEnabled) {
         $result.Valid = $true
-        $result.Message = 'CSRF validation disabled'
+        $result.Message = Get-LocalizedString -Key 'api.csrf.validation_disabled'
         return $result
     }
 
     if ([string]::IsNullOrWhiteSpace($Token)) {
-        $result.Message = 'CSRF token is required'
+        $result.Message = Get-LocalizedString -Key 'api.csrf.token_required'
         return $result
     }
 
     if (-not $script:CsrfTokens.ContainsKey($Token)) {
-        $result.Message = 'Invalid CSRF token'
+        $result.Message = Get-LocalizedString -Key 'api.csrf.token_invalid'
         return $result
     }
 
@@ -214,7 +222,7 @@ function Test-CsrfToken {
     # Check expiration
     $expirationTime = $tokenData.CreatedAt.AddMinutes($tokenData.TtlMinutes)
     if ($now -gt $expirationTime) {
-        $result.Message = 'CSRF token has expired'
+        $result.Message = Get-LocalizedString -Key 'api.csrf.token_expired'
         $result.Expired = $true
         # Remove expired token
         $script:CsrfTokens.Remove($Token)
@@ -223,7 +231,7 @@ function Test-CsrfToken {
 
     # Check API key ownership if specified
     if ($ApiKeyId -and $tokenData.ApiKeyId -ne $ApiKeyId) {
-        $result.Message = 'CSRF token does not belong to this API key'
+        $result.Message = Get-LocalizedString -Key 'api.csrf.token_wrong_key'
         return $result
     }
 
@@ -232,7 +240,7 @@ function Test-CsrfToken {
     $script:CsrfTokens.Remove($Token)
 
     $result.Valid = $true
-    $result.Message = 'Valid (token consumed)'
+    $result.Message = Get-LocalizedString -Key 'api.csrf.token_consumed'
 
     return $result
 }
@@ -348,18 +356,18 @@ function Get-SanitizedErrorMessage {
 
     # Log full exception server-side for debugging
     if (Get-Command -Name Write-Status -ErrorAction SilentlyContinue) {
-        Write-Status -Message "API Error [$ErrorCode]: $($Exception.Message)" -Level 'Error' -Category 'Api'
+        Write-Status -Message (Get-LocalizedString -Key 'api.error_logged' -Parameters @{ ErrorCode = $ErrorCode; Message = $Exception.Message }) -Level 'Error' -Category 'Api'
     }
 
     # Map exception types to safe messages
     $safeMessage = switch -Regex ($Exception.GetType().Name) {
-        'ArgumentException|ArgumentNullException' { 'Invalid request parameters' }
-        'UnauthorizedAccessException' { 'Access denied' }
-        'FileNotFoundException|DirectoryNotFoundException' { 'Resource not found' }
-        'TimeoutException' { 'Operation timed out' }
-        'InvalidOperationException' { 'Invalid operation' }
-        'JsonException|JsonReaderException' { 'Invalid JSON format' }
-        default { 'An internal error occurred' }
+        'ArgumentException|ArgumentNullException' { Get-LocalizedString -Key 'api.error.invalid_request_parameters' }
+        'UnauthorizedAccessException' { Get-LocalizedString -Key 'api.error.access_denied' }
+        'FileNotFoundException|DirectoryNotFoundException' { Get-LocalizedString -Key 'api.error.resource_not_found' }
+        'TimeoutException' { Get-LocalizedString -Key 'api.error.operation_timed_out' }
+        'InvalidOperationException' { Get-LocalizedString -Key 'api.error.invalid_operation' }
+        'JsonException|JsonReaderException' { Get-LocalizedString -Key 'api.error.invalid_json_format' }
+        default { Get-LocalizedString -Key 'api.error.internal_error' }
     }
 
     return @{
@@ -399,6 +407,12 @@ function Get-ApiConfig {
                     RateLimitEnabled = if ($null -ne $json.security.rateLimiting.enabled) { $json.security.rateLimiting.enabled } else { $script:DefaultConfig.RateLimitEnabled }
                     MaxRequestsPerMinute = if ($null -ne $json.security.rateLimiting.maxRequestsPerMinute) { $json.security.rateLimiting.maxRequestsPerMinute } else { $script:DefaultConfig.MaxRequestsPerMinute }
                     MaxRequestsPerHour = if ($null -ne $json.security.rateLimiting.maxRequestsPerHour) { $json.security.rateLimiting.maxRequestsPerHour } else { $script:DefaultConfig.MaxRequestsPerHour }
+                    MaxFailedAuthPerHour = if ($null -ne $json.security.rateLimiting.maxFailedAuthPerHour) { $json.security.rateLimiting.maxFailedAuthPerHour } else { $script:DefaultConfig.MaxFailedAuthPerHour }
+                    BlockDurationMinutes = if ($null -ne $json.security.rateLimiting.blockDurationMinutes) { $json.security.rateLimiting.blockDurationMinutes } else { $script:DefaultConfig.BlockDurationMinutes }
+                    CsrfEnabled = if ($null -ne $json.security.csrf.enabled) { $json.security.csrf.enabled } else { $script:DefaultConfig.CsrfEnabled }
+                    CsrfTokenHeader = if ($null -ne $json.security.csrf.tokenHeader) { $json.security.csrf.tokenHeader } else { $script:DefaultConfig.CsrfTokenHeader }
+                    CsrfTokenTtlMinutes = if ($null -ne $json.security.csrf.tokenTtlMinutes) { $json.security.csrf.tokenTtlMinutes } else { $script:DefaultConfig.CsrfTokenTtlMinutes }
+                    MaxRequestBodyBytes = if ($null -ne $json.maxRequestBodyBytes) { $json.maxRequestBodyBytes } else { $script:DefaultConfig.MaxRequestBodyBytes }
                 }
 
                 # Load API keys - SECURITY: Only load from secure storage, never plaintext
@@ -413,15 +427,15 @@ function Get-ApiConfig {
                             if ($json.apiKeys.keys) {
                                 $enabledKeys = @($json.apiKeys.keys | Where-Object { $_.enabled })
                                 if ($enabledKeys.Count -gt 0) {
-                                    Write-Status -Message "SECURITY: No secure API keys found. Plaintext keys in config are ignored." -Level 'Warning' -Category 'Api'
-                                    Write-Status -Message "Use Save-SecureApiKey cmdlet to store API keys securely." -Level 'Info' -Category 'Api'
+                                    Write-Status -Message (Get-LocalizedString -Key 'api.security.no_secure_keys') -Level 'Warning' -Category 'Api'
+                                    Write-Status -Message (Get-LocalizedString -Key 'api.security.use_secure_key_cmdlet') -Level 'Info' -Category 'Api'
                                 }
                             }
                         }
                     } catch {
                         # SECURITY: On failure, do NOT fall back to plaintext - log error instead
-                        Write-Status -Message "SECURITY: Failed to load secure API keys: $($_.Exception.Message)" -Level 'Error' -Category 'Api'
-                        Write-Status -Message "API authentication will be unavailable. Use Save-SecureApiKey to configure keys." -Level 'Warning' -Category 'Api'
+                        Write-Status -Message (Get-LocalizedString -Key 'api.security.load_keys_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Api'
+                        Write-Status -Message (Get-LocalizedString -Key 'api.security.auth_unavailable') -Level 'Warning' -Category 'Api'
                     }
                 } else {
                     # Secure storage not available - SECURITY: Refuse to load plaintext API keys
@@ -429,8 +443,8 @@ function Get-ApiConfig {
                     if ($json.apiKeys.keys) {
                         $enabledKeys = @($json.apiKeys.keys | Where-Object { $_.enabled })
                         if ($enabledKeys.Count -gt 0) {
-                            Write-Status -Message "SECURITY: DPAPI secure storage not available. Refusing to load plaintext API keys." -Level 'Error' -Category 'Api'
-                            Write-Status -Message "Use Save-SecureApiKey cmdlet to store API keys securely, or disable authentication." -Level 'Warning' -Category 'Api'
+                            Write-Status -Message (Get-LocalizedString -Key 'api.security.dpapi_unavailable') -Level 'Error' -Category 'Api'
+                            Write-Status -Message (Get-LocalizedString -Key 'api.security.use_secure_key_or_disable') -Level 'Warning' -Category 'Api'
                             # Do not load plaintext keys - this is a security requirement
                         }
                     }
@@ -451,6 +465,73 @@ function Get-ApiConfig {
     }
 
     return $script:ServerState.Config
+}
+
+# === CORS HELPERS ===
+
+function Get-CorsAllowedOrigins {
+    <#
+    .SYNOPSIS
+        Builds a whitelist of allowed CORS origins based on local host/port.
+    #>
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param()
+
+    $config = Get-ApiConfig
+    $origins = @()
+    $hostCandidates = @($config.Host, 'localhost', '127.0.0.1') | Select-Object -Unique
+
+    foreach ($host in $hostCandidates) {
+        if ([string]::IsNullOrWhiteSpace($host)) { continue }
+        $origins += "http://${host}"
+        $origins += "http://${host}:$($config.Port)"
+        $origins += "https://${host}"
+        $origins += "https://${host}:$($config.Port)"
+    }
+
+    return @($origins | Select-Object -Unique)
+}
+
+function Set-CorsHeaders {
+    <#
+    .SYNOPSIS
+        Applies CORS headers when enabled and origin is allowed.
+    .OUTPUTS
+        [bool] indicating whether the request origin is allowed (or not required).
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        $Request,
+
+        [Parameter(Mandatory)]
+        $Response
+    )
+
+    $config = Get-ApiConfig
+    if (-not $config.EnableCors) {
+        return $true
+    }
+
+    $origin = $Request.Headers['Origin']
+    if ([string]::IsNullOrWhiteSpace($origin)) {
+        # Non-browser clients typically omit Origin header
+        return $true
+    }
+
+    $allowedOrigins = Get-CorsAllowedOrigins
+    if ($allowedOrigins -notcontains $origin) {
+        return $false
+    }
+
+    $Response.Headers['Access-Control-Allow-Origin'] = $origin
+    $Response.Headers['Vary'] = 'Origin'
+    $Response.Headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+    $Response.Headers['Access-Control-Allow-Headers'] = "$($config.ApiKeyHeader),$($config.CsrfTokenHeader),Content-Type"
+    $Response.Headers['Access-Control-Max-Age'] = '600'
+    return $true
 }
 
 # === AUTHENTICATION FUNCTIONS ===
@@ -513,12 +594,12 @@ function Test-ApiKeyValid {
     }
 
     if ([string]::IsNullOrWhiteSpace($ApiKey)) {
-        $result.Message = 'API key is required'
+        $result.Message = Get-LocalizedString -Key 'api.auth.key_required'
         return $result
     }
 
     if (-not $script:ServerState.ApiKeys.ContainsKey($ApiKey)) {
-        $result.Message = 'Invalid API key'
+        $result.Message = Get-LocalizedString -Key 'api.auth.key_invalid'
         return $result
     }
 
@@ -528,21 +609,21 @@ function Test-ApiKeyValid {
     if ($keyConfig.ExpiresAt) {
         $expirationDate = [datetime]::Parse($keyConfig.ExpiresAt)
         if ((Get-Date) -gt $expirationDate) {
-            $result.Message = 'API key has expired'
+            $result.Message = Get-LocalizedString -Key 'api.auth.key_expired'
             return $result
         }
     }
 
     # Check permission if required
     if ($RequiredPermission -and $keyConfig.Permissions -notcontains $RequiredPermission) {
-        $result.Message = "API key does not have '$RequiredPermission' permission"
+        $result.Message = Get-LocalizedString -Key 'api.auth.key_missing_permission' -Parameters @{ Permission = $RequiredPermission }
         return $result
     }
 
     $result.Valid = $true
     $result.KeyId = $keyConfig.Id
     $result.Permissions = $keyConfig.Permissions
-    $result.Message = 'Valid'
+    $result.Message = Get-LocalizedString -Key 'api.auth.key_valid'
 
     return $result
 }
@@ -625,7 +706,7 @@ function Test-RateLimit {
             $result.Allowed = $false
             $result.RetryAfterSeconds = [int][Math]::Ceiling(60 - ($now - $oldestInMinute).TotalSeconds)
             if ($result.RetryAfterSeconds -lt 1) { $result.RetryAfterSeconds = 1 }
-            $result.Message = "Rate limit exceeded: $($config.MaxRequestsPerMinute) requests per minute"
+            $result.Message = Get-LocalizedString -Key 'api.rate_limit.exceeded_minute' -Parameters @{ Limit = $config.MaxRequestsPerMinute }
             $result.RequestsInMinute = $requestsInMinute
             $result.RequestsInHour = $requestsInHour
             return $result
@@ -638,7 +719,7 @@ function Test-RateLimit {
             $result.Allowed = $false
             $result.RetryAfterSeconds = [int][Math]::Ceiling(3600 - ($now - $oldestInHour).TotalSeconds)
             if ($result.RetryAfterSeconds -lt 1) { $result.RetryAfterSeconds = 1 }
-            $result.Message = "Rate limit exceeded: $($config.MaxRequestsPerHour) requests per hour"
+            $result.Message = Get-LocalizedString -Key 'api.rate_limit.exceeded_hour' -Parameters @{ Limit = $config.MaxRequestsPerHour }
             $result.RequestsInMinute = $requestsInMinute
             $result.RequestsInHour = $requestsInHour
             return $result
@@ -715,7 +796,7 @@ function Test-ApiKeyRateLimit {
     if ($requestCount -ge $config.MaxRequestsPerHour) {
         $oldestRequest = $state.RequestTimestamps | Sort-Object | Select-Object -First 1
         $result.Allowed = $false
-        $result.Message = "API key rate limit exceeded"
+        $result.Message = Get-LocalizedString -Key 'api.rate_limit.api_key_exceeded'
         $result.RequestCount = $requestCount
         $result.RetryAfterSeconds = [int][Math]::Ceiling(3600 - ($now - $oldestRequest).TotalSeconds)
         if ($result.RetryAfterSeconds -lt 1) { $result.RetryAfterSeconds = 1 }
@@ -817,7 +898,7 @@ function Add-FailedAuthAttempt {
     # Block if exceeded limit
     if ($state.FailCount -ge $maxFailed) {
         $state.BlockedUntil = $now.AddMinutes($blockMinutes)
-        Write-Status -Message "IP $ClientIp blocked for $blockMinutes minutes due to $($state.FailCount) failed auth attempts" -Level 'Warning' -Category 'Api'
+        Write-Status -Message (Get-LocalizedString -Key 'api.ip_blocked' -Parameters @{ ClientIp = $ClientIp; Minutes = $blockMinutes; FailCount = $state.FailCount }) -Level 'Warning' -Category 'Api'
     }
 }
 
@@ -879,7 +960,7 @@ function Invoke-RateLimitCleanup {
     }
 
     if ($cleanedCount -gt 0) {
-        Write-Status -Message "Rate limit cleanup: removed $cleanedCount stale entries" -Level 'Verbose' -Category 'Api'
+        Write-Status -Message (Get-LocalizedString -Key 'api.rate_limit_cleanup' -Parameters @{ Count = $cleanedCount }) -Level 'Verbose' -Category 'Api'
     }
 }
 
@@ -967,7 +1048,7 @@ function Test-SafeHandlerScriptblock {
     # Phase 1: Regex-based pattern matching (fast initial check)
     foreach ($pattern in $script:DangerousHandlerPatterns) {
         if ($handlerText -match $pattern) {
-            throw "SECURITY: Handler contains dangerous pattern '$pattern'. Handler registration denied."
+            throw (Get-LocalizedString -Key 'api.security.handler_dangerous_pattern' -Parameters @{ Pattern = $pattern })
         }
     }
 
@@ -982,7 +1063,7 @@ function Test-SafeHandlerScriptblock {
         )
 
         if ($parseErrors.Count -gt 0) {
-            throw "SECURITY: Handler has syntax errors: $($parseErrors[0].Message)"
+            throw (Get-LocalizedString -Key 'api.security.handler_syntax_errors' -Parameters @{ Message = $parseErrors[0].Message })
         }
 
         # Check for dangerous command invocations
@@ -1000,7 +1081,7 @@ function Test-SafeHandlerScriptblock {
         foreach ($cmdAst in $commandAsts) {
             $commandName = $cmdAst.GetCommandName()
             if ($commandName -and $commandName -in $dangerousCommands) {
-                throw "SECURITY: Handler contains dangerous command '$commandName'. Handler registration denied."
+                throw (Get-LocalizedString -Key 'api.security.handler_dangerous_command' -Parameters @{ Command = $commandName })
             }
         }
 
@@ -1013,7 +1094,7 @@ function Test-SafeHandlerScriptblock {
         foreach ($typeAst in $typeAsts) {
             $typeName = $typeAst.TypeName.FullName
             if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
-                throw "SECURITY: Handler uses dangerous type '$typeName'. Handler registration denied."
+                throw (Get-LocalizedString -Key 'api.security.handler_dangerous_type' -Parameters @{ TypeName = $typeName })
             }
         }
 
@@ -1026,7 +1107,7 @@ function Test-SafeHandlerScriptblock {
         foreach ($memberAst in $memberAsts) {
             $memberText = $memberAst.Extent.Text.ToLower()
             if ($memberText -match 'scriptblock.*::create|assembly.*::load') {
-                throw "SECURITY: Handler uses dangerous static method. Handler registration denied."
+                throw (Get-LocalizedString -Key 'api.security.handler_dangerous_static_method')
             }
         }
 
@@ -1184,7 +1265,7 @@ function Start-ApiServer {
     )
 
     if ($script:ServerState.Running) {
-        Write-Status -Message "API server is already running" -Level 'Warning' -Category 'Api'
+        Write-Status -Message (Get-LocalizedString -Key 'api.server_already_running') -Level 'Warning' -Category 'Api'
         return
     }
 
@@ -1207,15 +1288,15 @@ function Start-ApiServer {
         $script:ServerState.StartTime = Get-Date
         $script:ServerState.RequestCount = 0
 
-        Write-Status -Message "API server started on $prefix" -Level 'Success' -Category 'Api' -StructuredData @{
+        Write-Status -Message (Get-LocalizedString -Key 'api.server_started' -Parameters @{ Url = $prefix }) -Level 'Success' -Category 'Api' -StructuredData @{
             Port = $config.Port
             Host = $config.Host
         }
 
         if ($Async) {
             # Run in background with concurrent request handling
-            $serverJob = Start-Job -ScriptBlock {
-                param($Port, $Host, $EndpointsJson, $ConfigJson, $ApiKeysJson, $PublicEndpointsJson)
+                $serverJob = Start-Job -ScriptBlock {
+                    param($Port, $Host, $EndpointsJson, $ConfigJson, $PublicEndpointsJson, $SecureStorageModulePath, $UseSecureStorage)
 
                 # Recreate server state in job
                 $listener = [System.Net.HttpListener]::new()
@@ -1223,12 +1304,25 @@ function Start-ApiServer {
                 $listener.Prefixes.Add($prefix)
                 $listener.Start()
 
-                $endpoints = $EndpointsJson | ConvertFrom-Json -AsHashtable
-                $config = $ConfigJson | ConvertFrom-Json -AsHashtable
-                $apiKeys = $ApiKeysJson | ConvertFrom-Json -AsHashtable
-                $publicEndpoints = $PublicEndpointsJson | ConvertFrom-Json
+                    $endpoints = $EndpointsJson | ConvertFrom-Json -AsHashtable
+                    $config = $ConfigJson | ConvertFrom-Json -AsHashtable
+                    $publicEndpoints = $PublicEndpointsJson | ConvertFrom-Json
 
-                $rateLimitState = @{}
+                    # Security: Load API keys from secure storage inside the job (avoid plaintext serialization)
+                    $apiKeys = @{}
+                    if ($UseSecureStorage -and (Test-Path $SecureStorageModulePath)) {
+                        try {
+                            Import-Module -Name $SecureStorageModulePath -Force -ErrorAction Stop
+                            if (Get-Command -Name Get-SecureApiKeysForAuth -ErrorAction SilentlyContinue) {
+                                $apiKeys = Get-SecureApiKeysForAuth
+                            }
+                        } catch {
+                            $apiKeys = @{}
+                        }
+                    }
+
+                    $rateLimitState = @{}
+                    $failedAuthState = @{}
 
                 while ($listener.IsListening) {
                     try {
@@ -1239,6 +1333,49 @@ function Start-ApiServer {
                         $method = $request.HttpMethod
                         $path = $request.Url.LocalPath
                         $clientIp = $request.RemoteEndPoint.Address.ToString()
+
+                        # CORS handling (async job)
+                        if ($config.EnableCors) {
+                            $origin = $request.Headers['Origin']
+                            if ($origin) {
+                                $allowedOrigins = @(
+                                    "http://${Host}",
+                                    "http://${Host}:${Port}",
+                                    "http://localhost",
+                                    "http://localhost:${Port}",
+                                    "http://127.0.0.1",
+                                    "http://127.0.0.1:${Port}",
+                                    "https://${Host}",
+                                    "https://${Host}:${Port}",
+                                    "https://localhost",
+                                    "https://localhost:${Port}",
+                                    "https://127.0.0.1",
+                                    "https://127.0.0.1:${Port}"
+                                ) | Select-Object -Unique
+                                if ($allowedOrigins -notcontains $origin) {
+                                    $response.StatusCode = 403
+                                    $errorMessage = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.cors_blocked' } else { 'CORS origin not allowed' }
+                                    $buffer = [System.Text.Encoding]::UTF8.GetBytes(("{0}" -f (@{ error = $errorMessage; code = 'CORS_BLOCKED' } | ConvertTo-Json -Compress)))
+                                    $response.ContentLength64 = $buffer.Length
+                                    $response.ContentType = 'application/json'
+                                    $response.OutputStream.Write($buffer, 0, $buffer.Length)
+                                    $response.Close()
+                                    continue
+                                }
+
+                                $response.Headers['Access-Control-Allow-Origin'] = $origin
+                                $response.Headers['Vary'] = 'Origin'
+                                $response.Headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+                                $response.Headers['Access-Control-Allow-Headers'] = "$($config.ApiKeyHeader),$($config.CsrfTokenHeader),Content-Type"
+                                $response.Headers['Access-Control-Max-Age'] = '600'
+                            }
+                        }
+
+                        if ($method -eq 'OPTIONS') {
+                            $response.StatusCode = 204
+                            $response.Close()
+                            continue
+                        }
 
                         # Rate limiting
                         $now = Get-Date
@@ -1252,8 +1389,10 @@ function Start-ApiServer {
                         if ($state.MinuteCount -ge $config.MaxRequestsPerMinute -or $state.HourCount -ge $config.MaxRequestsPerHour) {
                             $response.StatusCode = 429
                             $response.Headers.Add('Retry-After', $script:RATE_LIMIT_RETRY_SECONDS.ToString())
-                            $buffer = [System.Text.Encoding]::UTF8.GetBytes('{"error":"Rate limit exceeded"}')
+                            $rateLimitMessage = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.error.rate_limit_exceeded' } else { 'Rate limit exceeded' }
+                            $buffer = [System.Text.Encoding]::UTF8.GetBytes(("{0}" -f (@{ error = $rateLimitMessage } | ConvertTo-Json -Compress)))
                             $response.ContentLength64 = $buffer.Length
+                            $response.ContentType = 'application/json'
                             $response.OutputStream.Write($buffer, 0, $buffer.Length)
                             $response.Close()
                             continue
@@ -1261,24 +1400,39 @@ function Start-ApiServer {
                         $state.MinuteCount++
                         $state.HourCount++
 
+                        # Brute-force protection
+                        if ($failedAuthState.ContainsKey($clientIp)) {
+                            $authState = $failedAuthState[$clientIp]
+                            if ($authState.BlockedUntil -and (Get-Date) -lt $authState.BlockedUntil) {
+                                $response.StatusCode = 403
+                                $authBlockedMessage = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.auth_blocked' } else { 'Too many failed authentication attempts' }
+                                $buffer = [System.Text.Encoding]::UTF8.GetBytes(("{0}" -f (@{ error = $authBlockedMessage; code = 'AUTH_BLOCKED' } | ConvertTo-Json -Compress)))
+                                $response.ContentLength64 = $buffer.Length
+                                $response.ContentType = 'application/json'
+                                $response.OutputStream.Write($buffer, 0, $buffer.Length)
+                                $response.Close()
+                                continue
+                            }
+                        }
+
                         # Authentication (skip for public endpoints)
                         if ($config.RequireAuthentication -and $path -notin $publicEndpoints) {
                             $apiKey = $request.Headers[$config.ApiKeyHeader]
                             $authError = $null
 
                             if (-not $apiKey) {
-                                $authError = 'API key required'
+                                $authError = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.auth.key_required' } else { 'API key is required' }
                             } elseif (-not $apiKeys.ContainsKey($apiKey)) {
-                                $authError = 'Invalid API key'
+                                $authError = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.auth.key_invalid' } else { 'Invalid API key' }
                             } else {
                                 $keyData = $apiKeys[$apiKey]
                                 # Check if key is enabled
                                 if ($keyData.Enabled -eq $false) {
-                                    $authError = 'API key is disabled'
+                                    $authError = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.auth.key_disabled' } else { 'API key is disabled' }
                                 }
                                 # Check if key has expired
                                 elseif ($keyData.ExpiresAt -and (Get-Date) -gt [DateTime]::Parse($keyData.ExpiresAt)) {
-                                    $authError = 'API key has expired'
+                                    $authError = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.auth.key_expired' } else { 'API key has expired' }
                                 }
                                 # Check required permission
                                 else {
@@ -1287,12 +1441,28 @@ function Start-ApiServer {
                                                     else { 'read' }
                                     $hasPermission = $keyData.Permissions -contains $requiredPerm -or $keyData.Permissions -contains 'admin'
                                     if (-not $hasPermission) {
-                                        $authError = "Insufficient permissions: requires '$requiredPerm'"
+                                        $authError = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.auth.insufficient_permissions' -Parameters @{ Permission = $requiredPerm } } else { "Insufficient permissions: requires '$requiredPerm'" }
                                     }
                                 }
                             }
 
                             if ($authError) {
+                                # Track failed auth attempts (simple in-memory blocklist)
+                                $nowFail = Get-Date
+                                if (-not $failedAuthState.ContainsKey($clientIp)) {
+                                    $failedAuthState[$clientIp] = @{
+                                        FailCount = 0
+                                        FirstFailTime = $nowFail
+                                        BlockedUntil = $null
+                                    }
+                                }
+                                $failState = $failedAuthState[$clientIp]
+                                $failState.FailCount++
+                                $failState.FirstFailTime = $failState.FirstFailTime
+                                if ($failState.FailCount -ge $config.MaxFailedAuthPerHour) {
+                                    $failState.BlockedUntil = $nowFail.AddMinutes($config.BlockDurationMinutes)
+                                }
+
                                 $response.StatusCode = 401
                                 # Security: Use ConvertTo-Json to prevent JSON injection (special chars in $authError)
                                 $errorObj = @{ error = $authError; code = 'UNAUTHORIZED' }
@@ -1356,7 +1526,8 @@ function Start-ApiServer {
 
                             if ($isDangerous) {
                                 $response.StatusCode = 500
-                                $errorJson = '{"error":"Handler validation failed","code":"SECURITY_ERROR"}'
+                                $handlerValidationMessage = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.security.handler_validation_failed' } else { 'Handler validation failed' }
+                                $errorJson = (@{ error = $handlerValidationMessage; code = 'SECURITY_ERROR' } | ConvertTo-Json -Compress)
                                 $buffer = [System.Text.Encoding]::UTF8.GetBytes($errorJson)
                                 $response.ContentLength64 = $buffer.Length
                                 $response.ContentType = 'application/json'
@@ -1372,7 +1543,8 @@ function Start-ApiServer {
                                     # Security: Validate request body size to prevent DoS
                                     $maxBodySize = $script:ServerState.Config.MaxRequestBodyBytes
                                     if ($request.ContentLength64 -gt $maxBodySize) {
-                                        throw "Request body too large (max: $maxBodySize bytes)"
+                                        $bodyTooLargeMsg = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.error.request_body_too_large' -Parameters @{ MaxSize = $maxBodySize } } else { "Request body too large (max: $maxBodySize bytes)" }
+                                        throw $bodyTooLargeMsg
                                     }
                                     $reader = [System.IO.StreamReader]::new($request.InputStream)
                                     $requestBody = $reader.ReadToEnd() | ConvertFrom-Json -ErrorAction SilentlyContinue
@@ -1383,8 +1555,9 @@ function Start-ApiServer {
                                 $response.StatusCode = 200
                             } catch {
                                 # Sanitize error message - do not expose internal details
+                                $internalErrorMsg = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.error.internal_error' } else { 'An internal error occurred' }
                                 $jsonResponse = @{
-                                    error = 'An internal error occurred'
+                                    error = $internalErrorMsg
                                     code = 'INTERNAL_ERROR'
                                     timestamp = (Get-Date).ToString('o')
                                 } | ConvertTo-Json
@@ -1395,8 +1568,9 @@ function Start-ApiServer {
                             }
                         } else {
                             # Do not expose method/path details
+                            $notFoundMsg = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.error.endpoint_not_found' } else { 'Endpoint not found' }
                             $jsonResponse = @{
-                                error = 'Endpoint not found'
+                                error = $notFoundMsg
                                 code = 'NOT_FOUND'
                                 timestamp = (Get-Date).ToString('o')
                             } | ConvertTo-Json
@@ -1431,13 +1605,14 @@ function Start-ApiServer {
                 $config.Host,
                 ($script:ServerState.Endpoints | ConvertTo-Json -Depth 10 -Compress),
                 ($config | ConvertTo-Json -Depth 5 -Compress),
-                ($script:ServerState.ApiKeys | ConvertTo-Json -Depth 5 -Compress),
-                ($script:ServerState.PublicEndpoints | ConvertTo-Json -Compress)
+                ($script:ServerState.PublicEndpoints | ConvertTo-Json -Compress),
+                $script:SecureStoragePath,
+                $script:UseSecureStorage
             )
 
             # Store job reference for later management
             $script:ServerState.BackgroundJob = $serverJob
-            Write-Status -Message "API server started in background (Job ID: $($serverJob.Id))" -Level 'Info' -Category 'Api'
+            Write-Status -Message (Get-LocalizedString -Key 'api.server_started_background' -Parameters @{ JobId = $serverJob.Id }) -Level 'Info' -Category 'Api'
             return $serverJob
         } else {
             # Run synchronously (blocking)
@@ -1445,7 +1620,7 @@ function Start-ApiServer {
         }
     } catch {
         $script:ServerState.Running = $false
-        Write-Status -Message "Failed to start API server: $($_.Exception.Message)" -Level 'Error' -Category 'Api'
+        Write-Status -Message (Get-LocalizedString -Key 'api.server_start_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Api'
         throw
     }
 }
@@ -1466,7 +1641,7 @@ function Stop-ApiServer {
     param()
 
     if (-not $script:ServerState.Running) {
-        Write-Status -Message "API server is not running" -Level 'Warning' -Category 'Api'
+        Write-Status -Message (Get-LocalizedString -Key 'api.server_not_running') -Level 'Warning' -Category 'Api'
         return
     }
 
@@ -1499,12 +1674,12 @@ function Stop-ApiServer {
             'N/A'
         }
 
-        Write-Status -Message "API server stopped" -Level 'Info' -Category 'Api' -StructuredData @{
+        Write-Status -Message (Get-LocalizedString -Key 'api.server_stopped') -Level 'Info' -Category 'Api' -StructuredData @{
             Uptime = $uptime
             TotalRequests = $script:ServerState.RequestCount
         }
     } catch {
-        Write-Status -Message "Error stopping API server: $($_.Exception.Message)" -Level 'Error' -Category 'Api'
+        Write-Status -Message (Get-LocalizedString -Key 'api.server_stop_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Api'
     }
 }
 
@@ -1531,8 +1706,33 @@ function Invoke-ApiServerLoop {
 
             $clientIp = $request.RemoteEndPoint.Address.ToString()
 
+            # Apply CORS headers early (if enabled) and enforce allowed origins
+            $corsAllowed = Set-CorsHeaders -Request $request -Response $response
+            if (-not $corsAllowed) {
+                $response.StatusCode = 403
+                $corsMessage = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.cors_blocked' } else { 'CORS origin not allowed' }
+                $errorResponse = @{
+                    error = $corsMessage
+                    code = 'CORS_BLOCKED'
+                    timestamp = (Get-Date).ToString('o')
+                } | ConvertTo-Json
+                $buffer = [System.Text.Encoding]::UTF8.GetBytes($errorResponse)
+                $response.ContentLength64 = $buffer.Length
+                $response.ContentType = 'application/json'
+                $response.OutputStream.Write($buffer, 0, $buffer.Length)
+                $response.Close()
+                continue
+            }
+
+            # Handle CORS preflight
+            if ($method -eq 'OPTIONS') {
+                $response.StatusCode = 204
+                $response.Close()
+                continue
+            }
+
             if ($config.LogRequests) {
-                Write-Status -Message "API Request: $method $path from $clientIp" -Level 'Verbose' -Category 'Api'
+                Write-Status -Message (Get-LocalizedString -Key 'api.request_received' -Parameters @{ Method = $method; Path = $path }) -Level 'Verbose' -Category 'Api'
             }
 
             # Check rate limit first
@@ -1552,6 +1752,29 @@ function Invoke-ApiServerLoop {
                 continue
             }
 
+            # Check if client IP is blocked due to failed auth attempts (brute-force protection)
+            $authBlockResult = Test-FailedAuthBlock -ClientIp $clientIp
+            if ($authBlockResult.Blocked) {
+                $response.StatusCode = 403
+                $response.Headers.Add('Retry-After', $authBlockResult.RetryAfterSeconds.ToString())
+                $authBlockedMessage = if (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue) { Get-LocalizedString -Key 'api.auth_blocked' } else { 'Too many failed authentication attempts' }
+                $errorResponse = @{
+                    error = $authBlockedMessage
+                    code = 'AUTH_BLOCKED'
+                    retryAfter = $authBlockResult.RetryAfterSeconds
+                } | ConvertTo-Json
+                $buffer = [System.Text.Encoding]::UTF8.GetBytes($errorResponse)
+                $response.ContentLength64 = $buffer.Length
+                $response.ContentType = 'application/json'
+                $response.OutputStream.Write($buffer, 0, $buffer.Length)
+                $response.Close()
+
+                if ($config.LogRequests) {
+                    Write-Status -Message (Get-LocalizedString -Key 'api.auth_blocked' -Parameters @{ ClientIp = $clientIp; FailCount = $authBlockResult.FailCount }) -Level 'Warning' -Category 'Api'
+                }
+                continue
+            }
+
             # Check authentication (skip for public endpoints)
             if ($config.RequireAuthentication -and -not (Test-PublicEndpoint -Path $path)) {
                 $apiKey = $request.Headers[$config.ApiKeyHeader]
@@ -1559,6 +1782,9 @@ function Invoke-ApiServerLoop {
                 $authResult = Test-ApiKeyValid -ApiKey $apiKey -RequiredPermission $requiredPermission
 
                 if (-not $authResult.Valid) {
+                    # Record failed auth attempt for brute-force protection
+                    Add-FailedAuthAttempt -ClientIp $clientIp
+
                     $response.StatusCode = 401
                     $errorResponse = @{
                         error = $authResult.Message
@@ -1571,7 +1797,7 @@ function Invoke-ApiServerLoop {
                     $response.Close()
 
                     if ($config.LogRequests) {
-                        Write-Status -Message "API Auth failed: $($authResult.Message) for $path from $clientIp" -Level 'Warning' -Category 'Api'
+                        Write-Status -Message (Get-LocalizedString -Key 'api.auth_failed' -Parameters @{ Message = $authResult.Message; Path = $path; ClientIp = $clientIp }) -Level 'Warning' -Category 'Api'
                     }
                     continue
                 }
@@ -1596,7 +1822,7 @@ function Invoke-ApiServerLoop {
                             $response.Close()
 
                             if ($config.LogRequests) {
-                                Write-Status -Message "CSRF validation failed for $path from ${clientIp}: $($csrfResult.Message)" -Level 'Warning' -Category 'Api'
+                                Write-Status -Message (Get-LocalizedString -Key 'api.csrf_failed' -Parameters @{ Path = $path; ClientIp = $clientIp; Message = $csrfResult.Message }) -Level 'Warning' -Category 'Api'
                             }
                             continue
                         }
@@ -1621,7 +1847,7 @@ function Invoke-ApiServerLoop {
                         # Security: Validate request body size to prevent DoS
                         $maxBodySize = $script:ServerState.Config.MaxRequestBodyBytes
                         if ($request.ContentLength64 -gt $maxBodySize) {
-                            throw "Request body too large (max: $maxBodySize bytes)"
+                            throw (Get-LocalizedString -Key 'api.error.request_body_too_large' -Parameters @{ MaxSize = $maxBodySize })
                         }
                         $reader = [System.IO.StreamReader]::new($request.InputStream)
                         $requestBody = $reader.ReadToEnd()
@@ -1669,7 +1895,7 @@ function Invoke-ApiServerLoop {
                 # 404 Not Found - Do not expose method/path details
                 $response.StatusCode = 404
                 $notFoundResponse = @{
-                    error = 'Endpoint not found'
+                    error = Get-LocalizedString -Key 'api.error.endpoint_not_found'
                     code = 'NOT_FOUND'
                     timestamp = (Get-Date).ToString('o')
                 } | ConvertTo-Json
@@ -1691,7 +1917,7 @@ function Invoke-ApiServerLoop {
             # Listener was closed
             break
         } catch {
-            Write-Status -Message "Request processing error: $($_.Exception.Message)" -Level 'Error' -Category 'Api'
+            Write-Status -Message (Get-LocalizedString -Key 'api.request_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Api'
         }
     }
 }

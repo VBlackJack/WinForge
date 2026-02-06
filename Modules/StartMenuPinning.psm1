@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Start Menu Pinning Version: 3.5.0
+    Win11Forge - Start Menu Pinning v3.6.8
 
 .DESCRIPTION
     Module for managing Windows 11 Start Menu pinned items using start2.bin/start.bin method:
@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
     Requires: PowerShell 5.1+, Windows 11, Administrator privileges
     Method: start2.bin binary file copy (most reliable method as of 2024-2025)
 
@@ -71,8 +71,8 @@ $script:StartMenuDataPaths = @{
 
 # Default profile paths (for new users)
 $script:DefaultProfilePaths = @{
-    Start2 = 'C:\Users\Default\AppData\Local\Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\LocalState\start2.bin'
-    Start1 = 'C:\Users\Default\AppData\Local\Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\LocalState\start.bin'
+    Start2 = "$env:SystemDrive\Users\Default\AppData\Local\Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\LocalState\start2.bin"
+    Start1 = "$env:SystemDrive\Users\Default\AppData\Local\Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\LocalState\start.bin"
 }
 
 # Backup directory
@@ -224,7 +224,7 @@ function Backup-StartMenuLayout {
 .SYNOPSIS
     Deploys a Start Menu layout to the Default profile
 .DESCRIPTION
-    Copies start2.bin/start.bin to C:\Users\Default so new users get this layout
+    Copies start2.bin/start.bin to the Default user profile so new users get this layout
 .PARAMETER SourcePath
     Path to the binary file to deploy (from backup or current user)
 .PARAMETER UseCurrentUser

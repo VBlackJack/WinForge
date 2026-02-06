@@ -28,14 +28,14 @@ public partial class ScheduledDeploymentModel : ObservableValidator
 {
     /// <summary>Unique identifier for the scheduled deployment.</summary>
     [ObservableProperty]
-    [Required(ErrorMessage = "Deployment ID is required")]
-    [StringLength(32, MinimumLength = 1, ErrorMessage = "Deployment ID must be between 1 and 32 characters")]
+    [Required(ErrorMessageResourceName = nameof(Resources.Resources.Validation_Scheduled_Id_Required), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [StringLength(32, MinimumLength = 1, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Scheduled_Id_Length), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _id = string.Empty;
 
     /// <summary>Name of the deployment profile to run.</summary>
     [ObservableProperty]
-    [Required(ErrorMessage = "Profile name is required")]
-    [StringLength(256, MinimumLength = 1, ErrorMessage = "Profile name must be between 1 and 256 characters")]
+    [Required(ErrorMessageResourceName = nameof(Resources.Resources.Validation_Scheduled_ProfileName_Required), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [StringLength(256, MinimumLength = 1, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Scheduled_ProfileName_Length), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _profileName = string.Empty;
 
     /// <summary>Scheduled execution time.</summary>
@@ -44,7 +44,7 @@ public partial class ScheduledDeploymentModel : ObservableValidator
 
     /// <summary>Type of trigger (OneTime, Daily, Weekly, AtStartup, AtLogon).</summary>
     [ObservableProperty]
-    [Required(ErrorMessage = "Trigger type is required")]
+    [Required(ErrorMessageResourceName = nameof(Resources.Resources.Validation_Scheduled_TriggerType_Required), ErrorMessageResourceType = typeof(Resources.Resources))]
     private ScheduledTriggerType _triggerType = ScheduledTriggerType.OneTime;
 
     /// <summary>Current status of the scheduled deployment.</summary>
@@ -53,7 +53,7 @@ public partial class ScheduledDeploymentModel : ObservableValidator
 
     /// <summary>User who created the deployment.</summary>
     [ObservableProperty]
-    [StringLength(256, ErrorMessage = "Created by must not exceed 256 characters")]
+    [StringLength(256, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Scheduled_CreatedBy_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _createdBy = Environment.UserName;
 
     /// <summary>When the deployment was created.</summary>
@@ -66,7 +66,7 @@ public partial class ScheduledDeploymentModel : ObservableValidator
 
     /// <summary>Result of last execution.</summary>
     [ObservableProperty]
-    [StringLength(256, ErrorMessage = "Last run result must not exceed 256 characters")]
+    [StringLength(256, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Scheduled_LastRunResult_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string? _lastRunResult;
 
     /// <summary>Whether to run in parallel mode.</summary>

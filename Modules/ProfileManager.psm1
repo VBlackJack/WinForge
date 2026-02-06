@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Profile Manager Version: 3.5.0
+    Win11Forge - Profile Manager v3.6.8
 
 .DESCRIPTION
     Manages deployment profiles with JSON inheritance:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
     Supports multi-level inheritance (e.g., Personnel → Gaming → Office → Base)
     NEW: Supports Application Database references (AppId strings or objects)
 #>
@@ -239,12 +239,12 @@ function Get-ProfilePath {
     # Security: Validate profile name is safe (alphanumeric, dash, underscore only)
     # This prevents path traversal attacks
     if ($nameToValidate -notmatch '^[a-zA-Z0-9_-]+$') {
-        throw "Invalid profile name '$ProfileName': must contain only alphanumeric characters, dashes, and underscores"
+        throw (Get-LocalizedString -Key 'profile.validation.invalid_name' -Parameters @{ Name = $ProfileName })
     }
 
     # Security: Limit profile name length to prevent DoS
     if ($nameToValidate.Length -gt 64) {
-        throw "Invalid profile name: exceeds maximum length of 64 characters"
+        throw (Get-LocalizedString -Key 'profile.validation.name_too_long')
     }
 
     # Try to find in Profiles directory
@@ -261,14 +261,14 @@ function Get-ProfilePath {
 
     # Security: Verify resolved path stays within profiles directory
     if (-not $canonicalPath.StartsWith($canonicalBase, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "Security violation: Path traversal attempt detected for profile '$ProfileName'"
+        throw (Get-LocalizedString -Key 'profile.validation.path_traversal' -Parameters @{ Name = $ProfileName })
     }
 
     if (Test-Path -Path $profilePath) {
         return $profilePath
     }
 
-    throw "Profile not found: $ProfileName (searched in $ProfilesDirectory)"
+    throw (Get-LocalizedString -Key 'profile.not_found' -Parameters @{ Name = "$ProfileName ($ProfilesDirectory)" })
 }
 
 function Import-ProfileJson {
@@ -296,7 +296,7 @@ function Import-ProfileJson {
     )
 
     if (-not (Test-Path -Path $Path)) {
-        throw "Profile file not found: $Path"
+        throw (Get-LocalizedString -Key 'profile.not_found' -Parameters @{ Name = $Path })
     }
 
     # Validate profile against schema before loading (security check)
@@ -305,7 +305,7 @@ function Import-ProfileJson {
             $validationResult = Test-DeploymentProfile -ProfilePath $Path
             if (-not $validationResult.IsValid) {
                 $errorMessages = $validationResult.Errors -join '; '
-                throw "Profile schema validation failed for '$Path': $errorMessages"
+                throw (Get-LocalizedString -Key 'profile.validation.schema_failed' -Parameters @{ Path = $Path; Errors = $errorMessages })
             }
             Write-Verbose "Profile schema validation passed: $Path"
         } catch {
@@ -313,7 +313,7 @@ function Import-ProfileJson {
                 throw
             }
             # Log validation errors but continue if schema module has issues
-            Write-Status -Message "Schema validation skipped: $($_.Exception.Message)" -Level 'Warning'
+            Write-Status -Message (Get-LocalizedString -Key 'profile.validation.schema_skipped' -Parameters @{ Error = $_.Exception.Message }) -Level 'Warning'
         }
     }
 
@@ -327,7 +327,7 @@ function Import-ProfileJson {
     }
 
     try {
-        Write-Status -Message "Loading profile: $Path" -Level 'Verbose'
+        Write-Status -Message (Get-LocalizedString -Key 'profile.loading' -Parameters @{ Name = $Path }) -Level 'Verbose'
 
         $jsonContent = Get-Content -Path $Path -Raw -ErrorAction Stop
         $jsonObject = $jsonContent | ConvertFrom-Json -ErrorAction Stop
@@ -367,7 +367,7 @@ function Import-ProfileJson {
             }
         }
 
-        Write-Status -Message "Profile loaded: $($deploymentProfile.Name) v$($deploymentProfile.Version)" -Level 'Success'
+        Write-Status -Message (Get-LocalizedString -Key 'profile.loaded' -Parameters @{ Name = "$($deploymentProfile.Name) v$($deploymentProfile.Version)"; AppCount = $deploymentProfile.Applications.Count }) -Level 'Success'
 
         # Store in cache
         Set-CachedProfile -Path $Path -Profile $deploymentProfile
@@ -375,7 +375,7 @@ function Import-ProfileJson {
         return $deploymentProfile
 
     } catch {
-        Write-Status -Message "Failed to load profile: $($_.Exception.Message)" -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'profile.load_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
         throw
     }
 }
@@ -423,7 +423,7 @@ function Test-ProfileCycles {
     $visited = [System.Collections.Generic.HashSet[string]]::new()
     $recursionStack = [System.Collections.Generic.Stack[string]]::new()
 
-    function Build-InheritanceGraph {
+    function New-InheritanceGraph {
         param([string]$Name, [string]$Dir)
 
         if ($result.InheritanceGraph.ContainsKey($Name)) {
@@ -440,7 +440,7 @@ function Test-ProfileCycles {
             }
 
             foreach ($parent in $result.InheritanceGraph[$Name].Inherits) {
-                Build-InheritanceGraph -Name $parent -Dir $Dir
+                New-InheritanceGraph -Name $parent -Dir $Dir
             }
         } catch {
             $result.InheritanceGraph[$Name] = @{
@@ -451,7 +451,7 @@ function Test-ProfileCycles {
         }
     }
 
-    function Detect-Cycles {
+    function Find-Cycles {
         param([string]$Name, [System.Collections.Generic.List[string]]$Path)
 
         if ($recursionStack.Contains($Name)) {
@@ -474,7 +474,7 @@ function Test-ProfileCycles {
 
         if ($result.InheritanceGraph.ContainsKey($Name)) {
             foreach ($parent in $result.InheritanceGraph[$Name].Inherits) {
-                Detect-Cycles -Name $parent -Path $Path
+                Find-Cycles -Name $parent -Path $Path
             }
         }
 
@@ -483,14 +483,14 @@ function Test-ProfileCycles {
     }
 
     # Build graph starting from target profile
-    Build-InheritanceGraph -Name $ProfileName -Dir $ProfilesDirectory
+    New-InheritanceGraph -Name $ProfileName -Dir $ProfilesDirectory
 
     # Detect cycles for all profiles in graph
     foreach ($name in $result.InheritanceGraph.Keys) {
         $visited.Clear()
         $recursionStack.Clear()
         $path = [System.Collections.Generic.List[string]]::new()
-        Detect-Cycles -Name $name -Path $path
+        Find-Cycles -Name $name -Path $path
     }
 
     # Remove duplicate cycles
@@ -550,7 +550,7 @@ function Resolve-ProfileInheritance {
         $cyclePath += $InputProfile.Name
         $cycleString = $cyclePath -join ' -> '
 
-        $errorMsg = "Circular inheritance detected: $cycleString"
+        $errorMsg = Get-LocalizedString -Key 'profile.inheritance.cycle_detected' -Parameters @{ Cycle = $cycleString }
         Write-Status -Message $errorMsg -Level 'Error'
         throw [System.InvalidOperationException]::new($errorMsg)
     }
@@ -582,10 +582,10 @@ function Resolve-ProfileInheritance {
 
             } catch {
                 # Re-throw cycle detection errors
-                if ($_.Exception -is [System.InvalidOperationException] -and $_.Exception.Message -like "*Circular inheritance*") {
+                if ($_.Exception -is [System.InvalidOperationException]) {
                     throw
                 }
-                Write-Status -Message "Warning: Could not load parent profile '$parentName': $($_.Exception.Message)" -Level 'Warning'
+                Write-Status -Message (Get-LocalizedString -Key 'profile.inheritance.parent_load_failed' -Parameters @{ Parent = $parentName; Error = $_.Exception.Message }) -Level 'Warning'
             }
         }
     }
@@ -629,12 +629,12 @@ function Resolve-ApplicationReference {
         if ($script:UseAppDatabase) {
             $dbApp = Get-ApplicationById -AppId $AppReference
             if ($null -eq $dbApp) {
-                Write-Status -Message "Warning: Application '$AppReference' not found in database" -Level 'Warning'
+                Write-Status -Message (Get-LocalizedString -Key 'profile.applications.not_found_in_db' -Parameters @{ AppId = $AppReference }) -Level 'Warning'
                 return $null
             }
             return ConvertTo-ProfileApplication -App $dbApp
         } else {
-            Write-Status -Message "Warning: AppId reference '$AppReference' found but database not available" -Level 'Warning'
+            Write-Status -Message (Get-LocalizedString -Key 'profile.applications.db_not_available' -Parameters @{ AppId = $AppReference }) -Level 'Warning'
             return $null
         }
     }
@@ -644,7 +644,7 @@ function Resolve-ApplicationReference {
         if ($script:UseAppDatabase) {
             $dbApp = Get-ApplicationById -AppId $AppReference.AppId
             if ($null -eq $dbApp) {
-                Write-Status -Message "Warning: Application '$($AppReference.AppId)' not found in database" -Level 'Warning'
+                Write-Status -Message (Get-LocalizedString -Key 'profile.applications.not_found_in_db' -Parameters @{ AppId = $AppReference.AppId }) -Level 'Warning'
                 return $null
             }
 
@@ -668,7 +668,7 @@ function Resolve-ApplicationReference {
 
             return $app
         } else {
-            Write-Status -Message "Warning: AppId reference '$($AppReference.AppId)' found but database not available" -Level 'Warning'
+            Write-Status -Message (Get-LocalizedString -Key 'profile.applications.db_not_available' -Parameters @{ AppId = $AppReference.AppId }) -Level 'Warning'
             return $null
         }
     }
@@ -678,7 +678,7 @@ function Resolve-ApplicationReference {
         return $AppReference
     }
 
-    Write-Status -Message "Warning: Unknown application reference format" -Level 'Warning'
+    Write-Status -Message (Get-LocalizedString -Key 'profile.applications.unknown_format') -Level 'Warning'
     return $null
 }
 
@@ -858,7 +858,7 @@ function Get-DeploymentProfile {
         [string]$ProfilesDirectory
     )
 
-    Write-Status -Message "Loading deployment profile: $ProfileName" -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'profile.loading' -Parameters @{ Name = $ProfileName }) -Level 'Info'
 
     try {
         # Get profile path

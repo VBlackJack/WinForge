@@ -1,7 +1,7 @@
-{
+﻿{
   "_meta": {
     "description": "External download sources configuration for Win11Forge",
-    "version": "3.6.0",
+    "version": "3.6.8",
     "author": "Julien Bombled",
     "lastUpdated": "2026-01-19"
   },
@@ -15,7 +15,7 @@
     },
     "powershell7": {
       "description": "PowerShell 7 MSI installer",
-      "version": "7.5.0",
+      "version": "3.6.8",
       "downloadUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/PowerShell-7.5.0-win-x64.msi",
       "homepage": "https://github.com/PowerShell/PowerShell",
       "checksumUrl": "https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/hashes.sha256",
@@ -36,6 +36,7 @@
       "github.com",
       "githubusercontent.com",
       "github.io",
+      "api.github.com",
       "microsoft.com",
       "aka.ms",
       "windowsupdate.com",
@@ -157,6 +158,14 @@
     "microsoftStore": {
       "source": "msstore",
       "notes": "Use winget with --source msstore for Store apps"
+    }
+  },
+  "apiEndpoints": {
+    "description": "External API base URLs used by the framework",
+    "gitHubApi": {
+      "baseUrl": "https://api.github.com",
+      "description": "GitHub REST API for release checks and update downloads",
+      "notes": "Used by UpdateManager for release queries"
     }
   },
   "cache": {

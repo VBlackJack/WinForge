@@ -28,8 +28,10 @@
 #
 
 BeforeAll {
-    $ModulePath = Join-Path $PSScriptRoot '..\Modules\InstallationOrchestrator.psm1'
-    Import-Module $ModulePath -Force -ErrorAction Stop
+    # Import via InstallationEngine which loads StateManager + Orchestrator as nested modules.
+    # This makes both state management and orchestration functions available.
+    $EnginePath = Join-Path $PSScriptRoot '..\Modules\InstallationEngine.psd1'
+    Import-Module $EnginePath -Force -ErrorAction Stop
 
     # Test data directory
     $script:TestStateDir = Join-Path $env:TEMP "Win11ForgeTest_$([Guid]::NewGuid().ToString('N'))"
@@ -48,27 +50,27 @@ AfterAll {
 Describe 'InstallationOrchestrator Module' {
     Context 'Module Loading' {
         It 'Should load without errors' {
-            { Import-Module $ModulePath -Force } | Should -Not -Throw
+            { Import-Module $EnginePath -Force } | Should -Not -Throw
         }
 
-        It 'Should export Initialize-RollbackSession function' {
-            Get-Command -Module InstallationOrchestrator -Name 'Initialize-RollbackSession' | Should -Not -BeNullOrEmpty
+        It 'Should have Initialize-RollbackSession available' {
+            Get-Command -Name 'Initialize-RollbackSession' -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
 
-        It 'Should export Initialize-DeploymentSession function' {
-            Get-Command -Module InstallationOrchestrator -Name 'Initialize-DeploymentSession' | Should -Not -BeNullOrEmpty
+        It 'Should have Initialize-DeploymentSession available' {
+            Get-Command -Name 'Initialize-DeploymentSession' -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
 
-        It 'Should export Install-Application function' {
-            Get-Command -Module InstallationOrchestrator -Name 'Install-Application' | Should -Not -BeNullOrEmpty
+        It 'Should have Install-Application available' {
+            Get-Command -Name 'Install-Application' -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
 
-        It 'Should export Install-ApplicationsParallel function' {
-            Get-Command -Module InstallationOrchestrator -Name 'Install-ApplicationsParallel' | Should -Not -BeNullOrEmpty
+        It 'Should have Install-ApplicationsParallel available' {
+            Get-Command -Name 'Install-ApplicationsParallel' -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
 
-        It 'Should export Get-ApplicationSources function' {
-            Get-Command -Module InstallationOrchestrator -Name 'Get-ApplicationSources' | Should -Not -BeNullOrEmpty
+        It 'Should have Get-ApplicationSources available' {
+            Get-Command -Name 'Get-ApplicationSources' -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
     }
 
@@ -261,15 +263,15 @@ Describe 'Installation Orchestration' {
 
     Context 'Function Exports' {
         It 'Should export Invoke-InstallationMethodSequence function' {
-            Get-Command -Module InstallationOrchestrator -Name 'Invoke-InstallationMethodSequence' | Should -Not -BeNullOrEmpty
+            Get-Command -Name 'Invoke-InstallationMethodSequence' | Should -Not -BeNullOrEmpty
         }
 
         It 'Should export Install-Application function' {
-            Get-Command -Module InstallationOrchestrator -Name 'Install-Application' | Should -Not -BeNullOrEmpty
+            Get-Command -Name 'Install-Application' | Should -Not -BeNullOrEmpty
         }
 
         It 'Should export Install-ApplicationsParallel function' {
-            Get-Command -Module InstallationOrchestrator -Name 'Install-ApplicationsParallel' | Should -Not -BeNullOrEmpty
+            Get-Command -Name 'Install-ApplicationsParallel' | Should -Not -BeNullOrEmpty
         }
     }
 }
@@ -608,12 +610,22 @@ Describe 'Environment Restriction Extended' {
 }
 
 Describe 'Module Export Completeness' {
-    Context 'All Expected Functions Exported' {
-        It 'Should export <FunctionName> function' -TestCases @(
+    Context 'InstallationEngine exports all expected functions' {
+        It 'Should export <FunctionName> function via InstallationEngine' -TestCases @(
+            # Orchestration functions
+            @{ FunctionName = 'Invoke-Rollback' }
+            @{ FunctionName = 'Test-IncompleteDeployment' }
+            @{ FunctionName = 'Resume-Deployment' }
+            @{ FunctionName = 'Test-EnvironmentRestriction' }
+            @{ FunctionName = 'Invoke-InstallationMethodSequence' }
+            @{ FunctionName = 'Get-ApplicationSources' }
+            @{ FunctionName = 'Invoke-ApplicationUpgrade' }
+            @{ FunctionName = 'Install-Application' }
+            @{ FunctionName = 'Install-ApplicationsParallel' }
+            # State management functions (from StateManager)
             @{ FunctionName = 'Initialize-RollbackSession' }
             @{ FunctionName = 'Save-RollbackState' }
             @{ FunctionName = 'Add-RollbackEntry' }
-            @{ FunctionName = 'Invoke-Rollback' }
             @{ FunctionName = 'Clear-RollbackState' }
             @{ FunctionName = 'Get-RollbackState' }
             @{ FunctionName = 'Initialize-DeploymentSession' }
@@ -621,18 +633,10 @@ Describe 'Module Export Completeness' {
             @{ FunctionName = 'Update-DeploymentProgress' }
             @{ FunctionName = 'Test-ValidStateData' }
             @{ FunctionName = 'Get-DeploymentState' }
-            @{ FunctionName = 'Test-IncompleteDeployment' }
-            @{ FunctionName = 'Resume-Deployment' }
             @{ FunctionName = 'Clear-DeploymentState' }
-            @{ FunctionName = 'Test-EnvironmentRestriction' }
-            @{ FunctionName = 'Invoke-InstallationMethodSequence' }
-            @{ FunctionName = 'Get-ApplicationSources' }
-            @{ FunctionName = 'Invoke-ApplicationUpgrade' }
-            @{ FunctionName = 'Install-Application' }
-            @{ FunctionName = 'Install-ApplicationsParallel' }
         ) {
             param($FunctionName)
-            Get-Command -Module InstallationOrchestrator -Name $FunctionName -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command -Name $FunctionName -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
     }
 }

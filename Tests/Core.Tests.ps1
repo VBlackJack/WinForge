@@ -417,3 +417,129 @@ Describe 'Core Module Integration' {
         }
     }
 }
+
+Describe 'Core Module Mock-Based Tests' {
+
+    BeforeAll {
+        # Import DirectoryConstants to make Get-NetworkDefault available for mocking
+        $dcPath = Join-Path $PSScriptRoot '..\Core\DirectoryConstants.psm1'
+        if (Test-Path $dcPath) {
+            Import-Module $dcPath -Force -ErrorAction Stop
+        }
+        # Suppress console output during mock tests
+        Mock Write-Host { }
+    }
+
+    Context 'Test-InternetConnection - Mocked Connectivity Success' {
+        It 'Should return true when Test-Connection succeeds' {
+            InModuleScope Core {
+                Mock Get-NetworkDefault { return 'mock.test.host' }
+                Mock Test-Connection { return $true }
+                Mock Write-Status { }
+
+                $result = Test-InternetConnection
+                $result | Should -BeTrue
+            }
+        }
+
+        It 'Should call Get-NetworkDefault to obtain the test host' {
+            InModuleScope Core {
+                Mock Get-NetworkDefault { return 'mock.test.host' }
+                Mock Test-Connection { return $true }
+                Mock Write-Status { }
+
+                Test-InternetConnection
+                Should -Invoke -CommandName Get-NetworkDefault -Times 1 -ParameterFilter {
+                    $SettingKey -eq 'ConnectivityTestHost'
+                }
+            }
+        }
+
+        It 'Should call Test-Connection with the configured host' {
+            InModuleScope Core {
+                Mock Get-NetworkDefault { return 'custom.connectivity.host' }
+                Mock Test-Connection { return $true }
+                Mock Write-Status { }
+
+                Test-InternetConnection
+                Should -Invoke -CommandName Test-Connection -Times 1 -ParameterFilter {
+                    $ComputerName -eq 'custom.connectivity.host'
+                }
+            }
+        }
+    }
+
+    Context 'Test-InternetConnection - Mocked Connectivity Failure' {
+        It 'Should return false when Test-Connection fails' {
+            InModuleScope Core {
+                Mock Get-NetworkDefault { return 'mock.test.host' }
+                Mock Test-Connection { return $false }
+                Mock Write-Status { }
+
+                $result = Test-InternetConnection
+                $result | Should -BeFalse
+            }
+        }
+
+        It 'Should return false when Test-Connection throws an exception' {
+            InModuleScope Core {
+                Mock Get-NetworkDefault { return 'unreachable.host' }
+                Mock Test-Connection { throw 'Network unreachable' }
+                Mock Write-Status { }
+                Mock Get-LocalizedString { return $Key }
+
+                $result = Test-InternetConnection
+                $result | Should -BeFalse
+            }
+        }
+
+        It 'Should not throw even when connectivity check fails' {
+            InModuleScope Core {
+                Mock Get-NetworkDefault { return 'unreachable.host' }
+                Mock Test-Connection { throw 'DNS resolution failed' }
+                Mock Write-Status { }
+                Mock Get-LocalizedString { return $Key }
+
+                { Test-InternetConnection } | Should -Not -Throw
+            }
+        }
+    }
+
+    Context 'Test-InternetConnection - Mocked Network Default' {
+        It 'Should use the host returned by Get-NetworkDefault' {
+            InModuleScope Core {
+                Mock Get-NetworkDefault { return '1.1.1.1' }
+                Mock Test-Connection { return $true }
+                Mock Write-Status { }
+
+                $result = Test-InternetConnection
+                $result | Should -BeTrue
+                Should -Invoke -CommandName Test-Connection -ParameterFilter {
+                    $ComputerName -eq '1.1.1.1'
+                }
+            }
+        }
+    }
+
+    Context 'Invoke-SafeCommand - Mocked Error Logging' {
+        It 'Should call Write-Status with Error level on failure' {
+            Mock Write-Status { } -ModuleName Core
+            Mock Write-Host { }
+
+            Invoke-SafeCommand -ScriptBlock { throw 'Mocked failure' } -ContinueOnError -ErrorMessage 'Test error prefix'
+
+            Should -Invoke -CommandName Write-Status -ModuleName Core -Times 1 -ParameterFilter {
+                $Level -eq 'Error' -and $Message -match 'Test error prefix'
+            }
+        }
+
+        It 'Should not call Write-Status on success' {
+            Mock Write-Status { } -ModuleName Core
+            Mock Write-Host { }
+
+            Invoke-SafeCommand -ScriptBlock { 'no error' }
+
+            Should -Invoke -CommandName Write-Status -ModuleName Core -Times 0
+        }
+    }
+}

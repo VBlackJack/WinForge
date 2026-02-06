@@ -1,8 +1,8 @@
-{
+﻿{
   "_meta": {
     "locale": "en",
     "name": "English",
-    "version": "3.5.9",
+    "version": "3.6.8",
     "author": "Julien Bombled"
   },
   "common": {
@@ -27,7 +27,7 @@
     "next": "Next",
     "exit": "Exit",
     "retry": "Retry",
-    "version": "3.5.9"
+    "version": "3.6.8"
   },
   "core": {
     "admin_required": "Administrator privileges required",
@@ -55,11 +55,77 @@
     },
     "method": {
       "winget": "Installing via Winget: {PackageId}",
+      "winget_unavailable": "Winget not available",
+      "winget_success": "Installed successfully via Winget{Version}{Attempt}",
+      "winget_already_installed": "Already installed (Winget){Version}{Attempt}",
+      "winget_verified": "Installed successfully via Winget{Version} (verified post-install){Attempt}",
+      "winget_failed": "Winget installation failed (exit code: {ExitCode})",
+      "winget_failed_attempts": "Winget installation failed after {Attempts} attempts (exit code: {ExitCode})",
+      "winget_error_retry": "Winget error: {Error}, retrying in {Delay} seconds...",
+      "winget_error_final": "Winget installation error after {Attempts} attempts: {Error}",
       "chocolatey": "Installing via Chocolatey: {PackageId}",
+      "choco_unavailable": "Chocolatey not available",
+      "choco_success": "Installed successfully via Chocolatey{Version}{Attempt}",
+      "choco_verified": "Installed successfully via Chocolatey{Version} (verified){Attempt}",
+      "choco_failed": "Chocolatey installation failed (exit code: {ExitCode})",
+      "choco_error_retry": "Chocolatey error: {Error}, retrying in {Delay} seconds...",
+      "choco_error_final": "Chocolatey installation error after {Attempts} attempts: {Error}",
       "store": "Installing from Microsoft Store: {AppName}",
+      "store_success": "Installed successfully via Microsoft Store{Version}",
+      "store_error": "Store installation error: {Error}",
+      "store_unavailable_sandbox": "Microsoft Store is not available in Windows Sandbox: {ProductId}",
+      "store_manual_required": "Could not install automatically - Store page opened for manual installation",
       "direct": "Installing from direct download: {Url}",
+      "direct_invalid_url": "Invalid or insecure URL: {Url}",
+      "direct_downloading": "Downloading from: {Url}",
+      "direct_checksum_enabled": "Checksum validation enabled (SHA256)",
+      "direct_downloaded": "Downloaded: {Size}",
+      "direct_running_installer": "Running {Type} installer: {FileName}",
+      "direct_success": "Installed successfully via direct download",
+      "direct_failed": "Direct installation failed",
+      "direct_error": "Direct download error: {Error}",
+      "transient_error": "Transient error detected (exit code: {ExitCode}), retrying in {Delay} seconds...",
+      "verifying": "Verifying installation...",
+      "msi_installing": "Installing MSI package...",
+      "msi_success": "MSI package installed successfully",
+      "msi_exit_code": "MSI installer returned exit code: {ExitCode}",
+      "exe_custom_args": "Running installer with custom arguments: {Arguments}",
+      "exe_executing": "Executing: {Path} {Arguments}",
+      "exe_exit_code": "Process completed with exit code: {ExitCode}",
+      "exe_nonzero_exit": "Installer returned non-zero exit code: {ExitCode}",
+      "exe_success": "Installation completed",
+      "exe_failed": "EXE installation failed: {Error}",
+      "exe_trying_silent": "Trying silent installation switches...",
+      "exe_switch_success": "Installation completed with switch: {Switch}",
+      "exe_no_silent_switch": "No silent switch worked for this installer",
+      "zip_extracting": "Extracting ZIP archive (with Zip Slip protection)",
+      "zip_security_failed": "ZIP extraction failed security validation",
+      "zip_executing_installer": "Executing installer from archive: {FileName}",
+      "zip_installer_failed": "ZIP installer execution failed: {Error}",
+      "zip_deploying_portable": "No installer found - deploying portable tools",
+      "zip_deploying_to": "Deploying to: {Path}",
+      "zip_deployed_success": "Deployment completed successfully",
       "feature": "Enabling Windows Feature: {Feature}",
-      "capability": "Adding Windows Capability: {Capability}"
+      "feature_already_enabled": "Feature already enabled: {Feature}",
+      "feature_enabled": "Feature enabled successfully: {Feature}",
+      "feature_failed": "Failed to enable feature {Feature}: {Error}",
+      "capability": "Adding Windows Capability: {Capability}",
+      "capability_not_found": "Capability not found: {Capability}",
+      "capability_already_installed": "Capability already installed: {Capability}",
+      "capability_installing": "Installing capability: {Capability}",
+      "capability_success": "Capability installed successfully: {Capability}",
+      "capability_failed": "Failed to install capability {Capability}: {Error}",
+      "custom_installed": "Installed via {Method}",
+      "custom_failed": "Failed to install via {Method}",
+      "custom_unknown": "Unknown install method: {Method}",
+      "process": {
+        "graceful_terminated": "Process terminated gracefully via CloseMainWindow",
+        "force_kill": "Graceful termination failed - forcing process kill",
+        "timed_out": "Process execution timed out after {Seconds} seconds",
+        "close_failed": "CloseMainWindow failed: {Error}",
+        "kill_failed": "Process kill failed: {Error}",
+        "child_cleanup_failed": "Child process cleanup failed: {Error}"
+      }
     },
     "retry": {
       "attempt": "Attempt {Current} of {Max}",
@@ -177,7 +243,9 @@
     "invalid": "Invalid profile format: {Name}",
     "inheritance": {
       "resolving": "Resolving profile inheritance...",
+      "cycle_detected": "Circular inheritance detected: {Cycle}",
       "inherits_from": "Inherits from: {Parent}",
+      "parent_load_failed": "Failed to load parent profile '{Parent}': {Error}",
       "merged": "Merged {Count} applications from parent profiles"
     },
     "applications": {
@@ -410,7 +478,7 @@
     },
     "info": {
       "title": "Framework Information",
-      "version": "3.5.0",
+      "version": "3.6.8",
       "ps_version": "PowerShell Version:",
       "repo_path": "Repository Path:",
       "db_loaded": "Database Loaded:"
@@ -574,14 +642,6 @@
       "algorithm": "Using {Algorithm} for validation"
     }
   },
-  "cleanup": {
-    "title": "=== Cleanup ===",
-    "files_archived": "Files archived: {Count}",
-    "files_relocated": "Files relocated: {Count}",
-    "files_skipped": "Files skipped: {Count}",
-    "archive_location": "Archive location: {Path}",
-    "completed": "Cleanup completed"
-  },
   "test": {
     "title": "=== Win11Forge Profile Validation Test ===",
     "mode_info": "Testing all profiles in TestMode + Parallel mode",
@@ -714,16 +774,107 @@
     "checksum_failed": "Checksum validation FAILED! Expected: {Expected}, Got: {Got}",
     "removing_corrupted": "Removing potentially corrupted file...",
     "checksum_passed": "Checksum validation passed (SHA256: {Hash})",
-    "download_failed": "Download failed: {Error}"
+    "download_failed": "Download failed: {Error}",
+    "method": {
+      "invoke_webrequest": "Attempting download via Invoke-WebRequest...",
+      "invoke_webrequest_redirects": "Attempting download via Invoke-WebRequest (handles redirects)...",
+      "completed": "Download completed",
+      "completed_size": "Download completed ({Size} bytes)",
+      "webrequest_failed_fallback": "Invoke-WebRequest download failed, trying fallback method...",
+      "webrequest_failed_curl": "Invoke-WebRequest failed, trying curl...",
+      "webrequest_failed": "Invoke-WebRequest download failed: {Error}",
+      "http_error": "HTTP status code indicates failure: {StatusCode}",
+      "empty_or_missing": "Download completed but file is empty or missing",
+      "curl": "Attempting download via curl.exe...",
+      "curl_exit_code": "curl exit code: {ExitCode}",
+      "curl_failed": "curl.exe download failed: {Error}",
+      "bits": "Attempting download via BITS transfer...",
+      "bits_failed": "BITS transfer failed",
+      "bits_failed_detail": "BITS transfer failed: {Error}",
+      "all_exhausted": "Download failed: All methods exhausted"
+    }
   },
   "office": {
     "waiting": "Waiting for Office Click-to-Run installation to complete...",
     "detected": "Office installation detected: {Path}",
     "c2r_installing": "Office Click-to-Run still installing... ({Minutes} minutes elapsed)",
-    "c2r_active": "Office C2R Client active... ({Minutes} minutes elapsed)"
+    "c2r_active": "Office C2R Client active... ({Minutes} minutes elapsed)",
+    "monitoring": "Monitoring Office installation progress...",
+    "completed_registry": "Office installation completed after {Minutes} minutes (registry detected)",
+    "completed_executable": "Office installation completed after {Minutes} minutes (executable detected)",
+    "in_progress": "Office installation in progress ({Processes})... Elapsed: {Minutes} min",
+    "no_process_detected": "No Office installation processes detected and Office not found",
+    "timed_out": "Office installation timed out after {Minutes} minutes"
+  },
+  "detect": {
+    "security": {
+      "registry_path_blocked": "Registry path not allowed: {Path}",
+      "path_traversal_blocked": "Path traversal attempt blocked in detection path: {Path}",
+      "variable_syntax_blocked": "Security: PowerShell variable syntax not allowed in detection paths: {Path}",
+      "path_traversal_after_expansion": "Path traversal attempt blocked after expansion: {Path}",
+      "relative_path_blocked": "Relative path not allowed in detection: {Path}",
+      "command_not_allowed": "Command detection blocked: '{Executable}' not in allowed executables list",
+      "dangerous_arguments": "Command detection blocked: arguments contain dangerous characters for '{Executable}'"
+    },
+    "winget_failed": "Winget detection failed: {Error}",
+    "choco_failed": "Chocolatey detection failed: {Error}"
   },
   "engine": {
-    "env_check_failed": "Could not verify environment restrictions: {Error}"
+    "env_check_failed": "Could not verify environment restrictions: {Error}",
+    "env_restricted": "{AppName} is restricted in {Environment} environment",
+    "env_not_compatible": "Not compatible with {Environment} environment"
+  },
+  "orchestrator": {
+    "installing": "Installing: {AppName}",
+    "already_installed": "Already installed: {AppName}",
+    "already_installed_no_update": "Already installed (no update available)",
+    "already_installed_status": "Already installed",
+    "checking_updates": "Checking for updates: {AppName}",
+    "no_update_available": "No update available or upgrade not supported for: {AppName}",
+    "no_sources": "No installation sources available",
+    "no_valid_sources": "No valid installation sources configured",
+    "all_methods_failed": "All methods failed: {Reasons}",
+    "install_failed": "Installation failed: {Message}",
+    "failure": {
+      "office_c2r_timeout": "Office Click-to-Run did not complete in time",
+      "winget": "Winget failed (ID: {PackageId})",
+      "chocolatey": "Chocolatey failed (Package: {PackageId})",
+      "store": "Store failed (ID: {ProductId})",
+      "direct_download": "DirectDownload failed"
+    },
+    "result": {
+      "winget": "Installed via Winget",
+      "winget_verified": "Installed via Winget (verified by file detection)",
+      "chocolatey": "Installed via Chocolatey",
+      "chocolatey_verified": "Installed via Chocolatey (verified by file detection)",
+      "store": "Installed via Microsoft Store",
+      "direct_download": "Installed via direct download",
+      "windows_feature": "Installed via WindowsFeature",
+      "windows_capability": "Installed via WindowsCapability",
+      "invalid_direct_url": "Invalid DirectUrl",
+      "checksum_failed": "SHA256 checksum validation failed",
+      "all_failed": "All installation methods failed",
+      "winget_retry": "Installed via Winget (attempt {Attempt})",
+      "already_installed_winget": "Already installed (Winget)",
+      "already_installed_winget_retry": "Already installed (Winget) (attempt {Attempt})",
+      "chocolatey_retry": "Installed via Chocolatey (attempt {Attempt})",
+      "error": "Error: {Error}",
+      "download_exhausted": "Download failed - all methods exhausted",
+      "archive_security_failed": "Archive security validation failed",
+      "upgraded": "Upgraded successfully",
+      "no_upgrade": "No update available or upgrade not supported"
+    },
+    "upgrade": {
+      "attempting_winget": "Attempting Winget upgrade: {PackageId}",
+      "success_winget": "Successfully upgraded: {AppName}",
+      "no_update_winget": "No update available via Winget for: {AppName}",
+      "exit_code_winget": "Winget upgrade returned exit code: {ExitCode}",
+      "error_winget": "Winget upgrade error: {Error}",
+      "attempting_choco": "Attempting Chocolatey upgrade: {PackageId}",
+      "success_choco": "Successfully upgraded via Chocolatey: {AppName}",
+      "exit_code_choco": "Chocolatey upgrade returned exit code: {ExitCode}",
+      "error_choco": "Chocolatey upgrade error: {Error}"
+    }
   },
   "prereq": {
     "env_refreshed": "Environment refreshed",
@@ -996,14 +1147,93 @@
     "server_stopped": "API server stopped",
     "server_already_running": "API server is already running",
     "server_not_running": "API server is not running",
+    "server_started_background": "API server started in background (Job ID: {JobId})",
+    "server_start_failed": "Failed to start API server: {Error}",
+    "server_stop_error": "Error stopping API server: {Error}",
     "request_received": "API Request: {Method} {Path}",
     "endpoint_registered": "Registered endpoint: {Method} {Path}",
     "endpoint_not_found": "Endpoint not found: {Method} {Path}",
     "request_error": "Request processing error: {Error}",
+    "cors_blocked": "CORS origin not allowed",
+    "auth_blocked": "Too many failed authentication attempts",
+    "auth_failed": "Authentication failed: {Message} (path: {Path}, client: {ClientIp})",
+    "error_logged": "API error [{ErrorCode}]: {Message}",
+    "ip_blocked": "Client IP {ClientIp} blocked for {Minutes} minutes after {FailCount} failed attempts",
+    "rate_limit_cleanup": "Rate limit cleanup: removed {Count} stale entries",
     "status_running": "Server Status: Running",
     "status_stopped": "Server Status: Stopped",
     "uptime": "Uptime: {Duration}",
-    "request_count": "Total requests: {Count}"
+    "request_count": "Total requests: {Count}",
+    "csrf_failed": "CSRF validation failed for {Path} from {ClientIp}: {Message}",
+    "security": {
+      "no_secure_keys": "API keys found in config but not in secure storage. Keys will not be loaded from plaintext.",
+      "use_secure_key_cmdlet": "Use Set-SecureApiKey to store API keys securely with DPAPI encryption.",
+      "load_keys_failed": "Failed to load API keys from secure storage: {Error}",
+      "auth_unavailable": "API key authentication is temporarily unavailable.",
+      "dpapi_unavailable": "DPAPI secure storage is not available. Plaintext API keys will not be loaded.",
+      "use_secure_key_or_disable": "Use Set-SecureApiKey to store keys securely, or disable authentication.",
+      "handler_dangerous_pattern": "SECURITY: Handler contains dangerous pattern '{Pattern}'. Handler registration denied.",
+      "handler_syntax_errors": "SECURITY: Handler has syntax errors: {Message}",
+      "handler_dangerous_command": "SECURITY: Handler contains dangerous command '{Command}'. Handler registration denied.",
+      "handler_dangerous_type": "SECURITY: Handler uses dangerous type '{TypeName}'. Handler registration denied.",
+      "handler_dangerous_static_method": "SECURITY: Handler uses dangerous static method. Handler registration denied.",
+      "handler_validation_failed": "Handler validation failed"
+    },
+    "csrf": {
+      "validation_disabled": "CSRF validation disabled",
+      "token_required": "CSRF token is required",
+      "token_invalid": "Invalid CSRF token",
+      "token_expired": "CSRF token has expired",
+      "token_wrong_key": "CSRF token does not belong to this API key",
+      "token_consumed": "Valid (token consumed)"
+    },
+    "auth": {
+      "key_required": "API key is required",
+      "key_invalid": "Invalid API key",
+      "key_expired": "API key has expired",
+      "key_missing_permission": "API key does not have '{Permission}' permission",
+      "key_valid": "Valid",
+      "key_disabled": "API key is disabled",
+      "insufficient_permissions": "Insufficient permissions: requires '{Permission}'"
+    },
+    "rate_limit": {
+      "exceeded_minute": "Rate limit exceeded: {Limit} requests per minute",
+      "exceeded_hour": "Rate limit exceeded: {Limit} requests per hour",
+      "api_key_exceeded": "API key rate limit exceeded"
+    },
+    "error": {
+      "invalid_request_parameters": "Invalid request parameters",
+      "access_denied": "Access denied",
+      "resource_not_found": "Resource not found",
+      "operation_timed_out": "Operation timed out",
+      "invalid_operation": "Invalid operation",
+      "invalid_json_format": "Invalid JSON format",
+      "internal_error": "An internal error occurred",
+      "endpoint_not_found": "Endpoint not found",
+      "request_body_too_large": "Request body too large (max: {MaxSize} bytes)",
+      "rate_limit_exceeded": "Rate limit exceeded"
+    },
+    "endpoints": {
+      "request_body_validation_failed": "Request body validation failed: {Error}",
+      "file_not_found": "File not found: {FilePath}",
+      "schema_validation_failed": "Schema validation failed: {Errors}",
+      "json_parsing_failed": "JSON parsing failed: {Error}",
+      "profile_parse_failed": "Failed to parse profile: {Error}",
+      "database_load_failed": "Failed to load application database: {Error}",
+      "deployment_already_running": "Deployment is already in progress",
+      "request_validation_failed": "Request validation failed",
+      "profile_name_required": "Profile name is required in request body",
+      "profile_name_invalid_chars": "Invalid profile name: contains forbidden characters",
+      "profile_name_too_long": "Profile name too long (max {MaxLength} characters)",
+      "security_invalid_profile_path": "Security violation: Invalid profile path",
+      "profile_not_found": "Profile not found: {ProfileName}",
+      "deployment_started": "Deployment started for profile: {ProfileName}",
+      "no_apps_to_rollback": "No applications to rollback",
+      "rollback_summary_retrieved": "Rollback summary retrieved. Set force=true to execute.",
+      "rollback_manager_unavailable": "RollbackManager not available",
+      "csrf_api_key_required": "API key required to obtain CSRF token",
+      "default_endpoints_registered": "Registered {Count} default API endpoints"
+    }
   },
   "update": {
     "checking": "Checking for updates...",
@@ -1081,7 +1311,16 @@
     "available_plugins": "Available plugins: {Count}",
     "loaded_plugins": "Loaded plugins: {Count}",
     "disabled": "Plugin system is disabled",
+    "directory_create_failed": "Failed to create plugins directory: {Error}",
+    "load_failed": "Failed to load plugin '{Name}': {Error}",
+    "not_loaded": "Plugin '{Name}' is not loaded",
+    "unknown_hook": "Unknown hook: {Hook}",
     "template_info": "Plugin template available at: Plugins/_template",
+    "security": {
+      "symlink_validation": "Plugin entry point is a symlink, validating resolved target",
+      "path_traversal": "Plugin entry point escapes plugin directory (possible path traversal): {EntryPoint}",
+      "entry_point_not_found": "Plugin entry point not found: {Path}"
+    },
     "sandbox": {
       "executing": "Executing plugin '{Name}' in sandbox (timeout: {Timeout}s)",
       "timed_out": "Plugin '{Name}' timed out after {Timeout}s",
@@ -1097,9 +1336,12 @@
     "validation": {
       "invalid_session_id": "Invalid SessionId format in state file",
       "invalid_profile_name": "Invalid ProfileName in state file (contains forbidden characters)",
+      "invalid_profile_name_nul": "Invalid ProfileName in state file (contains NUL byte)",
+      "invalid_profile_name_control": "Invalid ProfileName in state file (contains control characters)",
       "profile_name_too_long": "ProfileName too long in state file",
       "invalid_total_apps": "Invalid TotalApps value in state file",
-      "dangerous_app_name": "Invalid app name in state file: contains shell metacharacters"
+      "dangerous_app_name": "Invalid app name in state file: contains shell metacharacters",
+      "corrupted_state": "State file validation failed - ignoring corrupted state"
     },
     "rollback": {
       "session_initialized": "Rollback session initialized: {SessionId}",
@@ -1337,6 +1579,26 @@
       "listFailed": "Failed to list scheduled deployments: {Error}",
       "profileNotFound": "Profile not found: {Name}",
       "invalidTime": "Invalid scheduled time - must be in the future"
+    }
+  },
+  "security": {
+    "archive": {
+      "path_traversal_blocked": "Security: Blocked path traversal attempt: {Path}",
+      "symlink_blocked": "Security: Blocked symbolic link in archive: {Path}",
+      "path_validation_error": "Security: Path validation error: {Error}",
+      "symlink_detected": "Security: Symlink detected in archive (blocked): {Entry}",
+      "zip_slip_detected": "Security: Zip Slip attack detected in entry: {Entry}",
+      "dangerous_filetype_blocked": "Security: Blocked dangerous file type in archive: {Entry} (use -AllowDangerousExtensions to override)",
+      "dangerous_filetype_warning": "Security: Warning - extracting dangerous file type: {Entry}",
+      "symlink_removed": "Security: Removed symlink created during extraction: {Path}",
+      "extraction_failed": "Archive extraction failed: {Error}"
+    },
+    "download": {
+      "internal_address_blocked": "Security: Download blocked - internal/private address detected: {Host}",
+      "untrusted_domain_blocked": "Download blocked - untrusted domain: {Host}. Add to Config/download-sources.json trustedDomains to allow.",
+      "dangerous_character": "Security: URL contains potentially dangerous character: {Character}",
+      "invalid_scheme": "Security: Invalid URL scheme (must be http or https): {Scheme}",
+      "malformed_url": "Security: Malformed URL: {Url}"
     }
   }
 }

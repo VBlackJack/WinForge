@@ -67,8 +67,8 @@ public class DeploymentHistoryEntry : IValidatableObject
     /// <summary>
     /// Name of the profile that was deployed.
     /// </summary>
-    [Required(ErrorMessage = "Profile name is required")]
-    [StringLength(128, MinimumLength = 1, ErrorMessage = "Profile name must be between 1 and 128 characters")]
+    [Required(ErrorMessageResourceName = nameof(Resources.Resources.Validation_History_ProfileName_Required), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [StringLength(128, MinimumLength = 1, ErrorMessageResourceName = nameof(Resources.Resources.Validation_History_ProfileName_Length), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string ProfileName { get; set; } = string.Empty;
 
     /// <summary>
@@ -81,31 +81,31 @@ public class DeploymentHistoryEntry : IValidatableObject
     /// <summary>
     /// Total number of applications attempted.
     /// </summary>
-    [Range(0, 10000, ErrorMessage = "Total apps must be between 0 and 10000")]
+    [Range(0, 10000, ErrorMessageResourceName = nameof(Resources.Resources.Validation_History_TotalApps_Range), ErrorMessageResourceType = typeof(Resources.Resources))]
     public int TotalApps { get; set; }
 
     /// <summary>
     /// Number of successfully installed applications.
     /// </summary>
-    [Range(0, 10000, ErrorMessage = "Successful apps must be between 0 and 10000")]
+    [Range(0, 10000, ErrorMessageResourceName = nameof(Resources.Resources.Validation_History_SuccessfulApps_Range), ErrorMessageResourceType = typeof(Resources.Resources))]
     public int SuccessfulApps { get; set; }
 
     /// <summary>
     /// Number of failed installations.
     /// </summary>
-    [Range(0, 10000, ErrorMessage = "Failed apps must be between 0 and 10000")]
+    [Range(0, 10000, ErrorMessageResourceName = nameof(Resources.Resources.Validation_History_FailedApps_Range), ErrorMessageResourceType = typeof(Resources.Resources))]
     public int FailedApps { get; set; }
 
     /// <summary>
     /// Number of skipped installations.
     /// </summary>
-    [Range(0, 10000, ErrorMessage = "Skipped apps must be between 0 and 10000")]
+    [Range(0, 10000, ErrorMessageResourceName = nameof(Resources.Resources.Validation_History_SkippedApps_Range), ErrorMessageResourceType = typeof(Resources.Resources))]
     public int SkippedApps { get; set; }
 
     /// <summary>
     /// Duration of the deployment in seconds.
     /// </summary>
-    [Range(0, MaxDeploymentDurationSeconds, ErrorMessage = "Duration must be between 0 and 7 days")]
+    [Range(0, MaxDeploymentDurationSeconds, ErrorMessageResourceName = nameof(Resources.Resources.Validation_History_Duration_Range), ErrorMessageResourceType = typeof(Resources.Resources))]
     public double DurationSeconds { get; set; }
 
     /// <summary>

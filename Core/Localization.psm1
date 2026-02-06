@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Localization Module v3.0.0
+    Win11Forge - Localization v3.6.8
 
 .DESCRIPTION
     Provides internationalization (i18n) functionality for the Win11Forge framework:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 
 .EXAMPLE
     # Initialize with auto-detected locale

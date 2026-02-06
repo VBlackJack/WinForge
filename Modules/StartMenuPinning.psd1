@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'StartMenuPinning.psm1'
-    ModuleVersion = '3.5.2'
+    ModuleVersion = '3.6.8'
     GUID = 'd739b262-3132-4189-8eba-ae6900236393'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'StartMenu', 'Pinning', 'Taskbar')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.5.2'
+            ReleaseNotes = 'Win11Forge v3.6.7'
         }
     }
 }

@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Installation Engine Module v3.2.2 (Modular Architecture)
+    Win11Forge - Installation Engine v3.6.8 (Modular Architecture)
 
 .DESCRIPTION
     Core installation engine orchestration with multi-source support and parallel execution.
@@ -23,7 +23,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 
     Changelog v3.2.2 (Complete Modular Architecture):
     - ARCHITECTURE: InstallationOrchestrator.psm1 contains high-level coordination logic

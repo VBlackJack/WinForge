@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Update Manager Module v3.1.4
+    Win11Forge - Update Manager v3.6.8
 
 .DESCRIPTION
     Provides auto-update functionality for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 #>
 
 #
@@ -61,10 +61,25 @@ $script:BatchUpdateCacheTime = $null
 $script:BatchUpdateCacheMaxAgeMinutes = 10
 
 # === CONFIGURATION ===
+
+# Load GitHub API base URL from download-sources config with fallback
+$script:DownloadSourcesPath = Join-Path $script:RepositoryRoot 'Config\download-sources.json'
+$script:GitHubApiBaseUrl = 'https://api.github.com'
+if (Test-Path -Path $script:DownloadSourcesPath) {
+    try {
+        $downloadSources = Get-Content -Path $script:DownloadSourcesPath -Raw | ConvertFrom-Json
+        if ($downloadSources.apiEndpoints.gitHubApi.baseUrl) {
+            $script:GitHubApiBaseUrl = $downloadSources.apiEndpoints.gitHubApi.baseUrl
+        }
+    } catch {
+        Write-Verbose "Failed to load download-sources.json, using default GitHub API URL: $($_.Exception.Message)"
+    }
+}
+
 $script:UpdateConfig = @{
     GitHubOwner = 'owner'
     GitHubRepo = 'Win11Forge'
-    ApiBaseUrl = 'https://api.github.com'
+    ApiBaseUrl = $script:GitHubApiBaseUrl
     AutoCheckEnabled = $true
     CheckIntervalHours = 24
     IncludePrerelease = $false

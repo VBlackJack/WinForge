@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'Win11ForgeExceptions.psm1'
-    ModuleVersion = '3.5.2'
+    ModuleVersion = '3.6.8'
     GUID = '2fd61c27-0cec-40f3-822e-89d81a3aaa0a'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Core', 'Exceptions', 'ErrorHandling')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.5.2'
+            ReleaseNotes = 'Win11Forge v3.6.7'
         }
     }
 }

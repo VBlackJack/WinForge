@@ -1,8 +1,8 @@
-{
+﻿{
   "_meta": {
     "$schema": "https://json-schema.org/draft-07/schema#",
     "description": "Configuration for applications to disable from Windows startup",
-    "version": "3.5.9",
+    "version": "3.6.8",
     "author": "Julien Bombled",
     "lastUpdated": "2026-02-03"
   },

@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Directory and Path Constants Module v3.1.4
+    Win11Forge - Directory and Path Constants v3.6.8
 
 .DESCRIPTION
     Centralized constants for all directory paths, registry paths, and
@@ -9,7 +9,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 #>
 
 #
@@ -149,6 +149,7 @@ $script:Timeouts = @{
     Download                    = 300    # 5 minutes
     ProcessStart                = 60     # 1 minute
     ApiRequest                  = 30     # 30 seconds
+    OfficeDetection             = 120    # 2 minutes
 }
 
 # === PARALLEL EXECUTION LIMITS ===
@@ -157,6 +158,12 @@ $script:ParallelLimits = @{
     MaxScanJobs                 = 8
     JobCheckIntervalSeconds     = 2
     MaxRetryAttempts            = 3
+}
+
+# === NETWORK DEFAULTS ===
+$script:NetworkDefaults = @{
+    ConnectivityTestHost        = '8.8.8.8'
+    ConnectivityTestCount       = 1
 }
 
 # === ALLOWED EXECUTABLES FOR DETECTION ===
@@ -331,6 +338,27 @@ function Get-ParallelLimit {
     throw [System.ArgumentException]::new("Unknown parallel limit key: $LimitKey")
 }
 
+function Get-NetworkDefault {
+    <#
+    .SYNOPSIS
+        Returns a network default setting by key name.
+    .PARAMETER SettingKey
+        The network setting key name.
+    #>
+    [CmdletBinding()]
+    [OutputType([object])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$SettingKey
+    )
+
+    if ($script:NetworkDefaults.ContainsKey($SettingKey)) {
+        return $script:NetworkDefaults[$SettingKey]
+    }
+
+    throw [System.ArgumentException]::new("Unknown network default key: $SettingKey")
+}
+
 function Get-AllowedDetectionExecutables {
     <#
     .SYNOPSIS
@@ -396,6 +424,7 @@ Export-ModuleMember -Function @(
     'Get-StatePath',
     'Get-Timeout',
     'Get-ParallelLimit',
+    'Get-NetworkDefault',
     'Get-AllowedDetectionExecutables',
     'Get-ShellFolder',
     'Get-RepositoryRoot'

@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Timeout Settings Module v3.3.0
+    Win11Forge - Timeout Settings v3.6.8
 
 .DESCRIPTION
     Provides centralized timeout configuration loading for Win11Forge:
@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 #>
 
 #

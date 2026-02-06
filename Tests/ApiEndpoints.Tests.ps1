@@ -43,43 +43,43 @@ Describe 'ApiEndpoints Module' {
         }
 
         It 'Should export Register-DefaultEndpoints function' {
-            Get-Command Register-DefaultEndpoints -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command Register-DefaultEndpoints -ErrorAction SilentlyContinue | Should -BeOfType [System.Management.Automation.FunctionInfo]
         }
 
         It 'Should export Update-DeploymentState function' {
-            Get-Command Update-DeploymentState -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command Update-DeploymentState -ErrorAction SilentlyContinue | Should -BeOfType [System.Management.Automation.FunctionInfo]
         }
 
         It 'Should export Get-VersionHandler function' {
-            Get-Command Get-VersionHandler -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command Get-VersionHandler -ErrorAction SilentlyContinue | Should -BeOfType [System.Management.Automation.FunctionInfo]
         }
 
         It 'Should export Get-ProfilesHandler function' {
-            Get-Command Get-ProfilesHandler -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command Get-ProfilesHandler -ErrorAction SilentlyContinue | Should -BeOfType [System.Management.Automation.FunctionInfo]
         }
 
         It 'Should export Get-ApplicationsHandler function' {
-            Get-Command Get-ApplicationsHandler -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command Get-ApplicationsHandler -ErrorAction SilentlyContinue | Should -BeOfType [System.Management.Automation.FunctionInfo]
         }
 
         It 'Should export Get-StatusHandler function' {
-            Get-Command Get-StatusHandler -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command Get-StatusHandler -ErrorAction SilentlyContinue | Should -BeOfType [System.Management.Automation.FunctionInfo]
         }
 
         It 'Should export Start-DeploymentHandler function' {
-            Get-Command Start-DeploymentHandler -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command Start-DeploymentHandler -ErrorAction SilentlyContinue | Should -BeOfType [System.Management.Automation.FunctionInfo]
         }
 
         It 'Should export Start-RollbackHandler function' {
-            Get-Command Start-RollbackHandler -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command Start-RollbackHandler -ErrorAction SilentlyContinue | Should -BeOfType [System.Management.Automation.FunctionInfo]
         }
 
         It 'Should export Get-CacheStatsHandler function' {
-            Get-Command Get-CacheStatsHandler -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command Get-CacheStatsHandler -ErrorAction SilentlyContinue | Should -BeOfType [System.Management.Automation.FunctionInfo]
         }
 
         It 'Should export Get-CsrfTokenHandler function' {
-            Get-Command Get-CsrfTokenHandler -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+            Get-Command Get-CsrfTokenHandler -ErrorAction SilentlyContinue | Should -BeOfType [System.Management.Automation.FunctionInfo]
         }
     }
 
@@ -87,7 +87,11 @@ Describe 'ApiEndpoints Module' {
         It 'Should return version information' {
             $context = @{}
             $result = Get-VersionHandler -Context $context
-            $result | Should -Not -BeNullOrEmpty
+            $result | Should -BeOfType [hashtable]
+            $result.Keys | Should -Contain 'framework'
+            $result.Keys | Should -Contain 'version'
+            $result.Keys | Should -Contain 'apiVersion'
+            $result.Keys | Should -Contain 'timestamp'
         }
 
         It 'Should include framework name' {
@@ -97,7 +101,8 @@ Describe 'ApiEndpoints Module' {
 
         It 'Should include version string' {
             $result = Get-VersionHandler -Context @{}
-            $result.version | Should -Not -BeNullOrEmpty
+            $result.version | Should -BeOfType [string]
+            $result.version | Should -Match '^\d+\.\d+\.\d+$'
         }
 
         It 'Should include apiVersion' {
@@ -107,19 +112,24 @@ Describe 'ApiEndpoints Module' {
 
         It 'Should include timestamp' {
             $result = Get-VersionHandler -Context @{}
-            $result.timestamp | Should -Not -BeNullOrEmpty
+            $result.timestamp | Should -BeOfType [string]
+            $result.timestamp | Should -Match '^\d{4}-\d{2}-\d{2}T'
         }
     }
 
     Context 'Get-ProfilesHandler' {
         It 'Should return profiles information' {
             $result = Get-ProfilesHandler -Context @{}
-            $result | Should -Not -BeNullOrEmpty
+            $result | Should -BeOfType [hashtable]
+            $result.Keys | Should -Contain 'profiles'
+            $result.Keys | Should -Contain 'count'
+            $result.Keys | Should -Contain 'profilesDirectory'
         }
 
         It 'Should include profiles array' {
             $result = Get-ProfilesHandler -Context @{}
-            $result.profiles | Should -Not -BeNullOrEmpty
+            $result.profiles | Should -BeOfType [hashtable]
+            $result.profiles.Count | Should -BeGreaterThan 0
         }
 
         It 'Should include count property' {
@@ -129,7 +139,8 @@ Describe 'ApiEndpoints Module' {
 
         It 'Should include profilesDirectory' {
             $result = Get-ProfilesHandler -Context @{}
-            $result.profilesDirectory | Should -Not -BeNullOrEmpty
+            $result.profilesDirectory | Should -BeOfType [string]
+            $result.profilesDirectory | Should -BeLike '*Profiles'
         }
 
         It 'Should return known profiles' {
@@ -142,7 +153,10 @@ Describe 'ApiEndpoints Module' {
     Context 'Get-ApplicationsHandler' {
         It 'Should return applications information' {
             $result = Get-ApplicationsHandler -Context @{}
-            $result | Should -Not -BeNullOrEmpty
+            $result | Should -BeOfType [hashtable]
+            $result.Keys | Should -Contain 'applications'
+            $result.Keys | Should -Contain 'count'
+            $result.Keys | Should -Contain 'categories'
         }
 
         It 'Should include applications property' {
@@ -188,12 +202,16 @@ Describe 'ApiEndpoints Module' {
     Context 'Get-StatusHandler' {
         It 'Should return status information' {
             $result = Get-StatusHandler -Context @{}
-            $result | Should -Not -BeNullOrEmpty
+            $result | Should -BeOfType [hashtable]
+            $result.Keys | Should -Contain 'status'
+            $result.Keys | Should -Contain 'progress'
+            $result.Keys | Should -Contain 'timestamp'
         }
 
         It 'Should include status field' {
             $result = Get-StatusHandler -Context @{}
-            $result.status | Should -Not -BeNullOrEmpty
+            $result.status | Should -BeOfType [string]
+            $result.status | Should -BeIn @('Idle', 'Starting', 'Running', 'Completed', 'Failed', 'RollingBack')
         }
 
         It 'Should include progress field' {
@@ -203,7 +221,8 @@ Describe 'ApiEndpoints Module' {
 
         It 'Should include timestamp' {
             $result = Get-StatusHandler -Context @{}
-            $result.timestamp | Should -Not -BeNullOrEmpty
+            $result.timestamp | Should -BeOfType [string]
+            $result.timestamp | Should -Match '^\d{4}-\d{2}-\d{2}T'
         }
     }
 
@@ -217,28 +236,28 @@ Describe 'ApiEndpoints Module' {
             $context = @{ Body = @{} }
             $result = Start-DeploymentHandler -Context $context
             $result.success | Should -Be $false
-            $result.error | Should -Not -BeNullOrEmpty
+            $result.error | Should -BeOfType [string]
         }
 
         It 'Should reject path traversal attempt with ..' {
             $context = @{ Body = @{ profile = '../../../etc/passwd' } }
             $result = Start-DeploymentHandler -Context $context
             $result.success | Should -Be $false
-            $result.error | Should -Not -BeNullOrEmpty
+            $result.error | Should -BeOfType [string]
         }
 
         It 'Should reject path traversal attempt with forward slash' {
             $context = @{ Body = @{ profile = 'test/profile' } }
             $result = Start-DeploymentHandler -Context $context
             $result.success | Should -Be $false
-            $result.error | Should -Not -BeNullOrEmpty
+            $result.error | Should -BeOfType [string]
         }
 
         It 'Should reject path traversal attempt with backslash' {
             $context = @{ Body = @{ profile = 'test\profile' } }
             $result = Start-DeploymentHandler -Context $context
             $result.success | Should -Be $false
-            $result.error | Should -Not -BeNullOrEmpty
+            $result.error | Should -BeOfType [string]
         }
 
         It 'Should reject profile name longer than 100 characters' {
@@ -246,21 +265,29 @@ Describe 'ApiEndpoints Module' {
             $context = @{ Body = @{ profile = $longName } }
             $result = Start-DeploymentHandler -Context $context
             $result.success | Should -Be $false
-            $result.error | Should -Not -BeNullOrEmpty
+            $result.error | Should -BeOfType [string]
         }
 
         It 'Should reject non-existent profile' {
             $context = @{ Body = @{ profile = 'NonExistentProfile12345' } }
             $result = Start-DeploymentHandler -Context $context
             $result.success | Should -Be $false
-            $result.error | Should -Not -BeNullOrEmpty
+            $result.error | Should -BeOfType [string]
         }
 
         It 'Should handle valid profile' {
             $context = @{ Body = @{ profile = 'Base' } }
             $result = Start-DeploymentHandler -Context $context
-            # May succeed or fail depending on environment
-            $result | Should -Not -BeNullOrEmpty
+            $result | Should -BeOfType [hashtable]
+            $result.Keys | Should -Contain 'success'
+            # May succeed or fail depending on schema validation availability
+            if ($result.success) {
+                $result.profile | Should -Be 'Base'
+                $result.startTime | Should -Match '^\d{4}-\d{2}-\d{2}T'
+            } else {
+                $result.Keys | Should -Contain 'error'
+                $result.error | Should -BeOfType [string]
+            }
         }
 
         It 'Should reject deployment when already running' {
@@ -268,14 +295,22 @@ Describe 'ApiEndpoints Module' {
             $context = @{ Body = @{ profile = 'Base' } }
             $result = Start-DeploymentHandler -Context $context
             $result.success | Should -Be $false
-            $result.error | Should -Not -BeNullOrEmpty
+            $result.error | Should -BeOfType [string]
         }
 
         It 'Should accept testMode in request body' {
             $context = @{ Body = @{ profile = 'Base'; testMode = $true } }
             $result = Start-DeploymentHandler -Context $context
-            # If successful, testMode should be true; otherwise just check result exists
-            $result | Should -Not -BeNullOrEmpty
+            $result | Should -BeOfType [hashtable]
+            $result.Keys | Should -Contain 'success'
+            # May succeed or fail depending on schema validation availability
+            if ($result.success) {
+                $result.testMode | Should -Be $true
+                $result.profile | Should -Be 'Base'
+            } else {
+                $result.Keys | Should -Contain 'error'
+                $result.error | Should -BeOfType [string]
+            }
         }
     }
 
@@ -283,25 +318,30 @@ Describe 'ApiEndpoints Module' {
         It 'Should return response' {
             $context = @{ Body = @{} }
             $result = Start-RollbackHandler -Context $context
-            $result | Should -Not -BeNullOrEmpty
+            $result | Should -BeOfType [hashtable]
+            $result.Keys | Should -Contain 'success'
         }
 
         It 'Should handle force parameter' {
             $context = @{ Body = @{ force = $false } }
             $result = Start-RollbackHandler -Context $context
-            $result | Should -Not -BeNullOrEmpty
+            $result | Should -BeOfType [hashtable]
+            $result.Keys | Should -Contain 'success'
         }
     }
 
     Context 'Get-CacheStatsHandler' {
         It 'Should return cache statistics' {
             $result = Get-CacheStatsHandler -Context @{}
-            $result | Should -Not -BeNullOrEmpty
+            $result | Should -BeOfType [hashtable]
+            $result.Keys | Should -Contain 'timestamp'
+            $result.Keys | Should -Contain 'winget'
         }
 
         It 'Should include timestamp' {
             $result = Get-CacheStatsHandler -Context @{}
-            $result.timestamp | Should -Not -BeNullOrEmpty
+            $result.timestamp | Should -BeOfType [string]
+            $result.timestamp | Should -Match '^\d{4}-\d{2}-\d{2}T'
         }
     }
 
@@ -369,8 +409,9 @@ Describe 'ApiEndpoints Module' {
             $context = @{ Body = @{ profile = "Base`0malicious" } }
             # The path functions should handle this, but profile should still be Base if it passes validation
             $result = Start-DeploymentHandler -Context $context
-            # Either it blocks it or handles it safely
-            $result | Should -Not -BeNullOrEmpty
+            # Either it blocks it or handles it safely - must return a hashtable with success key
+            $result | Should -BeOfType [hashtable]
+            $result.Keys | Should -Contain 'success'
         }
 
         It 'Should handle empty profile name' {

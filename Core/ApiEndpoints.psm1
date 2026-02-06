@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - API Endpoints Module v3.1.4
+    Win11Forge - API Endpoints Module
 
 .DESCRIPTION
     Defines REST API endpoint handlers for Win11Forge:
@@ -13,7 +13,6 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
 #>
 
 #
@@ -37,11 +36,31 @@ Set-StrictMode -Version Latest
 # === MODULE INITIALIZATION ===
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
+
+# Import Localization module for i18n
+$script:LocalizationPath = Join-Path $script:ModuleRoot 'Localization.psm1'
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationPath) {
+        Import-Module -Name $script:LocalizationPath -Force
+    }
+}
+
 $script:RestApiServerPath = Join-Path $script:ModuleRoot 'RestApiServer.psm1'
 $script:VersionPath = Join-Path $script:RepositoryRoot 'Config\version.json'
+$script:FrameworkVersion = 'unknown'
+if (Test-Path -Path $script:VersionPath) {
+    try {
+        $script:FrameworkVersion = (Get-Content -Path $script:VersionPath -Raw | ConvertFrom-Json).Version
+    } catch {
+        Write-Verbose "Failed to read version.json at module load: $($_.Exception.Message)"
+    }
+}
 $script:DatabasePath = Join-Path $script:RepositoryRoot 'Apps\Database\applications.json'
 $script:ProfilesPath = Join-Path $script:RepositoryRoot 'Profiles'
 $script:SchemasPath = Join-Path $script:RepositoryRoot 'Schemas'
+
+# === VALIDATION CONSTANTS ===
+$script:MAX_PROFILE_NAME_LENGTH = 100
 
 # Import RestApiServer module
 if (-not (Get-Command -Name Register-ApiEndpoint -ErrorAction SilentlyContinue)) {
@@ -113,7 +132,7 @@ function Test-ApiRequestBody {
         $result.IsValid = $true
     }
     catch {
-        $result.Errors = @("Request body validation failed: $($_.Exception.Message)")
+        $result.Errors = @((Get-LocalizedString -Key 'api.endpoints.request_body_validation_failed' -Parameters @{ Error = $_.Exception.Message }))
     }
 
     return $result
@@ -147,7 +166,7 @@ function Test-JsonFileValid {
 
     try {
         if (-not (Test-Path -Path $FilePath)) {
-            $result.ErrorMessage = "File not found: $FilePath"
+            $result.ErrorMessage = (Get-LocalizedString -Key 'api.endpoints.file_not_found' -Parameters @{ FilePath = $FilePath })
             return $result
         }
 
@@ -160,7 +179,7 @@ function Test-JsonFileValid {
             if (Test-Path -Path $schemaPath) {
                 $schemaValidation = Test-JsonAgainstSchema -JsonContent $jsonContent -SchemaPath $schemaPath
                 if (-not $schemaValidation.IsValid) {
-                    $result.ErrorMessage = "Schema validation failed: $($schemaValidation.Errors -join '; ')"
+                    $result.ErrorMessage = (Get-LocalizedString -Key 'api.endpoints.schema_validation_failed' -Parameters @{ Errors = ($schemaValidation.Errors -join '; ') })
                     return $result
                 }
             }
@@ -169,7 +188,7 @@ function Test-JsonFileValid {
         $result.IsValid = $true
     }
     catch {
-        $result.ErrorMessage = "JSON parsing failed: $($_.Exception.Message)"
+        $result.ErrorMessage = (Get-LocalizedString -Key 'api.endpoints.json_parsing_failed' -Parameters @{ Error = $_.Exception.Message })
     }
 
     return $result
@@ -191,12 +210,25 @@ function Get-VersionHandler {
     <#
     .SYNOPSIS
         Handler for GET /api/version
+    .DESCRIPTION
+        Returns framework version information including the current version
+        from Config/version.json, the API version, and a server timestamp.
+    .PARAMETER Context
+        The API request context containing headers, query parameters, and body.
+    .OUTPUTS
+        Hashtable with framework name, version, apiVersion, and timestamp.
+    .EXAMPLE
+        $result = Get-VersionHandler -Context $requestContext
     #>
-    param($Context)
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        $Context
+    )
 
     $versionInfo = @{
         framework = 'Win11Forge'
-        version = '3.1.4'
+        version = $script:FrameworkVersion
         apiVersion = '1.0'
         timestamp = (Get-Date).ToString('o')
     }
@@ -218,8 +250,21 @@ function Get-ProfilesHandler {
     <#
     .SYNOPSIS
         Handler for GET /api/profiles
+    .DESCRIPTION
+        Enumerates all deployment profiles from the Profiles/ directory.
+        Returns each profile's name, description, application count, and file path.
+    .PARAMETER Context
+        The API request context containing headers, query parameters, and body.
+    .OUTPUTS
+        Hashtable with profiles array, count, and profilesDirectory path.
+    .EXAMPLE
+        $result = Get-ProfilesHandler -Context $requestContext
     #>
-    param($Context)
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        $Context
+    )
 
     $profiles = @()
 
@@ -240,7 +285,7 @@ function Get-ProfilesHandler {
                 $profiles += @{
                     id = $file.BaseName
                     name = $file.BaseName
-                    error = "Failed to parse profile: $($_.Exception.Message)"
+                    error = (Get-LocalizedString -Key 'api.endpoints.profile_parse_failed' -Parameters @{ Error = $_.Exception.Message })
                 }
             }
         }
@@ -257,8 +302,22 @@ function Get-ApplicationsHandler {
     <#
     .SYNOPSIS
         Handler for GET /api/applications
+    .DESCRIPTION
+        Returns the application database with optional filtering by category
+        or search term. Supports query parameters: ?category=Gaming&search=steam.
+        Search terms are regex-escaped to prevent ReDoS attacks.
+    .PARAMETER Context
+        The API request context. Query parameters 'category' and 'search' are supported.
+    .OUTPUTS
+        Hashtable with applications array, count, categories breakdown, and databasePath.
+    .EXAMPLE
+        $result = Get-ApplicationsHandler -Context $requestContext
     #>
-    param($Context)
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        $Context
+    )
 
     $applications = @()
     $categories = @{}
@@ -300,7 +359,7 @@ function Get-ApplicationsHandler {
             }
         } catch {
             return @{
-                error = "Failed to load application database: $($_.Exception.Message)"
+                error = (Get-LocalizedString -Key 'api.endpoints.database_load_failed' -Parameters @{ Error = $_.Exception.Message })
             }
         }
     }
@@ -335,8 +394,22 @@ function Get-StatusHandler {
     <#
     .SYNOPSIS
         Handler for GET /api/status
+    .DESCRIPTION
+        Returns the current deployment state including status, profile,
+        progress percentage, uptime, processed applications count, and errors.
+    .PARAMETER Context
+        The API request context containing headers, query parameters, and body.
+    .OUTPUTS
+        Hashtable with status, currentProfile, progress, startTime, uptime,
+        applicationsProcessed, errors, and timestamp.
+    .EXAMPLE
+        $result = Get-StatusHandler -Context $requestContext
     #>
-    param($Context)
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        $Context
+    )
 
     $uptime = $null
     if ($script:DeploymentState.StartTime) {
@@ -359,13 +432,29 @@ function Start-DeploymentHandler {
     <#
     .SYNOPSIS
         Handler for POST /api/deploy
+    .DESCRIPTION
+        Initiates a deployment for the specified profile. Validates the request
+        body against the deployment schema, checks for path traversal attacks,
+        and verifies the profile exists before starting. Returns an error if a
+        deployment is already in progress.
+    .PARAMETER Context
+        The API request context. Body must contain 'profile' (required) and
+        optionally 'testMode' (boolean).
+    .OUTPUTS
+        Hashtable with success, message, profile, testMode, and startTime.
+    .EXAMPLE
+        $result = Start-DeploymentHandler -Context $requestContext
     #>
-    param($Context)
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        $Context
+    )
 
     if ($script:DeploymentState.Status -eq 'Running') {
         return @{
             success = $false
-            error = 'Deployment is already in progress'
+            error = (Get-LocalizedString -Key 'api.endpoints.deployment_already_running')
             currentProfile = $script:DeploymentState.CurrentProfile
         }
     }
@@ -377,7 +466,7 @@ function Start-DeploymentHandler {
     if (-not $validationResult.IsValid) {
         return @{
             success = $false
-            error = 'Request validation failed'
+            error = (Get-LocalizedString -Key 'api.endpoints.request_validation_failed')
             validationErrors = $validationResult.Errors
         }
     }
@@ -385,7 +474,7 @@ function Start-DeploymentHandler {
     if (-not $body -or -not $body.profile) {
         return @{
             success = $false
-            error = 'Profile name is required in request body'
+            error = (Get-LocalizedString -Key 'api.endpoints.profile_name_required')
         }
     }
 
@@ -396,15 +485,15 @@ function Start-DeploymentHandler {
     if ($profileName -match '\.\.|[/\\]') {
         return @{
             success = $false
-            error = 'Invalid profile name: contains forbidden characters'
+            error = (Get-LocalizedString -Key 'api.endpoints.profile_name_invalid_chars')
         }
     }
 
     # Security: Validate profile name length
-    if ($profileName.Length -gt 100) {
+    if ($profileName.Length -gt $script:MAX_PROFILE_NAME_LENGTH) {
         return @{
             success = $false
-            error = 'Profile name too long (max 100 characters)'
+            error = (Get-LocalizedString -Key 'api.endpoints.profile_name_too_long' -Parameters @{ MaxLength = $script:MAX_PROFILE_NAME_LENGTH })
         }
     }
 
@@ -417,14 +506,14 @@ function Start-DeploymentHandler {
     if (-not $canonicalPath.StartsWith($canonicalBase, [StringComparison]::OrdinalIgnoreCase)) {
         return @{
             success = $false
-            error = 'Security violation: Invalid profile path'
+            error = (Get-LocalizedString -Key 'api.endpoints.security_invalid_profile_path')
         }
     }
 
     if (-not (Test-Path $profilePath)) {
         return @{
             success = $false
-            error = "Profile not found: $profileName"
+            error = (Get-LocalizedString -Key 'api.endpoints.profile_not_found' -Parameters @{ ProfileName = $profileName })
         }
     }
 
@@ -441,7 +530,7 @@ function Start-DeploymentHandler {
 
     return @{
         success = $true
-        message = "Deployment started for profile: $profileName"
+        message = (Get-LocalizedString -Key 'api.endpoints.deployment_started' -Parameters @{ ProfileName = $profileName })
         profile = $profileName
         testMode = $testMode
         startTime = $script:DeploymentState.StartTime.ToString('o')
@@ -452,8 +541,23 @@ function Start-RollbackHandler {
     <#
     .SYNOPSIS
         Handler for POST /api/rollback
+    .DESCRIPTION
+        Handles rollback requests. Without force=true, returns a rollback summary
+        showing which applications can be rolled back. With force=true, executes
+        the rollback via RollbackManager. Validates the request body against
+        the rollback schema.
+    .PARAMETER Context
+        The API request context. Body optionally contains 'force' (boolean).
+    .OUTPUTS
+        Hashtable with success, message/error, and rollback summary or execution results.
+    .EXAMPLE
+        $result = Start-RollbackHandler -Context $requestContext
     #>
-    param($Context)
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        $Context
+    )
 
     $body = $Context.Body
 
@@ -462,7 +566,7 @@ function Start-RollbackHandler {
     if (-not $validationResult.IsValid) {
         return @{
             success = $false
-            error = 'Request validation failed'
+            error = (Get-LocalizedString -Key 'api.endpoints.request_validation_failed')
             validationErrors = $validationResult.Errors
         }
     }
@@ -481,7 +585,7 @@ function Start-RollbackHandler {
         if ($summary.TotalApps -eq 0) {
             return @{
                 success = $false
-                error = 'No applications to rollback'
+                error = (Get-LocalizedString -Key 'api.endpoints.no_apps_to_rollback')
             }
         }
 
@@ -504,7 +608,7 @@ function Start-RollbackHandler {
 
         return @{
             success = $true
-            message = 'Rollback summary retrieved. Set force=true to execute.'
+            message = (Get-LocalizedString -Key 'api.endpoints.rollback_summary_retrieved')
             summary = @{
                 sessionId = $summary.SessionId
                 totalApps = $summary.TotalApps
@@ -516,7 +620,7 @@ function Start-RollbackHandler {
 
     return @{
         success = $false
-        error = 'RollbackManager not available'
+        error = (Get-LocalizedString -Key 'api.endpoints.rollback_manager_unavailable')
     }
 }
 
@@ -524,8 +628,22 @@ function Get-CacheStatsHandler {
     <#
     .SYNOPSIS
         Handler for GET /api/cache/stats
+    .DESCRIPTION
+        Returns Winget cache statistics including hit/miss rates, cache age,
+        search cache entries, and last warmup timestamp. Requires WingetCache
+        module to be available.
+    .PARAMETER Context
+        The API request context containing headers, query parameters, and body.
+    .OUTPUTS
+        Hashtable with winget cache statistics and timestamp.
+    .EXAMPLE
+        $result = Get-CacheStatsHandler -Context $requestContext
     #>
-    param($Context)
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        $Context
+    )
 
     # Import WingetCache if available
     $wingetCachePath = Join-Path $script:RepositoryRoot 'Modules\WingetCache.psm1'
@@ -565,8 +683,18 @@ function Get-CsrfTokenHandler {
         Generates and returns a new CSRF token for the authenticated API key.
         This token must be included in the X-CSRF-Token header for all
         state-changing requests (POST, PUT, DELETE).
+    .PARAMETER Context
+        The API request context. Must include a valid API key in headers.
+    .OUTPUTS
+        Hashtable with csrfToken, expiresInMinutes, headerName, and timestamp.
+    .EXAMPLE
+        $result = Get-CsrfTokenHandler -Context $requestContext
     #>
-    param($Context)
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        $Context
+    )
 
     # Get API key from headers to associate token
     $config = Get-ApiConfig
@@ -574,7 +702,7 @@ function Get-CsrfTokenHandler {
 
     if (-not $apiKey) {
         return @{
-            error = 'API key required to obtain CSRF token'
+            error = (Get-LocalizedString -Key 'api.endpoints.csrf_api_key_required')
             code = 'UNAUTHORIZED'
         }
     }
@@ -632,7 +760,7 @@ function Register-DefaultEndpoints {
     Register-ApiEndpoint -Path '/api/cache/stats' -Method 'GET' -Handler ${function:Get-CacheStatsHandler} -Description 'Get cache statistics'
     Register-ApiEndpoint -Path '/api/csrf-token' -Method 'GET' -Handler ${function:Get-CsrfTokenHandler} -Description 'Get CSRF token for state-changing requests'
 
-    Write-Verbose "Registered 8 default API endpoints"
+    Write-Verbose (Get-LocalizedString -Key 'api.endpoints.default_endpoints_registered' -Parameters @{ Count = 8 })
 }
 
 function Update-DeploymentState {

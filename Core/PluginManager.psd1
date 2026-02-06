@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'PluginManager.psm1'
-    ModuleVersion = '3.5.2'
+    ModuleVersion = '3.6.8'
     GUID = '131acdcf-d3a6-4802-89fb-fa1837a7ebe2'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Core', 'Plugin', 'Extensibility')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.5.2'
+            ReleaseNotes = 'Win11Forge v3.6.7'
         }
     }
 }

@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Winget Cache Module v3.1.4
+    Win11Forge - Winget Cache v3.6.8
 
 .DESCRIPTION
     Provides intelligent caching for Winget operations to reduce
@@ -13,7 +13,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 #>
 
 #

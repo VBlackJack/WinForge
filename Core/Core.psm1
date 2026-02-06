@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Core Module v3.0.0
+    Win11Forge - Core Module
 
 .DESCRIPTION
     Provides core functionality for the Win11Forge framework:
@@ -11,7 +11,6 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
     This module must be loaded before any other framework modules
 #>
 
@@ -82,16 +81,35 @@ function Initialize-Logging {
         New-Item -Path $logDirectory -ItemType Directory -Force | Out-Null
     }
 
+    # Read version from Config/version.json (single source of truth)
+    $versionJsonPath = Join-Path (Split-Path (Split-Path -Parent $PSCommandPath) -Parent) 'Config\version.json'
+    $frameworkVersion = 'unknown'
+    if (Test-Path -Path $versionJsonPath) {
+        try {
+            $versionData = Get-Content -Path $versionJsonPath -Raw | ConvertFrom-Json
+            $frameworkVersion = $versionData.Version
+        } catch {
+            Write-Verbose "Failed to read version.json: $($_.Exception.Message)"
+        }
+    }
+
     # Initialize log file with header
+    $separator = '=' * 80
+    $headerLine = Get-LocalizedString -Key 'log.header' -Parameters @{ Version = $frameworkVersion }
+    $startedLine = Get-LocalizedString -Key 'log.started' -Parameters @{ DateTime = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') }
+    $computerLine = Get-LocalizedString -Key 'log.computer' -Parameters @{ Name = $env:COMPUTERNAME }
+    $userLine = Get-LocalizedString -Key 'log.user' -Parameters @{ Name = $env:USERNAME }
+    $psLine = Get-LocalizedString -Key 'log.powershell_version' -Parameters @{ Version = "$($PSVersionTable.PSVersion)" }
+    $osLine = Get-LocalizedString -Key 'log.os_version' -Parameters @{ OS = [System.Environment]::OSVersion.VersionString }
     $header = @"
-================================================================================
-Win11Forge Framework v3.0.0 - Deployment Log
-Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
-Computer: $env:COMPUTERNAME
-User: $env:USERNAME
-PowerShell: $($PSVersionTable.PSVersion)
-OS: $([System.Environment]::OSVersion.VersionString)
-================================================================================
+$separator
+$headerLine
+$startedLine
+$computerLine
+$userLine
+$psLine
+$osLine
+$separator
 
 "@
 
@@ -312,13 +330,12 @@ function Test-InternetConnection {
     param()
 
     try {
-        # Use Google DNS as connectivity test target
-        $connectivityTestHost = '8.8.8.8'
+        $connectivityTestHost = Get-NetworkDefault -SettingKey 'ConnectivityTestHost'
         $result = Test-Connection -ComputerName $connectivityTestHost -Count 1 -Quiet -ErrorAction Stop
         return $result
     }
     catch {
-        Write-Status -Message "Internet connectivity check failed: $($_.Exception.Message)" -Level 'Verbose'
+        Write-Status -Message (Get-LocalizedString -Key 'core.internet_check_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
         return $false
     }
 }
@@ -334,7 +351,7 @@ function Assert-Administrator {
     if (-not (Test-Administrator)) {
         Write-Status -Message (Get-LocalizedString -Key 'core.admin_required') -Level 'Error'
         Write-Status -Message (Get-LocalizedString -Key 'core.admin_run_as') -Level 'Error'
-        throw 'Administrator privileges required'
+        throw (Get-LocalizedString -Key 'core.admin_required')
     }
 }
 
@@ -351,7 +368,7 @@ function Assert-InternetConnection {
     if (-not (Test-InternetConnection)) {
         Write-Status -Message (Get-LocalizedString -Key 'core.internet_no_connection') -Level 'Error'
         Write-Status -Message (Get-LocalizedString -Key 'core.internet_ensure_connection') -Level 'Error'
-        throw 'Internet connection required'
+        throw (Get-LocalizedString -Key 'core.internet_no_connection')
     }
 
     Write-Status -Message (Get-LocalizedString -Key 'core.internet_verified') -Level 'Success'
@@ -631,7 +648,7 @@ function Clear-TemporaryFiles {
         }
 
         if ($count -gt 0) {
-            Write-Status -Message "Cleaned up $count temporary files" -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'core.cleaned_temp_files' -Parameters @{ Count = $count }) -Level 'Info'
         }
     }
     catch {

@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - User Profile Manager Module v3.1.4
+    Win11Forge - User Profile Manager v3.6.8
 
 .DESCRIPTION
     Manages persistent user profiles for Win11Forge:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 #>
 
 #
@@ -38,11 +38,19 @@ $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 $script:UserProfilesDir = Join-Path $env:LOCALAPPDATA 'Win11Forge\UserProfiles'
 $script:ConfigPath = Join-Path $script:RepositoryRoot 'Config\user-profiles-settings.json'
+$script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
 
 # Import Core module for logging
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
+    }
+}
+
+# Import Localization module
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force
     }
 }
 
@@ -74,7 +82,7 @@ function Initialize-UserProfileManager {
             New-Item -Path $script:UserProfilesDir -ItemType Directory -Force | Out-Null
             Write-Verbose "Created user profiles directory: $script:UserProfilesDir"
         } catch {
-            Write-Warning "Failed to create user profiles directory: $($_.Exception.Message)"
+            Write-Warning (Get-LocalizedString -Key 'userProfiles.error.createDirFailed' -Parameters @{ Error = $_.Exception.Message })
         }
     }
 }
@@ -147,7 +155,7 @@ function Save-UserProfile {
     $profilePath = Join-Path $script:UserProfilesDir "$Name.json"
 
     if ((Test-Path $profilePath) -and -not $Overwrite) {
-        throw "Profile '$Name' already exists. Use -Overwrite to replace it."
+        throw (Get-LocalizedString -Key 'userProfiles.error.alreadyExistsOverwrite' -Parameters @{ Name = $Name })
     }
 
     $existingProfile = $null
@@ -177,10 +185,10 @@ function Save-UserProfile {
 
     try {
         $profile | ConvertTo-Json -Depth 10 | Set-Content $profilePath -Encoding UTF8
-        Write-Status -Message "Profile saved: $Name" -Level 'Success' -Category 'Configuration'
+        Write-Status -Message (Get-LocalizedString -Key 'userProfiles.saved' -Parameters @{ Name = $Name }) -Level 'Success' -Category 'Configuration'
         return $profilePath
     } catch {
-        Write-Status -Message "Failed to save profile: $($_.Exception.Message)" -Level 'Error' -Category 'Configuration'
+        Write-Status -Message (Get-LocalizedString -Key 'userProfiles.error.saveFailed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Configuration'
         throw
     }
 }
@@ -278,14 +286,14 @@ function Get-UserProfile {
     $profilePath = Join-Path $script:UserProfilesDir "$Name.json"
 
     if (-not (Test-Path $profilePath)) {
-        Write-Warning "Profile not found: $Name"
+        Write-Warning (Get-LocalizedString -Key 'userProfiles.not_found' -Parameters @{ Name = $Name })
         return $null
     }
 
     try {
         return Get-Content $profilePath -Raw | ConvertFrom-Json
     } catch {
-        Write-Warning "Failed to load profile: $($_.Exception.Message)"
+        Write-Warning (Get-LocalizedString -Key 'userProfiles.error.loadFailed' -Parameters @{ Error = $_.Exception.Message })
         return $null
     }
 }
@@ -316,20 +324,20 @@ function Remove-UserProfile {
     $profilePath = Join-Path $script:UserProfilesDir "$Name.json"
 
     if (-not (Test-Path $profilePath)) {
-        Write-Warning "Profile not found: $Name"
+        Write-Warning (Get-LocalizedString -Key 'userProfiles.not_found' -Parameters @{ Name = $Name })
         return
     }
 
     if (-not $Confirm) {
-        Write-Warning "Use -Confirm to delete the profile"
+        Write-Warning (Get-LocalizedString -Key 'userProfiles.error.confirmRequired')
         return
     }
 
     try {
         Remove-Item $profilePath -Force
-        Write-Status -Message "Profile removed: $Name" -Level 'Info' -Category 'Configuration'
+        Write-Status -Message (Get-LocalizedString -Key 'userProfiles.removed' -Parameters @{ Name = $Name }) -Level 'Info' -Category 'Configuration'
     } catch {
-        Write-Status -Message "Failed to remove profile: $($_.Exception.Message)" -Level 'Error' -Category 'Configuration'
+        Write-Status -Message (Get-LocalizedString -Key 'userProfiles.error.removeFailed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Configuration'
     }
 }
 
@@ -373,7 +381,7 @@ function Export-UserProfile {
 
     $profile = Get-UserProfile -Name $Name
     if (-not $profile) {
-        throw "Profile not found: $Name"
+        throw (Get-LocalizedString -Key 'userProfiles.not_found' -Parameters @{ Name = $Name })
     }
 
     $exportData = [ordered]@{
@@ -398,10 +406,10 @@ function Export-UserProfile {
 
     try {
         $exportData | ConvertTo-Json -Depth 10 | Set-Content $OutputPath -Encoding UTF8
-        Write-Status -Message "Profile exported: $OutputPath" -Level 'Success' -Category 'Configuration'
+        Write-Status -Message (Get-LocalizedString -Key 'userProfiles.exported' -Parameters @{ Path = $OutputPath }) -Level 'Success' -Category 'Configuration'
         return $OutputPath
     } catch {
-        Write-Status -Message "Failed to export profile: $($_.Exception.Message)" -Level 'Error' -Category 'Configuration'
+        Write-Status -Message (Get-LocalizedString -Key 'userProfiles.error.exportFailed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error' -Category 'Configuration'
         throw
     }
 }
@@ -452,14 +460,14 @@ function Import-UserProfile {
 
         # Validate required fields
         if (-not $importData.Name -or -not $importData.Applications) {
-            throw "Invalid profile format: missing required fields"
+            throw (Get-LocalizedString -Key 'userProfiles.error.invalidFormat')
         }
 
         $profileName = if ($NewName) { $NewName } else { $importData.Name }
         $destPath = Join-Path $script:UserProfilesDir "$profileName.json"
 
         if ((Test-Path $destPath) -and -not $Overwrite) {
-            throw "Profile '$profileName' already exists. Use -Overwrite to replace it."
+            throw (Get-LocalizedString -Key 'userProfiles.error.alreadyExistsOverwrite' -Parameters @{ Name = $profileName })
         }
 
         # Create new profile with import data
@@ -479,7 +487,7 @@ function Import-UserProfile {
 
         $profile | ConvertTo-Json -Depth 10 | Set-Content $destPath -Encoding UTF8
 
-        Write-Status -Message "Profile imported: $profileName" -Level 'Success' -Category 'Configuration'
+        Write-Status -Message (Get-LocalizedString -Key 'userProfiles.imported' -Parameters @{ Name = $profileName }) -Level 'Success' -Category 'Configuration'
         return $destPath
     } catch {
         Write-Status -Message "Failed to import profile: $($_.Exception.Message)" -Level 'Error' -Category 'Configuration'

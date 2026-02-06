@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Win11Forge - Environment Detection Module v2.0
 
@@ -8,7 +8,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
     Supports: Windows Sandbox, VMware, Hyper-V, Physical machines
 #>
 

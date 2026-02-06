@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Win11Forge - Prerequisites installation module (v2.1.2 FIXED)
 
@@ -14,7 +14,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
     Fixed: Write-Status empty strings handling
     Fixed: Chocolatey installation arguments
     All bugs from deployment test have been corrected
@@ -41,6 +41,7 @@ Set-StrictMode -Version Latest
 # === MODULE INITIALIZATION ===
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
+$script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
 
 # Use centralized module loader for core dependencies
 $script:ModuleLoaderPath = Join-Path $script:RepositoryRoot 'Core\ModuleLoader.psm1'
@@ -57,11 +58,11 @@ if (Test-Path -Path $script:ModuleLoaderPath) {
             throw 'Core module is required before loading Prerequisites.psm1'
         }
     }
-    $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
-    if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
-        if (Test-Path -Path $script:LocalizationModulePath) {
-            Import-Module -Name $script:LocalizationModulePath -Force
-        }
+}
+
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
     }
 }
 

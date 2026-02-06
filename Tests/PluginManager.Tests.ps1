@@ -32,6 +32,9 @@ BeforeAll {
     $script:ModuleRoot = Join-Path $PSScriptRoot '..\Core'
     $script:ModulePath = Join-Path $script:ModuleRoot 'PluginManager.psm1'
 
+    # PluginManager depends on Localization for i18n strings
+    $localizationPath = Join-Path $script:ModuleRoot 'Localization.psm1'
+    Import-Module $localizationPath -Force -Global -ErrorAction Stop
     Import-Module $script:ModulePath -Force -ErrorAction Stop
 }
 

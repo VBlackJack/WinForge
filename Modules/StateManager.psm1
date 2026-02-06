@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - State Manager Module v3.3.0
+    Win11Forge - State Manager v3.6.8
 
 .DESCRIPTION
     Centralized state management for Win11Forge deployments:
@@ -13,7 +13,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 #>
 
 #
@@ -289,10 +289,17 @@ function Test-ValidStateData {
         $StateData
     )
 
-    # Validate SessionId format
-    if ($StateData.SessionId) {
+    # Convert hashtable to PSCustomObject for consistent property access
+    if ($StateData -is [hashtable]) {
+        $StateData = [PSCustomObject]$StateData
+    }
+
+    # Use PSObject.Properties for safe access (works with partial data under StrictMode)
+    $sessionIdProp = $StateData.PSObject.Properties['SessionId']
+    $sessionId = if ($sessionIdProp) { $sessionIdProp.Value } else { $null }
+    if ($sessionId) {
         try {
-            [guid]::Parse($StateData.SessionId) | Out-Null
+            [guid]::Parse($sessionId) | Out-Null
         } catch {
             Write-Status -Message (Get-LocalizedString -Key 'state.validation.invalid_session_id') -Level 'Warning' -Category 'State'
             return $false
@@ -300,20 +307,24 @@ function Test-ValidStateData {
     }
 
     # Validate ProfileName (no path traversal, no special chars)
-    if ($StateData.ProfileName) {
-        if ($StateData.ProfileName -match '\.\.|[/\\|<>:"|?*]') {
+    $profileNameProp = $StateData.PSObject.Properties['ProfileName']
+    $profileName = if ($profileNameProp) { $profileNameProp.Value } else { $null }
+    if ($profileName) {
+        if ($profileName -match '\.\.|[/\\|<>:"|?*]') {
             Write-Status -Message (Get-LocalizedString -Key 'state.validation.invalid_profile_name') -Level 'Warning' -Category 'State'
             return $false
         }
-        if ($StateData.ProfileName.Length -gt 100) {
+        if ($profileName.Length -gt 100) {
             Write-Status -Message (Get-LocalizedString -Key 'state.validation.profile_name_too_long') -Level 'Warning' -Category 'State'
             return $false
         }
     }
 
     # Validate TotalApps range
-    if ($null -ne $StateData.TotalApps) {
-        if ($StateData.TotalApps -lt 0 -or $StateData.TotalApps -gt 1000) {
+    $totalAppsProp = $StateData.PSObject.Properties['TotalApps']
+    $totalApps = if ($totalAppsProp) { $totalAppsProp.Value } else { $null }
+    if ($null -ne $totalApps) {
+        if ($totalApps -lt 0 -or $totalApps -gt 1000) {
             Write-Status -Message (Get-LocalizedString -Key 'state.validation.invalid_total_apps') -Level 'Warning' -Category 'State'
             return $false
         }
@@ -321,7 +332,14 @@ function Test-ValidStateData {
 
     # Validate app names (no shell metacharacters)
     $dangerousPattern = '[;&|`$<>]'
-    foreach ($appList in @($StateData.CompletedApps, $StateData.FailedApps, $StateData.PendingApps)) {
+    $completedAppsProp = $StateData.PSObject.Properties['CompletedApps']
+    $completedApps = if ($completedAppsProp) { $completedAppsProp.Value } else { $null }
+    $failedAppsProp = $StateData.PSObject.Properties['FailedApps']
+    $failedApps = if ($failedAppsProp) { $failedAppsProp.Value } else { $null }
+    $pendingAppsProp = $StateData.PSObject.Properties['PendingApps']
+    $pendingApps = if ($pendingAppsProp) { $pendingAppsProp.Value } else { $null }
+
+    foreach ($appList in @($completedApps, $failedApps, $pendingApps)) {
         if ($appList) {
             foreach ($appName in $appList) {
                 if ($appName -match $dangerousPattern) {

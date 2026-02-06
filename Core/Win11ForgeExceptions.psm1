@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Win11Forge - Custom Exception Classes v3.1.4
 
@@ -9,7 +9,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 #>
 
 #

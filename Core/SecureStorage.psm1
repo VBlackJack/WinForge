@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Secure Storage Module v1.0.0
+    Win11Forge - Secure Storage v3.6.8
 
 .DESCRIPTION
     Provides secure storage capabilities using Windows DPAPI:
@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 1.0.0
+    v3.6.8
     Uses Windows Data Protection API (DPAPI) for encryption
 #>
 
@@ -93,7 +93,7 @@ function Set-SecureFileAcl {
     }
 }
 
-function Ensure-SecureStoragePermissions {
+function Assert-SecureStoragePermissions {
     <#
     .SYNOPSIS
         Ensures all secure storage files have proper restrictive permissions.
@@ -120,7 +120,7 @@ function Ensure-SecureStoragePermissions {
 }
 
 # Ensure permissions on module load
-Ensure-SecureStoragePermissions
+Assert-SecureStoragePermissions
 
 function Get-DpapiEntropy {
     <#

@@ -801,4 +801,94 @@ public class Resources
     public static string Detection_SelectFile => ResourceManager.GetString("Detection_SelectFile", resourceCulture);
     public static string Detection_FeatureCheckNotSupported => ResourceManager.GetString("Detection_FeatureCheckNotSupported", resourceCulture);
     public static string Detection_StoreAppCheckNotSupported => ResourceManager.GetString("Detection_StoreAppCheckNotSupported", resourceCulture);
+
+    // DeploymentProfileModel Validation
+    public static string Validation_Profile_Name_Required => ResourceManager.GetString("Validation_Profile_Name_Required", resourceCulture);
+    public static string Validation_Profile_Name_Length => ResourceManager.GetString("Validation_Profile_Name_Length", resourceCulture);
+    public static string Validation_Profile_Name_Pattern => ResourceManager.GetString("Validation_Profile_Name_Pattern", resourceCulture);
+    public static string Validation_Profile_Description_MaxLength => ResourceManager.GetString("Validation_Profile_Description_MaxLength", resourceCulture);
+    public static string Validation_Profile_Version_MaxLength => ResourceManager.GetString("Validation_Profile_Version_MaxLength", resourceCulture);
+    public static string Validation_Profile_Version_Pattern => ResourceManager.GetString("Validation_Profile_Version_Pattern", resourceCulture);
+    public static string Validation_Profile_InheritedFrom_MaxCount => ResourceManager.GetString("Validation_Profile_InheritedFrom_MaxCount", resourceCulture);
+    public static string Validation_Profile_CircularInheritance => ResourceManager.GetString("Validation_Profile_CircularInheritance", resourceCulture);
+    public static string Validation_Profile_DuplicateParents => ResourceManager.GetString("Validation_Profile_DuplicateParents", resourceCulture);
+    public static string Validation_Profile_DuplicateApps => ResourceManager.GetString("Validation_Profile_DuplicateApps", resourceCulture);
+
+    // EditableApplicationModel Validation
+    public static string Validation_EditApp_Id_Required => ResourceManager.GetString("Validation_EditApp_Id_Required", resourceCulture);
+    public static string Validation_EditApp_Id_Pattern => ResourceManager.GetString("Validation_EditApp_Id_Pattern", resourceCulture);
+    public static string Validation_EditApp_Id_Length => ResourceManager.GetString("Validation_EditApp_Id_Length", resourceCulture);
+    public static string Validation_EditApp_Name_Required => ResourceManager.GetString("Validation_EditApp_Name_Required", resourceCulture);
+    public static string Validation_EditApp_Name_Length => ResourceManager.GetString("Validation_EditApp_Name_Length", resourceCulture);
+    public static string Validation_EditApp_Category_Required => ResourceManager.GetString("Validation_EditApp_Category_Required", resourceCulture);
+    public static string Validation_EditApp_Category_Length => ResourceManager.GetString("Validation_EditApp_Category_Length", resourceCulture);
+    public static string Validation_EditApp_Description_MaxLength => ResourceManager.GetString("Validation_EditApp_Description_MaxLength", resourceCulture);
+    public static string Validation_EditApp_Priority_Range => ResourceManager.GetString("Validation_EditApp_Priority_Range", resourceCulture);
+    public static string Validation_EditApp_Homepage_InvalidUrl => ResourceManager.GetString("Validation_EditApp_Homepage_InvalidUrl", resourceCulture);
+    public static string Validation_EditApp_Sources_Required => ResourceManager.GetString("Validation_EditApp_Sources_Required", resourceCulture);
+
+    // ApplicationSourcesModel Validation
+    public static string Validation_Sources_Winget_MaxLength => ResourceManager.GetString("Validation_Sources_Winget_MaxLength", resourceCulture);
+    public static string Validation_Sources_Chocolatey_MaxLength => ResourceManager.GetString("Validation_Sources_Chocolatey_MaxLength", resourceCulture);
+    public static string Validation_Sources_Store_Pattern => ResourceManager.GetString("Validation_Sources_Store_Pattern", resourceCulture);
+    public static string Validation_Sources_DirectUrl_InvalidUrl => ResourceManager.GetString("Validation_Sources_DirectUrl_InvalidUrl", resourceCulture);
+
+    // DirectDownloadSourceConfig Validation
+    public static string Validation_DirectDownload_InstallerType_Required => ResourceManager.GetString("Validation_DirectDownload_InstallerType_Required", resourceCulture);
+    public static string Validation_DirectDownload_Checksum_Pattern => ResourceManager.GetString("Validation_DirectDownload_Checksum_Pattern", resourceCulture);
+
+    // SystemInfoModel Validation
+    public static string Validation_SystemInfo_Hostname_MaxLength => ResourceManager.GetString("Validation_SystemInfo_Hostname_MaxLength", resourceCulture);
+    public static string Validation_SystemInfo_Username_MaxLength => ResourceManager.GetString("Validation_SystemInfo_Username_MaxLength", resourceCulture);
+    public static string Validation_SystemInfo_WindowsVersion_MaxLength => ResourceManager.GetString("Validation_SystemInfo_WindowsVersion_MaxLength", resourceCulture);
+    public static string Validation_SystemInfo_WindowsBuild_MaxLength => ResourceManager.GetString("Validation_SystemInfo_WindowsBuild_MaxLength", resourceCulture);
+    public static string Validation_SystemInfo_WingetVersion_MaxLength => ResourceManager.GetString("Validation_SystemInfo_WingetVersion_MaxLength", resourceCulture);
+    public static string Validation_SystemInfo_ChocolateyVersion_MaxLength => ResourceManager.GetString("Validation_SystemInfo_ChocolateyVersion_MaxLength", resourceCulture);
+    public static string Validation_SystemInfo_TotalMemory_Range => ResourceManager.GetString("Validation_SystemInfo_TotalMemory_Range", resourceCulture);
+    public static string Validation_SystemInfo_ProcessorCount_Range => ResourceManager.GetString("Validation_SystemInfo_ProcessorCount_Range", resourceCulture);
+
+    // ScheduledDeploymentModel Validation
+    public static string Validation_Scheduled_Id_Required => ResourceManager.GetString("Validation_Scheduled_Id_Required", resourceCulture);
+    public static string Validation_Scheduled_Id_Length => ResourceManager.GetString("Validation_Scheduled_Id_Length", resourceCulture);
+    public static string Validation_Scheduled_ProfileName_Required => ResourceManager.GetString("Validation_Scheduled_ProfileName_Required", resourceCulture);
+    public static string Validation_Scheduled_ProfileName_Length => ResourceManager.GetString("Validation_Scheduled_ProfileName_Length", resourceCulture);
+    public static string Validation_Scheduled_TriggerType_Required => ResourceManager.GetString("Validation_Scheduled_TriggerType_Required", resourceCulture);
+    public static string Validation_Scheduled_CreatedBy_MaxLength => ResourceManager.GetString("Validation_Scheduled_CreatedBy_MaxLength", resourceCulture);
+    public static string Validation_Scheduled_LastRunResult_MaxLength => ResourceManager.GetString("Validation_Scheduled_LastRunResult_MaxLength", resourceCulture);
+
+    // DeploymentHistoryEntry Validation
+    public static string Validation_History_ProfileName_Required => ResourceManager.GetString("Validation_History_ProfileName_Required", resourceCulture);
+    public static string Validation_History_ProfileName_Length => ResourceManager.GetString("Validation_History_ProfileName_Length", resourceCulture);
+    public static string Validation_History_TotalApps_Range => ResourceManager.GetString("Validation_History_TotalApps_Range", resourceCulture);
+    public static string Validation_History_SuccessfulApps_Range => ResourceManager.GetString("Validation_History_SuccessfulApps_Range", resourceCulture);
+    public static string Validation_History_FailedApps_Range => ResourceManager.GetString("Validation_History_FailedApps_Range", resourceCulture);
+    public static string Validation_History_SkippedApps_Range => ResourceManager.GetString("Validation_History_SkippedApps_Range", resourceCulture);
+    public static string Validation_History_Duration_Range => ResourceManager.GetString("Validation_History_Duration_Range", resourceCulture);
+    public static string Validation_History_AppsSumExceedsTotal => ResourceManager.GetString("Validation_History_AppsSumExceedsTotal", resourceCulture);
+    public static string Validation_History_FutureDate => ResourceManager.GetString("Validation_History_FutureDate", resourceCulture);
+    public static string Validation_History_SuccessWithFailedApps => ResourceManager.GetString("Validation_History_SuccessWithFailedApps", resourceCulture);
+    public static string Validation_History_FailedAllSuccessful => ResourceManager.GetString("Validation_History_FailedAllSuccessful", resourceCulture);
+
+    // PrerequisiteItem Validation
+    public static string Validation_Prereq_Name_Required => ResourceManager.GetString("Validation_Prereq_Name_Required", resourceCulture);
+    public static string Validation_Prereq_Name_Length => ResourceManager.GetString("Validation_Prereq_Name_Length", resourceCulture);
+    public static string Validation_Prereq_Version_MaxLength => ResourceManager.GetString("Validation_Prereq_Version_MaxLength", resourceCulture);
+    public static string Validation_Prereq_Category_MaxLength => ResourceManager.GetString("Validation_Prereq_Category_MaxLength", resourceCulture);
+    public static string Validation_Prereq_Description_MaxLength => ResourceManager.GetString("Validation_Prereq_Description_MaxLength", resourceCulture);
+
+    // PrerequisitesStatus Validation
+    public static string Validation_Prereq_PSVersion_MaxLength => ResourceManager.GetString("Validation_Prereq_PSVersion_MaxLength", resourceCulture);
+    public static string Validation_Prereq_PSVersion_Pattern => ResourceManager.GetString("Validation_Prereq_PSVersion_Pattern", resourceCulture);
+    public static string Validation_Prereq_ChocoVersion_MaxLength => ResourceManager.GetString("Validation_Prereq_ChocoVersion_MaxLength", resourceCulture);
+    public static string Validation_Prereq_ChocoVersion_Pattern => ResourceManager.GetString("Validation_Prereq_ChocoVersion_Pattern", resourceCulture);
+    public static string Validation_Prereq_WingetVersion_MaxLength => ResourceManager.GetString("Validation_Prereq_WingetVersion_MaxLength", resourceCulture);
+    public static string Validation_Prereq_WingetVersion_Pattern => ResourceManager.GetString("Validation_Prereq_WingetVersion_Pattern", resourceCulture);
+    public static string Validation_Prereq_DotNetVersion_MaxLength => ResourceManager.GetString("Validation_Prereq_DotNetVersion_MaxLength", resourceCulture);
+    public static string Validation_Prereq_DotNetFrameworkVersion_MaxLength => ResourceManager.GetString("Validation_Prereq_DotNetFrameworkVersion_MaxLength", resourceCulture);
+    public static string Validation_Prereq_DotNetFrameworkVersion_Pattern => ResourceManager.GetString("Validation_Prereq_DotNetFrameworkVersion_Pattern", resourceCulture);
+    public static string Validation_Prereq_VCRedistVersion_MaxLength => ResourceManager.GetString("Validation_Prereq_VCRedistVersion_MaxLength", resourceCulture);
+    public static string Validation_Prereq_JavaVersion_MaxLength => ResourceManager.GetString("Validation_Prereq_JavaVersion_MaxLength", resourceCulture);
+
+    // ValidationAttributes
+    public static string Validation_SemanticVersion_Invalid => ResourceManager.GetString("Validation_SemanticVersion_Invalid", resourceCulture);
 }

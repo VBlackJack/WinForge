@@ -300,8 +300,16 @@ Describe 'ProfileManager Module' {
             $profileA = Import-ProfileJson -Path $circularA
 
             # Should throw InvalidOperationException with cycle path when circular reference detected
-            { Resolve-ProfileInheritance -InputProfile $profileA -ProfilesDirectory $script:TestDataDirectory } |
-                Should -Throw -ExceptionType ([System.InvalidOperationException]) -ExpectedMessage '*Circular inheritance detected*'
+            $thrown = $null
+            try {
+                Resolve-ProfileInheritance -InputProfile $profileA -ProfilesDirectory $script:TestDataDirectory
+            } catch {
+                $thrown = $_
+            }
+
+            $thrown | Should -Not -BeNullOrEmpty
+            $thrown.Exception | Should -BeOfType [System.InvalidOperationException]
+            $thrown.Exception.Message | Should -Match '(Circular inheritance detected|Héritage circulaire détecté|profile\.inheritance\.cycle_detected)'
         }
     }
 
@@ -566,7 +574,7 @@ Describe 'ProfileManager Module' {
             $result = Test-ProfileValid -ProfilePath 'C:\NonExistent\Profile.json'
 
             $result.Valid | Should -BeFalse
-            $result.Errors.Count | Should -BeGreaterThan 0
+            @($result.Errors).Count | Should -BeGreaterThan 0
         }
 
         It 'Should return error for profile without name' {
@@ -584,7 +592,7 @@ Describe 'ProfileManager Module' {
 
             $result.Valid | Should -BeFalse
             # Accept either schema validation error or legacy validation error
-            $hasNameError = ($result.Errors | Where-Object {
+            $hasNameError = @(@($result.Errors) | Where-Object {
                 $_ -match 'Profile name is missing' -or
                 $_ -match 'Name.*String.*length' -or
                 $_ -match 'schema validation failed'

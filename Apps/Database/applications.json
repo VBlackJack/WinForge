@@ -1,6 +1,6 @@
-{
+﻿{
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "DatabaseVersion": "3.5.9",
+  "DatabaseVersion": "3.6.8",
   "LastUpdated": "2026-02-04",
   "TotalApplications": 175,
   "PriorityRanges": {
@@ -4845,7 +4845,7 @@
     "System": {
       "Description": "System utilities and tools",
       "DisplayName": "âš¡ SystÃ¨me",
-      "Count": 3
+      "Count": 7
     },
     "Browser": {
       "Description": "Web browsers",
@@ -4855,12 +4855,12 @@
     "Media": {
       "Description": "Media players and viewers",
       "DisplayName": "ðŸŽ¬ MÃ©dia",
-      "Count": 26
+      "Count": 22
     },
     "Utility": {
       "Description": "General utilities and tools",
       "DisplayName": "ðŸ› ï¸ Utilitaires",
-      "Count": 27
+      "Count": 31
     },
     "Support": {
       "Description": "Support and system tools",
@@ -4870,17 +4870,17 @@
     "Diagnostic": {
       "Description": "Diagnostic and monitoring tools",
       "DisplayName": "ðŸ” Diagnostic",
-      "Count": 9
+      "Count": 14
     },
     "Security": {
       "Description": "Security and privacy tools",
       "DisplayName": "ðŸ”’ SÃ©curitÃ©",
-      "Count": 11
+      "Count": 9
     },
     "Network": {
       "Description": "Network tools and utilities",
       "DisplayName": "ðŸŒ RÃ©seau",
-      "Count": 6
+      "Count": 11
     },
     "Recovery": {
       "Description": "Data recovery tools",
@@ -4895,7 +4895,7 @@
     "Productivity": {
       "Description": "Productivity and office applications",
       "DisplayName": "ðŸ“Š ProductivitÃ©",
-      "Count": 11
+      "Count": 12
     },
     "Communication": {
       "Description": "Communication and messaging applications",
@@ -4915,7 +4915,7 @@
     "Development": {
       "Description": "Development tools and environments",
       "DisplayName": "ðŸ’» DÃ©veloppement",
-      "Count": 17
+      "Count": 19
     },
     "Virtualization": {
       "Description": "Virtualization and sandboxing tools",
@@ -4925,22 +4925,17 @@
     "CloudStorage": {
       "Description": "Cloud storage clients",
       "DisplayName": "â˜ï¸ Cloud Storage",
-      "Count": 4
+      "Count": 5
     },
     "Compression": {
       "Description": "File compression tools",
       "DisplayName": "ðŸ“¦ Compression",
-      "Count": 4
-    },
-    "Multimedia": {
-      "Description": "Multimedia management tools",
-      "DisplayName": "ðŸŽµ MultimÃ©dia",
-      "Count": 4
+      "Count": 3
     },
     "3DPrint": {
       "Description": "3D printing and slicing tools",
       "DisplayName": "ðŸ–¨ï¸ Impression 3D",
-      "Count": 1
+      "Count": 2
     }
   },
   "Tags": {

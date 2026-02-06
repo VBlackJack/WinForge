@@ -231,7 +231,7 @@ Describe 'JsonSchemaValidation Module' {
             $results = Test-AllProfiles
             $invalidProfiles = $results | Where-Object { -not $_.IsValid }
 
-            $invalidProfiles.Count | Should -Be 0 -Because "All standard profiles should be valid"
+            @($invalidProfiles).Count | Should -Be 0 -Because "All standard profiles should be valid"
         }
     }
 

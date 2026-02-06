@@ -29,8 +29,8 @@ public class PrerequisiteItem
     /// <summary>
     /// Prerequisite name.
     /// </summary>
-    [Required(ErrorMessage = "Prerequisite name is required")]
-    [StringLength(128, MinimumLength = 1, ErrorMessage = "Name must be between 1 and 128 characters")]
+    [Required(ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_Name_Required), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [StringLength(128, MinimumLength = 1, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_Name_Length), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
@@ -41,19 +41,19 @@ public class PrerequisiteItem
     /// <summary>
     /// Version string or status message.
     /// </summary>
-    [StringLength(64, ErrorMessage = "Version must not exceed 64 characters")]
+    [StringLength(64, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_Version_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string Version { get; set; } = string.Empty;
 
     /// <summary>
     /// Category of prerequisite (PackageManager, Runtime, etc.)
     /// </summary>
-    [StringLength(64, ErrorMessage = "Category must not exceed 64 characters")]
+    [StringLength(64, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_Category_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string Category { get; set; } = string.Empty;
 
     /// <summary>
     /// Description of what this prerequisite provides.
     /// </summary>
-    [StringLength(512, ErrorMessage = "Description must not exceed 512 characters")]
+    [StringLength(512, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_Description_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
@@ -75,8 +75,8 @@ public class PrerequisitesStatus
     /// <summary>
     /// PowerShell version string.
     /// </summary>
-    [StringLength(64, ErrorMessage = "PowerShell version must not exceed 64 characters")]
-    [RegularExpression(@"^(\d+\.\d+(\.\d+)?(\.\d+)?)?$", ErrorMessage = "Invalid version format")]
+    [StringLength(64, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_PSVersion_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [RegularExpression(@"^(\d+\.\d+(\.\d+)?(\.\d+)?)?$", ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_PSVersion_Pattern), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string PowerShellVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -87,8 +87,8 @@ public class PrerequisitesStatus
     /// <summary>
     /// Chocolatey version string.
     /// </summary>
-    [StringLength(64, ErrorMessage = "Chocolatey version must not exceed 64 characters")]
-    [RegularExpression(@"^(\d+\.\d+(\.\d+)?)?$", ErrorMessage = "Invalid version format")]
+    [StringLength(64, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_ChocoVersion_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [RegularExpression(@"^(\d+\.\d+(\.\d+)?)?$", ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_ChocoVersion_Pattern), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string ChocolateyVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -99,8 +99,8 @@ public class PrerequisitesStatus
     /// <summary>
     /// Winget version string.
     /// </summary>
-    [StringLength(64, ErrorMessage = "Winget version must not exceed 64 characters")]
-    [RegularExpression(@"^(v?\d+\.\d+(\.\d+)?)?$", ErrorMessage = "Invalid version format")]
+    [StringLength(64, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_WingetVersion_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [RegularExpression(@"^(v?\d+\.\d+(\.\d+)?)?$", ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_WingetVersion_Pattern), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string WingetVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -111,7 +111,7 @@ public class PrerequisitesStatus
     /// <summary>
     /// .NET Core version info.
     /// </summary>
-    [StringLength(128, ErrorMessage = ".NET version must not exceed 128 characters")]
+    [StringLength(128, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_DotNetVersion_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string DotNetVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -122,8 +122,8 @@ public class PrerequisitesStatus
     /// <summary>
     /// .NET Framework version string.
     /// </summary>
-    [StringLength(64, ErrorMessage = ".NET Framework version must not exceed 64 characters")]
-    [RegularExpression(@"^(\d+\.\d+(\.\d+)?(\.\d+)?)?$", ErrorMessage = "Invalid version format")]
+    [StringLength(64, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_DotNetFrameworkVersion_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
+    [RegularExpression(@"^(\d+\.\d+(\.\d+)?(\.\d+)?)?$", ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_DotNetFrameworkVersion_Pattern), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string DotNetFrameworkVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -134,7 +134,7 @@ public class PrerequisitesStatus
     /// <summary>
     /// VC++ Redistributable version string.
     /// </summary>
-    [StringLength(128, ErrorMessage = "VC++ version must not exceed 128 characters")]
+    [StringLength(128, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_VCRedistVersion_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string VCRedistVersion { get; set; } = string.Empty;
 
     /// <summary>
@@ -145,7 +145,7 @@ public class PrerequisitesStatus
     /// <summary>
     /// Java version string.
     /// </summary>
-    [StringLength(128, ErrorMessage = "Java version must not exceed 128 characters")]
+    [StringLength(128, ErrorMessageResourceName = nameof(Resources.Resources.Validation_Prereq_JavaVersion_MaxLength), ErrorMessageResourceType = typeof(Resources.Resources))]
     public string JavaVersion { get; set; } = string.Empty;
 
     /// <summary>

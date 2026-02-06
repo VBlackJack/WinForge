@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-    Win11Forge - Rollback Manager Module v3.1.4
+    Win11Forge - Rollback Manager v3.6.8
 
 .DESCRIPTION
     Provides enhanced rollback management capabilities for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.0
+    v3.6.8
 #>
 
 #
