@@ -60,7 +60,6 @@ $RECYCLE.BIN/
 # Downloaded installers (temp)
 *.exe
 *.msi
-!Deploy-Win11Forge.bat
 
 # Credentials (if any)
 *.credentials
@@ -72,12 +71,18 @@ bin/
 obj/
 *.dll
 *.pdb
-*.exe
-!Deploy-Win11Forge.bat
 
 # Backups
 Backups/
 
 # Release builds
 Release/
+
+# Audit reports (generated, not source)
+AUDIT-REPORT*.md
+
+# Reports output
+Reports/
+
+# Claude Code project instructions
 CLAUDE.md
