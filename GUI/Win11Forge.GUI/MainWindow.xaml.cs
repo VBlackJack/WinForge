@@ -18,6 +18,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -249,6 +250,9 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             ViewIndex.Applications => new ApplicationsView { DataContext = _applicationsViewModel },
             _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
+
+        // Ensure theme-aware text color propagates to all child TextBlocks
+        view.SetResourceReference(TextElement.ForegroundProperty, "TextFillColorPrimaryBrush");
 
         _viewCache[index] = view;
         return view;

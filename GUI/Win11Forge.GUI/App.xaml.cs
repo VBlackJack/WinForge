@@ -349,6 +349,10 @@ public partial class App : Application
         app.Resources["SuccessBorderBrush"] = new SolidColorBrush(Color.FromRgb(76, 175, 80));      // #4CAF50
         app.Resources["SuccessBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(51, 76, 175, 80)); // #334CAF50
 
+        // Accent text colors - restore dark theme (light variants for dark backgrounds)
+        app.Resources["AccentGreenTextBrush"] = new SolidColorBrush(Color.FromRgb(129, 199, 132));    // #81C784
+        app.Resources["AccentOrangeTextBrush"] = new SolidColorBrush(Color.FromRgb(255, 183, 77));    // #FFB74D
+
         // Skeleton - restore dark theme (white-based opacity)
         app.Resources["SkeletonBaseBrush"] = new SolidColorBrush(Color.FromArgb(26, 255, 255, 255));   // #1AFFFFFF
         app.Resources["SkeletonHighlightBrush"] = new SolidColorBrush(Color.FromArgb(51, 255, 255, 255)); // #33FFFFFF
@@ -385,6 +389,10 @@ public partial class App : Application
         SwapIfExists(app, "SuccessIconBrush", "SuccessIconLightBrush");
         SwapIfExists(app, "SuccessBorderBrush", "SuccessBorderLightBrush");
         SwapIfExists(app, "SuccessBackgroundBrush", "SuccessBackgroundLightBrush");
+
+        // Accent text colors - darker variants for light backgrounds
+        SwapIfExists(app, "AccentGreenTextBrush", "AccentGreenTextLightBrush");
+        SwapIfExists(app, "AccentOrangeTextBrush", "AccentOrangeTextLightBrush");
 
         // Skeleton - black-based opacity for light backgrounds
         app.Resources["SkeletonBaseBrush"] = new SolidColorBrush(Color.FromArgb(26, 0, 0, 0));        // 10% black

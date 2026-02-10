@@ -417,11 +417,16 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// Applies the theme without saving (internal use).
     /// Delegates to App.ApplyThemeResources for centralized theme resource management.
     /// </summary>
-    private static void ApplyThemeInternal(bool isDark)
+    private static void ApplyThemeInternal(bool isDark, bool force = false)
     {
         try
         {
             var appTheme = isDark ? ApplicationTheme.Dark : ApplicationTheme.Light;
+
+            // Skip if theme is already applied to avoid corrupting WPF UI framework brushes
+            if (!force && ApplicationThemeManager.GetAppTheme() == appTheme)
+                return;
+
             ApplicationThemeManager.Apply(appTheme, WindowBackdropType.Mica);
 
             // Apply all theme-adaptive resources (accent, status, error/warning/success, skeleton, badges)

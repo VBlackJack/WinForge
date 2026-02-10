@@ -28,8 +28,8 @@
     <SolidColorBrush x:Key="FavoriteTextBrush" Color="#FF8F00"/>
     <SolidColorBrush x:Key="RequiredBrush" Color="#FFC107"/>
     <SolidColorBrush x:Key="OptionalBrush" Color="#9E9E9E"/>
-    <SolidColorBrush x:Key="AccentGreenTextBrush" Color="#2E7D32"/>
-    <SolidColorBrush x:Key="AccentOrangeTextBrush" Color="#E65100"/>
+    <SolidColorBrush x:Key="AccentGreenTextBrush" Color="#81C784"/>
+    <SolidColorBrush x:Key="AccentOrangeTextBrush" Color="#FFB74D"/>
     <SolidColorBrush x:Key="ManualInstallBadgeBrush" Color="#FF8A00"/>
 
     <!-- Secondary/Muted Icon Colors -->
@@ -81,6 +81,10 @@
     <SolidColorBrush x:Key="SuccessIconLightBrush" Color="#2E7D32"/>
     <SolidColorBrush x:Key="SuccessBorderLightBrush" Color="#2E7D32"/>
     <SolidColorBrush x:Key="SuccessBackgroundLightBrush" Color="#1A4CAF50"/>
+
+    <!-- Light Theme Accent Text variants (darker for white backgrounds) -->
+    <SolidColorBrush x:Key="AccentGreenTextLightBrush" Color="#2E7D32"/>
+    <SolidColorBrush x:Key="AccentOrangeTextLightBrush" Color="#E65100"/>
 
     <!-- Status Colors optimized for light theme -->
     <SolidColorBrush x:Key="StatusInstalledLightBrush" Color="#2E7D32"/>
