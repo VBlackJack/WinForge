@@ -27,11 +27,11 @@
                                Width="24"
                                Height="24"
                                VerticalAlignment="Center"
-                               Foreground="White"
+                               Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                                Margin="0,0,12,0"/>
                 <TextBlock Text="{loc:Loc Dialog_SaveProfile_Title}"
                            FontSize="20" FontWeight="SemiBold"
-                           Foreground="White"
+                           Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
         </Border>

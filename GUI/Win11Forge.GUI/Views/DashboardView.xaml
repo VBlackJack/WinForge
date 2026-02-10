@@ -120,7 +120,7 @@
                             <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
                                        Appearance="Primary"
                                        Background="{DynamicResource AccentOrangeTextBrush}"
-                                       Foreground="White"
+                                       Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                                        Padding="24,14"
                                        MinHeight="48"
                                        HorizontalAlignment="Left">
@@ -643,7 +643,7 @@
                                                 Visibility="{Binding IsDryRun, Converter={StaticResource BooleanToVisibilityConverter}}">
                                             <TextBlock Text="{loc:Loc Lbl_DryRun}"
                                                        FontSize="12"
-                                                       Foreground="Black"/>
+                                                       Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
                                         </Border>
                                     </Grid>
                                 </Border>

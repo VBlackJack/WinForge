@@ -415,40 +415,22 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
     /// <summary>
     /// Applies the theme without saving (internal use).
+    /// Delegates to App.ApplyThemeResources for centralized theme resource management.
     /// </summary>
-    private void ApplyThemeInternal(bool isDark)
+    private static void ApplyThemeInternal(bool isDark)
     {
         try
         {
             var appTheme = isDark ? ApplicationTheme.Dark : ApplicationTheme.Light;
             ApplicationThemeManager.Apply(appTheme, WindowBackdropType.Mica);
 
-            // Update theme-adaptive accent brush
-            UpdateThemeAdaptiveResources(isDark);
+            // Apply all theme-adaptive resources (accent, status, error/warning/success, skeleton, badges)
+            App.ApplyThemeResources(isDark);
         }
         catch
         {
             // Theme application is non-critical
         }
-    }
-
-    /// <summary>
-    /// Updates theme-adaptive resources based on current theme.
-    /// Dark theme uses Secondary (lime), Light theme uses Primary (purple).
-    /// </summary>
-    private static void UpdateThemeAdaptiveResources(bool isDark)
-    {
-        var app = System.Windows.Application.Current;
-        if (app?.Resources == null) return;
-
-        // Use direct colors to ensure correct contrast in each theme
-        // Dark theme: lime (#CDDC39) - visible on dark background
-        // Light theme: purple (#673AB7) - visible on light background
-        var accentBrush = isDark
-            ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(205, 220, 57))   // Lime
-            : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(103, 58, 183)); // DeepPurple
-
-        app.Resources["ThemeAdaptiveAccentBrush"] = accentBrush;
     }
 
     /// <summary>

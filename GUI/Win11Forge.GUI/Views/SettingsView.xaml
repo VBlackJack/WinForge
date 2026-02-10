@@ -354,7 +354,7 @@
                                             Margin="12,0,0,0"
                                             Visibility="{Binding HasErrors, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <TextBlock Text="{Binding ErrorCount}"
-                                                   Foreground="White"
+                                                   Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                                                    FontWeight="Bold"
                                                    FontSize="12"/>
                                     </Border>

@@ -136,12 +136,17 @@ public class BoolToRequiredIconConverter : IValueConverter
 /// </summary>
 public class BoolToRequiredColorConverter : IValueConverter
 {
-    private static readonly SolidColorBrush RequiredBrush = new(Color.FromRgb(255, 193, 7)); // Amber
-    private static readonly SolidColorBrush OptionalBrush = new(Color.FromRgb(158, 158, 158)); // Gray
+    private static readonly SolidColorBrush FallbackRequiredBrush = new(Color.FromRgb(255, 193, 7));
+    private static readonly SolidColorBrush FallbackOptionalBrush = new(Color.FromRgb(158, 158, 158));
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is true ? RequiredBrush : OptionalBrush;
+        var app = Application.Current;
+        if (value is true)
+        {
+            return app?.TryFindResource("RequiredBrush") ?? FallbackRequiredBrush;
+        }
+        return app?.TryFindResource("OptionalBrush") ?? FallbackOptionalBrush;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -353,12 +358,17 @@ public class BoolToFavoriteIconConverter : IValueConverter
 /// </summary>
 public class BoolToFavoriteColorConverter : IValueConverter
 {
-    private static readonly SolidColorBrush FavoriteBrush = new(Color.FromRgb(255, 215, 0)); // Gold
-    private static readonly SolidColorBrush NotFavoriteBrush = new(Color.FromRgb(158, 158, 158)); // Gray
+    private static readonly SolidColorBrush FallbackFavoriteBrush = new(Color.FromRgb(255, 215, 0));
+    private static readonly SolidColorBrush FallbackNotFavoriteBrush = new(Color.FromRgb(158, 158, 158));
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is true ? FavoriteBrush : NotFavoriteBrush;
+        var app = Application.Current;
+        if (value is true)
+        {
+            return app?.TryFindResource("FavoriteActiveBrush") ?? FallbackFavoriteBrush;
+        }
+        return app?.TryFindResource("FavoriteInactiveBrush") ?? FallbackNotFavoriteBrush;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

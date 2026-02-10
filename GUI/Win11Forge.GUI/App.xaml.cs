@@ -174,8 +174,8 @@ public partial class App : Application
                     : ApplicationTheme.Light;
                 ApplicationThemeManager.Apply(appTheme, WindowBackdropType.Mica);
 
-                // Initialize theme-adaptive accent brush
-                InitializeThemeAdaptiveResources(settings.IsDarkTheme);
+                // Apply all theme-adaptive resources (accent, status, error/warning/success, skeleton)
+                ApplyThemeResources(settings.IsDarkTheme);
             }
             catch (Exception ex)
             {
@@ -287,62 +287,113 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// Initializes theme-adaptive resources based on current theme.
-    /// Dark theme uses accent blue, Light theme uses accent purple.
-    /// Applies enhanced contrast colors for light theme to meet WCAG AA standards.
+    /// Applies all theme-adaptive resources based on the current theme.
+    /// Centralized method called both at startup and on theme toggle.
+    /// Handles accent colors, status colors, error/warning/success colors,
+    /// skeleton brushes, and badge foreground brushes for both directions.
     /// </summary>
-    private void InitializeThemeAdaptiveResources(bool isDark)
+    internal static void ApplyThemeResources(bool isDark)
     {
+        var app = Application.Current;
+        if (app?.Resources == null) return;
+
         try
         {
-            // WPF UI accent colors
-            // Dark theme: Windows 11 accent blue (#60CDFF) - visible on dark background
-            // Light theme: Windows 11 accent purple (#6B4EAA) - visible on light background
+            // Accent brush: Blue for dark, Purple for light
             var accentBrush = isDark
-                ? new SolidColorBrush(Color.FromRgb(96, 205, 255))   // Accent Blue
-                : new SolidColorBrush(Color.FromRgb(107, 78, 170));  // Accent Purple
+                ? new SolidColorBrush(Color.FromRgb(96, 205, 255))   // #60CDFF - Accent Blue
+                : new SolidColorBrush(Color.FromRgb(107, 78, 170));  // #6B4EAA - Accent Purple
+            app.Resources["ThemeAdaptiveAccentBrush"] = accentBrush;
 
-            Resources["ThemeAdaptiveAccentBrush"] = accentBrush;
-
-            // Apply light theme contrast enhancements
-            if (!isDark)
+            if (isDark)
             {
-                ApplyLightThemeContrastEnhancements();
+                RestoreDarkThemeDefaults(app);
             }
+            else
+            {
+                ApplyLightThemeEnhancements(app);
+            }
+
+            Log($"{(isDark ? "Dark" : "Light")} theme resources applied");
         }
         catch (Exception ex)
         {
-            Log($"Failed to initialize theme-adaptive resources: {ex.Message}");
+            Log($"Failed to apply theme resources: {ex.Message}");
         }
     }
 
     /// <summary>
-    /// Applies enhanced contrast colors for light theme to improve readability.
-    /// Updates status colors to use darker variants that meet WCAG AA contrast ratios.
+    /// Restores all brushes to their dark theme defaults (matching FluentThemeBridge.xaml).
+    /// Called when switching from light to dark theme.
     /// </summary>
-    private void ApplyLightThemeContrastEnhancements()
+    private static void RestoreDarkThemeDefaults(Application app)
     {
-        try
-        {
-            // Update status colors with higher contrast versions for light theme
-            Resources["StatusInstalledBrush"] = Resources["StatusInstalledLightBrush"];
-            Resources["StatusFailedBrush"] = Resources["StatusFailedLightBrush"];
-            Resources["StatusInstallingBrush"] = Resources["StatusInstallingLightBrush"];
-            Resources["StatusSkippedBrush"] = Resources["StatusSkippedLightBrush"];
-            Resources["StatusPendingBrush"] = Resources["StatusPendingLightBrush"];
+        // Status colors - restore dark theme originals
+        app.Resources["StatusInstalledBrush"] = new SolidColorBrush(Color.FromRgb(76, 175, 80));    // #4CAF50
+        app.Resources["StatusFailedBrush"] = new SolidColorBrush(Color.FromRgb(244, 67, 54));       // #F44336
+        app.Resources["StatusInstallingBrush"] = new SolidColorBrush(Color.FromRgb(33, 150, 243));   // #2196F3
+        app.Resources["StatusSkippedBrush"] = new SolidColorBrush(Color.FromRgb(245, 124, 0));      // #F57C00
+        app.Resources["StatusPendingBrush"] = new SolidColorBrush(Color.FromRgb(158, 158, 158));     // #9E9E9E
 
-            // Update skeleton colors for light theme visibility
-            Resources["SkeletonBaseBrush"] = new SolidColorBrush(
-                Color.FromArgb(26, 0, 0, 0)); // 10% black
-            Resources["SkeletonHighlightBrush"] = new SolidColorBrush(
-                Color.FromArgb(51, 0, 0, 0)); // 20% black
+        // Error/Warning/Success - restore dark theme originals (light text on dark backgrounds)
+        app.Resources["ErrorTextBrush"] = new SolidColorBrush(Color.FromRgb(239, 83, 80));          // #EF5350
+        app.Resources["ErrorIconBrush"] = new SolidColorBrush(Color.FromRgb(239, 83, 80));          // #EF5350
+        app.Resources["ErrorBorderBrush"] = new SolidColorBrush(Color.FromRgb(239, 83, 80));        // #EF5350
+        app.Resources["ErrorBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(51, 244, 67, 54)); // #33F44336
+        app.Resources["WarningTextBrush"] = new SolidColorBrush(Color.FromRgb(255, 183, 77));       // #FFB74D
+        app.Resources["WarningIconBrush"] = new SolidColorBrush(Color.FromRgb(255, 183, 77));       // #FFB74D
+        app.Resources["WarningBorderBrush"] = new SolidColorBrush(Color.FromRgb(245, 124, 0));      // #F57C00
+        app.Resources["WarningBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(51, 245, 124, 0)); // #33F57C00
+        app.Resources["SuccessTextBrush"] = new SolidColorBrush(Color.FromRgb(129, 199, 132));      // #81C784
+        app.Resources["SuccessIconBrush"] = new SolidColorBrush(Color.FromRgb(129, 199, 132));      // #81C784
+        app.Resources["SuccessBorderBrush"] = new SolidColorBrush(Color.FromRgb(76, 175, 80));      // #4CAF50
+        app.Resources["SuccessBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(51, 76, 175, 80)); // #334CAF50
 
-            Log("Light theme contrast enhancements applied");
-        }
-        catch (Exception ex)
-        {
-            Log($"Failed to apply light theme contrast enhancements: {ex.Message}");
-        }
+        // Skeleton - restore dark theme (white-based opacity)
+        app.Resources["SkeletonBaseBrush"] = new SolidColorBrush(Color.FromArgb(26, 255, 255, 255));   // #1AFFFFFF
+        app.Resources["SkeletonHighlightBrush"] = new SolidColorBrush(Color.FromArgb(51, 255, 255, 255)); // #33FFFFFF
+
+        // Badge foregrounds - white text on saturated dark-theme backgrounds
+        app.Resources["BadgePrimaryForegroundBrush"] = new SolidColorBrush(Colors.White);
+        app.Resources["BadgeSecondaryForegroundBrush"] = new SolidColorBrush(Colors.White);
+    }
+
+    /// <summary>
+    /// Applies enhanced contrast colors for light theme to improve readability.
+    /// Updates status, error/warning/success, skeleton, and badge colors
+    /// to use darker variants that meet WCAG AA contrast ratios on light backgrounds.
+    /// </summary>
+    private static void ApplyLightThemeEnhancements(Application app)
+    {
+        // Status colors - darker variants for light backgrounds
+        app.Resources["StatusInstalledBrush"] = app.Resources["StatusInstalledLightBrush"];
+        app.Resources["StatusFailedBrush"] = app.Resources["StatusFailedLightBrush"];
+        app.Resources["StatusInstallingBrush"] = app.Resources["StatusInstallingLightBrush"];
+        app.Resources["StatusSkippedBrush"] = app.Resources["StatusSkippedLightBrush"];
+        app.Resources["StatusPendingBrush"] = app.Resources["StatusPendingLightBrush"];
+
+        // Error/Warning/Success - darker text for light backgrounds
+        app.Resources["ErrorTextBrush"] = app.Resources["ErrorTextLightBrush"];
+        app.Resources["ErrorIconBrush"] = app.Resources["ErrorIconLightBrush"];
+        app.Resources["ErrorBorderBrush"] = app.Resources["ErrorBorderLightBrush"];
+        app.Resources["ErrorBackgroundBrush"] = app.Resources["ErrorBackgroundLightBrush"];
+        app.Resources["WarningTextBrush"] = app.Resources["WarningTextLightBrush"];
+        app.Resources["WarningIconBrush"] = app.Resources["WarningIconLightBrush"];
+        app.Resources["WarningBorderBrush"] = app.Resources["WarningBorderLightBrush"];
+        app.Resources["WarningBackgroundBrush"] = app.Resources["WarningBackgroundLightBrush"];
+        app.Resources["SuccessTextBrush"] = app.Resources["SuccessTextLightBrush"];
+        app.Resources["SuccessIconBrush"] = app.Resources["SuccessIconLightBrush"];
+        app.Resources["SuccessBorderBrush"] = app.Resources["SuccessBorderLightBrush"];
+        app.Resources["SuccessBackgroundBrush"] = app.Resources["SuccessBackgroundLightBrush"];
+
+        // Skeleton - black-based opacity for light backgrounds
+        app.Resources["SkeletonBaseBrush"] = new SolidColorBrush(Color.FromArgb(26, 0, 0, 0));        // 10% black
+        app.Resources["SkeletonHighlightBrush"] = new SolidColorBrush(Color.FromArgb(51, 0, 0, 0));   // 20% black
+
+        // Badge foregrounds - keep white for most saturated backgrounds,
+        // but dark text for lighter secondary backgrounds
+        app.Resources["BadgePrimaryForegroundBrush"] = new SolidColorBrush(Colors.White);
+        app.Resources["BadgeSecondaryForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
     }
 
     /// <summary>

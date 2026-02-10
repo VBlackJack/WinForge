@@ -63,13 +63,24 @@
     <SolidColorBrush x:Key="SkeletonBaseBrush" Color="#1AFFFFFF"/>
     <SolidColorBrush x:Key="SkeletonHighlightBrush" Color="#33FFFFFF"/>
 
-    <!-- Light Theme Contrast Enhancement Colors (WCAG AA compliant) -->
-    <SolidColorBrush x:Key="LightThemeTextPrimary" Color="#212121"/>
-    <SolidColorBrush x:Key="LightThemeTextSecondary" Color="#424242"/>
-    <SolidColorBrush x:Key="LightThemeTextHint" Color="#757575"/>
-    <SolidColorBrush x:Key="LightThemeBorder" Color="#BDBDBD"/>
-    <SolidColorBrush x:Key="LightThemeCardBackground" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="LightThemeHoverBackground" Color="#0A000000"/>
+    <!-- Badge Foreground Brushes (for text on colored badge backgrounds) -->
+    <!-- Swapped dynamically by App.ApplyThemeResources for light/dark adaptation -->
+    <SolidColorBrush x:Key="BadgePrimaryForegroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="BadgeSecondaryForegroundBrush" Color="#FFFFFF"/>
+
+    <!-- Light Theme Error/Warning/Success variants (darker for white backgrounds) -->
+    <SolidColorBrush x:Key="ErrorTextLightBrush" Color="#B71C1C"/>
+    <SolidColorBrush x:Key="ErrorIconLightBrush" Color="#C62828"/>
+    <SolidColorBrush x:Key="ErrorBorderLightBrush" Color="#C62828"/>
+    <SolidColorBrush x:Key="ErrorBackgroundLightBrush" Color="#1AF44336"/>
+    <SolidColorBrush x:Key="WarningTextLightBrush" Color="#E65100"/>
+    <SolidColorBrush x:Key="WarningIconLightBrush" Color="#F57C00"/>
+    <SolidColorBrush x:Key="WarningBorderLightBrush" Color="#EF6C00"/>
+    <SolidColorBrush x:Key="WarningBackgroundLightBrush" Color="#1AF57C00"/>
+    <SolidColorBrush x:Key="SuccessTextLightBrush" Color="#1B5E20"/>
+    <SolidColorBrush x:Key="SuccessIconLightBrush" Color="#2E7D32"/>
+    <SolidColorBrush x:Key="SuccessBorderLightBrush" Color="#2E7D32"/>
+    <SolidColorBrush x:Key="SuccessBackgroundLightBrush" Color="#1A4CAF50"/>
 
     <!-- Status Colors optimized for light theme -->
     <SolidColorBrush x:Key="StatusInstalledLightBrush" Color="#2E7D32"/>

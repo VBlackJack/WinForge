@@ -300,9 +300,9 @@
                         Visibility="{Binding HasProfileApplied, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="CheckmarkCircle24" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0"
-                                       Foreground="White"/>
+                                       Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
                         <TextBlock FontSize="12" VerticalAlignment="Center"
-                                   Foreground="White">
+                                   Foreground="{DynamicResource BadgePrimaryForegroundBrush}">
                             <Run Text="{Binding SelectedCount}"/>
                             <Run Text="{loc:Loc Apps_AppsSelected}"/>
                         </TextBlock>
@@ -461,14 +461,14 @@
                             Visibility="{Binding HasSearchFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Search24" Width="14" Height="14" VerticalAlignment="Center"
-                                           Foreground="White"/>
+                                           Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
                             <TextBlock Text="{Binding SearchText}"
                                        FontSize="12"
                                        MaxWidth="80"
                                        TextTrimming="CharacterEllipsis"
                                        VerticalAlignment="Center"
                                        Margin="4,0,0,0"
-                                       Foreground="White"/>
+                                       Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
                         </StackPanel>
                     </Border>
                     <!-- Category Filter Badge -->
@@ -481,12 +481,12 @@
                             Visibility="{Binding HasCategoryFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Folder24" Width="14" Height="14" VerticalAlignment="Center"
-                                           Foreground="Black"/>
+                                           Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
                             <TextBlock Text="{Binding SelectedCategory}"
                                        FontSize="12"
                                        VerticalAlignment="Center"
                                        Margin="4,0,0,0"
-                                       Foreground="Black"/>
+                                       Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
                         </StackPanel>
                     </Border>
                     <!-- Status Filter Badge -->
@@ -1009,7 +1009,7 @@
                                                 <TextBlock Text="{Binding ProfileTier}"
                                                            FontSize="10"
                                                            FontWeight="Bold"
-                                                           Foreground="White"/>
+                                                           Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
                                             </Border>
                                             <!-- Manual Install Badge -->
                                             <Border Background="{DynamicResource ManualInstallBadgeBrush}"
@@ -1022,7 +1022,7 @@
                                                 <TextBlock Text="{loc:Loc Apps_ManualInstall}"
                                                            FontSize="10"
                                                            FontWeight="Bold"
-                                                           Foreground="White"/>
+                                                           Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
                                             </Border>
                                         </StackPanel>
                                         <TextBlock Text="{Binding Description}"

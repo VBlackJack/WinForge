@@ -185,10 +185,10 @@
                 <ui:SymbolIcon Symbol="ErrorCircle24"
                                Width="20" Height="20"
                                VerticalAlignment="Center"
-                               Foreground="White"
+                               Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                                Margin="0,0,12,0"/>
                 <TextBlock Text="{Binding ValidationMessage}"
-                           Foreground="White"
+                           Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                            TextWrapping="Wrap"
                            VerticalAlignment="Center"/>
             </StackPanel>
@@ -221,7 +221,7 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:SymbolIcon Symbol="CheckmarkCircle24"
                                    Width="20" Height="20"
-                                   Foreground="Green"
+                                   Foreground="{DynamicResource StatusInstalledBrush}"
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"
                                    Visibility="{Binding VerificationSuccess, Converter={StaticResource BooleanToVisibilityConverter}}"/>
