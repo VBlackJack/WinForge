@@ -58,7 +58,8 @@
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="WeatherSunny24" Width="20" Height="20" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
-                                        <ui:ToggleSwitch IsChecked="{Binding IsDarkTheme}"/>
+                                        <ui:ToggleSwitch IsChecked="{Binding IsDarkTheme}"
+                                                         AutomationProperties.Name="{loc:Loc A11y_Settings_ThemeToggle}"/>
                                         <ui:SymbolIcon Symbol="DarkTheme24" Width="20" Height="20" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="8,0,0,0"/>
                                     </StackPanel>
                                 </Grid>
@@ -76,7 +77,8 @@
                                     </StackPanel>
 
                                     <ui:ToggleSwitch Grid.Column="1"
-                                                  IsChecked="{Binding ReducedMotion}"/>
+                                                     IsChecked="{Binding ReducedMotion}"
+                                                     AutomationProperties.Name="{loc:Loc A11y_Settings_ReducedMotion}"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
@@ -105,7 +107,8 @@
                                         <ComboBox ItemsSource="{Binding AvailableLanguages}"
                                                   SelectedItem="{Binding SelectedLanguage}"
                                                   DisplayMemberPath="DisplayName"
-                                                  MinWidth="140" MaxWidth="200" Margin="0,0,12,0"/>
+                                                  MinWidth="140" MaxWidth="200" Margin="0,0,12,0"
+                                                  AutomationProperties.Name="{loc:Loc A11y_Settings_Language}"/>
                                         <ui:Button Content="{loc:Loc Settings_Apply}"
                                                 Command="{Binding ApplyLanguageCommand}"
                                                 Appearance="Primary"/>

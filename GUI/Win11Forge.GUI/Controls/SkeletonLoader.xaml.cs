@@ -122,6 +122,7 @@ public partial class SkeletonLoader : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        Loaded -= OnLoaded;
         UpdateVisibility();
     }
 

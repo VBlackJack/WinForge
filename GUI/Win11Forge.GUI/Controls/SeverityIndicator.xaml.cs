@@ -106,11 +106,38 @@ public partial class SeverityIndicator : UserControl
 
     private void UpdateSeverityAppearance()
     {
-        var (icon, background, border, foreground) = GetSeverityStyles(Severity);
+        var app = Application.Current;
+        var (icon, background, border, foreground) = Severity switch
+        {
+            SeverityLevel.Success => (
+                SymbolRegular.CheckmarkCircle24,
+                app?.TryFindResource("SuccessBackgroundBrush") as Brush ?? CachedBrushes.SuccessBackground,
+                app?.TryFindResource("SuccessBorderBrush") as Brush ?? CachedBrushes.SuccessBorder,
+                app?.TryFindResource("SuccessIconBrush") as Brush ?? CachedBrushes.SuccessBorder),
+            SeverityLevel.Warning => (
+                SymbolRegular.Warning24,
+                app?.TryFindResource("WarningBackgroundBrush") as Brush ?? CachedBrushes.WarningBackground,
+                app?.TryFindResource("WarningBorderBrush") as Brush ?? CachedBrushes.WarningBorder,
+                app?.TryFindResource("WarningIconBrush") as Brush ?? CachedBrushes.WarningForeground),
+            SeverityLevel.Error => (
+                SymbolRegular.DismissCircle24,
+                app?.TryFindResource("ErrorBackgroundBrush") as Brush ?? CachedBrushes.ErrorBackground,
+                app?.TryFindResource("ErrorBorderBrush") as Brush ?? CachedBrushes.ErrorBorder,
+                app?.TryFindResource("ErrorIconBrush") as Brush ?? CachedBrushes.ErrorForeground),
+            SeverityLevel.Critical => (
+                SymbolRegular.ShieldError24,
+                CachedBrushes.CriticalBackground,
+                CachedBrushes.CriticalBorder,
+                CachedBrushes.CriticalForeground),
+            _ => (
+                SymbolRegular.Info24,
+                CachedBrushes.InfoBackground,
+                CachedBrushes.InfoBorder,
+                CachedBrushes.InfoBorder)
+        };
 
         SeverityIcon.Symbol = icon;
         SeverityIcon.Foreground = foreground;
-
         IndicatorBorder.Background = background;
         IndicatorBorder.BorderBrush = border;
 
@@ -118,40 +145,26 @@ public partial class SeverityIndicator : UserControl
         AutomationProperties.SetName(this, $"{Severity} indicator");
     }
 
-    private static (SymbolRegular Icon, Brush Background, Brush Border, Brush Foreground) GetSeverityStyles(SeverityLevel severity)
+    private static class CachedBrushes
     {
-        return severity switch
+        internal static readonly SolidColorBrush SuccessBackground = Freeze(new SolidColorBrush(Color.FromArgb(0x1E, 0x4C, 0xAF, 0x50)));
+        internal static readonly SolidColorBrush SuccessBorder = Freeze(new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50)));
+        internal static readonly SolidColorBrush WarningBackground = Freeze(new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0x98, 0x00)));
+        internal static readonly SolidColorBrush WarningBorder = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x98, 0x00)));
+        internal static readonly SolidColorBrush WarningForeground = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0xB7, 0x4D)));
+        internal static readonly SolidColorBrush ErrorBackground = Freeze(new SolidColorBrush(Color.FromArgb(0x33, 0xF4, 0x43, 0x36)));
+        internal static readonly SolidColorBrush ErrorBorder = Freeze(new SolidColorBrush(Color.FromRgb(0xF4, 0x43, 0x36)));
+        internal static readonly SolidColorBrush ErrorForeground = Freeze(new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50)));
+        internal static readonly SolidColorBrush CriticalBackground = Freeze(new SolidColorBrush(Color.FromArgb(0x4D, 0xF4, 0x43, 0x36)));
+        internal static readonly SolidColorBrush CriticalBorder = Freeze(new SolidColorBrush(Color.FromRgb(0xD3, 0x2F, 0x2F)));
+        internal static readonly SolidColorBrush CriticalForeground = Freeze(new SolidColorBrush(Colors.White));
+        internal static readonly SolidColorBrush InfoBackground = Freeze(new SolidColorBrush(Color.FromArgb(0x1E, 0x21, 0x96, 0xF3)));
+        internal static readonly SolidColorBrush InfoBorder = Freeze(new SolidColorBrush(Color.FromRgb(0x21, 0x96, 0xF3)));
+
+        private static SolidColorBrush Freeze(SolidColorBrush brush)
         {
-            SeverityLevel.Success => (
-                SymbolRegular.CheckmarkCircle24,
-                new SolidColorBrush(Color.FromArgb(0x1E, 0x4C, 0xAF, 0x50)),
-                new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50)),
-                new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50))
-            ),
-            SeverityLevel.Warning => (
-                SymbolRegular.Warning24,
-                new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0x98, 0x00)),
-                new SolidColorBrush(Color.FromRgb(0xFF, 0x98, 0x00)),
-                new SolidColorBrush(Color.FromRgb(0xFF, 0xB7, 0x4D))
-            ),
-            SeverityLevel.Error => (
-                SymbolRegular.DismissCircle24,
-                new SolidColorBrush(Color.FromArgb(0x33, 0xF4, 0x43, 0x36)),
-                new SolidColorBrush(Color.FromRgb(0xF4, 0x43, 0x36)),
-                new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50))
-            ),
-            SeverityLevel.Critical => (
-                SymbolRegular.ShieldError24,
-                new SolidColorBrush(Color.FromArgb(0x4D, 0xF4, 0x43, 0x36)),
-                new SolidColorBrush(Color.FromRgb(0xD3, 0x2F, 0x2F)),
-                new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF))
-            ),
-            _ => ( // Info
-                SymbolRegular.Info24,
-                new SolidColorBrush(Color.FromArgb(0x1E, 0x21, 0x96, 0xF3)),
-                new SolidColorBrush(Color.FromRgb(0x21, 0x96, 0xF3)),
-                new SolidColorBrush(Color.FromRgb(0x21, 0x96, 0xF3))
-            )
-        };
+            brush.Freeze();
+            return brush;
+        }
     }
 }

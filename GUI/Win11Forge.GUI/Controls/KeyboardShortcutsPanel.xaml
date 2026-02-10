@@ -184,7 +184,8 @@
                        Appearance="Primary"
                        HorizontalAlignment="Right"
                        Margin="0,20,0,0"
-                       Click="CloseButton_Click"/>
+                       Click="CloseButton_Click"
+                       AutomationProperties.Name="{loc:Loc A11y_Shortcuts_Close}"/>
         </Grid>
     </Border>
 </UserControl>

@@ -311,12 +311,12 @@ public partial class DetectionEditor : UserControl
         if (TestSuccess == true)
         {
             TestResultIcon.Symbol = SymbolRegular.CheckmarkCircle24;
-            TestResultIcon.Foreground = new SolidColorBrush(Colors.Green);
+            TestResultIcon.Foreground = Application.Current?.TryFindResource("StatusInstalledBrush") as Brush ?? new SolidColorBrush(Colors.Green);
         }
         else if (TestSuccess == false)
         {
             TestResultIcon.Symbol = SymbolRegular.ErrorCircle24;
-            TestResultIcon.Foreground = new SolidColorBrush(Colors.Red);
+            TestResultIcon.Foreground = Application.Current?.TryFindResource("StatusFailedBrush") as Brush ?? new SolidColorBrush(Colors.Red);
         }
     }
 
@@ -475,7 +475,7 @@ public partial class DetectionEditor : UserControl
                 Dispatcher.Invoke(() =>
                 {
                     TestSuccess = false;
-                    TestResult = "Invalid path after environment variable expansion";
+                    TestResult = Loc.Detection_InvalidExpandedPath;
                 });
                 return;
             }
@@ -554,7 +554,7 @@ public partial class DetectionEditor : UserControl
                 Dispatcher.Invoke(() =>
                 {
                     TestSuccess = false;
-                    TestResult = "Invalid command path: contains potentially dangerous characters";
+                    TestResult = Loc.Detection_InvalidCommandPath;
                 });
                 return;
             }
@@ -580,7 +580,7 @@ public partial class DetectionEditor : UserControl
                     Dispatcher.Invoke(() =>
                     {
                         TestSuccess = false;
-                        TestResult = "Command timed out after 5 seconds";
+                        TestResult = Loc.Detection_CommandTimeout;
                     });
                     return;
                 }

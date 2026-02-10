@@ -235,7 +235,7 @@ public class InputDialog : Window
 
         var okButton = new System.Windows.Controls.Button
         {
-            Content = "OK",
+            Content = Loc.Common_OK,
             Width = 80,
             IsDefault = true
         };

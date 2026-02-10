@@ -15,7 +15,7 @@
  */
 
 using System.Windows;
-using System.Windows.Media.Animation;
+using Win11Forge.GUI.Helpers;
 
 namespace Win11Forge.GUI.Views;
 
@@ -70,14 +70,7 @@ public partial class SplashScreen : Window
                 return;
             }
 
-            var fadeOut = new DoubleAnimation
-            {
-                From = 1.0,
-                To = 0.0,
-                Duration = TimeSpan.FromMilliseconds(300),
-                EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
-            };
-
+            var fadeOut = AnimationHelper.CreateFadeAnimation(1.0, 0.0, 300);
             fadeOut.Completed += (s, e) => Close();
             BeginAnimation(OpacityProperty, fadeOut);
         });

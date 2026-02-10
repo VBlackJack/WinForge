@@ -366,25 +366,25 @@ public partial class App : Application
     private static void ApplyLightThemeEnhancements(Application app)
     {
         // Status colors - darker variants for light backgrounds
-        app.Resources["StatusInstalledBrush"] = app.Resources["StatusInstalledLightBrush"];
-        app.Resources["StatusFailedBrush"] = app.Resources["StatusFailedLightBrush"];
-        app.Resources["StatusInstallingBrush"] = app.Resources["StatusInstallingLightBrush"];
-        app.Resources["StatusSkippedBrush"] = app.Resources["StatusSkippedLightBrush"];
-        app.Resources["StatusPendingBrush"] = app.Resources["StatusPendingLightBrush"];
+        SwapIfExists(app, "StatusInstalledBrush", "StatusInstalledLightBrush");
+        SwapIfExists(app, "StatusFailedBrush", "StatusFailedLightBrush");
+        SwapIfExists(app, "StatusInstallingBrush", "StatusInstallingLightBrush");
+        SwapIfExists(app, "StatusSkippedBrush", "StatusSkippedLightBrush");
+        SwapIfExists(app, "StatusPendingBrush", "StatusPendingLightBrush");
 
         // Error/Warning/Success - darker text for light backgrounds
-        app.Resources["ErrorTextBrush"] = app.Resources["ErrorTextLightBrush"];
-        app.Resources["ErrorIconBrush"] = app.Resources["ErrorIconLightBrush"];
-        app.Resources["ErrorBorderBrush"] = app.Resources["ErrorBorderLightBrush"];
-        app.Resources["ErrorBackgroundBrush"] = app.Resources["ErrorBackgroundLightBrush"];
-        app.Resources["WarningTextBrush"] = app.Resources["WarningTextLightBrush"];
-        app.Resources["WarningIconBrush"] = app.Resources["WarningIconLightBrush"];
-        app.Resources["WarningBorderBrush"] = app.Resources["WarningBorderLightBrush"];
-        app.Resources["WarningBackgroundBrush"] = app.Resources["WarningBackgroundLightBrush"];
-        app.Resources["SuccessTextBrush"] = app.Resources["SuccessTextLightBrush"];
-        app.Resources["SuccessIconBrush"] = app.Resources["SuccessIconLightBrush"];
-        app.Resources["SuccessBorderBrush"] = app.Resources["SuccessBorderLightBrush"];
-        app.Resources["SuccessBackgroundBrush"] = app.Resources["SuccessBackgroundLightBrush"];
+        SwapIfExists(app, "ErrorTextBrush", "ErrorTextLightBrush");
+        SwapIfExists(app, "ErrorIconBrush", "ErrorIconLightBrush");
+        SwapIfExists(app, "ErrorBorderBrush", "ErrorBorderLightBrush");
+        SwapIfExists(app, "ErrorBackgroundBrush", "ErrorBackgroundLightBrush");
+        SwapIfExists(app, "WarningTextBrush", "WarningTextLightBrush");
+        SwapIfExists(app, "WarningIconBrush", "WarningIconLightBrush");
+        SwapIfExists(app, "WarningBorderBrush", "WarningBorderLightBrush");
+        SwapIfExists(app, "WarningBackgroundBrush", "WarningBackgroundLightBrush");
+        SwapIfExists(app, "SuccessTextBrush", "SuccessTextLightBrush");
+        SwapIfExists(app, "SuccessIconBrush", "SuccessIconLightBrush");
+        SwapIfExists(app, "SuccessBorderBrush", "SuccessBorderLightBrush");
+        SwapIfExists(app, "SuccessBackgroundBrush", "SuccessBackgroundLightBrush");
 
         // Skeleton - black-based opacity for light backgrounds
         app.Resources["SkeletonBaseBrush"] = new SolidColorBrush(Color.FromArgb(26, 0, 0, 0));        // 10% black
@@ -394,6 +394,19 @@ public partial class App : Application
         // but dark text for lighter secondary backgrounds
         app.Resources["BadgePrimaryForegroundBrush"] = new SolidColorBrush(Colors.White);
         app.Resources["BadgeSecondaryForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
+    }
+
+    /// <summary>
+    /// Swaps a target resource with a source resource only if the source exists.
+    /// Prevents null injection into the resource dictionary during theme switching.
+    /// </summary>
+    private static void SwapIfExists(Application app, string targetKey, string sourceKey)
+    {
+        var source = app.TryFindResource(sourceKey);
+        if (source != null)
+        {
+            app.Resources[targetKey] = source;
+        }
     }
 
     /// <summary>

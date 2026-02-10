@@ -44,7 +44,8 @@
                         x:Name="SearchTextBox"
                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                         PlaceholderText="{loc:Loc Apps_SearchHint}"
-                        Icon="{ui:SymbolIcon Search24}">
+                        Icon="{ui:SymbolIcon Search24}"
+                        AutomationProperties.Name="{loc:Loc A11y_AppPicker_Search}">
                 <ui:TextBox.InputBindings>
                     <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
                 </ui:TextBox.InputBindings>
@@ -54,7 +55,8 @@
                       ItemsSource="{Binding Categories}"
                       SelectedItem="{Binding SelectedCategory}"
                       Width="180"
-                      Margin="8,0,0,0"/>
+                      Margin="8,0,0,0"
+                      AutomationProperties.Name="{loc:Loc A11y_AppPicker_Category}"/>
         </Grid>
 
         <!-- Applications DataGrid -->
@@ -68,7 +70,8 @@
                   SelectionMode="Single"
                   Margin="16,0,16,0"
                   VirtualizingStackPanel.IsVirtualizing="True"
-                  VirtualizingStackPanel.VirtualizationMode="Recycling">
+                  VirtualizingStackPanel.VirtualizationMode="Recycling"
+                  AutomationProperties.Name="{loc:Loc A11y_AppPicker_AppList}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="{loc:Loc Col_Application}"
                                     Binding="{Binding Name}"
@@ -121,7 +124,8 @@
                        Content="{loc:Loc Btn_Cancel}"
                        Command="{Binding CancelCommand}"
                        Appearance="Secondary"
-                       Margin="0,0,12,0"/>
+                       Margin="0,0,12,0"
+                       AutomationProperties.Name="{loc:Loc A11y_AppPicker_Cancel}"/>
 
             <!-- Add Button -->
             <ui:Button Grid.Column="2"
@@ -129,7 +133,8 @@
                        Command="{Binding ConfirmCommand}"
                        CommandParameter="{Binding SelectedApplication}"
                        IsEnabled="{Binding HasSelection}"
-                       Appearance="Primary"/>
+                       Appearance="Primary"
+                       AutomationProperties.Name="{loc:Loc A11y_AppPicker_Add}"/>
         </Grid>
     </Grid>
 </UserControl>

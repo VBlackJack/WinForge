@@ -123,7 +123,8 @@
                                        Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                                        Padding="24,14"
                                        MinHeight="48"
-                                       HorizontalAlignment="Left">
+                                       HorizontalAlignment="Left"
+                                       AutomationProperties.Name="{loc:Loc A11y_Dashboard_FixPrereqs}">
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="Wrench24"
                                                    Width="20" Height="20"
@@ -161,7 +162,8 @@
                                 <ui:Button Command="{Binding StartDeploymentCommand}"
                                            Style="{StaticResource HeroCtaButton}"
                                            ToolTip="{loc:Loc Dashboard_StartDeployment_Hint}"
-                                           Margin="0,0,12,0">
+                                           Margin="0,0,12,0"
+                                           AutomationProperties.Name="{loc:Loc A11y_Dashboard_StartDeployment}">
                                     <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="Rocket24"
                                                        Width="24" Height="24"
@@ -175,7 +177,8 @@
                                            ToolTip="{loc:Loc Dashboard_ViewUpdates_Hint}"
                                            Height="56"
                                            Padding="24,0"
-                                           Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                           Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                           AutomationProperties.Name="{loc:Loc A11y_Dashboard_ViewUpdates}">
                                     <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="ArrowDownload24"
                                                        Width="20" Height="20"

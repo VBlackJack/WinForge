@@ -204,22 +204,22 @@ public class StatusToColorConverter : IValueConverter
         return value switch
         {
             // ApplicationStatus
-            ApplicationStatus.Pending => app.TryFindResource("StatusPendingBrush") ?? new SolidColorBrush(Color.FromRgb(158, 158, 158)),
-            ApplicationStatus.Installing => app.TryFindResource("StatusInstallingBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243)),
-            ApplicationStatus.Installed => app.TryFindResource("StatusInstalledBrush") ?? new SolidColorBrush(Color.FromRgb(76, 175, 80)),
-            ApplicationStatus.Failed => app.TryFindResource("StatusFailedBrush") ?? new SolidColorBrush(Color.FromRgb(244, 67, 54)),
-            ApplicationStatus.Skipped => app.TryFindResource("StatusSkippedBrush") ?? new SolidColorBrush(Color.FromRgb(255, 152, 0)),
-            ApplicationStatus.AlreadyInstalled => app.TryFindResource("StatusAlreadyInstalledBrush") ?? new SolidColorBrush(Color.FromRgb(139, 195, 74)),
-            ApplicationStatus.Uninstalling => app.TryFindResource("StatusUninstallingBrush") ?? new SolidColorBrush(Color.FromRgb(156, 39, 176)),
-            ApplicationStatus.Uninstalled => app.TryFindResource("StatusUninstalledBrush") ?? new SolidColorBrush(Color.FromRgb(121, 134, 203)),
-            ApplicationStatus.UpdateAvailable => app.TryFindResource("SecondaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(255, 152, 0)),
-            ApplicationStatus.Updating => app.TryFindResource("StatusInstallingBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243)),
+            ApplicationStatus.Pending => app?.TryFindResource("StatusPendingBrush") ?? new SolidColorBrush(Color.FromRgb(158, 158, 158)),
+            ApplicationStatus.Installing => app?.TryFindResource("StatusInstallingBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243)),
+            ApplicationStatus.Installed => app?.TryFindResource("StatusInstalledBrush") ?? new SolidColorBrush(Color.FromRgb(76, 175, 80)),
+            ApplicationStatus.Failed => app?.TryFindResource("StatusFailedBrush") ?? new SolidColorBrush(Color.FromRgb(244, 67, 54)),
+            ApplicationStatus.Skipped => app?.TryFindResource("StatusSkippedBrush") ?? new SolidColorBrush(Color.FromRgb(255, 152, 0)),
+            ApplicationStatus.AlreadyInstalled => app?.TryFindResource("StatusAlreadyInstalledBrush") ?? new SolidColorBrush(Color.FromRgb(139, 195, 74)),
+            ApplicationStatus.Uninstalling => app?.TryFindResource("StatusUninstallingBrush") ?? new SolidColorBrush(Color.FromRgb(156, 39, 176)),
+            ApplicationStatus.Uninstalled => app?.TryFindResource("StatusUninstalledBrush") ?? new SolidColorBrush(Color.FromRgb(121, 134, 203)),
+            ApplicationStatus.UpdateAvailable => app?.TryFindResource("SecondaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(255, 152, 0)),
+            ApplicationStatus.Updating => app?.TryFindResource("StatusInstallingBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243)),
             // DeploymentResult
-            DeploymentResult.Success => app.TryFindResource("StatusInstalledBrush") ?? new SolidColorBrush(Color.FromRgb(76, 175, 80)),
-            DeploymentResult.PartialSuccess => app.TryFindResource("StatusSkippedBrush") ?? new SolidColorBrush(Color.FromRgb(255, 152, 0)),
-            DeploymentResult.Failed => app.TryFindResource("StatusFailedBrush") ?? new SolidColorBrush(Color.FromRgb(244, 67, 54)),
-            DeploymentResult.Cancelled => app.TryFindResource("StatusPendingBrush") ?? new SolidColorBrush(Color.FromRgb(158, 158, 158)),
-            _ => app.TryFindResource("StatusPendingBrush") ?? new SolidColorBrush(Color.FromRgb(158, 158, 158))
+            DeploymentResult.Success => app?.TryFindResource("StatusInstalledBrush") ?? new SolidColorBrush(Color.FromRgb(76, 175, 80)),
+            DeploymentResult.PartialSuccess => app?.TryFindResource("StatusSkippedBrush") ?? new SolidColorBrush(Color.FromRgb(255, 152, 0)),
+            DeploymentResult.Failed => app?.TryFindResource("StatusFailedBrush") ?? new SolidColorBrush(Color.FromRgb(244, 67, 54)),
+            DeploymentResult.Cancelled => app?.TryFindResource("StatusPendingBrush") ?? new SolidColorBrush(Color.FromRgb(158, 158, 158)),
+            _ => app?.TryFindResource("StatusPendingBrush") ?? new SolidColorBrush(Color.FromRgb(158, 158, 158))
         };
     }
 
@@ -391,14 +391,14 @@ public class StatusToRowBackgroundConverter : IValueConverter
 
         return value switch
         {
-            ApplicationStatus.Installed => app.TryFindResource("RowInstalledBackground") ?? new SolidColorBrush(Color.FromArgb(30, 76, 175, 80)),
-            ApplicationStatus.AlreadyInstalled => app.TryFindResource("RowInstalledBackground") ?? new SolidColorBrush(Color.FromArgb(30, 76, 175, 80)),
-            ApplicationStatus.UpdateAvailable => app.TryFindResource("RowUpdateAvailableBackground") ?? new SolidColorBrush(Color.FromArgb(40, 255, 152, 0)),
-            ApplicationStatus.Updating => app.TryFindResource("RowInstallingBackground") ?? new SolidColorBrush(Color.FromArgb(30, 33, 150, 243)),
-            ApplicationStatus.Failed => app.TryFindResource("RowFailedBackground") ?? new SolidColorBrush(Color.FromArgb(30, 244, 67, 54)),
-            ApplicationStatus.Installing => app.TryFindResource("RowInstallingBackground") ?? new SolidColorBrush(Color.FromArgb(30, 33, 150, 243)),
-            ApplicationStatus.Uninstalling => app.TryFindResource("RowInstallingBackground") ?? new SolidColorBrush(Color.FromArgb(30, 33, 150, 243)),
-            ApplicationStatus.Uninstalled => app.TryFindResource("RowUninstalledBackground") ?? new SolidColorBrush(Color.FromArgb(30, 121, 134, 203)),
+            ApplicationStatus.Installed => app?.TryFindResource("RowInstalledBackground") ?? new SolidColorBrush(Color.FromArgb(30, 76, 175, 80)),
+            ApplicationStatus.AlreadyInstalled => app?.TryFindResource("RowInstalledBackground") ?? new SolidColorBrush(Color.FromArgb(30, 76, 175, 80)),
+            ApplicationStatus.UpdateAvailable => app?.TryFindResource("RowUpdateAvailableBackground") ?? new SolidColorBrush(Color.FromArgb(40, 255, 152, 0)),
+            ApplicationStatus.Updating => app?.TryFindResource("RowInstallingBackground") ?? new SolidColorBrush(Color.FromArgb(30, 33, 150, 243)),
+            ApplicationStatus.Failed => app?.TryFindResource("RowFailedBackground") ?? new SolidColorBrush(Color.FromArgb(30, 244, 67, 54)),
+            ApplicationStatus.Installing => app?.TryFindResource("RowInstallingBackground") ?? new SolidColorBrush(Color.FromArgb(30, 33, 150, 243)),
+            ApplicationStatus.Uninstalling => app?.TryFindResource("RowInstallingBackground") ?? new SolidColorBrush(Color.FromArgb(30, 33, 150, 243)),
+            ApplicationStatus.Uninstalled => app?.TryFindResource("RowUninstalledBackground") ?? new SolidColorBrush(Color.FromArgb(30, 121, 134, 203)),
             _ => TransparentBrush
         };
     }
@@ -504,9 +504,9 @@ public class BooleanToPhaseColorConverter : IValueConverter
         var app = Application.Current;
         if (value is true)
         {
-            return app.TryFindResource("PrimaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243));
+            return app?.TryFindResource("PrimaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243));
         }
-        return app.TryFindResource("StatusSuccessBrush") ?? new SolidColorBrush(Color.FromRgb(76, 175, 80));
+        return app?.TryFindResource("StatusSuccessBrush") ?? new SolidColorBrush(Color.FromRgb(76, 175, 80));
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -546,9 +546,9 @@ public class ThemeAdaptiveBrushConverter : IValueConverter
         var app = Application.Current;
         if (isDark)
         {
-            return app.TryFindResource("SecondaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(205, 220, 57));
+            return app?.TryFindResource("SecondaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(205, 220, 57));
         }
-        return app.TryFindResource("PrimaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(103, 58, 183));
+        return app?.TryFindResource("PrimaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(103, 58, 183));
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

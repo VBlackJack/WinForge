@@ -3436,4 +3436,158 @@ This action cannot be undone.</value>
     <value>The value must be a valid version number (e.g., 1.0.0, 2.1.3-beta).</value>
     <comment>SemanticVersionAttribute default error message</comment>
   </data>
+  <!-- Audit Round 3 - Accessibility AutomationProperties -->
+  <data name="A11y_Logs_ViewLog" xml:space="preserve">
+    <value>View log file</value>
+    <comment>Accessibility name for log view button</comment>
+  </data>
+  <data name="A11y_Logs_CopyPath" xml:space="preserve">
+    <value>Copy log file path</value>
+    <comment>Accessibility name for copy log path button</comment>
+  </data>
+  <data name="A11y_Logs_DeleteLog" xml:space="preserve">
+    <value>Delete log file</value>
+    <comment>Accessibility name for delete log button</comment>
+  </data>
+  <data name="A11y_Logs_Search" xml:space="preserve">
+    <value>Search logs</value>
+    <comment>Accessibility name for log search field</comment>
+  </data>
+  <data name="A11y_Logs_LevelFilter" xml:space="preserve">
+    <value>Filter by log level</value>
+    <comment>Accessibility name for log level filter</comment>
+  </data>
+  <data name="A11y_Logs_DateFilter" xml:space="preserve">
+    <value>Filter by date</value>
+    <comment>Accessibility name for date filter</comment>
+  </data>
+  <data name="A11y_Logs_ClearFilters" xml:space="preserve">
+    <value>Clear all filters</value>
+    <comment>Accessibility name for clear filters button</comment>
+  </data>
+  <data name="A11y_Logs_ClearOld" xml:space="preserve">
+    <value>Clear old log files</value>
+    <comment>Accessibility name for clear old logs button</comment>
+  </data>
+  <data name="A11y_Deployment_Pause" xml:space="preserve">
+    <value>Pause deployment</value>
+    <comment>Accessibility name for pause button</comment>
+  </data>
+  <data name="A11y_Deployment_Resume" xml:space="preserve">
+    <value>Resume deployment</value>
+    <comment>Accessibility name for resume button</comment>
+  </data>
+  <data name="A11y_Deployment_Cancel" xml:space="preserve">
+    <value>Cancel deployment</value>
+    <comment>Accessibility name for cancel deployment button</comment>
+  </data>
+  <data name="A11y_Deployment_CopyLogs" xml:space="preserve">
+    <value>Copy logs to clipboard</value>
+    <comment>Accessibility name for copy logs button</comment>
+  </data>
+  <data name="A11y_Deployment_CloseLogs" xml:space="preserve">
+    <value>Close log viewer</value>
+    <comment>Accessibility name for close log viewer button</comment>
+  </data>
+  <data name="A11y_Dashboard_StartDeployment" xml:space="preserve">
+    <value>Start deployment</value>
+    <comment>Accessibility name for start deployment button</comment>
+  </data>
+  <data name="A11y_Dashboard_ViewUpdates" xml:space="preserve">
+    <value>View available updates</value>
+    <comment>Accessibility name for view updates button</comment>
+  </data>
+  <data name="A11y_Dashboard_FixPrereqs" xml:space="preserve">
+    <value>Fix prerequisites</value>
+    <comment>Accessibility name for fix prerequisites button</comment>
+  </data>
+  <data name="A11y_Settings_ThemeToggle" xml:space="preserve">
+    <value>Toggle dark theme</value>
+    <comment>Accessibility name for theme toggle</comment>
+  </data>
+  <data name="A11y_Settings_ReducedMotion" xml:space="preserve">
+    <value>Toggle reduced motion</value>
+    <comment>Accessibility name for reduced motion toggle</comment>
+  </data>
+  <data name="A11y_Settings_Language" xml:space="preserve">
+    <value>Select language</value>
+    <comment>Accessibility name for language selector</comment>
+  </data>
+  <data name="A11y_Profile_Overwrite" xml:space="preserve">
+    <value>Overwrite existing profile</value>
+    <comment>Accessibility name for overwrite radio button</comment>
+  </data>
+  <data name="A11y_Profile_SaveNew" xml:space="preserve">
+    <value>Save as new profile</value>
+    <comment>Accessibility name for save as new radio button</comment>
+  </data>
+  <data name="A11y_Profile_Name" xml:space="preserve">
+    <value>Profile name</value>
+    <comment>Accessibility name for profile name field</comment>
+  </data>
+  <data name="A11y_Profile_Parent" xml:space="preserve">
+    <value>Parent profile</value>
+    <comment>Accessibility name for parent profile selector</comment>
+  </data>
+  <data name="A11y_Profile_Description" xml:space="preserve">
+    <value>Profile description</value>
+    <comment>Accessibility name for profile description field</comment>
+  </data>
+  <data name="A11y_Profile_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Accessibility name for cancel button in profile dialog</comment>
+  </data>
+  <data name="A11y_Profile_Save" xml:space="preserve">
+    <value>Save profile</value>
+    <comment>Accessibility name for save profile button</comment>
+  </data>
+  <data name="A11y_AppPicker_Search" xml:space="preserve">
+    <value>Search applications</value>
+    <comment>Accessibility name for app picker search field</comment>
+  </data>
+  <data name="A11y_AppPicker_Category" xml:space="preserve">
+    <value>Filter by category</value>
+    <comment>Accessibility name for category filter</comment>
+  </data>
+  <data name="A11y_AppPicker_AppList" xml:space="preserve">
+    <value>Application list</value>
+    <comment>Accessibility name for application list</comment>
+  </data>
+  <data name="A11y_AppPicker_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Accessibility name for cancel button in app picker</comment>
+  </data>
+  <data name="A11y_AppPicker_Add" xml:space="preserve">
+    <value>Add selected applications</value>
+    <comment>Accessibility name for add button in app picker</comment>
+  </data>
+  <data name="A11y_Onboarding_DontShow" xml:space="preserve">
+    <value>Do not show again</value>
+    <comment>Accessibility name for dont show again checkbox</comment>
+  </data>
+  <data name="A11y_Onboarding_GetStarted" xml:space="preserve">
+    <value>Get started</value>
+    <comment>Accessibility name for get started button</comment>
+  </data>
+  <data name="A11y_Shortcuts_Close" xml:space="preserve">
+    <value>Close keyboard shortcuts</value>
+    <comment>Accessibility name for close shortcuts button</comment>
+  </data>
+  <!-- Audit Round 3 - Error Messages -->
+  <data name="Error_LoadViewFailed" xml:space="preserve">
+    <value>Failed to load view: {0}</value>
+    <comment>Error message when a view fails to load (0=error message)</comment>
+  </data>
+  <data name="Detection_InvalidExpandedPath" xml:space="preserve">
+    <value>Invalid path after environment variable expansion</value>
+    <comment>Error when expanded path is invalid</comment>
+  </data>
+  <data name="Detection_InvalidCommandPath" xml:space="preserve">
+    <value>Invalid command path: contains potentially dangerous characters</value>
+    <comment>Error when command path contains dangerous characters</comment>
+  </data>
+  <data name="Detection_CommandTimeout" xml:space="preserve">
+    <value>Command timed out after 5 seconds</value>
+    <comment>Error when detection command times out</comment>
+  </data>
 </root>

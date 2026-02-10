@@ -19,6 +19,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Wpf.Ui.Controls;
+using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Controls;
 
@@ -56,14 +57,14 @@ public partial class ConfirmDialog : UserControl
     public void Configure(
         string title,
         string message,
-        string confirmText = "Confirm",
-        string cancelText = "Cancel",
+        string? confirmText = null,
+        string? cancelText = null,
         ConfirmDialogType dialogType = ConfirmDialogType.Question)
     {
         TitleText.Text = title;
         MessageText.Text = message;
-        ConfirmButton.Content = confirmText;
-        CancelButton.Content = cancelText;
+        ConfirmButton.Content = confirmText ?? Loc.Dialog_Confirm;
+        CancelButton.Content = cancelText ?? Loc.Dialog_Cancel;
 
         // Set icon and color based on type
         switch (dialogType)

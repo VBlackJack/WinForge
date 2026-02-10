@@ -50,6 +50,12 @@ public partial class ApplicationsView : UserControl
         {
             if (DataContext is ApplicationsViewModel viewModel)
             {
+                // Unsubscribe first to prevent duplicate handlers on re-load
+                viewModel.OpenEditorRequested -= OnOpenEditorRequested;
+                viewModel.ConfirmDeleteRequested -= OnConfirmDeleteRequested;
+                viewModel.ImportRequested -= OnImportRequested;
+                viewModel.ExportRequested -= OnExportRequested;
+
                 // Subscribe to events
                 viewModel.OpenEditorRequested += OnOpenEditorRequested;
                 viewModel.ConfirmDeleteRequested += OnConfirmDeleteRequested;

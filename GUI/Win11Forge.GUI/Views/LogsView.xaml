@@ -97,6 +97,7 @@
                 <ui:TextBox Grid.Column="0"
                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                             PlaceholderText="{loc:Loc Logs_SearchPlaceholder}"
+                            AutomationProperties.Name="{loc:Loc A11y_Logs_Search}"
                             Margin="0,0,16,0">
                     <ui:TextBox.InputBindings>
                         <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
@@ -107,12 +108,14 @@
                 <ComboBox Grid.Column="1"
                           ItemsSource="{Binding LogLevels}"
                           SelectedItem="{Binding SelectedLogLevel}"
+                          AutomationProperties.Name="{loc:Loc A11y_Logs_LevelFilter}"
                           Width="120"
                           Margin="0,0,8,0"/>
 
                 <!-- Date Filter -->
                 <DatePicker Grid.Column="2"
                             SelectedDate="{Binding FilterDate}"
+                            AutomationProperties.Name="{loc:Loc A11y_Logs_DateFilter}"
                             Width="150"
                             Margin="0,0,8,0"/>
 
@@ -120,7 +123,8 @@
                 <ui:Button Grid.Column="3"
                            Command="{Binding ClearFiltersCommand}"
                            Appearance="Transparent"
-                           ToolTip="{loc:Loc Logs_ClearFilters}">
+                           ToolTip="{loc:Loc Logs_ClearFilters}"
+                           AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}">
                     <ui:SymbolIcon Symbol="FilterDismiss24" Width="20" Height="20"/>
                 </ui:Button>
 
@@ -129,6 +133,7 @@
                            Command="{Binding ClearOldLogsCommand}"
                            Appearance="Transparent"
                            ToolTip="{loc:Loc Logs_ClearOld}"
+                           AutomationProperties.Name="{loc:Loc A11y_Logs_ClearOld}"
                            Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                            Margin="8,0,0,0">
                     <ui:SymbolIcon Symbol="DeleteDismiss24" Width="20" Height="20"/>
@@ -207,26 +212,29 @@
                                         <ui:Button Command="{Binding DataContext.ViewLogCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                    CommandParameter="{Binding}"
                                                    Appearance="Transparent"
-                                                   Width="32" Height="32"
-                                                   Padding="4"
-                                                   ToolTip="{loc:Loc Logs_View}">
+                                                   Width="44" Height="44"
+                                                   Padding="8"
+                                                   ToolTip="{loc:Loc Logs_View}"
+                                                   AutomationProperties.Name="{loc:Loc A11y_Logs_ViewLog}">
                                             <ui:SymbolIcon Symbol="Eye24" Width="18" Height="18"/>
                                         </ui:Button>
                                         <ui:Button Command="{Binding DataContext.CopyLogPathCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                    CommandParameter="{Binding}"
                                                    Appearance="Transparent"
-                                                   Width="32" Height="32"
-                                                   Padding="4"
-                                                   ToolTip="{loc:Loc Logs_CopyPath}">
+                                                   Width="44" Height="44"
+                                                   Padding="8"
+                                                   ToolTip="{loc:Loc Logs_CopyPath}"
+                                                   AutomationProperties.Name="{loc:Loc A11y_Logs_CopyPath}">
                                             <ui:SymbolIcon Symbol="Copy24" Width="18" Height="18"/>
                                         </ui:Button>
                                         <ui:Button Command="{Binding DataContext.DeleteLogCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                    CommandParameter="{Binding}"
                                                    Appearance="Transparent"
-                                                   Width="32" Height="32"
-                                                   Padding="4"
+                                                   Width="44" Height="44"
+                                                   Padding="8"
                                                    Foreground="{DynamicResource SystemFillColorCriticalBrush}"
-                                                   ToolTip="{loc:Loc Logs_Delete}">
+                                                   ToolTip="{loc:Loc Logs_Delete}"
+                                                   AutomationProperties.Name="{loc:Loc A11y_Logs_DeleteLog}">
                                             <ui:SymbolIcon Symbol="Delete24" Width="18" Height="18"/>
                                         </ui:Button>
                                     </StackPanel>

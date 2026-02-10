@@ -268,25 +268,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     /// </summary>
     private void MainWindow_Closing(object? sender, CancelEventArgs e)
     {
-        // Unsubscribe from service events
-        if (_undoService != null && _undoStateChangedHandler != null)
-        {
-            _undoService.StateChanged -= _undoStateChangedHandler;
-        }
-
-        if (_navigationService != null && _navigationChangedHandler != null)
-        {
-            _navigationService.NavigationChanged -= _navigationChangedHandler;
-        }
-
-        // Unregister from WeakReferenceMessenger
-        WeakReferenceMessenger.Default.Unregister<NavigateMessage>(this);
-
-        // Dispose ViewModels that implement IDisposable
-        (_deploymentViewModel as IDisposable)?.Dispose();
-        (_appsViewModel as IDisposable)?.Dispose();
-        (_settingsViewModel as IDisposable)?.Dispose();
-        (_applicationsViewModel as IDisposable)?.Dispose();
+        Dispose();
     }
 
     /// <summary>
@@ -413,7 +395,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"MainWindow_Loaded failed: {ex}");
-            _toastService?.ShowError($"Initialization error: {ex.Message}");
+            _toastService?.ShowError(string.Format(Loc.Init_ErrorMessage, ex.Message));
         }
     }
 
@@ -604,7 +586,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"LoadViewContent failed for index {selectedIndex}: {ex}");
-            _toastService?.ShowError($"Failed to load view: {ex.Message}");
+            _toastService?.ShowError(string.Format(Loc.Error_LoadViewFailed, ex.Message));
         }
     }
 
@@ -621,13 +603,13 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Failed to initialize {viewName} view: {ex.Message}");
-            _toastService?.ShowError($"Failed to load {viewName}. Please try again.");
+            _toastService?.ShowError(string.Format(Loc.Error_LoadViewFailed, ex.Message));
         }
     }
 
     private async Task InitializeDashboardAsync()
     {
-        if (_dashboardInitialized) return;
+        if (_dashboardInitialized || _dashboardViewModel == null) return;
 
         await _dashboardViewModel.InitializeAsync();
         _dashboardInitialized = true;
@@ -635,7 +617,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
     private async Task InitializeDeploymentAsync()
     {
-        if (_deploymentInitialized) return;
+        if (_deploymentInitialized || _deploymentViewModel == null) return;
 
         await _deploymentViewModel.InitializeAsync();
         _deploymentInitialized = true;
@@ -643,7 +625,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
     private async Task InitializeAppsAsync()
     {
-        if (_appsInitialized) return;
+        if (_appsInitialized || _appsViewModel == null) return;
 
         await _appsViewModel.InitializeAsync();
         _appsInitialized = true;
@@ -651,7 +633,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
     private async Task InitializeSettingsAsync()
     {
-        if (_settingsInitialized) return;
+        if (_settingsInitialized || _settingsViewModel == null) return;
 
         await _settingsViewModel.InitializeAsync();
         _settingsInitialized = true;
@@ -659,7 +641,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
     private async Task InitializePrerequisitesAsync()
     {
-        if (_prerequisitesInitialized) return;
+        if (_prerequisitesInitialized || _prerequisitesViewModel == null) return;
 
         await _prerequisitesViewModel.InitializeAsync();
         _prerequisitesInitialized = true;
@@ -667,7 +649,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
     private async Task InitializeApplicationsAsync()
     {
-        if (_applicationsInitialized) return;
+        if (_applicationsInitialized || _applicationsViewModel == null) return;
 
         await _applicationsViewModel.LoadApplicationsCommand.ExecuteAsync(null);
         _applicationsInitialized = true;
@@ -692,6 +674,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             // Save navigation state for view preservation
             try
             {
+                if (_settingsService == null) return;
                 var settings = _settingsService.LoadSettings();
                 settings.LastNavigationIndex = viewIndex;
                 _settingsService.SaveSettings(settings);
@@ -736,7 +719,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             var onboardingControl = new OnboardingDialog();
             onboardingControl.Completed += (_, dontShowAgain) =>
             {
-                if (dontShowAgain)
+                if (dontShowAgain && _settingsService != null)
                 {
                     var settings = _settingsService.LoadSettings();
                     settings.IsFirstRun = false;
@@ -753,9 +736,12 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             await dialog.ShowAsync();
 
             // Mark first run complete after dialog closes
-            var currentSettings = _settingsService.LoadSettings();
-            currentSettings.IsFirstRun = false;
-            _settingsService.SaveSettings(currentSettings);
+            if (_settingsService != null)
+            {
+                var currentSettings = _settingsService.LoadSettings();
+                currentSettings.IsFirstRun = false;
+                _settingsService.SaveSettings(currentSettings);
+            }
         }
         catch (Exception ex)
         {

@@ -13,78 +13,16 @@
                 <ResourceDictionary Source="Resources/FluentThemeBridge.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Consolidated Color Resources for WCAG AA Contrast -->
-            <SolidColorBrush x:Key="StatusPendingBrush" Color="#9E9E9E"/>
-            <SolidColorBrush x:Key="StatusInstallingBrush" Color="#2196F3"/>
-            <SolidColorBrush x:Key="StatusInstalledBrush" Color="#4CAF50"/>
-            <SolidColorBrush x:Key="StatusFailedBrush" Color="#F44336"/>
-            <SolidColorBrush x:Key="StatusSkippedBrush" Color="#F57C00"/>
-            <SolidColorBrush x:Key="StatusAlreadyInstalledBrush" Color="#8BC34A"/>
-            <SolidColorBrush x:Key="StatusUninstallingBrush" Color="#9C27B0"/>
-            <SolidColorBrush x:Key="StatusUninstalledBrush" Color="#7986CB"/>
+            <!-- Brush resources defined in FluentThemeBridge.xaml (merged above).
+                 App.xaml.cs swaps theme-adaptive brushes at runtime via ApplyThemeResources(). -->
 
-            <!-- Row Background Colors (semi-transparent) -->
-            <SolidColorBrush x:Key="RowInstalledBackground" Color="#1E4CAF50"/>
-            <SolidColorBrush x:Key="RowFailedBackground" Color="#1EF44336"/>
-            <SolidColorBrush x:Key="RowInstallingBackground" Color="#1E2196F3"/>
-            <SolidColorBrush x:Key="RowUninstalledBackground" Color="#1E7986CB"/>
-            <SolidColorBrush x:Key="RowUpdateAvailableBackground" Color="#28F57C00"/>
-
-            <!-- Accent Colors -->
-            <SolidColorBrush x:Key="FavoriteActiveBrush" Color="#FFD700"/>
-            <SolidColorBrush x:Key="FavoriteInactiveBrush" Color="#9E9E9E"/>
-            <SolidColorBrush x:Key="FavoriteTextBrush" Color="#FF8F00"/>
-            <SolidColorBrush x:Key="RequiredBrush" Color="#FFC107"/>
-            <SolidColorBrush x:Key="OptionalBrush" Color="#9E9E9E"/>
-            <SolidColorBrush x:Key="AccentGreenTextBrush" Color="#2E7D32"/>
-            <SolidColorBrush x:Key="AccentOrangeTextBrush" Color="#E65100"/>
-            <SolidColorBrush x:Key="ManualInstallBadgeBrush" Color="#FF8A00"/>
-
-            <!-- Secondary/Muted Icon Colors (use instead of Opacity for WCAG compliance) -->
-            <SolidColorBrush x:Key="IconSecondaryBrush" Color="#9E9E9E"/>
-            <SolidColorBrush x:Key="IconHintBrush" Color="#757575"/>
-            <SolidColorBrush x:Key="IconDisabledBrush" Color="#616161"/>
-
-            <!-- Error Display Colors (for error banners and validation) -->
-            <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="#33F44336"/>
-            <SolidColorBrush x:Key="ErrorBorderBrush" Color="#EF5350"/>
-            <SolidColorBrush x:Key="ErrorTextBrush" Color="#EF5350"/>
-            <SolidColorBrush x:Key="ErrorIconBrush" Color="#EF5350"/>
-
-            <!-- Validation Colors -->
-            <SolidColorBrush x:Key="ValidationErrorBorderBrush" Color="#F44336"/>
-            <SolidColorBrush x:Key="ValidationSuccessBorderBrush" Color="#4CAF50"/>
-
-            <!-- Warning Display Colors (for dry run, caution banners) -->
-            <SolidColorBrush x:Key="WarningBackgroundBrush" Color="#33F57C00"/>
-            <SolidColorBrush x:Key="WarningBorderBrush" Color="#F57C00"/>
-            <SolidColorBrush x:Key="WarningTextBrush" Color="#FFB74D"/>
-            <SolidColorBrush x:Key="WarningIconBrush" Color="#FFB74D"/>
-
-            <!-- Success Display Colors (for deployment complete, validation success) -->
-            <SolidColorBrush x:Key="SuccessBackgroundBrush" Color="#334CAF50"/>
-            <SolidColorBrush x:Key="SuccessBorderBrush" Color="#4CAF50"/>
-            <SolidColorBrush x:Key="SuccessTextBrush" Color="#81C784"/>
-            <SolidColorBrush x:Key="SuccessIconBrush" Color="#81C784"/>
-
-            <!-- Skeleton Loader Colors (theme-aware with transparency) -->
-            <SolidColorBrush x:Key="SkeletonBaseBrush" Color="#1AFFFFFF"/>
-            <SolidColorBrush x:Key="SkeletonHighlightBrush" Color="#33FFFFFF"/>
-
-            <!-- Light Theme Contrast Enhancement Colors -->
+            <!-- Light Theme Contrast Enhancement Colors (unique to App.xaml) -->
             <SolidColorBrush x:Key="LightThemeTextPrimary" Color="#212121"/>
             <SolidColorBrush x:Key="LightThemeTextSecondary" Color="#424242"/>
             <SolidColorBrush x:Key="LightThemeTextHint" Color="#757575"/>
             <SolidColorBrush x:Key="LightThemeBorder" Color="#BDBDBD"/>
             <SolidColorBrush x:Key="LightThemeCardBackground" Color="#FFFFFF"/>
             <SolidColorBrush x:Key="LightThemeHoverBackground" Color="#0A000000"/>
-
-            <!-- Status Colors optimized for light theme (darker for better contrast) -->
-            <SolidColorBrush x:Key="StatusInstalledLightBrush" Color="#2E7D32"/>
-            <SolidColorBrush x:Key="StatusFailedLightBrush" Color="#C62828"/>
-            <SolidColorBrush x:Key="StatusInstallingLightBrush" Color="#1565C0"/>
-            <SolidColorBrush x:Key="StatusSkippedLightBrush" Color="#E65100"/>
-            <SolidColorBrush x:Key="StatusPendingLightBrush" Color="#616161"/>
 
             <!-- Focus Visual Style (WCAG compliant high-visibility focus indicator) -->
             <Style x:Key="HighVisibilityFocusVisual">
@@ -241,9 +179,6 @@
 
             <!-- No-Op Storyboard for reduced motion -->
             <Storyboard x:Key="NoAnimationStoryboard"/>
-
-            <!-- Theme-Adaptive Accent Brush -->
-            <SolidColorBrush x:Key="ThemeAdaptiveAccentBrush" Color="#60CDFF"/>
 
             <!-- Theme-Adaptive Outlined Button Style -->
             <Style x:Key="ThemeAdaptiveOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">

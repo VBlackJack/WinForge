@@ -133,7 +133,8 @@
                                Content="{loc:Loc Btn_Pause}"
                                Command="{Binding PauseDeploymentCommand}"
                                Visibility="{Binding CanPauseDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
-                               Margin="0,0,12,0">
+                               Margin="0,0,12,0"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_Pause}">
                         <ui:Button.ContentTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
@@ -148,7 +149,8 @@
                     <ui:Button Appearance="Primary"
                                Command="{Binding ResumeDeploymentCommand}"
                                Visibility="{Binding CanResumeDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
-                               Margin="0,0,12,0">
+                               Margin="0,0,12,0"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_Resume}">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Play24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Btn_Resume}" VerticalAlignment="Center"/>
@@ -157,7 +159,8 @@
 
                     <!-- Cancel Button -->
                     <ui:Button Appearance="Secondary"
-                               Command="{Binding CancelDeploymentCommand}">
+                               Command="{Binding CancelDeploymentCommand}"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_Cancel}">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Dismiss24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Btn_Cancel}" VerticalAlignment="Center"/>
@@ -491,10 +494,12 @@
                     <ui:Button Content="{loc:Loc LogViewer_Copy}"
                                Appearance="Secondary"
                                Click="CopyLogsToClipboard_Click"
-                               Margin="0,0,12,0"/>
+                               Margin="0,0,12,0"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_CopyLogs}"/>
                     <ui:Button Content="{loc:Loc LogViewer_Close}"
                                Appearance="Primary"
-                               Command="{Binding CloseLogViewerCommand}"/>
+                               Command="{Binding CloseLogViewerCommand}"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_CloseLogs}"/>
                 </StackPanel>
             </Grid>
         </Border>

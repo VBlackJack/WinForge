@@ -32,6 +32,7 @@ public partial class ErrorDialog : UserControl
 {
     private string? _helpUrl;
     private string? _errorCode;
+    private System.Windows.Threading.DispatcherTimer? _copyFeedbackTimer;
     private const string GitHubIssuesUrl = "https://github.com/VBlackJack/Win11Forge/issues/new";
 
     public event EventHandler<DialogAction>? ActionSelected;
@@ -259,17 +260,18 @@ public partial class ErrorDialog : UserControl
                 CopyDetailsButton.Content = "✓";
                 CopyDetailsButton.IsEnabled = false;
 
-                var timer = new System.Windows.Threading.DispatcherTimer
+                _copyFeedbackTimer?.Stop();
+                _copyFeedbackTimer = new System.Windows.Threading.DispatcherTimer
                 {
                     Interval = TimeSpan.FromSeconds(2)
                 };
-                timer.Tick += (s, args) =>
+                _copyFeedbackTimer.Tick += (s, args) =>
                 {
                     CopyDetailsButton.Content = originalContent;
                     CopyDetailsButton.IsEnabled = true;
-                    timer.Stop();
+                    _copyFeedbackTimer.Stop();
                 };
-                timer.Start();
+                _copyFeedbackTimer.Start();
             }
         }
         catch (Exception ex)
@@ -293,7 +295,7 @@ public partial class ErrorDialog : UserControl
                 $"## Environment\n\n" +
                 $"- OS: Windows {Environment.OSVersion.Version}\n" +
                 $"- .NET: {Environment.Version}\n" +
-                $"- Win11Forge Version: 3.2.3\n"
+                $"- Win11Forge Version: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}\n"
             );
 
             var url = $"{GitHubIssuesUrl}?title={issueTitle}&body={issueBody}";

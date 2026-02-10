@@ -2139,4 +2139,120 @@ Cette action est irreversible.</value>
   <data name="Cancel_Complete" xml:space="preserve">
     <value>Operation annulee</value>
   </data>
+  <!-- Audit Round 3 - Accessibility AutomationProperties -->
+  <data name="A11y_Logs_ViewLog" xml:space="preserve">
+    <value>Voir le fichier journal</value>
+  </data>
+  <data name="A11y_Logs_CopyPath" xml:space="preserve">
+    <value>Copier le chemin du fichier journal</value>
+  </data>
+  <data name="A11y_Logs_DeleteLog" xml:space="preserve">
+    <value>Supprimer le fichier journal</value>
+  </data>
+  <data name="A11y_Logs_Search" xml:space="preserve">
+    <value>Rechercher dans les journaux</value>
+  </data>
+  <data name="A11y_Logs_LevelFilter" xml:space="preserve">
+    <value>Filtrer par niveau</value>
+  </data>
+  <data name="A11y_Logs_DateFilter" xml:space="preserve">
+    <value>Filtrer par date</value>
+  </data>
+  <data name="A11y_Logs_ClearFilters" xml:space="preserve">
+    <value>Effacer tous les filtres</value>
+  </data>
+  <data name="A11y_Logs_ClearOld" xml:space="preserve">
+    <value>Supprimer les anciens journaux</value>
+  </data>
+  <data name="A11y_Deployment_Pause" xml:space="preserve">
+    <value>Mettre en pause le deploiement</value>
+  </data>
+  <data name="A11y_Deployment_Resume" xml:space="preserve">
+    <value>Reprendre le deploiement</value>
+  </data>
+  <data name="A11y_Deployment_Cancel" xml:space="preserve">
+    <value>Annuler le deploiement</value>
+  </data>
+  <data name="A11y_Deployment_CopyLogs" xml:space="preserve">
+    <value>Copier les journaux dans le presse-papiers</value>
+  </data>
+  <data name="A11y_Deployment_CloseLogs" xml:space="preserve">
+    <value>Fermer la visionneuse de journaux</value>
+  </data>
+  <data name="A11y_Dashboard_StartDeployment" xml:space="preserve">
+    <value>Demarrer le deploiement</value>
+  </data>
+  <data name="A11y_Dashboard_ViewUpdates" xml:space="preserve">
+    <value>Voir les mises a jour disponibles</value>
+  </data>
+  <data name="A11y_Dashboard_FixPrereqs" xml:space="preserve">
+    <value>Corriger les prerequis</value>
+  </data>
+  <data name="A11y_Settings_ThemeToggle" xml:space="preserve">
+    <value>Basculer le theme sombre</value>
+  </data>
+  <data name="A11y_Settings_ReducedMotion" xml:space="preserve">
+    <value>Basculer les animations reduites</value>
+  </data>
+  <data name="A11y_Settings_Language" xml:space="preserve">
+    <value>Selectionner la langue</value>
+  </data>
+  <data name="A11y_Profile_Overwrite" xml:space="preserve">
+    <value>Ecraser le profil existant</value>
+  </data>
+  <data name="A11y_Profile_SaveNew" xml:space="preserve">
+    <value>Enregistrer comme nouveau profil</value>
+  </data>
+  <data name="A11y_Profile_Name" xml:space="preserve">
+    <value>Nom du profil</value>
+  </data>
+  <data name="A11y_Profile_Parent" xml:space="preserve">
+    <value>Profil parent</value>
+  </data>
+  <data name="A11y_Profile_Description" xml:space="preserve">
+    <value>Description du profil</value>
+  </data>
+  <data name="A11y_Profile_Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="A11y_Profile_Save" xml:space="preserve">
+    <value>Enregistrer le profil</value>
+  </data>
+  <data name="A11y_AppPicker_Search" xml:space="preserve">
+    <value>Rechercher des applications</value>
+  </data>
+  <data name="A11y_AppPicker_Category" xml:space="preserve">
+    <value>Filtrer par categorie</value>
+  </data>
+  <data name="A11y_AppPicker_AppList" xml:space="preserve">
+    <value>Liste des applications</value>
+  </data>
+  <data name="A11y_AppPicker_Cancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="A11y_AppPicker_Add" xml:space="preserve">
+    <value>Ajouter les applications selectionnees</value>
+  </data>
+  <data name="A11y_Onboarding_DontShow" xml:space="preserve">
+    <value>Ne plus afficher</value>
+  </data>
+  <data name="A11y_Onboarding_GetStarted" xml:space="preserve">
+    <value>Commencer</value>
+  </data>
+  <data name="A11y_Shortcuts_Close" xml:space="preserve">
+    <value>Fermer les raccourcis clavier</value>
+  </data>
+  <!-- Audit Round 3 - Error Messages -->
+  <data name="Error_LoadViewFailed" xml:space="preserve">
+    <value>Echec du chargement de la vue : {0}</value>
+  </data>
+  <data name="Detection_InvalidExpandedPath" xml:space="preserve">
+    <value>Chemin invalide apres expansion des variables d'environnement</value>
+  </data>
+  <data name="Detection_InvalidCommandPath" xml:space="preserve">
+    <value>Chemin de commande invalide : contient des caracteres potentiellement dangereux</value>
+  </data>
+  <data name="Detection_CommandTimeout" xml:space="preserve">
+    <value>La commande a expire apres 5 secondes</value>
+  </data>
 </root>

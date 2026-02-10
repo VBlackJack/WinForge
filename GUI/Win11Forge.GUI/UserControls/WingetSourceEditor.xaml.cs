@@ -233,12 +233,12 @@ public partial class WingetSourceEditor : UserControl
         if (TestSuccess == true)
         {
             TestResultIcon.Symbol = SymbolRegular.CheckmarkCircle24;
-            TestResultIcon.Foreground = new SolidColorBrush(Colors.Green);
+            TestResultIcon.Foreground = Application.Current?.TryFindResource("StatusInstalledBrush") as Brush ?? new SolidColorBrush(Colors.Green);
         }
         else if (TestSuccess == false)
         {
             TestResultIcon.Symbol = SymbolRegular.ErrorCircle24;
-            TestResultIcon.Foreground = new SolidColorBrush(Colors.Red);
+            TestResultIcon.Foreground = Application.Current?.TryFindResource("StatusFailedBrush") as Brush ?? new SolidColorBrush(Colors.Red);
         }
     }
 

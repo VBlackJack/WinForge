@@ -892,4 +892,46 @@ public class Resources
 
     // ValidationAttributes
     public static string Validation_SemanticVersion_Invalid => ResourceManager.GetString("Validation_SemanticVersion_Invalid", resourceCulture);
+
+    // Audit Round 3 - Accessibility AutomationProperties
+    public static string A11y_Logs_ViewLog => ResourceManager.GetString("A11y_Logs_ViewLog", resourceCulture);
+    public static string A11y_Logs_CopyPath => ResourceManager.GetString("A11y_Logs_CopyPath", resourceCulture);
+    public static string A11y_Logs_DeleteLog => ResourceManager.GetString("A11y_Logs_DeleteLog", resourceCulture);
+    public static string A11y_Logs_Search => ResourceManager.GetString("A11y_Logs_Search", resourceCulture);
+    public static string A11y_Logs_LevelFilter => ResourceManager.GetString("A11y_Logs_LevelFilter", resourceCulture);
+    public static string A11y_Logs_DateFilter => ResourceManager.GetString("A11y_Logs_DateFilter", resourceCulture);
+    public static string A11y_Logs_ClearFilters => ResourceManager.GetString("A11y_Logs_ClearFilters", resourceCulture);
+    public static string A11y_Logs_ClearOld => ResourceManager.GetString("A11y_Logs_ClearOld", resourceCulture);
+    public static string A11y_Deployment_Pause => ResourceManager.GetString("A11y_Deployment_Pause", resourceCulture);
+    public static string A11y_Deployment_Resume => ResourceManager.GetString("A11y_Deployment_Resume", resourceCulture);
+    public static string A11y_Deployment_Cancel => ResourceManager.GetString("A11y_Deployment_Cancel", resourceCulture);
+    public static string A11y_Deployment_CopyLogs => ResourceManager.GetString("A11y_Deployment_CopyLogs", resourceCulture);
+    public static string A11y_Deployment_CloseLogs => ResourceManager.GetString("A11y_Deployment_CloseLogs", resourceCulture);
+    public static string A11y_Dashboard_StartDeployment => ResourceManager.GetString("A11y_Dashboard_StartDeployment", resourceCulture);
+    public static string A11y_Dashboard_ViewUpdates => ResourceManager.GetString("A11y_Dashboard_ViewUpdates", resourceCulture);
+    public static string A11y_Dashboard_FixPrereqs => ResourceManager.GetString("A11y_Dashboard_FixPrereqs", resourceCulture);
+    public static string A11y_Settings_ThemeToggle => ResourceManager.GetString("A11y_Settings_ThemeToggle", resourceCulture);
+    public static string A11y_Settings_ReducedMotion => ResourceManager.GetString("A11y_Settings_ReducedMotion", resourceCulture);
+    public static string A11y_Settings_Language => ResourceManager.GetString("A11y_Settings_Language", resourceCulture);
+    public static string A11y_Profile_Overwrite => ResourceManager.GetString("A11y_Profile_Overwrite", resourceCulture);
+    public static string A11y_Profile_SaveNew => ResourceManager.GetString("A11y_Profile_SaveNew", resourceCulture);
+    public static string A11y_Profile_Name => ResourceManager.GetString("A11y_Profile_Name", resourceCulture);
+    public static string A11y_Profile_Parent => ResourceManager.GetString("A11y_Profile_Parent", resourceCulture);
+    public static string A11y_Profile_Description => ResourceManager.GetString("A11y_Profile_Description", resourceCulture);
+    public static string A11y_Profile_Cancel => ResourceManager.GetString("A11y_Profile_Cancel", resourceCulture);
+    public static string A11y_Profile_Save => ResourceManager.GetString("A11y_Profile_Save", resourceCulture);
+    public static string A11y_AppPicker_Search => ResourceManager.GetString("A11y_AppPicker_Search", resourceCulture);
+    public static string A11y_AppPicker_Category => ResourceManager.GetString("A11y_AppPicker_Category", resourceCulture);
+    public static string A11y_AppPicker_AppList => ResourceManager.GetString("A11y_AppPicker_AppList", resourceCulture);
+    public static string A11y_AppPicker_Cancel => ResourceManager.GetString("A11y_AppPicker_Cancel", resourceCulture);
+    public static string A11y_AppPicker_Add => ResourceManager.GetString("A11y_AppPicker_Add", resourceCulture);
+    public static string A11y_Onboarding_DontShow => ResourceManager.GetString("A11y_Onboarding_DontShow", resourceCulture);
+    public static string A11y_Onboarding_GetStarted => ResourceManager.GetString("A11y_Onboarding_GetStarted", resourceCulture);
+    public static string A11y_Shortcuts_Close => ResourceManager.GetString("A11y_Shortcuts_Close", resourceCulture);
+
+    // Audit Round 3 - Error Messages
+    public static string Error_LoadViewFailed => ResourceManager.GetString("Error_LoadViewFailed", resourceCulture);
+    public static string Detection_InvalidExpandedPath => ResourceManager.GetString("Detection_InvalidExpandedPath", resourceCulture);
+    public static string Detection_InvalidCommandPath => ResourceManager.GetString("Detection_InvalidCommandPath", resourceCulture);
+    public static string Detection_CommandTimeout => ResourceManager.GetString("Detection_CommandTimeout", resourceCulture);
 }
