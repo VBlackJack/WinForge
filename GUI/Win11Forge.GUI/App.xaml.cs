@@ -299,10 +299,10 @@ public partial class App : Application
 
         try
         {
-            // Accent brush: Blue for dark, Purple for light
+            // Accent brush: Light blue for dark theme, Windows blue for light theme
             var accentBrush = isDark
                 ? new SolidColorBrush(Color.FromRgb(96, 205, 255))   // #60CDFF - Accent Blue
-                : new SolidColorBrush(Color.FromRgb(107, 78, 170));  // #6B4EAA - Accent Purple
+                : new SolidColorBrush(Color.FromRgb(0, 95, 184));    // #005FB8 - Windows 11 Blue
             app.Resources["ThemeAdaptiveAccentBrush"] = accentBrush;
 
             if (isDark)
@@ -349,9 +349,19 @@ public partial class App : Application
         app.Resources["SuccessBorderBrush"] = new SolidColorBrush(Color.FromRgb(76, 175, 80));      // #4CAF50
         app.Resources["SuccessBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(51, 76, 175, 80)); // #334CAF50
 
+        // Primary/Secondary hue - restore dark theme originals
+        app.Resources["PrimaryHueMidBrush"] = new SolidColorBrush(Color.FromRgb(96, 205, 255));       // #60CDFF
+        app.Resources["SecondaryHueMidBrush"] = new SolidColorBrush(Color.FromRgb(139, 195, 74));     // #8BC34A
+
         // Accent text colors - restore dark theme (light variants for dark backgrounds)
         app.Resources["AccentGreenTextBrush"] = new SolidColorBrush(Color.FromRgb(129, 199, 132));    // #81C784
         app.Resources["AccentOrangeTextBrush"] = new SolidColorBrush(Color.FromRgb(255, 183, 77));    // #FFB74D
+
+        // Accent colors - restore dark theme (bright for dark backgrounds)
+        app.Resources["FavoriteActiveBrush"] = new SolidColorBrush(Color.FromRgb(255, 215, 0));       // #FFD700
+        app.Resources["FavoriteTextBrush"] = new SolidColorBrush(Color.FromRgb(255, 143, 0));         // #FF8F00
+        app.Resources["RequiredBrush"] = new SolidColorBrush(Color.FromRgb(255, 193, 7));             // #FFC107
+        app.Resources["ManualInstallBadgeBrush"] = new SolidColorBrush(Color.FromRgb(255, 138, 0));   // #FF8A00
 
         // Skeleton - restore dark theme (white-based opacity)
         app.Resources["SkeletonBaseBrush"] = new SolidColorBrush(Color.FromArgb(26, 255, 255, 255));   // #1AFFFFFF
@@ -390,9 +400,23 @@ public partial class App : Application
         SwapIfExists(app, "SuccessBorderBrush", "SuccessBorderLightBrush");
         SwapIfExists(app, "SuccessBackgroundBrush", "SuccessBackgroundLightBrush");
 
+        // Primary/Secondary hue - muted for light backgrounds
+        SwapIfExists(app, "PrimaryHueMidBrush", "PrimaryHueMidLightBrush");
+        SwapIfExists(app, "SecondaryHueMidBrush", "SecondaryHueMidLightBrush");
+
         // Accent text colors - darker variants for light backgrounds
         SwapIfExists(app, "AccentGreenTextBrush", "AccentGreenTextLightBrush");
         SwapIfExists(app, "AccentOrangeTextBrush", "AccentOrangeTextLightBrush");
+
+        // Accent colors - toned down for light backgrounds
+        SwapIfExists(app, "FavoriteActiveBrush", "FavoriteActiveLightBrush");
+        SwapIfExists(app, "FavoriteTextBrush", "FavoriteTextLightBrush");
+        SwapIfExists(app, "RequiredBrush", "RequiredLightBrush");
+        SwapIfExists(app, "ManualInstallBadgeBrush", "ManualInstallBadgeLightBrush");
+
+        // Card/control borders - stronger for light theme visual hierarchy
+        app.Resources["ControlElevationBorderBrush"] = new SolidColorBrush(Color.FromRgb(200, 200, 200));  // #C8C8C8
+        app.Resources["ControlStrokeColorDefaultBrush"] = new SolidColorBrush(Color.FromRgb(200, 200, 200));
 
         // Skeleton - black-based opacity for light backgrounds
         app.Resources["SkeletonBaseBrush"] = new SolidColorBrush(Color.FromArgb(26, 0, 0, 0));        // 10% black

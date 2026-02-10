@@ -22,6 +22,10 @@
     <SolidColorBrush x:Key="RowUninstalledBackground" Color="#1E7986CB"/>
     <SolidColorBrush x:Key="RowUpdateAvailableBackground" Color="#28F57C00"/>
 
+    <!-- Primary/Secondary Hue Brushes (main accent colors, swapped by theme) -->
+    <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#60CDFF"/>
+    <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="#8BC34A"/>
+
     <!-- Accent Colors -->
     <SolidColorBrush x:Key="FavoriteActiveBrush" Color="#FFD700"/>
     <SolidColorBrush x:Key="FavoriteInactiveBrush" Color="#9E9E9E"/>
@@ -85,6 +89,16 @@
     <!-- Light Theme Accent Text variants (darker for white backgrounds) -->
     <SolidColorBrush x:Key="AccentGreenTextLightBrush" Color="#2E7D32"/>
     <SolidColorBrush x:Key="AccentOrangeTextLightBrush" Color="#E65100"/>
+
+    <!-- Light Theme Primary/Secondary Hue (muted for white backgrounds) -->
+    <SolidColorBrush x:Key="PrimaryHueMidLightBrush" Color="#0078D4"/>
+    <SolidColorBrush x:Key="SecondaryHueMidLightBrush" Color="#2E7D32"/>
+
+    <!-- Light Theme Accent variants (toned down for white backgrounds) -->
+    <SolidColorBrush x:Key="FavoriteActiveLightBrush" Color="#D4A017"/>
+    <SolidColorBrush x:Key="FavoriteTextLightBrush" Color="#BF6C00"/>
+    <SolidColorBrush x:Key="RequiredLightBrush" Color="#E6A100"/>
+    <SolidColorBrush x:Key="ManualInstallBadgeLightBrush" Color="#CC6D00"/>
 
     <!-- Status Colors optimized for light theme -->
     <SolidColorBrush x:Key="StatusInstalledLightBrush" Color="#2E7D32"/>
