@@ -2,14 +2,15 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:converters="clr-namespace:Win11Forge.GUI.Resources">
+             xmlns:converters="clr-namespace:Win11Forge.GUI.Resources"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             ShutdownMode="OnMainWindowClose">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <materialDesign:BundledTheme BaseTheme="Dark" PrimaryColor="DeepPurple" SecondaryColor="Lime" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign2.Defaults.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
+                <ui:ThemesDictionary Theme="Dark" />
+                <ui:ControlsDictionary />
+                <ResourceDictionary Source="Resources/FluentThemeBridge.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Consolidated Color Resources for WCAG AA Contrast -->
@@ -44,14 +45,7 @@
             <SolidColorBrush x:Key="IconHintBrush" Color="#757575"/>
             <SolidColorBrush x:Key="IconDisabledBrush" Color="#616161"/>
 
-            <!-- NOTE: For text colors, prefer using MaterialDesign theme brushes directly:
-                 - MaterialDesignBody (primary text)
-                 - MaterialDesignBodyLight (secondary text)
-                 - MaterialDesignCheckBoxDisabled (disabled/hint text)
-                 These custom brushes are kept for legacy compatibility only -->
-
             <!-- Error Display Colors (for error banners and validation) -->
-            <!-- Using semi-transparent colors for theme compatibility -->
             <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="#33F44336"/>
             <SolidColorBrush x:Key="ErrorBorderBrush" Color="#EF5350"/>
             <SolidColorBrush x:Key="ErrorTextBrush" Color="#EF5350"/>
@@ -62,7 +56,6 @@
             <SolidColorBrush x:Key="ValidationSuccessBorderBrush" Color="#4CAF50"/>
 
             <!-- Warning Display Colors (for dry run, caution banners) -->
-            <!-- Using semi-transparent colors for theme compatibility -->
             <SolidColorBrush x:Key="WarningBackgroundBrush" Color="#33F57C00"/>
             <SolidColorBrush x:Key="WarningBorderBrush" Color="#F57C00"/>
             <SolidColorBrush x:Key="WarningTextBrush" Color="#FFB74D"/>
@@ -79,7 +72,6 @@
             <SolidColorBrush x:Key="SkeletonHighlightBrush" Color="#33FFFFFF"/>
 
             <!-- Light Theme Contrast Enhancement Colors -->
-            <!-- These provide WCAG AA compliant contrast ratios for light backgrounds -->
             <SolidColorBrush x:Key="LightThemeTextPrimary" Color="#212121"/>
             <SolidColorBrush x:Key="LightThemeTextSecondary" Color="#424242"/>
             <SolidColorBrush x:Key="LightThemeTextHint" Color="#757575"/>
@@ -99,7 +91,7 @@
                 <Setter Property="Control.Template">
                     <Setter.Value>
                         <ControlTemplate>
-                            <Border BorderBrush="{DynamicResource SecondaryHueMidBrush}"
+                            <Border BorderBrush="{DynamicResource SystemAccentColorSecondaryBrush}"
                                     BorderThickness="2"
                                     CornerRadius="4"
                                     Margin="-2"/>
@@ -109,62 +101,34 @@
             </Style>
 
             <!-- Keyboard-focused Button Style with enhanced visibility -->
-            <Style x:Key="KeyboardFocusableButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+            <Style x:Key="KeyboardFocusableButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="AutomationProperties.IsRequiredForForm" Value="False"/>
-                <Style.Triggers>
-                    <Trigger Property="IsKeyboardFocused" Value="True">
-                        <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp8"/>
-                    </Trigger>
-                </Style.Triggers>
             </Style>
 
             <!-- Keyboard-focused Icon Button Style -->
-            <Style x:Key="KeyboardFocusableIconButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
+            <Style x:Key="KeyboardFocusableIconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
                 <Style.Triggers>
                     <Trigger Property="IsKeyboardFocused" Value="True">
-                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}"/>
+                        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
 
             <!-- Keyboard-focused Card Style with outline on focus -->
-            <Style x:Key="KeyboardFocusableCard" TargetType="materialDesign:Card" BasedOn="{StaticResource {x:Type materialDesign:Card}}">
+            <Style x:Key="KeyboardFocusableCard" TargetType="Border">
                 <Setter Property="Focusable" Value="True"/>
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
-                <Style.Triggers>
-                    <Trigger Property="IsKeyboardFocused" Value="True">
-                        <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp8"/>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
-
-            <!-- Navigation ListBoxItem Style with visible focus and active indicator -->
-            <Style x:Key="NavigationListBoxItemStyle" TargetType="ListBoxItem" BasedOn="{StaticResource MaterialDesignNavigationPrimaryListBoxItem}">
-                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
-                <Setter Property="MinHeight" Value="48"/>
-                <Setter Property="Padding" Value="16,12"/>
-                <Setter Property="BorderThickness" Value="4,0,0,0"/>
-                <Setter Property="BorderBrush" Value="Transparent"/>
-                <Style.Triggers>
-                    <Trigger Property="IsSelected" Value="True">
-                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
-                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}"/>
-                        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}"/>
-                    </Trigger>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}"/>
-                    </Trigger>
-                </Style.Triggers>
             </Style>
 
             <!-- Validation TextBox Style (shows error when text is empty) -->
-            <Style x:Key="MaterialDesignRequiredOutlinedTextBox" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}">
+            <Style x:Key="RequiredTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding Text.Length, RelativeSource={RelativeSource Self}}" Value="0">
                         <Setter Property="BorderBrush" Value="{DynamicResource ValidationErrorBorderBrush}"/>
-                        <Setter Property="materialDesign:TextFieldAssist.UnderlineBrush" Value="{DynamicResource ValidationErrorBorderBrush}"/>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
@@ -227,8 +191,8 @@
                 <Setter Property="Opacity" Value="1"/>
             </Style>
 
-            <!-- Card Hover Animation Style (uses AnimationFast resource) -->
-            <Style x:Key="AnimatedCardStyle" TargetType="materialDesign:Card" BasedOn="{StaticResource {x:Type materialDesign:Card}}">
+            <!-- Card Hover Animation Style -->
+            <Style x:Key="AnimatedCardStyle" TargetType="Border">
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Trigger.EnterActions>
@@ -260,46 +224,47 @@
             </Style>
 
             <!-- Static Card Style (no animation, for reduced motion) -->
-            <Style x:Key="StaticCardStyle" TargetType="materialDesign:Card" BasedOn="{StaticResource {x:Type materialDesign:Card}}"/>
+            <Style x:Key="StaticCardStyle" TargetType="Border"/>
 
-            <!-- Success Pulse Animation Storyboard (duration controlled by AnimationFast resource) -->
+            <!-- Success Pulse Animation Storyboard -->
             <Storyboard x:Key="SuccessPulseAnimation">
                 <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                 To="#4CAF50" Duration="{StaticResource AnimationFast}" AutoReverse="True"/>
             </Storyboard>
 
-            <!-- Error Shake Animation Storyboard (subtle feedback, short duration) -->
+            <!-- Error Shake Animation Storyboard -->
             <Storyboard x:Key="ErrorShakeAnimation">
                 <ThicknessAnimation Storyboard.TargetProperty="Margin"
                                     From="0" To="5,0,-5,0" Duration="0:0:0.05"
                                     AutoReverse="True" RepeatBehavior="3x"/>
             </Storyboard>
 
-            <!-- No-Op Storyboard for reduced motion (instant state change) -->
+            <!-- No-Op Storyboard for reduced motion -->
             <Storyboard x:Key="NoAnimationStoryboard"/>
 
             <!-- Theme-Adaptive Accent Brush -->
-            <!-- Updated dynamically: Secondary (lime) in dark theme, Primary (purple) in light theme -->
-            <SolidColorBrush x:Key="ThemeAdaptiveAccentBrush" Color="#CDDC39"/>
+            <SolidColorBrush x:Key="ThemeAdaptiveAccentBrush" Color="#60CDFF"/>
 
             <!-- Theme-Adaptive Outlined Button Style -->
-            <!-- Uses ThemeAdaptiveAccentBrush which changes with theme -->
-            <Style x:Key="ThemeAdaptiveOutlinedButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
+            <Style x:Key="ThemeAdaptiveOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                <Setter Property="Background" Value="Transparent"/>
             </Style>
 
-            <!-- Destructive Action Outlined Button Style -->
-            <!-- For dangerous actions like delete, clear, remove -->
-            <Style x:Key="DestructiveOutlinedButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
-                <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesignValidationErrorBrush}"/>
-                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignValidationErrorBrush}"/>
+            <!-- Destructive Action Button Style -->
+            <Style x:Key="DestructiveOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="BorderBrush" Value="{DynamicResource ValidationErrorBorderBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBorderBrush}"/>
+                <Setter Property="Background" Value="Transparent"/>
             </Style>
 
-            <!-- Hover Transition Styles (smooth micro-interactions) -->
+            <!-- Hover Transition Styles -->
 
             <!-- Icon Button with Hover Scale Effect -->
-            <Style x:Key="HoverScaleIconButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
+            <Style x:Key="HoverScaleIconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
                 <Setter Property="RenderTransform">
                     <Setter.Value>
@@ -349,7 +314,7 @@
             </Style>
 
             <!-- Outlined Button with Hover Background Fade -->
-            <Style x:Key="HoverFadeOutlinedButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
+            <Style x:Key="HoverFadeOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="Background" Value="Transparent"/>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
@@ -434,75 +399,78 @@
             <!-- Touch-Optimized Styles (WCAG 2.5.5 - minimum 44x44px touch targets) -->
 
             <!-- Touch-friendly Icon Button (min 44x44 hit area) -->
-            <Style x:Key="TouchFriendlyIconButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
+            <Style x:Key="TouchFriendlyIconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="MinWidth" Value="44"/>
                 <Setter Property="MinHeight" Value="44"/>
                 <Setter Property="Padding" Value="10"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
             </Style>
 
             <!-- Touch-friendly Button with larger hit area -->
-            <Style x:Key="TouchFriendlyButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+            <Style x:Key="TouchFriendlyButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="MinHeight" Value="44"/>
                 <Setter Property="Padding" Value="16,10"/>
             </Style>
 
             <!-- Touch-friendly Outlined Button -->
-            <Style x:Key="TouchFriendlyOutlinedButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
+            <Style x:Key="TouchFriendlyOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="MinHeight" Value="44"/>
                 <Setter Property="Padding" Value="16,10"/>
+                <Setter Property="Background" Value="Transparent"/>
             </Style>
 
             <!-- Touch-friendly Checkbox with larger hit area -->
-            <Style x:Key="TouchFriendlyCheckBox" TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+            <Style x:Key="TouchFriendlyCheckBox" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
                 <Setter Property="MinHeight" Value="44"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                 <Setter Property="Padding" Value="8,10"/>
             </Style>
 
             <!-- Touch-friendly List Item -->
-            <Style x:Key="TouchFriendlyListBoxItem" TargetType="ListBoxItem" BasedOn="{StaticResource MaterialDesignNavigationPrimaryListBoxItem}">
+            <Style x:Key="TouchFriendlyListBoxItem" TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
                 <Setter Property="MinHeight" Value="48"/>
                 <Setter Property="Padding" Value="16,12"/>
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
             </Style>
 
             <!-- Touch-friendly ComboBox -->
-            <Style x:Key="TouchFriendlyComboBox" TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignOutlinedComboBox}">
+            <Style x:Key="TouchFriendlyComboBox" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
                 <Setter Property="MinHeight" Value="44"/>
             </Style>
 
             <!-- Touch-friendly TextBox -->
-            <Style x:Key="TouchFriendlyTextBox" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignOutlinedTextBox}">
+            <Style x:Key="TouchFriendlyTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                 <Setter Property="MinHeight" Value="44"/>
             </Style>
 
             <!-- Enhanced DataGrid Row Style with visible hover effect -->
-            <Style x:Key="EnhancedDataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource MaterialDesignDataGridRow}">
+            <Style x:Key="EnhancedDataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                 <Setter Property="Background" Value="Transparent"/>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Light}"/>
+                        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                     </Trigger>
                     <Trigger Property="IsSelected" Value="True">
-                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
-                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Primary.Foreground}"/>
+                        <Setter Property="Background" Value="{DynamicResource SystemAccentColorPrimaryBrush}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
                     </Trigger>
                     <MultiTrigger>
                         <MultiTrigger.Conditions>
                             <Condition Property="IsSelected" Value="True"/>
                             <Condition Property="IsMouseOver" Value="True"/>
                         </MultiTrigger.Conditions>
-                        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary.Dark}"/>
+                        <Setter Property="Background" Value="{DynamicResource SystemAccentColorSecondaryBrush}"/>
                     </MultiTrigger>
                 </Style.Triggers>
             </Style>
 
             <!-- DataGrid Cell Style with improved focus visibility -->
-            <Style x:Key="EnhancedDataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource MaterialDesignDataGridCell}">
+            <Style x:Key="EnhancedDataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Style.Triggers>
                     <Trigger Property="IsKeyboardFocused" Value="True">
-                        <Setter Property="BorderBrush" Value="{DynamicResource SecondaryHueMidBrush}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorSecondaryBrush}"/>
                         <Setter Property="BorderThickness" Value="2"/>
                     </Trigger>
                 </Style.Triggers>
@@ -511,9 +479,11 @@
             <!-- Micro-animation Styles for Enhanced UX Feedback -->
 
             <!-- Favorite Button Style with bounce animation -->
-            <Style x:Key="AnimatedFavoriteButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignIconButton}">
+            <Style x:Key="AnimatedFavoriteButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="Width" Value="44"/>
                 <Setter Property="Height" Value="44"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
                 <Setter Property="RenderTransform">
                     <Setter.Value>
@@ -557,7 +527,7 @@
             </Style>
 
             <!-- Selection Checkbox Style with scale animation -->
-            <Style x:Key="AnimatedSelectionCheckBox" TargetType="CheckBox" BasedOn="{StaticResource MaterialDesignCheckBox}">
+            <Style x:Key="AnimatedSelectionCheckBox" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
                 <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
                 <Setter Property="RenderTransform">
                     <Setter.Value>

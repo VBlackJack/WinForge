@@ -17,7 +17,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Controls;
 
 namespace Win11Forge.GUI.Controls;
 
@@ -33,9 +33,9 @@ public partial class EmptyStateControl : UserControl
     public static readonly DependencyProperty IconKindProperty =
         DependencyProperty.Register(
             nameof(IconKind),
-            typeof(PackIconKind),
+            typeof(SymbolRegular),
             typeof(EmptyStateControl),
-            new PropertyMetadata(PackIconKind.AlertCircleOutline));
+            new PropertyMetadata(SymbolRegular.ErrorCircle24));
 
     /// <summary>
     /// Identifies the IconSize dependency property.
@@ -108,9 +108,9 @@ public partial class EmptyStateControl : UserControl
     /// <summary>
     /// Gets or sets the icon kind to display.
     /// </summary>
-    public PackIconKind IconKind
+    public SymbolRegular IconKind
     {
-        get => (PackIconKind)GetValue(IconKindProperty);
+        get => (SymbolRegular)GetValue(IconKindProperty);
         set => SetValue(IconKindProperty, value);
     }
 

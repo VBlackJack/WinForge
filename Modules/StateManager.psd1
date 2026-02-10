@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'StateManager.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '7b634acc-e0bf-4318-96e9-74a2ef93608d'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Windows;
 using System.Windows.Controls;
 
 namespace Win11Forge.GUI.Views;
@@ -26,5 +27,15 @@ public partial class SaveProfileDialog : UserControl
     public SaveProfileDialog()
     {
         InitializeComponent();
+    }
+
+    private void CancelButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Dialog lifecycle managed by parent ViewModel
+    }
+
+    private void SaveButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Dialog lifecycle managed by parent ViewModel
     }
 }

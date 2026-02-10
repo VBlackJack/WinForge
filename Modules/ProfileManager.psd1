@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ProfileManager.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = 'cfd8f357-383b-41d7-9aca-9770360e26b3'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

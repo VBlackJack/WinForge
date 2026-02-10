@@ -1456,6 +1456,9 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Common_Dismiss" xml:space="preserve">
     <value>Fermer</value>
   </data>
+  <data name="Common_Details" xml:space="preserve">
+    <value>Détails</value>
+  </data>
   <data name="Common_DryRun" xml:space="preserve">
     <value>[SIMULATION]</value>
   </data>

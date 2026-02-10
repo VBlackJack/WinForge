@@ -20,7 +20,8 @@ using System.Globalization;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Appearance;
+using Wpf.Ui.Controls;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 
@@ -32,7 +33,6 @@ namespace Win11Forge.GUI.ViewModels;
 /// </summary>
 public partial class SettingsViewModel : ViewModelBase, IDisposable
 {
-    private readonly PaletteHelper _paletteHelper = new();
     private readonly IAppSettingsService _settingsService;
     private readonly IDeploymentHistoryService _historyService;
     private readonly IPowerShellBridge _powerShellBridge;
@@ -420,9 +420,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            var theme = _paletteHelper.GetTheme();
-            theme.SetBaseTheme(isDark ? BaseTheme.Dark : BaseTheme.Light);
-            _paletteHelper.SetTheme(theme);
+            var appTheme = isDark ? ApplicationTheme.Dark : ApplicationTheme.Light;
+            ApplicationThemeManager.Apply(appTheme, WindowBackdropType.Mica);
 
             // Update theme-adaptive accent brush
             UpdateThemeAdaptiveResources(isDark);

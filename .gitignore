@@ -29,6 +29,11 @@ Logs/
 # Test output
 Test-*-Output.txt
 *-TestResults.xml
+Tests/Results/TestResults_*.NUnitXml
+Tests/Results/TestResults_*.JUnitXml
+
+# Generated dashboard data
+Assets/Dashboard/telemetry-data.json
 
 # Archive (old versions)
 Archive/

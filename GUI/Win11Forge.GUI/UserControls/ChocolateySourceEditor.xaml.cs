@@ -20,7 +20,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Controls;
 using CommunityToolkit.Mvvm.Input;
 using Loc = Win11Forge.GUI.Resources.Resources;
 
@@ -212,12 +212,12 @@ public partial class ChocolateySourceEditor : UserControl
     {
         if (TestSuccess == true)
         {
-            TestResultIcon.Kind = PackIconKind.CheckCircle;
+            TestResultIcon.Symbol = SymbolRegular.CheckmarkCircle24;
             TestResultIcon.Foreground = new SolidColorBrush(Colors.Green);
         }
         else if (TestSuccess == false)
         {
-            TestResultIcon.Kind = PackIconKind.AlertCircle;
+            TestResultIcon.Symbol = SymbolRegular.ErrorCircle24;
             TestResultIcon.Foreground = new SolidColorBrush(Colors.Red);
         }
     }

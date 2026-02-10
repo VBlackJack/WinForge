@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'InstallationOrchestrator.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = 'a205fabe-d842-42c1-8989-4b9ec5383a53'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

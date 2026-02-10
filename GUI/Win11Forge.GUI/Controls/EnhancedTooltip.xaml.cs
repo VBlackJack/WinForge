@@ -16,7 +16,7 @@
 
 using System.Windows;
 using System.Windows.Controls;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Controls;
 
 namespace Win11Forge.GUI.Controls;
 
@@ -61,9 +61,9 @@ public partial class EnhancedTooltip : UserControl
     public static readonly DependencyProperty IconKindProperty =
         DependencyProperty.Register(
             nameof(IconKind),
-            typeof(PackIconKind),
+            typeof(SymbolRegular),
             typeof(EnhancedTooltip),
-            new PropertyMetadata(PackIconKind.InformationOutline));
+            new PropertyMetadata(SymbolRegular.Info24));
 
     /// <summary>
     /// Identifies the ShowIcon dependency property.
@@ -105,9 +105,9 @@ public partial class EnhancedTooltip : UserControl
     /// <summary>
     /// Gets or sets the icon kind.
     /// </summary>
-    public PackIconKind IconKind
+    public SymbolRegular IconKind
     {
-        get => (PackIconKind)GetValue(IconKindProperty);
+        get => (SymbolRegular)GetValue(IconKindProperty);
         set => SetValue(IconKindProperty, value);
     }
 
@@ -128,7 +128,7 @@ public partial class EnhancedTooltip : UserControl
     /// <summary>
     /// Creates an enhanced tooltip for use with ToolTip property.
     /// </summary>
-    public static EnhancedTooltip Create(string description, string? title = null, string? shortcut = null, PackIconKind icon = PackIconKind.InformationOutline)
+    public static EnhancedTooltip Create(string description, string? title = null, string? shortcut = null, SymbolRegular icon = SymbolRegular.Info24)
     {
         return new EnhancedTooltip
         {

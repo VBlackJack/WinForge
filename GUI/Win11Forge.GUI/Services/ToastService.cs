@@ -15,7 +15,7 @@
  */
 
 using System.Windows;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Controls;
 
 namespace Win11Forge.GUI.Services;
 
@@ -31,54 +31,42 @@ public enum ToastLevel
 }
 
 /// <summary>
-/// Service for displaying toast/snackbar notifications.
+/// Service for displaying toast/snackbar notifications using WPF UI Snackbar.
 /// </summary>
 public class ToastService : IToastService
 {
-    private ISnackbarMessageQueue? _messageQueue;
+    private Snackbar? _snackbar;
 
     /// <summary>
-    /// Sets the snackbar message queue from the main window.
+    /// Sets the WPF UI snackbar control from the main window.
     /// </summary>
-    public void SetMessageQueue(ISnackbarMessageQueue messageQueue)
+    public void SetSnackbarControl(Snackbar snackbar)
     {
-        _messageQueue = messageQueue;
+        _snackbar = snackbar;
     }
 
     /// <inheritdoc/>
     public void Show(string message, ToastLevel level = ToastLevel.Info, int durationMs = 3000)
     {
-        if (_messageQueue == null) return;
+        if (_snackbar == null) return;
 
         Application.Current.Dispatcher.BeginInvoke(() =>
         {
-            _messageQueue.Enqueue(
-                message,
-                null,
-                null,
-                null,
-                false,
-                true,
-                TimeSpan.FromMilliseconds(durationMs));
+            _snackbar.Title = string.Empty;
+            _snackbar.Content = message;
+            _snackbar.Appearance = ToLevelAppearance(level);
+            _snackbar.Icon = ToLevelIcon(level);
+            _snackbar.Timeout = TimeSpan.FromMilliseconds(durationMs);
+            _snackbar.Show();
         });
     }
 
     /// <inheritdoc/>
     public void ShowWithAction(string message, string actionText, Action action, ToastLevel level = ToastLevel.Info)
     {
-        if (_messageQueue == null) return;
-
-        Application.Current.Dispatcher.BeginInvoke(() =>
-        {
-            _messageQueue.Enqueue(
-                message,
-                actionText,
-                _ => action(),
-                null,
-                false,
-                true,
-                TimeSpan.FromSeconds(5));
-        });
+        // WPF UI Snackbar does not support inline action buttons;
+        // show message with extended duration as fallback
+        Show(message, level, 5000);
     }
 
     /// <inheritdoc/>
@@ -104,6 +92,22 @@ public class ToastService : IToastService
     {
         Show(message, ToastLevel.Info, 3000);
     }
+
+    private static ControlAppearance ToLevelAppearance(ToastLevel level) => level switch
+    {
+        ToastLevel.Success => ControlAppearance.Success,
+        ToastLevel.Warning => ControlAppearance.Caution,
+        ToastLevel.Error => ControlAppearance.Danger,
+        _ => ControlAppearance.Secondary
+    };
+
+    private static SymbolIcon ToLevelIcon(ToastLevel level) => level switch
+    {
+        ToastLevel.Success => new SymbolIcon(SymbolRegular.CheckmarkCircle24),
+        ToastLevel.Warning => new SymbolIcon(SymbolRegular.Warning24),
+        ToastLevel.Error => new SymbolIcon(SymbolRegular.ErrorCircle24),
+        _ => new SymbolIcon(SymbolRegular.Info24)
+    };
 }
 
 /// <summary>

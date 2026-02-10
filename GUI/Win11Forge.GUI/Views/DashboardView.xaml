@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              xmlns:models="clr-namespace:Win11Forge.GUI.Models"
@@ -13,19 +13,31 @@
 
     <UserControl.Resources>
         <!-- Clickable Stats Card Style -->
-        <Style x:Key="ClickableStatsCard" TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+        <Style x:Key="ClickableStatsCard" TargetType="Button">
             <Setter Property="Height" Value="Auto"/>
             <Setter Property="Padding" Value="16"/>
             <Setter Property="Margin" Value="0,0,12,0"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="8"/>
-            <Setter Property="Background" Value="{DynamicResource MaterialDesignCardBackground}"/>
-            <Setter Property="materialDesign:ElevationAssist.Elevation" Value="Dp1"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                                BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}"/>
+                    <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -36,16 +48,15 @@
             <Setter Property="Padding" Value="24,16"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="8"/>
         </Style>
 
         <!-- Hero CTA Button Style -->
-        <Style x:Key="HeroCtaButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+        <Style x:Key="HeroCtaButton" TargetType="ui:Button">
+            <Setter Property="Appearance" Value="Primary"/>
             <Setter Property="Height" Value="56"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Padding" Value="32,0"/>
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="8"/>
         </Style>
     </UserControl.Resources>
 
@@ -60,10 +71,13 @@
             </Grid.RowDefinitions>
 
             <!-- HERO SECTION -->
-            <materialDesign:Card Grid.Row="0"
-                                  Margin="0,0,0,24"
-                                  Padding="32"
-                                  materialDesign:ElevationAssist.Elevation="Dp2">
+            <Border Grid.Row="0"
+                    Margin="0,0,0,24"
+                    Padding="32"
+                    CornerRadius="8"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                    BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -75,128 +89,125 @@
                         <!-- State: Checking -->
                         <StackPanel Visibility="{Binding IsChecking, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                             IsIndeterminate="True"
-                                             Width="32" Height="32"
-                                             Margin="0,0,16,0"/>
+                                <ui:ProgressRing IsIndeterminate="True"
+                                                 Width="32" Height="32"
+                                                 Margin="0,0,16,0"/>
                                 <TextBlock Text="{Binding HeroTitle}"
-                                           Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                                           FontSize="24" FontWeight="SemiBold"
                                            VerticalAlignment="Center"/>
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
-                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                       FontSize="14"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
 
                         <!-- State: NeedPrereqs -->
                         <StackPanel Visibility="{Binding NeedsPrerequisites, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <materialDesign:PackIcon Kind="AlertCircle"
-                                                          Width="32" Height="32"
-                                                          Foreground="{DynamicResource AccentOrangeTextBrush}"
-                                                          Margin="0,0,16,0"
-                                                          VerticalAlignment="Center"/>
+                                <ui:SymbolIcon Symbol="ErrorCircle24"
+                                               Width="32" Height="32"
+                                               Foreground="{DynamicResource AccentOrangeTextBrush}"
+                                               Margin="0,0,16,0"
+                                               VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding HeroTitle}"
-                                           Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                                           FontSize="24" FontWeight="SemiBold"
                                            VerticalAlignment="Center"/>
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
-                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                       FontSize="14"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        Margin="0,0,0,16"/>
-                            <Button Command="{Binding NavigateToPrerequisitesCommand}"
-                                    Style="{StaticResource MaterialDesignRaisedButton}"
-                                    Background="{DynamicResource AccentOrangeTextBrush}"
-                                    Foreground="White"
-                                    materialDesign:ButtonAssist.CornerRadius="8"
-                                    Padding="24,14"
-                                    MinHeight="48"
-                                    HorizontalAlignment="Left">
+                            <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
+                                       Appearance="Primary"
+                                       Background="{DynamicResource AccentOrangeTextBrush}"
+                                       Foreground="White"
+                                       Padding="24,14"
+                                       MinHeight="48"
+                                       HorizontalAlignment="Left">
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Wrench"
-                                                              Width="20" Height="20"
-                                                              VerticalAlignment="Center"
-                                                              Margin="0,0,8,0"/>
+                                    <ui:SymbolIcon Symbol="Wrench24"
+                                                   Width="20" Height="20"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,8,0"/>
                                     <TextBlock Text="{loc:Loc Dashboard_Btn_FixPrereqs}" VerticalAlignment="Center"/>
                                 </StackPanel>
-                            </Button>
+                            </ui:Button>
                         </StackPanel>
 
                         <!-- State: Ready -->
                         <StackPanel Visibility="{Binding IsReady, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <materialDesign:PackIcon Kind="CheckCircle"
-                                                          Width="32" Height="32"
-                                                          Foreground="{DynamicResource AccentGreenTextBrush}"
-                                                          Margin="0,0,16,0"
-                                                          VerticalAlignment="Center"
-                                                          Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
-                                <materialDesign:PackIcon Kind="InformationOutline"
-                                                          Width="32" Height="32"
-                                                          Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                                          Margin="0,0,16,0"
-                                                          VerticalAlignment="Center"
-                                                          Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <ui:SymbolIcon Symbol="CheckmarkCircle24"
+                                               Width="32" Height="32"
+                                               Foreground="{DynamicResource AccentGreenTextBrush}"
+                                               Margin="0,0,16,0"
+                                               VerticalAlignment="Center"
+                                               Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                <ui:SymbolIcon Symbol="Info24"
+                                               Width="32" Height="32"
+                                               Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                               Margin="0,0,16,0"
+                                               VerticalAlignment="Center"
+                                               Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                 <TextBlock Text="{Binding HeroTitle}"
-                                           Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                                           FontSize="24" FontWeight="SemiBold"
                                            VerticalAlignment="Center"/>
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
-                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                       FontSize="14"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        Margin="0,0,0,16"/>
                             <StackPanel Orientation="Horizontal">
-                                <Button Command="{Binding StartDeploymentCommand}"
-                                        Style="{StaticResource HeroCtaButton}"
-                                        ToolTip="{loc:Loc Dashboard_StartDeployment_Hint}"
-                                        Margin="0,0,12,0">
+                                <ui:Button Command="{Binding StartDeploymentCommand}"
+                                           Style="{StaticResource HeroCtaButton}"
+                                           ToolTip="{loc:Loc Dashboard_StartDeployment_Hint}"
+                                           Margin="0,0,12,0">
                                     <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="RocketLaunch"
-                                                                  Width="24" Height="24"
-                                                                  VerticalAlignment="Center"
-                                                                  Margin="0,0,12,0"/>
+                                        <ui:SymbolIcon Symbol="Rocket24"
+                                                       Width="24" Height="24"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,12,0"/>
                                         <TextBlock Text="{loc:Loc Dashboard_Btn_StartDeployment}" VerticalAlignment="Center"/>
                                     </StackPanel>
-                                </Button>
-                                <Button Command="{Binding ViewUpdatesCommand}"
-                                        Style="{StaticResource MaterialDesignOutlinedButton}"
-                                        ToolTip="{loc:Loc Dashboard_ViewUpdates_Hint}"
-                                        materialDesign:ButtonAssist.CornerRadius="8"
-                                        Height="56"
-                                        Padding="24,0"
-                                        Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                </ui:Button>
+                                <ui:Button Command="{Binding ViewUpdatesCommand}"
+                                           Appearance="Secondary"
+                                           ToolTip="{loc:Loc Dashboard_ViewUpdates_Hint}"
+                                           Height="56"
+                                           Padding="24,0"
+                                           Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="Download"
-                                                                  Width="20" Height="20"
-                                                                  VerticalAlignment="Center"
-                                                                  Margin="0,0,8,0"/>
+                                        <ui:SymbolIcon Symbol="ArrowDownload24"
+                                                       Width="20" Height="20"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0"/>
                                         <TextBlock Text="{loc:Loc Dashboard_Btn_ViewUpdates}" VerticalAlignment="Center"/>
                                     </StackPanel>
-                                </Button>
+                                </ui:Button>
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
 
                     <!-- Version Badge -->
                     <Border Grid.Column="1"
-                            Background="{DynamicResource MaterialDesignCardBackground}"
-                            BorderBrush="{DynamicResource MaterialDesignDivider}"
+                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource ControlElevationBorderBrush}"
                             BorderThickness="1"
                             CornerRadius="8"
                             Padding="16,12"
                             VerticalAlignment="Top">
                         <StackPanel>
                             <TextBlock Text="Win11Forge"
-                                       Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
-                                       Foreground="{DynamicResource MaterialDesignBodyLight}"/>
-                            <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}">
+                                       FontSize="14" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock FontSize="20" FontWeight="SemiBold">
                                 <Run Text="v"/>
                                 <Run Text="{Binding AppVersion, Mode=OneWay}"/>
                             </TextBlock>
                         </StackPanel>
                     </Border>
                 </Grid>
-            </materialDesign:Card>
+            </Border>
 
             <!-- STATS ROW -->
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,24">
@@ -214,17 +225,17 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="{Binding ProfileCount}"
-                                       Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                                       FontSize="34" FontWeight="SemiBold"
                                        Foreground="{DynamicResource PrimaryHueMidBrush}"/>
                             <TextBlock Text="{loc:Loc Dashboard_Stats_Profiles}"
-                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                       Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
-                        <materialDesign:PackIcon Grid.Column="1"
-                                                  Kind="ChevronRight"
-                                                  Width="24" Height="24"
-                                                  Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                  VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Grid.Column="1"
+                                       Symbol="ChevronRight24"
+                                       Width="24" Height="24"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
                     </Grid>
                 </Button>
 
@@ -242,17 +253,17 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="{Binding AppCount}"
-                                       Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                                       FontSize="34" FontWeight="SemiBold"
                                        Foreground="{DynamicResource SecondaryHueMidBrush}"/>
                             <TextBlock Text="{loc:Loc Dashboard_Stats_Apps}"
-                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                       Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
-                        <materialDesign:PackIcon Grid.Column="1"
-                                                  Kind="ChevronRight"
-                                                  Width="24" Height="24"
-                                                  Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                  VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Grid.Column="1"
+                                       Symbol="ChevronRight24"
+                                       Width="24" Height="24"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
                     </Grid>
                 </Button>
 
@@ -272,8 +283,10 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="{Binding UpdateCount}">
                                 <TextBlock.Style>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignHeadline4TextBlock}">
-                                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}"/>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontSize" Value="34"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding UpdateCount, Converter={StaticResource NonZeroToBoolConverter}}" Value="True">
                                                 <Setter Property="Foreground" Value="{DynamicResource AccentGreenTextBrush}"/>
@@ -283,14 +296,14 @@
                                 </TextBlock.Style>
                             </TextBlock>
                             <TextBlock Text="{loc:Loc Dashboard_Stats_Updates}"
-                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                       Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
-                        <materialDesign:PackIcon Grid.Column="1"
-                                                  Kind="ChevronRight"
-                                                  Width="24" Height="24"
-                                                  Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                  VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Grid.Column="1"
+                                       Symbol="ChevronRight24"
+                                       Width="24" Height="24"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
                     </Grid>
                 </Button>
             </StackPanel>
@@ -304,9 +317,12 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- LEFT: System Info -->
-                <materialDesign:Card Grid.Column="0"
-                                      Padding="24"
-                                      materialDesign:ElevationAssist.Elevation="Dp1">
+                <Border Grid.Column="0"
+                        Padding="24"
+                        CornerRadius="8"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                        BorderThickness="1">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -315,13 +331,13 @@
 
                         <!-- System Info Header -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
-                            <materialDesign:PackIcon Kind="MonitorDashboard"
-                                                      Width="24" Height="24"
-                                                      VerticalAlignment="Center"
-                                                      Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                                      Margin="0,0,12,0"/>
+                            <ui:SymbolIcon Symbol="Desktop24"
+                                           Width="24" Height="24"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                           Margin="0,0,12,0"/>
                             <TextBlock Text="{loc:Loc Dashboard_SystemInfo_Title}"
-                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"/>
+                                       FontSize="20" FontWeight="SemiBold"/>
                         </StackPanel>
 
                         <!-- System Info Grid -->
@@ -340,151 +356,155 @@
                             <!-- Hostname -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,16,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Hostname}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Text="{Binding Hostname}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"/>
+                                           FontSize="14"/>
                             </StackPanel>
 
                             <!-- OS -->
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_OS}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Text="{Binding OSName}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"/>
+                                           FontSize="14"/>
                             </StackPanel>
 
                             <!-- Build -->
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,16,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Build}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Text="{Binding OSBuild}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"/>
+                                           FontSize="14"/>
                             </StackPanel>
 
                             <!-- Admin -->
                             <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Admin}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="{Binding IsAdmin, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                              Width="16" Height="16"
-                                                              Foreground="{Binding IsAdmin, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                              VerticalAlignment="Center"
-                                                              Margin="0,0,6,0"/>
+                                    <ui:SymbolIcon Symbol="{Binding IsAdmin, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                   Width="16" Height="16"
+                                                   Foreground="{Binding IsAdmin, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,6,0"/>
                                     <TextBlock Text="{Binding AdminStatus}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"/>
+                                               FontSize="14"/>
                                 </StackPanel>
                             </StackPanel>
 
                             <!-- Winget -->
                             <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,16,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Winget}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="{Binding WingetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                              Width="16" Height="16"
-                                                              Foreground="{Binding WingetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                              VerticalAlignment="Center"
-                                                              Margin="0,0,6,0"/>
+                                    <ui:SymbolIcon Symbol="{Binding WingetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                   Width="16" Height="16"
+                                                   Foreground="{Binding WingetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,6,0"/>
                                     <TextBlock Text="{Binding WingetVersion}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"/>
+                                               FontSize="14"/>
                                 </StackPanel>
                             </StackPanel>
 
                             <!-- Chocolatey -->
                             <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Chocolatey}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="{Binding ChocolateyInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                              Width="16" Height="16"
-                                                              Foreground="{Binding ChocolateyInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                              VerticalAlignment="Center"
-                                                              Margin="0,0,6,0"/>
+                                    <ui:SymbolIcon Symbol="{Binding ChocolateyInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                   Width="16" Height="16"
+                                                   Foreground="{Binding ChocolateyInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,6,0"/>
                                     <TextBlock Text="{Binding ChocolateyVersion}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"/>
+                                               FontSize="14"/>
                                 </StackPanel>
                             </StackPanel>
 
                             <!-- PowerShell -->
                             <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,16,0">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_PowerShell}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="{Binding PowerShellInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                              Width="16" Height="16"
-                                                              Foreground="{Binding PowerShellInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                              VerticalAlignment="Center"
-                                                              Margin="0,0,6,0"/>
+                                    <ui:SymbolIcon Symbol="{Binding PowerShellInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                   Width="16" Height="16"
+                                                   Foreground="{Binding PowerShellInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,6,0"/>
                                     <TextBlock Text="{Binding PowerShellVersion}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"/>
+                                               FontSize="14"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
                     </Grid>
-                </materialDesign:Card>
+                </Border>
 
                 <!-- RIGHT: Quick Actions -->
                 <StackPanel Grid.Column="2">
                     <!-- Updates Status Card -->
-                    <materialDesign:Card Padding="20"
-                                          Margin="0,0,0,16"
-                                          materialDesign:ElevationAssist.Elevation="Dp1">
+                    <Border Padding="20"
+                            Margin="0,0,0,16"
+                            CornerRadius="8"
+                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                            BorderThickness="1">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <materialDesign:PackIcon Kind="Update"
-                                                          Width="24" Height="24"
-                                                          VerticalAlignment="Center"
-                                                          Foreground="{DynamicResource AccentGreenTextBrush}"
-                                                          Margin="0,0,12,0"/>
+                                <ui:SymbolIcon Symbol="ArrowSync24"
+                                               Width="24" Height="24"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource AccentGreenTextBrush}"
+                                               Margin="0,0,12,0"/>
                                 <TextBlock Text="{loc:Loc Dashboard_Updates_Title}"
-                                           Style="{StaticResource MaterialDesignHeadline6TextBlock}"/>
+                                           FontSize="20" FontWeight="SemiBold"/>
                             </StackPanel>
 
                             <!-- Scan Button -->
-                            <Button Command="{Binding ScanUpdatesCommand}"
-                                    Style="{StaticResource MaterialDesignRaisedButton}"
-                                    ToolTip="{loc:Loc Dashboard_ScanBtn_Hint}"
-                                    materialDesign:ButtonAssist.CornerRadius="8"
-                                    HorizontalAlignment="Stretch"
-                                    IsEnabled="{Binding IsNotScanning}">
+                            <ui:Button Command="{Binding ScanUpdatesCommand}"
+                                       Appearance="Primary"
+                                       ToolTip="{loc:Loc Dashboard_ScanBtn_Hint}"
+                                       HorizontalAlignment="Stretch"
+                                       IsEnabled="{Binding IsNotScanning}">
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Magnify"
-                                                              Width="18" Height="18"
-                                                              VerticalAlignment="Center"
-                                                              Margin="0,0,8,0"
-                                                              Visibility="{Binding IsNotScanning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                                 IsIndeterminate="True"
-                                                 Width="18" Height="18"
-                                                 Margin="0,0,8,0"
-                                                 Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    <ui:SymbolIcon Symbol="Search24"
+                                                   Width="18" Height="18"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,8,0"
+                                                   Visibility="{Binding IsNotScanning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    <ui:ProgressRing IsIndeterminate="True"
+                                                     Width="18" Height="18"
+                                                     Margin="0,0,8,0"
+                                                     Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                     <TextBlock Text="{Binding ScanButtonText}" VerticalAlignment="Center"/>
                                 </StackPanel>
-                            </Button>
+                            </ui:Button>
 
                             <!-- Last Scan Time -->
                             <TextBlock Text="{Binding LastScanDisplay}"
-                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        HorizontalAlignment="Center"
-                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
                                        Margin="0,8,0,0"/>
                         </StackPanel>
-                    </materialDesign:Card>
+                    </Border>
 
                     <!-- Quick Navigation -->
-                    <materialDesign:Card Padding="20"
-                                          materialDesign:ElevationAssist.Elevation="Dp1">
+                    <Border Padding="20"
+                            CornerRadius="8"
+                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                            BorderThickness="1">
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Dashboard_QuickNav_Title}"
-                                       Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                                       FontSize="16" FontWeight="Medium"
                                        Margin="0,0,0,16"/>
 
                             <!-- Prerequisites Button -->
@@ -497,19 +517,19 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0"
-                                                              Kind="CheckboxMarkedCircleOutline"
-                                                              Width="24" Height="24"
-                                                              VerticalAlignment="Center"
-                                                              Margin="0,0,12,0"/>
+                                    <ui:SymbolIcon Grid.Column="0"
+                                                   Symbol="CheckmarkCircle24"
+                                                   Width="24" Height="24"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,12,0"/>
                                     <TextBlock Grid.Column="1"
                                                Text="{loc:Loc Nav_Prerequisites}"
                                                VerticalAlignment="Center"/>
-                                    <materialDesign:PackIcon Grid.Column="2"
-                                                              Kind="ChevronRight"
-                                                              Width="20" Height="20"
-                                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                              VerticalAlignment="Center"/>
+                                    <ui:SymbolIcon Grid.Column="2"
+                                                   Symbol="ChevronRight24"
+                                                   Width="20" Height="20"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   VerticalAlignment="Center"/>
                                 </Grid>
                             </Button>
 
@@ -524,31 +544,34 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <materialDesign:PackIcon Grid.Column="0"
-                                                              Kind="Apps"
-                                                              Width="24" Height="24"
-                                                              VerticalAlignment="Center"
-                                                              Margin="0,0,12,0"/>
+                                    <ui:SymbolIcon Grid.Column="0"
+                                                   Symbol="Apps24"
+                                                   Width="24" Height="24"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,12,0"/>
                                     <TextBlock Grid.Column="1"
                                                Text="{loc:Loc Nav_Apps}"
                                                VerticalAlignment="Center"/>
-                                    <materialDesign:PackIcon Grid.Column="2"
-                                                              Kind="ChevronRight"
-                                                              Width="20" Height="20"
-                                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                              VerticalAlignment="Center"/>
+                                    <ui:SymbolIcon Grid.Column="2"
+                                                   Symbol="ChevronRight24"
+                                                   Width="20" Height="20"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   VerticalAlignment="Center"/>
                                 </Grid>
                             </Button>
                         </StackPanel>
-                    </materialDesign:Card>
+                    </Border>
                 </StackPanel>
             </Grid>
 
             <!-- HISTORY SECTION -->
-            <materialDesign:Card Grid.Row="3"
-                                  Padding="24"
-                                  Margin="0,0,0,24"
-                                  materialDesign:ElevationAssist.Elevation="Dp1">
+            <Border Grid.Row="3"
+                    Padding="24"
+                    Margin="0,0,0,24"
+                    CornerRadius="8"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                    BorderThickness="1">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -557,13 +580,13 @@
 
                     <!-- Header -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                        <materialDesign:PackIcon Kind="History"
-                                                  Width="24" Height="24"
-                                                  VerticalAlignment="Center"
-                                                  Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                                  Margin="0,0,12,0"/>
+                        <ui:SymbolIcon Symbol="History24"
+                                       Width="24" Height="24"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                       Margin="0,0,12,0"/>
                         <TextBlock Text="{loc:Loc Dashboard_History_Title}"
-                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"/>
+                                   FontSize="20" FontWeight="SemiBold"/>
                     </StackPanel>
 
                     <!-- History List -->
@@ -572,7 +595,7 @@
                                    Visibility="{Binding HasRecentDeployments, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:DeploymentHistoryEntry}">
-                                <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                <Border BorderBrush="{DynamicResource ControlElevationBorderBrush}"
                                         BorderThickness="0,0,0,1"
                                         Padding="0,12">
                                     <Grid>
@@ -584,19 +607,19 @@
                                         </Grid.ColumnDefinitions>
 
                                         <!-- Status Icon -->
-                                        <materialDesign:PackIcon Grid.Column="0"
-                                                                  Kind="{Binding Result, Converter={StaticResource StatusToIconConverter}}"
-                                                                  Width="24" Height="24"
-                                                                  Foreground="{Binding Result, Converter={StaticResource StatusToColorConverter}}"
-                                                                  VerticalAlignment="Center"
-                                                                  Margin="0,0,16,0"/>
+                                        <ui:SymbolIcon Grid.Column="0"
+                                                       Symbol="{Binding Result, Converter={StaticResource StatusToIconConverter}}"
+                                                       Width="24" Height="24"
+                                                       Foreground="{Binding Result, Converter={StaticResource StatusToColorConverter}}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,16,0"/>
 
                                         <!-- Profile Info -->
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding ProfileName}"
-                                                       Style="{StaticResource MaterialDesignBody1TextBlock}"/>
-                                            <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                                       Foreground="{DynamicResource MaterialDesignBodyLight}">
+                                                       FontSize="14"/>
+                                            <TextBlock FontSize="12"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}">
                                                 <Run Text="{Binding Summary, Mode=OneWay}"/>
                                                 <Run Text=" - "/>
                                                 <Run Text="{Binding FormattedDuration, Mode=OneWay}"/>
@@ -606,8 +629,8 @@
                                         <!-- Date -->
                                         <TextBlock Grid.Column="2"
                                                    Text="{Binding FormattedDate}"
-                                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                    VerticalAlignment="Center"
                                                    Margin="16,0"/>
 
@@ -619,7 +642,7 @@
                                                 VerticalAlignment="Center"
                                                 Visibility="{Binding IsDryRun, Converter={StaticResource BooleanToVisibilityConverter}}">
                                             <TextBlock Text="{loc:Loc Lbl_DryRun}"
-                                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                       FontSize="12"
                                                        Foreground="Black"/>
                                         </Border>
                                     </Grid>
@@ -634,25 +657,25 @@
                                 VerticalAlignment="Center"
                                 Margin="0,24"
                                 Visibility="{Binding HasRecentDeployments, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                        <materialDesign:PackIcon Kind="ClipboardTextClockOutline"
-                                                  Width="48" Height="48"
-                                                  Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                                  HorizontalAlignment="Center"
-                                                  Margin="0,0,0,12"
-                                                  AutomationProperties.Name="{loc:Loc A11y_NoHistoryIcon}"/>
+                        <ui:SymbolIcon Symbol="Clock24"
+                                       Width="48" Height="48"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,12"
+                                       AutomationProperties.Name="{loc:Loc A11y_NoHistoryIcon}"/>
                         <TextBlock Text="{loc:Loc Dashboard_History_Empty}"
-                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                   FontSize="14"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
-            </materialDesign:Card>
+            </Border>
 
             <!-- FOOTER -->
             <TextBlock Grid.Row="4"
                        HorizontalAlignment="Center"
-                       Foreground="{DynamicResource MaterialDesignBodyLight}"
-                       Style="{StaticResource MaterialDesignCaptionTextBlock}">
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       FontSize="12">
                 <Run Text="Win11Forge v"/>
                 <Run Text="{Binding AppVersion, Mode=OneWay}"/>
             </TextBlock>

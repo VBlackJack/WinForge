@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'DirectoryConstants.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = 'ee5b82ab-0a2a-479d-9216-52b82c6a2fbc'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

@@ -16,7 +16,7 @@
 
 using System.Windows;
 using System.Windows.Controls;
-using MaterialDesignThemes.Wpf;
+using System.Windows.Input;
 using Win11Forge.GUI.ViewModels;
 
 namespace Win11Forge.GUI.Views;
@@ -34,7 +34,7 @@ public partial class DeploymentView : UserControl
     /// <summary>
     /// Handles dialog closing to update ViewModel state.
     /// </summary>
-    private void DialogHost_DialogClosing(object sender, DialogClosingEventArgs e)
+    private void DialogHost_DialogClosing(object sender, MouseButtonEventArgs e)
     {
         if (DataContext is DeploymentViewModel vm)
         {

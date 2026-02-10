@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ModuleLoader.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = 'edcec501-c8ef-4d87-abc0-ef82e4143f09'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

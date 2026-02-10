@@ -1,7 +1,7 @@
 <UserControl x:Class="Win11Forge.GUI.Controls.KeyboardShortcutsPanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              MinWidth="350" MaxWidth="500">
     <Border Padding="24">
@@ -14,12 +14,12 @@
 
             <!-- Header -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
-                <materialDesign:PackIcon Kind="Keyboard"
-                                          Width="28" Height="28"
-                                          VerticalAlignment="Center"
-                                          Margin="0,0,12,0"/>
+                <ui:SymbolIcon Symbol="Keyboard24"
+                               Width="28" Height="28"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,0"/>
                 <TextBlock Text="{loc:Loc Help_KeyboardShortcuts}"
-                           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                           FontSize="20" FontWeight="SemiBold"
                            VerticalAlignment="Center"/>
             </StackPanel>
 
@@ -28,7 +28,7 @@
                 <StackPanel>
                     <!-- General Section -->
                     <TextBlock Text="{loc:Loc Help_Section_General}"
-                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               FontSize="14" FontWeight="Medium"
                                Opacity="0.7"
                                Margin="0,0,0,8"/>
 
@@ -41,7 +41,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <Border Grid.Column="0"
-                                            Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                            Background="{DynamicResource ControlFillColorDefaultBrush}"
                                             CornerRadius="4"
                                             Padding="8,4"
                                             HorizontalAlignment="Left">
@@ -51,7 +51,7 @@
                                     </Border>
                                     <TextBlock Grid.Column="1"
                                                Text="{Binding Description}"
-                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                               FontSize="12"
                                                VerticalAlignment="Center"
                                                Margin="12,0,0,0"/>
                                 </Grid>
@@ -61,7 +61,7 @@
 
                     <!-- Application Manager Section -->
                     <TextBlock Text="{loc:Loc Help_Section_AppManager}"
-                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               FontSize="14" FontWeight="Medium"
                                Opacity="0.7"
                                Margin="0,16,0,8"/>
 
@@ -74,7 +74,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <Border Grid.Column="0"
-                                            Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                            Background="{DynamicResource ControlFillColorDefaultBrush}"
                                             CornerRadius="4"
                                             Padding="8,4"
                                             HorizontalAlignment="Left">
@@ -84,7 +84,7 @@
                                     </Border>
                                     <TextBlock Grid.Column="1"
                                                Text="{Binding Description}"
-                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                               FontSize="12"
                                                VerticalAlignment="Center"
                                                Margin="12,0,0,0"/>
                                 </Grid>
@@ -94,7 +94,7 @@
 
                     <!-- Navigation Section -->
                     <TextBlock Text="{loc:Loc Help_Section_Navigation}"
-                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               FontSize="14" FontWeight="Medium"
                                Opacity="0.7"
                                Margin="0,16,0,8"/>
 
@@ -107,7 +107,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <Border Grid.Column="0"
-                                            Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                            Background="{DynamicResource ControlFillColorDefaultBrush}"
                                             CornerRadius="4"
                                             Padding="8,4"
                                             HorizontalAlignment="Left">
@@ -117,7 +117,7 @@
                                     </Border>
                                     <TextBlock Grid.Column="1"
                                                Text="{Binding Description}"
-                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                               FontSize="12"
                                                VerticalAlignment="Center"
                                                Margin="12,0,0,0"/>
                                 </Grid>
@@ -127,7 +127,7 @@
 
                     <!-- Data Grid Section -->
                     <TextBlock Text="{loc:Loc Help_Section_DataGrid}"
-                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               FontSize="14" FontWeight="Medium"
                                Opacity="0.7"
                                Margin="0,16,0,8"/>
 
@@ -140,7 +140,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <Border Grid.Column="0"
-                                            Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                            Background="{DynamicResource ControlFillColorDefaultBrush}"
                                             CornerRadius="4"
                                             Padding="8,4"
                                             HorizontalAlignment="Left">
@@ -150,7 +150,7 @@
                                     </Border>
                                     <TextBlock Grid.Column="1"
                                                Text="{Binding Description}"
-                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                               FontSize="12"
                                                VerticalAlignment="Center"
                                                Margin="12,0,0,0"/>
                                 </Grid>
@@ -159,18 +159,18 @@
                     </ItemsControl>
 
                     <!-- Hint for DataGrid -->
-                    <Border Background="{DynamicResource MaterialDesignToolBarBackground}"
+                    <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
                             CornerRadius="4"
                             Padding="12"
                             Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="InformationOutline"
-                                                      Width="18" Height="18"
-                                                      VerticalAlignment="Center"
-                                                      Opacity="0.7"
-                                                      Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="Info24"
+                                           Width="18" Height="18"
+                                           VerticalAlignment="Center"
+                                           Opacity="0.7"
+                                           Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Help_Shortcut_DataGrid}"
-                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                       FontSize="12"
                                        TextWrapping="Wrap"
                                        Opacity="0.8"/>
                         </StackPanel>
@@ -179,12 +179,12 @@
             </ScrollViewer>
 
             <!-- Close Button -->
-            <Button Grid.Row="2"
-                    Content="{loc:Loc Dialog_Close}"
-                    Style="{StaticResource MaterialDesignRaisedButton}"
-                    HorizontalAlignment="Right"
-                    Margin="0,20,0,0"
-                    Click="CloseButton_Click"/>
+            <ui:Button Grid.Row="2"
+                       Content="{loc:Loc Dialog_Close}"
+                       Appearance="Primary"
+                       HorizontalAlignment="Right"
+                       Margin="0,20,0,0"
+                       Click="CloseButton_Click"/>
         </Grid>
     </Border>
 </UserControl>

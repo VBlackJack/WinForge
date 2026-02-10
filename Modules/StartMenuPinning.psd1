@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'StartMenuPinning.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = 'd739b262-3132-4189-8eba-ae6900236393'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

@@ -360,11 +360,11 @@ public partial class DashboardViewModel : ViewModelBase
             }
             else
             {
-                // Phase 3: Scan for updates (only if prerequisites are OK)
-                CheckingPhaseText = Resources.Resources.Dashboard_Phase_ScanningUpdates;
-                OnPropertyChanged(nameof(HeroTitle));
+                // Show Ready state immediately, then scan in background
+                CurrentState = DashboardState.Ready;
 
-                await ScanForUpdatesAsync();
+                // Phase 3: Scan for updates in background (non-blocking)
+                _ = ScanForUpdatesInBackgroundAsync();
             }
         }
         catch (PowerShellBridgeException ex)
@@ -474,9 +474,10 @@ public partial class DashboardViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Performs the initial update scan during initialization.
+    /// Performs the update scan in the background without blocking initialization.
+    /// Updates dashboard state when complete.
     /// </summary>
-    private async Task ScanForUpdatesAsync()
+    private async Task ScanForUpdatesInBackgroundAsync()
     {
         IsScanning = true;
         UpdateCount = 0;
@@ -505,12 +506,15 @@ public partial class DashboardViewModel : ViewModelBase
             LastScanTime = DateTime.Now;
             OnPropertyChanged(nameof(LastScanDisplay));
 
-            // Set state based on update count
             CurrentState = resultCount > 0 ? DashboardState.HasUpdates : DashboardState.Ready;
         }
         catch (TimeoutException)
         {
-            CurrentState = DashboardState.Ready;
+            Debug.WriteLine("Background scan timed out");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Background scan failed: {ex.Message}");
         }
         finally
         {

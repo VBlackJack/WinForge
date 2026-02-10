@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              mc:Ignorable="d"
              d:DesignHeight="400" d:DesignWidth="500">
@@ -11,8 +11,8 @@
     <StackPanel>
         <!-- Description -->
         <TextBlock Text="{loc:Loc AppEditor_DetectionDescription}"
-                   Style="{StaticResource MaterialDesignBody2TextBlock}"
-                   Foreground="{DynamicResource MaterialDesignBodyLight}"
+                   FontSize="12"
+                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                    TextWrapping="Wrap"
                    Margin="0,0,0,16"/>
 
@@ -20,9 +20,6 @@
         <ComboBox x:Name="MethodComboBox"
                   SelectedValue="{Binding Method, RelativeSource={RelativeSource AncestorType=UserControl}}"
                   SelectedValuePath="Tag"
-                  materialDesign:HintAssist.Hint="{loc:Loc AppEditor_DetectionMethod}"
-                  materialDesign:HintAssist.IsFloating="True"
-                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
                   Margin="0,0,0,16"
                   AutomationProperties.Name="Detection method">
             <ComboBoxItem Content="{loc:Loc Detection_Method_Registry}" Tag="Registry"/>
@@ -33,59 +30,57 @@
         </ComboBox>
 
         <!-- Registry Detection Panel -->
-        <materialDesign:Card x:Name="RegistryPanel"
-                              Padding="16"
-                              Margin="0,0,0,16"
-                              Visibility="Collapsed">
+        <Border x:Name="RegistryPanel"
+                CornerRadius="8"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Padding="16"
+                Margin="0,0,0,16"
+                Visibility="Collapsed">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                    <materialDesign:PackIcon Kind="Key"
-                                              Width="20" Height="20"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,8,0"/>
+                    <ui:SymbolIcon Symbol="Key24"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
                     <TextBlock Text="{loc:Loc Detection_Registry_Title}"
-                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               FontSize="14" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Registry Path -->
-                <TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                         materialDesign:HintAssist.Hint="{loc:Loc Detection_Registry_Path}"
-                         materialDesign:HintAssist.IsFloating="True"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                <ui:TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc Detection_Registry_Path}"
                          Margin="0,0,0,12"
                          AutomationProperties.Name="Registry path"/>
 
                 <!-- Registry Value Name -->
-                <TextBox Text="{Binding VersionKey, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                         materialDesign:HintAssist.Hint="{loc:Loc AppEditor_VersionKey}"
-                         materialDesign:HintAssist.IsFloating="True"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                <ui:TextBox Text="{Binding VersionKey, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc AppEditor_VersionKey}"
                          Margin="0,0,0,12"
                          AutomationProperties.Name="Version registry value"/>
 
                 <!-- Minimum Version -->
-                <TextBox Text="{Binding MinVersion, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                         materialDesign:HintAssist.Hint="{loc:Loc AppEditor_MinVersion}"
-                         materialDesign:HintAssist.IsFloating="True"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                <ui:TextBox Text="{Binding MinVersion, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc AppEditor_MinVersion}"
                          AutomationProperties.Name="Minimum version"/>
             </StackPanel>
-        </materialDesign:Card>
+        </Border>
 
         <!-- File Detection Panel -->
-        <materialDesign:Card x:Name="FilePanel"
-                              Padding="16"
-                              Margin="0,0,0,16"
-                              Visibility="Collapsed">
+        <Border x:Name="FilePanel"
+                CornerRadius="8"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Padding="16"
+                Margin="0,0,0,16"
+                Visibility="Collapsed">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                    <materialDesign:PackIcon Kind="File"
-                                              Width="20" Height="20"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,8,0"/>
+                    <ui:SymbolIcon Symbol="Document24"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
                     <TextBlock Text="{loc:Loc Detection_File_Title}"
-                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               FontSize="14" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
@@ -96,15 +91,13 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBox Grid.Column="0"
+                    <ui:TextBox Grid.Column="0"
                              Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                             materialDesign:HintAssist.Hint="{loc:Loc Detection_File_Path}"
-                             materialDesign:HintAssist.IsFloating="True"
-                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             PlaceholderText="{loc:Loc Detection_File_Path}"
                              AutomationProperties.Name="File path"/>
 
-                    <Button Grid.Column="1"
-                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                    <ui:Button Grid.Column="1"
+                            Appearance="Secondary"
                             Content="{loc:Loc Detection_Browse}"
                             Command="{Binding BrowseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                             Margin="8,0,0,0"
@@ -113,93 +106,91 @@
                 </Grid>
 
                 <!-- Minimum Version -->
-                <TextBox Text="{Binding MinVersion, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                         materialDesign:HintAssist.Hint="{loc:Loc AppEditor_MinVersion}"
-                         materialDesign:HintAssist.IsFloating="True"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                <ui:TextBox Text="{Binding MinVersion, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc AppEditor_MinVersion}"
                          AutomationProperties.Name="Minimum version"/>
             </StackPanel>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Command Detection Panel -->
-        <materialDesign:Card x:Name="CommandPanel"
-                              Padding="16"
-                              Margin="0,0,0,16"
-                              Visibility="Collapsed">
+        <Border x:Name="CommandPanel"
+                CornerRadius="8"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Padding="16"
+                Margin="0,0,0,16"
+                Visibility="Collapsed">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                    <materialDesign:PackIcon Kind="Application"
-                                              Width="20" Height="20"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,8,0"/>
+                    <ui:SymbolIcon Symbol="Apps24"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
                     <TextBlock Text="{loc:Loc Detection_Command_Title}"
-                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               FontSize="14" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Command -->
-                <TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                         materialDesign:HintAssist.Hint="{loc:Loc Detection_Command_Path}"
-                         materialDesign:HintAssist.IsFloating="True"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                <ui:TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc Detection_Command_Path}"
                          AutomationProperties.Name="Command to execute"/>
 
                 <TextBlock Text="{loc:Loc Detection_Command_Hint}"
-                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            Margin="0,4,0,0"/>
             </StackPanel>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Windows Feature Panel -->
-        <materialDesign:Card x:Name="WindowsFeaturePanel"
-                              Padding="16"
-                              Margin="0,0,0,16"
-                              Visibility="Collapsed">
+        <Border x:Name="WindowsFeaturePanel"
+                CornerRadius="8"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Padding="16"
+                Margin="0,0,0,16"
+                Visibility="Collapsed">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                    <materialDesign:PackIcon Kind="Cog"
-                                              Width="20" Height="20"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,8,0"/>
+                    <ui:SymbolIcon Symbol="Settings24"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
                     <TextBlock Text="{loc:Loc Detection_WindowsFeature_Title}"
-                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               FontSize="14" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Feature Name -->
-                <TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                         materialDesign:HintAssist.Hint="{loc:Loc Detection_WindowsFeature_Name}"
-                         materialDesign:HintAssist.IsFloating="True"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                <ui:TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc Detection_WindowsFeature_Name}"
                          AutomationProperties.Name="Windows feature name"/>
             </StackPanel>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Store App Panel -->
-        <materialDesign:Card x:Name="StoreAppPanel"
-                              Padding="16"
-                              Margin="0,0,0,16"
-                              Visibility="Collapsed">
+        <Border x:Name="StoreAppPanel"
+                CornerRadius="8"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Padding="16"
+                Margin="0,0,0,16"
+                Visibility="Collapsed">
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                    <materialDesign:PackIcon Kind="Shopping"
-                                              Width="20" Height="20"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,8,0"/>
+                    <ui:SymbolIcon Symbol="StoreMicrosoft24"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
                     <TextBlock Text="{loc:Loc Detection_StoreApp_Title}"
-                               Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
+                               FontSize="14" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Package Family Name -->
-                <TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                         materialDesign:HintAssist.Hint="{loc:Loc Detection_StoreApp_PackageName}"
-                         materialDesign:HintAssist.IsFloating="True"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                <ui:TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc Detection_StoreApp_PackageName}"
                          AutomationProperties.Name="Package family name"/>
             </StackPanel>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Test Detection Button and Result -->
         <Grid>
@@ -208,26 +199,25 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="0"
-                    Style="{StaticResource MaterialDesignOutlinedButton}"
+            <ui:Button Grid.Column="0"
+                    Appearance="Secondary"
                     Command="{Binding TestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     ToolTip="{loc:Loc Detection_TestTooltip}"
                     MinWidth="140"
                     AutomationProperties.Name="Test detection">
                 <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="Play"
-                                              Width="18" Height="18"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,8,0"
-                                              Visibility="{Binding IsTesting, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
-                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                 IsIndeterminate="True"
+                    <ui:SymbolIcon Symbol="Play24"
+                                   Width="18" Height="18"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"
+                                   Visibility="{Binding IsTesting, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                    <ProgressBar IsIndeterminate="True"
                                  Width="18" Height="18"
                                  Margin="0,0,8,0"
                                  Visibility="{Binding IsTesting, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <TextBlock Text="{loc:Loc Detection_TestButton}" VerticalAlignment="Center"/>
                 </StackPanel>
-            </Button>
+            </ui:Button>
 
             <!-- Test Result -->
             <Border Grid.Column="1"
@@ -248,16 +238,16 @@
                     </Style>
                 </Border.Style>
                 <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon x:Name="TestResultIcon"
-                                              Width="20" Height="20"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,8,0"/>
+                    <ui:SymbolIcon x:Name="TestResultIcon"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
                     <StackPanel>
                         <TextBlock Text="{Binding TestResult, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    FontWeight="Medium"
                                    VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding DetectedVersion, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                   FontSize="12"
                                    Visibility="{Binding DetectedVersion, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullableToVisibilityConverter}}"/>
                     </StackPanel>
                 </StackPanel>

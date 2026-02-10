@@ -18,7 +18,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              mc:Ignorable="d"
@@ -42,46 +42,48 @@
 
             <StackPanel Grid.Column="0">
                 <TextBlock Text="{loc:Loc Logs_Title}"
-                           Style="{StaticResource MaterialDesignHeadline4TextBlock}"/>
+                           FontSize="28" FontWeight="SemiBold"/>
                 <TextBlock Text="{loc:Loc Logs_Subtitle}"
-                           Style="{StaticResource MaterialDesignBody2TextBlock}"
-                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            Margin="0,4,0,0"/>
             </StackPanel>
 
             <!-- Actions -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Command="{Binding RefreshCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        Margin="0,0,8,0"
-                        ToolTip="{loc:Loc Logs_Refresh}">
+                <ui:Button Command="{Binding RefreshCommand}"
+                           Appearance="Secondary"
+                           Margin="0,0,8,0"
+                           ToolTip="{loc:Loc Logs_Refresh}">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="Refresh" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ui:SymbolIcon Symbol="ArrowSync24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                         <TextBlock Text="{loc:Loc Logs_Refresh}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
-                <Button Command="{Binding OpenLogFolderCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        Margin="0,0,8,0"
-                        ToolTip="{loc:Loc Logs_OpenFolder}">
+                </ui:Button>
+                <ui:Button Command="{Binding OpenLogFolderCommand}"
+                           Appearance="Secondary"
+                           Margin="0,0,8,0"
+                           ToolTip="{loc:Loc Logs_OpenFolder}">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="FolderOpen" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ui:SymbolIcon Symbol="FolderOpen24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                         <TextBlock Text="{loc:Loc Logs_OpenFolder}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
-                <Button Command="{Binding ExportLogsCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        ToolTip="{loc:Loc Logs_Export}">
+                </ui:Button>
+                <ui:Button Command="{Binding ExportLogsCommand}"
+                           Appearance="Secondary"
+                           ToolTip="{loc:Loc Logs_Export}">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="Export" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ui:SymbolIcon Symbol="ArrowExportLtr24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                         <TextBlock Text="{loc:Loc Logs_Export}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
+                </ui:Button>
             </StackPanel>
         </Grid>
 
         <!-- Filters -->
-        <materialDesign:Card Grid.Row="1" Padding="16" Margin="0,0,0,16" materialDesign:ElevationAssist.Elevation="Dp2">
+        <Border Grid.Row="1" Padding="16" Margin="0,0,0,16"
+                CornerRadius="8"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -92,54 +94,52 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Search -->
-                <TextBox Grid.Column="0"
-                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         materialDesign:HintAssist.Hint="{loc:Loc Logs_SearchPlaceholder}"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                         Margin="0,0,16,0">
-                    <TextBox.InputBindings>
+                <ui:TextBox Grid.Column="0"
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                            PlaceholderText="{loc:Loc Logs_SearchPlaceholder}"
+                            Margin="0,0,16,0">
+                    <ui:TextBox.InputBindings>
                         <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
-                    </TextBox.InputBindings>
-                </TextBox>
+                    </ui:TextBox.InputBindings>
+                </ui:TextBox>
 
                 <!-- Log Level Filter -->
                 <ComboBox Grid.Column="1"
                           ItemsSource="{Binding LogLevels}"
                           SelectedItem="{Binding SelectedLogLevel}"
-                          materialDesign:HintAssist.Hint="{loc:Loc Logs_Level}"
-                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
                           Width="120"
                           Margin="0,0,8,0"/>
 
                 <!-- Date Filter -->
                 <DatePicker Grid.Column="2"
                             SelectedDate="{Binding FilterDate}"
-                            materialDesign:HintAssist.Hint="{loc:Loc Logs_Date}"
-                            Style="{StaticResource MaterialDesignOutlinedDatePicker}"
                             Width="150"
                             Margin="0,0,8,0"/>
 
                 <!-- Clear Filters -->
-                <Button Grid.Column="3"
-                        Command="{Binding ClearFiltersCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        ToolTip="{loc:Loc Logs_ClearFilters}">
-                    <materialDesign:PackIcon Kind="FilterRemove" Width="20" Height="20"/>
-                </Button>
+                <ui:Button Grid.Column="3"
+                           Command="{Binding ClearFiltersCommand}"
+                           Appearance="Transparent"
+                           ToolTip="{loc:Loc Logs_ClearFilters}">
+                    <ui:SymbolIcon Symbol="FilterDismiss24" Width="20" Height="20"/>
+                </ui:Button>
 
                 <!-- Clear Old Logs -->
-                <Button Grid.Column="4"
-                        Command="{Binding ClearOldLogsCommand}"
-                        Style="{StaticResource DestructiveOutlinedButton}"
-                        ToolTip="{loc:Loc Logs_ClearOld}"
-                        Margin="8,0,0,0">
-                    <materialDesign:PackIcon Kind="DeleteClock" Width="20" Height="20"/>
-                </Button>
+                <ui:Button Grid.Column="4"
+                           Command="{Binding ClearOldLogsCommand}"
+                           Appearance="Transparent"
+                           ToolTip="{loc:Loc Logs_ClearOld}"
+                           Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                           Margin="8,0,0,0">
+                    <ui:SymbolIcon Symbol="DeleteDismiss24" Width="20" Height="20"/>
+                </ui:Button>
             </Grid>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Log Files List -->
-        <materialDesign:Card Grid.Row="2" Padding="0" materialDesign:ElevationAssist.Elevation="Dp2">
+        <Border Grid.Row="2" Padding="0"
+                CornerRadius="8"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -147,7 +147,8 @@
                 </Grid.RowDefinitions>
 
                 <!-- Log Files Header -->
-                <Border Grid.Row="0" Background="{DynamicResource MaterialDesignToolBarBackground}" Padding="16,12">
+                <Border Grid.Row="0" Background="{DynamicResource SubtleFillColorSecondaryBrush}" Padding="16,12"
+                        CornerRadius="8,8,0,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -155,10 +156,10 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0"
                                    Text="{loc:Loc Logs_Files}"
-                                   Style="{StaticResource MaterialDesignSubtitle1TextBlock}"/>
+                                   FontSize="16" FontWeight="Medium"/>
                         <TextBlock Grid.Column="1"
-                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                   Foreground="{DynamicResource MaterialDesignBodyLight}">
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}">
                             <Run Text="{Binding FilteredLogFiles.Count, Mode=OneWay}"/>
                             <Run Text="{loc:Loc Logs_FilesCount}"/>
                         </TextBlock>
@@ -177,18 +178,16 @@
                           SelectionUnit="FullRow"
                           GridLinesVisibility="Horizontal"
                           HeadersVisibility="Column"
-                          materialDesign:DataGridAssist.CellPadding="12 8"
-                          materialDesign:DataGridAssist.ColumnHeaderPadding="12 8"
                           VerticalScrollBarVisibility="Auto"
                           MouseDoubleClick="DataGrid_MouseDoubleClick">
                     <DataGrid.Columns>
                         <DataGridTemplateColumn Header="" Width="Auto">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <materialDesign:PackIcon Kind="{Binding Icon}"
-                                                              Width="20" Height="20"
-                                                              Foreground="{Binding IconColor}"
-                                                              VerticalAlignment="Center"/>
+                                    <ui:SymbolIcon Symbol="{Binding Icon}"
+                                                   Width="20" Height="20"
+                                                   Foreground="{Binding IconColor}"
+                                                   VerticalAlignment="Center"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -205,28 +204,31 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
-                                        <Button Command="{Binding DataContext.ViewLogCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource MaterialDesignIconButton}"
-                                                Width="32" Height="32"
-                                                ToolTip="{loc:Loc Logs_View}">
-                                            <materialDesign:PackIcon Kind="Eye" Width="18" Height="18"/>
-                                        </Button>
-                                        <Button Command="{Binding DataContext.CopyLogPathCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource MaterialDesignIconButton}"
-                                                Width="32" Height="32"
-                                                ToolTip="{loc:Loc Logs_CopyPath}">
-                                            <materialDesign:PackIcon Kind="ContentCopy" Width="18" Height="18"/>
-                                        </Button>
-                                        <Button Command="{Binding DataContext.DeleteLogCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                                CommandParameter="{Binding}"
-                                                Style="{StaticResource MaterialDesignIconButton}"
-                                                Width="32" Height="32"
-                                                Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
-                                                ToolTip="{loc:Loc Logs_Delete}">
-                                            <materialDesign:PackIcon Kind="Delete" Width="18" Height="18"/>
-                                        </Button>
+                                        <ui:Button Command="{Binding DataContext.ViewLogCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                   CommandParameter="{Binding}"
+                                                   Appearance="Transparent"
+                                                   Width="32" Height="32"
+                                                   Padding="4"
+                                                   ToolTip="{loc:Loc Logs_View}">
+                                            <ui:SymbolIcon Symbol="Eye24" Width="18" Height="18"/>
+                                        </ui:Button>
+                                        <ui:Button Command="{Binding DataContext.CopyLogPathCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                   CommandParameter="{Binding}"
+                                                   Appearance="Transparent"
+                                                   Width="32" Height="32"
+                                                   Padding="4"
+                                                   ToolTip="{loc:Loc Logs_CopyPath}">
+                                            <ui:SymbolIcon Symbol="Copy24" Width="18" Height="18"/>
+                                        </ui:Button>
+                                        <ui:Button Command="{Binding DataContext.DeleteLogCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                   CommandParameter="{Binding}"
+                                                   Appearance="Transparent"
+                                                   Width="32" Height="32"
+                                                   Padding="4"
+                                                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                                   ToolTip="{loc:Loc Logs_Delete}">
+                                            <ui:SymbolIcon Symbol="Delete24" Width="18" Height="18"/>
+                                        </ui:Button>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -239,19 +241,20 @@
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center"
                             Visibility="{Binding HasNoLogs, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <materialDesign:PackIcon Kind="FileDocumentAlertOutline"
-                                              Width="64" Height="64"
-                                              HorizontalAlignment="Center"
-                                              Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                    <ui:SymbolIcon Symbol="DocumentError24"
+                                   Width="64" Height="64"
+                                   FontSize="48"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     <TextBlock Text="{loc:Loc Logs_NoLogs}"
-                               Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                               FontSize="20" FontWeight="SemiBold"
                                HorizontalAlignment="Center"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,16,0,0"/>
                     <TextBlock Text="{loc:Loc Logs_NoLogs_Hint}"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               FontSize="12"
                                HorizontalAlignment="Center"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,8,0,0"/>
                 </StackPanel>
 
@@ -261,7 +264,7 @@
                              VerticalAlignment="Top"
                              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             </Grid>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Status Bar -->
         <Border Grid.Row="3" Margin="0,16,0,0">
@@ -273,13 +276,13 @@
 
                 <TextBlock Grid.Column="0"
                            Text="{Binding StatusMessage}"
-                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center"/>
 
                 <TextBlock Grid.Column="1"
-                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center">
                     <Run Text="{loc:Loc Logs_TotalSize}"/>
                     <Run Text="{Binding TotalSizeFormatted, Mode=OneWay}"/>

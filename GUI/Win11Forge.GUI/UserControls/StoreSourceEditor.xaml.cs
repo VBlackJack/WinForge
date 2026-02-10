@@ -20,7 +20,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Controls;
 
 namespace Win11Forge.GUI.UserControls;
 
@@ -128,12 +128,12 @@ public partial class StoreSourceEditor : UserControl
 
         if (IsValid)
         {
-            ValidationIcon.Kind = PackIconKind.CheckCircle;
+            ValidationIcon.Symbol = SymbolRegular.CheckmarkCircle24;
             ValidationIcon.Foreground = new SolidColorBrush(Colors.Green);
         }
         else
         {
-            ValidationIcon.Kind = PackIconKind.AlertCircle;
+            ValidationIcon.Symbol = SymbolRegular.ErrorCircle24;
             ValidationIcon.Foreground = new SolidColorBrush(Colors.Orange);
         }
     }

@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'StartupManager.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '874cf8cc-8852-4a49-aaf5-d3efffe86865'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

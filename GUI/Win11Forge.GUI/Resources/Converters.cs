@@ -18,7 +18,9 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui;
+using Wpf.Ui.Appearance;
+using Wpf.Ui.Controls;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.ViewModels;
 
@@ -114,13 +116,13 @@ public class InverseNullableToVisibilityConverter : IValueConverter
 }
 
 /// <summary>
-/// Converts boolean (IsRequired) to Material Design icon kind.
+/// Converts boolean (IsRequired) to Fluent icon symbol.
 /// </summary>
 public class BoolToRequiredIconConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is true ? PackIconKind.Star : PackIconKind.StarOutline;
+        return value is true ? SymbolRegular.Star24 : SymbolRegular.StarOff24;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -149,7 +151,7 @@ public class BoolToRequiredColorConverter : IValueConverter
 }
 
 /// <summary>
-/// Converts ApplicationStatus or DeploymentResult to Material Design icon kind.
+/// Converts ApplicationStatus or DeploymentResult to Fluent icon symbol.
 /// </summary>
 public class StatusToIconConverter : IValueConverter
 {
@@ -158,22 +160,22 @@ public class StatusToIconConverter : IValueConverter
         return value switch
         {
             // ApplicationStatus
-            ApplicationStatus.Pending => PackIconKind.Clock,
-            ApplicationStatus.Installing => PackIconKind.ProgressDownload,
-            ApplicationStatus.Installed => PackIconKind.CheckCircle,
-            ApplicationStatus.Failed => PackIconKind.AlertCircle,
-            ApplicationStatus.Skipped => PackIconKind.SkipNext,
-            ApplicationStatus.AlreadyInstalled => PackIconKind.CheckAll,
-            ApplicationStatus.Uninstalling => PackIconKind.ProgressUpload,
-            ApplicationStatus.Uninstalled => PackIconKind.CheckCircleOutline,
-            ApplicationStatus.UpdateAvailable => PackIconKind.Update,
-            ApplicationStatus.Updating => PackIconKind.ProgressClock,
+            ApplicationStatus.Pending => SymbolRegular.Clock24,
+            ApplicationStatus.Installing => SymbolRegular.ArrowDownload24,
+            ApplicationStatus.Installed => SymbolRegular.CheckmarkCircle24,
+            ApplicationStatus.Failed => SymbolRegular.ErrorCircle24,
+            ApplicationStatus.Skipped => SymbolRegular.Next24,
+            ApplicationStatus.AlreadyInstalled => SymbolRegular.CheckmarkStarburst24,
+            ApplicationStatus.Uninstalling => SymbolRegular.ArrowUpload24,
+            ApplicationStatus.Uninstalled => SymbolRegular.CheckmarkCircle24,
+            ApplicationStatus.UpdateAvailable => SymbolRegular.ArrowSync24,
+            ApplicationStatus.Updating => SymbolRegular.ArrowClockwise24,
             // DeploymentResult
-            DeploymentResult.Success => PackIconKind.CheckCircle,
-            DeploymentResult.PartialSuccess => PackIconKind.AlertCircleCheck,
-            DeploymentResult.Failed => PackIconKind.CloseCircle,
-            DeploymentResult.Cancelled => PackIconKind.Cancel,
-            _ => PackIconKind.HelpCircle
+            DeploymentResult.Success => SymbolRegular.CheckmarkCircle24,
+            DeploymentResult.PartialSuccess => SymbolRegular.Warning24,
+            DeploymentResult.Failed => SymbolRegular.DismissCircle24,
+            DeploymentResult.Cancelled => SymbolRegular.Dismiss24,
+            _ => SymbolRegular.QuestionCircle24
         };
     }
 
@@ -244,14 +246,14 @@ public class ZeroToVisibilityConverter : IValueConverter
 }
 
 /// <summary>
-/// Converts boolean (IsInstalled) to Material Design icon kind.
-/// True = CheckCircle, False = AlertCircle.
+/// Converts boolean (IsInstalled) to Fluent icon symbol.
+/// True = CheckmarkCircle, False = ErrorCircle.
 /// </summary>
 public class BoolToInstalledIconConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is true ? PackIconKind.CheckCircle : PackIconKind.AlertCircle;
+        return value is true ? SymbolRegular.CheckmarkCircle24 : SymbolRegular.ErrorCircle24;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -287,14 +289,14 @@ public class BoolToInstalledColorConverter : IValueConverter
 }
 
 /// <summary>
-/// Converts boolean (IsPaused) to Material Design icon kind.
+/// Converts boolean (IsPaused) to Fluent icon symbol.
 /// True = Pause, False = Play (running).
 /// </summary>
 public class BoolToPauseIconConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is true ? PackIconKind.Pause : PackIconKind.Play;
+        return value is true ? SymbolRegular.Pause24 : SymbolRegular.Play24;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -329,14 +331,14 @@ public class StatusFilterToStringConverter : IValueConverter
 }
 
 /// <summary>
-/// Converts boolean (IsFavorite) to Material Design icon kind.
-/// True = Star (filled), False = StarOutline.
+/// Converts boolean (IsFavorite) to Fluent icon symbol.
+/// True = Star (filled), False = StarOff.
 /// </summary>
 public class BoolToFavoriteIconConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is true ? PackIconKind.Star : PackIconKind.StarOutline;
+        return value is true ? SymbolRegular.Star24 : SymbolRegular.StarOff24;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -472,7 +474,7 @@ public class BooleanToCheckIconConverter : IValueConverter
     {
         // If it's the current active phase, show loading spinner style
         // Otherwise show checkmark for completed phases
-        return value is true ? PackIconKind.CircleOutline : PackIconKind.CheckCircle;
+        return value is true ? SymbolRegular.Circle24 : SymbolRegular.CheckmarkCircle24;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -529,9 +531,7 @@ public class ThemeAdaptiveBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        var paletteHelper = new PaletteHelper();
-        var theme = paletteHelper.GetTheme();
-        var isDark = theme.GetBaseTheme() == BaseTheme.Dark;
+        var isDark = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
 
         var app = Application.Current;
         if (isDark)
@@ -548,16 +548,14 @@ public class ThemeAdaptiveBrushConverter : IValueConverter
 }
 
 /// <summary>
-/// Converts a boolean (IsNew) to the appropriate Material Design icon.
-/// True (new) = Plus icon, False (edit) = Pencil icon.
+/// Converts a boolean (IsNew) to the appropriate Fluent icon.
+/// True (new) = Add icon, False (edit) = Edit icon.
 /// </summary>
 public class BoolToAddEditIconConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is true
-            ? MaterialDesignThemes.Wpf.PackIconKind.Plus
-            : MaterialDesignThemes.Wpf.PackIconKind.Pencil;
+        return value is true ? SymbolRegular.Add24 : SymbolRegular.Edit24;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

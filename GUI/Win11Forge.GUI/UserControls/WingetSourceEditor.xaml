@@ -3,12 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              mc:Ignorable="d"
              d:DesignHeight="200" d:DesignWidth="500">
 
-    <materialDesign:Card Padding="16">
+    <Border CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" Padding="16">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -26,30 +26,27 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="Package"
-                                              Width="24" Height="24"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,12,0"/>
+                    <ui:SymbolIcon Symbol="Box24"
+                                   Width="24" Height="24"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"/>
                     <TextBlock Text="Winget"
-                               Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                               FontSize="16" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <ToggleButton Grid.Column="2"
-                              x:Name="EnableToggle"
-                              Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                              IsChecked="{Binding IsSourceEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                              ToolTip="{loc:Loc SourceEditor_EnableDisable}"
-                              AutomationProperties.Name="Enable Winget source"/>
+                <ui:ToggleSwitch Grid.Column="2"
+                                 x:Name="EnableToggle"
+                                 IsChecked="{Binding IsSourceEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                 ToolTip="{loc:Loc SourceEditor_EnableDisable}"
+                                 AutomationProperties.Name="Enable Winget source"/>
             </Grid>
 
             <!-- Package ID -->
-            <TextBox Grid.Row="1"
+            <ui:TextBox Grid.Row="1"
                      x:Name="PackageIdTextBox"
                      Text="{Binding PackageId, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                     materialDesign:HintAssist.Hint="{loc:Loc AppEditor_WingetPackageId}"
-                     materialDesign:HintAssist.IsFloating="True"
-                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                     PlaceholderText="{loc:Loc AppEditor_WingetPackageId}"
                      IsEnabled="{Binding IsChecked, ElementName=EnableToggle}"
                      Margin="0,0,0,12"
                      AutomationProperties.Name="Winget package ID"/>
@@ -64,20 +61,15 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Version -->
-                <TextBox Grid.Column="0"
+                <ui:TextBox Grid.Column="0"
                          Text="{Binding Version, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                         materialDesign:HintAssist.Hint="{loc:Loc SourceEditor_Version}"
-                         materialDesign:HintAssist.IsFloating="True"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         PlaceholderText="{loc:Loc SourceEditor_Version}"
                          AutomationProperties.Name="Version"/>
 
                 <!-- Source Repository -->
                 <ComboBox Grid.Column="2"
                           SelectedValue="{Binding SourceRepository, RelativeSource={RelativeSource AncestorType=UserControl}}"
                           SelectedValuePath="Tag"
-                          materialDesign:HintAssist.Hint="{loc:Loc SourceEditor_Repository}"
-                          materialDesign:HintAssist.IsFloating="True"
-                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
                           AutomationProperties.Name="Source repository">
                     <ComboBoxItem Content="winget" Tag="winget"/>
                     <ComboBoxItem Content="msstore" Tag="msstore"/>
@@ -91,27 +83,25 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="0"
-                        x:Name="TestButton"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                <ui:Button Grid.Column="0"
+                        Appearance="Secondary"
                         Command="{Binding TestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         ToolTip="{loc:Loc SourceEditor_TestTooltip}"
                         MinWidth="120"
                         AutomationProperties.Name="Test package">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="Magnify"
-                                                  Width="18" Height="18"
-                                                  VerticalAlignment="Center"
-                                                  Margin="0,0,8,0"
-                                                  Visibility="{Binding IsTesting, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
-                        <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                     IsIndeterminate="True"
+                        <ui:SymbolIcon Symbol="Search24"
+                                       Width="18" Height="18"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"
+                                       Visibility="{Binding IsTesting, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                        <ProgressBar IsIndeterminate="True"
                                      Width="18" Height="18"
                                      Margin="0,0,8,0"
                                      Visibility="{Binding IsTesting, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         <TextBlock Text="{loc:Loc SourceEditor_Test}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
+                </ui:Button>
 
                 <!-- Test Result -->
                 <StackPanel Grid.Column="1"
@@ -119,10 +109,10 @@
                             Margin="16,0,0,0"
                             VerticalAlignment="Center"
                             Visibility="{Binding TestResult, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullableToVisibilityConverter}}">
-                    <materialDesign:PackIcon x:Name="TestResultIcon"
-                                              Width="20" Height="20"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,8,0"/>
+                    <ui:SymbolIcon x:Name="TestResultIcon"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
                     <TextBlock x:Name="TestResultText"
                                Text="{Binding TestResult, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                VerticalAlignment="Center"
@@ -130,5 +120,5 @@
                 </StackPanel>
             </Grid>
         </Grid>
-    </materialDesign:Card>
+    </Border>
 </UserControl>

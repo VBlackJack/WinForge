@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'Prerequisites.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = 'aa479331-d931-4d0d-8c6e-606d1d63ae7c'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

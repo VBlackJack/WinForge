@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              mc:Ignorable="d"
@@ -19,33 +19,34 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <materialDesign:ColorZone Grid.Row="0"
-                                   Mode="PrimaryMid"
-                                   Padding="16"
-                                   materialDesign:ElevationAssist.Elevation="Dp2">
+        <Border Grid.Row="0"
+                Background="{DynamicResource SystemAccentColorPrimaryBrush}"
+                Padding="16">
             <StackPanel Orientation="Horizontal">
-                <materialDesign:PackIcon Kind="ContentSave"
-                                          Width="24"
-                                          Height="24"
-                                          VerticalAlignment="Center"
-                                          Margin="0,0,12,0"/>
+                <ui:SymbolIcon Symbol="Save24"
+                               Width="24"
+                               Height="24"
+                               VerticalAlignment="Center"
+                               Foreground="White"
+                               Margin="0,0,12,0"/>
                 <TextBlock Text="{loc:Loc Dialog_SaveProfile_Title}"
-                           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                           FontSize="20" FontWeight="SemiBold"
+                           Foreground="White"
                            VerticalAlignment="Center"/>
             </StackPanel>
-        </materialDesign:ColorZone>
+        </Border>
 
         <!-- Content -->
         <StackPanel Grid.Row="1" Margin="16">
 
             <!-- Apps count info -->
             <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                <materialDesign:PackIcon Kind="Apps"
-                                          Width="20" Height="20"
-                                          VerticalAlignment="Center"
-                                          Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                          Margin="0,0,8,0"/>
-                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}">
+                <ui:SymbolIcon Symbol="AppsList24"
+                               Width="20" Height="20"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Margin="0,0,8,0"/>
+                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
                     <Run Text="{Binding SelectedAppsCount, Mode=OneWay}"/>
                     <Run Text=" "/>
                     <Run Text="{loc:Loc Dialog_SaveProfile_AppsSelected}"/>
@@ -81,33 +82,30 @@
 
                 <!-- Profile Name -->
                 <TextBlock Text="{loc:Loc Editor_Lbl_Name}"
-                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           FontSize="12"
                            Margin="0,0,0,8"/>
-                <TextBox Text="{Binding NewProfileName, UpdateSourceTrigger=PropertyChanged}"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                         materialDesign:HintAssist.Hint="{loc:Loc Editor_Hint_ProfileName}"
-                         Margin="0,0,0,16"/>
+                <ui:TextBox Text="{Binding NewProfileName, UpdateSourceTrigger=PropertyChanged}"
+                            PlaceholderText="{loc:Loc Editor_Hint_ProfileName}"
+                            Margin="0,0,0,16"/>
 
                 <!-- Parent Profile -->
                 <TextBlock Text="{loc:Loc Editor_Lbl_Parent}"
-                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           FontSize="12"
                            Margin="0,0,0,8"/>
                 <ComboBox ItemsSource="{Binding AvailableParents}"
                           SelectedItem="{Binding SelectedParent}"
-                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
                           Margin="0,0,0,16"/>
 
                 <!-- Description -->
                 <TextBlock Text="{loc:Loc Editor_Lbl_Description}"
-                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           FontSize="12"
                            Margin="0,0,0,8"/>
-                <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                         materialDesign:HintAssist.Hint="{loc:Loc Editor_Hint_Description}"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         Height="60"
-                         VerticalContentAlignment="Top"/>
+                <ui:TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                            PlaceholderText="{loc:Loc Editor_Hint_Description}"
+                            AcceptsReturn="True"
+                            TextWrapping="Wrap"
+                            Height="60"
+                            VerticalContentAlignment="Top"/>
             </StackPanel>
         </StackPanel>
 
@@ -120,20 +118,18 @@
             </Grid.ColumnDefinitions>
 
             <!-- Cancel Button -->
-            <Button Grid.Column="1"
-                    Content="{loc:Loc Btn_Cancel}"
-                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                    CommandParameter="{x:Null}"
-                    Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                    Margin="0,0,12,0"/>
+            <ui:Button Grid.Column="1"
+                       Content="{loc:Loc Btn_Cancel}"
+                       Appearance="Secondary"
+                       Click="CancelButton_Click"
+                       Margin="0,0,12,0"/>
 
             <!-- Save Button -->
-            <Button Grid.Column="2"
-                    Content="{loc:Loc Btn_Save}"
-                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                    CommandParameter="{Binding}"
-                    IsEnabled="{Binding CanSave}"
-                    Style="{StaticResource MaterialDesignRaisedButton}"/>
+            <ui:Button Grid.Column="2"
+                       Content="{loc:Loc Btn_Save}"
+                       Appearance="Primary"
+                       Click="SaveButton_Click"
+                       IsEnabled="{Binding CanSave}"/>
         </Grid>
     </Grid>
 </UserControl>

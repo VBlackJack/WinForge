@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'StartMenuLayout.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '30cb2343-58eb-4ecf-b6dc-4a242d63b6de'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

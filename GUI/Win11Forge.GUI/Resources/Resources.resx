@@ -2220,6 +2220,10 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Dismiss</value>
     <comment>Dismiss button text to close error messages</comment>
   </data>
+  <data name="Common_Details" xml:space="preserve">
+    <value>Details</value>
+    <comment>Expandable details section header in error dialogs</comment>
+  </data>
   <data name="Common_DryRun" xml:space="preserve">
     <value>[DRY RUN]</value>
     <comment>Dry run prefix for simulated installations</comment>

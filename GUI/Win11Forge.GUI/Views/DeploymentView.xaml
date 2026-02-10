@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              xmlns:models="clr-namespace:Win11Forge.GUI.Models"
@@ -11,96 +11,8 @@
              d:DataContext="{d:DesignInstance Type=viewModels:DeploymentViewModel}"
              d:DesignHeight="700" d:DesignWidth="1000">
 
-    <materialDesign:DialogHost IsOpen="{Binding IsLogViewerOpen}"
-                                CloseOnClickAway="True"
-                                DialogClosing="DialogHost_DialogClosing">
-        <materialDesign:DialogHost.DialogContent>
-            <!-- Log Viewer Dialog -->
-            <Border MinWidth="600" MaxWidth="900" MaxHeight="500" Padding="24">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Dialog Header -->
-                    <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                        <TextBlock Text="{loc:Loc LogViewer_Title}"
-                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"/>
-                        <TextBlock Text="{Binding LogViewerApplication.Name}"
-                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                   Margin="0,4,0,0"/>
-                        <!-- Error message if present -->
-                        <Border Background="{DynamicResource ErrorBackgroundBrush}"
-                                BorderBrush="{DynamicResource ErrorBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4"
-                                Padding="12,8"
-                                Margin="0,12,0,0"
-                                Visibility="{Binding LogViewerApplication.ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="AlertCircle"
-                                                          Foreground="{DynamicResource ErrorIconBrush}"
-                                                          Width="20" Height="20"
-                                                          VerticalAlignment="Center"
-                                                          Margin="0,0,8,0"/>
-                                <TextBlock Text="{Binding LogViewerApplication.ErrorMessage}"
-                                           Foreground="{DynamicResource ErrorTextBrush}"
-                                           TextWrapping="Wrap"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-
-                    <!-- Log Content -->
-                    <Border Grid.Row="1"
-                            Background="{DynamicResource MaterialDesignCardBackground}"
-                            BorderBrush="{DynamicResource MaterialDesignDivider}"
-                            BorderThickness="1"
-                            CornerRadius="4">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Auto">
-                            <TextBox Text="{Binding LogViewerApplication.LogOutput, Mode=OneWay}"
-                                     IsReadOnly="True"
-                                     TextWrapping="NoWrap"
-                                     FontFamily="Consolas"
-                                     FontSize="12"
-                                     BorderThickness="0"
-                                     Padding="12"
-                                     Background="Transparent"
-                                     VerticalScrollBarVisibility="Disabled"
-                                     HorizontalScrollBarVisibility="Disabled"/>
-                        </ScrollViewer>
-                    </Border>
-
-                    <!-- No logs message -->
-                    <TextBlock Grid.Row="1"
-                               Text="{loc:Loc LogViewer_NoLogs}"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Visibility="{Binding LogViewerApplication.LogOutput, Converter={StaticResource InverseNullableToVisibilityConverter}}"/>
-
-                    <!-- Dialog Actions -->
-                    <StackPanel Grid.Row="2"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Right"
-                                Margin="0,16,0,0">
-                        <Button Content="{loc:Loc LogViewer_Copy}"
-                                Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                                Click="CopyLogsToClipboard_Click"
-                                Margin="0,0,12,0"/>
-                        <Button Content="{loc:Loc LogViewer_Close}"
-                                Style="{StaticResource MaterialDesignRaisedButton}"
-                                Command="{Binding CloseLogViewerCommand}"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
-        </materialDesign:DialogHost.DialogContent>
-
+    <Grid>
+    <!-- Main Content -->
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -111,19 +23,20 @@
         <!-- Title -->
         <StackPanel Grid.Row="0" Margin="0,0,0,24">
             <TextBlock Text="{loc:Loc Monitoring_Title}"
-                       Style="{StaticResource MaterialDesignHeadline4TextBlock}"/>
+                       FontSize="28" FontWeight="SemiBold"/>
             <TextBlock Text="{loc:Loc Monitoring_Subtitle}"
-                       Style="{StaticResource MaterialDesignBody2TextBlock}"
-                       Foreground="{DynamicResource MaterialDesignBodyLight}"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        Margin="0,8,0,0"/>
         </StackPanel>
 
         <!-- Deployment Progress Card -->
-        <materialDesign:Card Grid.Row="1"
-                              Padding="24"
-                              Margin="0,0,0,16"
-                              materialDesign:ElevationAssist.Elevation="Dp2"
-                              Visibility="{Binding IsDeploying, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <Border Grid.Row="1"
+                Padding="24"
+                Margin="0,0,0,16"
+                CornerRadius="8"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Visibility="{Binding IsDeploying, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -140,19 +53,19 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="{Binding IsPaused, Converter={StaticResource BoolToPauseIconConverter}}"
-                                                  Width="28" Height="28"
-                                                  Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                                  VerticalAlignment="Center"
-                                                  Margin="0,0,12,0"/>
+                        <ui:SymbolIcon Symbol="{Binding IsPaused, Converter={StaticResource BoolToPauseIconConverter}}"
+                                       Width="28" Height="28"
+                                       Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,12,0"/>
                         <StackPanel>
                             <TextBlock Text="{Binding DeploymentStatusMessage}"
-                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                       FontSize="20" FontWeight="SemiBold"
                                        TextTrimming="CharacterEllipsis"
                                        MaxWidth="400"/>
                             <TextBlock Text="{Binding CurrentAppName}"
-                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        TextTrimming="CharacterEllipsis"
                                        MaxWidth="400"
                                        ToolTip="{Binding CurrentAppName}"
@@ -181,31 +94,30 @@
                              Minimum="0"
                              Maximum="100"
                              Height="8"
-                             Margin="0,20,0,8"
-                             Style="{StaticResource MaterialDesignLinearProgressBar}"/>
+                             Margin="0,20,0,8"/>
 
                 <!-- Time Info -->
                 <StackPanel Grid.Row="2"
                             Orientation="Horizontal"
                             HorizontalAlignment="Center"
                             Margin="0,0,0,16">
-                    <materialDesign:PackIcon Kind="ClockOutline"
-                                              Width="16" Height="16"
-                                              VerticalAlignment="Center"
-                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                              Margin="0,0,6,0"/>
-                    <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                    <ui:SymbolIcon Symbol="Clock24"
+                                   Width="16" Height="16"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Margin="0,0,6,0"/>
+                    <TextBlock FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center">
                         <Run Text="{Binding ElapsedTime, Mode=OneWay}"/>
                         <Run Text=" / ~"/>
                         <Run Text="{Binding EstimatedTimeRemaining, Mode=OneWay}"/>
                     </TextBlock>
                     <TextBlock Text=" - "
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="8,0"/>
-                    <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                    <TextBlock FontSize="12"
                                FontWeight="Bold">
                         <Run Text="{Binding ProgressPercentage, Mode=OneWay, StringFormat={}{0:F0}}"/>
                         <Run Text="%"/>
@@ -217,66 +129,67 @@
                             Orientation="Horizontal"
                             HorizontalAlignment="Center">
                     <!-- Pause Button -->
-                    <Button Content="{loc:Loc Btn_Pause}"
-                            Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                            Command="{Binding PauseDeploymentCommand}"
-                            Visibility="{Binding CanPauseDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            Margin="0,0,12,0">
-                        <Button.ContentTemplate>
+                    <ui:Button Appearance="Secondary"
+                               Content="{loc:Loc Btn_Pause}"
+                               Command="{Binding PauseDeploymentCommand}"
+                               Visibility="{Binding CanPauseDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               Margin="0,0,12,0">
+                        <ui:Button.ContentTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Pause" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <ui:SymbolIcon Symbol="Pause24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <TextBlock Text="{loc:Loc Btn_Pause}" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </DataTemplate>
-                        </Button.ContentTemplate>
-                    </Button>
+                        </ui:Button.ContentTemplate>
+                    </ui:Button>
 
                     <!-- Resume Button -->
-                    <Button Style="{StaticResource MaterialDesignRaisedButton}"
-                            Command="{Binding ResumeDeploymentCommand}"
-                            Visibility="{Binding CanResumeDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            Margin="0,0,12,0">
+                    <ui:Button Appearance="Primary"
+                               Command="{Binding ResumeDeploymentCommand}"
+                               Visibility="{Binding CanResumeDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               Margin="0,0,12,0">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Play" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="Play24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Btn_Resume}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Button>
+                    </ui:Button>
 
                     <!-- Cancel Button -->
-                    <Button Style="{StaticResource MaterialDesignOutlinedSecondaryButton}"
-                            Command="{Binding CancelDeploymentCommand}">
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding CancelDeploymentCommand}">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Close" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="Dismiss24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Btn_Cancel}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Button>
+                    </ui:Button>
                 </StackPanel>
             </Grid>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Empty State (no deployment in progress) -->
-        <materialDesign:Card Grid.Row="1"
-                              Padding="48"
-                              Margin="0,0,0,16"
-                              materialDesign:ElevationAssist.Elevation="Dp2"
-                              Visibility="{Binding IsDeploying, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+        <Border Grid.Row="1"
+                Padding="48"
+                Margin="0,0,0,16"
+                CornerRadius="8"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Visibility="{Binding IsDeploying, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel HorizontalAlignment="Center">
-                <materialDesign:PackIcon Kind="MonitorDashboard"
-                                          Width="64" Height="64"
-                                          HorizontalAlignment="Center"
-                                          Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                          AutomationProperties.Name="{loc:Loc A11y_NoDeploymentIcon}"/>
+                <ui:SymbolIcon Symbol="DesktopPulse24"
+                               Width="64" Height="64"
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               AutomationProperties.Name="{loc:Loc A11y_NoDeploymentIcon}"/>
                 <TextBlock Text="{loc:Loc Monitoring_NoDeployment}"
-                           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                           FontSize="20" FontWeight="SemiBold"
                            HorizontalAlignment="Center"
                            Margin="0,16,0,8"/>
                 <TextBlock Text="{loc:Loc Monitoring_NoDeploymentHint}"
-                           Style="{StaticResource MaterialDesignBody2TextBlock}"
-                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            HorizontalAlignment="Center"/>
             </StackPanel>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Deployment Result Banner -->
         <Border Grid.Row="2"
@@ -299,7 +212,7 @@
                             <Setter Property="Background" Value="{DynamicResource ErrorBackgroundBrush}"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding DeploymentResult}" Value="Cancelled">
-                            <Setter Property="Background" Value="{DynamicResource MaterialDesignToolBarBackground}"/>
+                            <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
@@ -311,36 +224,38 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <!-- Result Icon -->
-                <materialDesign:PackIcon Grid.Column="0"
-                                          Width="32" Height="32"
-                                          VerticalAlignment="Center"
-                                          Margin="0,0,16,0">
-                    <materialDesign:PackIcon.Style>
-                        <Style TargetType="materialDesign:PackIcon">
-                            <Setter Property="Kind" Value="CheckCircle"/>
+                <ui:SymbolIcon Grid.Column="0"
+                               Width="32" Height="32"
+                               VerticalAlignment="Center"
+                               Margin="0,0,16,0">
+                    <ui:SymbolIcon.Style>
+                        <Style TargetType="ui:SymbolIcon">
+                            <Setter Property="Symbol" Value="CheckmarkCircle24"/>
                             <Setter Property="Foreground" Value="{DynamicResource SuccessIconBrush}"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding DeploymentResult}" Value="Partial">
-                                    <Setter Property="Kind" Value="AlertCircle"/>
+                                    <Setter Property="Symbol" Value="ErrorCircle24"/>
                                     <Setter Property="Foreground" Value="{DynamicResource WarningIconBrush}"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding DeploymentResult}" Value="Failed">
-                                    <Setter Property="Kind" Value="CloseCircle"/>
+                                    <Setter Property="Symbol" Value="DismissCircle24"/>
                                     <Setter Property="Foreground" Value="{DynamicResource ErrorIconBrush}"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding DeploymentResult}" Value="Cancelled">
-                                    <Setter Property="Kind" Value="Cancel"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
+                                    <Setter Property="Symbol" Value="Dismiss24"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </materialDesign:PackIcon.Style>
-                </materialDesign:PackIcon>
+                    </ui:SymbolIcon.Style>
+                </ui:SymbolIcon>
                 <!-- Result Text -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock>
                         <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignHeadline6TextBlock}">
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontSize" Value="20"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
                                 <Setter Property="Text" Value="{loc:Loc Deployment_Result_Success}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding DeploymentResult}" Value="Partial">
@@ -356,8 +271,8 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-                    <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                    <TextBlock FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,4,0,0">
                         <Run Text="{Binding SuccessCount, Mode=OneWay}"/>
                         <Run Text="{loc:Loc Deployment_Summary_Installed}"/>
@@ -369,8 +284,8 @@
                 </StackPanel>
                 <!-- Elapsed Time -->
                 <TextBlock Grid.Column="2"
-                           Style="{StaticResource MaterialDesignBody2TextBlock}"
-                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center">
                     <Run Text="{Binding ElapsedTime, Mode=OneWay}"/>
                 </TextBlock>
@@ -378,11 +293,12 @@
         </Border>
 
         <!-- Applications List (status only) - visible during deployment and after completion -->
-        <materialDesign:Card Grid.Row="2"
-                              Padding="0"
-                              materialDesign:ElevationAssist.Elevation="Dp2">
-            <materialDesign:Card.Style>
-                <Style TargetType="materialDesign:Card" BasedOn="{StaticResource {x:Type materialDesign:Card}}">
+        <Border Grid.Row="2"
+                Padding="0"
+                CornerRadius="8"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+            <Border.Style>
+                <Style TargetType="Border">
                     <Setter Property="Visibility" Value="Collapsed"/>
                     <Setter Property="Margin" Value="0"/>
                     <Style.Triggers>
@@ -395,7 +311,7 @@
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </materialDesign:Card.Style>
+            </Border.Style>
             <DataGrid ItemsSource="{Binding DeploymentApplications}"
                       AutoGenerateColumns="False"
                       CanUserAddRows="False"
@@ -411,8 +327,6 @@
                       VirtualizingPanel.VirtualizationMode="Recycling"
                       VirtualizingPanel.ScrollUnit="Pixel"
                       EnableRowVirtualization="True"
-                      materialDesign:DataGridAssist.CellPadding="12 8"
-                      materialDesign:DataGridAssist.ColumnHeaderPadding="12 10"
                       RowStyle="{StaticResource EnhancedDataGridRowStyle}"
                       CellStyle="{StaticResource EnhancedDataGridCellStyle}"
                       AutomationProperties.Name="Deployment applications list">
@@ -421,10 +335,10 @@
                     <DataGridTemplateColumn Width="50">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                <materialDesign:PackIcon Kind="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
-                                                          Width="20" Height="20"
-                                                          HorizontalAlignment="Center"
-                                                          Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"/>
+                                <ui:SymbolIcon Symbol="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
+                                               Width="20" Height="20"
+                                               HorizontalAlignment="Center"
+                                               Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -437,7 +351,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                 <TextBlock Text="{Binding Name}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontSize="14"
                                            VerticalAlignment="Center"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -451,7 +365,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                 <TextBlock Text="{Binding StatusMessage}"
-                                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                           FontSize="12"
                                            TextTrimming="CharacterEllipsis"
                                            ToolTip="{Binding StatusMessage}"/>
                             </DataTemplate>
@@ -463,30 +377,127 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                 <!-- WCAG 2.5.5: 44x44px minimum touch target -->
-                                <Button Style="{StaticResource MaterialDesignIconButton}"
-                                        Width="44" Height="44"
-                                        ToolTip="{loc:Loc Btn_ViewLogs}"
-                                        Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                        CommandParameter="{Binding}"
-                                        Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
-                                    <materialDesign:PackIcon Kind="FileDocumentOutline" Width="20" Height="20"/>
-                                </Button>
+                                <ui:Button Appearance="Transparent"
+                                           Width="44" Height="44"
+                                           ToolTip="{loc:Loc Btn_ViewLogs}"
+                                           Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                           CommandParameter="{Binding}"
+                                           Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
+                                    <ui:SymbolIcon Symbol="Document24" Width="20" Height="20"/>
+                                </ui:Button>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Error Message -->
         <TextBlock Grid.Row="2"
                    Text="{Binding ErrorMessage}"
-                   Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
-                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                   FontSize="14"
                    Visibility="{Binding ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Top"
                    Margin="0,16,0,0"/>
     </Grid>
-    </materialDesign:DialogHost>
+
+    <!-- Log Viewer Dialog Overlay -->
+    <Grid Visibility="{Binding IsLogViewerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+        <!-- Backdrop -->
+        <Border Background="#80000000"
+                MouseDown="DialogHost_DialogClosing"/>
+
+        <!-- Dialog Content -->
+        <Border MinWidth="600" MaxWidth="900" MaxHeight="500"
+                Padding="24"
+                CornerRadius="8"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Dialog Header -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                    <TextBlock Text="{loc:Loc LogViewer_Title}"
+                               FontSize="20" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding LogViewerApplication.Name}"
+                               FontSize="14"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Margin="0,4,0,0"/>
+                    <!-- Error message if present -->
+                    <Border Background="{DynamicResource ErrorBackgroundBrush}"
+                            BorderBrush="{DynamicResource ErrorBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="12,8"
+                            Margin="0,12,0,0"
+                            Visibility="{Binding LogViewerApplication.ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ErrorCircle24"
+                                           Foreground="{DynamicResource ErrorIconBrush}"
+                                           Width="20" Height="20"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding LogViewerApplication.ErrorMessage}"
+                                       Foreground="{DynamicResource ErrorTextBrush}"
+                                       TextWrapping="Wrap"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Log Content -->
+                <Border Grid.Row="1"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+                        <TextBox Text="{Binding LogViewerApplication.LogOutput, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 TextWrapping="NoWrap"
+                                 FontFamily="Consolas"
+                                 FontSize="12"
+                                 BorderThickness="0"
+                                 Padding="12"
+                                 Background="Transparent"
+                                 VerticalScrollBarVisibility="Disabled"
+                                 HorizontalScrollBarVisibility="Disabled"/>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- No logs message -->
+                <TextBlock Grid.Row="1"
+                           Text="{loc:Loc LogViewer_NoLogs}"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding LogViewerApplication.LogOutput, Converter={StaticResource InverseNullableToVisibilityConverter}}"/>
+
+                <!-- Dialog Actions -->
+                <StackPanel Grid.Row="2"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            Margin="0,16,0,0">
+                    <ui:Button Content="{loc:Loc LogViewer_Copy}"
+                               Appearance="Secondary"
+                               Click="CopyLogsToClipboard_Click"
+                               Margin="0,0,12,0"/>
+                    <ui:Button Content="{loc:Loc LogViewer_Close}"
+                               Appearance="Primary"
+                               Command="{Binding CloseLogViewerCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+    </Grid>
 </UserControl>

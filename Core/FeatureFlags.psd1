@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'FeatureFlags.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '485f36a2-a161-41cd-b28e-c5bb5dec6628'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

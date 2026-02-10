@@ -49,7 +49,7 @@ public class AccessibilityService : IAccessibilityService
         if (string.IsNullOrWhiteSpace(message))
             return;
 
-        Application.Current?.Dispatcher.Invoke(() =>
+        Application.Current?.Dispatcher.InvokeAsync(() =>
         {
             if (_liveRegion == null)
                 return;

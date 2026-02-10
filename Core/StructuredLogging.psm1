@@ -37,6 +37,15 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:ConfigPath = Join-Path $script:RepositoryRoot 'Config\logging-settings.json'
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+
+if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
+    } else {
+        throw [System.IO.FileNotFoundException]::new("DirectoryConstants module not found: $script:DirectoryConstantsPath")
+    }
+}
 
 # === LOGGING STATE ===
 $script:LoggingState = @{
@@ -59,7 +68,7 @@ $script:DefaultConfig = @{
     JsonLogging = @{
         Enabled = $true
         RetentionDays = 30
-        Directory = Join-Path $env:LOCALAPPDATA 'Win11Forge\Logs\json'
+        Directory = Get-Win11ForgeDirectory -DirectoryType 'JsonLogs'
         BufferSize = 10
         PrettyPrint = $false
         MaxFileSizeMB = 10  # Rotate log when file exceeds this size

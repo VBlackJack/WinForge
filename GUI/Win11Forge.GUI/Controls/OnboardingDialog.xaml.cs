@@ -16,7 +16,7 @@
 
 using System.Windows;
 using System.Windows.Controls;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Controls;
 
 namespace Win11Forge.GUI.Controls;
 
@@ -35,6 +35,6 @@ public partial class OnboardingDialog : UserControl
     private void GetStartedButton_Click(object sender, RoutedEventArgs e)
     {
         Completed?.Invoke(this, DontShowAgainCheckbox.IsChecked == true);
-        DialogHost.CloseDialogCommand.Execute(null, null);
+        // ContentDialog manages its own lifecycle
     }
 }

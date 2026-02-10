@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'SecureStorage.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '9f5e4876-1718-42ac-8f5f-884fa833bf3d'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

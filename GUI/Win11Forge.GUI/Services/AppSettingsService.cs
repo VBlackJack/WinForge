@@ -18,7 +18,8 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Appearance;
+using Wpf.Ui.Controls;
 
 namespace Win11Forge.GUI.Services;
 
@@ -226,13 +227,13 @@ public class AppSettingsService : IAppSettingsService
     /// <inheritdoc/>
     public void ApplySettings(AppSettings settings)
     {
-        // Apply theme
+        // Apply theme using WPF UI ApplicationThemeManager
         try
         {
-            var paletteHelper = new PaletteHelper();
-            var theme = paletteHelper.GetTheme();
-            theme.SetBaseTheme(settings.IsDarkTheme ? BaseTheme.Dark : BaseTheme.Light);
-            paletteHelper.SetTheme(theme);
+            var appTheme = settings.IsDarkTheme
+                ? ApplicationTheme.Dark
+                : ApplicationTheme.Light;
+            ApplicationThemeManager.Apply(appTheme, WindowBackdropType.Mica);
         }
         catch (Exception ex)
         {

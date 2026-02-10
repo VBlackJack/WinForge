@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'Win11ForgeGUI.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '711bc72b-1310-4c07-8cb1-53c24ebaeccb'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

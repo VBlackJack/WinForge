@@ -20,7 +20,6 @@ using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using MaterialDesignThemes.Wpf;
 using Win11Forge.GUI.Services;
 using Res = Win11Forge.GUI.Resources.Resources;
 
@@ -194,13 +193,13 @@ public partial class ErrorDialog : UserControl
     private void OkButton_Click(object sender, RoutedEventArgs e)
     {
         ActionSelected?.Invoke(this, DialogAction.Ok);
-        DialogHost.CloseDialogCommand.Execute(null, null);
+        // ContentDialog manages its own lifecycle
     }
 
     private void RetryButton_Click(object sender, RoutedEventArgs e)
     {
         ActionSelected?.Invoke(this, DialogAction.Retry);
-        DialogHost.CloseDialogCommand.Execute(null, null);
+        // ContentDialog manages its own lifecycle
     }
 
     private void HelpButton_Click(object sender, RoutedEventArgs e)
@@ -329,7 +328,7 @@ public partial class ErrorDialog : UserControl
         if (e.Key == Key.Escape)
         {
             ActionSelected?.Invoke(this, DialogAction.Ok);
-            DialogHost.CloseDialogCommand.Execute(null, null);
+            // ContentDialog manages its own lifecycle
             e.Handled = true;
         }
     }

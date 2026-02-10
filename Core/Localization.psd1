@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'Localization.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '6b647dbb-8207-4e56-99b9-b370d6e15c09'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

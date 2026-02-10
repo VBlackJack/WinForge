@@ -15,8 +15,9 @@
  */
 
 using System.Windows;
-using MaterialDesignThemes.Wpf;
-using Win11Forge.GUI.Controls;
+using System.Windows.Controls;
+using Wpf.Ui.Controls;
+using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Services;
 
@@ -44,10 +45,21 @@ public enum DialogAction
 
 /// <summary>
 /// Service for displaying consistent dialogs throughout the application.
-/// Provides actionable error messages with retry and help options.
+/// Uses WPF UI ContentDialog for Fluent Design modal dialogs.
 /// </summary>
 public class DialogService : IDialogService
 {
+    private ContentPresenter? _contentPresenter;
+
+    /// <summary>
+    /// Sets the content presenter used for hosting ContentDialogs.
+    /// Call this from MainWindow after initialization.
+    /// </summary>
+    public void SetContentPresenter(ContentPresenter presenter)
+    {
+        _contentPresenter = presenter;
+    }
+
     /// <inheritdoc/>
     public async Task<DialogAction> ShowErrorAsync(
         string title,
@@ -56,101 +68,150 @@ public class DialogService : IDialogService
         bool showRetry = false,
         string? helpUrl = null)
     {
-        var result = DialogAction.Ok;
-
-        var dialog = new ErrorDialogContent
+        if (_contentPresenter == null)
         {
-            Title = title,
-            Message = message,
-            Details = details,
-            ShowRetry = showRetry,
-            HelpUrl = helpUrl
-        };
-
-        dialog.ActionSelected += (_, action) => result = action;
+            System.Windows.MessageBox.Show(
+                $"{message}\n\n{details}",
+                title,
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
+            return DialogAction.Ok;
+        }
 
         try
         {
-            await DialogHost.Show(dialog, "RootDialog");
+            var content = new StackPanel();
+            content.Children.Add(new System.Windows.Controls.TextBlock
+            {
+                Text = message,
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 8)
+            });
+
+            if (!string.IsNullOrEmpty(details))
+            {
+                content.Children.Add(new Expander
+                {
+                    Header = Loc.Common_Details ?? "Details",
+                    Content = new System.Windows.Controls.TextBlock
+                    {
+                        Text = details,
+                        TextWrapping = TextWrapping.Wrap,
+                        FontFamily = new System.Windows.Media.FontFamily("Consolas"),
+                        FontSize = 12
+                    }
+                });
+            }
+
+            var dialog = new ContentDialog(_contentPresenter)
+            {
+                Title = title,
+                Content = content,
+                CloseButtonText = Loc.Common_OK ?? "OK",
+                PrimaryButtonText = showRetry ? (Loc.Common_TryAgain ?? "Retry") : null
+            };
+
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary ? DialogAction.Retry : DialogAction.Ok;
         }
         catch
         {
-            // Fallback to MessageBox if DialogHost unavailable
-            MessageBox.Show(
+            System.Windows.MessageBox.Show(
                 $"{message}\n\n{details}",
                 title,
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
+            return DialogAction.Ok;
         }
-
-        return result;
     }
 
     /// <inheritdoc/>
     public async Task ShowInfoAsync(string title, string message)
     {
-        var dialog = new InfoDialogContent
+        if (_contentPresenter == null)
         {
-            Title = title,
-            Message = message,
-            DialogType = DialogType.Information
-        };
+            System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            return;
+        }
 
         try
         {
-            await DialogHost.Show(dialog, "RootDialog");
+            var dialog = new ContentDialog(_contentPresenter)
+            {
+                Title = title,
+                Content = new System.Windows.Controls.TextBlock
+                {
+                    Text = message,
+                    TextWrapping = TextWrapping.Wrap
+                },
+                CloseButtonText = Loc.Common_OK ?? "OK"
+            };
+            await dialog.ShowAsync();
         }
         catch
         {
-            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
         }
     }
 
     /// <inheritdoc/>
     public async Task ShowSuccessAsync(string title, string message)
     {
-        var dialog = new InfoDialogContent
+        if (_contentPresenter == null)
         {
-            Title = title,
-            Message = message,
-            DialogType = DialogType.Success
-        };
+            System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            return;
+        }
 
         try
         {
-            await DialogHost.Show(dialog, "RootDialog");
+            var dialog = new ContentDialog(_contentPresenter)
+            {
+                Title = title,
+                Content = new System.Windows.Controls.TextBlock
+                {
+                    Text = message,
+                    TextWrapping = TextWrapping.Wrap
+                },
+                CloseButtonText = Loc.Common_OK ?? "OK"
+            };
+            await dialog.ShowAsync();
         }
         catch
         {
-            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
         }
     }
 
     /// <inheritdoc/>
     public async Task<bool> ShowConfirmAsync(string title, string message, string? confirmText = null, string? cancelText = null)
     {
-        var result = false;
-
-        var dialog = new ConfirmDialog();
-        dialog.Configure(
-            title,
-            message,
-            confirmText ?? Resources.Resources.Common_OK,
-            cancelText ?? Resources.Resources.Common_Cancel,
-            ConfirmDialogType.Question);
-
-        dialog.ResultSelected += (_, confirmed) => result = confirmed;
+        if (_contentPresenter == null)
+        {
+            return System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OKCancel, System.Windows.MessageBoxImage.Question) == System.Windows.MessageBoxResult.OK;
+        }
 
         try
         {
-            await DialogHost.Show(dialog, "RootDialog");
+            var dialog = new ContentDialog(_contentPresenter)
+            {
+                Title = title,
+                Content = new System.Windows.Controls.TextBlock
+                {
+                    Text = message,
+                    TextWrapping = TextWrapping.Wrap
+                },
+                PrimaryButtonText = confirmText ?? Loc.Common_OK ?? "OK",
+                CloseButtonText = cancelText ?? Loc.Common_Cancel ?? "Cancel"
+            };
+
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary;
         }
         catch
         {
-            result = MessageBox.Show(message, title, MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.OK;
+            return System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OKCancel, System.Windows.MessageBoxImage.Question) == System.Windows.MessageBoxResult.OK;
         }
-
-        return result;
     }
 }
 
@@ -183,64 +244,4 @@ public interface IDialogService
     /// Shows a confirmation dialog and returns user choice.
     /// </summary>
     Task<bool> ShowConfirmAsync(string title, string message, string? confirmText = null, string? cancelText = null);
-}
-
-/// <summary>
-/// Content for error dialogs with actionable options.
-/// </summary>
-public class ErrorDialogContent
-{
-    public string Title { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
-    public string? Details { get; set; }
-    public bool ShowRetry { get; set; }
-    public string? HelpUrl { get; set; }
-
-    public event EventHandler<DialogAction>? ActionSelected;
-
-    public void SelectAction(DialogAction action)
-    {
-        ActionSelected?.Invoke(this, action);
-        DialogHost.CloseDialogCommand.Execute(null, null);
-    }
-}
-
-/// <summary>
-/// Content for info/success dialogs.
-/// </summary>
-public class InfoDialogContent
-{
-    public string Title { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
-    public DialogType DialogType { get; set; } = DialogType.Information;
-
-    public void Close()
-    {
-        DialogHost.CloseDialogCommand.Execute(null, null);
-    }
-}
-
-/// <summary>
-/// Content for confirmation dialogs.
-/// </summary>
-public class ConfirmDialogContent
-{
-    public string Title { get; set; } = string.Empty;
-    public string Message { get; set; } = string.Empty;
-    public string ConfirmText { get; set; } = Resources.Resources.Common_OK;
-    public string CancelText { get; set; } = Resources.Resources.Common_Cancel;
-
-    public event EventHandler<bool>? ResultSelected;
-
-    public void Confirm()
-    {
-        ResultSelected?.Invoke(this, true);
-        DialogHost.CloseDialogCommand.Execute(null, null);
-    }
-
-    public void Cancel()
-    {
-        ResultSelected?.Invoke(this, false);
-        DialogHost.CloseDialogCommand.Execute(null, null);
-    }
 }

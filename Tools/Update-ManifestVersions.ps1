@@ -2,7 +2,7 @@
 param([string]$RootPath = (Split-Path $PSScriptRoot -Parent))
 
 $versionPath = Join-Path $RootPath 'Config\version.json'
-$targetVersion = '3.6.8'
+$targetVersion = '3.7.0'
 if (Test-Path $versionPath) {
     try {
         $versionJson = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
@@ -11,7 +11,7 @@ if (Test-Path $versionPath) {
         }
     } catch {
         # Fall back to default if version file is invalid
-        $targetVersion = '3.6.8'
+        $targetVersion = '3.7.0'
     }
 }
 

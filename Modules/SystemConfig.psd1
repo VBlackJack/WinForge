@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'SystemConfig.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '92947f6b-3f59-43bc-b252-69313e504de9'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

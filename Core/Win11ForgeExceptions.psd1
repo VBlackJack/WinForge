@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'Win11ForgeExceptions.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '2fd61c27-0cec-40f3-822e-89d81a3aaa0a'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

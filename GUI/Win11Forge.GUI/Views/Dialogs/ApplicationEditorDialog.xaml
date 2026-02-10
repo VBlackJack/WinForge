@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
         xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
         xmlns:uc="clr-namespace:Win11Forge.GUI.UserControls"
@@ -15,11 +15,10 @@
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         ResizeMode="CanResize"
-        Background="{DynamicResource MaterialDesign.Brush.Background}"
-        TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+        Background="{DynamicResource ApplicationBackgroundBrush}"
+        TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
         TextElement.FontWeight="Medium"
-        TextElement.FontSize="14"
-        FontFamily="{DynamicResource MaterialDesignFont}">
+        TextElement.FontSize="14">
 
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding CancelCommand}"/>
@@ -39,24 +38,24 @@
                 Background="{DynamicResource PrimaryHueMidBrush}"
                 Padding="24,16">
             <StackPanel Orientation="Horizontal">
-                <materialDesign:PackIcon x:Name="HeaderIcon"
-                                          Width="28" Height="28"
-                                          VerticalAlignment="Center"
-                                          Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
-                                          Margin="0,0,16,0">
-                    <materialDesign:PackIcon.Style>
-                        <Style TargetType="materialDesign:PackIcon">
-                            <Setter Property="Kind" Value="Pencil"/>
+                <ui:SymbolIcon x:Name="HeaderIcon"
+                               Width="28" Height="28"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+                               Margin="0,0,16,0">
+                    <ui:SymbolIcon.Style>
+                        <Style TargetType="ui:SymbolIcon">
+                            <Setter Property="Symbol" Value="Edit24"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsNewApplication}" Value="True">
-                                    <Setter Property="Kind" Value="Plus"/>
+                                    <Setter Property="Symbol" Value="Add24"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </materialDesign:PackIcon.Style>
-                </materialDesign:PackIcon>
+                    </ui:SymbolIcon.Style>
+                </ui:SymbolIcon>
                 <TextBlock Text="{Binding DialogTitle}"
-                           Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                           FontSize="24" FontWeight="SemiBold"
                            Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
@@ -64,59 +63,47 @@
 
         <!-- Tab Content -->
         <TabControl Grid.Row="1"
-                    Style="{StaticResource MaterialDesignFilledTabControl}"
                     Margin="16">
             <!-- General Tab -->
             <TabItem Header="{loc:Loc AppEditor_Tab_General}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
                     <StackPanel>
                         <!-- App ID -->
-                        <TextBox Text="{Binding Application.AppId, UpdateSourceTrigger=PropertyChanged}"
-                                 materialDesign:HintAssist.Hint="{loc:Loc AppEditor_AppId}"
-                                 materialDesign:HintAssist.IsFloating="True"
-                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                 IsEnabled="{Binding CanEditAppId}"
-                                 Margin="0,0,0,16"
-                                 AutomationProperties.Name="Application ID"/>
+                        <ui:TextBox Text="{Binding Application.AppId, UpdateSourceTrigger=PropertyChanged}"
+                                    PlaceholderText="{loc:Loc AppEditor_AppId}"
+                                    IsEnabled="{Binding CanEditAppId}"
+                                    Margin="0,0,0,16"
+                                    AutomationProperties.Name="Application ID"/>
 
                         <!-- Name -->
-                        <TextBox Text="{Binding Application.Name, UpdateSourceTrigger=PropertyChanged}"
-                                 materialDesign:HintAssist.Hint="{loc:Loc AppEditor_Name}"
-                                 materialDesign:HintAssist.IsFloating="True"
-                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                 Margin="0,0,0,16"
-                                 AutomationProperties.Name="Application name"/>
+                        <ui:TextBox Text="{Binding Application.Name, UpdateSourceTrigger=PropertyChanged}"
+                                    PlaceholderText="{loc:Loc AppEditor_Name}"
+                                    Margin="0,0,0,16"
+                                    AutomationProperties.Name="Application name"/>
 
                         <!-- Category -->
                         <ComboBox ItemsSource="{Binding Categories}"
                                   SelectedItem="{Binding SelectedCategory}"
-                                  materialDesign:HintAssist.Hint="{loc:Loc AppEditor_Category}"
-                                  materialDesign:HintAssist.IsFloating="True"
-                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
                                   IsEditable="False"
                                   Margin="0,0,0,16"
                                   AutomationProperties.Name="Category"/>
 
                         <!-- Description -->
-                        <TextBox Text="{Binding Application.Description, UpdateSourceTrigger=PropertyChanged}"
-                                 materialDesign:HintAssist.Hint="{loc:Loc AppEditor_Description}"
-                                 materialDesign:HintAssist.IsFloating="True"
-                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                 AcceptsReturn="True"
-                                 TextWrapping="Wrap"
-                                 MinHeight="80"
-                                 MaxHeight="150"
-                                 VerticalScrollBarVisibility="Auto"
-                                 Margin="0,0,0,16"
-                                 AutomationProperties.Name="Description"/>
+                        <ui:TextBox Text="{Binding Application.Description, UpdateSourceTrigger=PropertyChanged}"
+                                    PlaceholderText="{loc:Loc AppEditor_Description}"
+                                    AcceptsReturn="True"
+                                    TextWrapping="Wrap"
+                                    MinHeight="80"
+                                    MaxHeight="150"
+                                    VerticalScrollBarVisibility="Auto"
+                                    Margin="0,0,0,16"
+                                    AutomationProperties.Name="Description"/>
 
                         <!-- Homepage -->
-                        <TextBox Text="{Binding Application.Homepage, UpdateSourceTrigger=PropertyChanged}"
-                                 materialDesign:HintAssist.Hint="{loc:Loc AppEditor_Homepage}"
-                                 materialDesign:HintAssist.IsFloating="True"
-                                 Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                                 Margin="0,0,0,16"
-                                 AutomationProperties.Name="Homepage URL"/>
+                        <ui:TextBox Text="{Binding Application.Homepage, UpdateSourceTrigger=PropertyChanged}"
+                                    PlaceholderText="{loc:Loc AppEditor_Homepage}"
+                                    Margin="0,0,0,16"
+                                    AutomationProperties.Name="Homepage URL"/>
 
                         <!-- Priority -->
                         <Grid Margin="0,0,0,16">
@@ -128,7 +115,6 @@
                                     Minimum="1" Maximum="100"
                                     TickFrequency="10"
                                     IsSnapToTickEnabled="False"
-                                    Style="{StaticResource MaterialDesignDiscreteSlider}"
                                     AutomationProperties.Name="Installation priority"/>
                             <TextBlock Grid.Column="1"
                                        Text="{Binding Application.DefaultPriority, StringFormat='Priority: {0}'}"
@@ -192,15 +178,15 @@
 
         <!-- Validation Message -->
         <Border Grid.Row="2"
-                Background="{DynamicResource MaterialDesignValidationErrorBrush}"
+                Background="{DynamicResource SystemFillColorCriticalBrush}"
                 Padding="16,8"
                 Visibility="{Binding ValidationMessage, Converter={StaticResource NullableToVisibilityConverter}}">
             <StackPanel Orientation="Horizontal">
-                <materialDesign:PackIcon Kind="AlertCircle"
-                                          Width="20" Height="20"
-                                          VerticalAlignment="Center"
-                                          Foreground="White"
-                                          Margin="0,0,12,0"/>
+                <ui:SymbolIcon Symbol="ErrorCircle24"
+                               Width="20" Height="20"
+                               VerticalAlignment="Center"
+                               Foreground="White"
+                               Margin="0,0,12,0"/>
                 <TextBlock Text="{Binding ValidationMessage}"
                            Foreground="White"
                            TextWrapping="Wrap"
@@ -210,7 +196,7 @@
 
         <!-- Actions -->
         <Border Grid.Row="3"
-                Background="{DynamicResource MaterialDesignToolBarBackground}"
+                Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
                 Padding="16">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -222,26 +208,26 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Verify button -->
-                <Button Grid.Column="0"
-                        x:Name="VerifyButton"
-                        Content="{loc:Loc AppDb_Verify}"
-                        Style="{StaticResource MaterialDesignRaisedButton}"
-                        Click="VerifyButton_Click"
-                        MinWidth="80"
-                        Margin="0,0,12,0"
-                        AutomationProperties.Name="Verify sources"/>
+                <ui:Button Grid.Column="0"
+                           x:Name="VerifyButton"
+                           Content="{loc:Loc AppDb_Verify}"
+                           Appearance="Primary"
+                           Click="VerifyButton_Click"
+                           MinWidth="80"
+                           Margin="0,0,12,0"
+                           AutomationProperties.Name="Verify sources"/>
 
                 <!-- Verify result -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <materialDesign:PackIcon Kind="CheckCircle"
-                                              Width="20" Height="20"
-                                              Foreground="Green"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,8,0"
-                                              Visibility="{Binding VerificationSuccess, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <ui:SymbolIcon Symbol="CheckmarkCircle24"
+                                   Width="20" Height="20"
+                                   Foreground="Green"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"
+                                   Visibility="{Binding VerificationSuccess, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     <TextBlock Text="{Binding VerificationResult}"
                                VerticalAlignment="Center"
-                               Foreground="{DynamicResource MaterialDesignBody}"/>
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                 </StackPanel>
 
                 <!-- Dirty indicator -->
@@ -252,35 +238,34 @@
                            HorizontalAlignment="Center"
                            Visibility="{Binding IsDirty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
-                <Button Grid.Column="3"
-                        Content="{loc:Loc AppEditor_Cancel}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
-                        Command="{Binding CancelCommand}"
-                        IsCancel="True"
-                        MinWidth="100"
-                        Margin="0,0,12,0"
-                        AutomationProperties.Name="Cancel"/>
+                <ui:Button Grid.Column="3"
+                           Content="{loc:Loc AppEditor_Cancel}"
+                           Appearance="Secondary"
+                           Command="{Binding CancelCommand}"
+                           IsCancel="True"
+                           MinWidth="100"
+                           Margin="0,0,12,0"
+                           AutomationProperties.Name="Cancel"/>
 
-                <Button Grid.Column="4"
-                        Style="{StaticResource MaterialDesignRaisedButton}"
-                        Command="{Binding SaveCommand}"
-                        IsDefault="True"
-                        MinWidth="100"
-                        AutomationProperties.Name="Save">
+                <ui:Button Grid.Column="4"
+                           Appearance="Primary"
+                           Command="{Binding SaveCommand}"
+                           IsDefault="True"
+                           MinWidth="100"
+                           AutomationProperties.Name="Save">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="ContentSave"
-                                                  Width="18" Height="18"
-                                                  VerticalAlignment="Center"
-                                                  Margin="0,0,8,0"
-                                                  Visibility="{Binding IsSaving, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
-                        <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                     IsIndeterminate="True"
-                                     Width="18" Height="18"
-                                     Margin="0,0,8,0"
-                                     Visibility="{Binding IsSaving, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <ui:SymbolIcon Symbol="Save24"
+                                       Width="18" Height="18"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"
+                                       Visibility="{Binding IsSaving, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                        <ui:ProgressRing IsIndeterminate="True"
+                                         Width="18" Height="18"
+                                         Margin="0,0,8,0"
+                                         Visibility="{Binding IsSaving, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         <TextBlock Text="{loc:Loc AppEditor_Save}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
+                </ui:Button>
             </Grid>
         </Border>
     </Grid>

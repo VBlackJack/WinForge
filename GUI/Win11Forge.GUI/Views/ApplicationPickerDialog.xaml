@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              mc:Ignorable="d"
              Width="700" Height="500"
@@ -18,21 +18,20 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <materialDesign:ColorZone Grid.Row="0"
-                                   Mode="PrimaryMid"
-                                   Padding="16"
-                                   materialDesign:ElevationAssist.Elevation="Dp2">
+        <Border Grid.Row="0"
+                Background="{DynamicResource PrimaryHueMidBrush}"
+                Padding="16">
             <StackPanel Orientation="Horizontal">
-                <materialDesign:PackIcon Kind="PackageVariantPlus"
-                                          Width="24"
-                                          Height="24"
-                                          VerticalAlignment="Center"
-                                          Margin="0,0,12,0"/>
+                <ui:SymbolIcon Symbol="Box24"
+                               Width="24"
+                               Height="24"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,0"/>
                 <TextBlock Text="{loc:Loc Dialog_SelectApp_Title}"
-                           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                           FontSize="20" FontWeight="SemiBold"
                            VerticalAlignment="Center"/>
             </StackPanel>
-        </materialDesign:ColorZone>
+        </Border>
 
         <!-- Search Bar -->
         <Grid Grid.Row="1" Margin="16,16,16,8">
@@ -41,21 +40,19 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Column="0"
-                     x:Name="SearchTextBox"
-                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                     materialDesign:HintAssist.Hint="{loc:Loc Apps_SearchHint}"
-                     materialDesign:TextFieldAssist.HasClearButton="True">
-                <TextBox.InputBindings>
+            <ui:TextBox Grid.Column="0"
+                        x:Name="SearchTextBox"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                        PlaceholderText="{loc:Loc Apps_SearchHint}"
+                        Icon="{ui:SymbolIcon Search24}">
+                <ui:TextBox.InputBindings>
                     <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
-                </TextBox.InputBindings>
-            </TextBox>
+                </ui:TextBox.InputBindings>
+            </ui:TextBox>
 
             <ComboBox Grid.Column="1"
                       ItemsSource="{Binding Categories}"
                       SelectedItem="{Binding SelectedCategory}"
-                      Style="{StaticResource MaterialDesignOutlinedComboBox}"
                       Width="180"
                       Margin="8,0,0,0"/>
         </Grid>
@@ -69,7 +66,6 @@
                   CanUserDeleteRows="False"
                   IsReadOnly="True"
                   SelectionMode="Single"
-                  Style="{StaticResource MaterialDesignDataGrid}"
                   Margin="16,0,16,0"
                   VirtualizingStackPanel.IsVirtualizing="True"
                   VirtualizingStackPanel.VirtualizationMode="Recycling">
@@ -91,14 +87,14 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <materialDesign:PackIcon Kind="PackageVariantRemove"
-                                      Width="48"
-                                      Height="48"
-                                      Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                      HorizontalAlignment="Center"/>
+            <ui:SymbolIcon Symbol="BoxDismiss24"
+                           Width="48"
+                           Height="48"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           HorizontalAlignment="Center"/>
             <TextBlock Text="{loc:Loc Dialog_NoAppsAvailable}"
-                       Style="{StaticResource MaterialDesignBody2TextBlock}"
-                       Foreground="{DynamicResource MaterialDesignBodyLight}"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        HorizontalAlignment="Center"
                        Margin="0,8,0,0"/>
         </StackPanel>
@@ -114,27 +110,26 @@
             <!-- Selected Count -->
             <TextBlock Grid.Column="0"
                        VerticalAlignment="Center"
-                       Foreground="{DynamicResource MaterialDesignBodyLight}">
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}">
                 <Run Text="{Binding FilteredApplications.Count, Mode=OneWay}"/>
                 <Run Text=" "/>
                 <Run Text="{loc:Loc Dialog_AppsAvailable}"/>
             </TextBlock>
 
             <!-- Cancel Button -->
-            <Button Grid.Column="1"
-                    Content="{loc:Loc Btn_Cancel}"
-                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                    CommandParameter="{x:Null}"
-                    Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                    Margin="0,0,12,0"/>
+            <ui:Button Grid.Column="1"
+                       Content="{loc:Loc Btn_Cancel}"
+                       Command="{Binding CancelCommand}"
+                       Appearance="Secondary"
+                       Margin="0,0,12,0"/>
 
             <!-- Add Button -->
-            <Button Grid.Column="2"
-                    Content="{loc:Loc Dialog_SelectApp_Add}"
-                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                    CommandParameter="{Binding SelectedApplication}"
-                    IsEnabled="{Binding HasSelection}"
-                    Style="{StaticResource MaterialDesignRaisedButton}"/>
+            <ui:Button Grid.Column="2"
+                       Content="{loc:Loc Dialog_SelectApp_Add}"
+                       Command="{Binding ConfirmCommand}"
+                       CommandParameter="{Binding SelectedApplication}"
+                       IsEnabled="{Binding HasSelection}"
+                       Appearance="Primary"/>
         </Grid>
     </Grid>
 </UserControl>

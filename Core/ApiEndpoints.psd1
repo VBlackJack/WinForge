@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ApiEndpoints.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '13574a98-f79b-4035-8abc-5bbb4f91f9d3'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

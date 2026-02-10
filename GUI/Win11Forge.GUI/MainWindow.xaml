@@ -1,297 +1,136 @@
-<Window x:Class="Win11Forge.GUI.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
-        xmlns:views="clr-namespace:Win11Forge.GUI.Views"
-        xmlns:controls="clr-namespace:Win11Forge.GUI.Controls"
-        mc:Ignorable="d"
-        Title="{loc:Loc App_Title}"
-        Height="900" Width="1600"
-        MinHeight="600" MinWidth="1200"
-        WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource MaterialDesign.Brush.Background}"
-        TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-        TextElement.FontWeight="Medium"
-        TextElement.FontSize="14"
-        FontFamily="{materialDesign:MaterialDesignFont}"
-        Icon="Win11Forge.ico">
+<ui:FluentWindow x:Class="Win11Forge.GUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+    xmlns:controls="clr-namespace:Win11Forge.GUI.Controls"
+    mc:Ignorable="d"
+    Title="{loc:Loc App_Title}"
+    Height="900" Width="1600"
+    MinHeight="600" MinWidth="1200"
+    WindowStartupLocation="CenterScreen"
+    WindowBackdropType="Mica"
+    ExtendsContentIntoTitleBar="True"
+    Icon="Win11Forge.ico">
 
-    <Window.InputBindings>
-        <KeyBinding Key="F1" Command="{Binding ShowKeyboardShortcutsCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
-        <KeyBinding Modifiers="Ctrl" Key="D1" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="0"/>
-        <KeyBinding Modifiers="Ctrl" Key="D2" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="1"/>
-        <KeyBinding Modifiers="Ctrl" Key="D3" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="2"/>
-        <KeyBinding Modifiers="Ctrl" Key="D4" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="3"/>
-        <KeyBinding Modifiers="Ctrl" Key="D5" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="4"/>
-        <KeyBinding Modifiers="Ctrl" Key="D6" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="5"/>
-        <KeyBinding Modifiers="Ctrl" Key="D7" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="6"/>
-        <KeyBinding Modifiers="Ctrl" Key="OemComma" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="5"/>
-        <KeyBinding Modifiers="Ctrl" Key="Z" Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
-        <KeyBinding Modifiers="Ctrl" Key="Y" Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
-        <KeyBinding Modifiers="Ctrl+Shift" Key="Z" Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
-    </Window.InputBindings>
+    <ui:FluentWindow.InputBindings>
+        <KeyBinding Key="F1" Command="{Binding ShowKeyboardShortcutsCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
+        <KeyBinding Modifiers="Ctrl" Key="D1" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="0"/>
+        <KeyBinding Modifiers="Ctrl" Key="D2" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="1"/>
+        <KeyBinding Modifiers="Ctrl" Key="D3" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="2"/>
+        <KeyBinding Modifiers="Ctrl" Key="D4" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="3"/>
+        <KeyBinding Modifiers="Ctrl" Key="D5" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="4"/>
+        <KeyBinding Modifiers="Ctrl" Key="D6" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="5"/>
+        <KeyBinding Modifiers="Ctrl" Key="OemComma" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="4"/>
+        <KeyBinding Modifiers="Ctrl" Key="Z" Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
+        <KeyBinding Modifiers="Ctrl" Key="Y" Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
+        <KeyBinding Modifiers="Ctrl+Shift" Key="Z" Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
+    </ui:FluentWindow.InputBindings>
 
-    <materialDesign:DialogHost Identifier="RootDialog"
-                                DialogTheme="Inherit"
-                                CloseOnClickAway="False">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <!-- Skip to Content Link (WCAG 2.1 Accessibility) -->
-        <Button x:Name="SkipToContentButton"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Content="{loc:Loc Accessibility_SkipToContent}"
-                Click="SkipToContent_Click"
-                VerticalAlignment="Top"
-                HorizontalAlignment="Left"
-                Panel.ZIndex="1000"
-                Margin="4"
-                Padding="12,8"
-                AutomationProperties.Name="Skip to main content"
-                AutomationProperties.HelpText="Press Enter to skip navigation and go directly to the main content area">
-            <Button.Style>
-                <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
-                    <Setter Property="Opacity" Value="0"/>
-                    <Setter Property="IsHitTestVisible" Value="False"/>
-                    <Style.Triggers>
-                        <Trigger Property="IsFocused" Value="True">
-                            <Setter Property="Opacity" Value="1"/>
-                            <Setter Property="IsHitTestVisible" Value="True"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Button.Style>
-        </Button>
-
-        <!-- Navigation Drawer -->
-        <materialDesign:Card Grid.Column="0"
-                              UniformCornerRadius="0"
-                              materialDesign:ElevationAssist.Elevation="Dp4">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-
-                <!-- App Header with Back Navigation -->
-                <materialDesign:ColorZone Grid.Row="0"
-                                           Mode="PrimaryMid"
-                                           Padding="16"
-                                           materialDesign:ElevationAssist.Elevation="Dp2">
+        <ui:NavigationView x:Name="RootNavigation"
+                           PaneDisplayMode="Left"
+                           IsBackButtonVisible="Auto"
+                           OpenPaneLength="220"
+                           BackRequested="RootNavigation_BackRequested"
+                           SelectionChanged="RootNavigation_SelectionChanged">
+            <ui:NavigationView.Header>
+                <!-- Breadcrumb and Undo/Redo bar -->
+                <Border Padding="16,8"
+                        Visibility="{Binding ShowBreadcrumb, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-
-                        <!-- Back Button (WCAG 2.5.5: 44x44px minimum touch target) -->
-                        <Button x:Name="BackButton"
-                                Grid.Row="0" Grid.Column="0"
-                                Style="{StaticResource MaterialDesignIconButton}"
-                                Command="{Binding GoBackCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                Visibility="{Binding CanGoBack, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                ToolTip="{loc:Loc Nav_Back}"
-                                Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                Width="44" Height="44"
-                                Margin="0,0,8,0"
-                                AutomationProperties.Name="Go back"
-                                AutomationProperties.HelpText="Navigate to the previous view">
-                            <materialDesign:PackIcon Kind="ArrowLeft" Width="24" Height="24"/>
-                        </Button>
-
-                        <TextBlock Grid.Row="0" Grid.Column="1"
-                                   Text="{loc:Loc App_Name}"
-                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                                   Text="{loc:Loc MainWindow_Welcome}"
-                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                   Opacity="0.7"
-                                   Margin="0,4,0,0"/>
+                        <controls:Breadcrumb x:Name="BreadcrumbControl"
+                                             Grid.Column="0"
+                                             AutomationProperties.Name="Breadcrumb navigation"/>
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    Visibility="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <ui:Button Appearance="Transparent"
+                                       Icon="{ui:SymbolIcon ArrowUndo24}"
+                                       Width="44" Height="44"
+                                       Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"
+                                       ToolTip="{loc:Loc Undo_Title}"
+                                       AutomationProperties.Name="Undo last action"
+                                       IsEnabled="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
+                            <ui:Button Appearance="Transparent"
+                                       Icon="{ui:SymbolIcon ArrowRedo24}"
+                                       Width="44" Height="44"
+                                       Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"
+                                       ToolTip="{loc:Loc Undo_Redo}"
+                                       AutomationProperties.Name="Redo last undone action"
+                                       IsEnabled="{Binding CanRedo, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
+                        </StackPanel>
                     </Grid>
-                </materialDesign:ColorZone>
+                </Border>
+            </ui:NavigationView.Header>
 
-                <!-- Navigation Items -->
-                <ListBox Grid.Row="1"
-                         x:Name="NavigationListBox"
-                         SelectionChanged="NavigationListBox_SelectionChanged"
-                         SelectedIndex="0"
-                         Style="{StaticResource MaterialDesignNavigationPrimaryListBox}"
-                         ItemContainerStyle="{StaticResource NavigationListBoxItemStyle}"
-                         AutomationProperties.Name="Main Navigation">
-                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_Dashboard}"
-                                 AutomationProperties.HelpText="Navigate to Dashboard view, Ctrl+1">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="ViewDashboard"
-                                                      Width="24"
-                                                      Height="24"
-                                                      Margin="0,0,16,0"/>
-                            <TextBlock Text="{loc:Loc Nav_Dashboard}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ListBoxItem>
-                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_Prerequisites}"
-                                 AutomationProperties.HelpText="Navigate to Prerequisites view, Ctrl+2">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="CheckboxMarkedCircleOutline"
-                                                      Width="24"
-                                                      Height="24"
-                                                      Margin="0,0,16,0"/>
-                            <TextBlock Text="{loc:Loc Nav_Prerequisites}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ListBoxItem>
-                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_Apps}"
-                                 AutomationProperties.HelpText="Navigate to Applications view, Ctrl+3">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Apps"
-                                                      Width="24"
-                                                      Height="24"
-                                                      Margin="0,0,16,0"/>
-                            <TextBlock Text="{loc:Loc Nav_Apps}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ListBoxItem>
-                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_Deployment}"
-                                 AutomationProperties.HelpText="Navigate to Deployment view, Ctrl+4">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Rocket"
-                                                      Width="24"
-                                                      Height="24"
-                                                      Margin="0,0,16,0"/>
-                            <TextBlock Text="{loc:Loc Nav_Deployment}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ListBoxItem>
-                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_Settings}"
-                                 AutomationProperties.HelpText="Navigate to Settings view, Ctrl+5">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Cog"
-                                                      Width="24"
-                                                      Height="24"
-                                                      Margin="0,0,16,0"/>
-                            <TextBlock Text="{loc:Loc Nav_Settings}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ListBoxItem>
-                    <ListBoxItem AutomationProperties.Name="{loc:Loc Nav_AppDatabase}"
-                                 AutomationProperties.HelpText="Navigate to Application Database view, Ctrl+7">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Database"
-                                                      Width="24"
-                                                      Height="24"
-                                                      Margin="0,0,16,0"/>
-                            <TextBlock Text="{loc:Loc Nav_AppDatabase}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ListBoxItem>
-                </ListBox>
-            </Grid>
-        </materialDesign:Card>
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Dashboard}"
+                                       Tag="0"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon Board24}"
+                                       AutomationProperties.Name="{loc:Loc Nav_Dashboard}"
+                                       AutomationProperties.HelpText="Navigate to Dashboard view, Ctrl+1"/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Prerequisites}"
+                                       Tag="1"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon CheckmarkCircle24}"
+                                       AutomationProperties.Name="{loc:Loc Nav_Prerequisites}"
+                                       AutomationProperties.HelpText="Navigate to Prerequisites view, Ctrl+2"/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Apps}"
+                                       Tag="2"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon Apps24}"
+                                       AutomationProperties.Name="{loc:Loc Nav_Apps}"
+                                       AutomationProperties.HelpText="Navigate to Applications view, Ctrl+3"/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Deployment}"
+                                       Tag="3"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon Rocket24}"
+                                       AutomationProperties.Name="{loc:Loc Nav_Deployment}"
+                                       AutomationProperties.HelpText="Navigate to Deployment view, Ctrl+4"/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Settings}"
+                                       Tag="4"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon Settings24}"
+                                       AutomationProperties.Name="{loc:Loc Nav_Settings}"
+                                       AutomationProperties.HelpText="Navigate to Settings view, Ctrl+5"/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_AppDatabase}"
+                                       Tag="5"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon Database24}"
+                                       AutomationProperties.Name="{loc:Loc Nav_AppDatabase}"
+                                       AutomationProperties.HelpText="Navigate to Application Database view, Ctrl+6"/>
+            </ui:NavigationView.MenuItems>
 
-        <!-- Main Content Area -->
-        <Grid x:Name="MainContentArea" Grid.Column="1" Focusable="True"
-              AutomationProperties.Name="Main content area">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
 
-            <!-- Breadcrumb Navigation -->
-            <Border Grid.Row="0"
-                    Background="{DynamicResource MaterialDesignToolBarBackground}"
-                    Padding="16,8"
-                    Visibility="{Binding ShowBreadcrumb, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <controls:Breadcrumb x:Name="BreadcrumbControl"
-                                         Grid.Column="0"
-                                         AutomationProperties.Name="Breadcrumb navigation"/>
-                    <!-- Undo/Redo Buttons -->
-                    <StackPanel Grid.Column="1"
-                                Orientation="Horizontal"
-                                Visibility="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <!-- WCAG 2.5.5: 44x44px minimum touch targets -->
-                        <Button Style="{StaticResource MaterialDesignIconButton}"
-                                Width="44" Height="44"
-                                Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                ToolTip="{loc:Loc Undo_Title}"
-                                AutomationProperties.Name="Undo last action"
-                                IsEnabled="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=Window}}">
-                            <materialDesign:PackIcon Kind="Undo" Width="20" Height="20"/>
-                        </Button>
-                        <Button Style="{StaticResource MaterialDesignIconButton}"
-                                Width="44" Height="44"
-                                Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                ToolTip="{loc:Loc Undo_Redo}"
-                                AutomationProperties.Name="Redo last undone action"
-                                IsEnabled="{Binding CanRedo, RelativeSource={RelativeSource AncestorType=Window}}">
-                            <materialDesign:PackIcon Kind="Redo" Width="20" Height="20"/>
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Border>
 
-            <!-- Dashboard View -->
-            <views:DashboardView x:Name="DashboardViewControl"
-                                  Grid.Row="1"
-                                  Visibility="Visible"/>
+        </ui:NavigationView>
 
-            <!-- Deployment View -->
-            <views:DeploymentView x:Name="DeploymentViewControl"
-                                   Grid.Row="1"
-                                   Visibility="Collapsed"/>
+        <!-- Content Dialog Presenter -->
+        <ContentPresenter x:Name="RootContentDialog"/>
 
-            <!-- Apps View -->
-            <views:AppsView x:Name="AppsViewControl"
-                             Grid.Row="1"
-                             Visibility="Collapsed"/>
-
-            <!-- Settings View -->
-            <views:SettingsView x:Name="SettingsViewControl"
-                                 Grid.Row="1"
-                                 Visibility="Collapsed"/>
-
-            <!-- Applications Database View -->
-            <views:ApplicationsView x:Name="ApplicationsViewControl"
-                                     Grid.Row="1"
-                                     Visibility="Collapsed"/>
-
-            <!-- Prerequisites View -->
-            <views:PrerequisitesView x:Name="PrerequisitesViewControl"
-                                      Grid.Row="1"
-                                      Visibility="Collapsed"/>
-        </Grid>
-
-        <!-- Toast Notifications Snackbar -->
-        <materialDesign:Snackbar x:Name="MainSnackbar"
-                                  Grid.Column="1"
-                                  MessageQueue="{materialDesign:MessageQueue}"
-                                  VerticalAlignment="Bottom"
-                                  HorizontalAlignment="Stretch"
-                                  Margin="16"/>
+        <!-- Snackbar Presenter (Snackbar is created in code-behind) -->
+        <ui:SnackbarPresenter x:Name="RootSnackbarPresenter"
+                              VerticalAlignment="Bottom"
+                              Margin="16"/>
 
         <!-- Screen Reader Live Region (invisible but announced) -->
         <TextBlock x:Name="ScreenReaderLiveRegion"
-                   Grid.Column="1"
                    Visibility="Collapsed"
                    AutomationProperties.LiveSetting="Polite"
                    AutomationProperties.Name="{loc:Loc Accessibility_LiveRegion}"/>
+
+        <!-- Title Bar for window dragging (required with ExtendsContentIntoTitleBar) -->
+        <ui:TitleBar x:Name="TitleBar"
+                     Title="{loc:Loc App_Title}"
+                     Icon="Win11Forge.ico"
+                     VerticalAlignment="Top"/>
     </Grid>
-    </materialDesign:DialogHost>
-</Window>
+</ui:FluentWindow>

@@ -18,25 +18,26 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Controls;
 using Win11Forge.GUI.Controls;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Messages;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
+using Win11Forge.GUI.Views;
 using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI;
 
 /// <summary>
-/// Main application window with navigation.
+/// Main application window with Fluent Design navigation.
+/// Uses NavigationView.ReplaceContent for view switching.
 /// Implements cleanup pattern for event handlers and messenger subscriptions.
 /// </summary>
-public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
+public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposable
 {
     private bool _disposed;
     private bool _initializationFailed;
@@ -59,6 +60,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
     private EventHandler? _undoStateChangedHandler;
     private EventHandler? _navigationChangedHandler;
 
+    // View cache for lazy creation
+    private readonly Dictionary<ViewIndex, FrameworkElement> _viewCache = new();
+
     private bool _dashboardInitialized;
     private bool _deploymentInitialized;
     private bool _appsInitialized;
@@ -66,6 +70,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
     private bool _prerequisitesInitialized;
     private bool _applicationsInitialized;
     private bool _isNavigatingFromService;
+    private bool _isNavigating;
+    private int _currentViewIndex = -1;
     private bool _showBreadcrumb = true;
 
     /// <summary>
@@ -181,7 +187,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
                     if (!_isNavigatingFromService)
                     {
                         _isNavigatingFromService = true;
-                        NavigationListBox.SelectedIndex = _navigationService.CurrentIndex;
+                        SelectNavigationItem(_navigationService.CurrentIndex);
                         _isNavigatingFromService = false;
                     }
                 });
@@ -195,14 +201,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
             _settingsViewModel = App.GetService<SettingsViewModel>();
             _prerequisitesViewModel = App.GetService<PrerequisitesViewModel>();
             _applicationsViewModel = App.GetService<ApplicationsViewModel>();
-
-            // Wire up DataContexts
-            DashboardViewControl.DataContext = _dashboardViewModel;
-            DeploymentViewControl.DataContext = _deploymentViewModel;
-            AppsViewControl.DataContext = _appsViewModel;
-            SettingsViewControl.DataContext = _settingsViewModel;
-            PrerequisitesViewControl.DataContext = _prerequisitesViewModel;
-            ApplicationsViewControl.DataContext = _applicationsViewModel;
 
             // Initialize on window load
             Loaded += MainWindow_Loaded;
@@ -221,15 +219,39 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
             _initializationFailed = true;
 
             // Show error dialog and allow graceful exit
-            MessageBox.Show(
+            System.Windows.MessageBox.Show(
                 string.Format(Loc.Init_ErrorMessage, ex.Message),
                 Loc.Init_ErrorTitle,
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
 
             // Close the window after showing the error - fields remain null (nullable types)
             Dispatcher.BeginInvoke(() => Close());
         }
+    }
+
+    /// <summary>
+    /// Gets or creates a view for the specified navigation index.
+    /// Views are created lazily and cached for reuse.
+    /// </summary>
+    private FrameworkElement GetOrCreateView(ViewIndex index)
+    {
+        if (_viewCache.TryGetValue(index, out var cached))
+            return cached;
+
+        FrameworkElement view = index switch
+        {
+            ViewIndex.Dashboard => new DashboardView { DataContext = _dashboardViewModel },
+            ViewIndex.Prerequisites => new PrerequisitesView { DataContext = _prerequisitesViewModel },
+            ViewIndex.Apps => new AppsView { DataContext = _appsViewModel },
+            ViewIndex.Deployment => new DeploymentView { DataContext = _deploymentViewModel },
+            ViewIndex.Settings => new SettingsView { DataContext = _settingsViewModel },
+            ViewIndex.Applications => new ApplicationsView { DataContext = _applicationsViewModel },
+            _ => throw new ArgumentOutOfRangeException(nameof(index))
+        };
+
+        _viewCache[index] = view;
+        return view;
     }
 
     /// <summary>
@@ -327,7 +349,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
             Loc.Nav_Prerequisites,
             Loc.Nav_Apps,
             Loc.Nav_Deployment,
-            Loc.Nav_Settings
+            Loc.Nav_Settings,
+            Loc.Nav_AppDatabase
         };
 
         // Current view is always the last item, previous views are clickable
@@ -344,19 +367,22 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
             // Skip if initialization failed
             if (_initializationFailed || _dashboardViewModel == null) return;
 
-            // Initialize toast service with snackbar
-            _toastService?.SetMessageQueue(MainSnackbar.MessageQueue);
+            // Initialize toast service with WPF UI snackbar (created programmatically)
+            var snackbar = new Snackbar(RootSnackbarPresenter) { Timeout = TimeSpan.FromSeconds(3) };
+            _toastService?.SetSnackbarControl(snackbar);
+
+            // Initialize dialog service with content presenter
+            var dialogService = App.GetService<IDialogService>();
+            if (dialogService is DialogService ds)
+            {
+                ds.SetContentPresenter(RootContentDialog);
+            }
 
             // Initialize accessibility service with live region for screen readers
             if (_accessibilityService is AccessibilityService accessibilityService)
             {
                 accessibilityService.Initialize(ScreenReaderLiveRegion);
             }
-
-            // Start cache pre-warming in background (non-blocking)
-            // This makes subsequent app scanning 10-50x faster
-            WarmCacheAsync().SafeFireAndForget(
-                onException: ex => System.Diagnostics.Debug.WriteLine($"Cache pre-warming failed (non-critical): {ex.Message}"));
 
             // Check for first run and show onboarding
             var settings = _settingsService?.LoadSettings();
@@ -365,19 +391,24 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
                 await ShowOnboardingAsync();
             }
 
-            // Restore last navigation state
-            if (settings != null && settings.LastNavigationIndex > 0 && settings.LastNavigationIndex < NavigationListBox.Items.Count)
+            // Restore last navigation state or default to Dashboard
+            if (settings != null && settings.LastNavigationIndex > 0 && settings.LastNavigationIndex < RootNavigation.MenuItems.Count)
             {
-                NavigationListBox.SelectedIndex = settings.LastNavigationIndex;
+                SelectNavigationItem(settings.LastNavigationIndex);
             }
             else
             {
                 // Initialize Dashboard (default view)
-                await InitializeDashboardAsync();
+                SelectNavigationItem(0);
             }
 
             // Set window title with dynamic version
             await UpdateWindowTitleAsync();
+
+            // Start cache pre-warming AFTER the initial view has loaded
+            // to avoid resource contention with the first view's initialization
+            WarmCacheAsync().SafeFireAndForget(
+                onException: ex => System.Diagnostics.Debug.WriteLine($"Cache pre-warming failed (non-critical): {ex.Message}"));
         }
         catch (Exception ex)
         {
@@ -420,71 +451,161 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
         }
     }
 
-    private void NavigationListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    /// <summary>
+    /// Handles NavigationView back button requests.
+    /// </summary>
+    private void RootNavigation_BackRequested(NavigationView sender, RoutedEventArgs args)
     {
-        // Guard: Views not yet initialized during XAML loading
-        if (DashboardViewControl == null) return;
+        GoBack();
+    }
 
-        var selectedIndex = NavigationListBox.SelectedIndex;
+    /// <summary>
+    /// Handles NavigationView selection changes (user click on nav item).
+    /// </summary>
+    private void RootNavigation_SelectionChanged(NavigationView sender, RoutedEventArgs args)
+    {
+        if (!IsLoaded || _isNavigating) return;
 
-        // Update breadcrumb
-        UpdateBreadcrumb(selectedIndex);
-
-        // Hide all views
-        DashboardViewControl.Visibility = Visibility.Collapsed;
-        DeploymentViewControl.Visibility = Visibility.Collapsed;
-        AppsViewControl.Visibility = Visibility.Collapsed;
-        SettingsViewControl.Visibility = Visibility.Collapsed;
-        PrerequisitesViewControl.Visibility = Visibility.Collapsed;
-        ApplicationsViewControl.Visibility = Visibility.Collapsed;
-
-        // Show selected view and initialize if needed
-        // Use SafeFireAndForget for consistent exception handling on fire-and-forget tasks
-        switch ((ViewIndex)selectedIndex)
+        // Try SelectedItem first
+        var selectedItem = RootNavigation.SelectedItem;
+        if (selectedItem != null)
         {
-            case ViewIndex.Dashboard:
-                DashboardViewControl.Visibility = Visibility.Visible;
-                SafeInitializeAsync(InitializeDashboardAsync, "Dashboard").SafeFireAndForget();
-                break;
+            var idx = RootNavigation.MenuItems.IndexOf(selectedItem);
+            if (idx >= 0)
+            {
+                SelectNavigationItem(idx);
+                return;
+            }
+        }
 
-            case ViewIndex.Prerequisites:
-                PrerequisitesViewControl.Visibility = Visibility.Visible;
-                SafeInitializeAsync(InitializePrerequisitesAsync, "Prerequisites").SafeFireAndForget();
-                break;
-
-            case ViewIndex.Apps:
-                AppsViewControl.Visibility = Visibility.Visible;
-                SafeInitializeAsync(InitializeAppsAsync, "Apps").SafeFireAndForget();
-                break;
-
-            case ViewIndex.Deployment:
-                DeploymentViewControl.Visibility = Visibility.Visible;
-                SafeInitializeAsync(InitializeDeploymentAsync, "Deployment").SafeFireAndForget();
-                break;
-
-            case ViewIndex.Settings:
-                SettingsViewControl.Visibility = Visibility.Visible;
-                SafeInitializeAsync(InitializeSettingsAsync, "Settings").SafeFireAndForget();
-                break;
-
-            case ViewIndex.Applications:
-                ApplicationsViewControl.Visibility = Visibility.Visible;
-                SafeInitializeAsync(InitializeApplicationsAsync, "Applications").SafeFireAndForget();
-                break;
+        // Fallback: find the active item
+        for (var i = 0; i < RootNavigation.MenuItems.Count; i++)
+        {
+            if (RootNavigation.MenuItems[i] is NavigationViewItem item && item.IsActive)
+            {
+                SelectNavigationItem(i);
+                return;
+            }
         }
     }
 
     /// <summary>
-    /// Handles the skip-to-content accessibility button click.
-    /// Moves keyboard focus to the main content area.
+    /// Handles direct click on a NavigationViewItem.
+    /// Used as primary navigation trigger since SelectionChanged may not fire
+    /// without TargetPageType set on NavigationViewItems.
     /// </summary>
-    private void SkipToContent_Click(object sender, RoutedEventArgs e)
+    private void NavigationViewItem_Click(object sender, RoutedEventArgs e)
     {
-        // Move focus to the main content area
-        MainContentArea?.Focus();
+        if (_isNavigating) return;
 
-        // Announce to screen readers
-        _accessibilityService?.Announce(Loc.Accessibility_SkippedToContent);
+        if (sender is NavigationViewItem item)
+        {
+            var tag = item.Tag;
+            if (tag is string tagStr && int.TryParse(tagStr, out var index))
+            {
+                SelectNavigationItem(index);
+            }
+            else
+            {
+                // Tag might be int if XAML parsed it differently
+                var idx = RootNavigation.MenuItems.IndexOf(item);
+                if (idx >= 0)
+                    SelectNavigationItem(idx);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Selects a navigation item by index and loads the corresponding view content.
+    /// </summary>
+    private void SelectNavigationItem(int index)
+    {
+        if (index < 0 || index >= RootNavigation.MenuItems.Count) return;
+
+        _isNavigating = true;
+        try
+        {
+            SetActiveItem(index);
+            LoadViewContent(index);
+        }
+        finally
+        {
+            _isNavigating = false;
+        }
+    }
+
+    /// <summary>
+    /// Sets the visual active state on navigation items.
+    /// </summary>
+    private void SetActiveItem(int index)
+    {
+        for (var i = 0; i < RootNavigation.MenuItems.Count; i++)
+        {
+            if (RootNavigation.MenuItems[i] is NavigationViewItem item)
+            {
+                item.IsActive = i == index;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Loads the view content for the specified index into the NavigationView content area.
+    /// Skips if the view is already loaded (deduplication guard).
+    /// </summary>
+    private void LoadViewContent(int selectedIndex)
+    {
+        if (selectedIndex == _currentViewIndex) return;
+
+        try
+        {
+            UpdateBreadcrumb(selectedIndex);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"UpdateBreadcrumb failed: {ex.Message}");
+        }
+
+        try
+        {
+            var viewIndex = (ViewIndex)selectedIndex;
+            var view = GetOrCreateView(viewIndex);
+            RootNavigation.ReplaceContent(view, null);
+
+            // Only update the index AFTER content was successfully replaced
+            _currentViewIndex = selectedIndex;
+
+            switch (viewIndex)
+            {
+                case ViewIndex.Dashboard:
+                    SafeInitializeAsync(InitializeDashboardAsync, "Dashboard").SafeFireAndForget();
+                    break;
+
+                case ViewIndex.Prerequisites:
+                    SafeInitializeAsync(InitializePrerequisitesAsync, "Prerequisites").SafeFireAndForget();
+                    break;
+
+                case ViewIndex.Apps:
+                    SafeInitializeAsync(InitializeAppsAsync, "Apps").SafeFireAndForget();
+                    break;
+
+                case ViewIndex.Deployment:
+                    SafeInitializeAsync(InitializeDeploymentAsync, "Deployment").SafeFireAndForget();
+                    break;
+
+                case ViewIndex.Settings:
+                    SafeInitializeAsync(InitializeSettingsAsync, "Settings").SafeFireAndForget();
+                    break;
+
+                case ViewIndex.Applications:
+                    SafeInitializeAsync(InitializeApplicationsAsync, "Applications").SafeFireAndForget();
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"LoadViewContent failed for index {selectedIndex}: {ex}");
+            _toastService?.ShowError($"Failed to load view: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -558,7 +679,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
     /// </summary>
     public void NavigateTo(int viewIndex)
     {
-        if (viewIndex >= 0 && viewIndex < NavigationListBox.Items.Count)
+        if (viewIndex >= 0 && viewIndex < RootNavigation.MenuItems.Count)
         {
             // Update navigation service (which will trigger navigation)
             if (!_isNavigatingFromService && _navigationService != null)
@@ -566,7 +687,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
                 _navigationService.NavigateTo(viewIndex);
             }
 
-            NavigationListBox.SelectedIndex = viewIndex;
+            SelectNavigationItem(viewIndex);
 
             // Save navigation state for view preservation
             try
@@ -590,8 +711,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
     {
         try
         {
-            var panel = new KeyboardShortcutsPanel();
-            await DialogHost.Show(panel, "RootDialog");
+            var dialog = new Wpf.Ui.Controls.ContentDialog(RootContentDialog)
+            {
+                Title = Loc.Help_KeyboardShortcuts ?? "Keyboard Shortcuts",
+                Content = new KeyboardShortcutsPanel(),
+                CloseButtonText = Loc.Common_OK ?? "OK"
+            };
+            await dialog.ShowAsync();
         }
         catch (Exception ex)
         {
@@ -607,8 +733,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
     {
         try
         {
-            var dialog = new OnboardingDialog();
-            dialog.Completed += (_, dontShowAgain) =>
+            var onboardingControl = new OnboardingDialog();
+            onboardingControl.Completed += (_, dontShowAgain) =>
             {
                 if (dontShowAgain)
                 {
@@ -618,7 +744,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
                 }
             };
 
-            await DialogHost.Show(dialog, "RootDialog");
+            var dialog = new Wpf.Ui.Controls.ContentDialog(RootContentDialog)
+            {
+                Title = Loc.Onboarding_Welcome ?? "Welcome",
+                Content = onboardingControl,
+                CloseButtonText = Loc.Common_OK ?? "OK"
+            };
+            await dialog.ShowAsync();
 
             // Mark first run complete after dialog closes
             var currentSettings = _settingsService.LoadSettings();

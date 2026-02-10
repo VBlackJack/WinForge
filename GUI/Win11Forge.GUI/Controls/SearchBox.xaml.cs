@@ -18,7 +18,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Controls;
 
 namespace Win11Forge.GUI.Controls;
 
@@ -30,7 +30,7 @@ public class SearchSuggestion
     public string Text { get; set; } = string.Empty;
     public string? Category { get; set; }
     public string? Shortcut { get; set; }
-    public PackIconKind Icon { get; set; } = PackIconKind.Magnify;
+    public SymbolRegular Icon { get; set; } = SymbolRegular.Search24;
     public bool IsRecent { get; set; }
 }
 
@@ -221,7 +221,7 @@ public partial class SearchBox : UserControl
             .Select(s => new SearchSuggestion
             {
                 Text = s,
-                Icon = PackIconKind.Apps
+                Icon = SymbolRegular.Apps24
             });
 
         foreach (var match in matches)
@@ -242,7 +242,7 @@ public partial class SearchBox : UserControl
             _suggestions.Add(new SearchSuggestion
             {
                 Text = recent,
-                Icon = PackIconKind.History,
+                Icon = SymbolRegular.History24,
                 IsRecent = true
             });
         }

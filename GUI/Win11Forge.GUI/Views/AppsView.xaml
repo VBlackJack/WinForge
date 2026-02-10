@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              xmlns:models="clr-namespace:Win11Forge.GUI.Models"
@@ -12,171 +12,181 @@
              d:DataContext="{d:DesignInstance Type=viewModels:AppsViewModel}"
              d:DesignHeight="700" d:DesignWidth="1000">
 
-    <!-- Single unified DialogHost to avoid nesting issues -->
-    <materialDesign:DialogHost Identifier="AppsDialogHost"
-                                IsOpen="{Binding IsDialogOpen, Mode=OneWay}"
-                                CloseOnClickAway="True"
-                                DialogClosing="DialogHost_DialogClosing">
-        <materialDesign:DialogHost.DialogContent>
-            <Grid>
-                <!-- Log Viewer Dialog -->
-                <Border MinWidth="600" MaxWidth="900" MaxHeight="500" Padding="24"
-                        Visibility="{Binding IsLogViewerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+    <!-- Dialog overlay -->
+    <Grid>
+        <!-- Dialog Overlay Layer -->
+        <Grid x:Name="DialogOverlay"
+              Panel.ZIndex="100"
+              Visibility="{Binding IsDialogOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <!-- Semi-transparent backdrop -->
+            <Border Background="#80000000"
+                    MouseLeftButtonDown="DialogHost_DialogClosing"/>
+            <!-- Dialog Content -->
+            <Border HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="8"
+                    Padding="0">
+                <Grid>
+                    <!-- Log Viewer Dialog -->
+                    <Border MinWidth="600" MaxWidth="900" MaxHeight="500" Padding="24"
+                            Visibility="{Binding IsLogViewerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                        <!-- Dialog Header -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                            <materialDesign:PackIcon Kind="FileDocumentOutline"
-                                                      Width="24" Height="24"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,12,0"/>
-                            <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                       VerticalAlignment="Center">
-                                <Run Text="{loc:Loc LogViewer_Title}"/>
-                                <Run Text=" - "/>
-                                <Run Text="{Binding LogViewerApplication.Name, FallbackValue=''}"/>
-                            </TextBlock>
-                        </StackPanel>
+                            <!-- Dialog Header -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                                <ui:SymbolIcon Symbol="Document24"
+                                               Width="24" Height="24"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
+                                <TextBlock FontSize="20" FontWeight="SemiBold"
+                                           VerticalAlignment="Center">
+                                    <Run Text="{loc:Loc LogViewer_Title}"/>
+                                    <Run Text=" - "/>
+                                    <Run Text="{Binding LogViewerApplication.Name, FallbackValue=''}"/>
+                                </TextBlock>
+                            </StackPanel>
 
-                        <!-- Log Content -->
-                        <Border Grid.Row="1"
-                                Background="{DynamicResource MaterialDesignCardBackground}"
-                                BorderBrush="{DynamicResource MaterialDesignDivider}"
-                                BorderThickness="1"
-                                CornerRadius="4">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                          HorizontalScrollBarVisibility="Auto">
-                                <TextBox Text="{Binding LogViewerApplication.LogOutput, Mode=OneWay}"
-                                         IsReadOnly="True"
-                                         TextWrapping="NoWrap"
-                                         FontFamily="Consolas"
-                                         FontSize="12"
-                                         BorderThickness="0"
-                                         Padding="12"
-                                         Background="Transparent"
-                                         VerticalScrollBarVisibility="Disabled"
-                                         HorizontalScrollBarVisibility="Disabled"/>
-                            </ScrollViewer>
-                        </Border>
+                            <!-- Log Content -->
+                            <Border Grid.Row="1"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Auto">
+                                    <TextBox Text="{Binding LogViewerApplication.LogOutput, Mode=OneWay}"
+                                             IsReadOnly="True"
+                                             TextWrapping="NoWrap"
+                                             FontFamily="Consolas"
+                                             FontSize="12"
+                                             BorderThickness="0"
+                                             Padding="12"
+                                             Background="Transparent"
+                                             VerticalScrollBarVisibility="Disabled"
+                                             HorizontalScrollBarVisibility="Disabled"/>
+                                </ScrollViewer>
+                            </Border>
 
-                        <!-- No logs message -->
-                        <TextBlock Grid.Row="1"
-                                   Text="{loc:Loc LogViewer_NoLogs}"
-                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Visibility="{Binding LogViewerApplication.LogOutput, Converter={StaticResource InverseNullableToVisibilityConverter}}"/>
+                            <!-- No logs message -->
+                            <TextBlock Grid.Row="1"
+                                       Text="{loc:Loc LogViewer_NoLogs}"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Visibility="{Binding LogViewerApplication.LogOutput, Converter={StaticResource InverseNullableToVisibilityConverter}}"/>
 
-                        <!-- Dialog Actions -->
-                        <StackPanel Grid.Row="2"
-                                    Orientation="Horizontal"
-                                    HorizontalAlignment="Right"
-                                    Margin="0,16,0,0">
-                            <Button Content="{loc:Loc LogViewer_Copy}"
-                                    Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                                    Click="CopyLogsToClipboard_Click"
-                                    Margin="0,0,12,0"/>
-                            <Button Content="{loc:Loc LogViewer_Close}"
-                                    Style="{StaticResource MaterialDesignRaisedButton}"
-                                    Command="{Binding CloseLogViewerCommand}"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                            <!-- Dialog Actions -->
+                            <StackPanel Grid.Row="2"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Right"
+                                        Margin="0,16,0,0">
+                                <ui:Button Content="{loc:Loc LogViewer_Copy}"
+                                           Appearance="Secondary"
+                                           Click="CopyLogsToClipboard_Click"
+                                           Margin="0,0,12,0"/>
+                                <ui:Button Content="{loc:Loc LogViewer_Close}"
+                                           Appearance="Primary"
+                                           Command="{Binding CloseLogViewerCommand}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                <!-- Summary Dialog -->
-                <Border MinWidth="400" MaxWidth="500" Padding="24"
-                        Visibility="{Binding IsSummaryDialogOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                    <!-- Summary Dialog -->
+                    <Border MinWidth="400" MaxWidth="500" Padding="24"
+                            Visibility="{Binding IsSummaryDialogOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                        <!-- Dialog Header -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                            <materialDesign:PackIcon Kind="{Binding LastDeploymentResult, Converter={StaticResource StatusToIconConverter}}"
-                                                      Foreground="{Binding LastDeploymentResult, Converter={StaticResource StatusToColorConverter}}"
-                                                      Width="28" Height="28"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,12,0"/>
-                            <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                                       Text="{loc:Loc Summary_Title}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
+                            <!-- Dialog Header -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                                <ui:SymbolIcon Symbol="{Binding LastDeploymentResult, Converter={StaticResource StatusToIconConverter}}"
+                                               Foreground="{Binding LastDeploymentResult, Converter={StaticResource StatusToColorConverter}}"
+                                               Width="28" Height="28"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
+                                <TextBlock FontSize="20" FontWeight="SemiBold"
+                                           Text="{loc:Loc Summary_Title}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
 
-                        <!-- Summary Content -->
-                        <StackPanel Grid.Row="1" Margin="0,0,0,24">
-                            <!-- Result Message -->
-                            <TextBlock Text="{Binding LastDeploymentResult, Converter={StaticResource DeploymentResultToStringConverter}}"
-                                       Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
-                                       Margin="0,0,0,16"/>
+                            <!-- Summary Content -->
+                            <StackPanel Grid.Row="1" Margin="0,0,0,24">
+                                <!-- Result Message -->
+                                <TextBlock Text="{Binding LastDeploymentResult, Converter={StaticResource DeploymentResultToStringConverter}}"
+                                           FontSize="16" FontWeight="Medium"
+                                           Margin="0,0,0,16"/>
 
-                            <!-- Stats Grid -->
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
+                                <!-- Stats Grid -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                                <!-- Success Count -->
-                                <TextBlock Grid.Row="0" Grid.Column="0"
-                                           Text="{loc:Loc Summary_Successful}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           Margin="0,0,16,8"/>
-                                <TextBlock Grid.Row="0" Grid.Column="1"
-                                           Text="{Binding SuccessCount}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           Foreground="{DynamicResource AccentGreenTextBrush}"
-                                           FontWeight="Bold"
-                                           Margin="0,0,0,8"/>
+                                    <!-- Success Count -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                               Text="{loc:Loc Summary_Successful}"
+                                               FontSize="14"
+                                               Margin="0,0,16,8"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1"
+                                               Text="{Binding SuccessCount}"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource AccentGreenTextBrush}"
+                                               FontWeight="Bold"
+                                               Margin="0,0,0,8"/>
 
-                                <!-- Failed Count -->
-                                <TextBlock Grid.Row="1" Grid.Column="0"
-                                           Text="{loc:Loc Summary_FailedCount}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           Margin="0,0,16,8"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1"
-                                           Text="{Binding FailedCount}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
-                                           FontWeight="Bold"
-                                           Margin="0,0,0,8"/>
+                                    <!-- Failed Count -->
+                                    <TextBlock Grid.Row="1" Grid.Column="0"
+                                               Text="{loc:Loc Summary_FailedCount}"
+                                               FontSize="14"
+                                               Margin="0,0,16,8"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1"
+                                               Text="{Binding FailedCount}"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                               FontWeight="Bold"
+                                               Margin="0,0,0,8"/>
 
-                                <!-- Skipped Count -->
-                                <TextBlock Grid.Row="2" Grid.Column="0"
-                                           Text="{loc:Loc Summary_SkippedCount}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           Margin="0,0,16,0"/>
-                                <TextBlock Grid.Row="2" Grid.Column="1"
-                                           Text="{Binding SkippedCount}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                           FontWeight="Bold"/>
-                            </Grid>
-                        </StackPanel>
+                                    <!-- Skipped Count -->
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+                                               Text="{loc:Loc Summary_SkippedCount}"
+                                               FontSize="14"
+                                               Margin="0,0,16,0"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1"
+                                               Text="{Binding SkippedCount}"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               FontWeight="Bold"/>
+                                </Grid>
+                            </StackPanel>
 
-                        <!-- Dialog Actions -->
-                        <Button Grid.Row="2"
-                                Content="{loc:Loc Summary_Close}"
-                                Style="{StaticResource MaterialDesignRaisedButton}"
-                                Command="{Binding CloseSummaryDialogCommand}"
-                                HorizontalAlignment="Right"/>
-                    </Grid>
-                </Border>
-            </Grid>
-        </materialDesign:DialogHost.DialogContent>
+                            <!-- Dialog Actions -->
+                            <ui:Button Grid.Row="2"
+                                       Content="{loc:Loc Summary_Close}"
+                                       Appearance="Primary"
+                                       Command="{Binding CloseSummaryDialogCommand}"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
 
     <Grid Margin="24">
         <Grid.RowDefinitions>
@@ -190,14 +200,15 @@
         <!-- Title -->
         <TextBlock Grid.Row="0"
                    Text="{loc:Loc Apps_Title}"
-                   Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                   FontSize="28" FontWeight="SemiBold"
                    Margin="0,0,0,16"/>
 
         <!-- Profile Selector Card -->
-        <materialDesign:Card Grid.Row="1"
-                              Padding="{StaticResource CardPadding}"
-                              Margin="{StaticResource MarginNormalBottom}"
-                              materialDesign:ElevationAssist.Elevation="Dp2">
+        <Border Grid.Row="1"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8"
+                Padding="{StaticResource CardPadding}"
+                Margin="{StaticResource MarginNormalBottom}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -210,29 +221,27 @@
 
                 <!-- Profile Icon and Label with Help -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <materialDesign:PackIcon Kind="FolderAccount"
-                                              Width="24" Height="24"
-                                              VerticalAlignment="Center"
-                                              Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                              Margin="0,0,12,0"/>
+                    <ui:SymbolIcon Symbol="Folder24"
+                                   Width="24" Height="24"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                   Margin="0,0,12,0"/>
                     <TextBlock Text="{loc:Loc Apps_ProfileLabel}"
-                               Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                               FontSize="16" FontWeight="Medium"
                                VerticalAlignment="Center"/>
-                    <materialDesign:PackIcon Kind="HelpCircleOutline"
-                                              Width="18" Height="18"
-                                              VerticalAlignment="Center"
-                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                              Margin="6,0,0,0"
-                                              ToolTip="{loc:Loc Apps_ProfileHelpTooltip}"
-                                              Cursor="Help"/>
+                    <ui:SymbolIcon Symbol="QuestionCircle24"
+                                   Width="18" Height="18"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Margin="6,0,0,0"
+                                   ToolTip="{loc:Loc Apps_ProfileHelpTooltip}"
+                                   Cursor="Help"/>
                 </StackPanel>
 
                 <!-- Profile ComboBox (visible when profiles exist) -->
                 <ComboBox Grid.Column="1"
                           ItemsSource="{Binding AvailableProfiles}"
                           SelectedItem="{Binding SelectedProfile}"
-                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                          materialDesign:HintAssist.Hint="{loc:Loc Apps_SelectProfile}"
                           MinWidth="180"
                           Margin="16,0,0,0"
                           ToolTip="{loc:Loc Apps_ProfileHelpTooltip}"
@@ -246,39 +255,39 @@
                             Margin="16,0,0,0"
                             VerticalAlignment="Center"
                             Visibility="{Binding HasProfiles, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                    <materialDesign:PackIcon Kind="InformationOutline"
-                                              Width="18" Height="18"
-                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,8,0"/>
+                    <ui:SymbolIcon Symbol="Info24"
+                                   Width="18" Height="18"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
                     <TextBlock Text="{loc:Loc Apps_NoProfilesAvailable}"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"
                                ToolTip="{loc:Loc Apps_NoProfilesHint}"/>
                 </StackPanel>
 
                 <!-- Clear Profile Button -->
-                <Button Grid.Column="2"
-                        Command="{Binding ClearProfileCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        ToolTip="{loc:Loc Apps_ClearProfile}"
-                        Margin="8,0,0,0"
-                        Visibility="{Binding HasProfileApplied, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <materialDesign:PackIcon Kind="Close"/>
-                </Button>
+                <ui:Button Grid.Column="2"
+                           Command="{Binding ClearProfileCommand}"
+                           Appearance="Secondary"
+                           ToolTip="{loc:Loc Apps_ClearProfile}"
+                           Margin="8,0,0,0"
+                           Visibility="{Binding HasProfileApplied, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ui:SymbolIcon Symbol="Dismiss24"/>
+                </ui:Button>
 
                 <!-- Save Profile Button -->
-                <Button Grid.Column="3"
-                        Command="{Binding ShowSaveProfileDialogCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        ToolTip="{loc:Loc Apps_SaveProfile}"
-                        Margin="8,0,0,0">
+                <ui:Button Grid.Column="3"
+                           Command="{Binding ShowSaveProfileDialogCommand}"
+                           Appearance="Secondary"
+                           ToolTip="{loc:Loc Apps_SaveProfile}"
+                           Margin="8,0,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="ContentSave" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ui:SymbolIcon Symbol="Save24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                         <TextBlock Text="{loc:Loc Apps_SaveProfile}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
+                </ui:Button>
 
                 <!-- Profile Info Badge -->
                 <Border Grid.Column="4"
@@ -290,9 +299,9 @@
                         HorizontalAlignment="Left"
                         Visibility="{Binding HasProfileApplied, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="CheckCircle" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0"
-                                                  Foreground="White"/>
-                        <TextBlock Style="{StaticResource MaterialDesignCaptionTextBlock}" VerticalAlignment="Center"
+                        <ui:SymbolIcon Symbol="CheckmarkCircle24" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0"
+                                       Foreground="White"/>
+                        <TextBlock FontSize="12" VerticalAlignment="Center"
                                    Foreground="White">
                             <Run Text="{Binding SelectedCount}"/>
                             <Run Text="{loc:Loc Apps_AppsSelected}"/>
@@ -301,24 +310,25 @@
                 </Border>
 
                 <!-- Install Selected Button (prominent) -->
-                <Button Grid.Column="5"
-                        Command="{Binding InstallSelectedCommand}"
-                        Style="{StaticResource MaterialDesignRaisedButton}"
-                        ToolTip="{loc:Loc Apps_InstallSelected}"
-                        Visibility="{Binding HasSelectedApps, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <ui:Button Grid.Column="5"
+                           Command="{Binding InstallSelectedCommand}"
+                           Appearance="Primary"
+                           ToolTip="{loc:Loc Apps_InstallSelected}"
+                           Visibility="{Binding HasSelectedApps, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="Download" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <TextBlock Text="{loc:Loc Apps_InstallSelected}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
+                </ui:Button>
             </Grid>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Filter Bar Card -->
-        <materialDesign:Card Grid.Row="2"
-                              Padding="{StaticResource CardPadding}"
-                              Margin="{StaticResource MarginNormalBottom}"
-                              materialDesign:ElevationAssist.Elevation="Dp2">
+        <Border Grid.Row="2"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8"
+                Padding="{StaticResource CardPadding}"
+                Margin="{StaticResource MarginNormalBottom}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <!-- Filters Section -->
@@ -350,7 +360,6 @@
                 <ComboBox Grid.Column="1"
                           ItemsSource="{Binding Categories}"
                           SelectedItem="{Binding SelectedCategory}"
-                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
                           MinWidth="140"
                           MaxWidth="200"
                           Margin="0,0,0,0"
@@ -361,7 +370,6 @@
                 <ComboBox Grid.Column="2"
                           ItemsSource="{Binding StatusFilters}"
                           SelectedItem="{Binding SelectedStatusFilter}"
-                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
                           MinWidth="120"
                           MaxWidth="180"
                           Margin="8,0,0,0"
@@ -375,72 +383,68 @@
                 </ComboBox>
 
                 <!-- Clear Filters Button -->
-                <Button Grid.Column="3"
-                        Command="{Binding ClearFiltersCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        ToolTip="{loc:Loc Apps_ClearFilters}"
-                        Margin="8,0,0,0"
-                        AutomationProperties.Name="Clear all filters"
-                        AutomationProperties.HelpText="Reset search text, category, and status filters">
-                    <materialDesign:PackIcon Kind="FilterRemove"/>
-                </Button>
+                <ui:Button Grid.Column="3"
+                           Command="{Binding ClearFiltersCommand}"
+                           Appearance="Secondary"
+                           ToolTip="{loc:Loc Apps_ClearFilters}"
+                           Margin="8,0,0,0"
+                           AutomationProperties.Name="Clear all filters"
+                           AutomationProperties.HelpText="Reset search text, category, and status filters">
+                    <ui:SymbolIcon Symbol="Filter24"/>
+                </ui:Button>
 
                 <!-- VIEW OPTIONS SECTION -->
 
                 <!-- Separator between Filters and View Options -->
                 <Border Grid.Column="4"
                         Width="1"
-                        Background="{DynamicResource MaterialDesignDivider}"
+                        Background="{DynamicResource ControlStrokeColorDefaultBrush}"
                         Margin="16,4"
                         VerticalAlignment="Stretch"/>
 
                 <!-- Column Visibility Toggle Button with Popup -->
-                <materialDesign:PopupBox Grid.Column="5"
-                                          PlacementMode="BottomAndAlignRightEdges"
-                                          ToolTip="{loc:Loc Apps_ColumnVisibility}"
-                                          Margin="8,0,0,0"
-                                          StaysOpen="True"
-                                          AutomationProperties.Name="Toggle column visibility"
-                                          AutomationProperties.HelpText="Show or hide table columns">
-                    <materialDesign:PopupBox.ToggleContent>
-                        <materialDesign:PackIcon Kind="TableColumn" Width="24" Height="24"/>
-                    </materialDesign:PopupBox.ToggleContent>
-                    <StackPanel Orientation="Vertical" MinWidth="180" Margin="8">
-                        <TextBlock Text="{loc:Loc Apps_ColumnVisibility}"
-                                   Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
-                                   Margin="8,4,8,12"/>
-                        <CheckBox Content="{loc:Loc Col_Favorites}"
-                                  IsChecked="{Binding ShowFavoritesColumn, Mode=TwoWay}"
-                                  Style="{StaticResource MaterialDesignCheckBox}"
-                                  Margin="8,4"/>
-                        <CheckBox Content="{loc:Loc Col_Version}"
-                                  IsChecked="{Binding ShowVersionColumn, Mode=TwoWay}"
-                                  Style="{StaticResource MaterialDesignCheckBox}"
-                                  Margin="8,4"/>
-                        <CheckBox Content="{loc:Loc Col_Status}"
-                                  IsChecked="{Binding ShowStatusColumn, Mode=TwoWay}"
-                                  Style="{StaticResource MaterialDesignCheckBox}"
-                                  Margin="8,4"/>
-                        <CheckBox Content="{loc:Loc Col_Category}"
-                                  IsChecked="{Binding ShowCategoryColumn, Mode=TwoWay}"
-                                  Style="{StaticResource MaterialDesignCheckBox}"
-                                  Margin="8,4"/>
-                        <CheckBox Content="{loc:Loc Apps_Col_Sources}"
-                                  IsChecked="{Binding ShowSourcesColumn, Mode=TwoWay}"
-                                  Style="{StaticResource MaterialDesignCheckBox}"
-                                  Margin="8,4"/>
-                        <CheckBox Content="{loc:Loc Col_Logs}"
-                                  IsChecked="{Binding ShowLogsColumn, Mode=TwoWay}"
-                                  Style="{StaticResource MaterialDesignCheckBox}"
-                                  Margin="8,4"/>
-                        <Separator Margin="8,8"/>
-                        <Button Content="{loc:Loc Apps_ResetColumns}"
-                                Command="{Binding ResetColumnsToDefaultsCommand}"
-                                Style="{StaticResource MaterialDesignFlatButton}"
-                                HorizontalAlignment="Stretch"
-                                Margin="4,0"/>
-                    </StackPanel>
-                </materialDesign:PopupBox>
+                <ui:DropDownButton Grid.Column="5"
+                                   ToolTip="{loc:Loc Apps_ColumnVisibility}"
+                                   Margin="8,0,0,0"
+                                   AutomationProperties.Name="Toggle column visibility"
+                                   AutomationProperties.HelpText="Show or hide table columns">
+                    <ui:DropDownButton.Content>
+                        <ui:SymbolIcon Symbol="Table24" Width="24" Height="24"/>
+                    </ui:DropDownButton.Content>
+                    <ui:DropDownButton.Flyout>
+                        <ui:Flyout>
+                            <StackPanel Orientation="Vertical" MinWidth="180" Margin="8">
+                                <TextBlock Text="{loc:Loc Apps_ColumnVisibility}"
+                                           FontSize="14" FontWeight="Medium"
+                                           Margin="8,4,8,12"/>
+                                <CheckBox Content="{loc:Loc Col_Favorites}"
+                                          IsChecked="{Binding ShowFavoritesColumn, Mode=TwoWay}"
+                                          Margin="8,4"/>
+                                <CheckBox Content="{loc:Loc Col_Version}"
+                                          IsChecked="{Binding ShowVersionColumn, Mode=TwoWay}"
+                                          Margin="8,4"/>
+                                <CheckBox Content="{loc:Loc Col_Status}"
+                                          IsChecked="{Binding ShowStatusColumn, Mode=TwoWay}"
+                                          Margin="8,4"/>
+                                <CheckBox Content="{loc:Loc Col_Category}"
+                                          IsChecked="{Binding ShowCategoryColumn, Mode=TwoWay}"
+                                          Margin="8,4"/>
+                                <CheckBox Content="{loc:Loc Apps_Col_Sources}"
+                                          IsChecked="{Binding ShowSourcesColumn, Mode=TwoWay}"
+                                          Margin="8,4"/>
+                                <CheckBox Content="{loc:Loc Col_Logs}"
+                                          IsChecked="{Binding ShowLogsColumn, Mode=TwoWay}"
+                                          Margin="8,4"/>
+                                <Separator Margin="8,8"/>
+                                <ui:Button Content="{loc:Loc Apps_ResetColumns}"
+                                           Command="{Binding ResetColumnsToDefaultsCommand}"
+                                           Appearance="Transparent"
+                                           HorizontalAlignment="Stretch"
+                                           Margin="4,0"/>
+                            </StackPanel>
+                        </ui:Flyout>
+                    </ui:DropDownButton.Flyout>
+                </ui:DropDownButton>
 
                 <!-- Active Filter Indicators (moved after separator) -->
                 <StackPanel Grid.Column="6"
@@ -456,10 +460,10 @@
                             Cursor="Hand"
                             Visibility="{Binding HasSearchFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Magnify" Width="14" Height="14" VerticalAlignment="Center"
-                                                      Foreground="White"/>
+                            <ui:SymbolIcon Symbol="Search24" Width="14" Height="14" VerticalAlignment="Center"
+                                           Foreground="White"/>
                             <TextBlock Text="{Binding SearchText}"
-                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       FontSize="12"
                                        MaxWidth="80"
                                        TextTrimming="CharacterEllipsis"
                                        VerticalAlignment="Center"
@@ -476,10 +480,10 @@
                             Cursor="Hand"
                             Visibility="{Binding HasCategoryFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="FolderOutline" Width="14" Height="14" VerticalAlignment="Center"
-                                                      Foreground="Black"/>
+                            <ui:SymbolIcon Symbol="Folder24" Width="14" Height="14" VerticalAlignment="Center"
+                                           Foreground="Black"/>
                             <TextBlock Text="{Binding SelectedCategory}"
-                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       FontSize="12"
                                        VerticalAlignment="Center"
                                        Margin="4,0,0,0"
                                        Foreground="Black"/>
@@ -487,15 +491,15 @@
                     </Border>
                     <!-- Status Filter Badge -->
                     <Border Style="{StaticResource HoverBadgeStyle}"
-                            Background="{DynamicResource MaterialDesignChipBackground}"
+                            Background="{DynamicResource ControlFillColorDefaultBrush}"
                             CornerRadius="12"
                             Padding="8,4"
                             Cursor="Hand"
                             Visibility="{Binding HasStatusFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="FilterOutline" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <ui:SymbolIcon Symbol="Filter24" Width="14" Height="14" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding SelectedStatusFilter, Converter={StaticResource StatusFilterToStringConverter}}"
-                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       FontSize="12"
                                        VerticalAlignment="Center"
                                        Margin="4,0,0,0"/>
                         </StackPanel>
@@ -507,7 +511,7 @@
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
                     <!-- Normal stats -->
-                    <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                    <TextBlock FontSize="12"
                                VerticalAlignment="Center"
                                Visibility="{Binding IsScanning, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                         <Run Text="{Binding FilteredCount, Mode=OneWay}"/>
@@ -526,13 +530,11 @@
                     <!-- Scan progress -->
                     <StackPanel Orientation="Horizontal"
                                 Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                     Value="0"
-                                     IsIndeterminate="True"
-                                     Width="20"
-                                     Height="20"
-                                     Margin="0,0,8,0"/>
-                        <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
+                        <ui:ProgressRing IsIndeterminate="True"
+                                         Width="20"
+                                         Height="20"
+                                         Margin="0,0,8,0"/>
+                        <TextBlock FontSize="12"
                                    VerticalAlignment="Center">
                             <Run Text="{Binding ScannedCount, Mode=OneWay}"/>
                             <Run Text="/"/>
@@ -542,60 +544,59 @@
                 </StackPanel>
 
                 <!-- Scan/Cancel Button -->
-                <Button Grid.Column="8"
-                        Command="{Binding ScanCommand}"
-                        Style="{StaticResource MaterialDesignRaisedButton}"
-                        Content="{loc:Loc Btn_Scan}"
-                        ToolTip="{loc:Loc Help_Tooltip_Scan}"
-                        Margin="16,0,0,0"
-                        Visibility="{Binding IsScanning, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                        AutomationProperties.Name="Scan for installed applications"
-                        AutomationProperties.HelpText="Check which applications are already installed on this system"/>
-                <Button Grid.Column="8"
-                        Command="{Binding CancelScanCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        Content="{loc:Loc Btn_Cancel}"
-                        Margin="16,0,0,0"
-                        Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"
-                        AutomationProperties.Name="Cancel scan"
-                        AutomationProperties.HelpText="Stop the current scan operation"/>
+                <ui:Button Grid.Column="8"
+                           Command="{Binding ScanCommand}"
+                           Appearance="Primary"
+                           Content="{loc:Loc Btn_Scan}"
+                           ToolTip="{loc:Loc Help_Tooltip_Scan}"
+                           Margin="16,0,0,0"
+                           Visibility="{Binding IsScanning, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                           AutomationProperties.Name="Scan for installed applications"
+                           AutomationProperties.HelpText="Check which applications are already installed on this system"/>
+                <ui:Button Grid.Column="8"
+                           Command="{Binding CancelScanCommand}"
+                           Appearance="Secondary"
+                           Content="{loc:Loc Btn_Cancel}"
+                           Margin="16,0,0,0"
+                           Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"
+                           AutomationProperties.Name="Cancel scan"
+                           AutomationProperties.HelpText="Stop the current scan operation"/>
 
                 <!-- Scan Updates Button -->
-                <Button Grid.Column="9"
-                        Command="{Binding ScanUpdatesCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        Margin="8,0,0,0"
-                        Visibility="{Binding IsScanningUpdates, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                        AutomationProperties.Name="Scan for updates"
-                        AutomationProperties.HelpText="Check for available updates for installed applications">
+                <ui:Button Grid.Column="9"
+                           Command="{Binding ScanUpdatesCommand}"
+                           Appearance="Secondary"
+                           Margin="8,0,0,0"
+                           Visibility="{Binding IsScanningUpdates, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                           AutomationProperties.Name="Scan for updates"
+                           AutomationProperties.HelpText="Check for available updates for installed applications">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="Update" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ui:SymbolIcon Symbol="ArrowSync24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <TextBlock Text="{loc:Loc Btn_ScanUpdates}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
+                </ui:Button>
                 <StackPanel Grid.Column="9"
                             Orientation="Horizontal"
                             Margin="8,0,0,0"
                             Visibility="{Binding IsScanningUpdates, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                 Value="0"
-                                 IsIndeterminate="True"
-                                 Width="20"
-                                 Height="20"
-                                 Margin="0,0,8,0"/>
+                    <ui:ProgressRing IsIndeterminate="True"
+                                     Width="20"
+                                     Height="20"
+                                     Margin="0,0,8,0"/>
                     <TextBlock Text="{loc:Loc Common_Loading}"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               FontSize="12"
                                VerticalAlignment="Center"/>
                 </StackPanel>
             </Grid>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Selection Action Bar -->
-        <materialDesign:Card Grid.Row="3"
-                              Padding="{StaticResource MarginMedium}"
-                              Margin="{StaticResource MarginSmallBottom}"
-                              materialDesign:ElevationAssist.Elevation="Dp1"
-                              Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+        <Border Grid.Row="3"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8"
+                Padding="{StaticResource MarginMedium}"
+                Margin="{StaticResource MarginSmallBottom}"
+                Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -607,71 +608,71 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Selection Help Icon -->
-                <materialDesign:PackIcon Grid.Column="0"
-                                          Kind="HelpCircleOutline"
-                                          Width="18" Height="18"
-                                          VerticalAlignment="Center"
-                                          Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                          Margin="0,0,12,0"
-                                          ToolTip="{loc:Loc Apps_SelectionHelpTooltip}"
-                                          Cursor="Help"/>
+                <ui:SymbolIcon Grid.Column="0"
+                               Symbol="QuestionCircle24"
+                               Width="18" Height="18"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Margin="0,0,12,0"
+                               ToolTip="{loc:Loc Apps_SelectionHelpTooltip}"
+                               Cursor="Help"/>
                 <!-- Select All/None/Not Installed Buttons -->
-                <Button Grid.Column="1"
-                        Content="{loc:Loc Apps_SelectAll}"
-                        Command="{Binding SelectAllCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        Padding="12,4"
-                        Margin="0,0,8,0"
-                        AutomationProperties.Name="Select all applications"
-                        AutomationProperties.HelpText="Select all applications in the filtered list"/>
-                <Button Grid.Column="2"
-                        Content="{loc:Loc Apps_SelectNone}"
-                        Command="{Binding SelectNoneCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        Padding="12,4"
-                        Margin="0,0,8,0"
-                        AutomationProperties.Name="Select none"
-                        AutomationProperties.HelpText="Deselect all applications"/>
-                <Button Grid.Column="3"
-                        Content="{loc:Loc Apps_SelectNotInstalled}"
-                        Command="{Binding SelectNotInstalledCommand}"
-                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                        Padding="12,4"
-                        AutomationProperties.Name="Select not installed"
-                        AutomationProperties.HelpText="Select only applications that are not yet installed"/>
+                <ui:Button Grid.Column="1"
+                           Content="{loc:Loc Apps_SelectAll}"
+                           Command="{Binding SelectAllCommand}"
+                           Appearance="Secondary"
+                           Padding="12,4"
+                           Margin="0,0,8,0"
+                           AutomationProperties.Name="Select all applications"
+                           AutomationProperties.HelpText="Select all applications in the filtered list"/>
+                <ui:Button Grid.Column="2"
+                           Content="{loc:Loc Apps_SelectNone}"
+                           Command="{Binding SelectNoneCommand}"
+                           Appearance="Secondary"
+                           Padding="12,4"
+                           Margin="0,0,8,0"
+                           AutomationProperties.Name="Select none"
+                           AutomationProperties.HelpText="Deselect all applications"/>
+                <ui:Button Grid.Column="3"
+                           Content="{loc:Loc Apps_SelectNotInstalled}"
+                           Command="{Binding SelectNotInstalledCommand}"
+                           Appearance="Secondary"
+                           Padding="12,4"
+                           AutomationProperties.Name="Select not installed"
+                           AutomationProperties.HelpText="Select only applications that are not yet installed"/>
 
                 <!-- Install Selected Button (hidden during batch ops) -->
                 <StackPanel Grid.Column="5" Orientation="Horizontal"
                             Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <!-- Select Favorites Button -->
-                    <Button Content="{loc:Loc Apps_SelectFavorites}"
-                            Command="{Binding SelectFavoritesCommand}"
-                            Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                            Padding="12,4"
-                            Margin="0,0,8,0"
-                            Visibility="{Binding IsUninstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="Select favorites"
-                            AutomationProperties.HelpText="Select only applications marked as favorites"/>
+                    <ui:Button Content="{loc:Loc Apps_SelectFavorites}"
+                               Command="{Binding SelectFavoritesCommand}"
+                               Appearance="Secondary"
+                               Padding="12,4"
+                               Margin="0,0,8,0"
+                               Visibility="{Binding IsUninstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="Select favorites"
+                               AutomationProperties.HelpText="Select only applications marked as favorites"/>
                     <!-- Uninstall Selected Button -->
-                    <Button Command="{Binding UninstallSelectedCommand}"
-                            Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                            Margin="0,0,8,0"
-                            Visibility="{Binding IsUninstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="Uninstall selected applications"
-                            AutomationProperties.HelpText="Remove the selected applications from this system">
+                    <ui:Button Command="{Binding UninstallSelectedCommand}"
+                               Appearance="Secondary"
+                               Margin="0,0,8,0"
+                               Visibility="{Binding IsUninstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="Uninstall selected applications"
+                               AutomationProperties.HelpText="Remove the selected applications from this system">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="Delete24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Apps_UninstallSelected}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Button>
+                    </ui:Button>
                     <!-- Install Selected Button -->
-                    <Button Command="{Binding InstallSelectedCommand}"
-                            Style="{StaticResource MaterialDesignRaisedButton}"
-                            Visibility="{Binding IsUninstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="Install selected applications"
-                            AutomationProperties.HelpText="Download and install the selected applications">
+                    <ui:Button Command="{Binding InstallSelectedCommand}"
+                               Appearance="Primary"
+                               Visibility="{Binding IsUninstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="Install selected applications"
+                               AutomationProperties.HelpText="Download and install the selected applications">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Download" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Apps_InstallSelected}" VerticalAlignment="Center"/>
                             <TextBlock VerticalAlignment="Center" Margin="8,0,0,0">
                                 <Run Text="("/>
@@ -679,7 +680,7 @@
                                 <Run Text=")"/>
                             </TextBlock>
                         </StackPanel>
-                    </Button>
+                    </ui:Button>
                 </StackPanel>
 
                 <!-- Batch Progress Panel (visible during batch ops) -->
@@ -698,23 +699,24 @@
                         </Style>
                     </StackPanel.Style>
                     <!-- Operation Type Icon and Label -->
-                    <materialDesign:PackIcon Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0">
-                        <materialDesign:PackIcon.Style>
-                            <Style TargetType="materialDesign:PackIcon">
-                                <Setter Property="Kind" Value="Download"/>
+                    <ui:SymbolIcon Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0">
+                        <ui:SymbolIcon.Style>
+                            <Style TargetType="ui:SymbolIcon">
+                                <Setter Property="Symbol" Value="ArrowDownload24"/>
                                 <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsUninstalling}" Value="True">
-                                        <Setter Property="Kind" Value="Delete"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignValidationErrorBrush}"/>
+                                        <Setter Property="Symbol" Value="Delete24"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </materialDesign:PackIcon.Style>
-                    </materialDesign:PackIcon>
+                        </ui:SymbolIcon.Style>
+                    </ui:SymbolIcon>
                     <TextBlock VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="Medium">
                         <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource MaterialDesignBody2TextBlock}">
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontSize" Value="12"/>
                                 <Setter Property="Text" Value="{loc:Loc Progress_Installing}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsUninstalling}" Value="True">
@@ -732,7 +734,7 @@
                     </TextBlock>
                     <!-- Current App Name -->
                     <TextBlock Text="{Binding CurrentBatchAppName}"
-                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               FontSize="12"
                                Foreground="{DynamicResource PrimaryHueMidBrush}"
                                FontWeight="Medium"
                                VerticalAlignment="Center"
@@ -749,62 +751,61 @@
                                  Margin="0,0,8,0"/>
                     <!-- Estimated Time Remaining -->
                     <TextBlock Text="{Binding EstimatedTimeRemaining}"
-                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"
                                Margin="0,0,12,0"
                                Visibility="{Binding EstimatedTimeRemaining, Converter={StaticResource NullableToVisibilityConverter}}"/>
                     <!-- Pause Button -->
-                    <Button Command="{Binding PauseCommand}"
-                            Style="{StaticResource MaterialDesignIconButton}"
-                            Width="44" Height="44"
-                            ToolTip="{loc:Loc Btn_Pause}"
-                            Visibility="{Binding IsPaused, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="Pause"
-                            AutomationProperties.HelpText="Pause the current batch operation">
-                        <materialDesign:PackIcon Kind="Pause"/>
-                    </Button>
+                    <ui:Button Command="{Binding PauseCommand}"
+                               Appearance="Transparent"
+                               Width="44" Height="44"
+                               ToolTip="{loc:Loc Btn_Pause}"
+                               Visibility="{Binding IsPaused, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="Pause"
+                               AutomationProperties.HelpText="Pause the current batch operation">
+                        <ui:SymbolIcon Symbol="Pause24"/>
+                    </ui:Button>
                     <!-- Resume Button -->
-                    <Button Command="{Binding ResumeCommand}"
-                            Style="{StaticResource MaterialDesignIconButton}"
-                            Width="44" Height="44"
-                            ToolTip="{loc:Loc Btn_Resume}"
-                            Visibility="{Binding IsPaused, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            AutomationProperties.Name="Resume"
-                            AutomationProperties.HelpText="Resume the paused batch operation">
-                        <materialDesign:PackIcon Kind="Play"/>
-                    </Button>
+                    <ui:Button Command="{Binding ResumeCommand}"
+                               Appearance="Transparent"
+                               Width="44" Height="44"
+                               ToolTip="{loc:Loc Btn_Resume}"
+                               Visibility="{Binding IsPaused, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="Resume"
+                               AutomationProperties.HelpText="Resume the paused batch operation">
+                        <ui:SymbolIcon Symbol="Play24"/>
+                    </ui:Button>
                     <!-- Cancel Button -->
-                    <Button Command="{Binding CancelBatchCommand}"
-                            Style="{StaticResource MaterialDesignIconButton}"
-                            Width="44" Height="44"
-                            ToolTip="{loc:Loc Btn_Cancel}"
-                            Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
-                            AutomationProperties.Name="Cancel"
-                            AutomationProperties.HelpText="Cancel the current batch operation">
-                        <materialDesign:PackIcon Kind="Close"/>
-                    </Button>
+                    <ui:Button Command="{Binding CancelBatchCommand}"
+                               Appearance="Transparent"
+                               Width="44" Height="44"
+                               ToolTip="{loc:Loc Btn_Cancel}"
+                               Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                               AutomationProperties.Name="Cancel"
+                               AutomationProperties.HelpText="Cancel the current batch operation">
+                        <ui:SymbolIcon Symbol="Dismiss24"/>
+                    </ui:Button>
                 </StackPanel>
             </Grid>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Applications DataGrid -->
-        <materialDesign:Card Grid.Row="4"
-                              Padding="0"
-                              materialDesign:ElevationAssist.Elevation="Dp2">
+        <Border Grid.Row="4"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="8"
+                Padding="0">
             <Grid>
                 <!-- Loading Indicator -->
                 <StackPanel Orientation="Vertical"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                 Value="0"
-                                 IsIndeterminate="True"
-                                 Width="48"
-                                 Height="48"/>
+                    <ui:ProgressRing IsIndeterminate="True"
+                                     Width="48"
+                                     Height="48"/>
                     <TextBlock Text="{loc:Loc Common_Loading}"
-                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                               FontSize="14"
                                HorizontalAlignment="Center"
                                Margin="0,16,0,0"/>
                 </StackPanel>
@@ -814,26 +815,26 @@
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Visibility="{Binding IsEmptyFilterResults, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <materialDesign:PackIcon Kind="FilterOff"
-                                              Width="64" Height="64"
-                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                              HorizontalAlignment="Center"
-                                              Margin="0,0,0,16"/>
+                    <ui:SymbolIcon Symbol="Filter24"
+                                   Width="64" Height="64"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,16"/>
                     <TextBlock Text="{loc:Loc Apps_EmptyFilterResults}"
-                               Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               FontSize="20" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,8"/>
                     <TextBlock Text="{loc:Loc Apps_EmptyFilterResultsHint}"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,16"/>
-                    <Button Content="{loc:Loc Apps_ClearFilters}"
-                            Command="{Binding ClearFiltersCommand}"
-                            Style="{StaticResource MaterialDesignRaisedButton}"
-                            HorizontalAlignment="Center"
-                            AutomationProperties.Name="Clear all filters to show applications"/>
+                    <ui:Button Content="{loc:Loc Apps_ClearFilters}"
+                               Command="{Binding ClearFiltersCommand}"
+                               Appearance="Primary"
+                               HorizontalAlignment="Center"
+                               AutomationProperties.Name="Clear all filters to show applications"/>
                 </StackPanel>
 
                 <!-- DataGrid with UI Virtualization for performance -->
@@ -856,8 +857,6 @@
                           EnableRowVirtualization="True"
                           EnableColumnVirtualization="False"
                           ScrollViewer.IsDeferredScrollingEnabled="False"
-                          materialDesign:DataGridAssist.CellPadding="16 8"
-                          materialDesign:DataGridAssist.ColumnHeaderPadding="16 8"
                           RowValidationErrorTemplate="{x:Null}"
                           RowHeaderWidth="0"
                           Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
@@ -865,7 +864,7 @@
                           AutomationProperties.Name="Applications list"
                           AutomationProperties.HelpText="List of available applications. Use arrow keys to navigate, Space to toggle selection.">
                     <DataGrid.RowStyle>
-                        <Style TargetType="DataGridRow" BasedOn="{StaticResource MaterialDesignDataGridRow}">
+                        <Style TargetType="DataGridRow">
                             <Setter Property="Background" Value="{Binding Status, Converter={StaticResource StatusToRowBackgroundConverter}}"/>
                             <Setter Property="MinHeight" Value="56"/>
                         </Style>
@@ -876,14 +875,14 @@
                                       Header="{loc:Loc Menu_Launch}"
                                       Click="ContextMenu_Launch_Click">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="Play"/>
+                                    <ui:SymbolIcon Symbol="Play24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem x:Name="MenuOpenHomepage"
                                       Header="{loc:Loc Menu_OpenHomepage}"
                                       Click="ContextMenu_OpenHomepage_Click">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="Web"/>
+                                    <ui:SymbolIcon Symbol="Globe24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
@@ -891,21 +890,21 @@
                                       Header="{loc:Loc Menu_Install}"
                                       Click="ContextMenu_Install_Click">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="Download"/>
+                                    <ui:SymbolIcon Symbol="ArrowDownload24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem x:Name="MenuUninstall"
                                       Header="{loc:Loc Menu_Uninstall}"
                                       Click="ContextMenu_Uninstall_Click">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="Delete"/>
+                                    <ui:SymbolIcon Symbol="Delete24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem x:Name="MenuUpdate"
                                       Header="{loc:Loc Menu_Update}"
                                       Click="ContextMenu_Update_Click">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="Update"/>
+                                    <ui:SymbolIcon Symbol="ArrowSync24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
@@ -913,27 +912,27 @@
                                       Header="{loc:Loc Menu_Scan}"
                                       Click="ContextMenu_Scan_Click">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="Magnify"/>
+                                    <ui:SymbolIcon Symbol="Search24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem x:Name="MenuScanSelected"
                                       Header="{loc:Loc Menu_ScanSelected}"
                                       Click="ContextMenu_ScanSelected_Click">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="MagnifyPlus"/>
+                                    <ui:SymbolIcon Symbol="Search24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
                             <MenuItem Header="{loc:Loc Menu_ToggleSelection}"
                                       Click="ContextMenu_ToggleSelection_Click">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="CheckboxMarked"/>
+                                    <ui:SymbolIcon Symbol="CheckboxChecked24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem Header="{loc:Loc Menu_ToggleFavorite}"
                                       Click="ContextMenu_ToggleFavorite_Click">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="Star"/>
+                                    <ui:SymbolIcon Symbol="Star24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
@@ -941,14 +940,14 @@
                                       Header="{loc:Loc Menu_ViewLogs}"
                                       Click="ContextMenu_ViewLogs_Click">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="FileDocument"/>
+                                    <ui:SymbolIcon Symbol="Document24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
                             <MenuItem Header="{loc:Loc Menu_CopyAppId}"
                                       Click="ContextMenu_CopyAppId_Click">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="ContentCopy"/>
+                                    <ui:SymbolIcon Symbol="Copy24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                         </ContextMenu>
@@ -980,9 +979,9 @@
                                             ToolTip="{loc:Loc Menu_ToggleFavorite}"
                                             AutomationProperties.Name="{Binding Name, StringFormat='Toggle favorite for {0}'}"
                                             AutomationProperties.HelpText="Add or remove from favorites">
-                                        <materialDesign:PackIcon Kind="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteIconConverter}}"
-                                                                  Foreground="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteColorConverter}}"
-                                                                  Width="20" Height="20"/>
+                                        <ui:SymbolIcon Symbol="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteIconConverter}}"
+                                                       Foreground="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteColorConverter}}"
+                                                       Width="20" Height="20"/>
                                     </Button>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -998,7 +997,7 @@
                                     <StackPanel Orientation="Vertical">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{Binding Name}"
-                                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                       FontSize="14"
                                                        FontWeight="Medium"/>
                                             <!-- Profile Tier Badge -->
                                             <Border Background="{DynamicResource SecondaryHueMidBrush}"
@@ -1027,14 +1026,14 @@
                                             </Border>
                                         </StackPanel>
                                         <TextBlock Text="{Binding Description}"
-                                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                    TextTrimming="CharacterEllipsis"
                                                    MaxWidth="350"/>
                                         <!-- Install Notes -->
                                         <TextBlock Text="{Binding InstallNotes}"
-                                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                                   Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                                    TextWrapping="Wrap"
                                                    MaxWidth="350"
                                                    Margin="0,2,0,0"
@@ -1056,20 +1055,20 @@
                                                 Visibility="{Binding CurrentVersion, Converter={StaticResource NullableToVisibilityConverter}}">
                                         <!-- Current Version -->
                                         <TextBlock Text="{Binding CurrentVersion}"
-                                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                                   FontSize="12"
                                                    FontFamily="Consolas"
                                                    VerticalAlignment="Center"/>
                                         <!-- Arrow and New Version (only if update available) -->
                                         <StackPanel Orientation="Horizontal"
                                                     Visibility="{Binding AvailableVersion, Converter={StaticResource NullableToVisibilityConverter}}">
-                                            <materialDesign:PackIcon Kind="ArrowRight"
-                                                                      Width="16"
-                                                                      Height="16"
-                                                                      Foreground="{DynamicResource AccentGreenTextBrush}"
-                                                                      VerticalAlignment="Center"
-                                                                      Margin="6,0,6,0"/>
+                                            <ui:SymbolIcon Symbol="ChevronRight24"
+                                                           Width="16"
+                                                           Height="16"
+                                                           Foreground="{DynamicResource AccentGreenTextBrush}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="6,0,6,0"/>
                                             <TextBlock Text="{Binding AvailableVersion}"
-                                                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                                       FontSize="12"
                                                        FontFamily="Consolas"
                                                        Foreground="{DynamicResource AccentGreenTextBrush}"
                                                        FontWeight="SemiBold"
@@ -1089,13 +1088,13 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                     <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
-                                                                  Width="18"
-                                                                  Height="18"
-                                                                  Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
-                                                                  VerticalAlignment="Center"/>
+                                        <ui:SymbolIcon Symbol="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
+                                                       Width="18"
+                                                       Height="18"
+                                                       Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
+                                                       VerticalAlignment="Center"/>
                                         <TextBlock Text="{Binding StatusMessage}"
-                                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                   FontSize="12"
                                                    VerticalAlignment="Center"
                                                    Margin="6,0,0,0"
                                                    TextTrimming="CharacterEllipsis"
@@ -1113,12 +1112,12 @@
                             </DataGridTemplateColumn.Header>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                    <Border Background="{DynamicResource MaterialDesignChipBackground}"
+                                    <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
                                             CornerRadius="12"
                                             Padding="10,4"
                                             VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Category}"
-                                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                                   FontSize="12"
                                                    VerticalAlignment="Center"
                                                    HorizontalAlignment="Center"/>
                                     </Border>
@@ -1135,7 +1134,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                     <TextBlock Text="{Binding Sources}"
-                                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                               FontSize="12"
                                                Foreground="{DynamicResource AccentGreenTextBrush}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -1158,7 +1157,7 @@
                                             Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}"
                                             AutomationProperties.Name="{Binding Name, StringFormat='View logs for {0}'}"
                                             AutomationProperties.HelpText="Opens the installation logs for this application">
-                                        <materialDesign:PackIcon Kind="FileDocumentOutline" Width="20" Height="20"/>
+                                        <ui:SymbolIcon Symbol="Document24" Width="20" Height="20"/>
                                     </Button>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -1166,7 +1165,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
-        </materialDesign:Card>
+        </Border>
 
         <!-- Error Message with Recovery Options -->
         <Border Grid.Row="4"
@@ -1182,32 +1181,32 @@
                 MaxWidth="500">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
-                    <materialDesign:PackIcon Kind="AlertCircle"
-                                              Width="24" Height="24"
-                                              Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,12,0"/>
+                    <ui:SymbolIcon Symbol="ErrorCircle24"
+                                   Width="24" Height="24"
+                                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"/>
                     <TextBlock Text="{Binding ErrorMessage}"
-                               Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
-                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                               Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                               FontSize="14"
                                TextWrapping="Wrap"
                                VerticalAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="{loc:Loc Common_TryAgain}"
-                            Command="{Binding RetryLastOperationCommand}"
-                            Style="{StaticResource MaterialDesignRaisedButton}"
-                            Margin="0,0,8,0"
-                            MinWidth="100"
-                            AutomationProperties.Name="Retry the failed operation"/>
-                    <Button Content="{loc:Loc Common_Dismiss}"
-                            Command="{Binding DismissErrorCommand}"
-                            Style="{StaticResource MaterialDesignOutlinedButton}"
-                            MinWidth="100"
-                            AutomationProperties.Name="Dismiss error message"/>
+                    <ui:Button Content="{loc:Loc Common_TryAgain}"
+                               Command="{Binding RetryLastOperationCommand}"
+                               Appearance="Primary"
+                               Margin="0,0,8,0"
+                               MinWidth="100"
+                               AutomationProperties.Name="Retry the failed operation"/>
+                    <ui:Button Content="{loc:Loc Common_Dismiss}"
+                               Command="{Binding DismissErrorCommand}"
+                               Appearance="Secondary"
+                               MinWidth="100"
+                               AutomationProperties.Name="Dismiss error message"/>
                 </StackPanel>
             </StackPanel>
         </Border>
     </Grid>
-    </materialDesign:DialogHost>
+    </Grid>
 </UserControl>

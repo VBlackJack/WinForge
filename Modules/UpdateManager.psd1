@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'UpdateManager.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '3db33192-93fc-44e6-a136-2e53877459b3'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

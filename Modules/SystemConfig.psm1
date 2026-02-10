@@ -97,7 +97,7 @@ function Get-SystemSettings {
     return $script:CachedSystemSettings
 }
 
-function Get-RegistryPath {
+function Get-SystemConfigRegistryPath {
     <#
     .SYNOPSIS
         Gets a registry path from configuration.
@@ -357,7 +357,7 @@ function Set-RegistrySettingFromConfig {
         return $false
     }
 
-    $registryPath = Get-RegistryPath -PathKey $pathKey -FallbackPath ''
+    $registryPath = Get-SystemConfigRegistryPath -PathKey $pathKey -FallbackPath ''
     if (-not $registryPath) {
         Write-Status -Message (Get-LocalizedString -Key 'sysconfig.path_not_found' -Parameters @{ Path = $pathKey }) -Level 'Warning'
         return $false
@@ -914,7 +914,7 @@ function Set-SystemConfiguration {
 
 Export-ModuleMember -Function @(
     'Get-SystemSettings',
-    'Get-RegistryPath',
+    'Get-SystemConfigRegistryPath',
     'Get-RegistryValueDefinition',
     'Get-PowerPlanGuid',
     'Get-ServicesList',

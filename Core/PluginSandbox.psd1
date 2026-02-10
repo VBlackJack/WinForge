@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'PluginSandbox.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '8a1369f8-98cd-4b7c-a5d2-29004729fd56'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

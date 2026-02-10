@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ScheduledDeployment.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = 'e14bf06d-c72f-4150-8153-f8d05a089d95'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

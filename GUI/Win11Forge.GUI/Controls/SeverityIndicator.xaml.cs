@@ -18,7 +18,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Controls;
 
 namespace Win11Forge.GUI.Controls;
 
@@ -108,7 +108,7 @@ public partial class SeverityIndicator : UserControl
     {
         var (icon, background, border, foreground) = GetSeverityStyles(Severity);
 
-        SeverityIcon.Kind = icon;
+        SeverityIcon.Symbol = icon;
         SeverityIcon.Foreground = foreground;
 
         IndicatorBorder.Background = background;
@@ -118,36 +118,36 @@ public partial class SeverityIndicator : UserControl
         AutomationProperties.SetName(this, $"{Severity} indicator");
     }
 
-    private static (PackIconKind Icon, Brush Background, Brush Border, Brush Foreground) GetSeverityStyles(SeverityLevel severity)
+    private static (SymbolRegular Icon, Brush Background, Brush Border, Brush Foreground) GetSeverityStyles(SeverityLevel severity)
     {
         return severity switch
         {
             SeverityLevel.Success => (
-                PackIconKind.CheckCircle,
+                SymbolRegular.CheckmarkCircle24,
                 new SolidColorBrush(Color.FromArgb(0x1E, 0x4C, 0xAF, 0x50)),
                 new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50)),
                 new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50))
             ),
             SeverityLevel.Warning => (
-                PackIconKind.AlertCircle,
+                SymbolRegular.Warning24,
                 new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0x98, 0x00)),
                 new SolidColorBrush(Color.FromRgb(0xFF, 0x98, 0x00)),
                 new SolidColorBrush(Color.FromRgb(0xFF, 0xB7, 0x4D))
             ),
             SeverityLevel.Error => (
-                PackIconKind.CloseCircle,
+                SymbolRegular.DismissCircle24,
                 new SolidColorBrush(Color.FromArgb(0x33, 0xF4, 0x43, 0x36)),
                 new SolidColorBrush(Color.FromRgb(0xF4, 0x43, 0x36)),
                 new SolidColorBrush(Color.FromRgb(0xEF, 0x53, 0x50))
             ),
             SeverityLevel.Critical => (
-                PackIconKind.AlertOctagon,
+                SymbolRegular.ShieldError24,
                 new SolidColorBrush(Color.FromArgb(0x4D, 0xF4, 0x43, 0x36)),
                 new SolidColorBrush(Color.FromRgb(0xD3, 0x2F, 0x2F)),
                 new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF))
             ),
             _ => ( // Info
-                PackIconKind.InformationOutline,
+                SymbolRegular.Info24,
                 new SolidColorBrush(Color.FromArgb(0x1E, 0x21, 0x96, 0xF3)),
                 new SolidColorBrush(Color.FromRgb(0x21, 0x96, 0xF3)),
                 new SolidColorBrush(Color.FromRgb(0x21, 0x96, 0xF3))

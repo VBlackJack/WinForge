@@ -16,7 +16,7 @@
 
 using System.Windows;
 using System.Windows.Controls;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Controls;
 using Res = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Controls;
@@ -81,6 +81,6 @@ public partial class KeyboardShortcutsPanel : UserControl
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
-        DialogHost.CloseDialogCommand.Execute(null, null);
+        // ContentDialog manages its own lifecycle
     }
 }

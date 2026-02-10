@@ -101,6 +101,7 @@ public class Resources
     public static string Common_OK => ResourceManager.GetString("Common_OK", resourceCulture);
     public static string Common_Cancel => ResourceManager.GetString("Common_Cancel", resourceCulture);
     public static string Common_TryAgain => ResourceManager.GetString("Common_TryAgain", resourceCulture);
+    public static string Common_Details => ResourceManager.GetString("Common_Details", resourceCulture);
     public static string Common_Dismiss => ResourceManager.GetString("Common_Dismiss", resourceCulture);
     public static string Common_DryRun => ResourceManager.GetString("Common_DryRun", resourceCulture);
 

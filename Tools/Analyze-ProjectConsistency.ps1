@@ -137,10 +137,11 @@ Write-Host "`n[3/5] Checking module exports..." -ForegroundColor Yellow
 
 Get-ChildItem -Path 'Modules' -Filter '*.psm1' | ForEach-Object {
     $moduleName = $_.BaseName
+    $manifestPath = Join-Path $_.DirectoryName "$moduleName.psd1"
     $content = Get-Content $_.FullName -Raw
 
     # Check if module has Export-ModuleMember
-    if ($content -notmatch 'Export-ModuleMember') {
+    if ($content -notmatch 'Export-ModuleMember' -and -not (Test-Path $manifestPath)) {
         $report.ModuleIssues += "${moduleName}: No Export-ModuleMember statement"
     }
 
@@ -176,11 +177,23 @@ $profiles | ForEach-Object {
 $allFunctions = @{}
 Get-ChildItem -Path 'Modules','Core' -Include '*.psm1' -Recurse | ForEach-Object {
     $moduleName = $_.Name
-    $content = Get-Content $_.FullName -Raw
-    $functions = [regex]::Matches($content, 'function\s+([A-Z][a-z]+-[A-Z]\w+)')
+    $tokens = $null
+    $parseErrors = $null
+    $ast = [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$parseErrors)
 
-    foreach ($match in $functions) {
-        $funcName = $match.Groups[1].Value
+    if ($parseErrors.Count -gt 0) {
+        $report.NamingIssues += "Could not parse module for duplicate function check: $moduleName"
+        return
+    }
+
+    $functions = $ast.FindAll({
+            param($node)
+            $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
+            $node.Extent.Text -match '^\s*function\s+'
+        }, $true)
+
+    foreach ($func in $functions) {
+        $funcName = $func.Name
         if ($allFunctions.ContainsKey($funcName)) {
             $report.NamingIssues += "Duplicate function '$funcName' in $moduleName and $($allFunctions[$funcName])"
         } else {

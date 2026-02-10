@@ -17,7 +17,6 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using MaterialDesignThemes.Wpf;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.ViewModels;
 
@@ -47,7 +46,7 @@ public partial class AppsView : UserControl
     /// <summary>
     /// Handles unified dialog closing event for all dialogs.
     /// </summary>
-    private void DialogHost_DialogClosing(object sender, DialogClosingEventArgs e)
+    private void DialogHost_DialogClosing(object sender, RoutedEventArgs e)
     {
         if (DataContext is AppsViewModel viewModel)
         {

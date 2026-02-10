@@ -401,9 +401,22 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private bool _isSummaryDialogOpen;
 
     /// <summary>
-    /// Whether any dialog is currently open (for DialogHost.IsOpen binding).
+    /// Whether the save profile dialog is open.
     /// </summary>
-    public bool IsDialogOpen => IsLogViewerOpen || IsSummaryDialogOpen;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDialogOpen))]
+    private bool _isSaveProfileDialogOpen;
+
+    /// <summary>
+    /// Content for the save profile dialog.
+    /// </summary>
+    [ObservableProperty]
+    private object? _saveProfileDialogContent;
+
+    /// <summary>
+    /// Whether any dialog is currently open.
+    /// </summary>
+    public bool IsDialogOpen => IsLogViewerOpen || IsSummaryDialogOpen || IsSaveProfileDialogOpen;
 
     /// <summary>
     /// Result of the last deployment operation.
@@ -1083,10 +1096,17 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             DataContext = dialogViewModel
         };
 
-        // Show dialog and wait for result
-        var result = await MaterialDesignThemes.Wpf.DialogHost.Show(dialog, "RootDialog");
+        // Show save profile dialog using ViewModel's save profile state
+        SaveProfileDialogContent = dialog;
+        IsSaveProfileDialogOpen = true;
 
-        if (result is SaveProfileDialogViewModel vm)
+        // Wait for the dialog to complete (set by view's dialog closing handler)
+        while (IsSaveProfileDialogOpen)
+        {
+            await Task.Delay(100);
+        }
+
+        if (dialog.DataContext is SaveProfileDialogViewModel vm)
         {
             await SaveProfileAsync(vm.GetResult(), selectedApps);
         }
@@ -1352,8 +1372,11 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             _scanCancellationTokenSource?.Dispose();
             _scanCancellationTokenSource = null;
 
+            // Capture callback before it may be cleared by the TriggerScanMessage handler's finally block
+            var completionCallback = _externalCompletionCallback;
+
             // Set the property values on UI thread to trigger notifications
-            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
             {
                 // Recount all installed apps after partial scan
                 if (hasActiveFilter)
@@ -1373,7 +1396,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
                 CommandManager.InvalidateRequerySuggested();
 
                 // Notify external callback (Dashboard) of completion
-                _externalCompletionCallback?.Invoke(UpdatesAvailableCount);
+                completionCallback?.Invoke(UpdatesAvailableCount);
             });
         }
     }
@@ -1719,7 +1742,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             _scanCancellationTokenSource?.Dispose();
             _scanCancellationTokenSource = null;
 
-            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
             {
                 UpdateCounters();
                 CommandManager.InvalidateRequerySuggested();
@@ -1925,7 +1948,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             await Task.WhenAll(tasks);
 
             // Update count on UI thread
-            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+            System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
             {
                 UpdatesAvailableCount = localUpdateCount;
             });

@@ -18,7 +18,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Controls;
 
 namespace Win11Forge.GUI.Controls;
 
@@ -69,23 +69,22 @@ public partial class ConfirmDialog : UserControl
         switch (dialogType)
         {
             case ConfirmDialogType.Warning:
-                DialogIcon.Kind = PackIconKind.AlertCircle;
+                DialogIcon.Symbol = SymbolRegular.Warning24;
                 DialogIcon.Foreground = Application.Current.TryFindResource("WarningIconBrush") as Brush
                     ?? new SolidColorBrush(Color.FromRgb(230, 81, 0));
                 break;
 
             case ConfirmDialogType.Danger:
-                DialogIcon.Kind = PackIconKind.AlertOctagon;
+                DialogIcon.Symbol = SymbolRegular.ShieldError24;
                 DialogIcon.Foreground = Application.Current.TryFindResource("ErrorIconBrush") as Brush
                     ?? new SolidColorBrush(Color.FromRgb(211, 47, 47));
-                ConfirmButton.Style = (Style)FindResource("MaterialDesignRaisedButton");
                 ConfirmButton.Background = Application.Current.TryFindResource("StatusFailedBrush") as Brush
                     ?? new SolidColorBrush(Color.FromRgb(244, 67, 54));
                 break;
 
             case ConfirmDialogType.Question:
             default:
-                DialogIcon.Kind = PackIconKind.HelpCircle;
+                DialogIcon.Symbol = SymbolRegular.QuestionCircle24;
                 DialogIcon.Foreground = Application.Current.TryFindResource("PrimaryHueMidBrush") as Brush
                     ?? new SolidColorBrush(Color.FromRgb(103, 58, 183));
                 break;
@@ -95,13 +94,13 @@ public partial class ConfirmDialog : UserControl
     private void ConfirmButton_Click(object sender, RoutedEventArgs e)
     {
         ResultSelected?.Invoke(this, true);
-        DialogHost.CloseDialogCommand.Execute(null, null);
+        // ContentDialog manages its own lifecycle
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
         ResultSelected?.Invoke(this, false);
-        DialogHost.CloseDialogCommand.Execute(null, null);
+        // ContentDialog manages its own lifecycle
     }
 
     private void UserControl_KeyDown(object sender, KeyEventArgs e)
@@ -109,7 +108,7 @@ public partial class ConfirmDialog : UserControl
         if (e.Key == Key.Escape)
         {
             ResultSelected?.Invoke(this, false);
-            DialogHost.CloseDialogCommand.Execute(null, null);
+            // ContentDialog manages its own lifecycle
             e.Handled = true;
         }
     }

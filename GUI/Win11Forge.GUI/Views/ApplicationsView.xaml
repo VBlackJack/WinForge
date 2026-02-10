@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              mc:Ignorable="d"
@@ -32,7 +32,7 @@
 
         <!-- Header -->
         <Border Grid.Row="0"
-                Background="{DynamicResource MaterialDesignToolBarBackground}"
+                Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
                 Padding="24,16">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -41,147 +41,133 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="Database"
-                                              Width="32" Height="32"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,16,0"/>
+                    <ui:SymbolIcon Symbol="Database24"
+                                   Width="32" Height="32"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,16,0"/>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="{loc:Loc AppDb_Title}"
-                                   Style="{StaticResource MaterialDesignHeadline5TextBlock}"/>
+                                   FontSize="24" FontWeight="SemiBold"/>
                         <TextBlock Text="{loc:Loc AppDb_Subtitle}"
-                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                   Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                   FontSize="12"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                 </StackPanel>
 
                 <!-- Actions -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <!-- Undo/Redo buttons -->
-                    <Button Style="{StaticResource MaterialDesignIconButton}"
-                            Command="{Binding UndoCommand}"
-                            ToolTip="{Binding NextUndoDescription, StringFormat='{}{0} (Ctrl+Z)', FallbackValue='Undo (Ctrl+Z)'}"
-                            AutomationProperties.Name="Undo last action"
-                            Width="44" Height="44"
-                            Margin="0,0,4,0">
-                        <materialDesign:PackIcon Kind="Undo" Width="24" Height="24"/>
-                    </Button>
-                    <Button Style="{StaticResource MaterialDesignIconButton}"
-                            Command="{Binding RedoCommand}"
-                            ToolTip="{Binding NextRedoDescription, StringFormat='{}{0} (Ctrl+Y)', FallbackValue='Redo (Ctrl+Y)'}"
-                            AutomationProperties.Name="Redo last action"
-                            Width="44" Height="44"
-                            Margin="0,0,16,0">
-                        <materialDesign:PackIcon Kind="Redo" Width="24" Height="24"/>
-                    </Button>
+                    <ui:Button Appearance="Transparent"
+                               Command="{Binding UndoCommand}"
+                               ToolTip="{Binding NextUndoDescription, StringFormat='{}{0} (Ctrl+Z)', FallbackValue='Undo (Ctrl+Z)'}"
+                               AutomationProperties.Name="Undo last action"
+                               Width="44" Height="44"
+                               Margin="0,0,4,0"
+                               Icon="{ui:SymbolIcon ArrowUndo24}"/>
+                    <ui:Button Appearance="Transparent"
+                               Command="{Binding RedoCommand}"
+                               ToolTip="{Binding NextRedoDescription, StringFormat='{}{0} (Ctrl+Y)', FallbackValue='Redo (Ctrl+Y)'}"
+                               AutomationProperties.Name="Redo last action"
+                               Width="44" Height="44"
+                               Margin="0,0,16,0"
+                               Icon="{ui:SymbolIcon ArrowRedo24}"/>
 
-                    <Button Style="{StaticResource MaterialDesignRaisedButton}"
-                            Command="{Binding AddCommand}"
-                            ToolTip="{loc:Loc AppDb_AddTooltip}"
-                            AutomationProperties.Name="Add new application"
-                            Margin="0,0,8,0"
-                            MinWidth="100">
+                    <ui:Button Appearance="Primary"
+                               Command="{Binding AddCommand}"
+                               ToolTip="{loc:Loc AppDb_AddTooltip}"
+                               AutomationProperties.Name="Add new application"
+                               Margin="0,0,8,0"
+                               MinWidth="100">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Plus"
-                                                      Width="18" Height="18"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="Add24"
+                                           Width="18" Height="18"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc AppDb_Add}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Button>
+                    </ui:Button>
 
                     <!-- Import/Export -->
-                    <Button Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                            Command="{Binding ImportCommand}"
-                            ToolTip="{loc:Loc AppDb_ImportTooltip}"
-                            AutomationProperties.Name="Import applications"
-                            Margin="0,0,4,0"
-                            MinWidth="80">
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding ImportCommand}"
+                               ToolTip="{loc:Loc AppDb_ImportTooltip}"
+                               AutomationProperties.Name="Import applications"
+                               Margin="0,0,4,0"
+                               MinWidth="80">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Import"
-                                                      Width="16" Height="16"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,6,0"/>
+                            <ui:SymbolIcon Symbol="ArrowImport24"
+                                           Width="16" Height="16"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,6,0"/>
                             <TextBlock Text="{loc:Loc AppDb_Import}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Button>
-                    <materialDesign:PopupBox PlacementMode="BottomAndAlignRightEdges"
-                                              ToolTip="{loc:Loc AppDb_ExportTooltip}"
-                                              Margin="0,0,8,0">
-                        <materialDesign:PopupBox.ToggleContent>
+                    </ui:Button>
+                    <ui:DropDownButton ToolTip="{loc:Loc AppDb_ExportTooltip}"
+                                       Margin="0,0,8,0">
+                        <ui:DropDownButton.Content>
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Export"
-                                                          Width="16" Height="16"
-                                                          VerticalAlignment="Center"
-                                                          Margin="0,0,6,0"/>
+                                <ui:SymbolIcon Symbol="ArrowExportLtr24"
+                                               Width="16" Height="16"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,6,0"/>
                                 <TextBlock Text="{loc:Loc AppDb_Export}" VerticalAlignment="Center"/>
-                                <materialDesign:PackIcon Kind="ChevronDown"
-                                                          Width="16" Height="16"
-                                                          VerticalAlignment="Center"
-                                                          Margin="4,0,0,0"/>
                             </StackPanel>
-                        </materialDesign:PopupBox.ToggleContent>
-                        <StackPanel MinWidth="150">
-                            <Button Content="{loc:Loc AppDb_ExportSelected}"
-                                    Command="{Binding ExportSelectedCommand}"
-                                    Style="{StaticResource MaterialDesignFlatButton}"
-                                    HorizontalContentAlignment="Left"
-                                    Padding="16,8"/>
-                            <Button Content="{loc:Loc AppDb_ExportAll}"
-                                    Command="{Binding ExportAllCommand}"
-                                    Style="{StaticResource MaterialDesignFlatButton}"
-                                    HorizontalContentAlignment="Left"
-                                    Padding="16,8"/>
-                        </StackPanel>
-                    </materialDesign:PopupBox>
+                        </ui:DropDownButton.Content>
+                        <ui:DropDownButton.Flyout>
+                            <ContextMenu>
+                                <MenuItem Header="{loc:Loc AppDb_ExportSelected}"
+                                          Command="{Binding ExportSelectedCommand}"/>
+                                <MenuItem Header="{loc:Loc AppDb_ExportAll}"
+                                          Command="{Binding ExportAllCommand}"/>
+                            </ContextMenu>
+                        </ui:DropDownButton.Flyout>
+                    </ui:DropDownButton>
 
                     <!-- Verify All -->
-                    <Button Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                            Command="{Binding VerifyAllSourcesCommand}"
-                            ToolTip="{loc:Loc AppDb_VerifySources}"
-                            AutomationProperties.Name="Verify all sources"
-                            Margin="0,0,8,0"
-                            MinWidth="80"
-                            Visibility="{Binding IsVerifying, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding VerifyAllSourcesCommand}"
+                               ToolTip="{loc:Loc AppDb_VerifySources}"
+                               AutomationProperties.Name="Verify all sources"
+                               Margin="0,0,8,0"
+                               MinWidth="80"
+                               Visibility="{Binding IsVerifying, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="CheckAll"
-                                                      Width="16" Height="16"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,6,0"/>
+                            <ui:SymbolIcon Symbol="CheckmarkStarburst24"
+                                           Width="16" Height="16"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,6,0"/>
                             <TextBlock Text="{loc:Loc AppDb_Verify}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                            Command="{Binding CancelVerificationCommand}"
-                            ToolTip="{loc:Loc Btn_Cancel}"
-                            AutomationProperties.Name="Cancel verification"
-                            Margin="0,0,8,0"
-                            MinWidth="80"
-                            Visibility="{Binding IsVerifying, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    </ui:Button>
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding CancelVerificationCommand}"
+                               ToolTip="{loc:Loc Btn_Cancel}"
+                               AutomationProperties.Name="Cancel verification"
+                               Margin="0,0,8,0"
+                               MinWidth="80"
+                               Visibility="{Binding IsVerifying, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
-                            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                         Value="{Binding VerificationProgress}"
-                                         IsIndeterminate="True"
-                                         Width="16" Height="16"
-                                         Margin="0,0,6,0"/>
+                            <ui:ProgressRing IsIndeterminate="True"
+                                             Width="16" Height="16"
+                                             Margin="0,0,6,0"/>
                             <TextBlock Text="{loc:Loc Btn_Cancel}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Button>
+                    </ui:Button>
 
-                    <Button Style="{StaticResource MaterialDesignIconButton}"
-                            Command="{Binding RefreshCommand}"
-                            ToolTip="{loc:Loc AppDb_Refresh}"
-                            AutomationProperties.Name="Refresh applications list"
-                            Width="44" Height="44">
-                        <materialDesign:PackIcon Kind="Refresh" Width="24" Height="24"/>
-                    </Button>
+                    <ui:Button Appearance="Transparent"
+                               Command="{Binding RefreshCommand}"
+                               ToolTip="{loc:Loc AppDb_Refresh}"
+                               AutomationProperties.Name="Refresh applications list"
+                               Width="44" Height="44"
+                               Icon="{ui:SymbolIcon ArrowSync24}"/>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- Toolbar / Filters -->
         <Border Grid.Row="1"
-                Background="{DynamicResource MaterialDesignCardBackground}"
-                BorderBrush="{DynamicResource MaterialDesignDivider}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
                 BorderThickness="0,0,0,1"
                 Padding="16,12">
             <Grid>
@@ -193,25 +179,22 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Search Box -->
-                <TextBox Grid.Column="0"
-                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         materialDesign:HintAssist.Hint="{loc:Loc AppDb_SearchHint}"
-                         materialDesign:TextFieldAssist.HasClearButton="True"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                         Margin="0,0,16,0"
-                         VerticalAlignment="Center"
-                         AutomationProperties.Name="Search applications">
-                    <TextBox.InputBindings>
+                <ui:TextBox Grid.Column="0"
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                            PlaceholderText="{loc:Loc AppDb_SearchHint}"
+                            Icon="{ui:SymbolIcon Search24}"
+                            Margin="0,0,16,0"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="Search applications">
+                    <ui:TextBox.InputBindings>
                         <KeyBinding Key="Escape" Command="{Binding ClearFiltersCommand}"/>
-                    </TextBox.InputBindings>
-                </TextBox>
+                    </ui:TextBox.InputBindings>
+                </ui:TextBox>
 
                 <!-- Category Filter -->
                 <ComboBox Grid.Column="1"
                           ItemsSource="{Binding Categories}"
                           SelectedItem="{Binding SelectedCategory}"
-                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                          materialDesign:HintAssist.Hint="{loc:Loc AppDb_CategoryFilter}"
                           VerticalAlignment="Center"
                           Margin="0,0,16,0"
                           AutomationProperties.Name="Filter by category"/>
@@ -221,47 +204,47 @@
 
                 <!-- Selection Actions -->
                 <StackPanel Grid.Column="3" Orientation="Horizontal">
-                    <Button Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                            Command="{Binding EditCommand}"
-                            ToolTip="{loc:Loc AppDb_EditTooltip}"
-                            AutomationProperties.Name="Edit selected application"
-                            Margin="0,0,8,0"
-                            MinWidth="80">
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding EditCommand}"
+                               ToolTip="{loc:Loc AppDb_EditTooltip}"
+                               AutomationProperties.Name="Edit selected application"
+                               Margin="0,0,8,0"
+                               MinWidth="80">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Pencil"
-                                                      Width="16" Height="16"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,6,0"/>
+                            <ui:SymbolIcon Symbol="Edit24"
+                                           Width="16" Height="16"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,6,0"/>
                             <TextBlock Text="{loc:Loc AppDb_Edit}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource ThemeAdaptiveOutlinedButton}"
-                            Command="{Binding DuplicateCommand}"
-                            ToolTip="{loc:Loc AppDb_DuplicateTooltip}"
-                            AutomationProperties.Name="Duplicate selected application"
-                            Margin="0,0,8,0"
-                            MinWidth="80">
+                    </ui:Button>
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding DuplicateCommand}"
+                               ToolTip="{loc:Loc AppDb_DuplicateTooltip}"
+                               AutomationProperties.Name="Duplicate selected application"
+                               Margin="0,0,8,0"
+                               MinWidth="80">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="ContentCopy"
-                                                      Width="16" Height="16"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,6,0"/>
+                            <ui:SymbolIcon Symbol="Copy24"
+                                           Width="16" Height="16"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,6,0"/>
                             <TextBlock Text="{loc:Loc AppDb_Duplicate}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Button>
-                    <Button Style="{StaticResource DestructiveOutlinedButton}"
-                            Command="{Binding DeleteCommand}"
-                            ToolTip="{loc:Loc AppDb_DeleteTooltip}"
-                            AutomationProperties.Name="Delete selected application"
-                            MinWidth="80">
+                    </ui:Button>
+                    <ui:Button Appearance="Danger"
+                               Command="{Binding DeleteCommand}"
+                               ToolTip="{loc:Loc AppDb_DeleteTooltip}"
+                               AutomationProperties.Name="Delete selected application"
+                               MinWidth="80">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Delete"
-                                                      Width="16" Height="16"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,6,0"/>
+                            <ui:SymbolIcon Symbol="Delete24"
+                                           Width="16" Height="16"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,6,0"/>
                             <TextBlock Text="{loc:Loc AppDb_Delete}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Button>
+                    </ui:Button>
                 </StackPanel>
             </Grid>
         </Border>
@@ -273,13 +256,12 @@
                 <StackPanel HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                 IsIndeterminate="True"
-                                 HorizontalAlignment="Center"
-                                 Width="48" Height="48"/>
+                    <ui:ProgressRing IsIndeterminate="True"
+                                     HorizontalAlignment="Center"
+                                     Width="48" Height="48"/>
                     <TextBlock Text="{loc:Loc Loading_Database}"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                HorizontalAlignment="Center"
                                Margin="0,16,0,0"/>
                 </StackPanel>
@@ -310,7 +292,7 @@
                                       Command="{Binding AddCommand}"
                                       InputGestureText="Ctrl+N">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="Plus"/>
+                                    <ui:SymbolIcon Symbol="Add24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
@@ -318,34 +300,34 @@
                                       Command="{Binding EditCommand}"
                                       InputGestureText="Ctrl+E">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="Pencil"/>
+                                    <ui:SymbolIcon Symbol="Edit24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem Header="{loc:Loc AppDb_Duplicate}"
                                       Command="{Binding DuplicateCommand}"
                                       InputGestureText="Ctrl+D">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="ContentCopy"/>
+                                    <ui:SymbolIcon Symbol="Copy24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem Header="{loc:Loc AppDb_Delete}"
                                       Command="{Binding DeleteCommand}"
                                       InputGestureText="Del">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="Delete" Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"/>
+                                    <ui:SymbolIcon Symbol="Delete24" Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
                             <MenuItem Header="{loc:Loc AppDb_VerifySources}"
                                       Command="{Binding VerifySelectedCommand}">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="CheckDecagram"/>
+                                    <ui:SymbolIcon Symbol="CheckmarkStarburst24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem Header="{loc:Loc AppDb_ExportSelected}"
                                       Command="{Binding ExportSelectedCommand}">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="Export"/>
+                                    <ui:SymbolIcon Symbol="ArrowExportLtr24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
@@ -353,7 +335,7 @@
                                       Command="{Binding RefreshCommand}"
                                       InputGestureText="F5">
                                 <MenuItem.Icon>
-                                    <materialDesign:PackIcon Kind="Refresh"/>
+                                    <ui:SymbolIcon Symbol="ArrowSync24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                         </ContextMenu>
@@ -400,7 +382,7 @@
                                                        Foreground="{DynamicResource SecondaryHueLightForegroundBrush}"/>
                                         </Border>
                                         <!-- Store -->
-                                        <Border Background="{DynamicResource MaterialDesignChipBackground}"
+                                        <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
                                                 CornerRadius="4"
                                                 Padding="6,2"
                                                 Margin="0,0,4,0"
@@ -408,7 +390,7 @@
                                             <TextBlock Text="{loc:Loc Source_Store}" FontSize="11"/>
                                         </Border>
                                         <!-- Direct -->
-                                        <Border Background="{DynamicResource MaterialDesignChipBackground}"
+                                        <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
                                                 CornerRadius="4"
                                                 Padding="6,2"
                                                 Visibility="{Binding Sources.DirectUrl, Converter={StaticResource NullableToVisibilityConverter}}">
@@ -428,10 +410,10 @@
                         <DataGridTemplateColumn Header="{loc:Loc AppDb_Col_Verified}" Width="80">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <materialDesign:PackIcon Kind="{Binding Verified, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                              Foreground="{Binding Verified, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                              Width="20" Height="20"
-                                                              HorizontalAlignment="Center"/>
+                                    <ui:SymbolIcon Symbol="{Binding Verified, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                   Foreground="{Binding Verified, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                   Width="20" Height="20"
+                                                   HorizontalAlignment="Center"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -439,8 +421,7 @@
                         <!-- Description (expandable) -->
                         <DataGridTextColumn Header="{loc:Loc AppDb_Col_Description}"
                                             Binding="{Binding Description}"
-                                            Width="*"
-                                            ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"/>
+                                            Width="*"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -448,19 +429,19 @@
                 <StackPanel HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Visibility="{Binding FilteredCount, Converter={StaticResource ZeroToVisibilityConverter}}">
-                    <materialDesign:PackIcon Kind="DatabaseOff"
-                                              Width="64" Height="64"
-                                              Foreground="{DynamicResource MaterialDesignBodyLight}"
-                                              HorizontalAlignment="Center"
-                                              Margin="0,0,0,16"
-                                              AutomationProperties.Name="{loc:Loc A11y_NoDatabaseIcon}"/>
+                    <ui:SymbolIcon Symbol="DatabaseSearch24"
+                                   Width="64" Height="64"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,16"
+                                   AutomationProperties.Name="{loc:Loc A11y_NoDatabaseIcon}"/>
                     <TextBlock Text="{loc:Loc AppDb_NoResults}"
-                               Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               FontSize="20" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                HorizontalAlignment="Center"/>
                     <TextBlock Text="{loc:Loc AppDb_NoResultsHint}"
-                               Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                HorizontalAlignment="Center"
                                Margin="0,8,0,0"/>
                 </StackPanel>
@@ -469,7 +450,7 @@
 
         <!-- Status Bar -->
         <Border Grid.Row="3"
-                Background="{DynamicResource MaterialDesignToolBarBackground}"
+                Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
                 Padding="16,8">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -478,7 +459,7 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Text="{Binding StatusMessage}"
-                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           FontSize="12"
                            VerticalAlignment="Center"/>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">

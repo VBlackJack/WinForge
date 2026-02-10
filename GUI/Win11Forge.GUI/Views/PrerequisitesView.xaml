@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              mc:Ignorable="d"
@@ -30,10 +30,10 @@
 
                 <StackPanel Grid.Column="0">
                     <TextBlock Text="{loc:Loc Prerequisites_PageTitle}"
-                               Style="{StaticResource MaterialDesignHeadline4TextBlock}"/>
+                               FontSize="28" FontWeight="SemiBold"/>
                     <TextBlock Text="{loc:Loc Prerequisites_PageDescription}"
-                               Style="{StaticResource MaterialDesignBody1TextBlock}"
-                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               FontSize="14"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,8,0,0"/>
                 </StackPanel>
 
@@ -43,13 +43,12 @@
                             Margin="0,0,8,0"
                             IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}">
                         <StackPanel Orientation="Horizontal">
-                            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                         Value="0" IsIndeterminate="True"
-                                         Width="16" Height="16"
-                                         Margin="0,0,8,0"
-                                         Visibility="{Binding IsChecking, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                            <materialDesign:PackIcon Kind="Refresh" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"
-                                                      Visibility="{Binding IsChecking, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                            <ui:ProgressRing IsIndeterminate="True"
+                                             Width="16" Height="16"
+                                             Margin="0,0,8,0"
+                                             Visibility="{Binding IsChecking, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="18" VerticalAlignment="Center" Margin="0,0,4,0"
+                                           Visibility="{Binding IsChecking, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                             <TextBlock Text="{loc:Loc Prerequisites_Check}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
@@ -57,11 +56,14 @@
             </Grid>
 
             <!-- Status Summary Card -->
-            <materialDesign:Card Grid.Row="1"
-                                  Padding="16"
-                                  Margin="0,0,0,16"
-                                  materialDesign:ElevationAssist.Elevation="Dp2"
-                                  Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
+            <Border Grid.Row="1"
+                    CornerRadius="8"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    Padding="16"
+                    Margin="0,0,0,16"
+                    Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -69,21 +71,21 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="{Binding Status.AllInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                  Width="32" Height="32"
-                                                  Foreground="{Binding Status.AllInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                  VerticalAlignment="Center"
-                                                  Margin="0,0,16,0"/>
+                        <ui:SymbolIcon Symbol="{Binding Status.AllInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                       FontSize="32"
+                                       Foreground="{Binding Status.AllInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,16,0"/>
                         <StackPanel>
-                            <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}">
+                            <TextBlock FontSize="20" FontWeight="SemiBold">
                                 <Run Text="{Binding Status.InstalledCount, Mode=OneWay}"/>
                                 <Run Text="/"/>
                                 <Run Text="{Binding Status.TotalCount, Mode=OneWay}"/>
                                 <Run Text=" "/>
                                 <Run Text="{loc:Loc Prerequisites_ComponentsInstalled}"/>
                             </TextBlock>
-                            <TextBlock Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                       Foreground="{DynamicResource MaterialDesignBodyLight}"
+                            <TextBlock FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        Visibility="{Binding Status.AllInstalled, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                                 <Run Text="{Binding Status.TotalMissingCount, Mode=OneWay}"/>
                                 <Run Text=" "/>
@@ -92,31 +94,33 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <Button Grid.Column="1"
-                            Command="{Binding InstallPrerequisitesCommand}"
-                            Style="{StaticResource MaterialDesignRaisedButton}"
-                            IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}"
-                            ToolTip="{loc:Loc Prerequisites_ReinstallTooltip}">
+                    <ui:Button Grid.Column="1"
+                               Appearance="Primary"
+                               Command="{Binding InstallPrerequisitesCommand}"
+                               IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}"
+                               ToolTip="{loc:Loc Prerequisites_ReinstallTooltip}">
                         <StackPanel Orientation="Horizontal">
-                            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                         Value="0" IsIndeterminate="True"
-                                         Width="16" Height="16"
-                                         Margin="0,0,8,0"
-                                         Visibility="{Binding IsInstalling, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                            <materialDesign:PackIcon Kind="Download" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"
-                                                      Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                            <ui:ProgressRing IsIndeterminate="True"
+                                             Width="16" Height="16"
+                                             Margin="0,0,8,0"
+                                             Visibility="{Binding IsInstalling, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="18" VerticalAlignment="Center" Margin="0,0,4,0"
+                                           Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                             <TextBlock Text="{loc:Loc Prerequisites_InstallAll}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Button>
+                    </ui:Button>
                 </Grid>
-            </materialDesign:Card>
+            </Border>
 
             <!-- Package Managers Section -->
-            <materialDesign:Card Grid.Row="2"
-                                  Padding="16"
-                                  Margin="0,0,0,16"
-                                  materialDesign:ElevationAssist.Elevation="Dp2"
-                                  Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
+            <Border Grid.Row="2"
+                    CornerRadius="8"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    Padding="16"
+                    Margin="0,0,0,16"
+                    Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -125,20 +129,20 @@
 
                     <!-- Section Header -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                        <materialDesign:PackIcon Kind="Package"
-                                                  Width="24" Height="24"
-                                                  VerticalAlignment="Center"
-                                                  Margin="0,0,8,0"/>
+                        <ui:SymbolIcon Symbol="Box24"
+                                       FontSize="24"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
                         <TextBlock Text="{loc:Loc Prerequisites_CategoryPackageManagers}"
-                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                   FontSize="20" FontWeight="SemiBold"
                                    VerticalAlignment="Center"/>
-                        <Border Background="{DynamicResource PrimaryHueMidBrush}"
+                        <Border Background="{DynamicResource SystemAccentColorPrimaryBrush}"
                                 CornerRadius="4"
                                 Padding="8,2"
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center">
                             <TextBlock Text="{loc:Loc Prerequisites_Required}"
-                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                       FontSize="12"
                                        Foreground="White"/>
                         </Border>
                     </StackPanel>
@@ -146,7 +150,7 @@
                     <!-- Package Managers List -->
                     <UniformGrid Grid.Row="1" Columns="3">
                         <!-- PowerShell 7 -->
-                        <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                        <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                 BorderThickness="0,0,1,0"
                                 Padding="0,0,16,0"
                                 Margin="0,0,16,0">
@@ -155,25 +159,24 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <materialDesign:PackIcon Grid.Column="0"
-                                                          Kind="{Binding Status.PowerShell7Installed, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                          Width="24" Height="24"
-                                                          Foreground="{Binding Status.PowerShell7Installed, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                          VerticalAlignment="Center"
-                                                          Margin="0,0,12,0"/>
+                                <ui:SymbolIcon Grid.Column="0"
+                                               Symbol="{Binding Status.PowerShell7Installed, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                               FontSize="24"
+                                               Foreground="{Binding Status.PowerShell7Installed, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="{loc:Loc Prerequisites_PowerShell7}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontSize="14"
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.PowerShellVersion}"
-                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                               Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
 
                         <!-- Winget -->
-                        <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                        <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                 BorderThickness="0,0,1,0"
                                 Padding="0,0,16,0"
                                 Margin="0,0,16,0">
@@ -182,19 +185,18 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <materialDesign:PackIcon Grid.Column="0"
-                                                          Kind="{Binding Status.WingetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                          Width="24" Height="24"
-                                                          Foreground="{Binding Status.WingetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                          VerticalAlignment="Center"
-                                                          Margin="0,0,12,0"/>
+                                <ui:SymbolIcon Grid.Column="0"
+                                               Symbol="{Binding Status.WingetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                               FontSize="24"
+                                               Foreground="{Binding Status.WingetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="{loc:Loc Prerequisites_Winget}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontSize="14"
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.WingetVersion}"
-                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                               Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -205,31 +207,33 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <materialDesign:PackIcon Grid.Column="0"
-                                                      Kind="{Binding Status.ChocolateyInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                      Width="24" Height="24"
-                                                      Foreground="{Binding Status.ChocolateyInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,12,0"/>
+                            <ui:SymbolIcon Grid.Column="0"
+                                           Symbol="{Binding Status.ChocolateyInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                           FontSize="24"
+                                           Foreground="{Binding Status.ChocolateyInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,12,0"/>
                             <StackPanel Grid.Column="1">
                                 <TextBlock Text="{loc:Loc Prerequisites_Chocolatey}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontSize="14"
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{Binding Status.ChocolateyVersion}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                           FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                         </Grid>
                     </UniformGrid>
                 </Grid>
-            </materialDesign:Card>
+            </Border>
 
             <!-- Runtime Environments Section -->
-            <materialDesign:Card Grid.Row="3"
-                                  Padding="16"
-                                  Margin="0,0,0,16"
-                                  materialDesign:ElevationAssist.Elevation="Dp2"
-                                  Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
+            <Border Grid.Row="3"
+                    CornerRadius="8"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    Padding="16"
+                    Margin="0,0,0,16"
+                    Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -238,27 +242,27 @@
 
                     <!-- Section Header -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                        <materialDesign:PackIcon Kind="CodeBraces"
-                                                  Width="24" Height="24"
-                                                  VerticalAlignment="Center"
-                                                  Margin="0,0,8,0"/>
+                        <ui:SymbolIcon Symbol="Code24"
+                                       FontSize="24"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
                         <TextBlock Text="{loc:Loc Prerequisites_CategoryRuntimes}"
-                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                   FontSize="20" FontWeight="SemiBold"
                                    VerticalAlignment="Center"/>
-                        <Border Background="{DynamicResource MaterialDesignChipBackground}"
+                        <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
                                 CornerRadius="4"
                                 Padding="8,2"
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center">
                             <TextBlock Text="{loc:Loc Prerequisites_Optional}"
-                                       Style="{StaticResource MaterialDesignCaptionTextBlock}"/>
+                                       FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </Border>
                     </StackPanel>
 
                     <!-- Runtimes List -->
                     <UniformGrid Grid.Row="1" Columns="2" Rows="2">
                         <!-- .NET Core -->
-                        <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                        <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                 BorderThickness="0,0,1,1"
                                 Padding="0,0,16,16"
                                 Margin="0,0,16,16">
@@ -267,26 +271,25 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <materialDesign:PackIcon Grid.Column="0"
-                                                          Kind="{Binding Status.DotNetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                          Width="24" Height="24"
-                                                          Foreground="{Binding Status.DotNetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                          VerticalAlignment="Center"
-                                                          Margin="0,0,12,0"/>
+                                <ui:SymbolIcon Grid.Column="0"
+                                               Symbol="{Binding Status.DotNetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                               FontSize="24"
+                                               Foreground="{Binding Status.DotNetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="{loc:Loc Prerequisites_DotNet}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontSize="14"
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.DotNetVersion}"
-                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
 
                         <!-- .NET Framework -->
-                        <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                        <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                 BorderThickness="0,0,0,1"
                                 Padding="0,0,0,16"
                                 Margin="0,0,0,16">
@@ -295,25 +298,24 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <materialDesign:PackIcon Grid.Column="0"
-                                                          Kind="{Binding Status.DotNetFrameworkInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                          Width="24" Height="24"
-                                                          Foreground="{Binding Status.DotNetFrameworkInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                          VerticalAlignment="Center"
-                                                          Margin="0,0,12,0"/>
+                                <ui:SymbolIcon Grid.Column="0"
+                                               Symbol="{Binding Status.DotNetFrameworkInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                               FontSize="24"
+                                               Foreground="{Binding Status.DotNetFrameworkInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="{loc:Loc Prerequisites_DotNetFramework}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontSize="14"
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.DotNetFrameworkVersion}"
-                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                               Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
 
                         <!-- Visual C++ Redistributable -->
-                        <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                        <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                 BorderThickness="0,0,1,0"
                                 Padding="0,0,16,0"
                                 Margin="0,0,16,0">
@@ -322,19 +324,18 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <materialDesign:PackIcon Grid.Column="0"
-                                                          Kind="{Binding Status.VCRedistInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                          Width="24" Height="24"
-                                                          Foreground="{Binding Status.VCRedistInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                          VerticalAlignment="Center"
-                                                          Margin="0,0,12,0"/>
+                                <ui:SymbolIcon Grid.Column="0"
+                                               Symbol="{Binding Status.VCRedistInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                               FontSize="24"
+                                               Foreground="{Binding Status.VCRedistInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="{loc:Loc Prerequisites_VCRedist}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontSize="14"
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.VCRedistVersion}"
-                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                               Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -345,31 +346,33 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <materialDesign:PackIcon Grid.Column="0"
-                                                      Kind="{Binding Status.JavaInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                                      Width="24" Height="24"
-                                                      Foreground="{Binding Status.JavaInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,12,0"/>
+                            <ui:SymbolIcon Grid.Column="0"
+                                           Symbol="{Binding Status.JavaInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                           FontSize="24"
+                                           Foreground="{Binding Status.JavaInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,12,0"/>
                             <StackPanel Grid.Column="1">
                                 <TextBlock Text="{loc:Loc Prerequisites_Java}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontSize="14"
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{Binding Status.JavaVersion}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                           FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Grid>
                     </UniformGrid>
                 </Grid>
-            </materialDesign:Card>
+            </Border>
 
             <!-- Installation Log Panel -->
-            <materialDesign:Card Grid.Row="4"
-                                  Padding="16"
-                                  materialDesign:ElevationAssist.Elevation="Dp2"
-                                  Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
+            <Border Grid.Row="4"
+                    CornerRadius="8"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    Padding="16"
+                    Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -384,18 +387,17 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Console"
-                                                      Width="24" Height="24"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="WindowConsole20"
+                                           FontSize="24"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Prerequisites_LogTitle}"
-                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                       FontSize="20" FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
-                            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                         Value="0" IsIndeterminate="True"
-                                         Width="16" Height="16"
-                                         Margin="12,0,0,0"
-                                         Visibility="{Binding IsInstalling, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <ui:ProgressRing IsIndeterminate="True"
+                                             Width="16" Height="16"
+                                             Margin="12,0,0,0"
+                                             Visibility="{Binding IsInstalling, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         </StackPanel>
 
                         <Button Grid.Column="1"
@@ -403,7 +405,7 @@
                                 Style="{StaticResource ThemeAdaptiveOutlinedButton}"
                                 Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <ui:SymbolIcon Symbol="Delete24" FontSize="18" VerticalAlignment="Center" Margin="0,0,4,0"/>
                                 <TextBlock Text="{loc:Loc Prerequisites_ClearLog}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
@@ -411,8 +413,8 @@
 
                     <!-- Log Content -->
                     <Border Grid.Row="1"
-                            Background="{DynamicResource MaterialDesignCardBackground}"
-                            BorderBrush="{DynamicResource MaterialDesignDivider}"
+                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                             BorderThickness="1"
                             CornerRadius="4"
                             MaxHeight="300">
@@ -433,7 +435,7 @@
                         </ScrollViewer>
                     </Border>
                 </Grid>
-            </materialDesign:Card>
+            </Border>
         </Grid>
     </ScrollViewer>
 </UserControl>

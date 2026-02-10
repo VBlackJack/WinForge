@@ -24,7 +24,7 @@ using System.Windows;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MaterialDesignThemes.Wpf;
+using Wpf.Ui.Controls;
 
 namespace Win11Forge.GUI.ViewModels;
 
@@ -119,7 +119,7 @@ public partial class LogsViewModel : ObservableObject
                             Size = info.Length,
                             LastModified = info.LastWriteTime,
                             LogType = "Text",
-                            Icon = PackIconKind.FileDocument,
+                            Icon = SymbolRegular.Document24,
                             IconColor = Brushes.Gray
                         });
                     }
@@ -140,7 +140,7 @@ public partial class LogsViewModel : ObservableObject
                             Size = info.Length,
                             LastModified = info.LastWriteTime,
                             LogType = "JSON",
-                            Icon = PackIconKind.CodeJson,
+                            Icon = SymbolRegular.BracesVariable24,
                             IconColor = Brushes.DodgerBlue
                         });
                     }
@@ -162,7 +162,7 @@ public partial class LogsViewModel : ObservableObject
                             Size = info.Length,
                             LastModified = info.LastWriteTime,
                             LogType = "Error",
-                            Icon = PackIconKind.AlertCircle,
+                            Icon = SymbolRegular.ErrorCircle24,
                             IconColor = Brushes.Red
                         });
                     }
@@ -362,13 +362,13 @@ public partial class LogsViewModel : ObservableObject
     [RelayCommand]
     private void ClearOldLogs()
     {
-        var result = MessageBox.Show(
+        var result = System.Windows.MessageBox.Show(
             Resources.Resources.Confirm_ClearOldLogs_Message ?? "Delete log files older than 7 days?",
             Resources.Resources.Confirm_ClearOldLogs_Title ?? "Clear Old Logs",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Warning);
 
-        if (result != MessageBoxResult.Yes) return;
+        if (result != System.Windows.MessageBoxResult.Yes) return;
 
         try
         {
@@ -450,13 +450,13 @@ public partial class LogsViewModel : ObservableObject
     {
         if (logFile == null) return;
 
-        var result = MessageBox.Show(
+        var result = System.Windows.MessageBox.Show(
             $"Delete {logFile.FileName}?",
             "Delete Log File",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Warning);
 
-        if (result != MessageBoxResult.Yes) return;
+        if (result != System.Windows.MessageBoxResult.Yes) return;
 
         try
         {
@@ -496,7 +496,7 @@ public class LogFileEntry
     public long Size { get; set; }
     public DateTime LastModified { get; set; }
     public string LogType { get; set; } = "Text";
-    public PackIconKind Icon { get; set; } = PackIconKind.FileDocument;
+    public SymbolRegular Icon { get; set; } = SymbolRegular.Document24;
     public Brush IconColor { get; set; } = Brushes.Gray;
 
     public string SizeFormatted

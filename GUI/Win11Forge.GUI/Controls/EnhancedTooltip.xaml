@@ -16,11 +16,11 @@
 <UserControl x:Class="Win11Forge.GUI.Controls.EnhancedTooltip"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              x:Name="Root"
              MaxWidth="350">
-    <Border Background="{DynamicResource MaterialDesignToolBarBackground}"
-            BorderBrush="{DynamicResource MaterialDesignDivider}"
+    <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
             BorderThickness="1"
             CornerRadius="6"
             Padding="12">
@@ -36,23 +36,22 @@
                         Orientation="Horizontal"
                         Margin="0,0,0,8"
                         Visibility="{Binding Title, ElementName=Root, Converter={StaticResource NullableToVisibilityConverter}}">
-                <materialDesign:PackIcon x:Name="TitleIcon"
-                                          Kind="{Binding IconKind, ElementName=Root}"
+                <ui:SymbolIcon x:Name="TitleIcon"
+                                          Symbol="{Binding IconKind, ElementName=Root}"
                                           Width="18" Height="18"
                                           VerticalAlignment="Center"
                                           Margin="0,0,8,0"
-                                          Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                          Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
                                           Visibility="{Binding ShowIcon, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                 <TextBlock Text="{Binding Title, ElementName=Root}"
-                           Style="{StaticResource MaterialDesignSubtitle2TextBlock}"
-                           FontWeight="Medium"
+                           FontSize="14" FontWeight="Medium"
                            VerticalAlignment="Center"/>
             </StackPanel>
 
             <!-- Description -->
             <TextBlock Grid.Row="1"
                        Text="{Binding Description, ElementName=Root}"
-                       Style="{StaticResource MaterialDesignBody2TextBlock}"
+                       FontSize="12"
                        TextWrapping="Wrap"
                        Opacity="0.9"/>
 
@@ -61,13 +60,13 @@
                     Margin="0,8,0,0"
                     Visibility="{Binding Shortcut, ElementName=Root, Converter={StaticResource NullableToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="KeyboardOutline"
+                    <ui:SymbolIcon Symbol="Keyboard24"
                                               Width="14" Height="14"
                                               VerticalAlignment="Center"
                                               Opacity="0.7"
                                               Margin="0,0,6,0"/>
                     <TextBlock Text="{Binding Shortcut, ElementName=Root}"
-                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                FontFamily="Consolas"
                                VerticalAlignment="Center"
                                Opacity="0.8"/>

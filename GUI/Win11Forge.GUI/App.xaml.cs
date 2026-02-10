@@ -17,7 +17,9 @@
 using System.Globalization;
 using System.IO;
 using System.Windows;
-using MaterialDesignThemes.Wpf;
+using System.Windows.Media;
+using Wpf.Ui.Appearance;
+using Wpf.Ui.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Services;
@@ -162,15 +164,15 @@ public partial class App : Application
                 }
             }
 
-            // Step 4: Apply theme
+            // Step 4: Apply theme using WPF UI ApplicationThemeManager
             Log($"Applying theme: {(settings.IsDarkTheme ? "Dark" : "Light")}");
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_ApplyingTheme);
             try
             {
-                var paletteHelper = new PaletteHelper();
-                var theme = paletteHelper.GetTheme();
-                theme.SetBaseTheme(settings.IsDarkTheme ? BaseTheme.Dark : BaseTheme.Light);
-                paletteHelper.SetTheme(theme);
+                var appTheme = settings.IsDarkTheme
+                    ? ApplicationTheme.Dark
+                    : ApplicationTheme.Light;
+                ApplicationThemeManager.Apply(appTheme, WindowBackdropType.Mica);
 
                 // Initialize theme-adaptive accent brush
                 InitializeThemeAdaptiveResources(settings.IsDarkTheme);
@@ -192,9 +194,15 @@ public partial class App : Application
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingInterface);
             var mainWindow = new MainWindow();
 
-            // Close splash and show main window
-            splash.CloseWithAnimation();
+            // Watch for OS theme changes
+            SystemThemeWatcher.Watch(mainWindow);
+
+            // Set as main window FIRST (prevents shutdown when splash closes)
+            MainWindow = mainWindow;
             mainWindow.Show();
+
+            // Close splash AFTER main window is visible
+            splash.CloseWithAnimation();
 
             Log("Startup complete.");
         }
@@ -280,19 +288,19 @@ public partial class App : Application
 
     /// <summary>
     /// Initializes theme-adaptive resources based on current theme.
-    /// Dark theme uses Secondary (lime), Light theme uses Primary (purple).
+    /// Dark theme uses accent blue, Light theme uses accent purple.
     /// Applies enhanced contrast colors for light theme to meet WCAG AA standards.
     /// </summary>
     private void InitializeThemeAdaptiveResources(bool isDark)
     {
         try
         {
-            // Use direct colors to ensure correct contrast in each theme
-            // Dark theme: lime (#CDDC39) - visible on dark background
-            // Light theme: purple (#673AB7) - visible on light background
+            // WPF UI accent colors
+            // Dark theme: Windows 11 accent blue (#60CDFF) - visible on dark background
+            // Light theme: Windows 11 accent purple (#6B4EAA) - visible on light background
             var accentBrush = isDark
-                ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(205, 220, 57))   // Lime
-                : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(103, 58, 183)); // DeepPurple
+                ? new SolidColorBrush(Color.FromRgb(96, 205, 255))   // Accent Blue
+                : new SolidColorBrush(Color.FromRgb(107, 78, 170));  // Accent Purple
 
             Resources["ThemeAdaptiveAccentBrush"] = accentBrush;
 
@@ -324,10 +332,10 @@ public partial class App : Application
             Resources["StatusPendingBrush"] = Resources["StatusPendingLightBrush"];
 
             // Update skeleton colors for light theme visibility
-            Resources["SkeletonBaseBrush"] = new System.Windows.Media.SolidColorBrush(
-                System.Windows.Media.Color.FromArgb(26, 0, 0, 0)); // 10% black
-            Resources["SkeletonHighlightBrush"] = new System.Windows.Media.SolidColorBrush(
-                System.Windows.Media.Color.FromArgb(51, 0, 0, 0)); // 20% black
+            Resources["SkeletonBaseBrush"] = new SolidColorBrush(
+                Color.FromArgb(26, 0, 0, 0)); // 10% black
+            Resources["SkeletonHighlightBrush"] = new SolidColorBrush(
+                Color.FromArgb(51, 0, 0, 0)); // 20% black
 
             Log("Light theme contrast enhancements applied");
         }

@@ -3,12 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              mc:Ignorable="d"
              d:DesignHeight="280" d:DesignWidth="500">
 
-    <materialDesign:Card Padding="16">
+    <Border CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" Padding="16">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -28,29 +28,26 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="Download"
-                                              Width="24" Height="24"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,12,0"/>
+                    <ui:SymbolIcon Symbol="ArrowDownload24"
+                                   Width="24" Height="24"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"/>
                     <TextBlock Text="{loc:Loc AppEditor_DirectDownload}"
-                               Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                               FontSize="16" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <ToggleButton Grid.Column="2"
-                              x:Name="EnableToggle"
-                              Style="{StaticResource MaterialDesignSwitchToggleButton}"
-                              IsChecked="{Binding IsSourceEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                              ToolTip="{loc:Loc SourceEditor_EnableDisable}"
-                              AutomationProperties.Name="Enable direct download source"/>
+                <ui:ToggleSwitch Grid.Column="2"
+                                 x:Name="EnableToggle"
+                                 IsChecked="{Binding IsSourceEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                 ToolTip="{loc:Loc SourceEditor_EnableDisable}"
+                                 AutomationProperties.Name="Enable direct download source"/>
             </Grid>
 
             <!-- Download URL -->
-            <TextBox Grid.Row="1"
+            <ui:TextBox Grid.Row="1"
                      Text="{Binding DownloadUrl, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                     materialDesign:HintAssist.Hint="{loc:Loc AppEditor_DirectUrl}"
-                     materialDesign:HintAssist.IsFloating="True"
-                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                     PlaceholderText="{loc:Loc AppEditor_DirectUrl}"
                      IsEnabled="{Binding IsChecked, ElementName=EnableToggle}"
                      Margin="0,0,0,12"
                      AutomationProperties.Name="Download URL"/>
@@ -67,9 +64,6 @@
                 <ComboBox Grid.Column="0"
                           SelectedValue="{Binding InstallerType, RelativeSource={RelativeSource AncestorType=UserControl}}"
                           SelectedValuePath="Tag"
-                          materialDesign:HintAssist.Hint="{loc:Loc SourceEditor_InstallerType}"
-                          materialDesign:HintAssist.IsFloating="True"
-                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
                           AutomationProperties.Name="Installer type">
                     <ComboBoxItem Content="exe" Tag="exe"/>
                     <ComboBoxItem Content="msi" Tag="msi"/>
@@ -78,20 +72,16 @@
                 </ComboBox>
 
                 <!-- Silent Args -->
-                <TextBox Grid.Column="2"
+                <ui:TextBox Grid.Column="2"
                          Text="{Binding SilentArgs, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                         materialDesign:HintAssist.Hint="{loc:Loc SourceEditor_SilentArgs}"
-                         materialDesign:HintAssist.IsFloating="True"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         PlaceholderText="{loc:Loc SourceEditor_SilentArgs}"
                          AutomationProperties.Name="Silent installation arguments"/>
             </Grid>
 
             <!-- Checksum -->
-            <TextBox Grid.Row="3"
+            <ui:TextBox Grid.Row="3"
                      Text="{Binding Checksum, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
-                     materialDesign:HintAssist.Hint="{loc:Loc SourceEditor_Checksum}"
-                     materialDesign:HintAssist.IsFloating="True"
-                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                     PlaceholderText="{loc:Loc SourceEditor_Checksum}"
                      IsEnabled="{Binding IsChecked, ElementName=EnableToggle}"
                      Margin="0,0,0,8"
                      AutomationProperties.Name="File checksum"/>
@@ -99,8 +89,8 @@
             <!-- Checksum hint -->
             <TextBlock Grid.Row="4"
                        Text="{loc:Loc SourceEditor_ChecksumHint}"
-                       Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                       Foreground="{DynamicResource MaterialDesignBodyLight}"
+                       FontSize="12"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        IsEnabled="{Binding IsChecked, ElementName=EnableToggle}"
                        Margin="0,0,0,12"/>
 
@@ -111,26 +101,25 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Grid.Column="0"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                <ui:Button Grid.Column="0"
+                        Appearance="Secondary"
                         Command="{Binding TestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         ToolTip="{loc:Loc SourceEditor_TestUrlTooltip}"
                         MinWidth="120"
                         AutomationProperties.Name="Test URL">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="LinkVariant"
-                                                  Width="18" Height="18"
-                                                  VerticalAlignment="Center"
-                                                  Margin="0,0,8,0"
-                                                  Visibility="{Binding IsTesting, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
-                        <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                     IsIndeterminate="True"
+                        <ui:SymbolIcon Symbol="Link24"
+                                       Width="18" Height="18"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"
+                                       Visibility="{Binding IsTesting, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                        <ProgressBar IsIndeterminate="True"
                                      Width="18" Height="18"
                                      Margin="0,0,8,0"
                                      Visibility="{Binding IsTesting, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         <TextBlock Text="{loc:Loc SourceEditor_TestUrl}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
+                </ui:Button>
 
                 <!-- Test Result -->
                 <StackPanel Grid.Column="1"
@@ -138,15 +127,15 @@
                             Margin="16,0,0,0"
                             VerticalAlignment="Center"
                             Visibility="{Binding TestResult, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullableToVisibilityConverter}}">
-                    <materialDesign:PackIcon x:Name="TestResultIcon"
-                                              Width="20" Height="20"
-                                              VerticalAlignment="Center"
-                                              Margin="0,0,8,0"/>
+                    <ui:SymbolIcon x:Name="TestResultIcon"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
                     <TextBlock Text="{Binding TestResult, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                VerticalAlignment="Center"
                                TextWrapping="Wrap"/>
                 </StackPanel>
             </Grid>
         </Grid>
-    </materialDesign:Card>
+    </Border>
 </UserControl>

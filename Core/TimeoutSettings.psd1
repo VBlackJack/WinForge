@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'TimeoutSettings.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = 'c889f9d4-6328-432b-889b-655e04e25fdf'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

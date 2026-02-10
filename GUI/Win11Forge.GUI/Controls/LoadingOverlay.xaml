@@ -1,7 +1,7 @@
 <UserControl x:Class="Win11Forge.GUI.Controls.LoadingOverlay"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:local="clr-namespace:Win11Forge.GUI.Controls"
              AutomationProperties.Name="Loading overlay"
@@ -14,32 +14,30 @@
         <!-- Centered loading content -->
         <Border HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Background="{DynamicResource MaterialDesignCardBackground}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 CornerRadius="12"
                 Padding="32"
-                MinWidth="200"
-                materialDesign:ElevationAssist.Elevation="Dp8">
+                MinWidth="200">
             <StackPanel HorizontalAlignment="Center">
                 <!-- Progress Indicator -->
                 <Grid x:Name="ProgressContainer" Margin="0,0,0,16">
                     <!-- Indeterminate Progress -->
-                    <ProgressBar x:Name="IndeterminateProgress"
-                                 Style="{StaticResource MaterialDesignCircularProgressBar}"
+                    <ui:ProgressRing x:Name="IndeterminateProgress"
                                  IsIndeterminate="True"
                                  Width="48" Height="48"
                                  HorizontalAlignment="Center"/>
 
                     <!-- Determinate Progress (hidden by default) -->
                     <ProgressBar x:Name="DeterminateProgress"
-                                 Style="{StaticResource MaterialDesignCircularProgressBar}"
-                                 Width="64" Height="64"
+                                 Width="200" Height="8"
                                  HorizontalAlignment="Center"
+                                 Minimum="0" Maximum="100"
                                  Visibility="Collapsed"/>
                 </Grid>
 
                 <!-- Loading Message -->
                 <TextBlock x:Name="MessageText"
-                           Style="{StaticResource MaterialDesignSubtitle1TextBlock}"
+                           FontSize="16" FontWeight="Medium"
                            HorizontalAlignment="Center"
                            TextAlignment="Center"
                            TextWrapping="Wrap"
@@ -48,27 +46,26 @@
 
                 <!-- Sub-message (e.g., "This may take a moment") -->
                 <TextBlock x:Name="SubMessageText"
-                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           FontSize="12"
                            HorizontalAlignment="Center"
                            TextAlignment="Center"
-                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            Margin="0,8,0,0"
                            Visibility="Collapsed"/>
 
                 <!-- Progress Text (e.g., "3 of 10") -->
                 <TextBlock x:Name="ProgressText"
-                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                           FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center"
-                           Foreground="{DynamicResource MaterialDesignBodyLight}"
                            Margin="0,8,0,0"
                            Visibility="Collapsed"
                            AutomationProperties.LiveSetting="Polite"/>
 
                 <!-- Cancel Button (optional) -->
-                <Button x:Name="CancelButton"
+                <ui:Button x:Name="CancelButton"
                         Content="{loc:Loc Dialog_Cancel}"
-                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Appearance="Secondary"
                         Margin="0,16,0,0"
                         Visibility="Collapsed"
                         Click="CancelButton_Click"

@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'JsonSchemaValidation.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = 'fe451f11-2ef6-4eea-b7a2-1c2a64a4ce83'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

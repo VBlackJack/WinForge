@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'RestApiServer.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '07efc0fc-7b11-41d2-8920-d265e20a4e98'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              mc:Ignorable="d"
@@ -19,33 +19,29 @@
         <!-- Title -->
         <TextBlock Grid.Row="0"
                    Text="{loc:Loc Settings_Title}"
-                   Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                   FontSize="34" FontWeight="SemiBold"
                    Margin="0,0,0,24"/>
 
         <!-- Settings Content with Tabs -->
         <TabControl Grid.Row="1"
-                    Style="{StaticResource MaterialDesignNavigationRailTabControl}"
-                    materialDesign:ColorZoneAssist.Mode="PrimaryMid"
-                    TabStripPlacement="Left">
+                    TabStripPlacement="Top">
 
             <!-- Appearance & Language Tab -->
             <TabItem>
                 <TabItem.Header>
-                    <StackPanel>
-                        <materialDesign:PackIcon Kind="Palette" Width="24" Height="24" HorizontalAlignment="Center"
-                                                  Foreground="White"/>
-                        <TextBlock Text="{loc:Loc Settings_Tab_Appearance}" Style="{StaticResource MaterialDesignCaptionTextBlock}" HorizontalAlignment="Center"
-                                   Foreground="White"/>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Color24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_Appearance}" FontSize="13" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
                         <!-- Theme Section -->
-                        <materialDesign:Card Padding="16" Margin="0,0,0,16" materialDesign:ElevationAssist.Elevation="Dp2">
+                        <Border Padding="16" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                    <materialDesign:PackIcon Kind="Palette" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                    <TextBlock Text="{loc:Loc Settings_Section_Appearance}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" VerticalAlignment="Center"/>
+                                    <ui:SymbolIcon Symbol="Color24" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBlock Text="{loc:Loc Settings_Section_Appearance}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
 
                                 <!-- Theme Toggle -->
@@ -56,14 +52,14 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="{loc:Loc Settings_Theme}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
-                                        <TextBlock Text="{loc:Loc Settings_Theme_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                        <TextBlock Text="{loc:Loc Settings_Theme}" FontSize="14" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_Theme_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="WeatherSunny" Width="20" Height="20" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" Margin="0,0,8,0"/>
-                                        <ToggleButton IsChecked="{Binding IsDarkTheme}" Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
-                                        <materialDesign:PackIcon Kind="WeatherNight" Width="20" Height="20" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesignBodyLight}" Margin="8,0,0,0"/>
+                                        <ui:SymbolIcon Symbol="WeatherSunny24" Width="20" Height="20" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
+                                        <ui:ToggleSwitch IsChecked="{Binding IsDarkTheme}"/>
+                                        <ui:SymbolIcon Symbol="DarkTheme24" Width="20" Height="20" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="8,0,0,0"/>
                                     </StackPanel>
                                 </Grid>
 
@@ -75,23 +71,22 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="{loc:Loc Settings_ReducedMotion}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
-                                        <TextBlock Text="{loc:Loc Settings_ReducedMotion_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                        <TextBlock Text="{loc:Loc Settings_ReducedMotion}" FontSize="14" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_ReducedMotion_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
 
-                                    <ToggleButton Grid.Column="1"
-                                                  IsChecked="{Binding ReducedMotion}"
-                                                  Style="{StaticResource MaterialDesignSwitchToggleButton}"/>
+                                    <ui:ToggleSwitch Grid.Column="1"
+                                                  IsChecked="{Binding ReducedMotion}"/>
                                 </Grid>
                             </StackPanel>
-                        </materialDesign:Card>
+                        </Border>
 
                         <!-- Language Section -->
-                        <materialDesign:Card Padding="16" Margin="0,0,0,16" materialDesign:ElevationAssist.Elevation="Dp2">
+                        <Border Padding="16" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                    <materialDesign:PackIcon Kind="Translate" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                    <TextBlock Text="{loc:Loc Settings_Section_Language}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" VerticalAlignment="Center"/>
+                                    <ui:SymbolIcon Symbol="Translate24" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBlock Text="{loc:Loc Settings_Section_Language}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
 
                                 <!-- Language Selector -->
@@ -102,24 +97,23 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="{loc:Loc Settings_Language}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
-                                        <TextBlock Text="{loc:Loc Settings_Language_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                        <TextBlock Text="{loc:Loc Settings_Language}" FontSize="14" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_Language_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                                         <ComboBox ItemsSource="{Binding AvailableLanguages}"
                                                   SelectedItem="{Binding SelectedLanguage}"
                                                   DisplayMemberPath="DisplayName"
-                                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
                                                   MinWidth="140" MaxWidth="200" Margin="0,0,12,0"/>
-                                        <Button Content="{loc:Loc Settings_Apply}"
+                                        <ui:Button Content="{loc:Loc Settings_Apply}"
                                                 Command="{Binding ApplyLanguageCommand}"
-                                                Style="{StaticResource MaterialDesignRaisedButton}"/>
+                                                Appearance="Primary"/>
                                     </StackPanel>
                                 </Grid>
 
                                 <!-- Restart Warning -->
-                                <Border Background="{DynamicResource MaterialDesignToolBarBackground}"
+                                <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
                                         CornerRadius="4" Padding="12"
                                         Visibility="{Binding RestartRequired, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <Grid>
@@ -128,24 +122,24 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="AlertCircle" Width="20" Height="20" VerticalAlignment="Center"
-                                                                      Foreground="{DynamicResource MaterialDesignValidationErrorBrush}" Margin="0,0,8,0"/>
-                                            <TextBlock Text="{loc:Loc Settings_RestartRequired}" Style="{StaticResource MaterialDesignBody2TextBlock}" VerticalAlignment="Center"/>
+                                            <ui:SymbolIcon Symbol="ErrorCircle24" Width="20" Height="20" VerticalAlignment="Center"
+                                                                      Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,0,8,0"/>
+                                            <TextBlock Text="{loc:Loc Settings_RestartRequired}" FontSize="12" VerticalAlignment="Center"/>
                                         </StackPanel>
-                                        <Button Grid.Column="1"
+                                        <ui:Button Grid.Column="1"
                                                 Command="{Binding RestartApplicationCommand}"
-                                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                                Appearance="Primary"
                                                 Margin="12,0,0,0"
                                                 AutomationProperties.Name="Restart application now">
                                             <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="Restart" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                <ui:SymbolIcon Symbol="ArrowSync24" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="{loc:Loc Settings_RestartNow}" VerticalAlignment="Center"/>
                                             </StackPanel>
-                                        </Button>
+                                        </ui:Button>
                                     </Grid>
                                 </Border>
                             </StackPanel>
-                        </materialDesign:Card>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -153,20 +147,18 @@
             <!-- Performance Tab -->
             <TabItem>
                 <TabItem.Header>
-                    <StackPanel>
-                        <materialDesign:PackIcon Kind="SpeedometerMedium" Width="24" Height="24" HorizontalAlignment="Center"
-                                                  Foreground="White"/>
-                        <TextBlock Text="{loc:Loc Settings_Tab_Performance}" Style="{StaticResource MaterialDesignCaptionTextBlock}" HorizontalAlignment="Center"
-                                   Foreground="White"/>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Gauge24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_Performance}" FontSize="13" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
-                    <materialDesign:Card Padding="16" materialDesign:ElevationAssist.Elevation="Dp2">
+                    <Border Padding="16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <materialDesign:PackIcon Kind="SpeedometerMedium" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                <TextBlock Text="{loc:Loc Settings_Section_Performance}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" VerticalAlignment="Center"/>
-                                <materialDesign:PackIcon Kind="HelpCircleOutline" Width="18" Height="18" Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                <ui:SymbolIcon Symbol="Gauge24" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                <TextBlock Text="{loc:Loc Settings_Section_Performance}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <ui:SymbolIcon Symbol="QuestionCircle24" Width="18" Height="18" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                           VerticalAlignment="Center" Margin="8,0,0,0" ToolTip="{loc:Loc Help_Performance}"/>
                             </StackPanel>
 
@@ -178,14 +170,14 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="{loc:Loc Settings_ParallelInstalls}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
-                                    <TextBlock Text="{loc:Loc Settings_ParallelInstalls_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                    <TextBlock Text="{loc:Loc Settings_ParallelInstalls}" FontSize="14" FontWeight="Medium"/>
+                                    <TextBlock Text="{loc:Loc Settings_ParallelInstalls_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
 
                                 <ComboBox Grid.Column="1"
                                           ItemsSource="{Binding ParallelInstallOptions}"
                                           SelectedItem="{Binding MaxParallelInstalls}"
-                                          Style="{StaticResource MaterialDesignOutlinedComboBox}" Width="80"/>
+                                          Width="80"/>
                             </Grid>
 
                             <!-- Parallel Scans Setting -->
@@ -196,42 +188,40 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="{loc:Loc Settings_ParallelScans}" Style="{StaticResource MaterialDesignBody1TextBlock}" FontWeight="Medium"/>
-                                    <TextBlock Text="{loc:Loc Settings_ParallelScans_Desc}" Style="{StaticResource MaterialDesignCaptionTextBlock}" Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                    <TextBlock Text="{loc:Loc Settings_ParallelScans}" FontSize="14" FontWeight="Medium"/>
+                                    <TextBlock Text="{loc:Loc Settings_ParallelScans_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
 
                                 <ComboBox Grid.Column="1"
                                           ItemsSource="{Binding ParallelScanOptions}"
                                           SelectedItem="{Binding MaxParallelScans}"
-                                          Style="{StaticResource MaterialDesignOutlinedComboBox}" Width="80"/>
+                                          Width="80"/>
                             </Grid>
                         </StackPanel>
-                    </materialDesign:Card>
+                    </Border>
                 </ScrollViewer>
             </TabItem>
 
             <!-- Data Tab -->
             <TabItem>
                 <TabItem.Header>
-                    <StackPanel>
-                        <materialDesign:PackIcon Kind="Database" Width="24" Height="24" HorizontalAlignment="Center"
-                                                  Foreground="White"/>
-                        <TextBlock Text="{loc:Loc Settings_Tab_Data}" Style="{StaticResource MaterialDesignCaptionTextBlock}" HorizontalAlignment="Center"
-                                   Foreground="White"/>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Database24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_Data}" FontSize="13" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
-                    <materialDesign:Card Padding="16" materialDesign:ElevationAssist.Elevation="Dp2">
+                    <Border Padding="16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                     <StackPanel>
                         <!-- Section Header -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                            <materialDesign:PackIcon Kind="Database"
+                            <ui:SymbolIcon Symbol="Database24"
                                                       Width="24" Height="24"
                                                       VerticalAlignment="Center"
                                                       Margin="0,0,12,0"/>
                             <TextBlock Text="{loc:Loc Settings_Section_Data}"
-                                       Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                       FontSize="20" FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
 
@@ -244,11 +234,11 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="{loc:Loc Settings_ExportImport}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontSize="14"
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{loc:Loc Settings_ExportImport_Desc}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -256,14 +246,14 @@
                                         Style="{StaticResource ThemeAdaptiveOutlinedButton}"
                                         Margin="0,0,8,0">
                                     <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="Export" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <ui:SymbolIcon Symbol="ArrowExportUp24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                         <TextBlock Text="{loc:Loc Settings_Export}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                                 <Button Command="{Binding ImportSettingsCommand}"
                                         Style="{StaticResource ThemeAdaptiveOutlinedButton}">
                                     <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="Import" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <ui:SymbolIcon Symbol="ArrowImport24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                         <TextBlock Text="{loc:Loc Settings_Import}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
@@ -279,18 +269,18 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="{loc:Loc Settings_ResetDefaults}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontSize="14"
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{loc:Loc Settings_ResetDefaults_Desc}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
                             <Button Grid.Column="1"
                                     Command="{Binding ResetToDefaultsCommand}"
                                     Style="{StaticResource ThemeAdaptiveOutlinedButton}">
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Restore" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <ui:SymbolIcon Symbol="ArrowReset24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                     <TextBlock Text="{loc:Loc Settings_ResetBtn}" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
@@ -305,11 +295,11 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="{loc:Loc Settings_ClearHistory}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontSize="14"
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{loc:Loc Settings_ClearHistory_Desc}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
                             <Button Grid.Column="1"
@@ -327,36 +317,36 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="{loc:Loc Settings_Btn_OpenLogs}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontSize="14"
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{loc:Loc Settings_OpenLogs_Desc}"
-                                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"/>
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
                             <Button Grid.Column="1"
                                     Command="{Binding OpenLogFolderCommand}"
                                     Style="{StaticResource ThemeAdaptiveOutlinedButton}">
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="FolderOpen" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <ui:SymbolIcon Symbol="FolderOpen24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <TextBlock Text="{loc:Loc Settings_Btn_OpenLogs}" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
                         </Grid>
                     </StackPanel>
-                    </materialDesign:Card>
+                    </Border>
 
                     <!-- Error History Section -->
-                    <materialDesign:Card Padding="16" Margin="0,16,0,0" materialDesign:ElevationAssist.Elevation="Dp2">
-                        <Expander IsExpanded="{Binding HasErrors}" materialDesign:ExpanderAssist.HorizontalHeaderPadding="0">
+                    <Border Padding="16" Margin="0,16,0,0" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                        <Expander IsExpanded="{Binding HasErrors}">
                             <Expander.Header>
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="AlertCircleOutline"
+                                    <ui:SymbolIcon Symbol="ErrorCircle24"
                                                               Width="24" Height="24"
                                                               VerticalAlignment="Center"
                                                               Margin="0,0,12,0"/>
                                     <TextBlock Text="{loc:Loc Settings_ErrorHistory}"
-                                               Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                               FontSize="20" FontWeight="SemiBold"
                                                VerticalAlignment="Center"/>
                                     <Border Background="{DynamicResource ErrorBorderBrush}"
                                             CornerRadius="12"
@@ -384,7 +374,7 @@
                                               MaxHeight="300">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                            <Border BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
                                                     BorderThickness="0,0,0,1"
                                                     Padding="0,8">
                                                 <Grid>
@@ -394,7 +384,7 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <materialDesign:PackIcon Kind="AlertCircle"
+                                                    <ui:SymbolIcon Symbol="ErrorCircle24"
                                                                               Grid.Column="0"
                                                                               Width="20" Height="20"
                                                                               Foreground="{DynamicResource ErrorBorderBrush}"
@@ -403,19 +393,19 @@
 
                                                     <StackPanel Grid.Column="1">
                                                         <TextBlock Text="{Binding Message}"
-                                                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                                                   FontSize="12"
                                                                    TextWrapping="Wrap"/>
                                                         <TextBlock Text="{Binding Source}"
-                                                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                                   FontSize="12"
+                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                                    Visibility="{Binding Source, Converter={StaticResource NullableToVisibilityConverter}}"
                                                                    Margin="0,4,0,0"/>
                                                     </StackPanel>
 
                                                     <TextBlock Grid.Column="2"
                                                                Text="{Binding FormattedTimestamp}"
-                                                               Style="{StaticResource MaterialDesignCaptionTextBlock}"
-                                                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                                VerticalAlignment="Top"
                                                                Margin="12,2,0,0"/>
                                                 </Grid>
@@ -426,14 +416,14 @@
 
                                 <!-- Empty State -->
                                 <TextBlock Text="{loc:Loc Settings_NoErrors}"
-                                           Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            HorizontalAlignment="Center"
                                            Margin="0,16"
                                            Visibility="{Binding HasErrors, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                             </StackPanel>
                         </Expander>
-                    </materialDesign:Card>
+                    </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -441,37 +431,35 @@
             <!-- Scheduled Deployments Tab -->
             <TabItem>
                 <TabItem.Header>
-                    <StackPanel>
-                        <materialDesign:PackIcon Kind="CalendarClock" Width="24" Height="24" HorizontalAlignment="Center"
-                                                  Foreground="White"/>
-                        <TextBlock Text="{loc:Loc Settings_Tab_Scheduled}" Style="{StaticResource MaterialDesignCaptionTextBlock}" HorizontalAlignment="Center"
-                                   Foreground="White"/>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="CalendarClock24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_Scheduled}" FontSize="13" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
                         <!-- Admin Required Warning -->
-                        <materialDesign:Card Padding="16" Margin="0,0,0,16" materialDesign:ElevationAssist.Elevation="Dp2"
+                        <Border Padding="16" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                               Visibility="{Binding IsScheduledDeploymentsAvailable, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="AlertCircle" Width="24" Height="24"
-                                                          Foreground="{DynamicResource MaterialDesignValidationErrorBrush}"
+                                <ui:SymbolIcon Symbol="ErrorCircle24" Width="24" Height="24"
+                                                          Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                                           VerticalAlignment="Center" Margin="0,0,12,0"/>
                                 <TextBlock Text="{loc:Loc ScheduledDeployment_AdminRequired}"
-                                           Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                           FontSize="14"
                                            VerticalAlignment="Center"
                                            TextWrapping="Wrap"/>
                             </StackPanel>
-                        </materialDesign:Card>
+                        </Border>
 
                         <!-- Create New Scheduled Deployment -->
-                        <materialDesign:Card Padding="16" Margin="0,0,0,16" materialDesign:ElevationAssist.Elevation="Dp2"
+                        <Border Padding="16" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                               IsEnabled="{Binding IsScheduledDeploymentsAvailable}">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                    <materialDesign:PackIcon Kind="CalendarPlus" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <ui:SymbolIcon Symbol="CalendarAdd24" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                     <TextBlock Text="{loc:Loc ScheduledDeployment_CreateNew}"
-                                               Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                               FontSize="20" FontWeight="SemiBold"
                                                VerticalAlignment="Center"/>
                                 </StackPanel>
 
@@ -483,12 +471,11 @@
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Text="{loc:Loc ScheduledDeployment_Profile}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontSize="14"
                                                VerticalAlignment="Center"/>
                                     <ComboBox Grid.Column="1"
                                               ItemsSource="{Binding AvailableProfiles}"
-                                              SelectedItem="{Binding NewScheduledProfile}"
-                                              Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
+                                              SelectedItem="{Binding NewScheduledProfile}"/>
                                 </Grid>
 
                                 <!-- Trigger Type -->
@@ -499,12 +486,11 @@
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Text="{loc:Loc ScheduledDeployment_TriggerType}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontSize="14"
                                                VerticalAlignment="Center"/>
                                     <ComboBox Grid.Column="1"
                                               ItemsSource="{Binding AvailableTriggerTypes}"
-                                              SelectedItem="{Binding NewScheduledTriggerType}"
-                                              Style="{StaticResource MaterialDesignOutlinedComboBox}"/>
+                                              SelectedItem="{Binding NewScheduledTriggerType}"/>
                                 </Grid>
 
                                 <!-- Schedule Time -->
@@ -516,32 +502,30 @@
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Text="{loc:Loc ScheduledDeployment_DateTime}"
-                                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                               FontSize="14"
                                                VerticalAlignment="Center"/>
                                     <DatePicker Grid.Column="1"
                                                 SelectedDate="{Binding NewScheduledTime}"
-                                                Style="{StaticResource MaterialDesignOutlinedDatePicker}"
                                                 Margin="0,0,8,0"/>
-                                    <materialDesign:TimePicker Grid.Column="2"
-                                                                SelectedTime="{Binding NewScheduledTime}"
-                                                                Style="{StaticResource MaterialDesignOutlinedTimePicker}"
-                                                                Is24Hours="True"/>
+                                    <ui:TextBox Grid.Column="2"
+                                                PlaceholderText="HH:mm"
+                                                Text="{Binding NewScheduledTimeText, UpdateSourceTrigger=PropertyChanged}"/>
                                 </Grid>
 
                                 <!-- Create Button -->
-                                <Button Command="{Binding CreateScheduledDeploymentCommand}"
-                                        Style="{StaticResource MaterialDesignRaisedButton}"
+                                <ui:Button Command="{Binding CreateScheduledDeploymentCommand}"
+                                        Appearance="Primary"
                                         HorizontalAlignment="Right">
                                     <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="CalendarPlus" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <ui:SymbolIcon Symbol="CalendarAdd24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                         <TextBlock Text="{loc:Loc ScheduledDeployment_Create}" VerticalAlignment="Center"/>
                                     </StackPanel>
-                                </Button>
+                                </ui:Button>
                             </StackPanel>
-                        </materialDesign:Card>
+                        </Border>
 
                         <!-- Scheduled Deployments List -->
-                        <materialDesign:Card Padding="16" materialDesign:ElevationAssist.Elevation="Dp2"
+                        <Border Padding="16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                               IsEnabled="{Binding IsScheduledDeploymentsAvailable}">
                             <StackPanel>
                                 <Grid Margin="0,0,0,16">
@@ -551,18 +535,18 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="CalendarMultiple" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                        <ui:SymbolIcon Symbol="CalendarMultiple24" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                         <TextBlock Text="{loc:Loc ScheduledDeployment_List}"
-                                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                                   FontSize="20" FontWeight="SemiBold"
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
 
-                                    <Button Grid.Column="1"
+                                    <ui:Button Grid.Column="1"
                                             Command="{Binding LoadScheduledDeploymentsCommand}"
-                                            Style="{StaticResource MaterialDesignIconButton}"
+                                            Appearance="Transparent"
                                             ToolTip="{loc:Loc ScheduledDeployment_Refresh}">
-                                        <materialDesign:PackIcon Kind="Refresh" Width="20" Height="20"/>
-                                    </Button>
+                                        <ui:SymbolIcon Symbol="ArrowSync24" Width="20" Height="20"/>
+                                    </ui:Button>
                                 </Grid>
 
                                 <!-- Loading Indicator -->
@@ -572,8 +556,8 @@
 
                                 <!-- Empty State -->
                                 <TextBlock Text="{loc:Loc ScheduledDeployment_Empty}"
-                                           Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            HorizontalAlignment="Center"
                                            Margin="0,16"
                                            Visibility="{Binding ScheduledDeployments.Count, Converter={StaticResource ZeroToVisibilityConverter}}"/>
@@ -586,7 +570,6 @@
                                           CanUserDeleteRows="False"
                                           IsReadOnly="True"
                                           SelectionMode="Single"
-                                          Style="{StaticResource MaterialDesignDataGrid}"
                                           Visibility="{Binding ScheduledDeployments.Count, Converter={StaticResource NonZeroToVisibilityConverter}}"
                                           MaxHeight="300">
                                     <DataGrid.Columns>
@@ -615,7 +598,7 @@
                                             Margin="0,0,8,0"
                                             IsEnabled="{Binding SelectedScheduledDeployment, Converter={StaticResource NullableToBooleanConverter}}">
                                         <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="Play" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <ui:SymbolIcon Symbol="Play24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                             <TextBlock Text="{loc:Loc ScheduledDeployment_RunNow}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Button>
@@ -623,13 +606,13 @@
                                             Style="{StaticResource DestructiveOutlinedButton}"
                                             IsEnabled="{Binding SelectedScheduledDeployment, Converter={StaticResource NullableToBooleanConverter}}">
                                         <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <ui:SymbolIcon Symbol="Delete24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                             <TextBlock Text="{loc:Loc ScheduledDeployment_Remove}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Button>
                                 </StackPanel>
                             </StackPanel>
-                        </materialDesign:Card>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -637,16 +620,14 @@
             <!-- About Tab -->
             <TabItem>
                 <TabItem.Header>
-                    <StackPanel>
-                        <materialDesign:PackIcon Kind="InformationOutline" Width="24" Height="24" HorizontalAlignment="Center"
-                                                  Foreground="White"/>
-                        <TextBlock Text="{loc:Loc Settings_Tab_About}" Style="{StaticResource MaterialDesignCaptionTextBlock}" HorizontalAlignment="Center"
-                                   Foreground="White"/>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Info24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_About}" FontSize="13" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
-                        <materialDesign:Card Padding="16" materialDesign:ElevationAssist.Elevation="Dp2">
+                        <Border Padding="16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -656,8 +637,7 @@
                                 <!-- App Info (Left) -->
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                     <TextBlock Text="{loc:Loc App_Name}"
-                                               Style="{StaticResource MaterialDesignHeadline5TextBlock}"
-                                               FontWeight="Bold"
+                                               FontSize="24" FontWeight="SemiBold"
                                                Margin="0,0,0,16"/>
 
                                     <Grid>
@@ -675,40 +655,40 @@
                                         <!-- Version -->
                                         <TextBlock Grid.Row="0" Grid.Column="0"
                                                    Text="{loc:Loc About_Version}"
-                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontSize="14"
                                                    FontWeight="Medium"
                                                    Margin="0,0,24,8"/>
                                         <TextBlock Grid.Row="0" Grid.Column="1"
                                                    Text="{Binding AppVersion}"
-                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontSize="14"
                                                    Margin="0,0,0,8"/>
 
                                         <!-- Author -->
                                         <TextBlock Grid.Row="1" Grid.Column="0"
                                                    Text="{loc:Loc About_Author}"
-                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontSize="14"
                                                    FontWeight="Medium"
                                                    Margin="0,0,24,8"/>
                                         <TextBlock Grid.Row="1" Grid.Column="1"
                                                    Text="{loc:Loc About_AuthorName}"
-                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontSize="14"
                                                    Margin="0,0,0,8"/>
 
                                         <!-- License -->
                                         <TextBlock Grid.Row="2" Grid.Column="0"
                                                    Text="{loc:Loc About_License}"
-                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontSize="14"
                                                    FontWeight="Medium"
                                                    Margin="0,0,24,8"/>
                                         <TextBlock Grid.Row="2" Grid.Column="1"
                                                    Text="{loc:Loc About_LicenseValue}"
-                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontSize="14"
                                                    Margin="0,0,0,8"/>
 
                                         <!-- GitHub -->
                                         <TextBlock Grid.Row="3" Grid.Column="0"
                                                    Text="{loc:Loc About_Repository}"
-                                                   Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                                   FontSize="14"
                                                    FontWeight="Medium"
                                                    Margin="0,0,24,0"/>
                                         <Button Grid.Row="3" Grid.Column="1"
@@ -729,23 +709,23 @@
                                        VerticalAlignment="Center"
                                        Margin="24,0,0,0"/>
                             </Grid>
-                        </materialDesign:Card>
+                        </Border>
 
                         <!-- Status Message -->
-                        <materialDesign:Card Padding="12" Margin="0,16,0,0"
-                                              materialDesign:ElevationAssist.Elevation="Dp1"
+                        <Border Padding="12" Margin="0,16,0,0"
+                                              CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                               Visibility="{Binding StatusMessage, Converter={StaticResource NullableToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="CheckCircle"
+                                <ui:SymbolIcon Symbol="CheckmarkCircle24"
                                                           Width="20" Height="20"
                                                           VerticalAlignment="Center"
-                                                          Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                                          Foreground="{DynamicResource SystemFillColorSuccessBrush}"
                                                           Margin="0,0,8,0"/>
                                 <TextBlock Text="{Binding StatusMessage}"
-                                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                           FontSize="12"
                                            VerticalAlignment="Center"/>
                             </StackPanel>
-                        </materialDesign:Card>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

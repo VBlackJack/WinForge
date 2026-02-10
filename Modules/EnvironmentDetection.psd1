@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'EnvironmentDetection.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = '84278f40-33e4-41b3-a5ad-ea4f1d7692d4'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'

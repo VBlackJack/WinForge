@@ -6,7 +6,7 @@ La **base de données centralisée d'applications** est le cœur du système Win
 
 **Version** : 2.5.0
 **Dernière mise à jour** : 2025-10-06
-**Total d'applications** : 66
+**Total d'applications** : 175
 
 ---
 
@@ -64,7 +64,7 @@ La **base de données centralisée d'applications** est le cœur du système Win
 ```
 Apps/
 ├── Database/
-│   └── applications.json        # Base de données principale (66 apps)
+│   └── applications.json        # Base de données principale (175 apps)
 ├── README.md                    # Cette documentation
 └── QUICK_START.md               # Guide de démarrage rapide
 ```
@@ -80,7 +80,7 @@ Apps/
   "$schema": "https://json-schema.org/draft-07/schema#",
   "DatabaseVersion": "2.5.0",
   "LastUpdated": "2025-10-06",
-  "TotalApplications": 66,
+  "TotalApplications": 175,
   "Applications": { ... },
   "Categories": { ... },
   "Tags": { ... }
@@ -317,10 +317,10 @@ Loading database...
 Database Statistics:
   Version          : 2.5.0
   Last Updated     : 2025-10-06
-  Total Apps       : 66
+  Total Apps       : 175
   Categories       : 20
   Tags             : 7
-  Verified Apps    : 66
+  Verified Apps    : 175
   Apps with Winget : 58
   Apps with Choco  : 48
   Apps with Store  : 12
@@ -338,8 +338,8 @@ Validating application sources (this may take a while)...
 
 ------------------------------------------------------------
 Validation Summary:
-  Total Apps  : 66
-  Valid       : 66 ✅
+  Total Apps  : 175
+  Valid       : 175 ✅
   Invalid     : 0 ✅
   Success Rate: 100%
 
@@ -375,7 +375,7 @@ Validation Summary:
 }
 
 # 2. Incrémenter TotalApplications
-"TotalApplications": 67
+"TotalApplications": 175
 
 # 3. Valider
 .\Tools\Validate-AppDatabase.ps1 -ValidateWinget -ValidateChocolatey
@@ -458,7 +458,7 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Win11Forge-A
 
 ## 📊 Statistiques Actuelles
 
-- **Total Applications** : 66
+- **Total Applications** : 175
 - **Catégories** : 19
 - **Tags** : 7
 - **Sources** :
@@ -466,7 +466,7 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Win11Forge-A
   - Chocolatey : 48 apps (73%)
   - Store : 12 apps (18%)
   - DirectUrl : 8 apps (12%)
-- **Vérifiées** : 66 apps (100%)
+- **Vérifiées** : 175 apps (100%)
 
 ---
 

@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ApplicationDatabase.psm1'
-    ModuleVersion = '3.6.8'
+    ModuleVersion = '3.7.0'
     GUID = 'c1556951-f2bd-4785-8b11-0b541795dab1'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
