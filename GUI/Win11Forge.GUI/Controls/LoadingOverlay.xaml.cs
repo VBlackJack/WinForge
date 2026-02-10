@@ -209,12 +209,13 @@ public partial class LoadingOverlay : UserControl
         }
         else
         {
-            AnimationHelper.FadeOut(this, 200);
-            // Use dispatcher to delay visibility change
-            Dispatcher.BeginInvoke(new Action(() =>
+            var fadeOut = Helpers.AnimationHelper.CreateFadeAnimation(1.0, 0.0, 200);
+            fadeOut.Completed += (s, e) =>
             {
                 Visibility = Visibility.Collapsed;
-            }), System.Windows.Threading.DispatcherPriority.Background);
+                BeginAnimation(OpacityProperty, null);
+            };
+            BeginAnimation(OpacityProperty, fadeOut);
         }
     }
 

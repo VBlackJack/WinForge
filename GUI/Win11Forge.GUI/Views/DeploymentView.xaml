@@ -406,7 +406,7 @@
     <!-- Log Viewer Dialog Overlay -->
     <Grid Visibility="{Binding IsLogViewerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
         <!-- Backdrop -->
-        <Border Background="#80000000"
+        <Border Background="{DynamicResource DialogOverlayBackgroundBrush}"
                 MouseDown="DialogHost_DialogClosing"/>
 
         <!-- Dialog Content -->

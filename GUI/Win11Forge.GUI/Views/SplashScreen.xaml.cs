@@ -64,6 +64,12 @@ public partial class SplashScreen : Window
     {
         Dispatcher.Invoke(() =>
         {
+            if (App.ReducedMotion)
+            {
+                Close();
+                return;
+            }
+
             var fadeOut = new DoubleAnimation
             {
                 From = 1.0,

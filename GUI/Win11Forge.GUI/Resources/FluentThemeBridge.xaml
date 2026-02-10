@@ -95,6 +95,9 @@
     <SolidColorBrush x:Key="SecondaryHueLightBrush" Color="#40A3D9A0"/>
     <SolidColorBrush x:Key="SecondaryHueLightForegroundBrush" Color="#FFFFFF"/>
 
+    <!-- Dialog Overlay Backdrop (semi-transparent, swapped by App.ApplyThemeResources) -->
+    <SolidColorBrush x:Key="DialogOverlayBackgroundBrush" Color="#80000000"/>
+
     <!-- Theme-Adaptive Accent Brush (updated dynamically by App.xaml.cs) -->
     <SolidColorBrush x:Key="ThemeAdaptiveAccentBrush" Color="#60CDFF"/>
 

@@ -14,7 +14,7 @@
                     <!-- Separator (not for first item) -->
                     <ui:SymbolIcon Symbol="ChevronRight24"
                                      Width="20" Height="20"
-                                     Opacity="0.5"
+                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                      VerticalAlignment="Center"
                                      Visibility="{Binding IsFirst, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                     <!-- Breadcrumb item -->
@@ -23,7 +23,8 @@
                             Command="{Binding NavigateCommand}"
                             IsEnabled="{Binding IsClickable}"
                             Padding="8,4"
-                            FontWeight="{Binding FontWeight}"/>
+                            FontWeight="{Binding FontWeight}"
+                            AutomationProperties.Name="{Binding Label}"/>
                 </StackPanel>
             </DataTemplate>
         </ItemsControl.ItemTemplate>

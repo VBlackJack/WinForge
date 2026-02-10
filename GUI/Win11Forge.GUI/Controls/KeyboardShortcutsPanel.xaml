@@ -29,7 +29,7 @@
                     <!-- General Section -->
                     <TextBlock Text="{loc:Loc Help_Section_General}"
                                FontSize="14" FontWeight="Medium"
-                               Opacity="0.7"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,0,0,8"/>
 
                     <ItemsControl x:Name="GeneralShortcuts">
@@ -62,7 +62,7 @@
                     <!-- Application Manager Section -->
                     <TextBlock Text="{loc:Loc Help_Section_AppManager}"
                                FontSize="14" FontWeight="Medium"
-                               Opacity="0.7"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,16,0,8"/>
 
                     <ItemsControl x:Name="AppManagerShortcuts">
@@ -95,7 +95,7 @@
                     <!-- Navigation Section -->
                     <TextBlock Text="{loc:Loc Help_Section_Navigation}"
                                FontSize="14" FontWeight="Medium"
-                               Opacity="0.7"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,16,0,8"/>
 
                     <ItemsControl x:Name="NavigationShortcuts">
@@ -128,7 +128,7 @@
                     <!-- Data Grid Section -->
                     <TextBlock Text="{loc:Loc Help_Section_DataGrid}"
                                FontSize="14" FontWeight="Medium"
-                               Opacity="0.7"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,16,0,8"/>
 
                     <ItemsControl x:Name="DataGridShortcuts">
@@ -167,12 +167,12 @@
                             <ui:SymbolIcon Symbol="Info24"
                                            Width="18" Height="18"
                                            VerticalAlignment="Center"
-                                           Opacity="0.7"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Help_Shortcut_DataGrid}"
                                        FontSize="12"
                                        TextWrapping="Wrap"
-                                       Opacity="0.8"/>
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>

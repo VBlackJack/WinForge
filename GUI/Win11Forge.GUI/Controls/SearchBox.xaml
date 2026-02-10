@@ -48,10 +48,9 @@
                             Padding="12,8"
                             Visibility="{Binding HasRecentSearches, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Clock24" Width="16" Height="16" Opacity="0.7" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="Clock24" Width="16" Height="16" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Search_RecentSearches}"
-                                       FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                       Opacity="0.7"/>
+                                       FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         </StackPanel>
                     </Border>
 
@@ -73,7 +72,7 @@
                                     <ui:SymbolIcon Grid.Column="0"
                                                               Symbol="{Binding Icon}"
                                                               Width="18" Height="18"
-                                                              Opacity="0.7"
+                                                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                               VerticalAlignment="Center"
                                                               Margin="0,0,12,0"/>
 
@@ -81,15 +80,13 @@
                                         <TextBlock Text="{Binding Text}"
                                                    FontSize="12"/>
                                         <TextBlock Text="{Binding Category}"
-                                                   FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                   Opacity="0.6"
+                                                   FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                    Visibility="{Binding Category, Converter={StaticResource NullableToVisibilityConverter}}"/>
                                     </StackPanel>
 
                                     <TextBlock Grid.Column="2"
                                                Text="{Binding Shortcut}"
-                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                               Opacity="0.5"
+                                               FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                VerticalAlignment="Center"
                                                Visibility="{Binding Shortcut, Converter={StaticResource NullableToVisibilityConverter}}"/>
                                 </Grid>

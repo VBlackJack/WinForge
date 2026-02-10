@@ -70,22 +70,22 @@ public partial class ConfirmDialog : UserControl
         {
             case ConfirmDialogType.Warning:
                 DialogIcon.Symbol = SymbolRegular.Warning24;
-                DialogIcon.Foreground = Application.Current.TryFindResource("WarningIconBrush") as Brush
+                DialogIcon.Foreground = Application.Current?.TryFindResource("WarningIconBrush") as Brush
                     ?? new SolidColorBrush(Color.FromRgb(230, 81, 0));
                 break;
 
             case ConfirmDialogType.Danger:
                 DialogIcon.Symbol = SymbolRegular.ShieldError24;
-                DialogIcon.Foreground = Application.Current.TryFindResource("ErrorIconBrush") as Brush
+                DialogIcon.Foreground = Application.Current?.TryFindResource("ErrorIconBrush") as Brush
                     ?? new SolidColorBrush(Color.FromRgb(211, 47, 47));
-                ConfirmButton.Background = Application.Current.TryFindResource("StatusFailedBrush") as Brush
+                ConfirmButton.Background = Application.Current?.TryFindResource("StatusFailedBrush") as Brush
                     ?? new SolidColorBrush(Color.FromRgb(244, 67, 54));
                 break;
 
             case ConfirmDialogType.Question:
             default:
                 DialogIcon.Symbol = SymbolRegular.QuestionCircle24;
-                DialogIcon.Foreground = Application.Current.TryFindResource("PrimaryHueMidBrush") as Brush
+                DialogIcon.Foreground = Application.Current?.TryFindResource("PrimaryHueMidBrush") as Brush
                     ?? new SolidColorBrush(Color.FromRgb(103, 58, 183));
                 break;
         }

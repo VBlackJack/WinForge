@@ -153,11 +153,11 @@
                    <ui:SymbolIcon Symbol="QuestionCircle24"
                                   Width="18" Height="18"
                                   VerticalAlignment="Center"
-                                  Opacity="0.7"
+                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                   Margin="0,0,8,0"/>
                    <TextBlock x:Name="OfflineHelpText"
                               FontSize="12"
-                              Opacity="0.7"/>
+                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                </StackPanel>
            </Border>
 

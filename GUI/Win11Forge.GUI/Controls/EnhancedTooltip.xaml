@@ -53,7 +53,7 @@
                        Text="{Binding Description, ElementName=Root}"
                        FontSize="12"
                        TextWrapping="Wrap"
-                       Opacity="0.9"/>
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
 
             <!-- Keyboard Shortcut (optional) -->
             <Border Grid.Row="2"
@@ -63,13 +63,13 @@
                     <ui:SymbolIcon Symbol="Keyboard24"
                                               Width="14" Height="14"
                                               VerticalAlignment="Center"
-                                              Opacity="0.7"
+                                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                               Margin="0,0,6,0"/>
                     <TextBlock Text="{Binding Shortcut, ElementName=Root}"
                                FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                FontFamily="Consolas"
                                VerticalAlignment="Center"
-                               Opacity="0.8"/>
+                               />
                 </StackPanel>
             </Border>
         </Grid>

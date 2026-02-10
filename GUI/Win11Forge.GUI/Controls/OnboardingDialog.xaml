@@ -28,7 +28,7 @@
                 <TextBlock Text="{loc:Loc Onboarding_Subtitle}"
                            FontSize="14"
                            HorizontalAlignment="Center"
-                           Opacity="0.7"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            Margin="0,8,0,0"/>
             </StackPanel>
 
@@ -46,7 +46,7 @@
                             Width="40" Height="40"
                             Margin="0,0,16,0">
                         <TextBlock Text="1"
-                                   Foreground="White"
+                                   Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                                    FontWeight="Bold"
                                    FontSize="18"
                                    HorizontalAlignment="Center"
@@ -57,7 +57,7 @@
                                    FontSize="16" FontWeight="Medium"/>
                         <TextBlock Text="{loc:Loc Onboarding_Step1_Desc}"
                                    FontSize="12"
-                                   Opacity="0.7"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    TextWrapping="Wrap"/>
                     </StackPanel>
                 </Grid>
@@ -74,7 +74,7 @@
                             Width="40" Height="40"
                             Margin="0,0,16,0">
                         <TextBlock Text="2"
-                                   Foreground="White"
+                                   Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                                    FontWeight="Bold"
                                    FontSize="18"
                                    HorizontalAlignment="Center"
@@ -85,7 +85,7 @@
                                    FontSize="16" FontWeight="Medium"/>
                         <TextBlock Text="{loc:Loc Onboarding_Step2_Desc}"
                                    FontSize="12"
-                                   Opacity="0.7"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    TextWrapping="Wrap"/>
                     </StackPanel>
                 </Grid>
@@ -102,7 +102,7 @@
                             Width="40" Height="40"
                             Margin="0,0,16,0">
                         <TextBlock Text="3"
-                                   Foreground="White"
+                                   Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                                    FontWeight="Bold"
                                    FontSize="18"
                                    HorizontalAlignment="Center"
@@ -113,7 +113,7 @@
                                    FontSize="16" FontWeight="Medium"/>
                         <TextBlock Text="{loc:Loc Onboarding_Step3_Desc}"
                                    FontSize="12"
-                                   Opacity="0.7"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    TextWrapping="Wrap"/>
                     </StackPanel>
                 </Grid>
@@ -130,7 +130,7 @@
                                    Width="24" Height="24"
                                    VerticalAlignment="Center"
                                    Margin="0,0,12,0"
-                                   Opacity="0.7"/>
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     <TextBlock FontSize="12"
                                VerticalAlignment="Center">
                         <Run Text="{loc:Loc Onboarding_Tip}"/>
