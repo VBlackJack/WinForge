@@ -42,7 +42,7 @@
         "Winget": "Google.Chrome",
         "Chocolatey": "googlechrome",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://dl.google.com/chrome/install/GoogleChromeStandaloneEnterprise64.msi"
       },
       "Detection": {
         "Method": "Registry",
@@ -57,7 +57,7 @@
         "popular",
         "essential"
       ],
-      "LastVerified": "2025-10-03",
+      "LastVerified": "2026-02-11",
       "Verified": true,
       "Homepage": "https://www.google.com/chrome/"
     },
@@ -1618,7 +1618,7 @@
       "Description": "Bridge to use Proton Mail with desktop email clients",
       "Sources": {
         "Winget": "Proton.ProtonMailBridge",
-        "Chocolatey": null,
+        "Chocolatey": "protonmailbridge",
         "Store": null,
         "DirectUrl": null
       },
@@ -1632,9 +1632,9 @@
         "proton",
         "privacy"
       ],
-      "LastVerified": "2026-01-16",
+      "LastVerified": "2026-02-11",
       "Verified": true,
-      "Notes": "DirectUrl unavailable: Proton uses dynamic signed download URLs. Use Winget for installation.",
+      "Notes": "DirectUrl unavailable: Proton uses dynamic signed download URLs. Chocolatey fallback added for hash mismatch resilience.",
       "Homepage": "https://proton.me/mail/bridge",
       "Detection": {
         "Value": "DisplayName",
@@ -1682,7 +1682,7 @@
         "Winget": "SiberSystems.RoboForm",
         "Chocolatey": "roboform",
         "Store": null,
-        "DirectUrl": null
+        "DirectUrl": "https://www.roboform.com/dist/RoboForm-Setup.exe"
       },
       "Detection": {
         "Method": "File",
@@ -1696,7 +1696,7 @@
         "password",
         "form-filler"
       ],
-      "LastVerified": "2025-10-03",
+      "LastVerified": "2026-02-11",
       "Verified": true,
       "Homepage": "https://www.roboform.com/"
     },

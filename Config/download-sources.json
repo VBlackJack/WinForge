@@ -87,6 +87,7 @@
       "keepassxc.org",
       "proton.me",
       "protonvpn.com",
+      "roboform.com",
       "nordvpn.com",
       "wireguard.com",
       "openvpn.net",
@@ -138,9 +139,14 @@
         "notes": "Always downloads latest stable Firefox"
       },
       "Chrome": {
-        "url": "https://dl.google.com/chrome/install/latest/chrome_installer.exe",
-        "silentArgs": "/silent /install",
-        "notes": "Google Chrome enterprise installer"
+        "url": "https://dl.google.com/chrome/install/GoogleChromeStandaloneEnterprise64.msi",
+        "silentArgs": "/quiet /norestart",
+        "notes": "Google Chrome enterprise MSI installer (standalone 64-bit)"
+      },
+      "Roboform": {
+        "url": "https://www.roboform.com/dist/RoboForm-Setup.exe",
+        "silentArgs": "/VERYSILENT /NORESTART",
+        "notes": "Roboform password manager installer"
       }
     }
   },

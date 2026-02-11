@@ -89,6 +89,10 @@
       "winget_already_installed": "Already installed (Winget){Version}{Attempt}",
       "winget_verified": "Installed successfully via Winget{Version} (verified post-install){Attempt}",
       "winget_failed": "Winget installation failed (exit code: {ExitCode})",
+      "winget_hash_mismatch": "Winget installer hash mismatch for {PackageId} — the package manifest is out of date. Try again later or use an alternative method.",
+      "winget_hash_mismatch_retrying_force": "Winget hash mismatch for {PackageId} — retrying with --force to bypass hash validation.",
+      "winget_force_success": "Installed {PackageId} via Winget with --force{Version} (hash validation bypassed).",
+      "winget_force_failed": "Installation of {PackageId} failed with --force (exit code: {ExitCode}).",
       "winget_failed_attempts": "Winget installation failed after {Attempts} attempts (exit code: {ExitCode})",
       "winget_error_retry": "Winget error: {Error}, retrying in {Delay} seconds...",
       "winget_error_final": "Winget installation error after {Attempts} attempts: {Error}",
@@ -223,6 +227,8 @@
         "winget_already": "Already installed (Winget)",
         "transient_error": "Transient error (exit code: {ExitCode}), retrying in {Delay} seconds...",
         "winget_failed": "Winget installation failed (exit code: {ExitCode})",
+        "winget_hash_mismatch": "Winget installer hash mismatch for {PackageId} — package manifest is out of date, skipping to next method.",
+        "winget_hash_mismatch_retrying_force": "Winget hash mismatch for {PackageId} — retrying with --force.",
         "attempting_choco": "Attempting installation via Chocolatey: {PackageName}",
         "retry_choco": "Retry {Attempt}/{MaxRetries} for Chocolatey: {PackageName}",
         "choco_timeout": "Chocolatey installation failed (timeout)",
@@ -1058,6 +1064,7 @@
       "invalid_direct_url": "Invalid DirectUrl",
       "checksum_failed": "SHA256 checksum validation failed",
       "all_failed": "All installation methods failed",
+      "winget_force": "Installed via Winget (force mode)",
       "winget_retry": "Installed via Winget (attempt {Attempt})",
       "already_installed_winget": "Already installed (Winget)",
       "already_installed_winget_retry": "Already installed (Winget) (attempt {Attempt})",
@@ -2015,5 +2022,35 @@
     "export": {
       "failed": "Export failed: {Error}"
     }
+  },
+  "sourcehealth": {
+    "title": "=== Source Health Check ===",
+    "checking_winget": "Checking Winget source: {PackageId}",
+    "checking_choco": "Checking Chocolatey source: {PackageName}",
+    "checking_directurl": "Checking DirectUrl: {Url}",
+    "winget_ok": "Winget package found: {PackageId}",
+    "winget_not_found": "Winget package not found: {PackageId}",
+    "choco_ok": "Chocolatey package found: {PackageName}",
+    "choco_not_found": "Chocolatey package not found: {PackageName}",
+    "directurl_ok": "DirectUrl reachable: {Url}",
+    "directurl_unreachable": "DirectUrl unreachable (HTTP {StatusCode}): {Url}",
+    "directurl_error": "DirectUrl check failed: {Error}",
+    "summary": {
+      "total": "Total applications checked: {Count}",
+      "healthy": "Healthy (all sources OK): {Count}",
+      "degraded": "Degraded (some sources failed): {Count}",
+      "critical": "Critical (no healthy sources): {Count}"
+    },
+    "repair": {
+      "enabled_force_flag": "Enabled wingetForceOnHashMismatch feature flag",
+      "flagged_dead_url": "Flagged dead DirectUrl for {AppName}",
+      "updated_verified": "Updated LastVerified for {AppName}"
+    }
+  },
+  "deploy": {
+    "validating_sources": "Validating installation sources for profile applications...",
+    "validation_complete": "Source validation complete.",
+    "critical_no_sources": "WARNING: {Count} application(s) have no healthy installation sources.",
+    "repairing_sources": "Attempting automatic source repair..."
   }
 }

@@ -89,6 +89,10 @@
       "winget_already_installed": "Déjà installé (Winget){Version}{Attempt}",
       "winget_verified": "Installé avec succès via Winget{Version} (vérifié post-installation){Attempt}",
       "winget_failed": "Échec de l'installation Winget (code de sortie : {ExitCode})",
+      "winget_hash_mismatch": "Incompatibilité de hachage de l'installeur Winget pour {PackageId} — le manifeste du paquet est obsolète. Réessayez plus tard ou utilisez une méthode alternative.",
+      "winget_hash_mismatch_retrying_force": "Incompatibilité de hachage Winget pour {PackageId} — nouvelle tentative avec --force pour contourner la validation du hachage.",
+      "winget_force_success": "Installation de {PackageId} via Winget avec --force{Version} (validation du hachage contournée).",
+      "winget_force_failed": "Échec de l'installation de {PackageId} avec --force (code de sortie : {ExitCode}).",
       "winget_failed_attempts": "Échec de l'installation Winget après {Attempts} tentatives (code de sortie : {ExitCode})",
       "winget_error_retry": "Erreur Winget : {Error}, nouvelle tentative dans {Delay} secondes...",
       "winget_error_final": "Erreur d'installation Winget après {Attempts} tentatives : {Error}",
@@ -223,6 +227,8 @@
         "winget_already": "Deja installe (Winget)",
         "transient_error": "Erreur transitoire (code de sortie : {ExitCode}), nouvelle tentative dans {Delay} secondes...",
         "winget_failed": "Echec de l'installation Winget (code de sortie : {ExitCode})",
+        "winget_hash_mismatch": "Incompatibilite de hachage de l'installeur Winget pour {PackageId} — manifeste du paquet obsolete, passage a la methode suivante.",
+        "winget_hash_mismatch_retrying_force": "Incompatibilite de hachage Winget pour {PackageId} — nouvelle tentative avec --force.",
         "attempting_choco": "Tentative d'installation via Chocolatey : {PackageName}",
         "retry_choco": "Nouvelle tentative {Attempt}/{MaxRetries} pour Chocolatey : {PackageName}",
         "choco_timeout": "Echec de l'installation Chocolatey (expiration du delai)",
@@ -1058,6 +1064,7 @@
       "invalid_direct_url": "URL directe invalide",
       "checksum_failed": "Échec de la validation du checksum SHA256",
       "all_failed": "Toutes les méthodes d'installation ont échoué",
+      "winget_force": "Installé via Winget (mode forcé)",
       "winget_retry": "Installé via Winget (tentative {Attempt})",
       "already_installed_winget": "Déjà installé (Winget)",
       "already_installed_winget_retry": "Déjà installé (Winget) (tentative {Attempt})",
@@ -2015,5 +2022,35 @@
     "export": {
       "failed": "Echec de l'exportation : {Error}"
     }
+  },
+  "sourcehealth": {
+    "title": "=== Verification de la sante des sources ===",
+    "checking_winget": "Verification de la source Winget : {PackageId}",
+    "checking_choco": "Verification de la source Chocolatey : {PackageName}",
+    "checking_directurl": "Verification de l'URL directe : {Url}",
+    "winget_ok": "Paquet Winget trouve : {PackageId}",
+    "winget_not_found": "Paquet Winget introuvable : {PackageId}",
+    "choco_ok": "Paquet Chocolatey trouve : {PackageName}",
+    "choco_not_found": "Paquet Chocolatey introuvable : {PackageName}",
+    "directurl_ok": "URL directe accessible : {Url}",
+    "directurl_unreachable": "URL directe inaccessible (HTTP {StatusCode}) : {Url}",
+    "directurl_error": "Echec de la verification de l'URL directe : {Error}",
+    "summary": {
+      "total": "Total d'applications verifiees : {Count}",
+      "healthy": "Saines (toutes les sources OK) : {Count}",
+      "degraded": "Degradees (certaines sources en echec) : {Count}",
+      "critical": "Critiques (aucune source saine) : {Count}"
+    },
+    "repair": {
+      "enabled_force_flag": "Activation du drapeau wingetForceOnHashMismatch",
+      "flagged_dead_url": "URL directe morte signalee pour {AppName}",
+      "updated_verified": "LastVerified mis a jour pour {AppName}"
+    }
+  },
+  "deploy": {
+    "validating_sources": "Validation des sources d'installation pour les applications du profil...",
+    "validation_complete": "Validation des sources terminee.",
+    "critical_no_sources": "ATTENTION : {Count} application(s) n'ont aucune source d'installation saine.",
+    "repairing_sources": "Tentative de reparation automatique des sources..."
   }
 }

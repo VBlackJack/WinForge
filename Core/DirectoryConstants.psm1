@@ -190,14 +190,16 @@ $script:NetworkDefaults = @{
 $script:ExitCodes = @{
     Winget = @{
         Success                     = 0
-        NoApplicableUpdate          = -1978335189   # 0x8A150014 - Already up to date
-        InstallerHashMismatch       = -1978335191   # 0x8A150012
-        NoApplicableInstaller       = -1978335183   # 0x8A15001B
-        PackageInUse                = -1978335178   # 0x8A150020
+        PackageAlreadyInstalled     = -1978334974   # 0x8A150102
+        InstallerHashMismatch       = -1978335215   # 0x8A150011
+        UpdateNotApplicable         = -1978335189   # 0x8A15002B
+        NoApplicableInstaller       = -1978335183   # 0x8A150031
+        PackageInUse                = -1978335178   # 0x8A150036
     }
     Chocolatey = @{
         Success                     = 0
         Reboot                      = 3010
+        RebootInitiated             = 1641
     }
     General = @{
         Success                     = 0

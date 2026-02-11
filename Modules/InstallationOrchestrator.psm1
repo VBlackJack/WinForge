@@ -997,6 +997,7 @@ function Test-AppInstalledParallel {
     $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
     $parallelTimeoutMs = $script:ParallelInstallTimeoutMs
     $frameworkVersion = (Get-Content (Join-Path $script:RepositoryRoot 'Config\version.json') -Raw | ConvertFrom-Json).Version
+    $wingetForceOnHashMismatch = Test-FeatureEnabled -FeatureName 'wingetForceOnHashMismatch'
 
     $installResults = $appsToInstall | ForEach-Object -ThrottleLimit $MaxParallel -Parallel {
         $app = $_
@@ -1008,6 +1009,7 @@ function Test-AppInstalledParallel {
         $detectAppFunc = $using:detectAppFunction
         $installTimeoutMs = $using:parallelTimeoutMs
         $fwVersion = $using:frameworkVersion
+        $forceOnHashMismatch = $using:wingetForceOnHashMismatch
 
         ${function:Test-ValidDownloadUrl} = [ScriptBlock]::Create($validateUrl)
         . ([ScriptBlock]::Create($detectAppFunc))
@@ -1126,7 +1128,7 @@ function Test-AppInstalledParallel {
 
                 $maxRetries = 3
                 $retryDelaySeconds = 2
-                $transientErrors = @(-1978335189, -1978335212)
+                $transientErrors = @(-1978335212)
 
                 for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
                     if ($attempt -gt 1) {
@@ -1156,6 +1158,28 @@ function Test-AppInstalledParallel {
                         $result.AlreadyInstalled = $true
                         $result.Message = if ($attempt -gt 1) { Get-LocalizedString -Key 'orchestrator.result.already_installed_winget_retry' -Parameters @{ Attempt = $attempt } } else { Get-LocalizedString -Key 'orchestrator.result.already_installed_winget' }
                         return $result
+                    } elseif ($process.ExitCode -eq -1978335215) {
+                        if ($forceOnHashMismatch) {
+                            Write-ParallelLog (Get-LocalizedString -Key 'install.orchestrator.parallel.winget_hash_mismatch_retrying_force' -Parameters @{ PackageId = $sources.Winget }) 'Warning'
+                            $forceArguments = $arguments + @('--force')
+                            $forceProcess = Start-Process -FilePath 'winget' -ArgumentList $forceArguments -NoNewWindow -PassThru
+                            if (-not $forceProcess.WaitForExit($installTimeoutMs)) {
+                                Write-ParallelLog "Force install timed out - terminating" 'Warning'
+                                $forceProcess.Kill()
+                            } elseif ($forceProcess.ExitCode -eq 0 -or $forceProcess.ExitCode -eq -1978334974) {
+                                $retryMsg = if ($attempt -gt 1) { " (attempt $attempt)" } else { "" }
+                                Write-ParallelLog "Installed successfully via Winget with --force$retryMsg" 'Success'
+                                $result.Success = $true
+                                $result.Method = 'Winget (force)'
+                                $result.Message = Get-LocalizedString -Key 'orchestrator.result.winget_force'
+                                return $result
+                            } else {
+                                Write-ParallelLog "Winget --force also failed (exit code: $($forceProcess.ExitCode))" 'Warning'
+                            }
+                        } else {
+                            Write-ParallelLog (Get-LocalizedString -Key 'orchestrator.parallel.winget_hash_mismatch' -Parameters @{ PackageId = $sources.Winget }) 'Warning'
+                        }
+                        break
                     } elseif ($transientErrors -contains $process.ExitCode -and $attempt -lt $maxRetries) {
                         $delay = $retryDelaySeconds * [Math]::Pow(2, $attempt - 1)
                         Write-ParallelLog "Transient error (exit code: $($process.ExitCode)), retrying in $delay seconds..." 'Warning'
@@ -1180,7 +1204,7 @@ function Test-AppInstalledParallel {
 
                 $maxRetries = 3
                 $retryDelaySeconds = 2
-                $transientErrors = @(1641, 3010, -1)
+                $transientErrors = @(1641, 3010)
 
                 for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
                     if ($attempt -gt 1) {

@@ -58,7 +58,8 @@ $script:DefaultFlags = @{
     urlWhitelisting          = $true
     environmentRestrictions  = $true
     retryLogic               = $true
-    officeSpecialHandling    = $true
+    officeSpecialHandling        = $true
+    wingetForceOnHashMismatch    = $false
 }
 
 # === PRIVATE FUNCTIONS ===

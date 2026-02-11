@@ -903,6 +903,9 @@ function Install-ViaWinget {
         [switch]$Silent,
 
         [Parameter()]
+        [switch]$ForceHashMismatch,
+
+        [Parameter()]
         [int]$MaxRetries = 3,
 
         [Parameter()]
@@ -980,8 +983,44 @@ function Install-ViaWinget {
                 return $true
             }
 
+            # Exit code -1978335215 = INSTALLER_HASH_MISMATCH
+            if ($exitCode -eq -1978335215) {
+                $shouldForce = $ForceHashMismatch.IsPresent -or (Test-FeatureEnabled -FeatureName 'wingetForceOnHashMismatch')
+
+                if ($shouldForce) {
+                    # Retry with --force to bypass hash validation
+                    $retryMsg = Get-LocalizedString -Key 'install.method.winget_hash_mismatch_retrying_force' -Parameters @{ PackageId = $PackageId }
+                    Write-Output "[WARNING] $retryMsg"
+                    Write-Status -Message $retryMsg -Level 'Warning'
+
+                    $forceArguments = $arguments + @('--force')
+                    $forceOutput = & winget @forceArguments 2>&1 | Out-String
+                    $forceExitCode = $LASTEXITCODE
+
+                    if ($forceExitCode -eq 0 -or $forceOutput -match 'Successfully installed' -or $forceOutput -match 'already installed') {
+                        $version = Get-InstalledAppVersion -WingetId $PackageId
+                        $versionInfo = if ($version) { " v$version" } else { "" }
+                        $forceSuccessMsg = Get-LocalizedString -Key 'install.method.winget_force_success' -Parameters @{ PackageId = $PackageId; Version = $versionInfo }
+                        Write-Output "[SUCCESS] $forceSuccessMsg"
+                        Write-Status -Message $forceSuccessMsg -Level 'Success'
+                        return $true
+                    }
+
+                    $forceFailMsg = Get-LocalizedString -Key 'install.method.winget_force_failed' -Parameters @{ PackageId = $PackageId; ExitCode = $forceExitCode }
+                    Write-Output "[WARNING] $forceFailMsg"
+                    Write-Status -Message $forceFailMsg -Level 'Warning'
+                    return $false
+                }
+
+                # Default: fail fast without --force
+                $hashMsg = Get-LocalizedString -Key 'install.method.winget_hash_mismatch' -Parameters @{ PackageId = $PackageId }
+                Write-Output "[WARNING] $hashMsg"
+                Write-Status -Message $hashMsg -Level 'Warning'
+                return $false
+            }
+
             # Check for transient network errors (exit codes that might benefit from retry)
-            $transientErrors = @(-1978335189, -1978335212)  # Common Winget network errors
+            $transientErrors = @(-1978335212)  # Winget network errors
             if ($transientErrors -contains $exitCode) {
                 if ($attempt -lt $MaxRetries) {
                     $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
@@ -1099,7 +1138,7 @@ function Install-ViaChocolatey {
             }
 
             # Check for transient network errors (but NOT if already installed)
-            $transientErrors = @(1641, 3010, -1)  # Common Chocolatey transient errors (reboot required, network timeout)
+            $transientErrors = @(1641, 3010)  # Chocolatey reboot-pending codes
             if ($transientErrors -contains $exitCode -and $attempt -lt $MaxRetries) {
                 # Before retrying, check if package is already installed
                 Write-Output "[INFO] $(Get-LocalizedString -Key 'install.method.verifying')"

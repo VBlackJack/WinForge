@@ -31,6 +31,12 @@
 .PARAMETER MaxParallelJobs
     Maximum number of parallel installations (default: 5)
 
+.PARAMETER ValidateSources
+    Validate installation sources before deployment (checks Winget, Chocolatey, DirectUrl availability)
+
+.PARAMETER RepairSources
+    Validate and attempt automatic repair of installation sources before deployment
+
 .EXAMPLE
     .\Deploy-Win11Environment.ps1 -ProfileName "Gaming"
 
@@ -86,7 +92,13 @@ param(
 
     [Parameter()]
     [ValidateRange(1, 10)]
-    [int]$MaxParallelJobs = 5
+    [int]$MaxParallelJobs = 5,
+
+    [Parameter()]
+    [switch]$ValidateSources,
+
+    [Parameter()]
+    [switch]$RepairSources
 )
 
 Set-StrictMode -Version Latest
@@ -410,6 +422,34 @@ try {
 }
 
 Write-Host ""
+
+# === SOURCE VALIDATION (optional) ===
+
+if ($ValidateSources -or $RepairSources) {
+    $sourceHealthModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Modules\SourceHealthCheck.psm1'
+    if (Test-Path -Path $sourceHealthModule) {
+        Import-Module -Name $sourceHealthModule -Force -Global
+        Write-Log -Message (Get-LocalizedString -Key 'deploy.validating_sources') -Level 'Info'
+
+        $healthResults = Test-SourceHealth -Applications $applications -CheckWinget -CheckChocolatey -CheckDirectUrl
+        Get-SourceHealthReport -Results $healthResults
+
+        if ($RepairSources) {
+            Write-Log -Message (Get-LocalizedString -Key 'deploy.repairing_sources') -Level 'Info'
+            $repairReport = Repair-AppSources -HealthResults $healthResults
+        }
+
+        $criticalApps = @($healthResults | Where-Object { $_.HealthySourceCount -eq 0 -and $_.TotalSourceCount -gt 0 })
+        if ($criticalApps.Count -gt 0) {
+            Write-Log -Message (Get-LocalizedString -Key 'deploy.critical_no_sources' -Params @{ Count = $criticalApps.Count }) -Level 'Warning'
+        }
+
+        Write-Log -Message (Get-LocalizedString -Key 'deploy.validation_complete') -Level 'Info'
+    } else {
+        Write-Log -Message "SourceHealthCheck module not found - skipping source validation" -Level 'Warning'
+    }
+    Write-Host ""
+}
 
 # === APPLICATION INSTALLATION ===
 
