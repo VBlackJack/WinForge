@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'SecureStorage.psm1'
-    ModuleVersion = '3.7.0'
+    ModuleVersion = '3.7.1'
     GUID = '9f5e4876-1718-42ac-8f5f-884fa833bf3d'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Core', 'Security', 'DPAPI', 'Encryption')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.6.8'
+            ReleaseNotes = 'Win11Forge v3.7.1'
         }
     }
 }

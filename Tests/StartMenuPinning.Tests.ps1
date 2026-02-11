@@ -63,8 +63,8 @@ Describe 'StartMenuPinning Module' {
             Get-Command Backup-StartMenuLayout -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
 
-        It 'Should export Deploy-StartMenuLayoutToDefault function' {
-            Get-Command Deploy-StartMenuLayoutToDefault -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        It 'Should export Publish-StartMenuLayoutToDefault function' {
+            Get-Command Publish-StartMenuLayoutToDefault -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
 
         It 'Should export Get-BackedUpLayouts function' {
@@ -153,19 +153,19 @@ Describe 'StartMenuPinning Module' {
         }
     }
 
-    Context 'Deploy-StartMenuLayoutToDefault' {
+    Context 'Publish-StartMenuLayoutToDefault' {
         It 'Should have SourcePath parameter' {
-            $cmd = Get-Command Deploy-StartMenuLayoutToDefault
+            $cmd = Get-Command Publish-StartMenuLayoutToDefault
             $cmd.Parameters.ContainsKey('SourcePath') | Should -BeTrue
         }
 
         It 'Should have UseCurrentUser parameter' {
-            $cmd = Get-Command Deploy-StartMenuLayoutToDefault
+            $cmd = Get-Command Publish-StartMenuLayoutToDefault
             $cmd.Parameters.ContainsKey('UseCurrentUser') | Should -BeTrue
         }
 
         It 'Should return false for non-existent source' {
-            $result = Deploy-StartMenuLayoutToDefault -SourcePath 'C:\NonExistent\File.bin'
+            $result = Publish-StartMenuLayoutToDefault -SourcePath 'C:\NonExistent\File.bin'
             $result | Should -BeFalse
         }
     }

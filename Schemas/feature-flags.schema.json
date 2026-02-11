@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://win11forge.local/schemas/feature-flags.schema.json",
+  "title": "Win11Forge Feature Flags",
+  "description": "Schema for Win11Forge runtime feature flags configuration (Config/feature-flags.json)",
+  "type": "object",
+  "required": ["features"],
+  "additionalProperties": false,
+  "properties": {
+    "_meta": {
+      "$ref": "#/$defs/Meta"
+    },
+    "features": {
+      "type": "object",
+      "description": "Stable feature flags for production use",
+      "additionalProperties": {
+        "$ref": "#/$defs/FeatureFlag"
+      }
+    },
+    "experimental": {
+      "type": "object",
+      "description": "Experimental features - use with caution, may change or be removed",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the experimental section"
+        }
+      },
+      "additionalProperties": {
+        "oneOf": [
+          { "$ref": "#/$defs/FeatureFlag" },
+          { "type": "string" }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "Meta": {
+      "type": "object",
+      "description": "Metadata about the configuration file",
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "description": "Internal schema identifier"
+        },
+        "description": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "author": {
+          "type": "string"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "_integrationStatus": {
+          "$ref": "#/$defs/IntegrationStatus"
+        }
+      }
+    },
+    "IntegrationStatus": {
+      "type": "object",
+      "description": "Tracks which feature flags are actively checked in code vs planned for future integration",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "active": {
+          "type": "array",
+          "description": "Feature flags actively checked in code",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "planned": {
+          "type": "array",
+          "description": "Feature flags planned for future code integration",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "experimental": {
+          "type": "array",
+          "description": "Experimental feature flags not yet stable",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "FeatureFlag": {
+      "type": "object",
+      "description": "Individual feature flag definition",
+      "required": ["enabled", "description", "defaultValue", "minVersion"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the feature is currently enabled"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the feature",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "defaultValue": {
+          "type": "boolean",
+          "description": "Default value when no explicit override is set"
+        },
+        "minVersion": {
+          "type": "string",
+          "description": "Minimum framework version required for this feature",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - System Configuration v3.6.8 (Zero Hardcoding)
+    Win11Forge - System Configuration v3.7.1 (Zero Hardcoding)
 
 .DESCRIPTION
     Applies system configuration from profile JSON:
@@ -16,7 +16,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Requires administrator privileges
 #>
 
@@ -101,6 +101,9 @@ function Get-SystemConfigRegistryPath {
     <#
     .SYNOPSIS
         Gets a registry path from configuration.
+    .DESCRIPTION
+        Looks up a named registry path from the SystemSettings configuration. Returns the
+        configured path if found, otherwise falls back to the provided default path.
 
     .PARAMETER PathKey
         The key name in RegistryPaths configuration.
@@ -131,6 +134,9 @@ function Get-RegistryValueDefinition {
     <#
     .SYNOPSIS
         Gets a registry value definition from configuration.
+    .DESCRIPTION
+        Retrieves the full registry value definition (path, name, type, and enabled/disabled values)
+        for a specific setting within a configuration group from the SystemSettings file.
 
     .PARAMETER Group
         The group name (Explorer, Taskbar, Privacy, etc.).
@@ -161,6 +167,9 @@ function Get-PowerPlanGuid {
     <#
     .SYNOPSIS
         Gets a power plan GUID from configuration.
+    .DESCRIPTION
+        Returns the Windows power plan GUID for the specified plan name from the SystemSettings
+        configuration. Falls back to well-known default GUIDs if the configuration is unavailable.
 
     .PARAMETER PlanName
         The power plan name (HighPerformance, Balanced, PowerSaver).
@@ -192,6 +201,9 @@ function Get-ServicesList {
     <#
     .SYNOPSIS
         Gets services list from configuration.
+    .DESCRIPTION
+        Returns an array of Windows service names for the specified list type from the SystemSettings
+        configuration. Falls back to a built-in default list if the configuration is unavailable.
 
     .PARAMETER ListType
         The type of services list (ToDisable, ToManual).
@@ -229,6 +241,9 @@ function Get-TimeoutValue {
     <#
     .SYNOPSIS
         Gets a timeout value from configuration.
+    .DESCRIPTION
+        Looks up a named timeout value from the SystemSettings configuration and returns it. Falls
+        back to the provided default value if the configuration is unavailable or the key is missing.
 
     .PARAMETER TimeoutKey
         The timeout key name.
@@ -261,6 +276,9 @@ function Set-RegistryValue {
     <#
     .SYNOPSIS
         Sets a registry value with error handling.
+    .DESCRIPTION
+        Creates or overwrites a registry value at the specified path, automatically creating the
+        registry key if it does not exist. Returns true on success or false if the operation fails.
 
     .PARAMETER Path
         Registry path
@@ -393,6 +411,10 @@ function Set-ExplorerConfiguration {
     <#
     .SYNOPSIS
         Configures Windows Explorer settings.
+    .DESCRIPTION
+        Applies Windows Explorer customizations from a profile configuration hashtable, including
+        hidden files visibility, file extensions, navigation pane options, developer mode, and
+        other shell preferences. Restarts Explorer to apply the changes.
 
     .PARAMETER Config
         Explorer configuration hashtable
@@ -466,6 +488,10 @@ function Set-TaskbarConfiguration {
     <#
     .SYNOPSIS
         Configures Windows 11 Taskbar settings.
+    .DESCRIPTION
+        Applies Windows 11 Taskbar customizations from a profile configuration hashtable, including
+        alignment, widget visibility, search bar style, task view button, and chat icon settings
+        via registry modifications.
 
     .PARAMETER Config
         Taskbar configuration hashtable
@@ -525,6 +551,10 @@ function Set-NetworkConfiguration {
     <#
     .SYNOPSIS
         Configures network settings including DNS.
+    .DESCRIPTION
+        Applies network configuration from a profile hashtable, including custom DNS server
+        assignment on active adapters, gaming/developer TCP optimizations (Nagle algorithm,
+        ACK frequency), and QoS bandwidth limit adjustments.
 
     .PARAMETER Config
         Network configuration hashtable
@@ -630,6 +660,10 @@ function Set-PrivacyConfiguration {
     <#
     .SYNOPSIS
         Configures Windows privacy settings.
+    .DESCRIPTION
+        Applies Windows privacy customizations from a profile configuration hashtable, including
+        telemetry level, advertising ID, location services, diagnostic data, and other privacy-
+        related registry settings.
 
     .PARAMETER Config
         Privacy configuration hashtable
@@ -718,6 +752,10 @@ function Set-PerformanceConfiguration {
     <#
     .SYNOPSIS
         Configures Windows performance settings.
+    .DESCRIPTION
+        Applies performance optimizations from a profile configuration hashtable, including visual
+        effects reduction, non-essential service disabling/demotion, power plan selection, and
+        Game Mode activation.
 
     .PARAMETER Config
         Performance configuration hashtable
@@ -805,6 +843,9 @@ function Set-SecurityConfiguration {
     <#
     .SYNOPSIS
         Configures Windows security settings.
+    .DESCRIPTION
+        Applies Windows security customizations from a profile configuration hashtable, such as UAC
+        level adjustment, SmartScreen settings, and other security-related registry modifications.
 
     .PARAMETER Config
         Security configuration hashtable
@@ -854,6 +895,10 @@ function Set-SystemConfiguration {
     <#
     .SYNOPSIS
         Applies complete system configuration from profile.
+    .DESCRIPTION
+        Serves as the top-level entry point for applying all system configuration sections from a
+        deployment profile. Delegates to the individual configuration functions (Explorer, Taskbar,
+        Privacy, Network, Performance, and Security) based on which sections are present.
 
     .PARAMETER Config
         System configuration hashtable from profile JSON

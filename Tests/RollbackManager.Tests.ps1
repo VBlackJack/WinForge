@@ -1,9 +1,9 @@
-﻿<#
+<#
 .SYNOPSIS
     Pester tests for RollbackManager module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge RollbackManager v3.6.8
+    Comprehensive unit tests for Win11Forge RollbackManager v3.7.1
     Tests auto-rollback, failure tracking, reporting, handler registration,
     rollback execution, and edge cases
 
@@ -43,6 +43,13 @@ BeforeAll {
     # Import Localization (provides Get-LocalizedString)
     if (Test-Path $script:LocalizationPath) {
         Import-Module $script:LocalizationPath -Force -ErrorAction Stop
+    }
+
+    # Force English locale for predictable test assertions
+    if (Get-Command -Name Set-CurrentLocale -ErrorAction SilentlyContinue) {
+        Set-CurrentLocale -Locale 'en'
+    } elseif (Get-Command -Name Initialize-Localization -ErrorAction SilentlyContinue) {
+        Initialize-Localization -Locale 'en'
     }
 
     Import-Module $script:ModulePath -Force -ErrorAction Stop

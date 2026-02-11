@@ -42,6 +42,16 @@ BeforeAll {
         Import-Module $script:CorePath -Force -ErrorAction Stop
     }
 
+    # Import Localization (provides Get-LocalizedString / t alias)
+    $script:LocalizationPath = Join-Path $PSScriptRoot '..\Core\Localization.psm1'
+    if (Test-Path $script:LocalizationPath) {
+        Import-Module $script:LocalizationPath -Force -ErrorAction Stop
+    }
+
+    if (Get-Command -Name Initialize-Localization -ErrorAction SilentlyContinue) {
+        Initialize-Localization -Locale 'en'
+    }
+
     # Import JsonSchemaValidation
     Import-Module $script:JsonSchemaValidationPath -Force -ErrorAction Stop
 
@@ -156,7 +166,7 @@ Describe 'JsonSchemaValidation Module' {
 
             $result = Test-JsonAgainstSchema -JsonPath $invalidJsonPath -SchemaPath $script:TestSchemaPath
             $result.IsValid | Should -BeFalse
-            $result.Errors | Where-Object { $_ -match 'Missing required property: version' } | Should -Not -BeNullOrEmpty
+            $result.Errors | Where-Object { $_ -match "Required property 'version' is missing" } | Should -Not -BeNullOrEmpty
         }
 
         It 'Should detect invalid pattern' {

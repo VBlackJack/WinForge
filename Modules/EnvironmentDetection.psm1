@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Environment Detection Module v2.0
+    Win11Forge - Environment Detection Module v3.7.1
 
 .DESCRIPTION
     Detects execution environment (Windows Sandbox, VMware, Hyper-V, Physical)
@@ -8,7 +8,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Supports: Windows Sandbox, VMware, Hyper-V, Physical machines
 #>
 
@@ -49,6 +49,14 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
     }
 }
 
+# Import DirectoryConstants for centralized registry paths
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+if (-not (Get-Command -Name Get-RegistryPath -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
+    }
+}
+
 # === CIM CACHE ===
 # Caches expensive CIM queries to avoid repeated WMI calls
 $script:CimCache = @{}
@@ -59,6 +67,11 @@ function Get-CachedCimInstance {
     <#
     .SYNOPSIS
         Gets a CIM instance from cache or queries it if not cached.
+    .DESCRIPTION
+        Provides a caching layer around Get-CimInstance to avoid repeated WMI
+        queries for the same class. Returns the cached result when available
+        and not expired; otherwise performs a fresh query and stores the result
+        with a configurable time-to-live.
     .PARAMETER ClassName
         The WMI class name to query.
     .PARAMETER Force
@@ -104,6 +117,10 @@ function Clear-CimCache {
     <#
     .SYNOPSIS
         Clears the CIM instance cache.
+    .DESCRIPTION
+        Removes entries from the CIM instance cache. When a specific ClassName
+        is provided, only that entry is removed; otherwise the entire cache is
+        cleared, forcing fresh WMI queries on subsequent access.
     .PARAMETER ClassName
         Optional specific class name to clear. If not specified, clears all.
     #>
@@ -131,6 +148,10 @@ function Clear-ExpiredCimCache {
     <#
     .SYNOPSIS
         Clears only expired entries from the CIM cache.
+    .DESCRIPTION
+        Iterates through all cached CIM entries and removes those whose age
+        exceeds their configured TTL. This is useful for periodic cache
+        maintenance without discarding still-valid entries.
     .OUTPUTS
         Number of entries cleared.
     #>
@@ -166,6 +187,10 @@ function Get-CimCacheStatistics {
     <#
     .SYNOPSIS
         Returns statistics about the CIM cache.
+    .DESCRIPTION
+        Produces a summary of the current CIM cache state, including total and
+        expired entry counts, the default TTL, and per-entry details such as
+        class name, age, and expiration status.
     .OUTPUTS
         Hashtable with cache statistics.
     #>
@@ -203,6 +228,10 @@ function Set-CimCacheDefaultTTL {
     <#
     .SYNOPSIS
         Sets the default TTL for CIM cache entries.
+    .DESCRIPTION
+        Updates the default time-to-live applied to new CIM cache entries.
+        Existing entries retain their original TTL; only entries cached after
+        this change will use the new default value.
     .PARAMETER Minutes
         Default TTL in minutes.
     #>
@@ -339,7 +368,7 @@ function Test-WindowsSandbox {
 
     # Method 2: Check for Sandbox-specific registry key
     try {
-        $sandboxKey = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'InstallationType' -ErrorAction SilentlyContinue
+        $sandboxKey = Get-ItemProperty -Path (Get-RegistryPath -PathKey 'WindowsNTVersion') -Name 'InstallationType' -ErrorAction SilentlyContinue
         if ($sandboxKey.InstallationType -eq 'WindowsSandbox') {
             Write-Verbose "Windows Sandbox detected via registry"
             return $true
@@ -349,6 +378,7 @@ function Test-WindowsSandbox {
     }
 
     # Method 3: Check for container environment
+    # No centralized key for SYSTEM\CurrentControlSet\Control\ContainerManager - keeping as-is
     try {
         $containerKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\ContainerManager' -ErrorAction SilentlyContinue
         if ($containerKey) {
@@ -366,7 +396,10 @@ function Test-IsVirtualMachine {
     <#
     .SYNOPSIS
         Quick check if running on any virtual machine.
-
+    .DESCRIPTION
+        Calls Get-SystemEnvironmentType and returns $true if the detected
+        environment is anything other than Physical, covering Hyper-V, VMware,
+        VirtualBox, Docker, WSL, and Windows Sandbox.
     .OUTPUTS
         [bool] True if running on a VM (any type)
     #>
@@ -412,7 +445,7 @@ function Test-IsWindowsSandbox {
 
     # Method 3: Check for Sandbox-specific registry key
     try {
-        $sandboxKey = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name 'InstallationType' -ErrorAction SilentlyContinue
+        $sandboxKey = Get-ItemProperty -Path (Get-RegistryPath -PathKey 'WindowsNTVersion') -Name 'InstallationType' -ErrorAction SilentlyContinue
         if ($sandboxKey.InstallationType -eq 'WindowsSandbox') {
             Write-Verbose "Windows Sandbox detected via registry InstallationType"
             return $true
@@ -422,6 +455,7 @@ function Test-IsWindowsSandbox {
     }
 
     # Method 4: Check for container environment
+    # No centralized key for SYSTEM\CurrentControlSet\Control\ContainerManager - keeping as-is
     try {
         $containerKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\ContainerManager' -ErrorAction SilentlyContinue
         if ($containerKey) {
@@ -501,7 +535,12 @@ function Test-ApplicationCompatibleWithEnvironment {
     <#
     .SYNOPSIS
         Checks if an application can be installed in current environment.
-
+    .DESCRIPTION
+        Evaluates the current environment capabilities against the requirements
+        of a given application. Returns a compatibility result indicating whether
+        the application can be installed, along with a reason and recommendation
+        when it cannot (e.g., virtualization software on a VM, driver packages
+        in a sandbox).
     .PARAMETER ApplicationName
         Name of the application to check
 
@@ -562,7 +601,11 @@ function Get-EnvironmentReport {
     <#
     .SYNOPSIS
         Generates a detailed environment report.
-
+    .DESCRIPTION
+        Collects comprehensive information about the current runtime environment,
+        including the environment type, capabilities, OS version, hardware specs
+        (CPU, RAM, disk), and PowerShell version. Uses cached CIM queries for
+        performance.
     .OUTPUTS
         [hashtable] Complete environment information
     #>

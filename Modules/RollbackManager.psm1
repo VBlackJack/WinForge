@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Rollback Manager v3.6.8
+    Win11Forge - Rollback Manager v3.7.1
 
 .DESCRIPTION
     Provides enhanced rollback management capabilities for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -113,9 +113,9 @@ function Get-RollbackConfig {
                     ConfirmationTimeoutSeconds = if ($null -ne $json.confirmationTimeoutSeconds) { $json.confirmationTimeoutSeconds } else { $script:DefaultConfig.ConfirmationTimeoutSeconds }
                     CriticalFailurePatterns = if ($null -ne $json.criticalFailurePatterns) { @($json.criticalFailurePatterns) } else { $script:DefaultConfig.CriticalFailurePatterns }
                 }
-                Write-Verbose "Loaded rollback configuration from $script:ConfigPath"
+                Write-Verbose (Get-LocalizedString -Key 'rollbackManager.config.loaded' -Parameters @{ Path = $script:ConfigPath })
             } catch {
-                Write-Warning "Failed to load rollback config, using defaults: $($_.Exception.Message)"
+                Write-Warning (Get-LocalizedString -Key 'rollbackManager.config.loadFailed' -Parameters @{ Error = $_.Exception.Message })
                 $script:RollbackConfig = $script:DefaultConfig.Clone()
             }
         } else {
@@ -159,7 +159,7 @@ function Enable-AutoRollbackOnFailure {
     }
 
     $script:FailureCount = 0
-    Write-Status -Message "Auto-rollback enabled (threshold: $($config.AutoRollbackThreshold) failures)" -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'rollbackManager.enabled' -Parameters @{ Threshold = $config.AutoRollbackThreshold }) -Level 'Info'
 }
 
 function Disable-AutoRollbackOnFailure {
@@ -179,7 +179,7 @@ function Disable-AutoRollbackOnFailure {
     $config = Get-RollbackConfig
     $config.AutoRollbackEnabled = $false
     $script:FailureCount = 0
-    Write-Status -Message "Auto-rollback disabled" -Level 'Info'
+    Write-Status -Message (t 'rollbackManager.disabled') -Level 'Info'
 }
 
 function Register-CriticalFailureHandler {
@@ -220,7 +220,7 @@ function Register-CriticalFailureHandler {
     }
 
     $script:CriticalFailureHandlers += $handlerEntry
-    Write-Verbose "Registered critical failure handler: $Name"
+    Write-Verbose (Get-LocalizedString -Key 'rollbackManager.handler_registered' -Parameters @{ Name = $Name })
     return $Name
 }
 
@@ -228,6 +228,9 @@ function Unregister-CriticalFailureHandler {
     <#
     .SYNOPSIS
         Removes a registered critical failure handler.
+    .DESCRIPTION
+        Removes a previously registered critical failure handler by its name/ID from the handlers
+        list, so it will no longer be invoked when the failure threshold is reached.
 
     .PARAMETER Name
         Name/ID of the handler to remove.
@@ -242,7 +245,7 @@ function Unregister-CriticalFailureHandler {
     )
 
     $script:CriticalFailureHandlers = @($script:CriticalFailureHandlers | Where-Object { $_.Id -ne $Name })
-    Write-Verbose "Unregistered critical failure handler: $Name"
+    Write-Verbose (Get-LocalizedString -Key 'rollbackManager.handler.unregistered' -Parameters @{ Name = $Name })
 }
 
 # === FAILURE TRACKING ===
@@ -279,11 +282,15 @@ function Register-InstallationFailure {
         [string]$AppName,
 
         [Parameter()]
-        [string]$ErrorMessage = "Unknown error",
+        [string]$ErrorMessage,
 
         [Parameter()]
         [switch]$IsCritical
     )
+
+    if (-not $PSBoundParameters.ContainsKey('ErrorMessage')) {
+        $ErrorMessage = t 'rollbackManager.error.unknown'
+    }
 
     $config = Get-RollbackConfig
     $script:FailureCount++
@@ -311,23 +318,23 @@ function Register-InstallationFailure {
 
     # Invoke critical failure handlers
     if ($isCriticalFailure) {
-        Write-Status -Message "Critical failure detected for $AppName" -Level 'Error'
+        Write-Status -Message (Get-LocalizedString -Key 'rollbackManager.critical_detected' -Parameters @{ AppName = $AppName }) -Level 'Error'
         foreach ($handlerEntry in $script:CriticalFailureHandlers) {
             try {
                 & $handlerEntry.Handler $failureDetails
             } catch {
-                Write-Verbose "Handler $($handlerEntry.Id) failed: $($_.Exception.Message)"
+                Write-Verbose (Get-LocalizedString -Key 'rollbackManager.handler.failed' -Parameters @{ Name = $handlerEntry.Id; Error = $_.Exception.Message })
             }
         }
         $failureDetails.ShouldRollback = $true
-        $failureDetails.RollbackReason = "Critical failure detected"
+        $failureDetails.RollbackReason = t 'rollbackManager.reason.criticalFailure'
     }
 
     # Check threshold
     if ($config.AutoRollbackEnabled -and $script:FailureCount -ge $config.AutoRollbackThreshold) {
         $failureDetails.ShouldRollback = $true
-        $failureDetails.RollbackReason = "Failure threshold reached ($script:FailureCount failures)"
-        Write-Status -Message "Auto-rollback threshold reached: $script:FailureCount failures" -Level 'Warning'
+        $failureDetails.RollbackReason = Get-LocalizedString -Key 'rollbackManager.reason.thresholdReached' -Parameters @{ Count = $script:FailureCount }
+        Write-Status -Message (Get-LocalizedString -Key 'rollbackManager.threshold_reached' -Parameters @{ Count = $script:FailureCount }) -Level 'Warning'
     }
 
     return $failureDetails
@@ -348,7 +355,7 @@ function Reset-FailureCount {
     param()
 
     $script:FailureCount = 0
-    Write-Verbose "Failure count reset to 0"
+    Write-Verbose (t 'rollbackManager.failureCount.reset')
 }
 
 # === ROLLBACK EXECUTION ===
@@ -399,7 +406,7 @@ function Invoke-RollbackWithConfirmation {
     if ($summary.TotalApps -eq 0) {
         return [PSCustomObject]@{
             Success = $false
-            Message = "No applications to rollback"
+            Message = t 'rollbackManager.noApps.toRollback'
             AppsRolledBack = 0
             Errors = @()
         }
@@ -454,17 +461,17 @@ function Invoke-RollbackWithConfirmation {
     if (-not $proceed) {
         return [PSCustomObject]@{
             Success = $false
-            Message = "Rollback cancelled by user"
+            Message = t 'rollbackManager.cancelled'
             AppsRolledBack = 0
             Errors = @()
         }
     }
 
     # Execute rollback via InstallationEngine
-    Write-Status -Message "Executing rollback..." -Level 'Info'
+    Write-Status -Message (t 'rollbackManager.executing') -Level 'Info'
     $result = @{
         Success = $true
-        Message = "Rollback completed"
+        Message = t 'rollbackManager.completed'
         AppsRolledBack = 0
         Errors = @()
     }
@@ -481,12 +488,12 @@ function Invoke-RollbackWithConfirmation {
             $result.AppsRolledBack = $summary.TotalApps
         } else {
             $result.Success = $false
-            $result.Message = "Rollback function not available"
+            $result.Message = t 'rollbackManager.functionNotAvailable'
         }
     } catch {
         $result.Success = $false
         $result.Errors += $_.Exception.Message
-        $result.Message = "Rollback failed: $($_.Exception.Message)"
+        $result.Message = Get-LocalizedString -Key 'rollbackManager.failed' -Parameters @{ Error = $_.Exception.Message }
     }
 
     # Reset failure count after rollback
@@ -604,48 +611,53 @@ function Export-RollbackReport {
             $report | ConvertTo-Json -Depth 10 | Set-Content -Path $Path -Encoding UTF8
         }
         'Text' {
-            $textContent = @"
-================================================================================
-WIN11FORGE ROLLBACK REPORT
-Generated: $($report.GeneratedAt)
-Computer: $($report.ComputerName)
-User: $($report.UserName)
-================================================================================
+            $separator = '=' * 80
+            $subSeparator = '-' * 19
+            $textLines = @(
+                $separator
+                (t 'rollbackManager.report.title')
+                (Get-LocalizedString -Key 'rollbackManager.report.generated' -Parameters @{ Timestamp = $report.GeneratedAt })
+                (Get-LocalizedString -Key 'rollbackManager.report.computer' -Parameters @{ Name = $report.ComputerName })
+                (Get-LocalizedString -Key 'rollbackManager.report.user' -Parameters @{ Name = $report.UserName })
+                $separator
+                ''
+                (t 'rollbackManager.report.sessionInfo')
+                $subSeparator
+                (Get-LocalizedString -Key 'rollbackManager.report.sessionId' -Parameters @{ SessionId = $summary.SessionId })
+                (Get-LocalizedString -Key 'rollbackManager.report.startTime' -Parameters @{ Time = $summary.StartTime })
+                (Get-LocalizedString -Key 'rollbackManager.report.appsInstalled' -Parameters @{ Count = $summary.TotalApps })
+                (Get-LocalizedString -Key 'rollbackManager.report.rollbackable' -Parameters @{ Count = $summary.RollbackableCount })
+                ''
+                (t 'rollbackManager.report.configSection')
+                ('-' * 13)
+                (Get-LocalizedString -Key 'rollbackManager.report.autoRollbackEnabled' -Parameters @{ Value = $config.AutoRollbackEnabled })
+                (Get-LocalizedString -Key 'rollbackManager.report.failureThreshold' -Parameters @{ Value = $config.AutoRollbackThreshold })
+                (Get-LocalizedString -Key 'rollbackManager.report.requireConfirmation' -Parameters @{ Value = $config.RequireConfirmation })
+                (Get-LocalizedString -Key 'rollbackManager.report.confirmationTimeout' -Parameters @{ Value = $config.ConfirmationTimeoutSeconds })
+                ''
+                (t 'rollbackManager.report.statusSection')
+                ('-' * 14)
+                (Get-LocalizedString -Key 'rollbackManager.report.consecutiveFailures' -Parameters @{ Count = $script:FailureCount })
+                (Get-LocalizedString -Key 'rollbackManager.report.registeredHandlers' -Parameters @{ Count = $script:CriticalFailureHandlers.Count })
+                ''
+                (t 'rollbackManager.report.applicationsSection')
+                ('-' * 12)
+            )
 
-SESSION INFORMATION
--------------------
-Session ID: $($summary.SessionId)
-Start Time: $($summary.StartTime)
-Applications Installed: $($summary.TotalApps)
-Rollbackable: $($summary.RollbackableCount)
+            $textContent = $textLines -join "`n"
 
-CONFIGURATION
--------------
-Auto-Rollback Enabled: $($config.AutoRollbackEnabled)
-Failure Threshold: $($config.AutoRollbackThreshold)
-Require Confirmation: $($config.RequireConfirmation)
-Confirmation Timeout: $($config.ConfirmationTimeoutSeconds)s
-
-CURRENT STATUS
---------------
-Consecutive Failures: $($script:FailureCount)
-Registered Handlers: $($script:CriticalFailureHandlers.Count)
-
-APPLICATIONS
-------------
-"@
             foreach ($app in $summary.Applications) {
                 $textContent += "`n- $($app.AppName)`n"
-                $textContent += "    Method: $($app.Method)`n"
-                $textContent += "    Package ID: $($app.PackageId)`n"
-                $textContent += "    Can Rollback: $($app.CanRollback)`n"
+                $textContent += "    $(Get-LocalizedString -Key 'rollbackManager.report.appMethod' -Parameters @{ Method = $app.Method })`n"
+                $textContent += "    $(Get-LocalizedString -Key 'rollbackManager.report.appPackageId' -Parameters @{ PackageId = $app.PackageId })`n"
+                $textContent += "    $(Get-LocalizedString -Key 'rollbackManager.report.appCanRollback' -Parameters @{ Value = $app.CanRollback })`n"
             }
 
             $textContent | Set-Content -Path $Path -Encoding UTF8
         }
     }
 
-    Write-Status -Message "Rollback report exported to: $Path" -Level 'Info'
+    Write-Status -Message (Get-LocalizedString -Key 'rollbackManager.report_exported' -Parameters @{ Path = $Path }) -Level 'Info'
 }
 
 function Test-RollbackCapability {

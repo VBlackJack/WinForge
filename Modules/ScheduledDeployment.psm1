@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Scheduled Deployment Manager v3.6.8
+    Win11Forge - Scheduled Deployment Manager v3.7.1
 
 .DESCRIPTION
     Module for managing scheduled deployments:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Requires: PowerShell 5.1+, Administrator privileges
 #>
 
@@ -87,6 +87,9 @@ function Test-ScheduledTasksAvailable {
     <#
     .SYNOPSIS
         Tests if the ScheduledTasks module is available.
+    .DESCRIPTION
+        Checks whether the Get-ScheduledTask cmdlet is accessible in the current session,
+        indicating that the Windows ScheduledTasks module is available for use.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -105,6 +108,9 @@ function Test-AdministratorPrivileges {
     <#
     .SYNOPSIS
         Tests if the current session has administrator privileges.
+    .DESCRIPTION
+        Evaluates the current Windows identity to determine whether the session is running
+        with administrator (elevated) privileges, which are required for managing scheduled tasks.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -486,6 +492,9 @@ function Enable-ScheduledDeployment {
     <#
     .SYNOPSIS
         Enables a disabled scheduled deployment.
+    .DESCRIPTION
+        Re-enables a previously disabled scheduled deployment task in Windows Task Scheduler.
+        Requires administrator privileges and throws an UnauthorizedAccessException if not elevated.
 
     .PARAMETER Id
         The deployment ID to enable.
@@ -525,6 +534,10 @@ function Disable-ScheduledDeployment {
     <#
     .SYNOPSIS
         Disables a scheduled deployment without removing it.
+    .DESCRIPTION
+        Disables an active scheduled deployment task in Windows Task Scheduler while preserving
+        its configuration. Requires administrator privileges and can be re-enabled later with
+        Enable-ScheduledDeployment.
 
     .PARAMETER Id
         The deployment ID to disable.
@@ -564,6 +577,10 @@ function Start-ScheduledDeployment {
     <#
     .SYNOPSIS
         Manually triggers a scheduled deployment to run immediately.
+    .DESCRIPTION
+        Forces an immediate execution of a scheduled deployment task, bypassing its configured
+        trigger schedule. Requires administrator privileges and the task must already exist
+        in Windows Task Scheduler.
 
     .PARAMETER Id
         The deployment ID to start.
@@ -605,6 +622,9 @@ function Save-ScheduledDeploymentInfo {
     <#
     .SYNOPSIS
         Saves deployment info to local storage.
+    .DESCRIPTION
+        Persists a scheduled deployment's metadata (profile name, trigger type, creation time,
+        and options) to the local JSON storage file for retrieval across sessions.
     #>
     [CmdletBinding()]
     param(
@@ -652,6 +672,9 @@ function Get-SavedDeploymentInfo {
     <#
     .SYNOPSIS
         Gets saved deployment info from local storage.
+    .DESCRIPTION
+        Reads the local JSON storage file and retrieves the metadata for a specific
+        scheduled deployment by its ID. Returns null if the file or entry does not exist.
     #>
     [CmdletBinding()]
     param(
@@ -702,6 +725,9 @@ function Remove-SavedDeploymentInfo {
     <#
     .SYNOPSIS
         Removes saved deployment info from local storage.
+    .DESCRIPTION
+        Deletes the metadata entry for a specific scheduled deployment from the local
+        JSON storage file, preserving all other entries.
     #>
     [CmdletBinding()]
     param(
@@ -744,6 +770,9 @@ function Get-ScheduledDeploymentSummary {
     <#
     .SYNOPSIS
         Gets a summary of all scheduled deployments.
+    .DESCRIPTION
+        Queries all scheduled deployments including completed ones and returns aggregate
+        counts broken down by status (Pending, Running, Completed, Failed, Disabled).
 
     .OUTPUTS
         [hashtable] Summary statistics.

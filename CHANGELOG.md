@@ -1,6 +1,54 @@
 # Win11Forge Framework - Changelog
 
-Note: la source de vérité de la version du framework est `Config/version.json`. Les lanceurs et la GUI lisent dynamiquement cette valeur.
+Note: the framework version source of truth is `Config/version.json`. Launchers and GUI read this value dynamically.
+
+## [3.7.1] - 2026-02-11
+
+### Bug Fixes
+- **Fixed**: SecureStorage DPAPI round-trip failures — `Get-DpapiEntropy` now persists entropy to disk on PS7 (replaced .NET Framework-only `File.Create(FileSecurity)` overload with cross-platform `FileStream` + `Set-SecureFileAcl`) and caches entropy in memory for session consistency
+- **Fixed**: Added `Add-Type -AssemblyName System.Security` to `SecureStorage.psm1` for PowerShell 5.1 compatibility (DPAPI types not auto-loaded)
+
+### Zero Hardcoding Audit Remediation
+
+Complete audit remediation addressing 225+ violations across conformity, code quality, and architecture.
+
+#### Internationalization (i18n)
+- **Added**: 150+ new i18n keys to `Config/Locales/en.json` and `Config/Locales/fr.json`
+- **Fixed**: 127+ hardcoded user-facing strings replaced with `Get-LocalizedString`/`t` calls across 20+ modules
+- **Affected modules**: StartMenuLayout, ApplicationDatabase, PluginSandbox, RollbackManager, JsonSchemaValidation, Prerequisites, InstallationMethods, SecureStorage, ModuleLoader, Core, StructuredLogging, Win11ForgeGUI, TelemetryCollector, InstallationOrchestrator
+
+#### Path Centralization (DirectoryConstants)
+- **Added**: 7 new registry path constants (`WindowsNTVersion`, `ContainerManager`, `OfficeClickToRun`, `OfficeInstallRoot`, `DotNetFramework`, `VCRedistX64`, `VCRedistX86`)
+- **Added**: 3 new state path constants (`SecureStorage`, `ApiKeys`, `Entropy`)
+- **Added**: 2 new shell folder entries (`DefaultUserProfile`, `StartMenuBinary`)
+- **Added**: Exit code constants for Winget, Chocolatey, and general operations (`Get-ExitCodes`)
+- **Fixed**: 28+ hardcoded `$env:LOCALAPPDATA` paths replaced with `Get-Win11ForgeDirectory`/`Get-StatePath` calls
+- **Fixed**: 5 hardcoded `$env:TEMP` paths replaced with `Get-ShellFolder -FolderType 'Temp'`
+- **Fixed**: 12 hardcoded `HKLM:\`/`HKCU:\` registry paths replaced with `Get-RegistryPath` calls
+- **Affected modules**: SecureStorage, StateManager, TelemetryCollector, WingetCache, UserProfileManager, ApplicationDatabase, UpdateManager, StartupManager, ApplicationDetection, EnvironmentDetection, Prerequisites
+
+#### User-Agent Version Fixes
+- **Fixed**: Outdated User-Agent strings (`Win11Forge/3.5.0`, `Win11Forge/3.5.2`) now read version dynamically from `Config/version.json` or assembly metadata
+- **Affected**: InstallationOrchestrator, UpdateManager, PackageVerificationService.cs
+
+#### Code Quality
+- **Renamed**: `Deploy-StartMenuLayoutToDefault` to `Publish-StartMenuLayoutToDefault` (approved PowerShell verb)
+- **Added**: `.SYNOPSIS` to 10 functions missing documentation (ParallelDetection x6, Win11ForgeGUI x4)
+- **Fixed**: 3 empty `catch {}` blocks replaced with `Write-Debug` statements (ModuleLoader, SecureStorage, StructuredLogging)
+- **Changed**: `JsonSchemaValidation.psm1` lazy-loaded in `ApiEndpoints.psm1` (resolves Core→Modules reverse dependency)
+- **Fixed**: CI workflow no longer excludes `PSAvoidUsingEmptyCatchBlock` rule
+
+#### Version Alignment
+- **Fixed**: All profile versions aligned to 3.7.1 (Base, Office, Gaming, Personnel, Enterprise)
+- **Fixed**: Locale file versions aligned to 3.7.1 (en.json, fr.json)
+- **Fixed**: 15+ module version headers updated from 3.6.8 to 3.7.1
+
+### Statistics
+- **i18n Keys**: 1,450+ (up from ~1,300)
+- **Test Coverage**: 1047+ tests
+- **Total Applications**: 175
+
+---
 
 ## [3.6.7] - 2026-02-05
 

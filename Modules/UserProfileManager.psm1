@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - User Profile Manager v3.6.8
+    Win11Forge - User Profile Manager v3.7.1
 
 .DESCRIPTION
     Manages persistent user profiles for Win11Forge:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -36,7 +36,6 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
-$script:UserProfilesDir = Join-Path $env:LOCALAPPDATA 'Win11Forge\UserProfiles'
 $script:ConfigPath = Join-Path $script:RepositoryRoot 'Config\user-profiles-settings.json'
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
 
@@ -53,6 +52,16 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
         Import-Module -Name $script:LocalizationModulePath -Force
     }
 }
+
+# Import DirectoryConstants for path management
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
+    }
+}
+
+$script:UserProfilesDir = Get-Win11ForgeDirectory -DirectoryType 'Profiles'
 
 # === CONFIGURATION ===
 $script:ProfileSchema = @{
@@ -267,6 +276,9 @@ function Get-UserProfile {
     <#
     .SYNOPSIS
         Gets a specific user profile.
+    .DESCRIPTION
+        Loads and returns a single user profile by name from the user profiles directory.
+        Returns null with a warning if the profile file does not exist or cannot be parsed.
 
     .PARAMETER Name
         Name of the profile.
@@ -302,6 +314,9 @@ function Remove-UserProfile {
     <#
     .SYNOPSIS
         Removes a user profile.
+    .DESCRIPTION
+        Deletes a user profile JSON file from the profiles directory after confirmation.
+        Validates that the profile exists before attempting removal and logs the operation.
 
     .PARAMETER Name
         Name of the profile to remove.
@@ -501,6 +516,10 @@ function Copy-UserProfile {
     <#
     .SYNOPSIS
         Creates a copy of an existing profile.
+    .DESCRIPTION
+        Duplicates an existing user profile under a new name, preserving all applications,
+        tags, and settings from the source profile. Throws a validation exception if the
+        source profile does not exist.
 
     .PARAMETER SourceName
         Name of the profile to copy.
@@ -541,6 +560,10 @@ function Merge-UserProfiles {
     <#
     .SYNOPSIS
         Merges multiple profiles into one.
+    .DESCRIPTION
+        Combines the application lists from multiple user profiles into a single new profile,
+        with optional deduplication of application entries. Tags from all source profiles are
+        aggregated and a 'merged' tag is added automatically.
 
     .PARAMETER Names
         Array of profile names to merge.
@@ -602,6 +625,10 @@ function Get-UserProfileStatistics {
     <#
     .SYNOPSIS
         Returns statistics about user profiles.
+    .DESCRIPTION
+        Computes aggregate metrics across all user profiles including total profile count,
+        total and average application counts, tag distribution, and the most commonly
+        included applications.
 
     .OUTPUTS
         PSCustomObject with profile statistics.

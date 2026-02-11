@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Parallel Detection v3.6.8
+    Win11Forge - Parallel Detection v3.7.1
 
 .DESCRIPTION
     Lightweight detection module optimized for parallel job execution.
@@ -8,7 +8,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -154,6 +154,13 @@ function Test-AppInstalledParallel {
 }
 
 function Test-RegistryDetection {
+    <#
+    .SYNOPSIS
+        Tests if an application is detected via registry path lookup.
+    .DESCRIPTION
+        Checks whether a registry path specified in the detection metadata exists on the system.
+        Includes security validation to block path traversal patterns before accessing the registry.
+    #>
     [CmdletBinding()]
     [OutputType([bool])]
     param([PSCustomObject]$Detection)
@@ -171,6 +178,14 @@ function Test-RegistryDetection {
 }
 
 function Test-FileDetection {
+    <#
+    .SYNOPSIS
+        Tests if an application is detected via file path existence check.
+    .DESCRIPTION
+        Verifies whether a file exists at the path specified in the detection metadata, with support
+        for environment variable expansion and wildcard paths. Enforces security checks including
+        path traversal prevention and absolute path requirements.
+    #>
     [CmdletBinding()]
     [OutputType([bool])]
     param([PSCustomObject]$Detection)
@@ -207,6 +222,14 @@ function Test-FileDetection {
 }
 
 function Test-CommandDetection {
+    <#
+    .SYNOPSIS
+        Tests if an application is detected via command availability or execution.
+    .DESCRIPTION
+        Determines whether an application is present by verifying command availability and optionally
+        running it to check output against an expected pattern. Only whitelisted executables are
+        permitted for security.
+    #>
     [CmdletBinding()]
     [OutputType([bool])]
     param([PSCustomObject]$Detection)
@@ -251,6 +274,13 @@ function Test-CommandDetection {
 }
 
 function Test-WindowsFeatureDetection {
+    <#
+    .SYNOPSIS
+        Tests if a Windows optional feature is enabled.
+    .DESCRIPTION
+        Queries Windows optional features to determine whether the specified feature is currently
+        enabled on the system. Returns false if the feature is not found or not enabled.
+    #>
     [CmdletBinding()]
     [OutputType([bool])]
     param([PSCustomObject]$Detection)
@@ -264,6 +294,13 @@ function Test-WindowsFeatureDetection {
 }
 
 function Test-WindowsCapabilityDetection {
+    <#
+    .SYNOPSIS
+        Tests if a Windows capability is installed.
+    .DESCRIPTION
+        Queries Windows capabilities to determine whether the specified capability is installed
+        on the system. Uses wildcard matching on the capability name for flexible detection.
+    #>
     [CmdletBinding()]
     [OutputType([bool])]
     param([PSCustomObject]$Detection)
@@ -279,6 +316,14 @@ function Test-WindowsCapabilityDetection {
 }
 
 function Test-StoreAppDetection {
+    <#
+    .SYNOPSIS
+        Tests if an application is detected via Microsoft Store or Winget listing.
+    .DESCRIPTION
+        Checks whether an application appears in the Winget list output, using either a provided
+        cache string or by querying Winget directly. Supports matching by Winget ID, Chocolatey
+        package name, or application display name.
+    #>
     [CmdletBinding()]
     [OutputType([bool])]
     param(

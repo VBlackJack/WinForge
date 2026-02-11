@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Installation Methods v3.6.8
+    Win11Forge - Installation Methods v3.7.1
 
 .DESCRIPTION
     Individual installation method implementations:
@@ -13,7 +13,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 
     Changelog v3.1.4:
     - Extracted from InstallationEngine.psm1 for modularity
@@ -203,6 +203,10 @@ function script:Test-TrustedDomain {
     <#
     .SYNOPSIS
         Fast O(1) trusted domain validation using HashSet.
+    .DESCRIPTION
+        Validates a given hostname against the trusted domains HashSet using
+        exact match first, then iteratively checking parent domains to support
+        subdomain matching. Returns $true if any match is found.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -555,7 +559,12 @@ function Test-ValidDownloadUrl {
 function Start-ProcessWithTimeout {
     <#
     .SYNOPSIS
-        Starts a process with timeout protection
+        Starts a process with timeout protection.
+    .DESCRIPTION
+        Launches an external process and waits for it to exit within the
+        specified timeout. If the timeout is exceeded, attempts a graceful
+        shutdown via CloseMainWindow before resorting to forceful termination,
+        including cleanup of any child processes to prevent orphans.
     #>
     [CmdletBinding()]
     [OutputType([System.Diagnostics.Process])]
@@ -659,7 +668,12 @@ function Start-ProcessWithTimeout {
 function Invoke-FileDownloadWithProgress {
     <#
     .SYNOPSIS
-        Downloads file with progress reporting, streaming, and optional checksum validation
+        Downloads file with progress reporting, streaming, and optional checksum validation.
+    .DESCRIPTION
+        Performs an HTTP download using streaming to minimize memory usage, with
+        periodic progress logging. Supports an optional SHA256 checksum parameter
+        to verify file integrity after download. Automatically cleans up partial
+        downloads on failure.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -1223,6 +1237,10 @@ function Install-MsiPackage {
     <#
     .SYNOPSIS
         Installs an MSI package silently.
+    .DESCRIPTION
+        Runs msiexec.exe with the /qn (quiet, no UI) and /norestart flags to
+        perform a silent MSI installation. Uses Start-ProcessWithTimeout to
+        enforce the default installation timeout and reports the exit code.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -1246,6 +1264,11 @@ function Install-ExePackage {
     <#
     .SYNOPSIS
         Installs an EXE package with custom or auto-detected silent switches.
+    .DESCRIPTION
+        Executes an EXE installer using either the provided custom arguments or,
+        if none are specified, iterates through common silent switches (/S,
+        /SILENT, /VERYSILENT, /quiet, /qn) until one succeeds. Returns $true
+        on a zero exit code.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -1301,6 +1324,11 @@ function Install-ZipPackage {
     <#
     .SYNOPSIS
         Extracts and installs a ZIP package (installer or portable).
+    .DESCRIPTION
+        Extracts the contents of a ZIP archive to a temporary directory using
+        Zip Slip-safe extraction, then searches for a nested installer (MSI or
+        EXE) to run. If no installer is found, treats the archive as a portable
+        application and copies it to the detection path or Program Files.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -1351,7 +1379,7 @@ function Install-ZipPackage {
     $destinationPath = $null
     if ($DetectionPath) {
         $destinationPath = Split-Path $DetectionPath -Parent
-        Write-Status -Message "Using detection path: $DetectionPath" -Level 'Verbose'
+        Write-Status -Message (t 'install.method.debug.direct_path_verbose' -Parameters @{ Path = $DetectionPath }) -Level 'Verbose'
     }
 
     if (-not $destinationPath) {
@@ -1390,32 +1418,29 @@ function Install-ViaDirectDownload {
         [string]$ExpectedSHA256 = $null  # Optional SHA256 checksum
     )
 
-    Write-Verbose "Install-ViaDirectDownload called"
-    Write-Verbose "URL: $Url"
-    Write-Verbose "CustomArguments: $CustomArguments"
+    Write-Verbose (t 'install.method.debug.attempting_direct' -Parameters @{ Url = $Url })
+    Write-Verbose (t 'install.method.debug.direct_custom_args_status' -Parameters @{ Arguments = $CustomArguments })
 
     try {
         # Validate URL before download
         if (-not (Test-ValidDownloadUrl -Url $Url)) {
-            Write-Verbose "Invalid or insecure URL: $Url"
-            Write-Status -Message (Get-LocalizedString -Key 'install.method.direct_invalid_url' -Parameters @{ Url = $Url }) -Level 'Error'
+            Write-Status -Message (t 'install.method.direct_invalid_url' -Parameters @{ Url = $Url }) -Level 'Error'
             return $false
         }
 
-        Write-Verbose "Downloading from: $Url"
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.direct_downloading' -Parameters @{ Url = $Url }) -Level 'Info'
+        Write-Status -Message (t 'install.method.direct_downloading' -Parameters @{ Url = $Url }) -Level 'Info'
 
-        $tempDir = Join-Path -Path $env:TEMP -ChildPath "Win11Forge_$([guid]::NewGuid().ToString('N'))"
+        $tempDir = Join-Path -Path (Get-ShellFolder -FolderType 'Temp') -ChildPath "Win11Forge_$([guid]::NewGuid().ToString('N'))"
         New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
-        Write-Verbose "TempDir created: $tempDir"
+        Write-Verbose (t 'install.method.debug.direct_path_verbose' -Parameters @{ Path = $tempDir })
 
         # Extract filename from URL, handling query parameters properly
         # URLs like: https://example.com/getInstaller?os=win&installer=Setup.exe
         $filename = $null
-        Write-Verbose "Starting filename extraction from URL"
+        Write-Verbose (t 'install.method.debug.attempting_direct' -Parameters @{ Url = $Url })
         try {
             $uri = [System.Uri]::new($Url)
-            Write-Verbose "URI parsed, Query: $($uri.Query)"
+            Write-Verbose "URI parsed - Query: $($uri.Query)"
 
             # First try: parse query string for common filename parameters
             if ($uri.Query) {
@@ -1456,8 +1481,8 @@ function Install-ViaDirectDownload {
         }
 
         $installerPath = Join-Path -Path $tempDir -ChildPath $filename
-        Write-Verbose "Installer filename: $filename"
-        Write-Verbose "InstallerPath: $installerPath"
+        Write-Verbose (t 'install.method.debug.installer_filename' -Parameters @{ Filename = $filename })
+        Write-Verbose (t 'install.method.debug.direct_path_verbose' -Parameters @{ Path = $installerPath })
 
         # Use streaming download with optional checksum validation
         $downloadParams = @{
@@ -1467,21 +1492,21 @@ function Install-ViaDirectDownload {
 
         if ($ExpectedSHA256) {
             $downloadParams['ExpectedSHA256'] = $ExpectedSHA256
-            Write-Verbose "Checksum validation enabled (SHA256)"
-            Write-Status -Message (Get-LocalizedString -Key 'install.method.direct_checksum_enabled') -Level 'Info'
+            Write-Verbose (t 'install.method.direct_checksum_enabled')
+            Write-Status -Message (t 'install.method.direct_checksum_enabled') -Level 'Info'
         }
 
         $downloadSuccess = Invoke-FileDownloadWithProgress @downloadParams
 
         if (-not $downloadSuccess -or -not (Test-Path -Path $installerPath)) {
-            Write-Verbose "Download failed: File not found or checksum mismatch"
-            Write-Status -Message (Get-LocalizedString -Key 'install.download.failed' -Parameters @{ Message = 'File not found or checksum mismatch' }) -Level 'Error'
+            Write-Verbose (t 'install.method.debug.direct_download_failed_verbose')
+            Write-Status -Message (t 'install.method.debug.direct_download_failed_verbose') -Level 'Error'
             return $false
         }
 
         $fileSize = Format-FileSize -Bytes (Get-Item $installerPath).Length
-        Write-Verbose "Downloaded: $fileSize"
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.direct_downloaded' -Parameters @{ Size = $fileSize }) -Level 'Info'
+        Write-Verbose (t 'install.method.debug.direct_downloaded_verbose' -Parameters @{ Size = $fileSize })
+        Write-Status -Message (t 'install.method.direct_downloaded' -Parameters @{ Size = $fileSize }) -Level 'Info'
 
         if ($InstallerType -eq 'auto') {
             $InstallerType = switch -Regex ($filename) {
@@ -1491,10 +1516,10 @@ function Install-ViaDirectDownload {
             }
         }
 
-        Write-Verbose "Running $InstallerType installer..."
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.direct_running_installer' -Parameters @{ Type = $InstallerType; FileName = $filename }) -Level 'Info'
-        Write-Status -Message "CustomArguments: $CustomArguments" -Level 'Verbose'
-        Write-Status -Message "InstallerPath exists: $(Test-Path $installerPath)" -Level 'Verbose'
+        Write-Verbose (t 'install.method.debug.direct_running_verbose' -Parameters @{ Type = $InstallerType })
+        Write-Status -Message (t 'install.method.direct_running_installer' -Parameters @{ Type = $InstallerType; FileName = $filename }) -Level 'Info'
+        Write-Status -Message (t 'install.method.debug.direct_custom_args_status' -Parameters @{ Arguments = $CustomArguments }) -Level 'Verbose'
+        Write-Status -Message (t 'install.method.debug.direct_path_exists' -Parameters @{ Exists = "$(Test-Path $installerPath)" }) -Level 'Verbose'
 
         # Install using appropriate method (delegated to helper functions)
         # Note: Helper functions output strings AND return boolean, so we must extract the boolean
@@ -1506,33 +1531,33 @@ function Install-ViaDirectDownload {
         }
 
         # Extract the boolean return value from the output (last boolean in the stream)
-        Write-Status -Message "Install output type: $($installOutput.GetType().Name), count: $(if ($installOutput -is [array]) { $installOutput.Count } else { 1 })" -Level 'Info'
+        Write-Status -Message (t 'install.method.debug.direct_output_type' -Parameters @{ Type = $installOutput.GetType().Name; Count = "$(if ($installOutput -is [array]) { $installOutput.Count } else { 1 })" }) -Level 'Verbose'
         $installed = if ($installOutput -is [bool]) {
             $installOutput
         } elseif ($installOutput -is [array]) {
             $boolResult = $installOutput | Where-Object { $_ -is [bool] } | Select-Object -Last 1
-            Write-Status -Message "Extracted boolean: $boolResult" -Level 'Info'
+            Write-Status -Message (t 'install.method.debug.direct_extracted_bool' -Parameters @{ Result = "$boolResult" }) -Level 'Verbose'
             if ($null -ne $boolResult) { $boolResult } else { $false }
         } else {
             $false
         }
-        Write-Status -Message "Final installed result: $installed" -Level 'Info'
+        Write-Status -Message (t 'install.method.debug.direct_final_result' -Parameters @{ Result = "$installed" }) -Level 'Verbose'
 
         Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
 
         if ($installed -eq $true) {
-            Write-Verbose "Installed successfully via direct download"
-            Write-Status -Message (Get-LocalizedString -Key 'install.method.direct_success') -Level 'Success'
+            Write-Verbose (t 'install.method.debug.direct_success_verbose')
+            Write-Status -Message (t 'install.method.direct_success') -Level 'Success'
         } else {
-            Write-Verbose "Direct installation failed"
-            Write-Status -Message (Get-LocalizedString -Key 'install.method.direct_failed') -Level 'Verbose'
+            Write-Verbose (t 'install.method.debug.direct_failed_verbose')
+            Write-Status -Message (t 'install.method.direct_failed') -Level 'Verbose'
         }
 
         return $installed
 
     } catch {
-        Write-Verbose "Direct download error: $($_.Exception.Message)"
-        Write-Status -Message (Get-LocalizedString -Key 'install.method.direct_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
+        Write-Verbose (t 'install.method.debug.direct_error_verbose' -Parameters @{ Error = $_.Exception.Message })
+        Write-Status -Message (t 'install.method.direct_error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
         return $false
     }
 }
@@ -1611,7 +1636,11 @@ function Invoke-CustomInstallMethod {
     <#
     .SYNOPSIS
         Handles custom installation methods (WindowsFeature, WindowsCapability).
-
+    .DESCRIPTION
+        Routes applications with non-standard install methods to the appropriate
+        Windows API. Supports WindowsFeature (via DISM/Enable-WindowsOptionalFeature)
+        and WindowsCapability (via Add-WindowsCapability), returning a standardized
+        result hashtable with success status and localized messages.
     .PARAMETER Application
         The application object with InstallMethod property.
 

@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Start Menu Layout Manager v3.6.8
+    Win11Forge - Start Menu Layout Manager v3.7.1
 
 .DESCRIPTION
     Module for managing Windows 11 Start Menu layout using LayoutModification.json:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Requires: PowerShell 5.1+, Windows 11, Administrator privileges
     Method: LayoutModification.json (official Microsoft method)
 #>
@@ -65,6 +65,7 @@ $script:StartMenuPaths = @{
 }
 
 $script:ProgramsFolder = Join-Path $script:StartMenuPaths.Common 'Programs'
+# Windows system path - intentional direct env usage
 $script:LayoutPath = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Shell\LayoutModification.json'
 $script:DefaultLayoutPath = "$env:SystemDrive\Users\Default\AppData\Local\Microsoft\Windows\Shell\LayoutModification.json"
 
@@ -145,7 +146,7 @@ function Get-ApplicationCategory {
         }
     }
     catch {
-        Write-Status -Message "Error looking up category: $($_.Exception.Message)" -Level 'Verbose'
+        Write-Status -Message (t 'startmenu.layout.category.lookup.error' @{ ErrorMessage = $_.Exception.Message }) -Level 'Verbose'
     }
 
     # Default category mapping based on common keywords
@@ -213,7 +214,7 @@ function Get-ShortcutInfo {
         return $info
     }
     catch {
-        Write-Status -Message "Error reading shortcut $ShortcutPath : $($_.Exception.Message)" -Level 'Verbose'
+        Write-Status -Message (t 'startmenu.layout.shortcut.read.error' @{ ShortcutPath = $ShortcutPath; ErrorMessage = $_.Exception.Message }) -Level 'Verbose'
         return $null
     }
 }
@@ -244,7 +245,7 @@ function Get-PackagedAppId {
         }
     }
     catch {
-        Write-Status -Message "Error finding packaged app ID: $($_.Exception.Message)" -Level 'Verbose'
+        Write-Status -Message (t 'startmenu.layout.packagedapp.find.error' @{ ErrorMessage = $_.Exception.Message }) -Level 'Verbose'
     }
 
     return $null
@@ -288,7 +289,7 @@ function Copy-ShortcutToStartMenu {
         return $destinationPath
     }
     catch {
-        Write-Status -Message "Error copying shortcut: $($_.Exception.Message)" -Level 'Error'
+        Write-Status -Message (t 'startmenu.layout.shortcut.copy.error' @{ ErrorMessage = $_.Exception.Message }) -Level 'Error'
         return $null
     }
 }
@@ -390,7 +391,7 @@ function Set-StartMenuLayout {
             }
 
             $JsonContent | Out-File -FilePath $targetPath -Encoding UTF8 -Force
-            Write-Status -Message "Layout deployed to Default profile: $targetPath" -Level 'Success'
+            Write-Status -Message (t 'startmenu.layout.deploy.defaultprofile.success' @{ TargetPath = $targetPath }) -Level 'Success'
         }
         else {
             # Deploy to current user
@@ -402,25 +403,25 @@ function Set-StartMenuLayout {
             }
 
             $JsonContent | Out-File -FilePath $targetPath -Encoding UTF8 -Force
-            Write-Status -Message "Layout deployed to current user: $targetPath" -Level 'Success'
+            Write-Status -Message (t 'startmenu.layout.deploy.currentuser.success' @{ TargetPath = $targetPath }) -Level 'Success'
 
             # Restart Start Menu
-            Write-Status -Message "Restarting Start Menu experience..." -Level 'Info'
+            Write-Status -Message (t 'startmenu.layout.restart.starting') -Level 'Info'
             try {
                 Stop-Process -Name StartMenuExperienceHost -Force -ErrorAction SilentlyContinue
                 Start-Sleep -Milliseconds 500
                 Start-Process explorer.exe -ErrorAction SilentlyContinue
-                Write-Status -Message "Start Menu restarted successfully" -Level 'Success'
+                Write-Status -Message (t 'startmenu.layout.restart.success') -Level 'Success'
             }
             catch {
-                Write-Status -Message "Could not restart Start Menu automatically. Please log off and log back in." -Level 'Warning'
+                Write-Status -Message (t 'startmenu.layout.restart.failed') -Level 'Warning'
             }
         }
 
         return $true
     }
     catch {
-        Write-Status -Message "Error deploying layout: $($_.Exception.Message)" -Level 'Error'
+        Write-Status -Message (t 'startmenu.layout.deploy.error' @{ ErrorMessage = $_.Exception.Message }) -Level 'Error'
         return $false
     }
 }
@@ -454,14 +455,14 @@ function Invoke-StartMenuOrganization {
         [string[]]$ExcludePatterns = @('*uninstall*', '*uninst*', '*remove*', '*help*', '*readme*')
     )
 
-    Write-Status -Message "Starting Start Menu organization (LayoutModification.json method)..." -Level 'Info'
-    Write-Status -Message "Scanning desktop shortcuts..." -Level 'Info'
+    Write-Status -Message (t 'startmenu.layout.organization.starting') -Level 'Info'
+    Write-Status -Message (t 'startmenu.layout.shortcuts.scanning') -Level 'Info'
 
     $shortcuts = Get-DesktopShortcuts
 
     # Handle $null, single object, or array
     if (-not $shortcuts) {
-        Write-Status -Message "No desktop shortcuts found" -Level 'Warning'
+        Write-Status -Message (t 'startmenu.layout.shortcuts.notfound') -Level 'Warning'
         return
     }
 
@@ -469,11 +470,11 @@ function Invoke-StartMenuOrganization {
     $shortcutArray = @($shortcuts)
 
     if ($shortcutArray.Count -eq 0) {
-        Write-Status -Message "No desktop shortcuts found" -Level 'Warning'
+        Write-Status -Message (t 'startmenu.layout.shortcuts.notfound') -Level 'Warning'
         return
     }
 
-    Write-Status -Message "Found $($shortcutArray.Count) desktop shortcuts" -Level 'Info'
+    Write-Status -Message (t 'startmenu.layout.shortcuts.found' @{ Count = $shortcutArray.Count }) -Level 'Info'
 
     $stats = @{
         Total = $shortcutArray.Count
@@ -491,7 +492,7 @@ function Invoke-StartMenuOrganization {
         $excluded = $false
         foreach ($pattern in $ExcludePatterns) {
             if ($shortcutName -like $pattern) {
-                Write-Status -Message "Skipped (excluded): $shortcutName" -Level 'Verbose'
+                Write-Status -Message (t 'startmenu.layout.shortcut.skipped' @{ ShortcutName = $shortcutName }) -Level 'Verbose'
                 $stats.Skipped++
                 $excluded = $true
                 break
@@ -517,7 +518,7 @@ function Invoke-StartMenuOrganization {
         if ($destinationPath) {
             $categorizedShortcuts[$category] += $destinationPath
             $stats.Copied++
-            Write-Status -Message "Copied: $shortcutName -> $category" -Level 'Verbose'
+            Write-Status -Message (t 'startmenu.layout.shortcut.copied' @{ ShortcutName = $shortcutName; Category = $category }) -Level 'Verbose'
         }
         else {
             $stats.Failed++
@@ -525,39 +526,39 @@ function Invoke-StartMenuOrganization {
     }
 
     # Generate LayoutModification.json
-    Write-Status -Message "Generating LayoutModification.json..." -Level 'Info'
+    Write-Status -Message (t 'startmenu.layout.json.generating') -Level 'Info'
     $jsonContent = New-LayoutModificationJson -CategorizedShortcuts $categorizedShortcuts
 
     # Deploy layout
-    Write-Status -Message "Deploying Start Menu layout..." -Level 'Info'
+    Write-Status -Message (t 'startmenu.layout.deploy.starting') -Level 'Info'
     $deployed = Set-StartMenuLayout -JsonContent $jsonContent -ForDefaultProfile:$ForDefaultProfile
 
     # Summary
-    Write-Status -Message "`n=== Start Menu Organization Summary ===" -Level 'Info'
-    Write-Status -Message "Total shortcuts processed: $($stats.Total)" -Level 'Info'
-    Write-Status -Message "Successfully copied: $($stats.Copied)" -Level 'Success'
+    Write-Status -Message (t 'startmenu.layout.summary.header') -Level 'Info'
+    Write-Status -Message (t 'startmenu.layout.summary.total' @{ Total = $stats.Total }) -Level 'Info'
+    Write-Status -Message (t 'startmenu.layout.summary.copied' @{ Copied = $stats.Copied }) -Level 'Success'
 
     if ($stats.Skipped -gt 0) {
-        Write-Status -Message "Skipped (excluded): $($stats.Skipped)" -Level 'Info'
+        Write-Status -Message (t 'startmenu.layout.summary.skipped' @{ Skipped = $stats.Skipped }) -Level 'Info'
     }
 
     if ($stats.Failed -gt 0) {
-        Write-Status -Message "Failed: $($stats.Failed)" -Level 'Warning'
+        Write-Status -Message (t 'startmenu.layout.summary.failed' @{ Failed = $stats.Failed }) -Level 'Warning'
     }
 
-    Write-Status -Message "`nCategories created:" -Level 'Info'
+    Write-Status -Message (t 'startmenu.layout.summary.categories.header') -Level 'Info'
     foreach ($category in $categorizedShortcuts.Keys | Sort-Object) {
         $count = $categorizedShortcuts[$category].Count
-        Write-Status -Message "  - $category ($count apps)" -Level 'Info'
+        Write-Status -Message (t 'startmenu.layout.summary.categories.item' @{ Category = $category; Count = $count }) -Level 'Info'
     }
 
     if ($deployed) {
-        Write-Status -Message "`nLayout deployed successfully!" -Level 'Success'
+        Write-Status -Message (t 'startmenu.layout.deploy.success') -Level 'Success'
         if ($ForDefaultProfile) {
-            Write-Status -Message "New user profiles will use this layout." -Level 'Info'
+            Write-Status -Message (t 'startmenu.layout.deploy.defaultprofile.info') -Level 'Info'
         }
         else {
-            Write-Status -Message "Please check your Start Menu. If changes don't appear, log off and log back in." -Level 'Info'
+            Write-Status -Message (t 'startmenu.layout.deploy.currentuser.info') -Level 'Info'
         }
     }
 }

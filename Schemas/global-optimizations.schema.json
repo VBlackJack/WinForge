@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://win11forge.local/schemas/global-optimizations.schema.json",
+  "title": "Win11Forge Global Optimizations",
+  "description": "Schema for global system optimizations applied to all deployment profiles",
+  "type": "object",
+  "required": ["SystemConfig"],
+  "additionalProperties": true,
+  "properties": {
+    "_meta": {
+      "type": "object",
+      "description": "Metadata about the configuration file",
+      "properties": {
+        "$schema": { "type": "string" },
+        "description": { "type": "string" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "author": { "type": "string" },
+        "lastUpdated": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+      }
+    },
+    "SystemConfig": {
+      "type": "object",
+      "description": "System configuration sections for Explorer, Taskbar, Privacy, Performance, Security, and Network",
+      "additionalProperties": false,
+      "properties": {
+        "Explorer": {
+          "type": "object",
+          "description": "Windows Explorer display and behavior settings",
+          "additionalProperties": false,
+          "properties": {
+            "ShowHiddenFiles": {
+              "type": "boolean",
+              "description": "Show hidden files and folders in Explorer",
+              "default": true
+            },
+            "ShowFileExtensions": {
+              "type": "boolean",
+              "description": "Show file name extensions",
+              "default": true
+            },
+            "NavigationPaneOptimized": {
+              "type": "boolean",
+              "description": "Optimize the navigation pane to show all folders",
+              "default": true
+            },
+            "ShowLibraries": {
+              "type": "boolean",
+              "description": "Show Libraries in the navigation pane",
+              "default": true
+            },
+            "ExpandToOpenFolder": {
+              "type": "boolean",
+              "description": "Expand navigation pane to the current open folder",
+              "default": true
+            },
+            "ShowSyncProviderNotifications": {
+              "type": "boolean",
+              "description": "Show sync provider notifications in Explorer",
+              "default": true
+            }
+          }
+        },
+        "Taskbar": {
+          "type": "object",
+          "description": "Windows taskbar configuration",
+          "additionalProperties": false,
+          "properties": {
+            "DisableWidgets": {
+              "type": "boolean",
+              "description": "Disable the Widgets panel on the taskbar",
+              "default": true
+            },
+            "StartAlignment": {
+              "type": "string",
+              "description": "Start menu alignment on the taskbar",
+              "enum": ["left", "center"],
+              "default": "left"
+            },
+            "SearchMode": {
+              "type": "string",
+              "description": "Taskbar search display mode",
+              "enum": ["hidden", "icon_only", "box"],
+              "default": "icon_only"
+            }
+          }
+        },
+        "Privacy": {
+          "type": "object",
+          "description": "Privacy and telemetry settings",
+          "additionalProperties": false,
+          "properties": {
+            "DisableTelemetry": {
+              "type": "boolean",
+              "description": "Disable Windows telemetry data collection",
+              "default": true
+            },
+            "MinimalDataCollection": {
+              "type": "boolean",
+              "description": "Set data collection to the minimal level",
+              "default": true
+            },
+            "DisableActivityHistory": {
+              "type": "boolean",
+              "description": "Disable Windows activity history tracking",
+              "default": true
+            },
+            "DisableCortana": {
+              "type": "boolean",
+              "description": "Disable Cortana voice assistant",
+              "default": true
+            },
+            "DisableConsumerFeatures": {
+              "type": "boolean",
+              "description": "Disable consumer features such as suggested apps and tips",
+              "default": true
+            },
+            "DisableWindowsTips": {
+              "type": "boolean",
+              "description": "Disable Windows tips and suggestions notifications",
+              "default": true
+            }
+          }
+        },
+        "Performance": {
+          "type": "object",
+          "description": "System performance optimization settings",
+          "additionalProperties": false,
+          "properties": {
+            "OptimizeServices": {
+              "type": "boolean",
+              "description": "Optimize Windows services by setting unnecessary ones to Manual",
+              "default": true
+            },
+            "PowerPlan": {
+              "type": "string",
+              "description": "Windows power plan to apply",
+              "enum": ["Balanced", "HighPerformance", "PowerSaver"],
+              "default": "Balanced"
+            },
+            "GameMode": {
+              "type": "boolean",
+              "description": "Enable Windows Game Mode for gaming optimization",
+              "default": false
+            }
+          }
+        },
+        "Security": {
+          "type": "object",
+          "description": "Security feature toggles",
+          "additionalProperties": false,
+          "properties": {
+            "WindowsDefender": {
+              "type": "boolean",
+              "description": "Keep Windows Defender enabled",
+              "default": true
+            },
+            "Firewall": {
+              "type": "boolean",
+              "description": "Keep Windows Firewall enabled",
+              "default": true
+            }
+          }
+        },
+        "Network": {
+          "type": "object",
+          "description": "Network configuration including DNS servers",
+          "additionalProperties": false,
+          "properties": {
+            "DnsServers": {
+              "type": "array",
+              "description": "Ordered list of DNS server IP addresses",
+              "items": {
+                "type": "string",
+                "pattern": "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$"
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "DnsNotes": {
+              "type": "string",
+              "description": "Human-readable description of the DNS server configuration"
+            }
+          }
+        }
+      }
+    },
+    "Notes": {
+      "type": "array",
+      "description": "Human-readable notes about the optimizations applied",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

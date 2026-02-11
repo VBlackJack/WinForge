@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge GUI v3.6.8
+    Win11Forge GUI v3.7.1
 
 .DESCRIPTION
     PowerShell graphical interface for Win11Forge deployment framework
@@ -8,7 +8,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Requires: PowerShell 5.1+, Win11Forge v3.0.0+
 #>
 
@@ -56,6 +56,9 @@ function Initialize-GUIModules {
     <#
     .SYNOPSIS
         Initialize required modules for GUI
+    .DESCRIPTION
+        Loads all PowerShell modules required by the console-based GUI, including Core,
+        Localization, EnvironmentDetection, and Prerequisites modules from the repository root.
     #>
     [CmdletBinding()]
     param()
@@ -109,7 +112,7 @@ function Initialize-GUIModules {
             Write-Verbose "Database loaded: $($script:AppDatabase.Keys.Count) applications" -Verbose
         }
         else {
-            Write-Host (Get-LocalizedString -Key 'common.warning' -DefaultValue 'Warning') + ": Database file not found at $dbPath" -ForegroundColor Yellow
+            Write-Host (Get-LocalizedString -Key 'gui.errors.db_file_not_found' -Parameters @{ Path = $dbPath }) -ForegroundColor Yellow
         }
 
         # Load ProfileManager module
@@ -146,6 +149,9 @@ function Get-DatabaseApps {
     <#
     .SYNOPSIS
         Get all apps from database as array
+    .DESCRIPTION
+        Retrieves all applications from the in-memory application database, with optional
+        filtering by category or tag. Returns an array of PSCustomObject with normalized properties.
     #>
     [CmdletBinding()]
     param(
@@ -195,6 +201,9 @@ function Get-DatabaseCategories {
     <#
     .SYNOPSIS
         Get all unique categories from database
+    .DESCRIPTION
+        Iterates through all applications in the database and collects a deduplicated list
+        of category names. Applications without an explicit category are assigned 'Unknown'.
     #>
     [CmdletBinding()]
     param()
@@ -214,6 +223,9 @@ function Get-DatabaseAppById {
     <#
     .SYNOPSIS
         Get app by ID from database
+    .DESCRIPTION
+        Looks up a single application by its unique identifier in the database and returns
+        a normalized PSCustomObject with all standard properties, or null if not found.
     #>
     [CmdletBinding()]
     param([string]$AppId)
@@ -239,6 +251,9 @@ function Search-DatabaseApps {
     <#
     .SYNOPSIS
         Search apps in database
+    .DESCRIPTION
+        Performs a wildcard search across application names and IDs in the database,
+        returning all matching entries as an array of normalized PSCustomObject.
     #>
     [CmdletBinding()]
     param([string]$SearchTerm)
@@ -269,6 +284,10 @@ function Get-DatabaseStats {
     <#
     .SYNOPSIS
         Get database statistics
+    .DESCRIPTION
+        Computes aggregate statistics for the application database, including total and verified
+        counts, installation source availability (Winget, Chocolatey, Store, DirectUrl),
+        and a per-category breakdown.
     #>
     [CmdletBinding()]
     param()
@@ -321,6 +340,9 @@ function Show-Header {
     <#
     .SYNOPSIS
         Display GUI header
+    .DESCRIPTION
+        Clears the console and renders a styled header bar with the specified title,
+        using a fixed-width bordered layout for consistent visual presentation.
     #>
     [CmdletBinding()]
     param(
@@ -339,6 +361,9 @@ function Show-Footer {
     <#
     .SYNOPSIS
         Display GUI footer
+    .DESCRIPTION
+        Renders a visual separator line at the bottom of a menu screen to provide
+        consistent framing for the console-based GUI.
     #>
     [CmdletBinding()]
     param()
@@ -351,6 +376,9 @@ function Read-Choice {
     <#
     .SYNOPSIS
         Read user choice with validation
+    .DESCRIPTION
+        Prompts the user for input and validates it against a set of allowed choices,
+        re-prompting on invalid input. Supports optional empty and cancel inputs.
     #>
     [CmdletBinding()]
     param(
@@ -389,6 +417,9 @@ function Show-ProgressBar {
     <#
     .SYNOPSIS
         Display a simple progress bar
+    .DESCRIPTION
+        Renders a text-based progress bar in the console using block characters, showing
+        the current percentage and item count. The bar updates in-place until completion.
     #>
     [CmdletBinding()]
     param(
@@ -418,6 +449,10 @@ function Show-MainMenu {
     <#
     .SYNOPSIS
         Display main menu and handle user selection
+    .DESCRIPTION
+        Presents the primary navigation menu for the console GUI, allowing the user to
+        deploy profiles, browse applications, manage profiles, view statistics, validate
+        the database, add applications, or access settings. Loops until the user exits.
     #>
 
     [CmdletBinding()]
@@ -463,6 +498,9 @@ function Show-DeployProfileMenu {
     <#
     .SYNOPSIS
         Display profile deployment menu
+    .DESCRIPTION
+        Lists all available deployment profiles and allows the user to select one for
+        deployment, with options for parallel execution and force reinstallation.
     #>
 
     [CmdletBinding()]
@@ -569,6 +607,9 @@ function Show-ApplicationBrowser {
     <#
     .SYNOPSIS
         Browse applications in database
+    .DESCRIPTION
+        Presents a sub-menu for exploring the application database with multiple views
+        including all applications, by category, by tag, search, and detailed view.
     #>
 
     [CmdletBinding()]
@@ -605,6 +646,9 @@ function Show-AllApplications {
     <#
     .SYNOPSIS
         Display all applications with pagination
+    .DESCRIPTION
+        Renders a paginated, sorted list of all applications in the database, displaying
+        name, category, and Winget ID in a tabular format with next/previous page navigation.
     #>
 
     [CmdletBinding()]
@@ -656,6 +700,9 @@ function Show-ApplicationsByCategory {
     <#
     .SYNOPSIS
         Browse applications by category
+    .DESCRIPTION
+        Displays a numbered list of application categories with their app counts, then shows
+        all applications within the selected category in a tabular format.
     #>
 
     [CmdletBinding()]
@@ -704,6 +751,9 @@ function Show-ApplicationsByTag {
     <#
     .SYNOPSIS
         Browse applications by tag
+    .DESCRIPTION
+        Collects all unique tags across the application database and lets the user select
+        one to view all applications associated with that tag.
     #>
 
     [CmdletBinding()]
@@ -754,6 +804,9 @@ function Show-ApplicationSearch {
     <#
     .SYNOPSIS
         Search applications by name
+    .DESCRIPTION
+        Prompts the user for a search term and performs a wildcard search across application
+        names and IDs, displaying matching results with name, category, and Winget ID.
     #>
 
     [CmdletBinding()]
@@ -791,6 +844,9 @@ function Show-ApplicationDetails {
     <#
     .SYNOPSIS
         Display detailed information about an application
+    .DESCRIPTION
+        Prompts for an application name or ID and displays comprehensive details including
+        category, sources, tags, description, homepage, and verification status.
     #>
 
     [CmdletBinding()]
@@ -886,6 +942,9 @@ function Show-ProfileBrowser {
     <#
     .SYNOPSIS
         Browse available profiles
+    .DESCRIPTION
+        Lists all deployment profiles found in the Profiles directory, showing name, version,
+        application count, and description. Allows selection of a profile to view its full details.
     #>
 
     [CmdletBinding()]
@@ -926,6 +985,9 @@ function Show-ProfileDetails {
     <#
     .SYNOPSIS
         Display detailed profile information
+    .DESCRIPTION
+        Renders a comprehensive view of a deployment profile including its name, version,
+        description, inheritance chain, and the full list of applications it contains.
     #>
     [CmdletBinding()]
     param(
@@ -976,6 +1038,10 @@ function Show-ProfileCreator {
     <#
     .SYNOPSIS
         Interactive profile creation wizard
+    .DESCRIPTION
+        Guides the user through a step-by-step process to create a new deployment profile,
+        including naming, description, inheritance selection, and application selection from
+        the database.
     #>
 
     [CmdletBinding()]
@@ -1084,6 +1150,10 @@ function Select-ApplicationsFromDatabase {
     <#
     .SYNOPSIS
         Interactive application selection from database
+    .DESCRIPTION
+        Provides an interactive loop for building a list of applications by browsing categories,
+        tags, searching by name, or entering app IDs directly, with the ability to review and
+        remove selections before finalizing.
     #>
 
     [CmdletBinding()]
@@ -1181,6 +1251,10 @@ function Show-DatabaseStatistics {
     <#
     .SYNOPSIS
         Display database statistics
+    .DESCRIPTION
+        Shows a formatted summary of the application database including total and verified
+        application counts, source availability breakdown, and the top five categories by
+        application count.
     #>
 
     [CmdletBinding()]
@@ -1226,6 +1300,9 @@ function Start-DatabaseValidation {
     <#
     .SYNOPSIS
         Run database validation
+    .DESCRIPTION
+        Executes the application database validation tool with user confirmation, checking
+        for structural integrity, missing fields, and optionally validating Winget package IDs.
     #>
 
     [CmdletBinding()]
@@ -1266,6 +1343,9 @@ function Show-SettingsMenu {
     <#
     .SYNOPSIS
         Display settings and options
+    .DESCRIPTION
+        Presents the settings sub-menu with options to view framework information,
+        browse log files, check for updates, and view the about page.
     #>
 
     [CmdletBinding()]
@@ -1293,6 +1373,13 @@ function Show-SettingsMenu {
 }
 
 function Show-FrameworkInfo {
+    <#
+    .SYNOPSIS
+        Displays Win11Forge framework version and environment information.
+    .DESCRIPTION
+        Shows the current framework version, PowerShell version, repository path, and
+        database loading status for diagnostic and informational purposes.
+    #>
     [CmdletBinding()]
     param()
 
@@ -1315,6 +1402,13 @@ function Show-FrameworkInfo {
 }
 
 function Show-LogsDirectory {
+    <#
+    .SYNOPSIS
+        Displays the logs directory contents and recent log files.
+    .DESCRIPTION
+        Lists the ten most recent log files from the Logs directory sorted by last write time,
+        or shows an appropriate message if the directory does not exist or contains no logs.
+    #>
     [CmdletBinding()]
     param()
 
@@ -1347,6 +1441,13 @@ function Show-LogsDirectory {
 }
 
 function Test-Updates {
+    <#
+    .SYNOPSIS
+        Checks for available Win11Forge framework updates.
+    .DESCRIPTION
+        Displays the current framework version and checks whether a newer version is available.
+        Currently serves as a placeholder until an automated update mechanism is implemented.
+    #>
     [CmdletBinding()]
     param()
 
@@ -1361,6 +1462,13 @@ function Test-Updates {
 }
 
 function Show-About {
+    <#
+    .SYNOPSIS
+        Displays the About page with framework features and documentation links.
+    .DESCRIPTION
+        Renders a formatted about screen showing the framework name, version, author,
+        key features summary, and links to relevant documentation resources.
+    #>
     [CmdletBinding()]
     param()
 
@@ -1391,6 +1499,10 @@ function Show-AddApplicationMenu {
     <#
     .SYNOPSIS
         Interactive menu to add a new application to the database
+    .DESCRIPTION
+        Walks the user through a multi-step wizard to define a new application entry including
+        name, category, installation sources (Winget, Chocolatey, Store), and then writes the
+        entry to the applications database file.
     #>
 
     [CmdletBinding()]
@@ -1494,8 +1606,8 @@ function Show-AddApplicationMenu {
 
         $newApp = [PSCustomObject]@{
             Name                     = $appName
-            Category                 = if ($category) { $category } else { "Other" }
-            Description              = if ($description) { $description } else { "No description provided" }
+            Category                 = if ($category) { $category } else { (Get-LocalizedString -Key 'gui.add_app.default_category') }
+            Description              = if ($description) { $description } else { (Get-LocalizedString -Key 'gui.add_app.default_description') }
             Sources                  = [PSCustomObject]@{
                 Winget      = if ($wingetId) { $wingetId } else { $null }
                 Chocolatey  = if ($chocoId) { $chocoId } else { $null }

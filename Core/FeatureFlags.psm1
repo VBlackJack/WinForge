@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Feature Flags v3.6.8
+    Win11Forge - Feature Flags v3.7.1
 
 .DESCRIPTION
     Manages feature flags for conditional feature enablement.
@@ -8,7 +8,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -67,6 +67,9 @@ function Import-FeatureFlags {
     <#
     .SYNOPSIS
         Loads feature flags from configuration file.
+    .DESCRIPTION
+        Reads and parses the feature-flags.json configuration file, loading both main and experimental
+        feature flags into the module state. Falls back to built-in defaults if the file is missing or invalid.
     #>
     [CmdletBinding()]
     param()
@@ -148,6 +151,9 @@ function Test-FeatureEnabled {
     <#
     .SYNOPSIS
         Tests if a feature is enabled.
+    .DESCRIPTION
+        Checks whether a named feature flag is currently enabled by evaluating runtime overrides first,
+        then loaded configuration, and finally built-in defaults. Returns false for unknown features.
     .PARAMETER FeatureName
         Name of the feature to test.
     .OUTPUTS
@@ -217,6 +223,9 @@ function Remove-FeatureOverride {
     <#
     .SYNOPSIS
         Removes a runtime override for a feature flag.
+    .DESCRIPTION
+        Clears a previously set runtime override for a specific feature, reverting it to its
+        configured or default value.
     .PARAMETER FeatureName
         Name of the feature override to remove.
     #>
@@ -236,6 +245,8 @@ function Clear-FeatureOverrides {
     <#
     .SYNOPSIS
         Clears all runtime feature overrides.
+    .DESCRIPTION
+        Removes all runtime overrides at once, reverting every feature flag to its configured or default state.
     #>
     [CmdletBinding()]
     param()
@@ -248,6 +259,9 @@ function Get-AllFeatureFlags {
     <#
     .SYNOPSIS
         Returns all feature flags and their current status.
+    .DESCRIPTION
+        Enumerates all known feature flags and returns their effective, configured, default, and override
+        values as an array of objects suitable for reporting or diagnostics.
     .OUTPUTS
         Array of feature flag objects.
     #>
@@ -294,6 +308,9 @@ function Get-EnabledFeatures {
     <#
     .SYNOPSIS
         Returns list of all enabled features.
+    .DESCRIPTION
+        Filters all known feature flags and returns only the names of those that are currently enabled,
+        taking into account runtime overrides, configuration, and defaults.
     .OUTPUTS
         Array of enabled feature names.
     #>
@@ -309,6 +326,9 @@ function Get-DisabledFeatures {
     <#
     .SYNOPSIS
         Returns list of all disabled features.
+    .DESCRIPTION
+        Filters all known feature flags and returns only the names of those that are currently disabled,
+        taking into account runtime overrides, configuration, and defaults.
     .OUTPUTS
         Array of disabled feature names.
     #>
@@ -367,6 +387,10 @@ function Invoke-WithFeature {
     <#
     .SYNOPSIS
         Executes a script block only if a feature is enabled.
+    .DESCRIPTION
+        Conditionally executes a primary script block when the specified feature flag is enabled,
+        or an optional fallback script block when the feature is disabled. Useful for branching
+        behavior based on feature toggles without explicit if/else blocks.
     .PARAMETER FeatureName
         Name of the feature to check.
     .PARAMETER ScriptBlock

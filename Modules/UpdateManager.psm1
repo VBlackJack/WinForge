@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Update Manager v3.6.8
+    Win11Forge - Update Manager v3.7.1
 
 .DESCRIPTION
     Provides auto-update functionality for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -54,11 +54,29 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
     }
 }
 
+# Import DirectoryConstants for path management
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
+    }
+}
+
 # === BATCH UPDATE CACHE ===
 # Caches winget upgrade results to avoid multiple CLI calls
 $script:BatchUpdateCache = @{}
 $script:BatchUpdateCacheTime = $null
 $script:BatchUpdateCacheMaxAgeMinutes = 10
+
+# === FRAMEWORK VERSION (from version.json) ===
+$script:FrameworkVersion = '0.0.0'
+if (Test-Path $script:VersionPath) {
+    try {
+        $script:FrameworkVersion = (Get-Content $script:VersionPath -Raw | ConvertFrom-Json).Version
+    } catch {
+        Write-Verbose "Failed to read framework version: $($_.Exception.Message)"
+    }
+}
 
 # === CONFIGURATION ===
 
@@ -83,9 +101,9 @@ $script:UpdateConfig = @{
     AutoCheckEnabled = $true
     CheckIntervalHours = 24
     IncludePrerelease = $false
-    BackupDirectory = Join-Path $env:LOCALAPPDATA 'Win11Forge\Backups'
-    DownloadDirectory = Join-Path $env:LOCALAPPDATA 'Win11Forge\Updates'
-    LastCheckFile = Join-Path $env:LOCALAPPDATA 'Win11Forge\last-update-check.json'
+    BackupDirectory = Get-Win11ForgeDirectory -DirectoryType 'Backups'
+    DownloadDirectory = Join-Path (Get-Win11ForgeDirectory -DirectoryType 'Data') 'Updates'
+    LastCheckFile = Join-Path (Get-Win11ForgeDirectory -DirectoryType 'Data') 'last-update-check.json'
 }
 
 # === VERSION FUNCTIONS ===
@@ -94,6 +112,9 @@ function Get-CurrentVersion {
     <#
     .SYNOPSIS
         Gets the current installed version.
+    .DESCRIPTION
+        Reads the framework version from the Config/version.json file and returns it as a string.
+        Returns '0.0.0' if the version file is missing or cannot be parsed.
 
     .OUTPUTS
         String containing the version number.
@@ -506,6 +527,9 @@ function Clear-BatchUpdateCache {
     <#
     .SYNOPSIS
         Clears the batch update cache to force a refresh.
+    .DESCRIPTION
+        Resets the in-memory batch update cache and its associated timestamp, forcing subsequent
+        calls to re-query package managers for the latest available updates.
     #>
     [CmdletBinding()]
     param()
@@ -524,6 +548,10 @@ function Get-LatestReleaseInfo {
     <#
     .SYNOPSIS
         Fetches the latest release information from GitHub.
+    .DESCRIPTION
+        Queries the GitHub Releases API for the configured repository and returns a structured
+        object with the release tag, version, name, body, publication date, and downloadable
+        assets. Optionally includes prerelease versions in the results.
 
     .PARAMETER IncludePrerelease
         Include prerelease versions.
@@ -552,7 +580,7 @@ function Get-LatestReleaseInfo {
     try {
         $headers = @{
             'Accept' = 'application/vnd.github+json'
-            'User-Agent' = 'Win11Forge-UpdateManager'
+            'User-Agent' = "Win11Forge-UpdateManager/$script:FrameworkVersion"
         }
 
         $response = Invoke-RestMethod -Uri $apiUrl -Headers $headers -Method GET -TimeoutSec 30
@@ -595,6 +623,10 @@ function Test-UpdateAvailable {
     <#
     .SYNOPSIS
         Checks if an update is available.
+    .DESCRIPTION
+        Compares the currently installed framework version against the latest GitHub release using
+        semantic version comparison. Returns an object indicating whether an update is available,
+        along with the current and latest version details.
 
     .PARAMETER IncludePrerelease
         Check for prerelease versions.
@@ -651,6 +683,10 @@ function Save-LastCheckTime {
     <#
     .SYNOPSIS
         Saves the last update check timestamp.
+    .DESCRIPTION
+        Persists the current date and time as the last update check timestamp to a JSON file on
+        disk. This timestamp is used by Test-ShouldCheckForUpdates to determine whether enough
+        time has elapsed since the last check.
     #>
     [CmdletBinding()]
     param()
@@ -671,6 +707,10 @@ function Test-ShouldCheckForUpdates {
     <#
     .SYNOPSIS
         Determines if an update check should be performed.
+    .DESCRIPTION
+        Evaluates whether an automatic update check is warranted by verifying that auto-check is
+        enabled and that the configured interval (in hours) has elapsed since the last recorded
+        check. Returns true if no previous check is found or if the interval has been exceeded.
 
     .OUTPUTS
         Boolean indicating if check should be performed.
@@ -704,6 +744,10 @@ function Invoke-DownloadUpdate {
     <#
     .SYNOPSIS
         Downloads an update package.
+    .DESCRIPTION
+        Downloads a release asset from the GitHub release information to a local temporary
+        directory. Selects the first .zip asset by default unless a specific asset name is
+        provided. Returns the local file path of the downloaded update package.
 
     .PARAMETER ReleaseInfo
         Release information from Get-LatestReleaseInfo or Test-UpdateAvailable.
@@ -776,6 +820,10 @@ function Backup-CurrentVersion {
     <#
     .SYNOPSIS
         Creates a backup of the current installation.
+    .DESCRIPTION
+        Compresses the current framework installation directory into a timestamped ZIP archive in
+        the configured backup directory. Use this before applying an update to enable rollback
+        via Restore-PreviousVersion if the update fails.
 
     .PARAMETER BackupName
         Optional name for the backup (default: version-timestamp).
@@ -825,6 +873,10 @@ function Restore-PreviousVersion {
     <#
     .SYNOPSIS
         Restores a previous version from backup.
+    .DESCRIPTION
+        Extracts a previously created backup archive to a temporary directory and copies its
+        contents over the current installation, effectively reverting to the backed-up version.
+        Use this to recover from a failed update.
 
     .PARAMETER BackupPath
         Path to the backup file.
@@ -843,7 +895,7 @@ function Restore-PreviousVersion {
 
     try {
         # Extract backup to a temp directory first
-        $tempDir = Join-Path $env:TEMP "Win11Forge_Restore_$(Get-Date -Format 'yyyyMMddHHmmss')"
+        $tempDir = Join-Path (Get-ShellFolder -FolderType 'Temp') "Win11Forge_Restore_$(Get-Date -Format 'yyyyMMddHHmmss')"
         Expand-Archive -Path $BackupPath -DestinationPath $tempDir -Force
 
         # Copy files back
@@ -863,6 +915,9 @@ function Get-AvailableBackups {
     <#
     .SYNOPSIS
         Lists available backups.
+    .DESCRIPTION
+        Scans the configured backup directory for ZIP archives and returns an array of objects
+        describing each backup's name, path, size, and creation timestamp.
 
     .OUTPUTS
         Array of backup information objects.
@@ -899,6 +954,10 @@ function Install-Update {
     <#
     .SYNOPSIS
         Installs a downloaded update.
+    .DESCRIPTION
+        Applies a downloaded update package by extracting it over the current installation. By
+        default creates a backup first, and automatically attempts to restore that backup if the
+        update extraction fails.
 
     .PARAMETER UpdatePath
         Path to the downloaded update file.
@@ -932,7 +991,7 @@ function Install-Update {
 
     try {
         # Extract update to temp directory
-        $tempDir = Join-Path $env:TEMP "Win11Forge_Update_$(Get-Date -Format 'yyyyMMddHHmmss')"
+        $tempDir = Join-Path (Get-ShellFolder -FolderType 'Temp') "Win11Forge_Update_$(Get-Date -Format 'yyyyMMddHHmmss')"
         Expand-Archive -Path $UpdatePath -DestinationPath $tempDir -Force
 
         # Copy new files
@@ -966,6 +1025,10 @@ function Set-UpdateConfiguration {
     <#
     .SYNOPSIS
         Updates the update manager configuration.
+    .DESCRIPTION
+        Modifies one or more settings in the update manager's runtime configuration, such as the
+        GitHub repository coordinates, auto-check behavior, check interval, and channel preference.
+        Changes take effect immediately but are not persisted across sessions.
 
     .PARAMETER GitHubOwner
         GitHub repository owner.
@@ -1031,6 +1094,9 @@ function Get-UpdateConfiguration {
     <#
     .SYNOPSIS
         Returns the current update configuration.
+    .DESCRIPTION
+        Returns a cloned copy of the current update manager configuration hashtable, including
+        GitHub repository details, auto-check settings, check intervals, and directory paths.
 
     .OUTPUTS
         Hashtable with configuration values.

@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Custom Exception Classes v3.1.4
+    Win11Forge - Custom Exception Classes v3.7.1
 
 .DESCRIPTION
     Defines custom exception classes for semantic error handling
@@ -9,7 +9,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -405,6 +405,11 @@ function New-InstallationException {
     <#
     .SYNOPSIS
         Creates a new InstallationException.
+
+    .DESCRIPTION
+        Factory function that constructs an InstallationException with the specified
+        application name, installation method, and exit code. Use this when an
+        application installation fails and a typed exception is needed for error handling.
     #>
     [CmdletBinding()]
     [OutputType([InstallationException])]
@@ -430,6 +435,11 @@ function New-WingetException {
     <#
     .SYNOPSIS
         Creates a new WingetException.
+
+    .DESCRIPTION
+        Factory function that constructs a WingetException with the specified application
+        name, exit code, and optional Winget command output. Use this when a Winget
+        package manager operation fails and the error details need to be captured.
     #>
     [CmdletBinding()]
     [OutputType([WingetException])]
@@ -455,6 +465,11 @@ function New-SecurityException {
     <#
     .SYNOPSIS
         Creates a new SecurityException.
+
+    .DESCRIPTION
+        Factory function that constructs a SecurityException with an optional security
+        context and action description. Use this when a security violation or unauthorized
+        operation is detected and needs to be reported through the exception hierarchy.
     #>
     [CmdletBinding()]
     [OutputType([SecurityException])]
@@ -477,6 +492,11 @@ function New-ApiException {
     <#
     .SYNOPSIS
         Creates a new ApiException.
+
+    .DESCRIPTION
+        Factory function that constructs an ApiException with the specified endpoint,
+        HTTP method, and status code. Use this when a REST API operation fails and
+        the request context needs to be preserved in the exception.
     #>
     [CmdletBinding()]
     [OutputType([ApiException])]
@@ -501,6 +521,11 @@ function Test-Win11ForgeException {
     <#
     .SYNOPSIS
         Tests if an exception is a Win11Forge exception.
+
+    .DESCRIPTION
+        Checks whether the given exception derives from the Win11ForgeException base class.
+        Use this to determine if an exception belongs to the framework's custom exception
+        hierarchy before attempting to access Win11Forge-specific properties like Category.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -516,6 +541,11 @@ function Get-ExceptionCategory {
     <#
     .SYNOPSIS
         Gets the category of a Win11Forge exception.
+
+    .DESCRIPTION
+        Extracts the category string (e.g., Installation, Security, API) from a
+        Win11ForgeException instance. Returns 'Unknown' if the exception is not part
+        of the framework's custom exception hierarchy.
     #>
     [CmdletBinding()]
     [OutputType([string])]
@@ -685,6 +715,12 @@ function Format-Win11ForgeError {
     <#
     .SYNOPSIS
         Formats a Win11Forge exception for display or logging.
+
+    .DESCRIPTION
+        Converts a Win11Forge exception into a human-readable string representation
+        that includes category, message, timestamp, context data, and optionally
+        the stack trace and inner exception details.
+
     .PARAMETER Exception
         The exception to format.
     .PARAMETER IncludeStackTrace
@@ -774,6 +810,11 @@ function New-TimeoutException {
     <#
     .SYNOPSIS
         Creates a new TimeoutException.
+
+    .DESCRIPTION
+        Factory function that constructs a TimeoutException with the specified operation
+        name and timeout duration in seconds. Use this when an operation exceeds its
+        configured time limit and needs to be reported as a timeout failure.
     #>
     [CmdletBinding()]
     [OutputType([TimeoutException])]
@@ -795,6 +836,11 @@ function New-ValidationException {
     <#
     .SYNOPSIS
         Creates a new ValidationException.
+
+    .DESCRIPTION
+        Factory function that constructs a ValidationException with the specified
+        parameter name and optionally the provided value and expected format. Use
+        this when input validation fails and the caller needs structured error details.
     #>
     [CmdletBinding()]
     [OutputType([ValidationException])]

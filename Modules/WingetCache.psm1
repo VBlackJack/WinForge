@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Winget Cache v3.6.8
+    Win11Forge - Winget Cache v3.7.1
 
 .DESCRIPTION
     Provides intelligent caching for Winget operations to reduce
@@ -13,7 +13,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -54,13 +54,21 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
     }
 }
 
+# Import DirectoryConstants for path management
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
+    }
+}
+
 # === CACHE CONFIGURATION ===
 $script:CacheConfig = @{
     ListTTLMinutes = 30
     SearchTTLMinutes = 60
     ChocoListTTLMinutes = 60
     MaxEntries = 500
-    CacheDirectory = Join-Path $env:LOCALAPPDATA 'Win11Forge'
+    CacheDirectory = Get-Win11ForgeDirectory -DirectoryType 'Cache'
     CacheFileName = 'WingetCache.json'
 }
 
@@ -552,6 +560,9 @@ function Clear-ChocoCache {
     <#
     .SYNOPSIS
         Clears the Chocolatey list cache.
+    .DESCRIPTION
+        Resets the in-memory Chocolatey package list cache and its timestamp, forcing
+        the next lookup to re-query Chocolatey directly.
     #>
     [CmdletBinding()]
     param()
@@ -565,6 +576,9 @@ function Get-ChocoStatistics {
     <#
     .SYNOPSIS
         Returns Chocolatey cache statistics.
+    .DESCRIPTION
+        Computes and returns cache performance metrics for Chocolatey lookups, including
+        hit count, miss count, hit rate percentage, and the age of the current cache entry.
     #>
     [CmdletBinding()]
     [OutputType([PSCustomObject])]

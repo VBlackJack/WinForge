@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Prerequisites installation module (v2.1.2 FIXED)
+    Win11Forge - Prerequisites installation module v3.7.1
 
 .DESCRIPTION
     Handles installation of system prerequisites with environment refresh:
@@ -14,7 +14,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Fixed: Write-Status empty strings handling
     Fixed: Chocolatey installation arguments
     All bugs from deployment test have been corrected
@@ -66,6 +66,14 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
     }
 }
 
+# Import DirectoryConstants for centralized registry paths
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+if (-not (Get-Command -Name Get-RegistryPath -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
+    }
+}
+
 # === CONFIGURATION PATHS ===
 $script:DownloadSourcesPath = Join-Path $script:RepositoryRoot 'Config\download-sources.json'
 
@@ -76,6 +84,10 @@ function Get-DownloadSources {
     <#
     .SYNOPSIS
         Loads download sources configuration from JSON file.
+    .DESCRIPTION
+        Reads and caches the download-sources.json configuration file, which contains URLs and
+        version information for prerequisite installers. Falls back to built-in default values
+        if the configuration file is missing or unreadable.
     .OUTPUTS
         Hashtable containing download URLs and configuration
     #>
@@ -91,7 +103,7 @@ function Get-DownloadSources {
                 $script:DownloadSources = $content | ConvertFrom-Json -ErrorAction Stop
             }
             catch {
-                Write-Warning "Failed to load download sources config: $($_.Exception.Message). Using fallback URLs."
+                Write-Warning (Get-LocalizedString -Key 'prerequisites.config.load_failed' -Parameters @{ Error = $_.Exception.Message })
                 # Fallback to default values - UPDATE THESE VERSIONS PERIODICALLY
                 $script:DownloadSources = @{
                     prerequisites = @{
@@ -107,7 +119,7 @@ function Get-DownloadSources {
             }
         }
         else {
-            Write-Warning "Download sources config not found at: $script:DownloadSourcesPath. Using fallback URLs."
+            Write-Warning (Get-LocalizedString -Key 'prerequisites.config.not_found' -Parameters @{ Path = $script:DownloadSourcesPath })
             # Fallback to default values - UPDATE THESE VERSIONS PERIODICALLY
             $script:DownloadSources = @{
                 prerequisites = @{
@@ -193,6 +205,10 @@ function Invoke-EnvironmentRefresh {
     <#
     .SYNOPSIS
         Forces a complete environment refresh including PATH discovery.
+    .DESCRIPTION
+        Performs a full environment variable reload from the registry (machine and user scopes),
+        rebuilds the PATH, and forces PowerShell's command cache to refresh. Use this after
+        installing a new tool to make it immediately available in the current session.
     #>
     [CmdletBinding()]
     param()
@@ -215,6 +231,9 @@ function Test-CommandAvailable {
     <#
     .SYNOPSIS
         Tests if a command is available in the current session.
+    .DESCRIPTION
+        Checks whether a command (cmdlet, function, alias, or executable) with the given name
+        exists in the current PowerShell session using Get-Command.
     #>
     [CmdletBinding()]
     param(
@@ -229,6 +248,10 @@ function Invoke-ExternalProcess {
     <#
     .SYNOPSIS
         Executes an external process with error handling.
+    .DESCRIPTION
+        Launches an external executable with the specified arguments, waits for completion, and
+        returns a boolean indicating success based on the exit code. Optionally refreshes
+        environment variables after the process exits.
     #>
     [CmdletBinding()]
     param(
@@ -293,7 +316,7 @@ function Install-Chocolatey {
         if (-not $chocoInstallPath) {
             $chocoInstallPath = "$env:ProgramData\chocolatey"
         }
-        $chocoTempPath = Join-Path $env:TEMP "chocolatey-install-$(Get-Date -Format 'yyyyMMddHHmmss')"
+        $chocoTempPath = Join-Path (Get-ShellFolder -FolderType 'Temp') "chocolatey-install-$(Get-Date -Format 'yyyyMMddHHmmss')"
 
         # Create temp directory
         New-Item -ItemType Directory -Path $chocoTempPath -Force | Out-Null
@@ -381,6 +404,10 @@ function Install-PowerShell7 {
     <#
     .SYNOPSIS
         Installs or upgrades to PowerShell 7.
+    .DESCRIPTION
+        Installs PowerShell 7 using a prioritized method chain: Winget first, then Chocolatey,
+        and finally a direct MSI download as a last resort. Skips installation if PowerShell 7+
+        is already running unless the Force switch is specified.
     #>
     [CmdletBinding()]
     param([switch]$Force)
@@ -434,20 +461,20 @@ function Install-PowerShell7 {
         $downloadUrl = $sources.prerequisites.powershell7.downloadUrl
         $expectedHash = $sources.prerequisites.powershell7.sha256
         $fileName = [System.IO.Path]::GetFileName($downloadUrl)
-        $tempPath = Join-Path -Path $env:TEMP -ChildPath $fileName
+        $tempPath = Join-Path -Path (Get-ShellFolder -FolderType 'Temp') -ChildPath $fileName
 
         Invoke-WebRequest -Uri $downloadUrl -OutFile $tempPath -UseBasicParsing
 
         # SHA256 checksum validation
         if ($expectedHash -and $expectedHash -ne 'SKIP_VALIDATION') {
-            Write-Status -Message 'Validating SHA256 checksum...' -Level 'Info'
+            Write-Status -Message (Get-LocalizedString -Key 'download.validating_checksum') -Level 'Info'
             $actualHash = (Get-FileHash -Path $tempPath -Algorithm SHA256).Hash
             if ($actualHash -ne $expectedHash) {
-                Write-Status -Message "SHA256 verification failed! Expected: $expectedHash, Got: $actualHash" -Level 'Error'
+                Write-Status -Message (Get-LocalizedString -Key 'download.checksum_failed' -Parameters @{ Expected = $expectedHash; Got = $actualHash }) -Level 'Error'
                 Remove-Item -Path $tempPath -Force -ErrorAction SilentlyContinue
-                throw (New-InstallationException -Message "SHA256 checksum mismatch - download may be corrupted or tampered")
+                throw (New-InstallationException -Message (Get-LocalizedString -Key 'download.checksum_failed' -Parameters @{ Expected = $expectedHash; Got = $actualHash }))
             }
-            Write-Status -Message 'SHA256 checksum verified successfully' -Level 'Success'
+            Write-Status -Message (Get-LocalizedString -Key 'download.checksum_passed' -Parameters @{ Hash = $actualHash }) -Level 'Success'
         }
 
         $arguments = @('/i', "`"$tempPath`"", '/qn', '/norestart', 'ADD_PATH=1', 'ENABLE_MU=1')
@@ -473,6 +500,10 @@ function Install-DotNetRuntime {
     <#
     .SYNOPSIS
         Installs .NET runtimes (Framework 4.8.1, .NET 6, .NET 8).
+    .DESCRIPTION
+        Installs the required .NET runtimes for the framework and its dependencies using Winget
+        or Chocolatey as available. Targets .NET Framework 4.8.1, .NET 6 Desktop Runtime, and
+        .NET 8 Desktop Runtime.
     #>
     [CmdletBinding()]
     param([switch]$Force)
@@ -564,6 +595,10 @@ function Install-VCRedist {
     <#
     .SYNOPSIS
         Installs Visual C++ redistributables (2015-2022, all architectures).
+    .DESCRIPTION
+        Installs the Visual C++ 2015-2022 redistributable packages for both x64 and x86
+        architectures using Chocolatey (preferred) or Winget as a fallback. These runtimes
+        are required by many Windows desktop applications.
     #>
     [CmdletBinding()]
     param([switch]$Force)
@@ -622,6 +657,10 @@ function Install-JavaRuntime {
     .SYNOPSIS
         Installs Java runtime environment (Eclipse Temurin JRE).
         Version is configured in Config/download-sources.json.
+    .DESCRIPTION
+        Installs the Eclipse Temurin JRE using Winget or Chocolatey as available. The target
+        version is defined in the download-sources.json configuration file rather than being
+        hardcoded in the script.
     #>
     [CmdletBinding()]
     param([switch]$Force)
@@ -709,6 +748,10 @@ function Test-Prerequisites {
     <#
     .SYNOPSIS
         Tests if prerequisites are installed and returns detailed status.
+    .DESCRIPTION
+        Checks for the presence and version of each system prerequisite (Chocolatey, PowerShell 7,
+        Winget, .NET runtimes, VC++ redistributables, and Java) and returns an ordered dictionary
+        with per-prerequisite installation status and version information.
 
     .OUTPUTS
         [System.Collections.Specialized.OrderedDictionary] Dictionary of prerequisites status
@@ -770,7 +813,7 @@ function Test-Prerequisites {
 
     # Check .NET Framework
     try {
-        $fxVersion = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -ErrorAction Stop
+        $fxVersion = Get-ItemProperty -Path (Get-RegistryPath -PathKey 'DotNetFramework') -ErrorAction Stop
         if ($fxVersion.Release) {
             $results['DotNetFramework'].Installed = $true
             $results['DotNetFramework'].Version = "4.8.1 (Release: $($fxVersion.Release))"
@@ -792,8 +835,8 @@ function Test-Prerequisites {
 
     # Check VC++ Redist
     $vcRedistKeys = @(
-        'HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64',
-        'HKLM:\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x64'
+        (Get-RegistryPath -PathKey 'VCRedistX64'),
+        (Get-RegistryPath -PathKey 'VCRedistX86')
     )
 
     foreach ($key in $vcRedistKeys) {
@@ -816,6 +859,10 @@ function Start-PrerequisitesInstallation {
     <#
     .SYNOPSIS
         Installs all system prerequisites with automatic environment refresh.
+    .DESCRIPTION
+        Orchestrates the full prerequisite installation workflow: installs Chocolatey, PowerShell 7,
+        .NET runtimes, VC++ redistributables, and Java in sequence, refreshing the environment
+        after each stage. Returns an ordered dictionary with the final status of each prerequisite.
     #>
     [CmdletBinding()]
     param([switch]$Force)

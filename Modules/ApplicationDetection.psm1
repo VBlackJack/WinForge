@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Application Detection v3.6.8
+    Win11Forge - Application Detection v3.7.1
 
 .DESCRIPTION
     Application detection and installation verification functions:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 
     Changelog v3.1.4:
     - Extracted from InstallationEngine.psm1 for modularity
@@ -60,6 +60,14 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
 if (-not (Get-Command -Name Test-IsWindowsSandbox -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:EnvironmentDetectionPath) {
         Import-Module -Name $script:EnvironmentDetectionPath -Force
+    }
+}
+
+# Import DirectoryConstants for centralized registry paths
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+if (-not (Get-Command -Name Get-RegistryPath -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
     }
 }
 
@@ -133,9 +141,9 @@ function Get-RegistryInstalledApp {
         $script:RegistryAppsCacheTime = Get-Date
 
         $uninstallPaths = @(
-            'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
-            'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
-            'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+            "$(Get-RegistryPath -PathKey 'UninstallX64')\*",
+            "$(Get-RegistryPath -PathKey 'UninstallX86')\*",
+            "$(Get-RegistryPath -PathKey 'UninstallCurrentUser')\*"
         )
 
         # Use parallel execution for PS7+ (each registry hive is independent)
@@ -224,6 +232,10 @@ function Clear-RegistryAppsCache {
     <#
     .SYNOPSIS
         Clears the registry applications cache to force a refresh.
+    .DESCRIPTION
+        Invalidates the in-memory registry applications cache and its associated
+        timestamp, forcing the next registry-based detection query to perform a
+        fresh scan of the installed application registry keys.
     #>
     [CmdletBinding()]
     param()
@@ -387,6 +399,12 @@ function Get-InstalledAppVersion {
     <#
     .SYNOPSIS
         Gets the installed version of an application via Winget or Chocolatey.
+    .DESCRIPTION
+        Attempts to retrieve the currently installed version of an application by
+        querying Winget first (if a WingetId is provided and winget is available),
+        then falling back to Chocolatey (if a ChocolateyId is provided and choco
+        is available). Returns $null if the version cannot be determined from
+        either package manager.
     #>
     [CmdletBinding()]
     [OutputType([string])]
@@ -465,8 +483,9 @@ function Wait-ForOfficeInstallation {
 
     # Registry paths that indicate Office is installed
     $officeRegistryPaths = @(
-        'HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration',
-        'HKLM:\SOFTWARE\Microsoft\Office\16.0\Common\InstallRoot'
+        (Get-RegistryPath -PathKey 'OfficeClickToRun'),
+        # No centralized key for Office 16.0 InstallRoot sub-path - keeping as-is
+        "$(Get-RegistryPath -PathKey 'OfficeInstallRoot')\16.0\Common\InstallRoot"
     )
 
     # Office executable paths
@@ -781,9 +800,9 @@ function Get-InstalledApplicationsCache {
     # 1. Registry: Get all Win32 uninstall entries (one query)
     $registryApps = @{}
     $uninstallPaths = @(
-        'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
-        'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
-        'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*'
+        "$(Get-RegistryPath -PathKey 'UninstallX64')\*",
+        "$(Get-RegistryPath -PathKey 'UninstallX86')\*",
+        "$(Get-RegistryPath -PathKey 'UninstallCurrentUser')\*"
     )
 
     foreach ($path in $uninstallPaths) {

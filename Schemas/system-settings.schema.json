@@ -1,0 +1,232 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://win11forge.local/schemas/system-settings.schema.json",
+  "title": "Win11Forge System Settings",
+  "description": "Schema for Windows system registry paths, registry values, power plans, GUIDs, services, and timeouts used by Win11Forge",
+  "type": "object",
+  "required": ["RegistryPaths", "RegistryValues", "PowerPlans", "Services"],
+  "additionalProperties": true,
+  "properties": {
+    "_meta": {
+      "type": "object",
+      "description": "Metadata about the configuration file",
+      "properties": {
+        "description": { "type": "string" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "author": { "type": "string" },
+        "lastUpdated": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+      }
+    },
+    "RegistryPaths": {
+      "type": "object",
+      "description": "Named registry path constants referenced by registry value definitions",
+      "additionalProperties": {
+        "type": "string",
+        "description": "Windows registry path (e.g., HKCU:\\... or HKLM:\\...)",
+        "pattern": "^(HKCU|HKLM|HKCR|HKU|HKCC):\\\\.*$",
+        "minLength": 5,
+        "maxLength": 512
+      }
+    },
+    "RegistryValues": {
+      "type": "object",
+      "description": "Registry value definitions grouped by system category",
+      "additionalProperties": false,
+      "properties": {
+        "Explorer": {
+          "$ref": "#/$defs/RegistryValueGroup",
+          "description": "Windows Explorer registry settings"
+        },
+        "Taskbar": {
+          "$ref": "#/$defs/RegistryValueGroup",
+          "description": "Taskbar registry settings"
+        },
+        "Search": {
+          "$ref": "#/$defs/RegistryValueGroup",
+          "description": "Windows Search and Cortana registry settings"
+        },
+        "Privacy": {
+          "$ref": "#/$defs/RegistryValueGroup",
+          "description": "Privacy, telemetry, and data collection registry settings"
+        },
+        "Performance": {
+          "$ref": "#/$defs/RegistryValueGroup",
+          "description": "Performance and visual effects registry settings"
+        },
+        "Network": {
+          "$ref": "#/$defs/RegistryValueGroup",
+          "description": "Network optimization registry settings"
+        },
+        "Security": {
+          "$ref": "#/$defs/RegistryValueGroup",
+          "description": "Security-related registry settings"
+        }
+      }
+    },
+    "PowerPlans": {
+      "type": "object",
+      "description": "Windows power plan GUID mappings",
+      "additionalProperties": false,
+      "properties": {
+        "HighPerformance": {
+          "type": "string",
+          "description": "GUID for the High Performance power plan",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        },
+        "Balanced": {
+          "type": "string",
+          "description": "GUID for the Balanced power plan",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        },
+        "PowerSaver": {
+          "type": "string",
+          "description": "GUID for the Power Saver power plan",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        }
+      }
+    },
+    "GUIDs": {
+      "type": "object",
+      "description": "System GUIDs used for Windows shell namespace and CLSID references",
+      "additionalProperties": {
+        "type": "string",
+        "description": "A GUID in brace format",
+        "pattern": "^\\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\\}$"
+      }
+    },
+    "Services": {
+      "type": "object",
+      "description": "Windows service management configuration",
+      "additionalProperties": false,
+      "properties": {
+        "ToDisable": {
+          "type": "array",
+          "description": "Service names to set to Disabled startup type",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "uniqueItems": true
+        },
+        "ToManual": {
+          "type": "array",
+          "description": "Service names to set to Manual startup type",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "uniqueItems": true
+        },
+        "Telemetry": {
+          "type": "string",
+          "description": "Name of the Windows telemetry service to manage",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "Timeouts": {
+      "type": "object",
+      "description": "Timeout values for system operations",
+      "additionalProperties": false,
+      "properties": {
+        "ExplorerRestartDelaySeconds": {
+          "type": "integer",
+          "description": "Delay in seconds to wait after restarting Explorer for settings to take effect",
+          "minimum": 0,
+          "maximum": 30,
+          "default": 2
+        }
+      }
+    }
+  },
+  "$defs": {
+    "RegistryValueGroup": {
+      "type": "object",
+      "description": "A group of related registry value definitions",
+      "additionalProperties": {
+        "$ref": "#/$defs/RegistryValueEntry"
+      }
+    },
+    "RegistryValueEntry": {
+      "type": "object",
+      "description": "A single registry value definition with its path, type, and possible values",
+      "required": ["Name", "Path", "Type"],
+      "additionalProperties": true,
+      "properties": {
+        "Name": {
+          "type": "string",
+          "description": "Registry value name",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "Path": {
+          "type": "string",
+          "description": "Reference to a key in RegistryPaths",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "Type": {
+          "type": "string",
+          "description": "Registry value data type",
+          "enum": ["DWord", "String", "QWord", "Binary", "MultiString", "ExpandString"]
+        },
+        "Comment": {
+          "type": "string",
+          "description": "Human-readable explanation of the value semantics",
+          "maxLength": 512
+        },
+        "ValueEnabled": {
+          "type": "integer",
+          "description": "Value to set when the feature is enabled"
+        },
+        "ValueDisabled": {
+          "type": "integer",
+          "description": "Value to set when the feature is disabled"
+        },
+        "ValueLeft": {
+          "type": "integer",
+          "description": "Value for left alignment (taskbar-specific)"
+        },
+        "ValueCenter": {
+          "type": "integer",
+          "description": "Value for center alignment (taskbar-specific)"
+        },
+        "ValueHidden": {
+          "type": "integer",
+          "description": "Value to hide the element"
+        },
+        "ValueIconOnly": {
+          "type": "integer",
+          "description": "Value to show icon only"
+        },
+        "ValueBox": {
+          "type": "integer",
+          "description": "Value to show search box"
+        },
+        "ValueBestPerformance": {
+          "type": "integer",
+          "description": "Value for best performance visual effects setting"
+        },
+        "ValueBestAppearance": {
+          "type": "integer",
+          "description": "Value for best appearance visual effects setting"
+        },
+        "ValueCustom": {
+          "type": "integer",
+          "description": "Value for custom visual effects setting"
+        },
+        "ValueOptimized": {
+          "type": "integer",
+          "description": "Value for optimized network setting"
+        },
+        "ValueDefault": {
+          "type": "integer",
+          "description": "Windows default value for the setting"
+        }
+      }
+    }
+  }
+}

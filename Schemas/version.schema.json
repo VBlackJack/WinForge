@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://win11forge.local/schemas/version.schema.json",
+  "title": "Win11Forge Version",
+  "description": "Schema for Win11Forge framework version metadata (Config/version.json)",
+  "type": "object",
+  "required": ["DisplayName", "Version", "ReleaseDate"],
+  "additionalProperties": false,
+  "properties": {
+    "DisplayName": {
+      "type": "string",
+      "description": "Human-readable display name of the framework",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "Version": {
+      "type": "string",
+      "description": "Semantic version of the framework (single source of truth)",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "ReleaseDate": {
+      "type": "string",
+      "description": "Release date in ISO 8601 format (YYYY-MM-DD)",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    }
+  }
+}

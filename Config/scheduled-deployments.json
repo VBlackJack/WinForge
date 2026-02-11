@@ -1,22 +1,20 @@
-﻿{
-    "deployments":  {
-
-                    },
-    "_meta":  {
-                  "$schema":  "../Schemas/scheduled-deployments.schema.json",
-                  "description":  "Scheduled deployments configuration for Win11Forge",
-                  "version":  "3.6.8",
-                  "author":  "Julien Bombled",
-                  "lastUpdated":  "2026-02-03"
-              },
-    "settings":  {
-                     "defaultTriggerType":  "OneTime",
-                     "maxConcurrentDeployments":  1,
-                     "retryOnFailure":  true,
-                     "retryDelayMinutes":  30,
-                     "maxRetries":  3,
-                     "notifyOnCompletion":  true,
-                     "notifyOnFailure":  true,
-                     "logRetentionDays":  30
-                 }
+{
+  "deployments": {},
+  "_meta": {
+    "$schema": "../Schemas/scheduled-deployments.schema.json",
+    "description": "Scheduled deployments configuration for Win11Forge",
+    "version": "3.6.8",
+    "author": "Julien Bombled",
+    "lastUpdated": "2026-02-03"
+  },
+  "settings": {
+    "defaultTriggerType": "OneTime",
+    "maxConcurrentDeployments": 1,
+    "retryOnFailure": true,
+    "retryDelayMinutes": 30,
+    "maxRetries": 3,
+    "notifyOnCompletion": true,
+    "notifyOnFailure": true,
+    "logRetentionDays": 30
+  }
 }

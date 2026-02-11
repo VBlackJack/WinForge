@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Win11Forge - Centralized Module Loader v1.0.0
 
@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     This module should be imported first by other modules
 #>
 
@@ -35,6 +35,16 @@ Set-StrictMode -Version Latest
 # === MODULE PATHS ===
 $script:ModuleLoaderRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleLoaderRoot -Parent
+
+# Import Localization module for i18n support
+$script:LocalizationModulePath = Join-Path $script:ModuleLoaderRoot 'Localization.psm1'
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        try {
+            Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
+        } catch { Write-Debug "Localization module not available: $($_.Exception.Message)" }
+    }
+}
 
 # Module path mapping: command name -> module file path (relative to repository root)
 $script:CommandToModuleMap = @{
@@ -162,7 +172,7 @@ function Import-CoreDependency {
 
         # Look up the module for this command
         if (-not $script:CommandToModuleMap.ContainsKey($CommandName)) {
-            Write-Warning "Unknown command '$CommandName' - not in module map"
+            Write-Warning (t 'core.moduleLoader.unknown_command' @{ CommandName = $CommandName })
             return $false
         }
 
@@ -181,11 +191,11 @@ function Import-CoreDependency {
                 $script:LoadedModules[$modulePath] = $true
                 return $true
             } catch {
-                Write-Warning "Failed to import module '$modulePath': $($_.Exception.Message)"
+                Write-Warning (t 'core.moduleLoader.import_failed' @{ ModulePath = $modulePath; Error = $_.Exception.Message })
                 return $false
             }
         } else {
-            Write-Warning "Module not found: $modulePath"
+            Write-Warning (t 'core.moduleLoader.not_found' @{ ModulePath = $modulePath })
             return $false
         }
     }
@@ -233,7 +243,7 @@ function Import-CoreDependencies {
     }
 
     if (-not $allSuccess -and $ThrowOnFailure) {
-        throw (New-ValidationException -Message "Failed to import required dependencies: $($failedCommands -join ', ')")
+        throw (New-ValidationException -Message (t 'core.moduleLoader.dependencies_failed' @{ Commands = ($failedCommands -join ', ') }))
     }
 
     return $allSuccess

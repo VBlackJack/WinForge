@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Application Database v3.6.8
+    Win11Forge - Application Database v3.7.1
 
 .DESCRIPTION
     Module for interacting with the centralized application database:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Last Updated: 2025-10-06
 #>
 
@@ -44,8 +44,16 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
         try {
             Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
         } catch {
-            Write-Verbose ("Localization module import failed: {0}" -f $PSItem.Exception.Message)
+            Write-Verbose (t 'database.localization.import_failed' @{ Error = $PSItem.Exception.Message })
         }
+    }
+}
+
+# Import DirectoryConstants for path management
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
     }
 }
 
@@ -70,7 +78,7 @@ function Enable-DatabaseFileWatcher {
     param()
 
     if ($Script:FileWatcherEnabled) {
-        Write-Verbose "Database file watcher already enabled"
+        Write-Verbose (t 'database.filewatcher.already_enabled')
         return
     }
 
@@ -87,13 +95,13 @@ function Enable-DatabaseFileWatcher {
         # Register event handler for file changes
         Register-ObjectEvent -InputObject $Script:FileWatcher -EventName Changed -Action {
             $Script:DatabaseCache = $null
-            Write-Verbose "Database file changed - cache invalidated"
+            Write-Verbose (t 'database.filewatcher.cache_invalidated')
         } -SourceIdentifier 'Win11Forge.DatabaseWatcher' | Out-Null
 
         $Script:FileWatcherEnabled = $true
-        Write-Verbose "Database file watcher enabled for: $Script:DatabasePath"
+        Write-Verbose (t 'database.filewatcher.enabled' @{ Path = $Script:DatabasePath })
     } catch {
-        Write-Warning "Could not enable database file watcher: $($_.Exception.Message)"
+        Write-Warning (t 'database.filewatcher.enable_failed' @{ Error = $_.Exception.Message })
     }
 }
 
@@ -101,6 +109,10 @@ function Disable-DatabaseFileWatcher {
     <#
     .SYNOPSIS
         Disables the database file watcher.
+    .DESCRIPTION
+        Unregisters the file system watcher event, disposes the watcher instance,
+        and resets the watcher state. Silently handles cases where the watcher
+        is already disabled or was never enabled.
     #>
     [CmdletBinding()]
     param()
@@ -117,9 +129,9 @@ function Disable-DatabaseFileWatcher {
             $Script:FileWatcher = $null
         }
         $Script:FileWatcherEnabled = $false
-        Write-Verbose "Database file watcher disabled"
+        Write-Verbose (t 'database.filewatcher.disabled')
     } catch {
-        Write-Warning "Could not disable database file watcher: $($_.Exception.Message)"
+        Write-Warning (t 'database.filewatcher.disable_failed' @{ Error = $_.Exception.Message })
     }
 }
 
@@ -127,6 +139,10 @@ function Test-DatabaseFileChanged {
     <#
     .SYNOPSIS
         Checks if the database file has been modified since last load.
+    .DESCRIPTION
+        Compares the current LastWriteTime of the database JSON file against the
+        timestamp recorded during the last load. Returns $false if the file does
+        not exist or has never been loaded.
     .OUTPUTS
         Boolean indicating if file has changed.
     #>
@@ -150,13 +166,17 @@ function Clear-DatabaseCache {
     <#
     .SYNOPSIS
         Clears the database cache, forcing a reload on next access.
+    .DESCRIPTION
+        Resets both the in-memory database cache and the last-modified timestamp,
+        ensuring the next call to load the application database will re-read
+        from disk rather than returning stale cached data.
     #>
     [CmdletBinding()]
     param()
 
     $Script:DatabaseCache = $null
     $Script:DatabaseLastModified = $null
-    Write-Verbose "Database cache cleared"
+    Write-Verbose (t 'database.cache.cleared')
 }
 
 <#
@@ -186,7 +206,7 @@ function Get-ApplicationDatabase {
         }
 
         if (-not (Test-Path $Script:DatabasePath)) {
-            throw (New-ValidationException -Message "Application database not found at: $Script:DatabasePath")
+            throw (New-ValidationException -Message (t 'database.load.not_found' @{ Path = $Script:DatabasePath }))
         }
 
         $jsonContent = Get-Content -Path $Script:DatabasePath -Raw -Encoding UTF8
@@ -195,12 +215,12 @@ function Get-ApplicationDatabase {
 
         # PS5.1 compatible: PSCustomObject doesn't have .Count, use Measure-Object
         $appCount = ($Script:DatabaseCache.Applications.PSObject.Properties | Measure-Object).Count
-        Write-Verbose "Database loaded: $appCount applications"
+        Write-Verbose (t 'database.load.success' @{ Count = $appCount })
 
         return $Script:DatabaseCache
     }
     catch {
-        Write-Error "Failed to load application database: $_"
+        Write-Error (t 'database.load.failed' @{ Error = $_ })
         return $null
     }
 }
@@ -230,7 +250,7 @@ function Get-ApplicationById {
     $app = $database.Applications.PSObject.Properties | Where-Object { $_.Name -eq $AppId } | Select-Object -ExpandProperty Value -First 1
 
     if ($null -eq $app) {
-        Write-Warning "Application '$AppId' not found in database"
+        Write-Warning (t 'database.application.not_found' @{ AppId = $AppId })
         return $null
     }
 
@@ -381,7 +401,7 @@ function ConvertTo-ProfileApplication {
             try {
                 $Priority = [int]$Priority
             } catch {
-                throw (New-ValidationException -Message "Priority must be a valid integer, got: $Priority ($($Priority.GetType().Name))")
+                throw (New-ValidationException -Message (t 'database.validation.priority_invalid' @{ Value = $Priority; Type = $Priority.GetType().Name }))
             }
         }
     }
@@ -403,7 +423,7 @@ function ConvertTo-ProfileApplication {
                         $Required = [bool]::Parse($Required)
                     }
                 } catch {
-                    throw (New-ValidationException -Message "Required must be a valid boolean (true/false/0/1), got: $Required ($($Required.GetType().Name))")
+                    throw (New-ValidationException -Message (t 'database.validation.required_invalid' @{ Value = $Required; Type = $Required.GetType().Name }))
                 }
             }
         }
@@ -505,7 +525,7 @@ function Test-ApplicationSources {
 
     $database = Get-ApplicationDatabase
     if ($null -eq $database) {
-        Write-Error "Cannot validate: Database not loaded"
+        Write-Error (t 'database.validate.not_loaded')
         return
     }
 
@@ -518,7 +538,7 @@ function Test-ApplicationSources {
         $app = $prop.Value
         $appId = $prop.Name
 
-        Write-Progress -Activity "Validating Application Sources" -Status "Testing $($app.Name) ($current/$totalApps)" -PercentComplete (($current / $totalApps) * 100)
+        Write-Progress -Activity (t 'database.validate.progress_activity') -Status (t 'database.validate.progress_status' @{ AppName = $app.Name; Current = $current; Total = $totalApps }) -PercentComplete (($current / $totalApps) * 100)
 
         $result = [PSCustomObject]@{
             AppId       = $appId
@@ -537,12 +557,12 @@ function Test-ApplicationSources {
                 # Winget returns 0 even when ID not found, must check output content
                 $result.WingetValid = ($LASTEXITCODE -eq 0 -and $wingetTest -match [regex]::Escape($app.Sources.Winget))
                 if (-not $result.WingetValid) {
-                    $result.Errors += "Winget ID not found: $($app.Sources.Winget)"
+                    $result.Errors += (t 'database.validate.winget_not_found' @{ WingetId = $app.Sources.Winget })
                 }
             }
             catch {
                 $result.WingetValid = $false
-                $result.Errors += "Winget test failed: $_"
+                $result.Errors += (t 'database.validate.winget_test_failed' @{ Error = $_ })
             }
         }
         else {
@@ -555,12 +575,12 @@ function Test-ApplicationSources {
                 $chocoTest = choco search $app.Sources.Chocolatey --exact --limit-output 2>&1
                 $result.ChocoValid = ($LASTEXITCODE -eq 0 -and $chocoTest)
                 if (-not $result.ChocoValid) {
-                    $result.Errors += "Chocolatey package not found: $($app.Sources.Chocolatey)"
+                    $result.Errors += (t 'database.validate.choco_not_found' @{ ChocoId = $app.Sources.Chocolatey })
                 }
             }
             catch {
                 $result.ChocoValid = $false
-                $result.Errors += "Chocolatey test failed: $_"
+                $result.Errors += (t 'database.validate.choco_test_failed' @{ Error = $_ })
             }
         }
         else {
@@ -595,7 +615,7 @@ function Reset-DatabaseCache {
     param()
 
     $Script:DatabaseCache = $null
-    Write-Verbose "Database cache cleared"
+    Write-Verbose (t 'database.cache.cleared')
 }
 
 <#
@@ -658,7 +678,7 @@ function Get-ApplicationDependencies {
 
     $app = Get-ApplicationById -AppId $AppId
     if ($null -eq $app) {
-        Write-Warning "Application not found: $AppId"
+        Write-Warning (t 'database.application.not_found_short' @{ AppId = $AppId })
         return @()
     }
 
@@ -726,7 +746,7 @@ function Resolve-ApplicationDependencies {
         }
 
         if ($visiting.Contains($Id)) {
-            Write-Warning "Circular dependency detected involving: $Id"
+            Write-Warning (t 'database.dependency.circular_detected' @{ AppId = $Id })
             return
         }
 
@@ -906,7 +926,7 @@ function New-DatabaseBackup {
 
     try {
         # Get backup directory
-        $backupDir = Join-Path $env:LOCALAPPDATA 'Win11Forge\Backups\Database'
+        $backupDir = Join-Path (Get-Win11ForgeDirectory -DirectoryType 'Backups') 'Database'
         if (-not (Test-Path $backupDir)) {
             New-Item -Path $backupDir -ItemType Directory -Force | Out-Null
         }
@@ -919,7 +939,7 @@ function New-DatabaseBackup {
         # Copy current database to backup
         if (Test-Path $Script:DatabasePath) {
             Copy-Item -Path $Script:DatabasePath -Destination $backupPath -Force
-            Write-Verbose "Database backup created: $backupPath"
+            Write-Verbose (t 'database.backup.created' @{ Path = $backupPath })
         }
 
         # Rotate old backups
@@ -930,14 +950,14 @@ function New-DatabaseBackup {
             $toDelete = $backups | Select-Object -Skip $MaxBackups
             foreach ($old in $toDelete) {
                 Remove-Item $old.FullName -Force
-                Write-Verbose "Removed old backup: $($old.Name)"
+                Write-Verbose (t 'database.backup.removed_old' @{ FileName = $old.Name })
             }
         }
 
         return $backupPath
     }
     catch {
-        Write-Warning "Failed to create backup: $($_.Exception.Message)"
+        Write-Warning (t 'database.backup.create_failed' @{ Error = $_.Exception.Message })
         return $null
     }
 }
@@ -957,7 +977,7 @@ function Get-DatabaseBackups {
     [OutputType([PSCustomObject[]])]
     param()
 
-    $backupDir = Join-Path $env:LOCALAPPDATA 'Win11Forge\Backups\Database'
+    $backupDir = Join-Path (Get-Win11ForgeDirectory -DirectoryType 'Backups') 'Database'
 
     if (-not (Test-Path $backupDir)) {
         return @()
@@ -1014,7 +1034,7 @@ function Restore-DatabaseFromBackup {
         if (-not (Test-Path $BackupPath)) {
             return [PSCustomObject]@{
                 Success = $false
-                Error = "Backup file not found: $BackupPath"
+                Error = (t 'database.backup.file_not_found' @{ Path = $BackupPath })
             }
         }
 
@@ -1026,7 +1046,7 @@ function Restore-DatabaseFromBackup {
         catch {
             return [PSCustomObject]@{
                 Success = $false
-                Error = "Invalid backup file format: $($_.Exception.Message)"
+                Error = (t 'database.backup.invalid_format' @{ Error = $_.Exception.Message })
             }
         }
 
@@ -1046,7 +1066,7 @@ function Restore-DatabaseFromBackup {
             Success = $true
             RestoredFrom = $BackupPath
             PreviousStateBackup = $currentBackup
-            Message = "Database restored successfully from backup"
+            Message = (t 'database.backup.restore_success')
         }
     }
     catch {
@@ -1077,7 +1097,7 @@ function Invoke-BackupRotation {
         [int]$MaxBackups = 10
     )
 
-    $backupDir = Join-Path $env:LOCALAPPDATA 'Win11Forge\Backups\Database'
+    $backupDir = Join-Path (Get-Win11ForgeDirectory -DirectoryType 'Backups') 'Database'
 
     if (-not (Test-Path $backupDir)) {
         return 0
@@ -1093,7 +1113,7 @@ function Invoke-BackupRotation {
         foreach ($old in $toDelete) {
             Remove-Item $old.FullName -Force
             $deletedCount++
-            Write-Verbose "Removed old backup: $($old.Name)"
+            Write-Verbose (t 'database.backup.removed_old' @{ FileName = $old.Name })
         }
     }
 
@@ -1129,27 +1149,27 @@ function Test-ApplicationConfiguration {
 
     # Validate AppId
     if ([string]::IsNullOrWhiteSpace($Application.AppId)) {
-        $errors += [PSCustomObject]@{ Field = 'AppId'; Message = 'Application ID is required' }
+        $errors += [PSCustomObject]@{ Field = 'AppId'; Message = (t 'database.validation.appid_required') }
     }
     elseif ($Application.AppId -notmatch '^[A-Za-z][A-Za-z0-9\.\-_]*$') {
-        $errors += [PSCustomObject]@{ Field = 'AppId'; Message = 'Application ID must start with a letter and contain only letters, numbers, dots, dashes, and underscores' }
+        $errors += [PSCustomObject]@{ Field = 'AppId'; Message = (t 'database.validation.appid_format') }
     }
     elseif ($IsNew) {
         # Check uniqueness for new applications
         $existing = Get-ApplicationById -AppId $Application.AppId
         if ($null -ne $existing) {
-            $errors += [PSCustomObject]@{ Field = 'AppId'; Message = "Application ID '$($Application.AppId)' already exists" }
+            $errors += [PSCustomObject]@{ Field = 'AppId'; Message = (t 'database.validation.appid_exists' @{ AppId = $Application.AppId }) }
         }
     }
 
     # Validate Name
     if ([string]::IsNullOrWhiteSpace($Application.Name)) {
-        $errors += [PSCustomObject]@{ Field = 'Name'; Message = 'Application name is required' }
+        $errors += [PSCustomObject]@{ Field = 'Name'; Message = (t 'database.validation.name_required') }
     }
 
     # Validate Category
     if ([string]::IsNullOrWhiteSpace($Application.Category)) {
-        $errors += [PSCustomObject]@{ Field = 'Category'; Message = 'Category is required' }
+        $errors += [PSCustomObject]@{ Field = 'Category'; Message = (t 'database.validation.category_required') }
     }
 
     # Validate Sources
@@ -1162,26 +1182,26 @@ function Test-ApplicationConfiguration {
     }
 
     if (-not $hasSources) {
-        $errors += [PSCustomObject]@{ Field = 'Sources'; Message = 'At least one installation source is required' }
+        $errors += [PSCustomObject]@{ Field = 'Sources'; Message = (t 'database.validation.source_required') }
     }
 
     # Validate DirectUrl format if provided
     if ($Application.Sources -and -not [string]::IsNullOrWhiteSpace($Application.Sources.DirectUrl)) {
         if ($Application.Sources.DirectUrl -notmatch '^https?://') {
-            $errors += [PSCustomObject]@{ Field = 'Sources.DirectUrl'; Message = 'Direct URL must be a valid HTTP or HTTPS URL' }
+            $errors += [PSCustomObject]@{ Field = 'Sources.DirectUrl'; Message = (t 'database.validation.directurl_format') }
         }
     }
 
     # Validate Homepage format if provided
     if (-not [string]::IsNullOrWhiteSpace($Application.Homepage)) {
         if ($Application.Homepage -notmatch '^https?://') {
-            $errors += [PSCustomObject]@{ Field = 'Homepage'; Message = 'Homepage must be a valid HTTP or HTTPS URL' }
+            $errors += [PSCustomObject]@{ Field = 'Homepage'; Message = (t 'database.validation.homepage_format') }
         }
     }
 
     # Validate Priority
     if ($Application.DefaultPriority -and ($Application.DefaultPriority -lt 1 -or $Application.DefaultPriority -gt 100)) {
-        $errors += [PSCustomObject]@{ Field = 'DefaultPriority'; Message = 'Priority must be between 1 and 100' }
+        $errors += [PSCustomObject]@{ Field = 'DefaultPriority'; Message = (t 'database.validation.priority_range') }
     }
 
     return [PSCustomObject]@{
@@ -1233,7 +1253,7 @@ function Set-Application {
         if ($null -eq $database) {
             return [PSCustomObject]@{
                 Success = $false
-                Errors = @([PSCustomObject]@{ Field = 'Database'; Message = 'Failed to load database' })
+                Errors = @([PSCustomObject]@{ Field = 'Database'; Message = (t 'database.load.failed_short') })
             }
         }
 
@@ -1304,7 +1324,7 @@ function Remove-Application {
         if ($null -eq $existing) {
             return [PSCustomObject]@{
                 Success = $false
-                Error = "Application '$AppId' not found"
+                Error = (t 'database.application.not_found' @{ AppId = $AppId })
             }
         }
 
@@ -1313,7 +1333,7 @@ function Remove-Application {
         if ($null -eq $database) {
             return [PSCustomObject]@{
                 Success = $false
-                Error = 'Failed to load database'
+                Error = (t 'database.load.failed_short')
             }
         }
 
@@ -1371,7 +1391,7 @@ function Import-ApplicationsFromFile {
         if (-not (Test-Path $Path)) {
             return [PSCustomObject]@{
                 Success = $false
-                Error = "File not found: $Path"
+                Error = (t 'database.import.file_not_found' @{ Path = $Path })
             }
         }
 
@@ -1382,7 +1402,7 @@ function Import-ApplicationsFromFile {
         if ($null -eq $importApps) {
             return [PSCustomObject]@{
                 Success = $false
-                Error = 'No Applications found in import file'
+                Error = (t 'database.import.no_applications')
             }
         }
 
@@ -1479,7 +1499,7 @@ function Export-ApplicationsToFile {
     try {
         $database = Get-ApplicationDatabase
         if ($null -eq $database) {
-            Write-Error "Failed to load database"
+            Write-Error (t 'database.load.failed_short')
             return $false
         }
 
@@ -1505,7 +1525,7 @@ function Export-ApplicationsToFile {
         return $true
     }
     catch {
-        Write-Error "Export failed: $($_.Exception.Message)"
+        Write-Error (t 'database.export.failed' @{ Error = $_.Exception.Message })
         return $false
     }
 }

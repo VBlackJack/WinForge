@@ -1,8 +1,8 @@
-﻿{
+{
   "_meta": {
     "locale": "fr",
     "name": "Français",
-    "version": "3.6.8",
+    "version": "3.7.1",
     "author": "Julien Bombled"
   },
   "common": {
@@ -27,7 +27,7 @@
     "next": "Suivant",
     "exit": "Quitter",
     "retry": "Réessayer",
-    "version": "3.6.8"
+    "version": "3.7.1"
   },
   "core": {
     "admin_required": "Privilèges administrateur requis",
@@ -36,7 +36,36 @@
     "internet_no_connection": "Aucune connexion Internet détectée",
     "internet_ensure_connection": "Veuillez vous assurer d'avoir une connexion Internet active",
     "internet_verified": "Connexion Internet vérifiée",
-    "cleaned_temp_files": "{Count} fichiers temporaires nettoyés"
+    "cleaned_temp_files": "{Count} fichiers temporaires nettoyés",
+    "moduleLoader": {
+      "unknown_command": "Commande inconnue '{CommandName}' - absente de la carte des modules",
+      "import_failed": "Echec de l'importation du module '{ModulePath}' : {Error}",
+      "not_found": "Module introuvable : {ModulePath}",
+      "dependencies_failed": "Echec de l'importation des dependances requises : {Commands}"
+    },
+    "logging": {
+      "structured_load_failed": "Echec du chargement du module StructuredLogging : {Error}",
+      "json_dir_create_failed": "Echec de la creation du repertoire de journaux JSON : {Error}",
+      "initialized": "Journalisation structuree initialisee",
+      "log_rotated": "Journal archive en raison de la limite de taille ({SizeMB} Mo)",
+      "log_file_rotated": "Fichier journal archive",
+      "reason_size_limit": "Limite de taille depassee",
+      "json_dir_not_found": "Repertoire de journaux JSON introuvable : {Path}",
+      "expand_archive_failed": "Echec de l'extraction de l'archive : {Error}",
+      "session_closed": "Session de journalisation structuree fermee"
+    },
+    "error": {
+      "operation_failed": "L'operation a echoue",
+      "stack_trace": "Trace de la pile : {StackTrace}"
+    },
+    "cleanup": {
+      "path_not_found": "Chemin introuvable : {Path}",
+      "could_not_remove": "Impossible de supprimer : {FileName}",
+      "error": "Erreur lors du nettoyage des fichiers temporaires : {Error}"
+    },
+    "localization": {
+      "load_failed": "Echec du chargement du module de localisation : {Error}"
+    }
   },
   "install": {
     "starting": "Démarrage de l'installation de {AppName}...",
@@ -125,6 +154,30 @@
         "close_failed": "Échec de CloseMainWindow : {Error}",
         "kill_failed": "Échec de l'arrêt du processus : {Error}",
         "child_cleanup_failed": "Échec du nettoyage des processus enfants : {Error}"
+      },
+      "debug": {
+        "attempting_winget": "Tentative d'installation Winget : {PackageId}",
+        "winget_success": "Installation Winget terminee avec succes",
+        "winget_exit_code": "Code de sortie Winget : {ExitCode}",
+        "attempting_choco": "Tentative d'installation Chocolatey : {PackageId}",
+        "choco_success": "Installation Chocolatey terminee avec succes",
+        "choco_exit_code": "Code de sortie Chocolatey : {ExitCode}",
+        "attempting_store": "Tentative d'installation Microsoft Store : {ProductId}",
+        "store_exit_code": "Code de sortie de l'installation Store : {ExitCode}",
+        "attempting_direct": "Tentative de telechargement direct : {Url}",
+        "installer_filename": "Nom du fichier d'installation : {Filename}",
+        "direct_path_verbose": "Chemin de l'installateur : {Path}",
+        "direct_download_failed_verbose": "Echec du telechargement : Fichier introuvable ou somme de controle non concordante",
+        "direct_downloaded_verbose": "Telecharge : {Size}",
+        "direct_running_verbose": "Execution de l'installateur {Type}...",
+        "direct_custom_args_status": "Arguments personnalises : {Arguments}",
+        "direct_path_exists": "Le chemin de l'installateur existe : {Exists}",
+        "direct_output_type": "Type de sortie de l'installation : {Type}, nombre : {Count}",
+        "direct_extracted_bool": "Booleen extrait : {Result}",
+        "direct_final_result": "Resultat final de l'installation : {Result}",
+        "direct_success_verbose": "Installe avec succes via telechargement direct",
+        "direct_failed_verbose": "Echec de l'installation directe",
+        "direct_error_verbose": "Erreur de telechargement direct : {Error}"
       }
     },
     "retry": {
@@ -144,6 +197,59 @@
     "timeout": {
       "warning": "L'installation a expiré après {Minutes} minutes",
       "process_killed": "Processus terminé suite au délai d'expiration"
+    },
+    "orchestrator": {
+      "attempting_winget": "Tentative via Winget : {PackageId}",
+      "office_c2r_waiting": "Installation d'Office initiee, attente de la fin de Click-to-Run...",
+      "success_despite_exit_code": "Installation reussie malgre le code de sortie (fichiers verifies)",
+      "attempting_choco": "Tentative via Chocolatey : {PackageId}",
+      "attempting_store": "Tentative via Microsoft Store : {ProductId}",
+      "attempting_direct": "Tentative de telechargement direct : {Url}",
+      "custom_args_detected": "Arguments personnalises detectes : {Arguments}",
+      "parallel": {
+        "starting": "Demarrage de l'installation de {AppName}",
+        "already_installed": "Deja installe - ignore",
+        "not_installed": "Non installe - poursuite de l'installation",
+        "custom_method": "Utilisation de la methode d'installation personnalisee : {Method}",
+        "windows_feature": "Installation en tant que fonctionnalite Windows : {Feature}",
+        "feature_success": "Fonctionnalite Windows installee avec succes",
+        "windows_capability": "Installation en tant que capacite Windows : {Capability}",
+        "capability_success": "Capacite Windows installee avec succes",
+        "attempting_winget": "Tentative d'installation via Winget : {PackageId}",
+        "retry_winget": "Nouvelle tentative {Attempt}/{MaxRetries} pour Winget : {PackageId}",
+        "process_timeout": "Le processus a expire apres {Seconds} secondes - arret",
+        "winget_timeout": "Echec de l'installation Winget (expiration du delai)",
+        "winget_success": "Installe avec succes via Winget",
+        "winget_already": "Deja installe (Winget)",
+        "transient_error": "Erreur transitoire (code de sortie : {ExitCode}), nouvelle tentative dans {Delay} secondes...",
+        "winget_failed": "Echec de l'installation Winget (code de sortie : {ExitCode})",
+        "attempting_choco": "Tentative d'installation via Chocolatey : {PackageName}",
+        "retry_choco": "Nouvelle tentative {Attempt}/{MaxRetries} pour Chocolatey : {PackageName}",
+        "choco_timeout": "Echec de l'installation Chocolatey (expiration du delai)",
+        "choco_success": "Installe avec succes via Chocolatey",
+        "choco_failed": "Echec de l'installation Chocolatey (code de sortie : {ExitCode})",
+        "store_sandbox_skip": "Installation Store ignoree - Windows Store indisponible dans le Sandbox",
+        "attempting_store": "Tentative d'installation via Microsoft Store : {ProductId}",
+        "store_timeout": "Echec de l'installation Microsoft Store (expiration du delai)",
+        "store_success": "Installe avec succes via Microsoft Store",
+        "store_failed": "Echec de l'installation Microsoft Store (code de sortie : {ExitCode})",
+        "invalid_url": "URL invalide ou non securisee : {Url}",
+        "attempting_direct": "Tentative d'installation par telechargement direct : {Url}",
+        "installer_filename": "Nom du fichier d'installation : {Filename}",
+        "download_completed": "Telechargement termine",
+        "validating_checksum": "Validation de la somme de controle SHA256...",
+        "checksum_failed": "Somme de controle ECHOUEE ! Attendu : {Expected}, Obtenu : {Got}",
+        "checksum_passed": "Validation de la somme de controle reussie",
+        "detected_type": "Type d'installateur detecte : {Type}",
+        "unsafe_msi_arg": "Securite : argument MSI non securise ignore : {Argument}",
+        "extracting_zip": "Extraction de l'archive ZIP",
+        "archive_blocked": "Extraction de l'archive bloquee par la validation de securite",
+        "unsafe_args_blocked": "Securite : utilisation de /S par defaut - arguments non securises bloques",
+        "no_installer_portable": "Aucun installateur trouve - deploiement d'outils portables",
+        "direct_success": "Installe avec succes via telechargement direct",
+        "direct_failed": "Echec de l'installation par telechargement direct (code de sortie : {ExitCode})",
+        "all_failed": "Toutes les methodes d'installation ont echoue"
+      }
     }
   },
   "parallel": {
@@ -234,7 +340,11 @@
       "refreshed": "Environnement actualisé"
     },
     "all_passed": "Tous les prérequis sont satisfaits",
-    "some_missing": "Certains prérequis sont manquants"
+    "some_missing": "Certains prérequis sont manquants",
+    "config": {
+      "load_failed": "Echec du chargement de la configuration des sources de telechargement : {Error}. Utilisation des URL par defaut.",
+      "not_found": "Fichier de configuration des sources introuvable : {Path}. Utilisation des URL par defaut."
+    }
   },
   "profile": {
     "loading": "Chargement du profil : {Name}",
@@ -562,10 +672,13 @@
       "success": "Application '{Name}' ajoutée avec succès !",
       "success_appid": "ID d'application : {AppId}",
       "success_total": "Total des applications dans la base : {Count}",
-      "success_js": "applications-data.js mis à jour"
+      "success_js": "applications-data.js mis à jour",
+      "default_description": "Aucune description fournie",
+      "default_category": "Autre"
     },
     "errors": {
-      "db_not_loaded": "Erreur : Base de données non chargée"
+      "db_not_loaded": "Erreur : Base de données non chargée",
+      "db_file_not_found": "Fichier de base de donnees introuvable a {Path}"
     }
   },
   "startup": {
@@ -650,7 +763,69 @@
     "summary_applied": "[OK] Disposition appliquée à l'utilisateur actuel",
     "current_unchanged": "Disposition de l'utilisateur actuel inchangée (utilisez -ApplyToCurrentUser pour appliquer)",
     "backup_saved": "Sauvegarde enregistrée dans : {Path}",
-    "deployment_failed": "Échec du déploiement"
+    "deployment_failed": "Échec du déploiement",
+    "layout": {
+      "category": {
+        "lookup": {
+          "error": "Erreur lors de la recherche de la categorie : {ErrorMessage}"
+        }
+      },
+      "shortcut": {
+        "read": {
+          "error": "Erreur lors de la lecture du raccourci {ShortcutPath} : {ErrorMessage}"
+        },
+        "copy": {
+          "error": "Erreur lors de la copie du raccourci : {ErrorMessage}"
+        },
+        "skipped": "Ignore (exclu) : {ShortcutName}",
+        "copied": "Copie : {ShortcutName} -> {Category}"
+      },
+      "packagedapp": {
+        "find": {
+          "error": "Erreur lors de la recherche de l'identifiant de l'application empaquetee : {ErrorMessage}"
+        }
+      },
+      "deploy": {
+        "defaultprofile": {
+          "success": "Disposition deployee dans le profil par defaut : {TargetPath}",
+          "info": "Les nouveaux profils utilisateur utiliseront cette disposition."
+        },
+        "currentuser": {
+          "success": "Disposition deployee pour l'utilisateur actuel : {TargetPath}",
+          "info": "Veuillez verifier votre menu Demarrer. Si les modifications n'apparaissent pas, deconnectez-vous puis reconnectez-vous."
+        },
+        "starting": "Deploiement de la disposition du menu Demarrer...",
+        "success": "\nDisposition deployee avec succes !",
+        "error": "Erreur lors du deploiement de la disposition : {ErrorMessage}"
+      },
+      "restart": {
+        "starting": "Redemarrage de l'experience du menu Demarrer...",
+        "success": "Menu Demarrer redemarre avec succes",
+        "failed": "Impossible de redemarrer le menu Demarrer automatiquement. Veuillez vous deconnecter puis vous reconnecter."
+      },
+      "organization": {
+        "starting": "Demarrage de l'organisation du menu Demarrer (methode LayoutModification.json)..."
+      },
+      "shortcuts": {
+        "scanning": "Analyse des raccourcis du bureau...",
+        "notfound": "Aucun raccourci de bureau trouve",
+        "found": "{Count} raccourcis de bureau trouves"
+      },
+      "json": {
+        "generating": "Generation du fichier LayoutModification.json..."
+      },
+      "summary": {
+        "header": "\n=== Resume de l'organisation du menu Demarrer ===",
+        "total": "Total des raccourcis traites : {Total}",
+        "copied": "Copies avec succes : {Copied}",
+        "skipped": "Ignores (exclus) : {Skipped}",
+        "failed": "Echoues : {Failed}",
+        "categories": {
+          "header": "\nCategories creees :",
+          "item": "  - {Category} ({Count} applications)"
+        }
+      }
+    }
   },
   "validation": {
     "url": {
@@ -661,6 +836,14 @@
     "checksum": {
       "mismatch": "Checksum non concordant - Attendu : {Expected}, Obtenu : {Actual}",
       "algorithm": "Utilisation de {Algorithm} pour la validation"
+    },
+    "schema": {
+      "file_not_found": "Fichier de schema introuvable : {Path}",
+      "invalid_json": "JSON invalide : {Error}",
+      "invalid_schema": "Schema invalide : {Error}",
+      "validation_error": "Erreur de validation a '{Path}' : {Message}",
+      "type_mismatch": "Type attendu '{Expected}' mais recu '{Actual}' a '{Path}'",
+      "required_missing": "La propriete requise '{Property}' est manquante a '{Path}'"
     }
   },
   "test": {
@@ -1150,7 +1333,54 @@
     "summary_title": "Résumé du rollback",
     "apps_to_rollback": "Applications à restaurer : {Count}",
     "report_exported": "Rapport de rollback exporté : {Path}",
-    "test_capability": "Test de la capacité de rollback pour {AppName}"
+    "test_capability": "Test de la capacité de rollback pour {AppName}",
+    "config": {
+      "loaded": "Configuration de rollback chargee depuis {Path}",
+      "loadFailed": "Echec du chargement de la configuration de rollback, utilisation des valeurs par defaut : {Error}"
+    },
+    "handler": {
+      "unregistered": "Handler d'echec critique desenregistre : {Name}",
+      "failed": "Le handler {Name} a echoue : {Error}"
+    },
+    "reason": {
+      "criticalFailure": "Echec critique detecte",
+      "thresholdReached": "Seuil d'echecs atteint ({Count} echecs)"
+    },
+    "failureCount": {
+      "reset": "Compteur d'echecs reinitialise a 0"
+    },
+    "noApps": {
+      "toRollback": "Aucune application a restaurer"
+    },
+    "completed": "Rollback termine",
+    "functionNotAvailable": "Fonction de rollback non disponible",
+    "failed": "Echec du rollback : {Error}",
+    "error": {
+      "unknown": "Erreur inconnue"
+    },
+    "report": {
+      "title": "RAPPORT DE ROLLBACK WIN11FORGE",
+      "generated": "Genere le : {Timestamp}",
+      "computer": "Ordinateur : {Name}",
+      "user": "Utilisateur : {Name}",
+      "sessionInfo": "INFORMATIONS DE SESSION",
+      "sessionId": "ID de session : {SessionId}",
+      "startTime": "Heure de debut : {Time}",
+      "appsInstalled": "Applications installees : {Count}",
+      "rollbackable": "Restaurables : {Count}",
+      "configSection": "CONFIGURATION",
+      "autoRollbackEnabled": "Rollback automatique active : {Value}",
+      "failureThreshold": "Seuil d'echecs : {Value}",
+      "requireConfirmation": "Confirmation requise : {Value}",
+      "confirmationTimeout": "Delai de confirmation : {Value}s",
+      "statusSection": "ETAT ACTUEL",
+      "consecutiveFailures": "Echecs consecutifs : {Count}",
+      "registeredHandlers": "Handlers enregistres : {Count}",
+      "applicationsSection": "APPLICATIONS",
+      "appMethod": "Methode : {Method}",
+      "appPackageId": "ID du package : {PackageId}",
+      "appCanRollback": "Restauration possible : {Value}"
+    }
   },
   "structuredLogging": {
     "initialized": "Logging structuré initialisé",
@@ -1300,8 +1530,9 @@
     "apps_installed": "Applications installées : {Count}",
     "avg_deployment_time": "Temps moyen de déploiement : {Time}",
     "report_exported": "Rapport de télémétrie exporté : {Path}",
-    "data_cleared": "Données de télémétrie effacées",
-    "dashboard_opened": "Ouverture du tableau de bord de télémétrie..."
+    "data_cleared": "Donnees de telemetrie effacees",
+    "dashboard_opened": "Ouverture du tableau de bord de télémétrie...",
+    "clear_requires_confirm": "Utilisez -Confirm pour effacer toutes les donnees de telemetrie"
   },
   "userProfiles": {
     "saved": "Profil sauvegardé : {Name}",
@@ -1350,7 +1581,41 @@
       "load_validation": "Validation du chargement du plugin : {Name}",
       "load_timed_out": "Validation du chargement expirée après {Timeout}s",
       "available": "Le sandboxing des plugins est disponible",
-      "not_available": "Le sandboxing des plugins n'est pas disponible"
+      "not_available": "Le sandboxing des plugins n'est pas disponible",
+      "timeout_module": {
+        "load_failed": "Echec du chargement du module TimeoutSettings : {Error}"
+      },
+      "validation": {
+        "parse_errors": "Le script contient des erreurs d'analyse : {Error}",
+        "dangerous_command": "Commande dangereuse bloquee : {Command}",
+        "dangerous_type": "Type dangereux bloque : {TypeName}",
+        "dangerous_member": "Invocation de membre dangereuse bloquee : {Expression}",
+        "ast_error": "Erreur de validation AST : {Error}"
+      },
+      "security": {
+        "handler_blocked": "Gestionnaire de plugin bloque par la validation de securite : {Errors}",
+        "plugin_blocked": "Plugin '{Name}' bloque : {Error}",
+        "module_blocked": "Module du plugin bloque par la validation de securite AST : {Errors}",
+        "load_blocked": "Chargement du plugin '{Name}' bloque : {Error}",
+        "job_parse_errors": "Securite : Le gestionnaire contient des erreurs d'analyse dans le contexte du job",
+        "job_blocked_command": "Securite : Commande bloquee detectee dans le contexte du job : {Command}",
+        "job_blocked_type": "Securite : Type bloque detecte dans le contexte du job : {TypeName}",
+        "job_module_parse_errors": "Securite : Le module contient des erreurs d'analyse dans le contexte du job",
+        "job_module_blocked_command": "Securite : Commande bloquee detectee dans le module : {Command}",
+        "job_module_blocked_type": "Securite : Type bloque detecte dans le module : {TypeName}",
+        "job_module_blocked_member": "Securite : Invocation de membre bloquee dans le module : {Expression}"
+      },
+      "execution": {
+        "timed_out": "L'execution du plugin a expire apres {Timeout} secondes",
+        "failed": "Le plugin '{Name}' a echoue : {Error}",
+        "output_error": "Echec de la recuperation de la sortie du job : {Error}",
+        "plugin_output_error": "Erreur de sortie du plugin '{Name}' : {Error}"
+      },
+      "hook": {
+        "invoking": "Invocation du hook sandbox '{Hook}' depuis le plugin '{Name}'",
+        "timed_out": "Le hook '{Hook}' a expire pour le plugin '{Name}'",
+        "failed": "Le hook '{Hook}' a echoue pour le plugin '{Name}' : {Error}"
+      }
     }
   },
   "state": {
@@ -1620,6 +1885,30 @@
       "dangerous_character": "Sécurité : L'URL contient un caractère potentiellement dangereux : {Character}",
       "invalid_scheme": "Sécurité : Schéma URL invalide (doit être http ou https) : {Scheme}",
       "malformed_url": "Sécurité : URL malformée : {Url}"
+    },
+    "storage": {
+      "acl_set": "ACL restrictive appliquee sur : {Path}",
+      "acl_failed": "Impossible d'appliquer l'ACL sur {Path} : {Error}",
+      "mutex_timeout": "Impossible d'acquerir le mutex d'entropie dans le delai, poursuite sans verrou",
+      "entropy_regenerating": "Regeneration du fichier d'entropie (longueur invalide : {Length})",
+      "entropy_not_found": "Fichier d'entropie introuvable, creation d'un nouveau",
+      "entropy_dir_not_found": "Repertoire d'entropie introuvable, creation d'un nouveau",
+      "entropy_read_failed": "Echec de la lecture du fichier d'entropie, regeneration : {Error}",
+      "entropy_persist_failed": "Impossible de persister le fichier d'entropie : {Error}",
+      "encrypt_failed": "Echec du chiffrement des donnees : {Error}",
+      "decrypt_failed": "Echec du dechiffrement des donnees : {Error}",
+      "api_key_saved": "Cle API '{KeyId}' enregistree de maniere securisee",
+      "api_key_save_failed": "Echec de l'enregistrement de la cle API : {Error}",
+      "api_keys_load_failed": "Impossible de charger les cles API securisees : {Error}",
+      "api_key_removed": "Cle API '{KeyId}' supprimee",
+      "api_key_remove_failed": "Echec de la suppression de la cle API : {Error}",
+      "api_keys_auth_failed": "Impossible de charger les cles API pour l'authentification : {Error}",
+      "read_failed": "Echec de la lecture du stockage securise (creation d'un nouveau) : {Error}",
+      "data_saved": "Donnee securisee '{Key}' enregistree",
+      "data_save_failed": "Echec de l'enregistrement des donnees securisees : {Error}",
+      "data_retrieve_failed": "Impossible de recuperer les donnees securisees : {Error}",
+      "data_removed": "Donnee securisee '{Key}' supprimee",
+      "data_remove_failed": "Echec de la suppression des donnees securisees : {Error}"
     }
   },
   "A11y_Logs_ViewLog": "Voir le fichier journal",
@@ -1660,5 +1949,71 @@
   "Detection_InvalidExpandedPath": "Chemin invalide après expansion des variables d'environnement",
   "Detection_InvalidCommandPath": "Chemin de commande invalide : contient des caractères potentiellement dangereux",
   "Detection_CommandTimeout": "La commande a expiré après 5 secondes",
-  "Common_OK": "OK"
+  "Common_OK": "OK",
+  "database": {
+    "localization": {
+      "import_failed": "Echec de l'importation du module de localisation : {Error}"
+    },
+    "filewatcher": {
+      "already_enabled": "Le surveillant de fichier de la base de donnees est deja active",
+      "cache_invalidated": "Fichier de base de donnees modifie - cache invalide",
+      "enabled": "Surveillant de fichier de la base de donnees active pour : {Path}",
+      "enable_failed": "Impossible d'activer le surveillant de fichier de la base de donnees : {Error}",
+      "disabled": "Surveillant de fichier de la base de donnees desactive",
+      "disable_failed": "Impossible de desactiver le surveillant de fichier de la base de donnees : {Error}"
+    },
+    "cache": {
+      "cleared": "Cache de la base de donnees vide"
+    },
+    "load": {
+      "not_found": "Base de donnees des applications introuvable a : {Path}",
+      "success": "Base de donnees chargee : {Count} applications",
+      "failed": "Echec du chargement de la base de donnees des applications : {Error}",
+      "failed_short": "Echec du chargement de la base de donnees"
+    },
+    "application": {
+      "not_found": "Application '{AppId}' introuvable dans la base de donnees",
+      "not_found_short": "Application introuvable : {AppId}"
+    },
+    "validation": {
+      "priority_invalid": "La priorite doit etre un entier valide, recu : {Value} ({Type})",
+      "required_invalid": "Required doit etre un booleen valide (true/false/0/1), recu : {Value} ({Type})",
+      "appid_required": "L'identifiant de l'application est requis",
+      "appid_format": "L'identifiant de l'application doit commencer par une lettre et ne contenir que des lettres, chiffres, points, tirets et underscores",
+      "appid_exists": "L'identifiant d'application '{AppId}' existe deja",
+      "name_required": "Le nom de l'application est requis",
+      "category_required": "La categorie est requise",
+      "source_required": "Au moins une source d'installation est requise",
+      "directurl_format": "L'URL directe doit etre une URL HTTP ou HTTPS valide",
+      "homepage_format": "La page d'accueil doit etre une URL HTTP ou HTTPS valide",
+      "priority_range": "La priorite doit etre comprise entre 1 et 100"
+    },
+    "validate": {
+      "not_loaded": "Impossible de valider : base de donnees non chargee",
+      "progress_activity": "Validation des sources d'applications",
+      "progress_status": "Test de {AppName} ({Current}/{Total})",
+      "winget_not_found": "Identifiant Winget introuvable : {WingetId}",
+      "winget_test_failed": "Echec du test Winget : {Error}",
+      "choco_not_found": "Paquet Chocolatey introuvable : {ChocoId}",
+      "choco_test_failed": "Echec du test Chocolatey : {Error}"
+    },
+    "dependency": {
+      "circular_detected": "Dependance circulaire detectee impliquant : {AppId}"
+    },
+    "backup": {
+      "created": "Sauvegarde de la base de donnees creee : {Path}",
+      "removed_old": "Ancienne sauvegarde supprimee : {FileName}",
+      "create_failed": "Echec de la creation de la sauvegarde : {Error}",
+      "file_not_found": "Fichier de sauvegarde introuvable : {Path}",
+      "invalid_format": "Format de fichier de sauvegarde invalide : {Error}",
+      "restore_success": "Base de donnees restauree avec succes a partir de la sauvegarde"
+    },
+    "import": {
+      "file_not_found": "Fichier introuvable : {Path}",
+      "no_applications": "Aucune application trouvee dans le fichier d'importation"
+    },
+    "export": {
+      "failed": "Echec de l'exportation : {Error}"
+    }
+  }
 }

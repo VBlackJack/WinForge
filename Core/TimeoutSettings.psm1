@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Timeout Settings v3.6.8
+    Win11Forge - Timeout Settings v3.7.1
 
 .DESCRIPTION
     Provides centralized timeout configuration loading for Win11Forge:
@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -216,6 +216,9 @@ function Get-InstallationTimeout {
     <#
     .SYNOPSIS
         Gets the installation timeout for a specific application.
+    .DESCRIPTION
+        Returns the appropriate timeout in seconds for installing an application.
+        Office-related applications receive a longer timeout due to their larger install footprint.
     .PARAMETER AppName
         Name of the application (used to detect Office apps).
     .OUTPUTS
@@ -244,6 +247,8 @@ function Get-ParallelTimeout {
     <#
     .SYNOPSIS
         Gets the parallel installation timeout in milliseconds.
+    .DESCRIPTION
+        Retrieves the configured timeout for parallel installation jobs from the centralized timeout settings.
     .OUTPUTS
         Timeout in milliseconds.
     #>
@@ -259,6 +264,8 @@ function Get-MaxParallelJobs {
     <#
     .SYNOPSIS
         Gets the maximum number of parallel installation jobs.
+    .DESCRIPTION
+        Retrieves the configured throttle limit for concurrent installation jobs from the centralized timeout settings.
     .OUTPUTS
         Maximum parallel jobs.
     #>
@@ -274,6 +281,8 @@ function Get-DownloadTimeout {
     <#
     .SYNOPSIS
         Gets the download timeout in seconds.
+    .DESCRIPTION
+        Retrieves the configured timeout for file download operations from the centralized timeout settings.
     .OUTPUTS
         Timeout in seconds.
     #>
@@ -289,6 +298,9 @@ function Get-CacheTtl {
     <#
     .SYNOPSIS
         Gets cache TTL settings.
+    .DESCRIPTION
+        Returns the time-to-live duration in minutes for a specified cache type (Registry, Winget, or Search),
+        controlling how long cached detection results remain valid before requiring a refresh.
     .PARAMETER CacheType
         Type of cache (Registry, Winget, Search).
     .OUTPUTS
@@ -315,6 +327,9 @@ function Get-PluginTimeout {
     <#
     .SYNOPSIS
         Gets plugin timeout settings.
+    .DESCRIPTION
+        Returns the configured timeout in seconds for plugin operations, distinguishing between
+        plugin execution timeouts and plugin load timeouts.
     .PARAMETER Operation
         Type of operation (Execution, Load).
     .OUTPUTS
@@ -340,6 +355,9 @@ function Get-ApiTimeout {
     <#
     .SYNOPSIS
         Gets API timeout settings.
+    .DESCRIPTION
+        Returns the configured timeout in milliseconds for REST API operations, distinguishing between
+        request processing timeouts and server shutdown timeouts.
     .PARAMETER Operation
         Type of operation (Request, Shutdown).
     .OUTPUTS

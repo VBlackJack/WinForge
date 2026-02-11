@@ -69,13 +69,9 @@ if (-not (Get-Command -Name Register-ApiEndpoint -ErrorAction SilentlyContinue))
     }
 }
 
-# Import JsonSchemaValidation module for schema validation
+# JsonSchemaValidation module path (lazy-loaded on first API validation request)
 $script:JsonSchemaValidationPath = Join-Path $script:RepositoryRoot 'Modules\JsonSchemaValidation.psm1'
-if (-not (Get-Command -Name Test-JsonAgainstSchema -ErrorAction SilentlyContinue)) {
-    if (Test-Path -Path $script:JsonSchemaValidationPath) {
-        Import-Module -Name $script:JsonSchemaValidationPath -Force
-    }
-}
+$script:JsonSchemaValidationLoaded = $false
 
 # === JSON VALIDATION HELPER ===
 
@@ -83,6 +79,13 @@ function Test-ApiRequestBody {
     <#
     .SYNOPSIS
         Validates an API request body against a JSON schema.
+
+    .DESCRIPTION
+        Converts the parsed request body to JSON and validates it against the specified
+        schema file using the JsonSchemaValidation module. Lazy-loads the validation
+        module on first use and skips validation gracefully when the schema file is not
+        found.
+
     .PARAMETER Body
         The parsed request body object.
     .PARAMETER SchemaName
@@ -121,6 +124,14 @@ function Test-ApiRequestBody {
             return $result
         }
 
+        # Lazy-load JsonSchemaValidation module on first use (Modules dependency)
+        if (-not $script:JsonSchemaValidationLoaded -and -not (Get-Command -Name Test-JsonAgainstSchema -ErrorAction SilentlyContinue)) {
+            if (Test-Path -Path $script:JsonSchemaValidationPath) {
+                Import-Module -Name $script:JsonSchemaValidationPath -Force -ErrorAction SilentlyContinue
+            }
+            $script:JsonSchemaValidationLoaded = $true
+        }
+
         if (Get-Command -Name Test-JsonAgainstSchema -ErrorAction SilentlyContinue) {
             $schemaValidation = Test-JsonAgainstSchema -JsonContent $jsonString -SchemaPath $schemaPath
             if (-not $schemaValidation.IsValid) {
@@ -142,6 +153,13 @@ function Test-JsonFileValid {
     <#
     .SYNOPSIS
         Validates a JSON file and optionally validates against a schema.
+
+    .DESCRIPTION
+        Reads and parses a JSON file to verify it contains valid JSON syntax. When
+        a SchemaName is provided, additionally validates the parsed content against
+        the specified JSON Schema. Returns a result hashtable with validity status,
+        parsed data, and any error messages.
+
     .PARAMETER FilePath
         Path to the JSON file to validate.
     .PARAMETER SchemaName
@@ -172,6 +190,14 @@ function Test-JsonFileValid {
 
         $jsonContent = Get-Content -Path $FilePath -Raw -ErrorAction Stop
         $result.Data = $jsonContent | ConvertFrom-Json -ErrorAction Stop
+
+        # Lazy-load JsonSchemaValidation module on first use (Modules dependency)
+        if ($SchemaName -and -not $script:JsonSchemaValidationLoaded -and -not (Get-Command -Name Test-JsonAgainstSchema -ErrorAction SilentlyContinue)) {
+            if (Test-Path -Path $script:JsonSchemaValidationPath) {
+                Import-Module -Name $script:JsonSchemaValidationPath -Force -ErrorAction SilentlyContinue
+            }
+            $script:JsonSchemaValidationLoaded = $true
+        }
 
         # Optional schema validation
         if ($SchemaName -and (Get-Command -Name Test-JsonAgainstSchema -ErrorAction SilentlyContinue)) {
@@ -767,6 +793,12 @@ function Update-DeploymentState {
     <#
     .SYNOPSIS
         Updates the deployment state (called by InstallationEngine).
+
+    .DESCRIPTION
+        Modifies the shared deployment state tracked by the API server, allowing the
+        installation engine to report progress in real time. Updates any combination
+        of status, progress percentage, current application name, and error message
+        so that API clients can poll for deployment progress.
 
     .PARAMETER Status
         New status value.

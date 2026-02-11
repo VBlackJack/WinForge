@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - JSON Schema Validation Module v3.6.8
+    Win11Forge - JSON Schema Validation Module v3.7.1
 
 .DESCRIPTION
     Module for validating JSON files against JSON Schema definitions:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Requires: PowerShell 5.1+
 #>
 
@@ -92,6 +92,10 @@ function Test-JsonSyntax {
     <#
     .SYNOPSIS
         Tests if a file contains valid JSON syntax.
+    .DESCRIPTION
+        Attempts to parse the specified file as JSON and reports whether the syntax is valid.
+        Includes security checks for file existence and maximum file size to prevent denial
+        of service from oversized inputs.
 
     .PARAMETER Path
         Path to the JSON file to validate.
@@ -175,7 +179,7 @@ function Test-JsonAgainstSchema {
     }
 
     if (-not (Test-Path $SchemaPath)) {
-        $result.AddError("Schema file not found: $SchemaPath")
+        $result.AddError((t 'validation.schema.file_not_found' @{ Path = $SchemaPath }))
         return $result
     }
 
@@ -218,6 +222,9 @@ function script:Get-SchemaProperty {
     <#
     .SYNOPSIS
         Safely gets a property from a schema object.
+    .DESCRIPTION
+        Retrieves a named property from a schema that may be either a PSCustomObject or a
+        hashtable, returning null if the property does not exist or the schema is null.
     #>
     param($Schema, [string]$PropertyName)
 
@@ -235,6 +242,10 @@ function Test-ObjectAgainstSchema {
     <#
     .SYNOPSIS
         Recursively validates an object against a JSON Schema.
+    .DESCRIPTION
+        Performs recursive validation of a PowerShell object against a JSON Schema Draft 7
+        definition, checking type constraints, required properties, additional properties,
+        array items, enum values, pattern matching, and oneOf combinators.
     #>
     [CmdletBinding()]
     param(
@@ -254,7 +265,7 @@ function Test-ObjectAgainstSchema {
     if ($null -eq $Object) {
         $schemaType = Get-SchemaProperty -Schema $Schema -PropertyName 'type'
         if ($schemaType -and $schemaType -ne 'null') {
-            $errors += "[$Path] Expected type '$schemaType', got null"
+            $errors += (t 'validation.schema.type_mismatch' @{ Expected = $schemaType; Actual = 'null'; Path = $Path })
         }
         return $errors
     }
@@ -266,7 +277,7 @@ function Test-ObjectAgainstSchema {
         $expectedTypes = if ($schemaType -is [array]) { $schemaType } else { @($schemaType) }
 
         if ($actualType -notin $expectedTypes) {
-            $errors += "[$Path] Expected type '$($expectedTypes -join ' or ')', got '$actualType'"
+            $errors += (t 'validation.schema.type_mismatch' @{ Expected = ($expectedTypes -join ' or '); Actual = $actualType; Path = $Path })
             return $errors
         }
     }
@@ -278,7 +289,7 @@ function Test-ObjectAgainstSchema {
         if ($requiredProps) {
             foreach ($requiredProp in $requiredProps) {
                 if (-not ($Object.PSObject.Properties.Name -contains $requiredProp)) {
-                    $errors += "[$Path] Missing required property: $requiredProp"
+                    $errors += (t 'validation.schema.required_missing' @{ Property = $requiredProp; Path = $Path })
                 }
             }
         }
@@ -392,6 +403,9 @@ function Get-JsonType {
     <#
     .SYNOPSIS
         Gets the JSON type name for a PowerShell value.
+    .DESCRIPTION
+        Maps a PowerShell value to its corresponding JSON Schema type name (null, boolean,
+        string, array, integer, number, or object) for use during schema validation.
     #>
     [CmdletBinding()]
     param(
@@ -436,6 +450,10 @@ function Test-DeploymentProfile {
     <#
     .SYNOPSIS
         Validates a deployment profile against the schema.
+    .DESCRIPTION
+        Validates a deployment profile JSON file against the profile JSON Schema definition.
+        Returns a validation result indicating whether the profile conforms to the expected
+        structure and constraints.
 
     .PARAMETER ProfilePath
         Path to the profile JSON file.
@@ -456,7 +474,7 @@ function Test-DeploymentProfile {
     if (-not (Test-Path $script:ProfileSchemaPath)) {
         $result = [JsonValidationResult]::new()
         $result.FilePath = $ProfilePath
-        $result.AddError("Profile schema not found: $script:ProfileSchemaPath")
+        $result.AddError((t 'validation.schema.file_not_found' @{ Path = $script:ProfileSchemaPath }))
         return $result
     }
 
@@ -467,6 +485,9 @@ function Test-ApplicationsDatabase {
     <#
     .SYNOPSIS
         Validates the applications database against the schema.
+    .DESCRIPTION
+        Validates the applications database JSON file against the database JSON Schema
+        definition. Defaults to the standard database location if no path is provided.
 
     .PARAMETER DatabasePath
         Path to the applications database JSON file. Defaults to standard location.
@@ -491,7 +512,7 @@ function Test-ApplicationsDatabase {
     if (-not (Test-Path $script:DatabaseSchemaPath)) {
         $result = [JsonValidationResult]::new()
         $result.FilePath = $DatabasePath
-        $result.AddError("Database schema not found: $script:DatabaseSchemaPath")
+        $result.AddError((t 'validation.schema.file_not_found' @{ Path = $script:DatabaseSchemaPath }))
         return $result
     }
 
@@ -502,6 +523,10 @@ function Test-AllProfiles {
     <#
     .SYNOPSIS
         Validates all profiles in the Profiles directory.
+    .DESCRIPTION
+        Iterates over all JSON files in the specified profiles directory and validates each
+        one against the profile schema, returning an array of validation results that can
+        be filtered to identify invalid profiles.
 
     .PARAMETER ProfilesDirectory
         Directory containing profile JSON files. Defaults to standard location.

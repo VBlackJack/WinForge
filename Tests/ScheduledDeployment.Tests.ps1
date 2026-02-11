@@ -46,6 +46,16 @@ BeforeAll {
         Import-Module $script:CorePath -Force -ErrorAction Stop
     }
 
+    # Import Localization (provides Get-LocalizedString / t alias)
+    $script:LocalizationPath = Join-Path $PSScriptRoot '..\Core\Localization.psm1'
+    if (Test-Path $script:LocalizationPath) {
+        Import-Module $script:LocalizationPath -Force -ErrorAction Stop
+    }
+
+    if (Get-Command -Name Initialize-Localization -ErrorAction SilentlyContinue) {
+        Initialize-Localization -Locale 'en'
+    }
+
     # Import ScheduledDeployment
     Import-Module $script:ScheduledDeploymentPath -Force -ErrorAction Stop
 

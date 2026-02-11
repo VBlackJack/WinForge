@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Telemetry Collector v3.6.8
+    Win11Forge - Telemetry Collector v3.7.1
 
 .DESCRIPTION
     Collects and manages local deployment telemetry for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Privacy: All telemetry data is stored locally and never transmitted.
 #>
 
@@ -38,12 +38,28 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
-$script:TelemetryPath = Join-Path $env:LOCALAPPDATA 'Win11Forge\telemetry.json'
+# Import DirectoryConstants for path management
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
+    }
+}
+
+$script:TelemetryPath = Get-StatePath -PathKey 'TelemetryData'
 
 # Import Core module for logging
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
         Import-Module -Name $script:CoreModulePath -Force
+    }
+}
+
+# Import Localization module for i18n support
+$script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force
     }
 }
 
@@ -169,6 +185,10 @@ function Save-TelemetryData {
     <#
     .SYNOPSIS
         Saves telemetry data to disk.
+    .DESCRIPTION
+        Serializes the in-memory telemetry data structure to a JSON file on disk,
+        creating the parent directory if it does not exist. Failures are logged as
+        verbose messages without interrupting execution.
     #>
     [CmdletBinding()]
     param()
@@ -194,6 +214,10 @@ function Register-DeploymentStart {
     <#
     .SYNOPSIS
         Records the start of a deployment session.
+    .DESCRIPTION
+        Creates a new deployment session record in the telemetry data, generates a unique
+        session ID if not provided, increments the total deployment count, and tracks
+        profile usage frequency.
 
     .PARAMETER ProfileName
         Name of the profile being deployed.
@@ -250,6 +274,9 @@ function Register-DeploymentEnd {
     <#
     .SYNOPSIS
         Records the end of a deployment session.
+    .DESCRIPTION
+        Finalizes a deployment session record by setting the end time, calculating duration,
+        and updating the success, failure, or rollback counters in the telemetry data.
 
     .PARAMETER SessionId
         Session identifier from Register-DeploymentStart.
@@ -316,6 +343,11 @@ function Register-ApplicationInstall {
     <#
     .SYNOPSIS
         Records an application installation.
+    .DESCRIPTION
+        Tracks an individual application installation in the telemetry data, updating
+        counters by installation method, category, and top-installed rankings. Failed
+        installations are tracked separately, and session-level counters are updated when
+        a session ID is provided.
 
     .PARAMETER AppName
         Name of the application.
@@ -411,6 +443,10 @@ function Get-TelemetrySummary {
     <#
     .SYNOPSIS
         Returns a summary of telemetry data.
+    .DESCRIPTION
+        Aggregates and formats the telemetry data into a structured summary including
+        deployment totals with success rates, top installed applications, installation
+        method breakdown, and profile usage statistics.
 
     .OUTPUTS
         PSCustomObject with telemetry summary.
@@ -476,6 +512,10 @@ function Export-TelemetryReport {
     <#
     .SYNOPSIS
         Exports telemetry data for the dashboard.
+    .DESCRIPTION
+        Generates a JSON file containing telemetry summary data with chart-friendly
+        structures for deployment pie charts, method/category bar charts, and top
+        applications rankings, suitable for consumption by the HTML dashboard.
 
     .PARAMETER OutputPath
         Path for the output JSON file.
@@ -538,6 +578,9 @@ function Clear-TelemetryData {
     <#
     .SYNOPSIS
         Clears all telemetry data.
+    .DESCRIPTION
+        Resets all telemetry data to a fresh initial state and persists the empty structure
+        to disk. Requires the Confirm switch to prevent accidental data loss.
 
     .PARAMETER Confirm
         Requires confirmation.
@@ -552,7 +595,7 @@ function Clear-TelemetryData {
     )
 
     if (-not $Confirm) {
-        Write-Warning "Use -Confirm to clear all telemetry data"
+        Write-Warning (Get-LocalizedString -Key 'telemetry.clear_requires_confirm')
         return
     }
 
@@ -585,7 +628,7 @@ function Clear-TelemetryData {
     }
 
     Save-TelemetryData
-    Write-Status -Message "Telemetry data cleared" -Level 'Info' -Category 'Telemetry'
+    Write-Status -Message (Get-LocalizedString -Key 'telemetry.data_cleared') -Level 'Info' -Category 'Telemetry'
 }
 
 # === MODULE EXPORTS ===

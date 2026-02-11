@@ -1,9 +1,9 @@
-﻿<#
+<#
 .SYNOPSIS
     Pester tests for StructuredLogging module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge StructuredLogging v3.6.8
+    Comprehensive unit tests for Win11Forge StructuredLogging v3.7.1
     Tests JSON logging, buffering, export filtering, retention cleanup,
     compression, query logic, request ID correlation, and archiving functions
 
@@ -34,6 +34,13 @@ BeforeAll {
     $script:ModulePath = Join-Path $script:ModuleRoot 'StructuredLogging.psm1'
 
     Import-Module $script:ModulePath -Force -ErrorAction Stop
+
+    # Import Localization for t alias
+    $script:LocalizationPath = Join-Path $script:ModuleRoot 'Localization.psm1'
+    if (Test-Path $script:LocalizationPath) {
+        Import-Module $script:LocalizationPath -Force -ErrorAction Stop
+        Initialize-Localization -Locale 'en'
+    }
 }
 
 Describe 'StructuredLogging Module' {
@@ -570,7 +577,9 @@ Describe 'StructuredLogging Module' {
             $count = Export-LogsToJson -OutputPath $outputPath
             $exported = Get-Content -Path $outputPath -Raw | ConvertFrom-Json
             for ($i = 1; $i -lt $exported.Count; $i++) {
-                [datetime]::Parse($exported[$i].timestamp) | Should -BeGreaterOrEqual ([datetime]::Parse($exported[$i - 1].timestamp))
+                $ts1 = if ($exported[$i].timestamp -is [datetime]) { $exported[$i].timestamp } else { [datetimeoffset]::Parse($exported[$i].timestamp).LocalDateTime }
+                $ts0 = if ($exported[$i - 1].timestamp -is [datetime]) { $exported[$i - 1].timestamp } else { [datetimeoffset]::Parse($exported[$i - 1].timestamp).LocalDateTime }
+                $ts1 | Should -BeGreaterOrEqual $ts0
             }
         }
     }

@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://win11forge.local/schemas/rollback-settings.schema.json",
+  "title": "Win11Forge Rollback Settings",
+  "description": "Schema for the Win11Forge rollback system configuration governing automatic rollback behavior and failure reporting",
+  "type": "object",
+  "required": ["autoRollbackEnabled", "autoRollbackThreshold", "rollbackMethods"],
+  "additionalProperties": true,
+  "properties": {
+    "_meta": {
+      "type": "object",
+      "description": "Metadata about the configuration file",
+      "properties": {
+        "description": { "type": "string" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "author": { "type": "string" },
+        "lastUpdated": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+      }
+    },
+    "autoRollbackEnabled": {
+      "type": "boolean",
+      "description": "Whether automatic rollback is triggered after consecutive failures",
+      "default": true
+    },
+    "autoRollbackThreshold": {
+      "type": "integer",
+      "description": "Number of consecutive failures before automatic rollback is triggered",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 3
+    },
+    "requireConfirmation": {
+      "type": "boolean",
+      "description": "Whether user confirmation is required before executing a rollback",
+      "default": true
+    },
+    "confirmationTimeoutSeconds": {
+      "type": "integer",
+      "description": "Timeout in seconds for rollback confirmation prompts before auto-proceeding",
+      "minimum": 5,
+      "maximum": 300,
+      "default": 30
+    },
+    "criticalFailurePatterns": {
+      "type": "array",
+      "description": "Regex patterns that identify critical system failures requiring immediate rollback",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "rollbackMethods": {
+      "type": "object",
+      "description": "Classification of installation methods by rollback support",
+      "additionalProperties": false,
+      "required": ["supported", "unsupported"],
+      "properties": {
+        "supported": {
+          "type": "array",
+          "description": "Installation methods that support automatic rollback (uninstall)",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "unsupported": {
+          "type": "array",
+          "description": "Installation methods that do not support automatic rollback",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "reporting": {
+      "type": "object",
+      "description": "Rollback failure report configuration",
+      "additionalProperties": false,
+      "properties": {
+        "autoExportOnFailure": {
+          "type": "boolean",
+          "description": "Automatically export a failure report when rollback occurs",
+          "default": false
+        },
+        "reportDirectory": {
+          "type": "string",
+          "description": "Directory path for rollback failure reports (supports environment variable expansion)",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "defaultFormat": {
+          "type": "string",
+          "description": "Default export format for rollback reports",
+          "enum": ["Json", "Csv", "Xml", "Html"],
+          "default": "Json"
+        }
+      }
+    }
+  }
+}

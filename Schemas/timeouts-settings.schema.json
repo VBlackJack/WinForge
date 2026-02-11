@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://win11forge.local/schemas/timeouts-settings.schema.json",
+  "title": "Win11Forge Timeout Settings",
+  "description": "Schema for Win11Forge operation timeout configuration (Config/timeouts-settings.json)",
+  "type": "object",
+  "required": ["installation", "parallel", "download", "detection", "api", "plugin"],
+  "additionalProperties": false,
+  "properties": {
+    "_meta": {
+      "$ref": "#/$defs/Meta"
+    },
+    "installation": {
+      "type": "object",
+      "description": "Installation operation timeouts",
+      "required": ["defaultTimeoutSeconds", "officeTimeoutSeconds"],
+      "additionalProperties": false,
+      "properties": {
+        "defaultTimeoutSeconds": {
+          "type": "integer",
+          "description": "Default installation timeout in seconds",
+          "minimum": 60,
+          "maximum": 7200
+        },
+        "officeTimeoutSeconds": {
+          "type": "integer",
+          "description": "Extended timeout for Office Click-to-Run installations in seconds",
+          "minimum": 60,
+          "maximum": 7200
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "parallel": {
+      "type": "object",
+      "description": "Parallel job execution settings",
+      "required": ["timeoutMilliseconds", "maxParallelJobs", "jobCheckIntervalSeconds"],
+      "additionalProperties": false,
+      "properties": {
+        "timeoutMilliseconds": {
+          "type": "integer",
+          "description": "Timeout for parallel job cleanup in milliseconds",
+          "minimum": 10000,
+          "maximum": 3600000
+        },
+        "maxParallelJobs": {
+          "type": "integer",
+          "description": "Maximum number of concurrent parallel installation jobs",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "jobCheckIntervalSeconds": {
+          "type": "integer",
+          "description": "Interval between parallel job status checks in seconds",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "download": {
+      "type": "object",
+      "description": "Download operation timeout and retry settings",
+      "required": ["timeoutSeconds", "retryDelaySeconds", "maxRetries"],
+      "additionalProperties": false,
+      "properties": {
+        "timeoutSeconds": {
+          "type": "integer",
+          "description": "Download timeout in seconds",
+          "minimum": 10,
+          "maximum": 3600
+        },
+        "retryDelaySeconds": {
+          "type": "integer",
+          "description": "Delay between retry attempts in seconds",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "maxRetries": {
+          "type": "integer",
+          "description": "Maximum number of retry attempts",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "detection": {
+      "type": "object",
+      "description": "Application detection cache TTL settings",
+      "required": ["registryCacheTtlMinutes", "wingetCacheTtlMinutes", "searchCacheTtlMinutes"],
+      "additionalProperties": false,
+      "properties": {
+        "registryCacheTtlMinutes": {
+          "type": "integer",
+          "description": "Registry detection cache time-to-live in minutes",
+          "minimum": 1,
+          "maximum": 1440
+        },
+        "wingetCacheTtlMinutes": {
+          "type": "integer",
+          "description": "Winget list cache time-to-live in minutes",
+          "minimum": 1,
+          "maximum": 1440
+        },
+        "searchCacheTtlMinutes": {
+          "type": "integer",
+          "description": "Search cache time-to-live in minutes",
+          "minimum": 1,
+          "maximum": 1440
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "api": {
+      "type": "object",
+      "description": "REST API timeout settings",
+      "required": ["requestTimeoutMs", "shutdownTimeoutMs"],
+      "additionalProperties": false,
+      "properties": {
+        "requestTimeoutMs": {
+          "type": "integer",
+          "description": "API request timeout in milliseconds",
+          "minimum": 1000,
+          "maximum": 600000
+        },
+        "shutdownTimeoutMs": {
+          "type": "integer",
+          "description": "API server graceful shutdown timeout in milliseconds",
+          "minimum": 1000,
+          "maximum": 60000
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "plugin": {
+      "type": "object",
+      "description": "Plugin execution timeout settings",
+      "required": ["executionTimeoutSeconds", "loadTimeoutSeconds"],
+      "additionalProperties": false,
+      "properties": {
+        "executionTimeoutSeconds": {
+          "type": "integer",
+          "description": "Maximum execution time for a plugin in seconds",
+          "minimum": 1,
+          "maximum": 600
+        },
+        "loadTimeoutSeconds": {
+          "type": "integer",
+          "description": "Maximum time to load a plugin in seconds",
+          "minimum": 1,
+          "maximum": 120
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Meta": {
+      "type": "object",
+      "description": "Metadata about the configuration file",
+      "properties": {
+        "description": { "type": "string" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "author": { "type": "string" },
+        "lastUpdated": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+      }
+    }
+  }
+}

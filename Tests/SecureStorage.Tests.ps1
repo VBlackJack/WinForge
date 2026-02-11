@@ -3,12 +3,12 @@
     Pester tests for SecureStorage module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge SecureStorage v1.0.0
+    Comprehensive unit tests for Win11Forge SecureStorage v3.7.1
     Tests DPAPI encryption, API key management, and secure data storage
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.5.2
+    Version: 3.7.1
     Requires: Pester v5+
 #>
 

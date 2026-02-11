@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - REST API Server v3.6.8
+    Win11Forge - REST API Server v3.7.1
 
 .DESCRIPTION
     Provides a local REST API server for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -280,6 +280,12 @@ function Get-CsrfTokenStatus {
     <#
     .SYNOPSIS
         Returns status of all active CSRF tokens.
+
+    .DESCRIPTION
+        Enumerates all CSRF tokens currently held in memory and returns their status,
+        including creation time, expiration time, remaining seconds, and whether each
+        token has expired. Token values are truncated for security.
+
     .OUTPUTS
         Array of CSRF token status objects.
     .EXAMPLE
@@ -384,6 +390,13 @@ function Get-ApiConfig {
     .SYNOPSIS
         Loads and returns the API configuration.
 
+    .DESCRIPTION
+        Reads the API server configuration from the JSON settings file, including
+        host, port, CORS, authentication, rate limiting, and CSRF settings. Loads
+        API keys exclusively from DPAPI secure storage. Caches the configuration
+        in server state after the first load and returns defaults when the file is
+        missing or unreadable.
+
     .OUTPUTS
         Hashtable containing API configuration.
     #>
@@ -473,6 +486,11 @@ function Get-CorsAllowedOrigins {
     <#
     .SYNOPSIS
         Builds a whitelist of allowed CORS origins based on local host/port.
+
+    .DESCRIPTION
+        Generates the list of allowed CORS origins by combining the configured host
+        and port into HTTP and HTTPS URLs, including common localhost variants. This
+        restricts cross-origin requests to only the local API server addresses.
     #>
     [CmdletBinding()]
     [OutputType([string[]])]
@@ -497,6 +515,13 @@ function Set-CorsHeaders {
     <#
     .SYNOPSIS
         Applies CORS headers when enabled and origin is allowed.
+
+    .DESCRIPTION
+        Checks whether CORS is enabled and, if so, validates the request's Origin
+        header against the allowed origins list. When the origin is permitted, sets
+        the appropriate Access-Control-Allow-* response headers. Returns false to
+        block requests from disallowed origins.
+
     .OUTPUTS
         [bool] indicating whether the request origin is allowed (or not required).
     #>
@@ -541,6 +566,11 @@ function Test-PublicEndpoint {
     .SYNOPSIS
         Tests if an endpoint is public (no authentication required).
 
+    .DESCRIPTION
+        Checks whether the given URL path is listed in the server's public endpoints
+        configuration. Public endpoints bypass API key authentication, allowing
+        unauthenticated access to health checks and version endpoints.
+
     .PARAMETER Path
         The URL path to test.
 
@@ -565,6 +595,11 @@ function Test-ApiKeyValid {
     <#
     .SYNOPSIS
         Validates an API key.
+
+    .DESCRIPTION
+        Verifies that the provided API key exists in the server's key store, has not
+        expired, and optionally holds the required permission level. Returns a result
+        hashtable containing validation status, key ID, permissions, and a message.
 
     .PARAMETER ApiKey
         The API key to validate.
@@ -633,6 +668,11 @@ function Test-RateLimit {
     .SYNOPSIS
         Tests if a client has exceeded rate limits using sliding window algorithm.
         Provides smoother rate limiting than fixed window by tracking actual request timestamps.
+
+    .DESCRIPTION
+        Evaluates the client's request history against configured per-minute and per-hour
+        thresholds using a sliding window approach. Tracks individual request timestamps
+        and prunes expired entries to calculate accurate request counts within each window.
 
     .PARAMETER ClientIp
         The client IP address.
@@ -743,6 +783,12 @@ function Test-ApiKeyRateLimit {
     <#
     .SYNOPSIS
         Tests rate limit for a specific API key using sliding window algorithm.
+
+    .DESCRIPTION
+        Evaluates per-API-key rate limiting by tracking request timestamps in a sliding
+        one-hour window. Prevents any single API key from exceeding the configured
+        MaxRequestsPerHour threshold regardless of the client IP address.
+
     .PARAMETER ApiKeyId
         The API key identifier.
     .OUTPUTS
@@ -814,6 +860,12 @@ function Test-FailedAuthBlock {
     <#
     .SYNOPSIS
         Tests if a client IP is blocked due to failed authentications.
+
+    .DESCRIPTION
+        Checks whether the given client IP address is currently blocked due to exceeding
+        the maximum allowed failed authentication attempts within an hour. Returns block
+        status, remaining block time, and failure count details.
+
     .PARAMETER ClientIp
         The client IP address.
     .OUTPUTS
@@ -861,6 +913,13 @@ function Add-FailedAuthAttempt {
     <#
     .SYNOPSIS
         Records a failed authentication attempt.
+
+    .DESCRIPTION
+        Increments the failed authentication counter for the given client IP address.
+        When the failure count exceeds the configured threshold within an hour, the
+        client IP is blocked for the configured block duration to prevent brute-force
+        attacks.
+
     .PARAMETER ClientIp
         The client IP address.
     #>
@@ -968,6 +1027,11 @@ function Get-RequiredPermission {
     <#
     .SYNOPSIS
         Determines required permission based on HTTP method and path.
+
+    .DESCRIPTION
+        Maps an HTTP method and URL path to the appropriate permission level required
+        for authorization. Deploy and rollback paths require 'deploy' permission, write
+        methods (POST/PUT/DELETE) require 'write', and GET requests require 'read'.
 
     .PARAMETER Method
         The HTTP method.
@@ -1181,6 +1245,11 @@ function Unregister-ApiEndpoint {
     .SYNOPSIS
         Removes a registered API endpoint.
 
+    .DESCRIPTION
+        Removes a previously registered API endpoint from the server's routing table.
+        After removal, requests to the specified path and method will no longer be
+        handled by the server.
+
     .PARAMETER Path
         The URL path.
 
@@ -1211,6 +1280,10 @@ function Get-RegisteredEndpoints {
     <#
     .SYNOPSIS
         Returns all registered endpoints.
+
+    .DESCRIPTION
+        Enumerates all API endpoints currently registered in the server's routing table
+        and returns their path, HTTP method, description, and registration timestamp.
 
     .OUTPUTS
         Array of endpoint information objects.
@@ -1687,6 +1760,12 @@ function Invoke-ApiServerLoop {
     <#
     .SYNOPSIS
         Main server loop for processing requests.
+
+    .DESCRIPTION
+        Runs the main HTTP listener loop that accepts incoming requests, applies CORS
+        validation, authentication, CSRF verification, rate limiting, and routes
+        requests to registered endpoint handlers. Continues processing until the
+        listener is stopped.
     #>
     [CmdletBinding()]
     param()
@@ -1929,6 +2008,11 @@ function Get-ApiServerStatus {
     .SYNOPSIS
         Returns the current API server status.
 
+    .DESCRIPTION
+        Returns a snapshot of the API server's operational state, including whether it
+        is running, its host and port, the base URL, start time, uptime duration,
+        total request count, and the number of registered endpoints.
+
     .OUTPUTS
         PSCustomObject with server status information.
 
@@ -1961,6 +2045,12 @@ function Test-ApiServerRunning {
     .SYNOPSIS
         Tests if the API server is running and responding.
 
+    .DESCRIPTION
+        Performs a health check by verifying the server state flag and then sending
+        an HTTP GET request to the version endpoint with a short timeout. Returns
+        true only if the server is both flagged as running and actively responding
+        to requests.
+
     .OUTPUTS
         Boolean indicating if server is responsive.
 
@@ -1990,6 +2080,11 @@ function New-ApiKey {
     <#
     .SYNOPSIS
         Creates a new API key.
+
+    .DESCRIPTION
+        Generates a cryptographically random API key, registers it in the server's
+        key store with the specified permissions and optional expiration, and persists
+        it to DPAPI-encrypted secure storage when available.
 
     .PARAMETER Id
         Unique identifier for the key.
@@ -2058,6 +2153,11 @@ function Remove-ApiKey {
     .SYNOPSIS
         Removes an API key by its ID or key value.
 
+    .DESCRIPTION
+        Deletes an API key from the server's in-memory key store, identified either by
+        its friendly ID or the actual key string. Use this to revoke access for a
+        specific key without restarting the server.
+
     .PARAMETER Id
         The ID of the key to remove.
 
@@ -2102,6 +2202,11 @@ function Get-ApiKeys {
     .SYNOPSIS
         Returns all registered API keys (without exposing actual key values).
 
+    .DESCRIPTION
+        Lists all API keys registered in the server's key store, returning metadata
+        such as ID, description, permissions, creation date, and expiration. Actual
+        key values are truncated to a short prefix for security.
+
     .OUTPUTS
         Array of API key information objects.
 
@@ -2132,6 +2237,11 @@ function Get-RateLimitStatus {
     <#
     .SYNOPSIS
         Returns rate limit status for all tracked clients (sliding window).
+
+    .DESCRIPTION
+        Reports the current rate limit counters for every tracked client IP, including
+        requests in the last minute and last hour based on the sliding window algorithm,
+        along with the last access timestamp.
 
     .OUTPUTS
         Array of rate limit status objects.
@@ -2170,6 +2280,11 @@ function Clear-RateLimitState {
     <#
     .SYNOPSIS
         Clears all rate limit tracking state.
+
+    .DESCRIPTION
+        Resets the entire rate limit tracking store, removing all per-client request
+        history. Use this to unblock all clients or after configuration changes that
+        require a fresh rate limit state.
 
     .EXAMPLE
         Clear-RateLimitState

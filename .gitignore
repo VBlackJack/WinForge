@@ -84,5 +84,8 @@ AUDIT-REPORT*.md
 # Reports output
 Reports/
 
+# Audit process snapshots
+Tools/AuditReports/*.json
+
 # Claude Code project instructions
 CLAUDE.md

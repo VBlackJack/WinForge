@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Main Deployment Script v3.6.8
+    Win11Forge - Main Deployment Script v3.7.1
 
 .DESCRIPTION
     Orchestrates complete Windows 11 environment deployment with:

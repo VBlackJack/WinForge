@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Structured Logging v3.6.8
+    Win11Forge - Structured Logging v3.7.1
 
 .DESCRIPTION
     Provides JSON-based structured logging for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -38,12 +38,20 @@ $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:ConfigPath = Join-Path $script:RepositoryRoot 'Config\logging-settings.json'
 $script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+$script:LocalizationModulePath = Join-Path $script:ModuleRoot 'Localization.psm1'
 
 if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:DirectoryConstantsPath) {
         Import-Module -Name $script:DirectoryConstantsPath -Force
     } else {
         throw [System.IO.FileNotFoundException]::new("DirectoryConstants module not found: $script:DirectoryConstantsPath")
+    }
+}
+
+# Import Localization module for i18n support
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        Import-Module -Name $script:LocalizationModulePath -Force
     }
 }
 
@@ -144,7 +152,7 @@ function Initialize-StructuredLogging {
         try {
             New-Item -Path $jsonDir -ItemType Directory -Force | Out-Null
         } catch {
-            Write-Warning "Failed to create JSON log directory: $($_.Exception.Message)"
+            Write-Warning (t 'core.logging.json_dir_create_failed' @{ Error = $_.Exception.Message })
         }
     }
 
@@ -163,7 +171,7 @@ function Initialize-StructuredLogging {
     $script:LoggingState.Initialized = $true
 
     # Write initialization log entry
-    Write-StructuredLog -Level 'Info' -Category 'System' -Message 'Structured logging initialized' -Data @{
+    Write-StructuredLog -Level 'Info' -Category 'System' -Message (t 'core.logging.initialized') -Data @{
         SessionId = $script:LoggingState.SessionId
         JsonLogPath = $script:LoggingState.JsonLogPath
         ComputerName = $env:COMPUTERNAME
@@ -178,6 +186,11 @@ function Get-LoggingConfig {
     <#
     .SYNOPSIS
         Loads and returns the logging configuration.
+
+    .DESCRIPTION
+        Reads the structured logging configuration from the JSON config file and returns
+        a hashtable with text logging, JSON logging, and category settings. Falls back
+        to default configuration values when the config file is missing or unreadable.
 
     .OUTPUTS
         Hashtable containing logging configuration.
@@ -413,7 +426,7 @@ function Invoke-LogRotationIfNeeded {
                 sessionId = $script:LoggingState.SessionId
                 level = 'Info'
                 category = 'System'
-                message = "Log rotated due to size limit ($maxSizeMB MB)"
+                message = (t 'core.logging.log_rotated' @{ SizeMB = $maxSizeMB })
                 data = @{
                     previousLogSize = $fileInfo.Length
                     newLogPath = $newLogPath
@@ -425,8 +438,8 @@ function Invoke-LogRotationIfNeeded {
             $script:LoggingState.JsonLogPath = $newLogPath
 
             # Write initialization entry to new file
-            Write-StructuredLog -Level 'Info' -Category 'System' -Message 'Log file rotated' -Data @{
-                reason = 'Size limit exceeded'
+            Write-StructuredLog -Level 'Info' -Category 'System' -Message (t 'core.logging.log_file_rotated') -Data @{
+                reason = (t 'core.logging.reason_size_limit')
                 previousLogSize = $fileInfo.Length
             }
         }
@@ -499,6 +512,10 @@ function Get-LogRequestId {
     .SYNOPSIS
         Gets the current request ID.
 
+    .DESCRIPTION
+        Retrieves the request ID currently stored in the logging state. This ID is used
+        to correlate all log entries belonging to the same logical request or operation.
+
     .OUTPUTS
         [string] The current request ID, or $null if not set.
 
@@ -565,7 +582,7 @@ function Export-LogsToJson {
 
     $jsonDir = $script:LoggingState.Config.JsonLogging.Directory
     if (-not (Test-Path -Path $jsonDir)) {
-        Write-Warning "JSON log directory not found: $jsonDir"
+        Write-Warning (t 'core.logging.json_dir_not_found' @{ Path = $jsonDir })
         return
     }
 
@@ -583,12 +600,12 @@ function Export-LogsToJson {
 
                 # Apply filters
                 if ($StartDate -and $entry.timestamp) {
-                    $entryTime = [datetime]::Parse($entry.timestamp)
+                    $entryTime = if ($entry.timestamp -is [datetime]) { $entry.timestamp } else { [datetimeoffset]::Parse($entry.timestamp).LocalDateTime }
                     if ($entryTime -lt $StartDate) { $include = $false }
                 }
 
                 if ($EndDate -and $entry.timestamp) {
-                    $entryTime = [datetime]::Parse($entry.timestamp)
+                    $entryTime = if ($entry.timestamp -is [datetime]) { $entry.timestamp } else { [datetimeoffset]::Parse($entry.timestamp).LocalDateTime }
                     if ($entryTime -gt $EndDate) { $include = $false }
                 }
 
@@ -610,7 +627,7 @@ function Export-LogsToJson {
     }
 
     # Sort by timestamp
-    $allEntries = $allEntries | Sort-Object { [datetime]::Parse($_.timestamp) }
+    $allEntries = $allEntries | Sort-Object { if ($_.timestamp -is [datetime]) { $_.timestamp } else { [datetimeoffset]::Parse($_.timestamp).LocalDateTime } }
 
     # Export
     $directory = Split-Path -Path $OutputPath -Parent
@@ -620,8 +637,9 @@ function Export-LogsToJson {
 
     $allEntries | ConvertTo-Json -Depth 10 | Set-Content -Path $OutputPath -Encoding UTF8
 
-    Write-Verbose "Exported $($allEntries.Count) log entries to $OutputPath"
-    return $allEntries.Count
+    $exportCount = @($allEntries).Count
+    Write-Verbose "Exported $exportCount log entries to $OutputPath"
+    return $exportCount
 }
 
 function Get-StructuredLogs {
@@ -822,6 +840,11 @@ function Get-ArchivedLogs {
     .SYNOPSIS
         Lists archived (compressed) log files.
 
+    .DESCRIPTION
+        Scans the JSON logging directory for compressed (.jsonl.zip) log archives and
+        returns metadata about each file, including name, path, size, and timestamps,
+        sorted by most recent modification first.
+
     .OUTPUTS
         Array of archived log file information.
 
@@ -863,6 +886,11 @@ function Expand-ArchivedLog {
     .SYNOPSIS
         Extracts an archived log file for viewing.
 
+    .DESCRIPTION
+        Decompresses a previously archived JSONL log zip file so its contents can be
+        inspected or processed. Extracts to the same directory as the archive by default,
+        or to a specified output path.
+
     .PARAMETER ArchivePath
         Path to the .zip archive.
 
@@ -895,7 +923,7 @@ function Expand-ArchivedLog {
         $extractedFile = Join-Path $OutputPath ([System.IO.Path]::GetFileNameWithoutExtension($ArchivePath))
         return $extractedFile
     } catch {
-        Write-Error "Failed to expand archive: $($_.Exception.Message)"
+        Write-Error (t 'core.logging.expand_archive_failed' @{ Error = $_.Exception.Message })
         return $null
     }
 }
@@ -919,7 +947,7 @@ function Close-StructuredLogging {
     }
 
     # Write close entry
-    Write-StructuredLog -Level 'Info' -Category 'System' -Message 'Structured logging session closed' -Data @{
+    Write-StructuredLog -Level 'Info' -Category 'System' -Message (t 'core.logging.session_closed') -Data @{
         SessionId = $script:LoggingState.SessionId
         Duration = ((Get-Date) - $script:LoggingState.StartTime).ToString()
     }
@@ -938,6 +966,11 @@ function Get-LoggingStatistics {
     <#
     .SYNOPSIS
         Returns statistics about the logging system.
+
+    .DESCRIPTION
+        Gathers and returns aggregate statistics about the structured logging subsystem,
+        including total log file count, combined size on disk, oldest and newest log
+        timestamps, and current buffer usage.
 
     .OUTPUTS
         PSCustomObject with logging statistics.

@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Profile Manager v3.6.8
+    Win11Forge - Profile Manager v3.7.1
 
 .DESCRIPTION
     Manages deployment profiles with JSON inheritance:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Supports multi-level inheritance (e.g., Personnel → Gaming → Office → Base)
     NEW: Supports Application Database references (AppId strings or objects)
 #>
@@ -123,6 +123,9 @@ function script:Set-CachedProfile {
     <#
     .SYNOPSIS
         Stores a profile in cache.
+    .DESCRIPTION
+        Saves a parsed DeploymentProfile object into the in-memory profile cache, keyed by its
+        absolute file path, along with the file's last-write timestamp for staleness detection.
     #>
     [CmdletBinding()]
     param(
@@ -145,6 +148,9 @@ function Clear-ProfileCache {
     <#
     .SYNOPSIS
         Clears the profile cache.
+    .DESCRIPTION
+        Removes all entries from the in-memory profile cache and their associated timestamps,
+        forcing subsequent profile loads to re-read from disk.
     #>
     [CmdletBinding()]
     param()
@@ -162,6 +168,9 @@ function script:Get-CachedFrameworkVersion {
     <#
     .SYNOPSIS
         Gets cached framework version from version.json.
+    .DESCRIPTION
+        Returns the framework version string from Config/version.json, caching the result in a
+        script-scoped variable to avoid repeated file reads on subsequent calls.
     #>
     if ($script:CachedFrameworkVersion) {
         return $script:CachedFrameworkVersion
@@ -205,6 +214,10 @@ function Get-ProfilePath {
     <#
     .SYNOPSIS
         Resolves profile path from name or file path.
+    .DESCRIPTION
+        Converts a profile name or file path into a validated absolute path to the profile JSON file.
+        Applies security checks including path traversal prevention, name length limits, and safe
+        character validation before resolving against the profiles directory.
 
     .PARAMETER ProfileName
         Profile name or full path to JSON file
@@ -275,6 +288,10 @@ function Import-ProfileJson {
     <#
     .SYNOPSIS
         Loads a profile from JSON file with caching.
+    .DESCRIPTION
+        Reads a deployment profile JSON file, parses it into a DeploymentProfile object, and stores
+        the result in the profile cache for faster subsequent loads. Uses the file's last-write
+        timestamp to detect stale cache entries and reload automatically when the file changes.
 
     .PARAMETER Path
         Path to the profile JSON file
@@ -503,6 +520,10 @@ function Resolve-ProfileInheritance {
     <#
     .SYNOPSIS
         Resolves profile inheritance recursively with cycle detection.
+    .DESCRIPTION
+        Walks the inheritance chain defined by each profile's 'inheritsFrom' property, loading
+        parent profiles recursively and returning them in base-first order. Tracks visited ancestors
+        to detect and report circular inheritance before it causes infinite recursion.
 
     .PARAMETER Profile
         Base profile to resolve
@@ -686,6 +707,10 @@ function Merge-ProfileApplications {
     <#
     .SYNOPSIS
         Merges applications from multiple profiles with deduplication.
+    .DESCRIPTION
+        Iterates through profiles in inheritance order and combines their application lists into a
+        single deduplicated collection. When the same application appears in multiple profiles, the
+        child profile's definition takes precedence over the parent.
 
     .PARAMETER Profiles
         Array of profiles in inheritance order
@@ -786,6 +811,10 @@ function Merge-ProfileSystemConfig {
     <#
     .SYNOPSIS
         Merges system configuration from multiple profiles.
+    .DESCRIPTION
+        Combines system configuration hashtables from profiles in inheritance order, with child
+        profile settings overriding parent values. Produces a single merged configuration hashtable
+        ready for use by the system configuration module.
 
     .PARAMETER Profiles
         Array of profiles in inheritance order
@@ -838,6 +867,10 @@ function Get-DeploymentProfile {
     <#
     .SYNOPSIS
         Loads a deployment profile with full inheritance resolution.
+    .DESCRIPTION
+        Serves as the primary entry point for loading a deployment profile. Resolves the profile
+        path, loads the JSON file, walks the full inheritance chain, and returns a merged result
+        containing the combined applications list and system configuration.
 
     .PARAMETER ProfileName
         Profile name or path to JSON file
@@ -921,6 +954,10 @@ function Test-ProfileValid {
     <#
     .SYNOPSIS
         Validates a profile JSON structure.
+    .DESCRIPTION
+        Performs structural validation on a profile JSON file, checking for required fields, valid
+        application references, and correct inheritance declarations. Returns a result hashtable
+        containing a validity flag along with any errors and warnings found.
 
     .PARAMETER ProfilePath
         Path to profile JSON file
@@ -1044,6 +1081,9 @@ function Get-ApplicationsByCategory {
     <#
     .SYNOPSIS
         Groups applications by category.
+    .DESCRIPTION
+        Organizes an array of application objects into a hashtable keyed by their Category property.
+        Applications without a category are placed into an 'Uncategorized' group.
 
     .PARAMETER Applications
         Array of applications
@@ -1077,6 +1117,9 @@ function Get-RequiredApplications {
     <#
     .SYNOPSIS
         Filters only required applications.
+    .DESCRIPTION
+        Returns only the applications from the input array whose Required property is set to true,
+        excluding optional applications from the deployment list.
 
     .PARAMETER Applications
         Array of applications

@@ -1,7 +1,7 @@
-﻿{
+{
   "Name": "Enterprise",
-  "Description": "Enterprise security profile with compliance tools, hardened configuration, and IT management utilities (v3.6.8)",
-  "Version": "3.6.8",
+  "Description": "Enterprise security profile with compliance tools, hardened configuration, and IT management utilities (v3.7.1)",
+  "Version": "3.7.1",
   "Inherits": ["Base"],
   "Applications": [
     "MicrosoftTeams",

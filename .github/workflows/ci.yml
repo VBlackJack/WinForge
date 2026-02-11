@@ -81,7 +81,6 @@ jobs:
             'PSUseDeclaredVarsMoreThanAssignments',
             'PSUseUsingScopeModifierInNewRunspaces',
             'PSUseApprovedVerbs',
-            'PSAvoidUsingEmptyCatchBlock',
             'PSUseSupportsShouldProcess'
           )
 

@@ -1,8 +1,8 @@
-﻿{
+{
   "_meta": {
     "locale": "en",
     "name": "English",
-    "version": "3.6.8",
+    "version": "3.7.1",
     "author": "Julien Bombled"
   },
   "common": {
@@ -27,7 +27,7 @@
     "next": "Next",
     "exit": "Exit",
     "retry": "Retry",
-    "version": "3.6.8"
+    "version": "3.7.1"
   },
   "core": {
     "admin_required": "Administrator privileges required",
@@ -36,7 +36,36 @@
     "internet_no_connection": "No internet connection detected",
     "internet_ensure_connection": "Please ensure you have an active internet connection",
     "internet_verified": "Internet connection verified",
-    "cleaned_temp_files": "Cleaned up {Count} temporary files"
+    "cleaned_temp_files": "Cleaned up {Count} temporary files",
+    "moduleLoader": {
+      "unknown_command": "Unknown command '{CommandName}' - not in module map",
+      "import_failed": "Failed to import module '{ModulePath}': {Error}",
+      "not_found": "Module not found: {ModulePath}",
+      "dependencies_failed": "Failed to import required dependencies: {Commands}"
+    },
+    "logging": {
+      "structured_load_failed": "Failed to load StructuredLogging module: {Error}",
+      "json_dir_create_failed": "Failed to create JSON log directory: {Error}",
+      "initialized": "Structured logging initialized",
+      "log_rotated": "Log rotated due to size limit ({SizeMB} MB)",
+      "log_file_rotated": "Log file rotated",
+      "reason_size_limit": "Size limit exceeded",
+      "json_dir_not_found": "JSON log directory not found: {Path}",
+      "expand_archive_failed": "Failed to expand archive: {Error}",
+      "session_closed": "Structured logging session closed"
+    },
+    "error": {
+      "operation_failed": "Operation failed",
+      "stack_trace": "Stack trace: {StackTrace}"
+    },
+    "cleanup": {
+      "path_not_found": "Path not found: {Path}",
+      "could_not_remove": "Could not remove: {FileName}",
+      "error": "Error cleaning temporary files: {Error}"
+    },
+    "localization": {
+      "load_failed": "Failed to load Localization module: {Error}"
+    }
   },
   "install": {
     "starting": "Starting installation of {AppName}...",
@@ -125,6 +154,30 @@
         "close_failed": "CloseMainWindow failed: {Error}",
         "kill_failed": "Process kill failed: {Error}",
         "child_cleanup_failed": "Child process cleanup failed: {Error}"
+      },
+      "debug": {
+        "attempting_winget": "Attempting Winget installation: {PackageId}",
+        "winget_success": "Winget installation completed successfully",
+        "winget_exit_code": "Winget exit code: {ExitCode}",
+        "attempting_choco": "Attempting Chocolatey installation: {PackageId}",
+        "choco_success": "Chocolatey installation completed successfully",
+        "choco_exit_code": "Chocolatey exit code: {ExitCode}",
+        "attempting_store": "Attempting Microsoft Store installation: {ProductId}",
+        "store_exit_code": "Store installation exit code: {ExitCode}",
+        "attempting_direct": "Attempting direct download: {Url}",
+        "installer_filename": "Installer filename: {Filename}",
+        "direct_path_verbose": "InstallerPath: {Path}",
+        "direct_download_failed_verbose": "Download failed: File not found or checksum mismatch",
+        "direct_downloaded_verbose": "Downloaded: {Size}",
+        "direct_running_verbose": "Running {Type} installer...",
+        "direct_custom_args_status": "CustomArguments: {Arguments}",
+        "direct_path_exists": "InstallerPath exists: {Exists}",
+        "direct_output_type": "Install output type: {Type}, count: {Count}",
+        "direct_extracted_bool": "Extracted boolean: {Result}",
+        "direct_final_result": "Final installed result: {Result}",
+        "direct_success_verbose": "Installed successfully via direct download",
+        "direct_failed_verbose": "Direct installation failed",
+        "direct_error_verbose": "Direct download error: {Error}"
       }
     },
     "retry": {
@@ -144,6 +197,59 @@
     "timeout": {
       "warning": "Installation timed out after {Minutes} minutes",
       "process_killed": "Process terminated due to timeout"
+    },
+    "orchestrator": {
+      "attempting_winget": "Attempting Winget: {PackageId}",
+      "office_c2r_waiting": "Office installation initiated, waiting for Click-to-Run to complete...",
+      "success_despite_exit_code": "Installation succeeded despite exit code (files verified)",
+      "attempting_choco": "Attempting Chocolatey: {PackageId}",
+      "attempting_store": "Attempting Microsoft Store: {ProductId}",
+      "attempting_direct": "Attempting direct download: {Url}",
+      "custom_args_detected": "Custom arguments detected: {Arguments}",
+      "parallel": {
+        "starting": "Starting installation of {AppName}",
+        "already_installed": "Already installed - skipping",
+        "not_installed": "Not installed - proceeding with installation",
+        "custom_method": "Using custom install method: {Method}",
+        "windows_feature": "Installing as Windows Feature: {Feature}",
+        "feature_success": "Windows Feature installed successfully",
+        "windows_capability": "Installing as Windows Capability: {Capability}",
+        "capability_success": "Windows Capability installed successfully",
+        "attempting_winget": "Attempting installation via Winget: {PackageId}",
+        "retry_winget": "Retry {Attempt}/{MaxRetries} for Winget: {PackageId}",
+        "process_timeout": "Process timed out after {Seconds} seconds - terminating",
+        "winget_timeout": "Winget installation failed (timeout)",
+        "winget_success": "Installed successfully via Winget",
+        "winget_already": "Already installed (Winget)",
+        "transient_error": "Transient error (exit code: {ExitCode}), retrying in {Delay} seconds...",
+        "winget_failed": "Winget installation failed (exit code: {ExitCode})",
+        "attempting_choco": "Attempting installation via Chocolatey: {PackageName}",
+        "retry_choco": "Retry {Attempt}/{MaxRetries} for Chocolatey: {PackageName}",
+        "choco_timeout": "Chocolatey installation failed (timeout)",
+        "choco_success": "Installed successfully via Chocolatey",
+        "choco_failed": "Chocolatey installation failed (exit code: {ExitCode})",
+        "store_sandbox_skip": "Skipping Store install - Windows Store unavailable in Sandbox",
+        "attempting_store": "Attempting installation via Microsoft Store: {ProductId}",
+        "store_timeout": "Microsoft Store installation failed (timeout)",
+        "store_success": "Installed successfully via Microsoft Store",
+        "store_failed": "Microsoft Store installation failed (exit code: {ExitCode})",
+        "invalid_url": "Invalid or insecure URL: {Url}",
+        "attempting_direct": "Attempting direct download installation: {Url}",
+        "installer_filename": "Installer filename: {Filename}",
+        "download_completed": "Download completed",
+        "validating_checksum": "Validating SHA256 checksum...",
+        "checksum_failed": "Checksum FAILED! Expected: {Expected}, Got: {Got}",
+        "checksum_passed": "Checksum validation passed",
+        "detected_type": "Detected installer type: {Type}",
+        "unsafe_msi_arg": "Security: Skipping unsafe MSI argument: {Argument}",
+        "extracting_zip": "Extracting ZIP archive",
+        "archive_blocked": "Archive extraction blocked by security validation",
+        "unsafe_args_blocked": "Security: Using default /S - unsafe arguments blocked",
+        "no_installer_portable": "No installer found - deploying portable tools",
+        "direct_success": "Installed successfully via direct download",
+        "direct_failed": "Direct download installation failed (exit code: {ExitCode})",
+        "all_failed": "All installation methods failed"
+      }
     }
   },
   "parallel": {
@@ -234,7 +340,11 @@
       "refreshed": "Environment refreshed"
     },
     "all_passed": "All prerequisites are satisfied",
-    "some_missing": "Some prerequisites are missing"
+    "some_missing": "Some prerequisites are missing",
+    "config": {
+      "load_failed": "Failed to load download sources config: {Error}. Using fallback URLs.",
+      "not_found": "Download sources config not found at: {Path}. Using fallback URLs."
+    }
   },
   "profile": {
     "loading": "Loading profile: {Name}",
@@ -562,10 +672,13 @@
       "success": "Application '{Name}' added successfully!",
       "success_appid": "App ID: {AppId}",
       "success_total": "Total apps in database: {Count}",
-      "success_js": "applications-data.js updated"
+      "success_js": "applications-data.js updated",
+      "default_description": "No description provided",
+      "default_category": "Other"
     },
     "errors": {
-      "db_not_loaded": "Error: Database not loaded"
+      "db_not_loaded": "Error: Database not loaded",
+      "db_file_not_found": "Database file not found at {Path}"
     }
   },
   "startup": {
@@ -650,7 +763,69 @@
     "summary_applied": "[OK] Layout applied to current user",
     "current_unchanged": "Current user layout unchanged (use -ApplyToCurrentUser to apply)",
     "backup_saved": "Backup saved at: {Path}",
-    "deployment_failed": "Deployment failed"
+    "deployment_failed": "Deployment failed",
+    "layout": {
+      "category": {
+        "lookup": {
+          "error": "Error looking up category: {ErrorMessage}"
+        }
+      },
+      "shortcut": {
+        "read": {
+          "error": "Error reading shortcut {ShortcutPath}: {ErrorMessage}"
+        },
+        "copy": {
+          "error": "Error copying shortcut: {ErrorMessage}"
+        },
+        "skipped": "Skipped (excluded): {ShortcutName}",
+        "copied": "Copied: {ShortcutName} -> {Category}"
+      },
+      "packagedapp": {
+        "find": {
+          "error": "Error finding packaged app ID: {ErrorMessage}"
+        }
+      },
+      "deploy": {
+        "defaultprofile": {
+          "success": "Layout deployed to Default profile: {TargetPath}",
+          "info": "New user profiles will use this layout."
+        },
+        "currentuser": {
+          "success": "Layout deployed to current user: {TargetPath}",
+          "info": "Please check your Start Menu. If changes don't appear, log off and log back in."
+        },
+        "starting": "Deploying Start Menu layout...",
+        "success": "\nLayout deployed successfully!",
+        "error": "Error deploying layout: {ErrorMessage}"
+      },
+      "restart": {
+        "starting": "Restarting Start Menu experience...",
+        "success": "Start Menu restarted successfully",
+        "failed": "Could not restart Start Menu automatically. Please log off and log back in."
+      },
+      "organization": {
+        "starting": "Starting Start Menu organization (LayoutModification.json method)..."
+      },
+      "shortcuts": {
+        "scanning": "Scanning desktop shortcuts...",
+        "notfound": "No desktop shortcuts found",
+        "found": "Found {Count} desktop shortcuts"
+      },
+      "json": {
+        "generating": "Generating LayoutModification.json..."
+      },
+      "summary": {
+        "header": "\n=== Start Menu Organization Summary ===",
+        "total": "Total shortcuts processed: {Total}",
+        "copied": "Successfully copied: {Copied}",
+        "skipped": "Skipped (excluded): {Skipped}",
+        "failed": "Failed: {Failed}",
+        "categories": {
+          "header": "\nCategories created:",
+          "item": "  - {Category} ({Count} apps)"
+        }
+      }
+    }
   },
   "validation": {
     "url": {
@@ -661,6 +836,14 @@
     "checksum": {
       "mismatch": "Checksum mismatch - Expected: {Expected}, Got: {Actual}",
       "algorithm": "Using {Algorithm} for validation"
+    },
+    "schema": {
+      "file_not_found": "Schema file not found: {Path}",
+      "invalid_json": "Invalid JSON: {Error}",
+      "invalid_schema": "Invalid schema: {Error}",
+      "validation_error": "Validation error at '{Path}': {Message}",
+      "type_mismatch": "Expected type '{Expected}' but got '{Actual}' at '{Path}'",
+      "required_missing": "Required property '{Property}' is missing at '{Path}'"
     }
   },
   "test": {
@@ -1150,7 +1333,54 @@
     "summary_title": "Rollback Summary",
     "apps_to_rollback": "Applications to rollback: {Count}",
     "report_exported": "Rollback report exported to: {Path}",
-    "test_capability": "Testing rollback capability for {AppName}"
+    "test_capability": "Testing rollback capability for {AppName}",
+    "config": {
+      "loaded": "Loaded rollback configuration from {Path}",
+      "loadFailed": "Failed to load rollback config, using defaults: {Error}"
+    },
+    "handler": {
+      "unregistered": "Unregistered critical failure handler: {Name}",
+      "failed": "Handler {Name} failed: {Error}"
+    },
+    "reason": {
+      "criticalFailure": "Critical failure detected",
+      "thresholdReached": "Failure threshold reached ({Count} failures)"
+    },
+    "failureCount": {
+      "reset": "Failure count reset to 0"
+    },
+    "noApps": {
+      "toRollback": "No applications to rollback"
+    },
+    "completed": "Rollback completed",
+    "functionNotAvailable": "Rollback function not available",
+    "failed": "Rollback failed: {Error}",
+    "error": {
+      "unknown": "Unknown error"
+    },
+    "report": {
+      "title": "WIN11FORGE ROLLBACK REPORT",
+      "generated": "Generated: {Timestamp}",
+      "computer": "Computer: {Name}",
+      "user": "User: {Name}",
+      "sessionInfo": "SESSION INFORMATION",
+      "sessionId": "Session ID: {SessionId}",
+      "startTime": "Start Time: {Time}",
+      "appsInstalled": "Applications Installed: {Count}",
+      "rollbackable": "Rollbackable: {Count}",
+      "configSection": "CONFIGURATION",
+      "autoRollbackEnabled": "Auto-Rollback Enabled: {Value}",
+      "failureThreshold": "Failure Threshold: {Value}",
+      "requireConfirmation": "Require Confirmation: {Value}",
+      "confirmationTimeout": "Confirmation Timeout: {Value}s",
+      "statusSection": "CURRENT STATUS",
+      "consecutiveFailures": "Consecutive Failures: {Count}",
+      "registeredHandlers": "Registered Handlers: {Count}",
+      "applicationsSection": "APPLICATIONS",
+      "appMethod": "Method: {Method}",
+      "appPackageId": "Package ID: {PackageId}",
+      "appCanRollback": "Can Rollback: {Value}"
+    }
   },
   "structuredLogging": {
     "initialized": "Structured logging initialized",
@@ -1301,7 +1531,8 @@
     "avg_deployment_time": "Average deployment time: {Time}",
     "report_exported": "Telemetry report exported: {Path}",
     "data_cleared": "Telemetry data cleared",
-    "dashboard_opened": "Opening telemetry dashboard..."
+    "dashboard_opened": "Opening telemetry dashboard...",
+    "clear_requires_confirm": "Use -Confirm to clear all telemetry data"
   },
   "userProfiles": {
     "saved": "Profile saved: {Name}",
@@ -1350,7 +1581,41 @@
       "load_validation": "Validating plugin load: {Name}",
       "load_timed_out": "Plugin load validation timed out after {Timeout}s",
       "available": "Plugin sandboxing is available",
-      "not_available": "Plugin sandboxing is not available"
+      "not_available": "Plugin sandboxing is not available",
+      "timeout_module": {
+        "load_failed": "Failed to load TimeoutSettings module: {Error}"
+      },
+      "validation": {
+        "parse_errors": "Script has parse errors: {Error}",
+        "dangerous_command": "Dangerous command blocked: {Command}",
+        "dangerous_type": "Dangerous type blocked: {TypeName}",
+        "dangerous_member": "Dangerous member invocation blocked: {Expression}",
+        "ast_error": "AST validation error: {Error}"
+      },
+      "security": {
+        "handler_blocked": "Plugin handler blocked by security validation: {Errors}",
+        "plugin_blocked": "Plugin '{Name}' blocked: {Error}",
+        "module_blocked": "Plugin module blocked by AST security validation: {Errors}",
+        "load_blocked": "Plugin '{Name}' load blocked: {Error}",
+        "job_parse_errors": "Security: Handler has parse errors in job context",
+        "job_blocked_command": "Security: Blocked command detected in job context: {Command}",
+        "job_blocked_type": "Security: Blocked type detected in job context: {TypeName}",
+        "job_module_parse_errors": "Security: Module has parse errors in job context",
+        "job_module_blocked_command": "Security: Blocked command detected in module: {Command}",
+        "job_module_blocked_type": "Security: Blocked type detected in module: {TypeName}",
+        "job_module_blocked_member": "Security: Blocked member invocation in module: {Expression}"
+      },
+      "execution": {
+        "timed_out": "Plugin execution timed out after {Timeout} seconds",
+        "failed": "Plugin '{Name}' failed: {Error}",
+        "output_error": "Failed to retrieve job output: {Error}",
+        "plugin_output_error": "Plugin '{Name}' output error: {Error}"
+      },
+      "hook": {
+        "invoking": "Invoking sandboxed hook '{Hook}' from plugin '{Name}'",
+        "timed_out": "Hook '{Hook}' timed out for plugin '{Name}'",
+        "failed": "Hook '{Hook}' failed for plugin '{Name}': {Error}"
+      }
     }
   },
   "state": {
@@ -1620,6 +1885,30 @@
       "dangerous_character": "Security: URL contains potentially dangerous character: {Character}",
       "invalid_scheme": "Security: Invalid URL scheme (must be http or https): {Scheme}",
       "malformed_url": "Security: Malformed URL: {Url}"
+    },
+    "storage": {
+      "acl_set": "Set restrictive ACL on: {Path}",
+      "acl_failed": "Could not set ACL on {Path}: {Error}",
+      "mutex_timeout": "Could not acquire entropy mutex within timeout, proceeding without lock",
+      "entropy_regenerating": "Regenerating entropy file (invalid length: {Length})",
+      "entropy_not_found": "Entropy file not found, creating new one",
+      "entropy_dir_not_found": "Entropy directory not found, creating new one",
+      "entropy_read_failed": "Failed to read entropy file, regenerating: {Error}",
+      "entropy_persist_failed": "Could not persist entropy file: {Error}",
+      "encrypt_failed": "Failed to encrypt data: {Error}",
+      "decrypt_failed": "Failed to decrypt data: {Error}",
+      "api_key_saved": "API key '{KeyId}' saved securely",
+      "api_key_save_failed": "Failed to save API key: {Error}",
+      "api_keys_load_failed": "Could not load secure API keys: {Error}",
+      "api_key_removed": "API key '{KeyId}' removed",
+      "api_key_remove_failed": "Failed to remove API key: {Error}",
+      "api_keys_auth_failed": "Could not load API keys for auth: {Error}",
+      "read_failed": "Failed to read secure storage (will create new): {Error}",
+      "data_saved": "Secure data '{Key}' saved",
+      "data_save_failed": "Failed to save secure data: {Error}",
+      "data_retrieve_failed": "Could not retrieve secure data: {Error}",
+      "data_removed": "Secure data '{Key}' removed",
+      "data_remove_failed": "Failed to remove secure data: {Error}"
     }
   },
   "A11y_Logs_ViewLog": "View log file",
@@ -1660,5 +1949,71 @@
   "Detection_InvalidExpandedPath": "Invalid path after environment variable expansion",
   "Detection_InvalidCommandPath": "Invalid command path: contains potentially dangerous characters",
   "Detection_CommandTimeout": "Command timed out after 5 seconds",
-  "Common_OK": "OK"
+  "Common_OK": "OK",
+  "database": {
+    "localization": {
+      "import_failed": "Localization module import failed: {Error}"
+    },
+    "filewatcher": {
+      "already_enabled": "Database file watcher already enabled",
+      "cache_invalidated": "Database file changed - cache invalidated",
+      "enabled": "Database file watcher enabled for: {Path}",
+      "enable_failed": "Could not enable database file watcher: {Error}",
+      "disabled": "Database file watcher disabled",
+      "disable_failed": "Could not disable database file watcher: {Error}"
+    },
+    "cache": {
+      "cleared": "Database cache cleared"
+    },
+    "load": {
+      "not_found": "Application database not found at: {Path}",
+      "success": "Database loaded: {Count} applications",
+      "failed": "Failed to load application database: {Error}",
+      "failed_short": "Failed to load database"
+    },
+    "application": {
+      "not_found": "Application '{AppId}' not found in database",
+      "not_found_short": "Application not found: {AppId}"
+    },
+    "validation": {
+      "priority_invalid": "Priority must be a valid integer, got: {Value} ({Type})",
+      "required_invalid": "Required must be a valid boolean (true/false/0/1), got: {Value} ({Type})",
+      "appid_required": "Application ID is required",
+      "appid_format": "Application ID must start with a letter and contain only letters, numbers, dots, dashes, and underscores",
+      "appid_exists": "Application ID '{AppId}' already exists",
+      "name_required": "Application name is required",
+      "category_required": "Category is required",
+      "source_required": "At least one installation source is required",
+      "directurl_format": "Direct URL must be a valid HTTP or HTTPS URL",
+      "homepage_format": "Homepage must be a valid HTTP or HTTPS URL",
+      "priority_range": "Priority must be between 1 and 100"
+    },
+    "validate": {
+      "not_loaded": "Cannot validate: Database not loaded",
+      "progress_activity": "Validating Application Sources",
+      "progress_status": "Testing {AppName} ({Current}/{Total})",
+      "winget_not_found": "Winget ID not found: {WingetId}",
+      "winget_test_failed": "Winget test failed: {Error}",
+      "choco_not_found": "Chocolatey package not found: {ChocoId}",
+      "choco_test_failed": "Chocolatey test failed: {Error}"
+    },
+    "dependency": {
+      "circular_detected": "Circular dependency detected involving: {AppId}"
+    },
+    "backup": {
+      "created": "Database backup created: {Path}",
+      "removed_old": "Removed old backup: {FileName}",
+      "create_failed": "Failed to create backup: {Error}",
+      "file_not_found": "Backup file not found: {Path}",
+      "invalid_format": "Invalid backup file format: {Error}",
+      "restore_success": "Database restored successfully from backup"
+    },
+    "import": {
+      "file_not_found": "File not found: {Path}",
+      "no_applications": "No Applications found in import file"
+    },
+    "export": {
+      "failed": "Export failed: {Error}"
+    }
+  }
 }

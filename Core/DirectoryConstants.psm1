@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Directory and Path Constants v3.6.8
+    Win11Forge - Directory and Path Constants v3.7.1
 
 .DESCRIPTION
     Centralized constants for all directory paths, registry paths, and
@@ -9,7 +9,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -67,6 +67,8 @@ $script:CommonStartMenuDir = [Environment]::GetFolderPath('CommonStartMenu')
 $script:CommonProgramsDir = [Environment]::GetFolderPath('CommonPrograms')
 $script:CommonStartupDir = [Environment]::GetFolderPath('CommonStartup')
 $script:CommonDesktopDir = [Environment]::GetFolderPath('CommonDesktopDirectory')
+$script:DefaultUserProfileDir = Join-Path $env:SystemDrive 'Users\Default'
+$script:StartMenuBinaryDir = Join-Path $script:System32Dir 'StartMenuExperienceHost'
 
 # === REGISTRY PATHS ===
 $script:RegistryPaths = @{
@@ -107,6 +109,21 @@ $script:RegistryPaths = @{
     # Power settings
     PowerSettings               = 'HKLM:\SYSTEM\CurrentControlSet\Control\Power'
     PowerPolicies               = 'HKLM:\SYSTEM\CurrentControlSet\Control\Power\PowerSettings'
+
+    # Version detection
+    WindowsNTVersion            = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+
+    # Container / virtualization
+    ContainerManager            = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\Packages'
+
+    # Office detection
+    OfficeClickToRun            = 'HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Configuration'
+    OfficeInstallRoot           = 'HKLM:\SOFTWARE\Microsoft\Office'
+
+    # Frameworks
+    DotNetFramework             = 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full'
+    VCRedistX64                 = 'HKLM:\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\X64'
+    VCRedistX86                 = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\X86'
 }
 
 # === CONFIGURATION FILE PATHS ===
@@ -133,6 +150,9 @@ $script:StatePaths = @{
     TelemetryData               = Join-Path $script:Win11ForgeTelemetryDir 'telemetry.json'
     UserSettings                = Join-Path $script:Win11ForgeDataDir 'settings.json'
     DeploymentHistory           = Join-Path $script:Win11ForgeDataDir 'deployment-history.json'
+    SecureStorage               = Join-Path $script:Win11ForgeDataDir 'secure-storage.dpapi'
+    ApiKeys                     = Join-Path $script:Win11ForgeDataDir 'api-keys.secure'
+    Entropy                     = Join-Path $script:Win11ForgeDataDir 'entropy.bin'
 }
 
 # === DATABASE PATHS ===
@@ -166,6 +186,27 @@ $script:NetworkDefaults = @{
     ConnectivityTestCount       = 1
 }
 
+# === EXIT CODES ===
+$script:ExitCodes = @{
+    Winget = @{
+        Success                     = 0
+        NoApplicableUpdate          = -1978335189   # 0x8A150014 - Already up to date
+        InstallerHashMismatch       = -1978335191   # 0x8A150012
+        NoApplicableInstaller       = -1978335183   # 0x8A15001B
+        PackageInUse                = -1978335178   # 0x8A150020
+    }
+    Chocolatey = @{
+        Success                     = 0
+        Reboot                      = 3010
+    }
+    General = @{
+        Success                     = 0
+        GeneralError                = 1
+        AccessDenied                = 5
+        RebootRequired              = 3010
+    }
+}
+
 # === ALLOWED EXECUTABLES FOR DETECTION ===
 $script:AllowedDetectionExecutables = @(
     'java', 'java.exe',
@@ -191,6 +232,9 @@ function Get-Win11ForgeDirectory {
     <#
     .SYNOPSIS
         Returns Win11Forge data directory paths.
+    .DESCRIPTION
+        Resolves and returns the absolute path for a specified Win11Forge data directory type
+        (e.g., Logs, Cache, Backups). Creates the directory automatically if it does not exist.
     .PARAMETER DirectoryType
         Type of directory to return.
     #>
@@ -225,6 +269,9 @@ function Get-RegistryPath {
     <#
     .SYNOPSIS
         Returns a registry path by key name.
+    .DESCRIPTION
+        Looks up a Windows registry path from the centralized registry paths dictionary using a
+        logical key name. Throws an ArgumentException if the key is not recognized.
     .PARAMETER PathKey
         The registry path key name.
     #>
@@ -246,6 +293,9 @@ function Get-AllRegistryPaths {
     <#
     .SYNOPSIS
         Returns all registry paths as a hashtable.
+    .DESCRIPTION
+        Returns a cloned copy of the complete registry paths dictionary, allowing callers to
+        enumerate all known registry locations without modifying the module's internal state.
     #>
     [CmdletBinding()]
     [OutputType([hashtable])]
@@ -258,6 +308,9 @@ function Get-ConfigPath {
     <#
     .SYNOPSIS
         Returns a configuration file path by key name.
+    .DESCRIPTION
+        Looks up a configuration file path from the centralized config paths dictionary using a
+        logical key name. Throws an ArgumentException if the key is not recognized.
     .PARAMETER PathKey
         The configuration path key name.
     #>
@@ -279,6 +332,9 @@ function Get-StatePath {
     <#
     .SYNOPSIS
         Returns a state file path by key name.
+    .DESCRIPTION
+        Looks up a runtime state file path from the centralized state paths dictionary using a
+        logical key name. Throws an ArgumentException if the key is not recognized.
     .PARAMETER PathKey
         The state path key name.
     #>
@@ -300,6 +356,9 @@ function Get-Timeout {
     <#
     .SYNOPSIS
         Returns a timeout value by key name.
+    .DESCRIPTION
+        Looks up a timeout value in seconds from the centralized timeouts dictionary using a
+        logical key name. Throws an ArgumentException if the key is not recognized.
     .PARAMETER TimeoutKey
         The timeout key name.
     #>
@@ -321,6 +380,9 @@ function Get-ParallelLimit {
     <#
     .SYNOPSIS
         Returns a parallel execution limit by key name.
+    .DESCRIPTION
+        Looks up a parallel execution constraint (e.g., max jobs, retry attempts) from the centralized
+        parallel limits dictionary. Throws an ArgumentException if the key is not recognized.
     .PARAMETER LimitKey
         The limit key name.
     #>
@@ -342,6 +404,9 @@ function Get-NetworkDefault {
     <#
     .SYNOPSIS
         Returns a network default setting by key name.
+    .DESCRIPTION
+        Looks up a network-related default value (e.g., connectivity test host, ping count) from the
+        centralized network defaults dictionary. Throws an ArgumentException if the key is not recognized.
     .PARAMETER SettingKey
         The network setting key name.
     #>
@@ -363,6 +428,9 @@ function Get-AllowedDetectionExecutables {
     <#
     .SYNOPSIS
         Returns the list of allowed executables for detection.
+    .DESCRIPTION
+        Returns the whitelist of executable names that the application detection system is permitted
+        to probe via command-based detection, limiting exposure to known development tools and runtimes.
     #>
     [CmdletBinding()]
     [OutputType([string[]])]
@@ -375,6 +443,9 @@ function Get-ShellFolder {
     <#
     .SYNOPSIS
         Returns a Windows shell folder path.
+    .DESCRIPTION
+        Resolves and returns the absolute path for a Windows shell folder such as Desktop, Documents,
+        Downloads, Start Menu, or Startup directories for the current user or all users.
     .PARAMETER FolderType
         Type of shell folder to return.
     #>
@@ -383,30 +454,62 @@ function Get-ShellFolder {
     param(
         [Parameter(Mandatory)]
         [ValidateSet('Desktop', 'Documents', 'Downloads', 'StartMenu', 'StartMenuPrograms',
-                     'Startup', 'CommonStartMenu', 'CommonPrograms', 'CommonStartup', 'CommonDesktop')]
+                     'Startup', 'CommonStartMenu', 'CommonPrograms', 'CommonStartup', 'CommonDesktop',
+                     'Temp', 'DefaultUserProfile', 'StartMenuBinary')]
         [string]$FolderType
     )
 
     $path = switch ($FolderType) {
-        'Desktop'           { $script:DesktopDir }
-        'Documents'         { $script:DocumentsDir }
-        'Downloads'         { $script:DownloadsDir }
-        'StartMenu'         { $script:StartMenuDir }
-        'StartMenuPrograms' { $script:StartMenuProgramsDir }
-        'Startup'           { $script:StartupDir }
-        'CommonStartMenu'   { $script:CommonStartMenuDir }
-        'CommonPrograms'    { $script:CommonProgramsDir }
-        'CommonStartup'     { $script:CommonStartupDir }
-        'CommonDesktop'     { $script:CommonDesktopDir }
+        'Desktop'            { $script:DesktopDir }
+        'Documents'          { $script:DocumentsDir }
+        'Downloads'          { $script:DownloadsDir }
+        'StartMenu'          { $script:StartMenuDir }
+        'StartMenuPrograms'  { $script:StartMenuProgramsDir }
+        'Startup'            { $script:StartupDir }
+        'CommonStartMenu'    { $script:CommonStartMenuDir }
+        'CommonPrograms'     { $script:CommonProgramsDir }
+        'CommonStartup'      { $script:CommonStartupDir }
+        'CommonDesktop'      { $script:CommonDesktopDir }
+        'Temp'               { $script:TempDir }
+        'DefaultUserProfile' { $script:DefaultUserProfileDir }
+        'StartMenuBinary'    { $script:StartMenuBinaryDir }
     }
 
     return $path
+}
+
+function Get-ExitCodes {
+    <#
+    .SYNOPSIS
+        Returns exit code constants for package managers and general operations.
+    .DESCRIPTION
+        Returns a hashtable of known exit codes for Winget, Chocolatey, or general operations.
+        When a Manager filter is specified, returns only that manager's exit codes; otherwise returns all.
+    .PARAMETER Manager
+        Optional package manager filter (Winget, Chocolatey, General).
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param(
+        [Parameter()]
+        [ValidateSet('Winget', 'Chocolatey', 'General')]
+        [string]$Manager
+    )
+
+    if ($Manager) {
+        return $script:ExitCodes[$Manager]
+    }
+
+    return $script:ExitCodes
 }
 
 function Get-RepositoryRoot {
     <#
     .SYNOPSIS
         Returns the Win11Forge repository root path.
+    .DESCRIPTION
+        Returns the absolute path to the Win11Forge repository root directory, computed at module
+        load time from the location of this module file.
     #>
     [CmdletBinding()]
     [OutputType([string])]
@@ -427,5 +530,6 @@ Export-ModuleMember -Function @(
     'Get-NetworkDefault',
     'Get-AllowedDetectionExecutables',
     'Get-ShellFolder',
+    'Get-ExitCodes',
     'Get-RepositoryRoot'
 )

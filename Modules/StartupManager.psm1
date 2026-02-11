@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Startup Manager v3.6.8
+    Win11Forge - Startup Manager v3.7.1
 
 .DESCRIPTION
     Module for managing Windows startup applications:
@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Requires: PowerShell 5.1+, Administrator privileges
 #>
 
@@ -51,12 +51,21 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
     }
 }
 
+# Import DirectoryConstants for centralized registry paths
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+if (-not (Get-Command -Name Get-RegistryPath -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
+    }
+}
+
 # === STARTUP LOCATIONS ===
 $script:StartupLocations = @{
-    CurrentUserRun = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
-    CurrentUserRunOnce = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce'
-    LocalMachineRun = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
-    LocalMachineRunOnce = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce'
+    CurrentUserRun = (Get-RegistryPath -PathKey 'CurrentUserRun')
+    CurrentUserRunOnce = (Get-RegistryPath -PathKey 'CurrentUserRunOnce')
+    LocalMachineRun = (Get-RegistryPath -PathKey 'LocalMachineRun')
+    LocalMachineRunOnce = (Get-RegistryPath -PathKey 'LocalMachineRunOnce')
+    # No centralized key for WOW6432Node Run path - keeping as-is
     LocalMachineRun64 = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run'
     CurrentUserStartup = [Environment]::GetFolderPath('Startup')
     CommonStartup = [Environment]::GetFolderPath('CommonStartup')

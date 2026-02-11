@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'StartupManager.psm1'
-    ModuleVersion = '3.7.0'
+    ModuleVersion = '3.7.1'
     GUID = '874cf8cc-8852-4a49-aaf5-d3efffe86865'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Startup', 'Autorun')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.6.8'
+            ReleaseNotes = 'Win11Forge v3.7.1'
         }
     }
 }

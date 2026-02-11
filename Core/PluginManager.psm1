@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Plugin Manager v3.6.8
+    Win11Forge - Plugin Manager v3.7.1
 
 .DESCRIPTION
     Provides plugin system functionality for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -166,6 +166,11 @@ function Get-PluginConfig {
     .SYNOPSIS
         Loads and returns the plugin configuration.
 
+    .DESCRIPTION
+        Reads plugin settings from the JSON configuration file, including enabled state,
+        auto-load behavior, allowed hooks, disabled plugins list, and timeout values.
+        Falls back to default configuration when the file is missing or malformed.
+
     .OUTPUTS
         Hashtable containing plugin configuration.
     #>
@@ -252,6 +257,11 @@ function Get-LoadedPlugins {
     <#
     .SYNOPSIS
         Lists currently loaded plugins.
+
+    .DESCRIPTION
+        Returns an array of plugin information objects for all plugins that are
+        currently loaded into the session, including their names, versions, and
+        registration metadata.
 
     .OUTPUTS
         Array of loaded plugin information.
@@ -394,6 +404,10 @@ function Remove-Plugin {
     .SYNOPSIS
         Unloads a plugin.
 
+    .DESCRIPTION
+        Removes a loaded plugin from the session by unregistering all its hooks and
+        custom installation methods, then removing it from the loaded plugins collection.
+
     .PARAMETER Name
         Name of the plugin to unload.
 
@@ -438,6 +452,11 @@ function Register-PluginHook {
     <#
     .SYNOPSIS
         Registers a hook handler.
+
+    .DESCRIPTION
+        Adds a handler to the specified hook point so it will be invoked when that
+        hook is triggered during framework operations. Only hooks listed in the
+        allowed hooks configuration are accepted.
 
     .PARAMETER HookName
         Name of the hook (e.g., 'pre-install').
@@ -577,6 +596,11 @@ function Register-CustomInstallMethod {
     .SYNOPSIS
         Registers a custom installation method.
 
+    .DESCRIPTION
+        Adds a plugin-provided installation method to the framework's method registry,
+        making it available alongside built-in methods like Winget and Chocolatey. The
+        handler will be invoked when an application specifies this method for installation.
+
     .PARAMETER MethodName
         Name of the installation method.
 
@@ -615,6 +639,11 @@ function Get-CustomInstallMethod {
     .SYNOPSIS
         Gets a custom installation method handler.
 
+    .DESCRIPTION
+        Looks up a custom installation method by name in the plugin registry and
+        returns the handler object if found, or null if no plugin has registered
+        a method with that name.
+
     .PARAMETER MethodName
         Name of the method.
 
@@ -639,6 +668,11 @@ function Get-RegisteredInstallMethods {
     .SYNOPSIS
         Lists all registered custom installation methods.
 
+    .DESCRIPTION
+        Returns information about all custom installation methods that have been
+        registered by plugins, including the method name, providing plugin name,
+        and registration timestamp.
+
     .OUTPUTS
         Array of method information.
     #>
@@ -661,6 +695,11 @@ function Test-PluginManifest {
     <#
     .SYNOPSIS
         Validates a plugin manifest.
+
+    .DESCRIPTION
+        Parses and validates a plugin's manifest.json file, checking for required
+        fields (name, version, entryPoint), valid name format, and that the declared
+        entry point script file exists on disk.
 
     .PARAMETER ManifestPath
         Path to the manifest.json file.

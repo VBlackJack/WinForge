@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - State Manager v3.6.8
+    Win11Forge - State Manager v3.7.1
 
 .DESCRIPTION
     Centralized state management for Win11Forge deployments:
@@ -13,7 +13,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -239,8 +239,16 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
     }
 }
 
+# Import DirectoryConstants for path management
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
+if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
+    }
+}
+
 # === DATA DIRECTORY ===
-$script:Win11ForgeDataDir = Join-Path $env:LOCALAPPDATA 'Win11Forge'
+$script:Win11ForgeDataDir = Get-Win11ForgeDirectory -DirectoryType 'Data'
 if (-not (Test-Path $script:Win11ForgeDataDir)) {
     New-Item -Path $script:Win11ForgeDataDir -ItemType Directory -Force | Out-Null
 }
@@ -357,6 +365,10 @@ function Test-ValidRollbackEntry {
     <#
     .SYNOPSIS
         Validates a rollback entry for security.
+    .DESCRIPTION
+        Checks a rollback entry for safe values by verifying that the application name, installation
+        method, and identifier do not contain shell metacharacters or exceed length limits, preventing
+        injection attacks during rollback operations.
     .PARAMETER Entry
         The rollback entry to validate.
     .OUTPUTS
@@ -395,6 +407,10 @@ function Initialize-RollbackSession {
     <#
     .SYNOPSIS
         Initializes a new rollback session to track installed applications.
+    .DESCRIPTION
+        Creates a new rollback session with a unique GUID, an empty installed-apps list, and a
+        start timestamp. The session state is immediately persisted to disk so that rollback
+        entries can be recovered after an unexpected interruption.
     .OUTPUTS
         The session ID of the new rollback session.
     #>
@@ -418,6 +434,9 @@ function Save-RollbackState {
     <#
     .SYNOPSIS
         Persists the rollback state to disk.
+    .DESCRIPTION
+        Serializes the current rollback state hashtable to JSON and writes it to the rollback state
+        file. This enables crash recovery by allowing the rollback session to be restored from disk.
     #>
     [CmdletBinding()]
     param()
@@ -433,6 +452,10 @@ function Add-RollbackEntry {
     <#
     .SYNOPSIS
         Adds an installed application to the rollback registry.
+    .DESCRIPTION
+        Records an application's installation details (name, method, identifier, and timestamp)
+        in the current rollback session after validating the entry for security. The updated state
+        is immediately persisted to disk.
     .PARAMETER AppName
         Name of the installed application.
     .PARAMETER Method
@@ -478,6 +501,9 @@ function Get-RollbackState {
     <#
     .SYNOPSIS
         Returns the current rollback state.
+    .DESCRIPTION
+        Returns a cloned copy of the current in-memory rollback state hashtable, including the
+        session ID, start time, and the list of installed applications tracked for potential rollback.
     .OUTPUTS
         Hashtable containing the current rollback state.
     #>
@@ -492,6 +518,9 @@ function Get-RollbackEntries {
     <#
     .SYNOPSIS
         Returns all rollback entries for the current session.
+    .DESCRIPTION
+        Retrieves the array of installed-application entries from the current rollback session.
+        Each entry contains the application name, installation method, identifier, and timestamp.
     .OUTPUTS
         Array of rollback entries.
     #>
@@ -506,6 +535,10 @@ function Clear-RollbackState {
     <#
     .SYNOPSIS
         Clears the rollback state (call after successful deployment or rollback).
+    .DESCRIPTION
+        Resets the in-memory rollback state to its initial empty values and deletes the persisted
+        rollback state file from disk. Call this after a successful deployment completes or after
+        a rollback has been executed.
     #>
     [CmdletBinding()]
     param()
@@ -527,6 +560,10 @@ function Restore-RollbackState {
     <#
     .SYNOPSIS
         Restores rollback state from disk if available.
+    .DESCRIPTION
+        Attempts to load a previously persisted rollback state from the state file on disk. This
+        enables recovery of an interrupted rollback session, allowing the framework to resume
+        tracking or uninstalling applications from where it left off.
     .OUTPUTS
         Boolean indicating if state was restored.
     #>
@@ -562,6 +599,10 @@ function Initialize-DeploymentSession {
     <#
     .SYNOPSIS
         Initializes a deployment session for tracking progress and enabling resume.
+    .DESCRIPTION
+        Creates a new deployment session with a unique GUID, populating it with the profile name,
+        application list, and timestamps. The state is immediately persisted to disk so the
+        deployment can be resumed if the process is interrupted.
     .PARAMETER ProfileName
         Name of the profile being deployed.
     .PARAMETER Applications
@@ -603,6 +644,10 @@ function Save-DeploymentState {
     <#
     .SYNOPSIS
         Persists deployment state to disk for crash recovery.
+    .DESCRIPTION
+        Serializes the current deployment state (including progress, completed and failed apps) to
+        JSON and writes it to the deployment state file. Updates the LastUpdated timestamp before
+        each write to track when the state was last persisted.
     #>
     [CmdletBinding()]
     param()
@@ -619,6 +664,9 @@ function Update-DeploymentProgress {
     <#
     .SYNOPSIS
         Updates deployment progress after an application installation attempt.
+    .DESCRIPTION
+        Moves an application from the pending list to either the completed or failed list based on
+        the installation outcome, then persists the updated deployment state to disk.
     .PARAMETER AppName
         Name of the application.
     .PARAMETER Success
@@ -649,6 +697,9 @@ function Get-DeploymentState {
     <#
     .SYNOPSIS
         Returns current deployment state or loads from disk if available.
+    .DESCRIPTION
+        Returns the in-memory deployment state if a session is active. Otherwise, attempts to load
+        a previously persisted state from disk for crash recovery. Returns null if no state exists.
     .OUTPUTS
         Hashtable containing the current deployment state.
     #>
@@ -690,6 +741,9 @@ function Get-DeploymentProgress {
     <#
     .SYNOPSIS
         Returns deployment progress as a percentage.
+    .DESCRIPTION
+        Calculates the deployment completion percentage by dividing the number of completed and
+        failed applications by the total application count, returning a value between 0 and 100.
     .OUTPUTS
         Progress percentage (0-100).
     #>
@@ -709,6 +763,10 @@ function Clear-DeploymentState {
     <#
     .SYNOPSIS
         Clears the deployment state (call after successful deployment).
+    .DESCRIPTION
+        Resets the in-memory deployment state to its initial empty values and deletes the persisted
+        state file from disk. Call this after a deployment completes successfully to prevent stale
+        state from interfering with future deployments.
     #>
     [CmdletBinding()]
     param()
@@ -735,6 +793,10 @@ function Test-DeploymentInProgress {
     <#
     .SYNOPSIS
         Checks if there is an incomplete deployment that can be resumed.
+    .DESCRIPTION
+        Queries the current deployment state and returns true if a session exists with one or more
+        applications still in the pending list, indicating the deployment was interrupted and can
+        be resumed.
     .OUTPUTS
         Boolean indicating if there is a resumable deployment.
     #>
@@ -750,6 +812,10 @@ function Get-ResumableDeployment {
     <#
     .SYNOPSIS
         Returns information about a resumable deployment.
+    .DESCRIPTION
+        Retrieves the saved deployment state and returns a summary hashtable containing the profile
+        name, remaining pending applications, and progress statistics. Returns null if there is no
+        resumable deployment.
     .OUTPUTS
         Hashtable with deployment info or null if none.
     #>

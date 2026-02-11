@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Localization v3.6.8
+    Win11Forge - Localization v3.7.1
 
 .DESCRIPTION
     Provides internationalization (i18n) functionality for the Win11Forge framework:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 
 .EXAMPLE
     # Initialize with auto-detected locale
@@ -55,6 +55,10 @@ function Initialize-Localization {
     <#
     .SYNOPSIS
         Initializes the localization system.
+    .DESCRIPTION
+        Loads translation files from the locales directory, auto-detecting the system language
+        if no locale is specified. Always loads English as a fallback, then overlays the requested
+        locale translations.
 
     .PARAMETER Locale
         Locale code (e.g., 'en', 'fr'). If not specified, auto-detects from system.
@@ -136,6 +140,10 @@ function Get-LocalizedString {
     <#
     .SYNOPSIS
         Gets a localized string by key.
+    .DESCRIPTION
+        Resolves a dot-notation translation key against the current locale, falling back to
+        English if the key is missing. Supports parameter substitution using {ParamName} placeholders
+        in translation values.
 
     .PARAMETER Key
         Translation key using dot notation (e.g., 'install.starting')
@@ -200,6 +208,10 @@ function Get-NestedValue {
     <#
     .SYNOPSIS
         Gets a value from a nested object using dot notation.
+    .DESCRIPTION
+        Traverses a nested hashtable or PSCustomObject hierarchy by splitting a dot-separated
+        key into segments and resolving each level. Returns null if any segment is missing.
+        Compatible with both PowerShell 5.1 PSCustomObjects and PowerShell 7+ hashtables.
 
     .PARAMETER Object
         The hashtable or PSCustomObject to search
@@ -255,6 +267,9 @@ function Get-CurrentLocale {
     <#
     .SYNOPSIS
         Gets the current locale code.
+    .DESCRIPTION
+        Returns the two-letter locale code that is currently active in the localization system
+        (e.g., 'en' or 'fr').
 
     .OUTPUTS
         [string] Current locale code (e.g., 'en', 'fr')
@@ -270,6 +285,9 @@ function Set-CurrentLocale {
     <#
     .SYNOPSIS
         Changes the current locale at runtime.
+    .DESCRIPTION
+        Reinitializes the localization system with a new locale code, reloading translation
+        files from disk while preserving the current locales directory path.
 
     .PARAMETER Locale
         New locale code to use
@@ -291,6 +309,9 @@ function Get-AvailableLocales {
     <#
     .SYNOPSIS
         Gets list of available locale codes.
+    .DESCRIPTION
+        Scans the locales directory for JSON translation files and returns an array of their
+        base names as available locale codes. Returns only 'en' if the directory is not found.
 
     .OUTPUTS
         [string[]] Array of available locale codes
@@ -313,6 +334,9 @@ function Test-TranslationKey {
     <#
     .SYNOPSIS
         Tests if a translation key exists.
+    .DESCRIPTION
+        Checks whether a dot-notation translation key is present in the current locale or the
+        English fallback translations. Does not return the value itself.
 
     .PARAMETER Key
         Translation key to test

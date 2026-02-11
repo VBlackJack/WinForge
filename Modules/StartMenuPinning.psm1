@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Start Menu Pinning v3.6.8
+    Win11Forge - Start Menu Pinning v3.7.1
 
 .DESCRIPTION
     Module for managing Windows 11 Start Menu pinned items using start2.bin/start.bin method:
@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Requires: PowerShell 5.1+, Windows 11, Administrator privileges
     Method: start2.bin binary file copy (most reliable method as of 2024-2025)
 
@@ -61,6 +61,7 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
 
 # === CONSTANTS ===
 
+# Windows system path - intentional direct env usage
 # Start Menu data paths (current user)
 $script:StartMenuDataPaths = @{
     # Windows 11 22H2+ uses start2.bin
@@ -230,11 +231,11 @@ function Backup-StartMenuLayout {
 .PARAMETER UseCurrentUser
     If specified, uses the current user's layout directly
 .EXAMPLE
-    Deploy-StartMenuLayoutToDefault -UseCurrentUser
+    Publish-StartMenuLayoutToDefault -UseCurrentUser
 .EXAMPLE
-    Deploy-StartMenuLayoutToDefault -SourcePath "C:\Backups\layout.bin"
+    Publish-StartMenuLayoutToDefault -SourcePath "C:\Backups\layout.bin"
 #>
-function Deploy-StartMenuLayoutToDefault {
+function Publish-StartMenuLayoutToDefault {
     [CmdletBinding()]
     param(
         [Parameter()]
@@ -407,10 +408,10 @@ function Invoke-StartMenuPinning {
     Write-Status -Message (Get-LocalizedString -Key 'startmenu.step2_deploy') -Level 'Info'
 
     if ($backupPath) {
-        $deployed = Deploy-StartMenuLayoutToDefault -SourcePath $backupPath
+        $deployed = Publish-StartMenuLayoutToDefault -SourcePath $backupPath
     }
     else {
-        $deployed = Deploy-StartMenuLayoutToDefault -UseCurrentUser
+        $deployed = Publish-StartMenuLayoutToDefault -UseCurrentUser
     }
 
     Write-Host ""
@@ -489,7 +490,7 @@ Export-ModuleMember -Function @(
     'Get-CurrentUserStartMenuBinary',
     'Get-DefaultProfileStartMenuBinary',
     'Backup-StartMenuLayout',
-    'Deploy-StartMenuLayoutToDefault',
+    'Publish-StartMenuLayoutToDefault',
     'Get-BackedUpLayouts',
     'Invoke-StartMenuPinning'
 )

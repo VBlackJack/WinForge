@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Orchestrator v3.6.8
+    Win11Forge - Installation Orchestrator v3.7.1
 
 .DESCRIPTION
     High-level orchestration logic for application installation.
@@ -17,7 +17,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 
     Changelog v3.2.2:
     - ARCHITECTURE: Extracted from InstallationEngine.psm1 for improved maintainability
@@ -393,12 +393,12 @@ function Invoke-InstallationMethodSequence {
     # 1. Try Winget
     if ($sources.Winget) {
         $result.AttemptedMethods += 'Winget'
-        & $writeLog "Attempting Winget: $($sources.Winget)" 'Verbose'
+        & $writeLog (Get-LocalizedString -Key 'install.orchestrator.attempting_winget' -Parameters @{ PackageId = $sources.Winget }) 'Verbose'
 
         $wingetOutput = @(Install-ViaWinget -PackageId $sources.Winget)
         if (& $getInstallResult $wingetOutput) {
             if ($isOfficeApp) {
-                & $writeLog "Office installation initiated, waiting for Click-to-Run to complete..." 'Info'
+                & $writeLog (Get-LocalizedString -Key 'install.orchestrator.office_c2r_waiting') 'Info'
                 $officeTimeout = Get-InstallationTimeout -AppName 'Office'
                 $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $officeTimeout
                 if (-not $officeInstalled) {
@@ -411,7 +411,7 @@ function Invoke-InstallationMethodSequence {
             return $result
         } else {
             if (& $testIgnoreExitCode) {
-                & $writeLog "Installation succeeded despite exit code (files verified)" 'Success'
+                & $writeLog (Get-LocalizedString -Key 'install.orchestrator.success_despite_exit_code') 'Success'
                 $result.Success = $true
                 $result.Method = 'Winget'
                 $result.Message = (Get-LocalizedString -Key 'orchestrator.result.winget_verified')
@@ -424,12 +424,12 @@ function Invoke-InstallationMethodSequence {
     # 2. Try Chocolatey
     if ($sources.Chocolatey) {
         $result.AttemptedMethods += 'Chocolatey'
-        & $writeLog "Attempting Chocolatey: $($sources.Chocolatey)" 'Verbose'
+        & $writeLog (Get-LocalizedString -Key 'install.orchestrator.attempting_choco' -Parameters @{ PackageId = $sources.Chocolatey }) 'Verbose'
 
         $chocoOutput = @(Install-ViaChocolatey -PackageName $sources.Chocolatey)
         if (& $getInstallResult $chocoOutput) {
             if ($isOfficeApp) {
-                & $writeLog "Office installation initiated, waiting for Click-to-Run to complete..." 'Info'
+                & $writeLog (Get-LocalizedString -Key 'install.orchestrator.office_c2r_waiting') 'Info'
                 $officeTimeout = Get-InstallationTimeout -AppName 'Office'
                 $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $officeTimeout
                 if (-not $officeInstalled) {
@@ -442,7 +442,7 @@ function Invoke-InstallationMethodSequence {
             return $result
         } else {
             if (& $testIgnoreExitCode) {
-                & $writeLog "Installation succeeded despite exit code (files verified)" 'Success'
+                & $writeLog (Get-LocalizedString -Key 'install.orchestrator.success_despite_exit_code') 'Success'
                 $result.Success = $true
                 $result.Method = 'Chocolatey'
                 $result.Message = (Get-LocalizedString -Key 'orchestrator.result.chocolatey_verified')
@@ -455,7 +455,7 @@ function Invoke-InstallationMethodSequence {
     # 3. Try Microsoft Store
     if ($sources.Store) {
         $result.AttemptedMethods += 'Store'
-        & $writeLog "Attempting Microsoft Store: $($sources.Store)" 'Verbose'
+        & $writeLog (Get-LocalizedString -Key 'install.orchestrator.attempting_store' -Parameters @{ ProductId = $sources.Store }) 'Verbose'
 
         $storeOutput = @(Install-ViaStore -ProductId $sources.Store)
         if (& $getInstallResult $storeOutput) {
@@ -471,14 +471,14 @@ function Invoke-InstallationMethodSequence {
     # 4. Try Direct Download
     if ($sources.DirectUrl) {
         $result.AttemptedMethods += 'DirectDownload'
-        & $writeLog "Attempting direct download: $($sources.DirectUrl)" 'Verbose'
+        & $writeLog (Get-LocalizedString -Key 'install.orchestrator.attempting_direct' -Parameters @{ Url = $sources.DirectUrl }) 'Verbose'
 
         $installParams = @{ Url = $sources.DirectUrl }
 
         $installArgs = if ($Application.PSObject.Properties['InstallArguments']) { $Application.InstallArguments } else { $null }
         if ($installArgs) {
             $installParams['CustomArguments'] = $installArgs
-            & $writeLog "Custom arguments detected: $installArgs" 'Verbose'
+            & $writeLog (Get-LocalizedString -Key 'install.orchestrator.custom_args_detected' -Parameters @{ Arguments = $installArgs }) 'Verbose'
         }
 
         if ($Application.Detection -and $Application.Detection.Path) {
@@ -996,6 +996,7 @@ function Test-AppInstalledParallel {
 
     $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
     $parallelTimeoutMs = $script:ParallelInstallTimeoutMs
+    $frameworkVersion = (Get-Content (Join-Path $script:RepositoryRoot 'Config\version.json') -Raw | ConvertFrom-Json).Version
 
     $installResults = $appsToInstall | ForEach-Object -ThrottleLimit $MaxParallel -Parallel {
         $app = $_
@@ -1006,6 +1007,7 @@ function Test-AppInstalledParallel {
         $validateUrl = $using:validateUrlFunction
         $detectAppFunc = $using:detectAppFunction
         $installTimeoutMs = $using:parallelTimeoutMs
+        $fwVersion = $using:frameworkVersion
 
         ${function:Test-ValidDownloadUrl} = [ScriptBlock]::Create($validateUrl)
         . ([ScriptBlock]::Create($detectAppFunc))
@@ -1301,6 +1303,7 @@ function Test-AppInstalledParallel {
                     }
                     Write-ParallelLog "Installer filename: $filename" 'Info'
 
+                    # Parallel runspace - intentional direct env usage
                     $tempDir = Join-Path $env:TEMP "Win11Forge_$([guid]::NewGuid().ToString('N'))"
                     New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
                     $tempFile = Join-Path $tempDir $filename
@@ -1315,7 +1318,7 @@ function Test-AppInstalledParallel {
                     try {
                         $ProgressPreference = 'SilentlyContinue'
                         $headers = @{
-                            'User-Agent' = 'Win11Forge/3.5.0 (Windows NT; PowerShell)'
+                            'User-Agent' = "Win11Forge/$fwVersion (Windows NT; PowerShell)"
                         }
                         Invoke-WebRequest -Uri $sources.DirectUrl -OutFile $tempFile -Headers $headers -UseBasicParsing -TimeoutSec 600 -ErrorAction Stop
                         if ((Test-Path -Path $tempFile) -and (Get-Item -Path $tempFile).Length -gt 0) { $downloadSuccess = $true }

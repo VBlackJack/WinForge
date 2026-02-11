@@ -43,6 +43,11 @@ internal static partial class PackageIdValidator
 /// </summary>
 public partial class PackageVerificationService : IPackageVerificationService
 {
+    private static readonly string AppVersion =
+        typeof(PackageVerificationService).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
+
+    private static readonly string UserAgentValue = $"Win11Forge/{AppVersion}";
+
     private static readonly HttpClient SharedHttpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(15)
@@ -205,7 +210,7 @@ public partial class PackageVerificationService : IPackageVerificationService
             var url = $"https://apps.microsoft.com/detail/{storeId}";
 
             using var request = new HttpRequestMessage(HttpMethod.Head, url);
-            request.Headers.Add("User-Agent", "Win11Forge/3.5.2");
+            request.Headers.Add("User-Agent", UserAgentValue);
 
             using var response = await SharedHttpClient.SendAsync(request, cancellationToken);
 
@@ -256,7 +261,7 @@ public partial class PackageVerificationService : IPackageVerificationService
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Head, url);
-            request.Headers.Add("User-Agent", "Win11Forge/3.5.2");
+            request.Headers.Add("User-Agent", UserAgentValue);
 
             using var response = await SharedHttpClient.SendAsync(request, cancellationToken);
 
@@ -275,7 +280,7 @@ public partial class PackageVerificationService : IPackageVerificationService
             {
                 using var getRequest = new HttpRequestMessage(HttpMethod.Get, url);
                 getRequest.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(0, 0);
-                getRequest.Headers.Add("User-Agent", "Win11Forge/3.5.2");
+                getRequest.Headers.Add("User-Agent", UserAgentValue);
 
                 using var getResponse = await SharedHttpClient.SendAsync(getRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 

@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Secure Storage v3.6.8
+    Win11Forge - Secure Storage v3.7.1
 
 .DESCRIPTION
     Provides secure storage capabilities using Windows DPAPI:
@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
     Uses Windows Data Protection API (DPAPI) for encryption
 #>
 
@@ -32,11 +32,22 @@
 
 Set-StrictMode -Version Latest
 
+# Load System.Security assembly for DPAPI types (required for PowerShell 5.1)
+Add-Type -AssemblyName System.Security
+
 # === MODULE INITIALIZATION ===
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
-$script:SecureStoragePath = Join-Path $env:LOCALAPPDATA 'Win11Forge\secure-storage.dat'
-$script:SecureApiKeysPath = Join-Path $env:LOCALAPPDATA 'Win11Forge\api-keys.secure'
+# Import DirectoryConstants for path management
+$script:DirectoryConstantsPath = Join-Path $script:ModuleRoot 'DirectoryConstants.psm1'
+if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
+    }
+}
+
+$script:SecureStoragePath = Get-StatePath -PathKey 'SecureStorage'
+$script:SecureApiKeysPath = Get-StatePath -PathKey 'ApiKeys'
 
 # Ensure directory exists
 $secureDir = Split-Path $script:SecureStoragePath -Parent
@@ -45,9 +56,29 @@ if (-not (Test-Path $secureDir)) {
 }
 
 # Security: Per-user entropy file path
-$script:EntropyPath = Join-Path $env:LOCALAPPDATA 'Win11Forge\entropy.dat'
+$script:EntropyPath = Get-StatePath -PathKey 'Entropy'
 # Mutex name for cross-process synchronization (per-user to avoid privilege issues)
 $script:EntropyMutexName = "Local\Win11Forge_Entropy_$($env:USERNAME)"
+# In-memory entropy cache to ensure consistency within a session
+$script:CachedEntropy = $null
+
+# Import Localization module for i18n support
+$script:LocalizationModulePath = Join-Path $script:ModuleRoot 'Localization.psm1'
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        try {
+            Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
+        } catch { Write-Debug "Localization module not available: $($_.Exception.Message)" }
+    }
+}
+
+# Import Win11ForgeExceptions for custom exception types
+$script:ExceptionsPath = Join-Path $script:ModuleRoot 'Win11ForgeExceptions.psm1'
+if (-not (Get-Command -Name New-SecurityException -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:ExceptionsPath) {
+        Import-Module -Name $script:ExceptionsPath -Force
+    }
+}
 
 # === ENTROPY MANAGEMENT ===
 
@@ -87,9 +118,9 @@ function Set-SecureFileAcl {
         )
         $acl.AddAccessRule($rule)
         Set-Acl -Path $Path -AclObject $acl -ErrorAction Stop
-        Write-Verbose "Set restrictive ACL on: $Path"
+        Write-Verbose (t 'security.storage.acl_set' @{ Path = $Path })
     } catch {
-        Write-Verbose "Could not set ACL on $Path : $($_.Exception.Message)"
+        Write-Verbose (t 'security.storage.acl_failed' @{ Path = $Path; Error = $_.Exception.Message })
     }
 }
 
@@ -140,6 +171,11 @@ function Get-DpapiEntropy {
     [OutputType([byte[]])]
     param()
 
+    # Return cached entropy if available (avoids file I/O on every call)
+    if ($null -ne $script:CachedEntropy) {
+        return $script:CachedEntropy
+    }
+
     $mutex = $null
     $mutexAcquired = $false
 
@@ -150,25 +186,26 @@ function Get-DpapiEntropy {
         # Wait for exclusive access (2 second timeout to mitigate attack surface)
         $mutexAcquired = $mutex.WaitOne(2000)
         if (-not $mutexAcquired) {
-            Write-Warning "Could not acquire entropy mutex within timeout, proceeding without lock"
+            Write-Warning (t 'security.storage.mutex_timeout')
         }
 
         # Try to read existing entropy file atomically (no separate Test-Path check)
         try {
             $entropyBytes = [System.IO.File]::ReadAllBytes($script:EntropyPath)
             if ($entropyBytes.Length -eq 32) {
+                $script:CachedEntropy = $entropyBytes
                 return $entropyBytes
             }
             # Invalid entropy file, will regenerate below
-            Write-Verbose "Regenerating entropy file (invalid length: $($entropyBytes.Length))"
+            Write-Verbose (t 'security.storage.entropy_regenerating' @{ Length = $entropyBytes.Length })
         } catch [System.IO.FileNotFoundException] {
             # File doesn't exist, will create below
-            Write-Verbose "Entropy file not found, creating new one"
+            Write-Verbose (t 'security.storage.entropy_not_found')
         } catch [System.IO.DirectoryNotFoundException] {
             # Directory doesn't exist, will create below
-            Write-Verbose "Entropy directory not found, creating new one"
+            Write-Verbose (t 'security.storage.entropy_dir_not_found')
         } catch {
-            Write-Verbose "Failed to read entropy file, regenerating: $($_.Exception.Message)"
+            Write-Verbose (t 'security.storage.entropy_read_failed' @{ Error = $_.Exception.Message })
         }
 
         # Generate new random entropy (32 bytes = 256 bits)
@@ -190,39 +227,38 @@ function Get-DpapiEntropy {
             }
 
             # Use a temporary file and atomic rename for safe writes
-            # Security: Create file with restrictive ACL BEFORE writing sensitive data
             $tempPath = "$script:EntropyPath.tmp.$PID"
             try {
-                # Create empty file first with restrictive permissions to avoid TOCTOU
-                $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
                 $fileStream = $null
                 try {
-                    # Create file with explicit access control - only current user can access
-                    $fileSecurity = New-Object System.Security.AccessControl.FileSecurity
-                    $fileSecurity.SetAccessRuleProtection($true, $false)
-                    $rule = New-Object System.Security.AccessControl.FileSystemAccessRule(
-                        $currentUser,
-                        [System.Security.AccessControl.FileSystemRights]::FullControl,
-                        [System.Security.AccessControl.AccessControlType]::Allow
-                    )
-                    $fileSecurity.AddAccessRule($rule)
-
-                    # Create file with ACL already applied (no TOCTOU window)
-                    $fileStream = [System.IO.File]::Create(
+                    # Write entropy to temp file (compatible with both .NET Framework and .NET Core)
+                    $fileStream = [System.IO.FileStream]::new(
                         $tempPath,
+                        [System.IO.FileMode]::Create,
+                        [System.IO.FileAccess]::Write,
+                        [System.IO.FileShare]::None,
                         4096,
-                        [System.IO.FileOptions]::WriteThrough,
-                        $fileSecurity
+                        [System.IO.FileOptions]::WriteThrough
                     )
-                    # Write entropy bytes to secured file
                     $fileStream.Write($entropyBytes, 0, $entropyBytes.Length)
                     $fileStream.Flush()
                 } finally {
                     if ($fileStream) { $fileStream.Dispose() }
                 }
 
+                # Apply restrictive ACL before moving to final path
+                Set-SecureFileAcl -Path $tempPath
+
                 # Atomic move (rename) to final path
-                [System.IO.File]::Move($tempPath, $script:EntropyPath, $true)
+                if ($PSVersionTable.PSVersion.Major -ge 7) {
+                    [System.IO.File]::Move($tempPath, $script:EntropyPath, $true)
+                } else {
+                    # .NET Framework File.Move does not support overwrite parameter
+                    if (Test-Path $script:EntropyPath) {
+                        Remove-Item -Path $script:EntropyPath -Force
+                    }
+                    [System.IO.File]::Move($tempPath, $script:EntropyPath)
+                }
             } finally {
                 # Clean up temp file if it still exists (move failed)
                 if (Test-Path $tempPath) {
@@ -230,9 +266,10 @@ function Get-DpapiEntropy {
                 }
             }
         } catch {
-            Write-Verbose "Could not persist entropy file: $($_.Exception.Message)"
+            Write-Verbose (t 'security.storage.entropy_persist_failed' @{ Error = $_.Exception.Message })
         }
 
+        $script:CachedEntropy = $entropyBytes
         return $entropyBytes
     } finally {
         # Always release the mutex
@@ -298,7 +335,7 @@ function Protect-Data {
 
             return [Convert]::ToBase64String($encryptedBytes)
         } catch {
-            throw (New-SecurityException -Message "Failed to encrypt data: $($_.Exception.Message)")
+            throw (New-SecurityException -Message (t 'security.storage.encrypt_failed' @{ Error = $_.Exception.Message }))
         }
     }
 }
@@ -354,7 +391,7 @@ function Unprotect-Data {
 
             return [System.Text.Encoding]::UTF8.GetString($decryptedBytes)
         } catch {
-            throw (New-SecurityException -Message "Failed to decrypt data: $($_.Exception.Message)")
+            throw (New-SecurityException -Message (t 'security.storage.decrypt_failed' @{ Error = $_.Exception.Message }))
         }
     }
 }
@@ -431,10 +468,10 @@ function Save-SecureApiKey {
         $encryptedStorage = Protect-Data -PlainText $json
         Set-Content -Path $script:SecureApiKeysPath -Value $encryptedStorage -Force
 
-        Write-Verbose "API key '$KeyId' saved securely"
+        Write-Verbose (t 'security.storage.api_key_saved' @{ KeyId = $KeyId })
         return $true
     } catch {
-        Write-Error "Failed to save API key: $($_.Exception.Message)"
+        Write-Error (t 'security.storage.api_key_save_failed' @{ Error = $_.Exception.Message })
         return $false
     }
 }
@@ -495,7 +532,7 @@ function Get-SecureApiKeys {
 
         return $keys
     } catch {
-        Write-Verbose "Could not load secure API keys: $($_.Exception.Message)"
+        Write-Verbose (t 'security.storage.api_keys_load_failed' @{ Error = $_.Exception.Message })
         return @{}
     }
 }
@@ -504,6 +541,9 @@ function Remove-SecureApiKey {
     <#
     .SYNOPSIS
         Removes an API key from secure storage.
+    .DESCRIPTION
+        Deletes the specified API key entry from the DPAPI-encrypted key store. If no keys remain
+        after removal, the entire secure API keys file is deleted.
 
     .PARAMETER KeyId
         The ID of the key to remove.
@@ -531,13 +571,13 @@ function Remove-SecureApiKey {
                 Set-Content -Path $script:SecureApiKeysPath -Value $encryptedStorage -Force
             }
 
-            Write-Verbose "API key '$KeyId' removed"
+            Write-Verbose (t 'security.storage.api_key_removed' @{ KeyId = $KeyId })
             return $true
         }
 
         return $false
     } catch {
-        Write-Error "Failed to remove API key: $($_.Exception.Message)"
+        Write-Error (t 'security.storage.api_key_remove_failed' @{ Error = $_.Exception.Message })
         return $false
     }
 }
@@ -579,7 +619,7 @@ function Get-SecureApiKeysForAuth {
             }
         }
     } catch {
-        Write-Verbose "Could not load API keys for auth: $($_.Exception.Message)"
+        Write-Verbose (t 'security.storage.api_keys_auth_failed' @{ Error = $_.Exception.Message })
     }
 
     return $authKeys
@@ -591,6 +631,9 @@ function Save-SecureData {
     <#
     .SYNOPSIS
         Saves arbitrary data securely using DPAPI encryption.
+    .DESCRIPTION
+        Encrypts a string value with DPAPI and stores it in the generic secure storage file,
+        indexed by a unique key name. Existing entries with the same key are overwritten.
 
     .PARAMETER Key
         Unique key name for the data.
@@ -619,7 +662,7 @@ function Save-SecureData {
                 $json = Unprotect-Data -EncryptedData $encryptedStorage
                 $storage = $json | ConvertFrom-Json -AsHashtable
             } catch {
-                Write-Verbose "Failed to read secure storage (will create new): $($_.Exception.Message)"
+                Write-Verbose (t 'security.storage.read_failed' @{ Error = $_.Exception.Message })
             }
         }
 
@@ -631,10 +674,10 @@ function Save-SecureData {
         $encryptedStorage = Protect-Data -PlainText $json
         Set-Content -Path $script:SecureStoragePath -Value $encryptedStorage -Force
 
-        Write-Verbose "Secure data '$Key' saved"
+        Write-Verbose (t 'security.storage.data_saved' @{ Key = $Key })
         return $true
     } catch {
-        Write-Error "Failed to save secure data: $($_.Exception.Message)"
+        Write-Error (t 'security.storage.data_save_failed' @{ Error = $_.Exception.Message })
         return $false
     }
 }
@@ -643,6 +686,9 @@ function Get-SecureData {
     <#
     .SYNOPSIS
         Retrieves securely stored data.
+    .DESCRIPTION
+        Decrypts and returns a value from the generic secure storage file by its key name.
+        Returns null if the key does not exist or the storage file is not found.
 
     .PARAMETER Key
         The key name of the data to retrieve.
@@ -675,7 +721,7 @@ function Get-SecureData {
 
         return $null
     } catch {
-        Write-Verbose "Could not retrieve secure data: $($_.Exception.Message)"
+        Write-Verbose (t 'security.storage.data_retrieve_failed' @{ Error = $_.Exception.Message })
         return $null
     }
 }
@@ -684,6 +730,9 @@ function Remove-SecureData {
     <#
     .SYNOPSIS
         Removes data from secure storage.
+    .DESCRIPTION
+        Deletes a value from the generic secure storage file by its key name. If no entries remain
+        after removal, the entire secure storage file is deleted.
 
     .PARAMETER Key
         The key name of the data to remove.
@@ -717,13 +766,13 @@ function Remove-SecureData {
                 Set-Content -Path $script:SecureStoragePath -Value $encryptedStorage -Force
             }
 
-            Write-Verbose "Secure data '$Key' removed"
+            Write-Verbose (t 'security.storage.data_removed' @{ Key = $Key })
             return $true
         }
 
         return $false
     } catch {
-        Write-Error "Failed to remove secure data: $($_.Exception.Message)"
+        Write-Error (t 'security.storage.data_remove_failed' @{ Error = $_.Exception.Message })
         return $false
     }
 }
@@ -732,6 +781,9 @@ function Test-SecureStorageAvailable {
     <#
     .SYNOPSIS
         Tests if secure storage (DPAPI) is available on this system.
+    .DESCRIPTION
+        Performs a round-trip encrypt/decrypt test with a known value to verify that the Windows
+        Data Protection API is functional on the current machine and user context.
 
     .OUTPUTS
         [bool] True if DPAPI is available and working.

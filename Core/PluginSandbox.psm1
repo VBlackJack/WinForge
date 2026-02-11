@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Win11Forge - Plugin Sandbox v3.6.8
+    Win11Forge - Plugin Sandbox v3.7.1
 
 .DESCRIPTION
     Provides sandboxed execution environment for Win11Forge plugins:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.6.8
+    v3.7.1
 #>
 
 #
@@ -48,7 +48,7 @@ if (Test-Path -Path $script:TimeoutSettingsPath) {
     try {
         Import-Module -Name $script:TimeoutSettingsPath -Force -ErrorAction Stop
     } catch {
-        Write-Warning "Failed to load TimeoutSettings module: $($_.Exception.Message)"
+        Write-Warning (t 'plugins.sandbox.timeout_module.load_failed' @{ Error = $_.Exception.Message })
     }
 }
 
@@ -131,7 +131,7 @@ function Test-ScriptblockSafe {
         # Check for parse errors
         if ($errors.Count -gt 0) {
             $result.IsValid = $false
-            $result.Errors += "Script has parse errors: $($errors[0].Message)"
+            $result.Errors += (t 'plugins.sandbox.validation.parse_errors' @{ Error = $errors[0].Message })
             return $result
         }
 
@@ -147,7 +147,7 @@ function Test-ScriptblockSafe {
                 foreach ($dangerous in $script:DangerousCommands) {
                     if ($commandName -match [regex]::Escape($dangerous)) {
                         $result.IsValid = $false
-                        $result.Errors += "Dangerous command blocked: $commandName"
+                        $result.Errors += (t 'plugins.sandbox.validation.dangerous_command' @{ Command = $commandName })
                     }
                 }
             }
@@ -164,7 +164,7 @@ function Test-ScriptblockSafe {
             $typeName = $typeAst.TypeName.FullName
             if ($typeName -match 'System\.Reflection|System\.Runtime\.InteropServices|System\.Net\.WebClient') {
                 $result.IsValid = $false
-                $result.Errors += "Dangerous type blocked: $typeName"
+                $result.Errors += (t 'plugins.sandbox.validation.dangerous_type' @{ TypeName = $typeName })
             }
         }
 
@@ -182,14 +182,14 @@ function Test-ScriptblockSafe {
                 $expressionText = $memberAst.Extent.Text
                 if ($expressionText -match 'scriptblock|webclient|assembly|reflection') {
                     $result.IsValid = $false
-                    $result.Errors += "Dangerous member invocation blocked: $expressionText"
+                    $result.Errors += (t 'plugins.sandbox.validation.dangerous_member' @{ Expression = $expressionText })
                 }
             }
         }
 
     } catch {
         $result.IsValid = $false
-        $result.Errors += "AST validation error: $($_.Exception.Message)"
+        $result.Errors += (t 'plugins.sandbox.validation.ast_error' @{ Error = $_.Exception.Message })
     }
 
     return $result
@@ -269,8 +269,8 @@ function Invoke-PluginSandboxed {
         $handlerText = $Handler.ToString()
         $validation = Test-ScriptblockSafe -ScriptText $handlerText
         if (-not $validation.IsValid) {
-            $result.Error = "Plugin handler blocked by security validation: $($validation.Errors -join '; ')"
-            Write-Status -Message "Plugin '$PluginName' blocked: $($result.Error)" -Level 'Error' -Category 'Plugin'
+            $result.Error = (t 'plugins.sandbox.security.handler_blocked' @{ Errors = ($validation.Errors -join '; ') })
+            Write-Status -Message (t 'plugins.sandbox.security.plugin_blocked' @{ Name = $PluginName; Error = $result.Error }) -Level 'Error' -Category 'Plugin'
             $result.ExecutionTimeMs = ((Get-Date) - $startTime).TotalMilliseconds
             return $result
         }
@@ -333,7 +333,7 @@ function Invoke-PluginSandboxed {
         if ($null -eq $completed) {
             # Job timed out
             $result.TimedOut = $true
-            $result.Error = "Plugin execution timed out after $TimeoutSeconds seconds"
+            $result.Error = (t 'plugins.sandbox.execution.timed_out' @{ Timeout = $TimeoutSeconds })
 
             # Forcibly stop the job
             $job | Stop-Job -PassThru | Remove-Job -Force -ErrorAction SilentlyContinue
@@ -350,14 +350,14 @@ function Invoke-PluginSandboxed {
 
                 if ($job.State -eq 'Failed') {
                     $result.Error = $job.ChildJobs[0].JobStateInfo.Reason.Message
-                    Write-Status -Message "Plugin '$PluginName' failed: $($result.Error)" -Level 'Warning' -Category 'Plugin'
+                    Write-Status -Message (t 'plugins.sandbox.execution.failed' @{ Name = $PluginName; Error = $result.Error }) -Level 'Warning' -Category 'Plugin'
                 } else {
                     $result.Success = $true
                     $result.Result = $jobResult
                 }
             } catch {
-                $result.Error = "Failed to retrieve job output: $($_.Exception.Message)"
-                Write-Status -Message "Plugin '$PluginName' output error: $($result.Error)" -Level 'Warning' -Category 'Plugin'
+                $result.Error = (t 'plugins.sandbox.execution.output_error' @{ Error = $_.Exception.Message })
+                Write-Status -Message (t 'plugins.sandbox.execution.plugin_output_error' @{ Name = $PluginName; Error = $result.Error }) -Level 'Warning' -Category 'Plugin'
             } finally {
                 # Always clean up job
                 Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
@@ -408,7 +408,7 @@ function Invoke-PluginHookSandboxed {
     $results = @()
 
     foreach ($handler in $Handlers) {
-        Write-Status -Message "Invoking sandboxed hook '$HookName' from plugin '$($handler.PluginName)'" -Level 'Verbose' -Category 'Plugin'
+        Write-Status -Message (t 'plugins.sandbox.hook.invoking' @{ Hook = $HookName; Name = $handler.PluginName }) -Level 'Verbose' -Category 'Plugin'
 
         $sandboxResult = Invoke-PluginSandboxed `
             -Handler $handler.Handler `
@@ -427,9 +427,9 @@ function Invoke-PluginHookSandboxed {
 
         if (-not $sandboxResult.Success) {
             if ($sandboxResult.TimedOut) {
-                Write-Status -Message "Hook '$HookName' timed out for plugin '$($handler.PluginName)'" -Level 'Warning' -Category 'Plugin'
+                Write-Status -Message (t 'plugins.sandbox.hook.timed_out' @{ Hook = $HookName; Name = $handler.PluginName }) -Level 'Warning' -Category 'Plugin'
             } else {
-                Write-Status -Message "Hook '$HookName' failed for plugin '$($handler.PluginName)': $($sandboxResult.Error)" -Level 'Warning' -Category 'Plugin'
+                Write-Status -Message (t 'plugins.sandbox.hook.failed' @{ Hook = $HookName; Name = $handler.PluginName; Error = $sandboxResult.Error }) -Level 'Warning' -Category 'Plugin'
             }
         }
     }
@@ -471,6 +471,12 @@ function Get-SandboxStatus {
     <#
     .SYNOPSIS
         Returns current sandbox configuration and status.
+
+    .DESCRIPTION
+        Retrieves the current sandbox availability, timeout configuration, PowerShell
+        version, and job support status. Merges defaults with any overrides from the
+        timeout settings module when available.
+
     .OUTPUTS
         Hashtable with sandbox status information.
     #>
@@ -539,8 +545,8 @@ function Invoke-PluginLoadSandboxed {
         $moduleContent = Get-Content -Path $PluginPath -Raw -ErrorAction Stop
         $preValidation = Test-ScriptblockSafe -ScriptText $moduleContent
         if (-not $preValidation.IsValid) {
-            $result.Error = "Plugin module blocked by AST security validation: $($preValidation.Errors -join '; ')"
-            Write-Status -Message "Plugin '$PluginName' load blocked: $($result.Error)" -Level 'Error' -Category 'Plugin'
+            $result.Error = (t 'plugins.sandbox.security.module_blocked' @{ Errors = ($preValidation.Errors -join '; ') })
+            Write-Status -Message (t 'plugins.sandbox.security.load_blocked' @{ Name = $PluginName; Error = $result.Error }) -Level 'Error' -Category 'Plugin'
             $result.LoadTimeMs = ((Get-Date) - $startTime).TotalMilliseconds
             return $result
         }

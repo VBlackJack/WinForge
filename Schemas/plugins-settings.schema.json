@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://win11forge.local/schemas/plugins-settings.schema.json",
+  "title": "Win11Forge Plugin Settings",
+  "description": "Schema for the Win11Forge plugin system configuration",
+  "type": "object",
+  "required": ["enabled", "allowedHooks"],
+  "additionalProperties": true,
+  "properties": {
+    "_meta": {
+      "type": "object",
+      "description": "Metadata about the configuration file",
+      "properties": {
+        "description": { "type": "string" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "author": { "type": "string" },
+        "lastUpdated": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+      }
+    },
+    "enabled": {
+      "type": "boolean",
+      "description": "Whether the plugin system is globally enabled",
+      "default": true
+    },
+    "autoLoad": {
+      "type": "boolean",
+      "description": "Automatically load plugins from the Plugins directory on startup",
+      "default": true
+    },
+    "allowedHooks": {
+      "type": "array",
+      "description": "List of lifecycle hooks that plugins are permitted to register",
+      "items": {
+        "type": "string",
+        "enum": [
+          "pre-install",
+          "post-install",
+          "pre-uninstall",
+          "post-uninstall",
+          "pre-deployment",
+          "post-deployment",
+          "on-error"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "disabledPlugins": {
+      "type": "array",
+      "description": "List of plugin names to exclude from loading",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      },
+      "uniqueItems": true
+    },
+    "pluginTimeout": {
+      "type": "integer",
+      "description": "Maximum execution time per plugin hook invocation in seconds",
+      "minimum": 1,
+      "maximum": 600,
+      "default": 30
+    },
+    "sandboxing": {
+      "type": "object",
+      "description": "Plugin sandboxing configuration for isolation and security",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether plugin sandboxing with AST validation and job isolation is enabled",
+          "default": true
+        },
+        "notes": {
+          "type": "string",
+          "description": "Human-readable notes about the sandboxing configuration"
+        }
+      }
+    },
+    "trustedPublishers": {
+      "type": "array",
+      "description": "List of trusted plugin publisher identifiers that bypass extra validation",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "uniqueItems": true
+    },
+    "pluginRegistry": {
+      "type": "object",
+      "description": "Online plugin registry configuration for discovering and installing plugins",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the online plugin registry is enabled",
+          "default": false
+        },
+        "url": {
+          "oneOf": [
+            { "type": "string", "format": "uri" },
+            { "type": "null" }
+          ],
+          "description": "URL of the plugin registry (null when not configured)"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Human-readable notes about the registry configuration"
+        }
+      }
+    }
+  }
+}

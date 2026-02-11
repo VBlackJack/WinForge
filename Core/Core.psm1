@@ -46,6 +46,7 @@ if (Test-Path -Path $script:StructuredLoggingPath) {
         $script:StructuredLoggingEnabled = $true
     } catch {
         $script:StructuredLoggingEnabled = $false
+        # Bootstrap: intentional exception - localization not yet loaded
         Write-Warning "Failed to load StructuredLogging module: $($_.Exception.Message)"
     }
 }
@@ -56,6 +57,9 @@ function Initialize-Logging {
     <#
     .SYNOPSIS
         Initializes logging system with file output.
+    .DESCRIPTION
+        Creates the log file and writes a header containing the framework version, system information,
+        and timestamp. Also configures verbose logging mode when requested.
 
     .PARAMETER LogPath
         Path to the log file
@@ -122,6 +126,10 @@ function Write-Status {
     <#
     .SYNOPSIS
         Writes a status message with color coding and logging.
+    .DESCRIPTION
+        Central logging function that writes messages to the console with level-appropriate colors,
+        appends them to the log file, and optionally emits structured JSON log entries. Verbose
+        messages are suppressed unless verbose logging is enabled.
 
     .PARAMETER Message
         The message to display
@@ -199,6 +207,9 @@ function Write-StatusProgress {
     <#
     .SYNOPSIS
         Writes a progress indicator with percentage.
+    .DESCRIPTION
+        Wraps Write-Progress to display a progress bar in the console with an activity description,
+        status text, and percentage complete.
 
     .PARAMETER Activity
         Activity description
@@ -229,6 +240,9 @@ function Write-Section {
     <#
     .SYNOPSIS
         Writes a section header for better log organization.
+    .DESCRIPTION
+        Outputs a visually distinct separator block around a title string to demarcate major
+        phases or sections in both the console output and log file.
 
     .PARAMETER Title
         Section title
@@ -253,6 +267,10 @@ function Invoke-SafeCommand {
     <#
     .SYNOPSIS
         Executes a script block with error handling and logging.
+    .DESCRIPTION
+        Wraps a script block in a try-catch with automatic error logging and optional verbose
+        stack trace output. Returns a boolean indicating success and can optionally re-throw
+        or continue on error.
 
     .PARAMETER ScriptBlock
         Script block to execute
@@ -272,7 +290,7 @@ function Invoke-SafeCommand {
         [scriptblock]$ScriptBlock,
 
         [Parameter()]
-        [string]$ErrorMessage = 'Operation failed',
+        [string]$ErrorMessage = (t 'core.error.operation_failed'),
 
         [Parameter()]
         [switch]$ContinueOnError
@@ -287,7 +305,7 @@ function Invoke-SafeCommand {
         Write-Status -Message "$ErrorMessage : $errorDetail" -Level 'Error'
 
         if ($script:VerboseLogging) {
-            Write-Status -Message "Stack trace: $($_.ScriptStackTrace)" -Level 'Verbose'
+            Write-Status -Message (t 'core.error.stack_trace' @{ StackTrace = $_.ScriptStackTrace }) -Level 'Verbose'
         }
 
         if (-not $ContinueOnError) {
@@ -304,6 +322,9 @@ function Test-Administrator {
     <#
     .SYNOPSIS
         Checks if current session has administrator privileges.
+    .DESCRIPTION
+        Queries the current Windows identity and checks whether it belongs to the built-in
+        Administrator role using the Windows security principal API.
 
     .OUTPUTS
         [bool] True if running as administrator
@@ -321,6 +342,9 @@ function Test-InternetConnection {
     <#
     .SYNOPSIS
         Tests internet connectivity.
+    .DESCRIPTION
+        Performs a single ICMP ping to the configured connectivity test host to determine
+        whether the machine has internet access.
 
     .OUTPUTS
         [bool] True if internet is accessible
@@ -344,6 +368,9 @@ function Assert-Administrator {
     <#
     .SYNOPSIS
         Ensures script is running with administrator privileges or exits.
+    .DESCRIPTION
+        Validates that the current session has administrator privileges and throws a localized
+        error message if it does not, preventing non-elevated execution of privileged operations.
     #>
     [CmdletBinding()]
     param()
@@ -359,6 +386,9 @@ function Assert-InternetConnection {
     <#
     .SYNOPSIS
         Ensures internet connection is available or exits.
+    .DESCRIPTION
+        Tests internet connectivity and throws a localized error if no connection is available,
+        preventing operations that require network access from proceeding.
     #>
     [CmdletBinding()]
     param()
@@ -380,6 +410,9 @@ function Get-StringHash {
     <#
     .SYNOPSIS
         Generates a hash from a string.
+    .DESCRIPTION
+        Computes a cryptographic hash of the input string using the specified algorithm (MD5, SHA1,
+        or SHA256) and returns the result as a hexadecimal string.
 
     .PARAMETER String
         String to hash
@@ -419,6 +452,9 @@ function ConvertTo-SafeFileName {
     <#
     .SYNOPSIS
         Converts a string to a safe filename.
+    .DESCRIPTION
+        Replaces all characters that are invalid in Windows file names with underscores,
+        producing a sanitized string suitable for use as a file or directory name.
 
     .PARAMETER String
         String to convert
@@ -447,6 +483,9 @@ function Test-CommandExists {
     <#
     .SYNOPSIS
         Tests if a command exists in the current session.
+    .DESCRIPTION
+        Uses Get-Command to check whether a cmdlet, function, alias, or executable with the
+        given name is available in the current PowerShell session.
 
     .PARAMETER Name
         Command name to test
@@ -468,6 +507,9 @@ function Get-DownloadedFileName {
     <#
     .SYNOPSIS
         Extracts filename from URL or Content-Disposition header.
+    .DESCRIPTION
+        Parses the Content-Disposition header first for a filename; if unavailable, extracts the
+        filename from the URL path. Falls back to 'download.exe' when neither source yields a name.
 
     .PARAMETER Url
         URL to parse
@@ -513,6 +555,9 @@ function Format-FileSize {
     <#
     .SYNOPSIS
         Formats a file size in bytes to human-readable format.
+    .DESCRIPTION
+        Converts a byte count into a human-readable string with the appropriate unit
+        (bytes, KB, MB, GB, or TB) and two decimal places of precision.
 
     .PARAMETER Bytes
         File size in bytes
@@ -548,6 +593,9 @@ function Get-ElapsedTime {
     <#
     .SYNOPSIS
         Calculates elapsed time from a start time.
+    .DESCRIPTION
+        Computes the time span between a given start time and the current time and returns it
+        as a formatted hh:mm:ss string.
 
     .PARAMETER StartTime
         Start time
@@ -572,6 +620,9 @@ function Confirm-Action {
     <#
     .SYNOPSIS
         Prompts user for confirmation.
+    .DESCRIPTION
+        Displays a colored prompt with a yes/no choice and reads user input. Supports a configurable
+        default answer when the user presses Enter without typing a response.
 
     .PARAMETER Message
         Confirmation message
@@ -610,6 +661,9 @@ function Clear-TemporaryFiles {
     <#
     .SYNOPSIS
         Cleans up temporary files in specified directory.
+    .DESCRIPTION
+        Recursively removes files in the specified directory that are older than the given number
+        of days. Skips files that cannot be deleted and logs the total count of removed files.
 
     .PARAMETER Path
         Directory path to clean
@@ -627,7 +681,7 @@ function Clear-TemporaryFiles {
     )
 
     if (-not (Test-Path -Path $Path)) {
-        Write-Status -Message "Path not found: $Path" -Level 'Verbose'
+        Write-Status -Message (t 'core.cleanup.path_not_found' @{ Path = $Path }) -Level 'Verbose'
         return
     }
 
@@ -643,7 +697,7 @@ function Clear-TemporaryFiles {
                 $count++
             }
             catch {
-                Write-Status -Message "Could not remove: $($file.Name)" -Level 'Verbose'
+                Write-Status -Message (t 'core.cleanup.could_not_remove' @{ FileName = $file.Name }) -Level 'Verbose'
             }
         }
 
@@ -652,18 +706,21 @@ function Clear-TemporaryFiles {
         }
     }
     catch {
-        Write-Status -Message "Error cleaning temporary files: $($_.Exception.Message)" -Level 'Verbose'
+        Write-Status -Message (t 'core.cleanup.error' @{ Error = $_.Exception.Message }) -Level 'Verbose'
     }
 }
 
 # === LOCALIZATION INTEGRATION ===
 
 $script:LocalizationModulePath = Join-Path -Path $PSScriptRoot -ChildPath 'Localization.psm1'
-if (Test-Path -Path $script:LocalizationModulePath) {
-    try {
-        Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction Stop
-    } catch {
-        Write-Warning "Failed to load Localization module: $($_.Exception.Message)"
+if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:LocalizationModulePath) {
+        try {
+            Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction Stop
+        } catch {
+            # Bootstrap: intentional exception - localization not yet loaded
+            Write-Warning "Failed to load Localization module: $($_.Exception.Message)"
+        }
     }
 }
 

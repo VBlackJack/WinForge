@@ -33,7 +33,14 @@ BeforeAll {
     $script:SysConfigPath = Join-Path $script:ModuleRoot 'SystemConfig.psm1'
     $script:CorePath = Join-Path $PSScriptRoot '..\Core\Core.psm1'
 
-    # Import Core first
+    # Import Localization first (provides Get-LocalizedString / t alias)
+    $script:LocalizationPath = Join-Path $PSScriptRoot '..\Core\Localization.psm1'
+    if (Test-Path $script:LocalizationPath) {
+        Import-Module $script:LocalizationPath -Force -ErrorAction Stop
+        Initialize-Localization -Locale 'en'
+    }
+
+    # Import Core (provides Write-Status)
     if (Test-Path $script:CorePath) {
         Import-Module $script:CorePath -Force -ErrorAction Stop
     }
