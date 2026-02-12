@@ -316,7 +316,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="24"/>
-                    <ColumnDefinition Width="320"/>
+                    <ColumnDefinition Width="*" MinWidth="240" MaxWidth="360"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- LEFT: System Info -->
@@ -514,7 +514,7 @@
                             <Button Command="{Binding NavigateToPrerequisitesCommand}"
                                     Style="{StaticResource QuickActionButtonStyle}"
                                     ToolTip="{loc:Loc Dashboard_Nav_PrereqsHint}">
-                                <Grid Width="240">
+                                <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
@@ -541,7 +541,7 @@
                                     Style="{StaticResource QuickActionButtonStyle}"
                                     ToolTip="{loc:Loc Dashboard_Nav_AppsHint}"
                                     Margin="0">
-                                <Grid Width="240">
+                                <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>

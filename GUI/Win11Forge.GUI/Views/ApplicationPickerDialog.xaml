@@ -6,7 +6,7 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              mc:Ignorable="d"
-             MinWidth="520" MinHeight="420"
+             MinWidth="420" MinHeight="360"
              d:DesignHeight="500" d:DesignWidth="700">
 
     <Grid>
@@ -54,7 +54,8 @@
             <ComboBox Grid.Column="1"
                       ItemsSource="{Binding Categories}"
                       SelectedItem="{Binding SelectedCategory}"
-                      Width="180"
+                      MinWidth="140"
+                      MaxWidth="200"
                       Margin="8,0,0,0"
                       AutomationProperties.Name="{loc:Loc A11y_AppPicker_Category}"/>
         </Grid>
@@ -78,10 +79,10 @@
                                     Width="*"/>
                 <DataGridTextColumn Header="{loc:Loc Col_Category}"
                                     Binding="{Binding Category}"
-                                    Width="120"/>
+                                    Width="100"/>
                 <DataGridTextColumn Header="{loc:Loc Apps_Col_Id}"
                                     Binding="{Binding AppId}"
-                                    Width="180"/>
+                                    Width="140"/>
             </DataGrid.Columns>
         </DataGrid>
 

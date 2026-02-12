@@ -84,7 +84,10 @@
         <Border Grid.Row="1" Padding="16" Margin="0,0,0,16"
                 CornerRadius="8"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
-            <Grid>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          CanContentScroll="False">
+            <Grid MinWidth="620">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -109,20 +112,21 @@
                           ItemsSource="{Binding LogLevels}"
                           SelectedItem="{Binding SelectedLogLevel}"
                           AutomationProperties.Name="{loc:Loc A11y_Logs_LevelFilter}"
-                          Width="120"
+                          MinWidth="120"
                           Margin="0,0,8,0"/>
 
                 <!-- Date Filter -->
                 <DatePicker Grid.Column="2"
                             SelectedDate="{Binding FilterDate}"
                             AutomationProperties.Name="{loc:Loc A11y_Logs_DateFilter}"
-                            Width="150"
+                            MinWidth="140"
                             Margin="0,0,8,0"/>
 
                 <!-- Clear Filters -->
                 <ui:Button Grid.Column="3"
                            Command="{Binding ClearFiltersCommand}"
                            Appearance="Transparent"
+                           Style="{StaticResource TouchFriendlyIconButton}"
                            ToolTip="{loc:Loc Logs_ClearFilters}"
                            AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}">
                     <ui:SymbolIcon Symbol="FilterDismiss24" Width="20" Height="20"/>
@@ -132,6 +136,7 @@
                 <ui:Button Grid.Column="4"
                            Command="{Binding ClearOldLogsCommand}"
                            Appearance="Transparent"
+                           Style="{StaticResource TouchFriendlyIconButton}"
                            ToolTip="{loc:Loc Logs_ClearOld}"
                            AutomationProperties.Name="{loc:Loc A11y_Logs_ClearOld}"
                            Foreground="{DynamicResource SystemFillColorCriticalBrush}"
@@ -139,6 +144,7 @@
                     <ui:SymbolIcon Symbol="DeleteDismiss24" Width="20" Height="20"/>
                 </ui:Button>
             </Grid>
+            </ScrollViewer>
         </Border>
 
         <!-- Log Files List -->

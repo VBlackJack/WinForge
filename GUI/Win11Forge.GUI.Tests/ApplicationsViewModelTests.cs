@@ -236,7 +236,7 @@ public class ApplicationsViewModelTests
         // Assert
         Assert.NotNull(receivedArgs);
         Assert.True(receivedArgs.IsNew);
-        Assert.Equal($"{originalId}_Copy", receivedArgs.Application.AppId);
+        Assert.Equal($"{originalId}{Win11Forge.GUI.Resources.Resources.AppDb_CopyIdSuffix}", receivedArgs.Application.AppId);
     }
 
     /// <summary>

@@ -946,4 +946,15 @@ public class Resources
     public static string Detection_InvalidExpandedPath => ResourceManager.GetString("Detection_InvalidExpandedPath", resourceCulture);
     public static string Detection_InvalidCommandPath => ResourceManager.GetString("Detection_InvalidCommandPath", resourceCulture);
     public static string Detection_CommandTimeout => ResourceManager.GetString("Detection_CommandTimeout", resourceCulture);
+
+    // Audit Round 2 - Missing accessors
+    public static string Settings_SaveFailed => ResourceManager.GetString("Settings_SaveFailed", resourceCulture);
+    public static string ScheduledDeployment_Date => ResourceManager.GetString("ScheduledDeployment_Date", resourceCulture);
+    public static string ScheduledDeployment_Time => ResourceManager.GetString("ScheduledDeployment_Time", resourceCulture);
+    public static string AppDb_UndoTooltipFormat => ResourceManager.GetString("AppDb_UndoTooltipFormat", resourceCulture);
+    public static string AppDb_RedoTooltipFormat => ResourceManager.GetString("AppDb_RedoTooltipFormat", resourceCulture);
+    public static string AppDb_UndoTooltipDefault => ResourceManager.GetString("AppDb_UndoTooltipDefault", resourceCulture);
+    public static string AppDb_RedoTooltipDefault => ResourceManager.GetString("AppDb_RedoTooltipDefault", resourceCulture);
+    public static string AppDb_CopyIdSuffix => ResourceManager.GetString("AppDb_CopyIdSuffix", resourceCulture);
+    public static string AppDb_CopyNameSuffix => ResourceManager.GetString("AppDb_CopyNameSuffix", resourceCulture);
 }

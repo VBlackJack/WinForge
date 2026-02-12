@@ -21,7 +21,7 @@
                   SelectedValue="{Binding Method, RelativeSource={RelativeSource AncestorType=UserControl}}"
                   SelectedValuePath="Tag"
                   Margin="0,0,0,16"
-                  AutomationProperties.Name="Detection method">
+                  AutomationProperties.Name="{loc:Loc AppEditor_DetectionMethod}">
             <ComboBoxItem Content="{loc:Loc Detection_Method_Registry}" Tag="Registry"/>
             <ComboBoxItem Content="{loc:Loc Detection_Method_File}" Tag="File"/>
             <ComboBoxItem Content="{loc:Loc Detection_Method_Command}" Tag="Command"/>
@@ -51,18 +51,18 @@
                 <ui:TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="{loc:Loc Detection_Registry_Path}"
                          Margin="0,0,0,12"
-                         AutomationProperties.Name="Registry path"/>
+                         AutomationProperties.Name="{loc:Loc Detection_Registry_Path}"/>
 
                 <!-- Registry Value Name -->
                 <ui:TextBox Text="{Binding VersionKey, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="{loc:Loc AppEditor_VersionKey}"
                          Margin="0,0,0,12"
-                         AutomationProperties.Name="Version registry value"/>
+                         AutomationProperties.Name="{loc:Loc AppEditor_VersionKey}"/>
 
                 <!-- Minimum Version -->
                 <ui:TextBox Text="{Binding MinVersion, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="{loc:Loc AppEditor_MinVersion}"
-                         AutomationProperties.Name="Minimum version"/>
+                         AutomationProperties.Name="{loc:Loc AppEditor_MinVersion}"/>
             </StackPanel>
         </Border>
 
@@ -94,7 +94,7 @@
                     <ui:TextBox Grid.Column="0"
                              Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
                              PlaceholderText="{loc:Loc Detection_File_Path}"
-                             AutomationProperties.Name="File path"/>
+                             AutomationProperties.Name="{loc:Loc Detection_File_Path}"/>
 
                     <ui:Button Grid.Column="1"
                             Appearance="Secondary"
@@ -102,13 +102,13 @@
                             Command="{Binding BrowseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                             Margin="8,0,0,0"
                             VerticalAlignment="Stretch"
-                            AutomationProperties.Name="Browse for file"/>
+                            AutomationProperties.Name="{loc:Loc Detection_Browse}"/>
                 </Grid>
 
                 <!-- Minimum Version -->
                 <ui:TextBox Text="{Binding MinVersion, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="{loc:Loc AppEditor_MinVersion}"
-                         AutomationProperties.Name="Minimum version"/>
+                         AutomationProperties.Name="{loc:Loc AppEditor_MinVersion}"/>
             </StackPanel>
         </Border>
 
@@ -133,7 +133,7 @@
                 <!-- Command -->
                 <ui:TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="{loc:Loc Detection_Command_Path}"
-                         AutomationProperties.Name="Command to execute"/>
+                         AutomationProperties.Name="{loc:Loc Detection_Command_Path}"/>
 
                 <TextBlock Text="{loc:Loc Detection_Command_Hint}"
                            FontSize="12"
@@ -163,7 +163,7 @@
                 <!-- Feature Name -->
                 <ui:TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="{loc:Loc Detection_WindowsFeature_Name}"
-                         AutomationProperties.Name="Windows feature name"/>
+                         AutomationProperties.Name="{loc:Loc Detection_WindowsFeature_Name}"/>
             </StackPanel>
         </Border>
 
@@ -188,7 +188,7 @@
                 <!-- Package Family Name -->
                 <ui:TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="{loc:Loc Detection_StoreApp_PackageName}"
-                         AutomationProperties.Name="Package family name"/>
+                         AutomationProperties.Name="{loc:Loc Detection_StoreApp_PackageName}"/>
             </StackPanel>
         </Border>
 
@@ -204,7 +204,7 @@
                     Command="{Binding TestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     ToolTip="{loc:Loc Detection_TestTooltip}"
                     MinWidth="140"
-                    AutomationProperties.Name="Test detection">
+                    AutomationProperties.Name="{loc:Loc Detection_TestButton}">
                 <StackPanel Orientation="Horizontal">
                     <ui:SymbolIcon Symbol="Play24"
                                    Width="18" Height="18"

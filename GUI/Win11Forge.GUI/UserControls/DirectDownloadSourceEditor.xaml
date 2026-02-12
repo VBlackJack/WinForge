@@ -41,7 +41,7 @@
                                  x:Name="EnableToggle"
                                  IsChecked="{Binding IsSourceEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                  ToolTip="{loc:Loc SourceEditor_EnableDisable}"
-                                 AutomationProperties.Name="Enable direct download source"/>
+                                 AutomationProperties.Name="{loc:Loc SourceEditor_EnableDisable}"/>
             </Grid>
 
             <!-- Download URL -->
@@ -50,7 +50,7 @@
                      PlaceholderText="{loc:Loc AppEditor_DirectUrl}"
                      IsEnabled="{Binding IsChecked, ElementName=EnableToggle}"
                      Margin="0,0,0,12"
-                     AutomationProperties.Name="Download URL"/>
+                     AutomationProperties.Name="{loc:Loc AppEditor_DirectUrl}"/>
 
             <!-- Installer Type and Silent Args Row -->
             <Grid Grid.Row="2" Margin="0,0,0,12" IsEnabled="{Binding IsChecked, ElementName=EnableToggle}">
@@ -64,7 +64,7 @@
                 <ComboBox Grid.Column="0"
                           SelectedValue="{Binding InstallerType, RelativeSource={RelativeSource AncestorType=UserControl}}"
                           SelectedValuePath="Tag"
-                          AutomationProperties.Name="Installer type">
+                          AutomationProperties.Name="{loc:Loc SourceEditor_InstallerType}">
                     <ComboBoxItem Content="exe" Tag="exe"/>
                     <ComboBoxItem Content="msi" Tag="msi"/>
                     <ComboBoxItem Content="msix" Tag="msix"/>
@@ -75,7 +75,7 @@
                 <ui:TextBox Grid.Column="2"
                          Text="{Binding SilentArgs, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="{loc:Loc SourceEditor_SilentArgs}"
-                         AutomationProperties.Name="Silent installation arguments"/>
+                         AutomationProperties.Name="{loc:Loc SourceEditor_SilentArgs}"/>
             </Grid>
 
             <!-- Checksum -->
@@ -84,7 +84,7 @@
                      PlaceholderText="{loc:Loc SourceEditor_Checksum}"
                      IsEnabled="{Binding IsChecked, ElementName=EnableToggle}"
                      Margin="0,0,0,8"
-                     AutomationProperties.Name="File checksum"/>
+                     AutomationProperties.Name="{loc:Loc SourceEditor_Checksum}"/>
 
             <!-- Checksum hint -->
             <TextBlock Grid.Row="4"
@@ -106,7 +106,7 @@
                         Command="{Binding TestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         ToolTip="{loc:Loc SourceEditor_TestUrlTooltip}"
                         MinWidth="120"
-                        AutomationProperties.Name="Test URL">
+                        AutomationProperties.Name="{loc:Loc SourceEditor_TestUrl}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Link24"
                                        Width="18" Height="18"

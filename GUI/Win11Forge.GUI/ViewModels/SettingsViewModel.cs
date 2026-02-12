@@ -33,6 +33,8 @@ namespace Win11Forge.GUI.ViewModels;
 /// </summary>
 public partial class SettingsViewModel : ViewModelBase, IDisposable
 {
+    private const string GitHubRepositoryUrl = "https://github.com/VBlackJack/Win11Forge";
+
     private readonly IAppSettingsService _settingsService;
     private readonly IDeploymentHistoryService _historyService;
     private readonly IPowerShellBridge _powerShellBridge;
@@ -40,6 +42,9 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private readonly IApplicationDetectionService? _detectionService;
     private readonly ToastService? _toastService;
     private string _initialLanguageCode = string.Empty;
+    private bool _isLoadingSettings;
+    private bool _settingsLoaded;
+    private bool? _reducedMotionOverride;
 
     /// <summary>
     /// Whether dark theme is enabled.
@@ -100,6 +105,12 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// </summary>
     [ObservableProperty]
     private bool _reducedMotion;
+
+    /// <summary>
+    /// Whether high contrast mode is enabled for accessibility.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isHighContrastEnabled;
 
     /// <summary>
     /// Available parallel install options.
@@ -318,7 +329,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         AvailableLanguages =
         [
             new LanguageOption("en", "English"),
-            new LanguageOption("fr", "Francais")
+            new LanguageOption("fr", "Français")
         ];
 
         // Version will be loaded in InitializeAsync
@@ -338,7 +349,10 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// <inheritdoc/>
     public override async Task InitializeAsync()
     {
-        LoadCurrentSettings();
+        if (!_settingsLoaded)
+        {
+            LoadCurrentSettings();
+        }
 
         // Load version and scheduled deployments in parallel
         var versionTask = _powerShellBridge.GetWin11ForgeVersionAsync();
@@ -353,23 +367,37 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// </summary>
     private void LoadCurrentSettings()
     {
-        var settings = _settingsService.LoadSettings();
+        _isLoadingSettings = true;
+        try
+        {
+            var settings = _settingsService.LoadSettings();
 
-        // Get current theme from settings
-        IsDarkTheme = settings.IsDarkTheme;
+            // Get current theme from settings
+            IsDarkTheme = settings.IsDarkTheme;
 
-        // Get language from settings
-        _initialLanguageCode = settings.LanguageCode;
-        SelectedLanguage = AvailableLanguages.FirstOrDefault(l => l.Code == settings.LanguageCode)
-                          ?? AvailableLanguages.First();
+            // Get language from settings
+            _initialLanguageCode = settings.LanguageCode;
+            SelectedLanguage = AvailableLanguages.FirstOrDefault(l => l.Code == settings.LanguageCode)
+                              ?? AvailableLanguages.First();
 
-        // Get parallel installs setting
-        MaxParallelInstalls = Math.Clamp(settings.MaxParallelInstalls, 1, 10);
-        MaxParallelScans = Math.Clamp(settings.MaxParallelScans, 1, 20);
-        UpdateScanTimeoutMinutes = Math.Clamp(settings.UpdateScanTimeoutMinutes, 1, 30);
+            // Get parallel installs setting
+            MaxParallelInstalls = Math.Clamp(settings.MaxParallelInstalls, 1, 10);
+            MaxParallelScans = Math.Clamp(settings.MaxParallelScans, 1, 20);
+            UpdateScanTimeoutMinutes = Math.Clamp(settings.UpdateScanTimeoutMinutes, 1, 30);
+            _reducedMotionOverride = settings.ReducedMotionOverride;
+            ReducedMotion = _reducedMotionOverride ?? App.ReducedMotion;
+            IsHighContrastEnabled = settings.IsHighContrastEnabled;
 
-        // Apply theme immediately
-        ApplyThemeInternal(IsDarkTheme);
+            // Apply theme and accessibility immediately
+            ApplyThemeInternal(IsDarkTheme, force: true);
+            App.ApplyHighContrastMode(IsHighContrastEnabled);
+            App.SetReducedMotionOverride(_reducedMotionOverride);
+            _settingsLoaded = true;
+        }
+        finally
+        {
+            _isLoadingSettings = false;
+        }
     }
 
     /// <summary>
@@ -377,9 +405,12 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// </summary>
     partial void OnMaxParallelInstallsChanged(int value)
     {
-        SaveSettings();
-        StatusMessage = Resources.Resources.Settings_ParallelInstallsApplied;
-        _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
+        if (_isLoadingSettings) return;
+        if (TrySaveSettings())
+        {
+            StatusMessage = Resources.Resources.Settings_ParallelInstallsApplied;
+            _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
+        }
     }
 
     /// <summary>
@@ -387,9 +418,12 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// </summary>
     partial void OnMaxParallelScansChanged(int value)
     {
-        SaveSettings();
-        StatusMessage = Resources.Resources.Settings_ParallelScansApplied;
-        _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
+        if (_isLoadingSettings) return;
+        if (TrySaveSettings())
+        {
+            StatusMessage = Resources.Resources.Settings_ParallelScansApplied;
+            _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
+        }
     }
 
     /// <summary>
@@ -397,9 +431,12 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// </summary>
     partial void OnUpdateScanTimeoutMinutesChanged(int value)
     {
-        SaveSettings();
-        StatusMessage = Resources.Resources.Settings_ScanTimeoutApplied;
-        _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
+        if (_isLoadingSettings) return;
+        if (TrySaveSettings())
+        {
+            StatusMessage = Resources.Resources.Settings_ScanTimeoutApplied;
+            _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
+        }
     }
 
     /// <summary>
@@ -407,10 +444,42 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// </summary>
     partial void OnIsDarkThemeChanged(bool value)
     {
+        if (_isLoadingSettings) return;
         ApplyThemeInternal(value);
-        SaveSettings();
-        StatusMessage = Resources.Resources.Settings_ThemeApplied;
-        _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
+        if (TrySaveSettings())
+        {
+            StatusMessage = Resources.Resources.Settings_ThemeApplied;
+            _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
+        }
+    }
+
+    /// <summary>
+    /// Called when reduced motion preference changes.
+    /// </summary>
+    partial void OnReducedMotionChanged(bool value)
+    {
+        if (_isLoadingSettings) return;
+        _reducedMotionOverride = value;
+        App.SetReducedMotionOverride(value);
+        if (TrySaveSettings())
+        {
+            StatusMessage = Resources.Resources.Settings_AutoSaved;
+            _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
+        }
+    }
+
+    /// <summary>
+    /// Called when high contrast mode changes.
+    /// </summary>
+    partial void OnIsHighContrastEnabledChanged(bool value)
+    {
+        if (_isLoadingSettings) return;
+        App.ApplyHighContrastMode(value);
+        if (TrySaveSettings())
+        {
+            StatusMessage = Resources.Resources.Settings_AutoSaved;
+            _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
+        }
     }
 
     /// <summary>
@@ -461,7 +530,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         if (SelectedLanguage == null) return;
 
         // Save the language setting (will take effect on restart)
-        SaveSettings();
+        if (!TrySaveSettings()) return;
 
         // Set the culture for immediate partial effect
         try
@@ -510,18 +579,27 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// <summary>
     /// Saves current settings to disk.
     /// </summary>
-    private void SaveSettings()
+    private bool TrySaveSettings()
     {
-        var settings = new AppSettings
-        {
-            IsDarkTheme = IsDarkTheme,
-            LanguageCode = SelectedLanguage?.Code ?? "en",
-            MaxParallelInstalls = MaxParallelInstalls,
-            MaxParallelScans = MaxParallelScans,
-            UpdateScanTimeoutMinutes = UpdateScanTimeoutMinutes
-        };
+        // Load existing settings to preserve fields not managed by this view
+        var settings = _settingsService.LoadSettings();
+        settings.IsDarkTheme = IsDarkTheme;
+        settings.IsHighContrastEnabled = IsHighContrastEnabled;
+        settings.ReducedMotionOverride = _reducedMotionOverride;
+        settings.LanguageCode = SelectedLanguage?.Code ?? "en";
+        settings.MaxParallelInstalls = MaxParallelInstalls;
+        settings.MaxParallelScans = MaxParallelScans;
+        settings.UpdateScanTimeoutMinutes = UpdateScanTimeoutMinutes;
 
-        _settingsService.SaveSettings(settings);
+        if (_settingsService.SaveSettings(settings))
+        {
+            return true;
+        }
+
+        var saveFailedMessage = Resources.Resources.Settings_SaveFailed;
+        StatusMessage = saveFailedMessage;
+        _toastService?.ShowError(saveFailedMessage);
+        return false;
     }
 
     /// <summary>
@@ -587,7 +665,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         {
             using var process = Process.Start(new ProcessStartInfo
             {
-                FileName = "https://github.com/VBlackJack/Win11Forge",
+                FileName = GitHubRepositoryUrl,
                 UseShellExecute = true
             });
         }
@@ -650,7 +728,11 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
                 if (importedSettings != null)
                 {
-                    _settingsService.SaveSettings(importedSettings);
+                    if (!_settingsService.SaveSettings(importedSettings))
+                    {
+                        StatusMessage = Resources.Resources.Settings_SaveFailed;
+                        return;
+                    }
 
                     // Reload settings into UI
                     LoadCurrentSettings();
@@ -685,7 +767,11 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         try
         {
             var defaultSettings = new AppSettings();
-            _settingsService.SaveSettings(defaultSettings);
+            if (!_settingsService.SaveSettings(defaultSettings))
+            {
+                StatusMessage = Resources.Resources.Settings_SaveFailed;
+                return;
+            }
             LoadCurrentSettings();
             StatusMessage = Resources.Resources.Settings_ResetSuccess;
             RestartRequired = true;

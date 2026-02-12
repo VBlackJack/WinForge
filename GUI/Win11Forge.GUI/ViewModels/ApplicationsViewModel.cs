@@ -19,6 +19,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -42,6 +43,17 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     private CancellationTokenSource? _searchDebounceTokenSource;
     private CancellationTokenSource? _verificationCts;
     private const int SearchDebounceMs = 300;
+
+    private static string GetLocalizedString(string resourceKey, string fallback)
+    {
+        return Loc.ResourceManager.GetString(resourceKey, Loc.Culture) ?? fallback;
+    }
+
+    private static string FormatLocalized(string resourceKey, string fallbackFormat, params object[] args)
+    {
+        var format = GetLocalizedString(resourceKey, fallbackFormat);
+        return string.Format(CultureInfo.CurrentCulture, format, args);
+    }
 
     /// <summary>
     /// All applications loaded from the database.
@@ -133,13 +145,29 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     /// Description of the next undo action.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(UndoButtonTooltip))]
     private string? _nextUndoDescription;
 
     /// <summary>
     /// Description of the next redo action.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RedoButtonTooltip))]
     private string? _nextRedoDescription;
+
+    /// <summary>
+    /// Localized tooltip for the Undo button.
+    /// </summary>
+    public string UndoButtonTooltip => NextUndoDescription != null
+        ? string.Format(CultureInfo.CurrentCulture, Loc.AppDb_UndoTooltipFormat, NextUndoDescription)
+        : Loc.AppDb_UndoTooltipDefault;
+
+    /// <summary>
+    /// Localized tooltip for the Redo button.
+    /// </summary>
+    public string RedoButtonTooltip => NextRedoDescription != null
+        ? string.Format(CultureInfo.CurrentCulture, Loc.AppDb_RedoTooltipFormat, NextRedoDescription)
+        : Loc.AppDb_RedoTooltipDefault;
 
     /// <summary>
     /// Event raised when an application editor dialog should be opened.
@@ -329,8 +357,8 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         if (SelectedApplication == null) return;
 
         var clone = SelectedApplication.Clone();
-        clone.AppId = $"{clone.AppId}_Copy";
-        clone.Name = $"{clone.Name} (Copy)";
+        clone.AppId = $"{clone.AppId}{Loc.AppDb_CopyIdSuffix}";
+        clone.Name = $"{clone.Name}{Loc.AppDb_CopyNameSuffix}";
 
         OpenEditorRequested?.Invoke(this, new ApplicationEditorEventArgs(clone, isNew: true));
     }
@@ -434,11 +462,20 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
             {
                 if (_verificationCts.Token.IsCancellationRequested)
                 {
-                    StatusMessage = $"Verification cancelled ({current}/{total})";
+                    StatusMessage = FormatLocalized(
+                        "Verify_CancelledProgress",
+                        "Verification cancelled ({0}/{1})",
+                        current,
+                        total);
                     break;
                 }
 
-                StatusMessage = $"Verifying {current + 1}/{total}: {app.Name}...";
+                StatusMessage = FormatLocalized(
+                    "Verify_ProgressItem",
+                    "Verifying {0}/{1}: {2}...",
+                    current + 1,
+                    total,
+                    app.Name);
 
                 try
                 {
@@ -472,13 +509,27 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
 
             if (!_verificationCts.Token.IsCancellationRequested)
             {
-                StatusMessage = $"Verification complete: {validCount} valid, {invalidCount} invalid" +
-                    (errorCount > 0 ? $", {errorCount} errors" : "");
+                StatusMessage = errorCount > 0
+                    ? FormatLocalized(
+                        "Verify_CompleteSummaryWithErrors",
+                        "Verification complete: {0} valid, {1} invalid, {2} errors",
+                        validCount,
+                        invalidCount,
+                        errorCount)
+                    : FormatLocalized(
+                        "Verify_CompleteSummary",
+                        "Verification complete: {0} valid, {1} invalid",
+                        validCount,
+                        invalidCount);
             }
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = $"Verification cancelled ({current}/{total})";
+            StatusMessage = FormatLocalized(
+                "Verify_CancelledProgress",
+                "Verification cancelled ({0}/{1})",
+                current,
+                total);
         }
         catch (Exception ex)
         {

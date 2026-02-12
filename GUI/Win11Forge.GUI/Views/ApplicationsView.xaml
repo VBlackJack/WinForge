@@ -55,20 +55,24 @@
                 </StackPanel>
 
                 <!-- Actions -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <ScrollViewer Grid.Column="1"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Disabled"
+                              CanContentScroll="False">
+                <StackPanel Orientation="Horizontal" Margin="16,0,0,0">
                     <!-- Undo/Redo buttons -->
                     <ui:Button Appearance="Transparent"
                                Command="{Binding UndoCommand}"
-                               ToolTip="{Binding NextUndoDescription, StringFormat='{}{0} (Ctrl+Z)', FallbackValue='Undo (Ctrl+Z)'}"
+                               ToolTip="{Binding UndoButtonTooltip}"
                                AutomationProperties.Name="{loc:Loc A11y_Main_Undo}"
-                               Width="44" Height="44"
+                               Style="{StaticResource TouchFriendlyIconButton}"
                                Margin="0,0,4,0"
                                Icon="{ui:SymbolIcon ArrowUndo24}"/>
                     <ui:Button Appearance="Transparent"
                                Command="{Binding RedoCommand}"
-                               ToolTip="{Binding NextRedoDescription, StringFormat='{}{0} (Ctrl+Y)', FallbackValue='Redo (Ctrl+Y)'}"
+                               ToolTip="{Binding RedoButtonTooltip}"
                                AutomationProperties.Name="{loc:Loc A11y_Main_Redo}"
-                               Width="44" Height="44"
+                               Style="{StaticResource TouchFriendlyIconButton}"
                                Margin="0,0,16,0"
                                Icon="{ui:SymbolIcon ArrowRedo24}"/>
 
@@ -161,6 +165,7 @@
                                Width="44" Height="44"
                                Icon="{ui:SymbolIcon ArrowSync24}"/>
                 </StackPanel>
+                </ScrollViewer>
             </Grid>
         </Border>
 
@@ -170,83 +175,91 @@
                 BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
                 BorderThickness="0,0,0,1"
                 Padding="16,12">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="300"/>
-                    <ColumnDefinition Width="200"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          CanContentScroll="False">
+                <Grid MinWidth="760">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" MinWidth="220"/>
+                        <ColumnDefinition Width="Auto" MinWidth="160"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <!-- Search Box -->
-                <ui:TextBox Grid.Column="0"
-                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                            PlaceholderText="{loc:Loc AppDb_SearchHint}"
-                            Icon="{ui:SymbolIcon Search24}"
-                            Margin="0,0,16,0"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="{loc:Loc A11y_AppPicker_Search}">
-                    <ui:TextBox.InputBindings>
-                        <KeyBinding Key="Escape" Command="{Binding ClearFiltersCommand}"/>
-                    </ui:TextBox.InputBindings>
-                </ui:TextBox>
+                    <!-- Search Box -->
+                    <ui:TextBox Grid.Column="0"
+                                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                PlaceholderText="{loc:Loc AppDb_SearchHint}"
+                                Icon="{ui:SymbolIcon Search24}"
+                                Margin="0,0,16,0"
+                                MinWidth="220"
+                                MaxWidth="340"
+                                VerticalAlignment="Center"
+                                AutomationProperties.Name="{loc:Loc A11y_AppPicker_Search}">
+                        <ui:TextBox.InputBindings>
+                            <KeyBinding Key="Escape" Command="{Binding ClearFiltersCommand}"/>
+                        </ui:TextBox.InputBindings>
+                    </ui:TextBox>
 
-                <!-- Category Filter -->
-                <ComboBox Grid.Column="1"
-                          ItemsSource="{Binding Categories}"
-                          SelectedItem="{Binding SelectedCategory}"
-                          VerticalAlignment="Center"
-                          Margin="0,0,16,0"
-                          AutomationProperties.Name="{loc:Loc A11y_AppPicker_Category}"/>
+                    <!-- Category Filter -->
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding SelectedCategory}"
+                              MinWidth="160"
+                              MaxWidth="220"
+                              VerticalAlignment="Center"
+                              Margin="0,0,16,0"
+                              AutomationProperties.Name="{loc:Loc A11y_AppPicker_Category}"/>
 
-                <!-- Spacer -->
-                <Grid Grid.Column="2"/>
+                    <!-- Spacer -->
+                    <Grid Grid.Column="2"/>
 
-                <!-- Selection Actions -->
-                <StackPanel Grid.Column="3" Orientation="Horizontal">
-                    <ui:Button Appearance="Secondary"
-                               Command="{Binding EditCommand}"
-                               ToolTip="{loc:Loc AppDb_EditTooltip}"
-                               AutomationProperties.Name="{loc:Loc AppDb_Edit}"
-                               Margin="0,0,8,0"
-                               MinWidth="80">
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Edit24"
-                                           Width="16" Height="16"
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,6,0"/>
-                            <TextBlock Text="{loc:Loc AppDb_Edit}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ui:Button>
-                    <ui:Button Appearance="Secondary"
-                               Command="{Binding DuplicateCommand}"
-                               ToolTip="{loc:Loc AppDb_DuplicateTooltip}"
-                               AutomationProperties.Name="{loc:Loc AppDb_Duplicate}"
-                               Margin="0,0,8,0"
-                               MinWidth="80">
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Copy24"
-                                           Width="16" Height="16"
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,6,0"/>
-                            <TextBlock Text="{loc:Loc AppDb_Duplicate}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ui:Button>
-                    <ui:Button Appearance="Danger"
-                               Command="{Binding DeleteCommand}"
-                               ToolTip="{loc:Loc AppDb_DeleteTooltip}"
-                               AutomationProperties.Name="{loc:Loc AppDb_Delete}"
-                               MinWidth="80">
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Delete24"
-                                           Width="16" Height="16"
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,6,0"/>
-                            <TextBlock Text="{loc:Loc AppDb_Delete}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ui:Button>
-                </StackPanel>
-            </Grid>
+                    <!-- Selection Actions -->
+                    <StackPanel Grid.Column="3" Orientation="Horizontal">
+                        <ui:Button Appearance="Secondary"
+                                   Command="{Binding EditCommand}"
+                                   ToolTip="{loc:Loc AppDb_EditTooltip}"
+                                   AutomationProperties.Name="{loc:Loc AppDb_Edit}"
+                                   Margin="0,0,8,0"
+                                   MinWidth="80">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Edit24"
+                                               Width="16" Height="16"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,6,0"/>
+                                <TextBlock Text="{loc:Loc AppDb_Edit}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ui:Button>
+                        <ui:Button Appearance="Secondary"
+                                   Command="{Binding DuplicateCommand}"
+                                   ToolTip="{loc:Loc AppDb_DuplicateTooltip}"
+                                   AutomationProperties.Name="{loc:Loc AppDb_Duplicate}"
+                                   Margin="0,0,8,0"
+                                   MinWidth="80">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Copy24"
+                                               Width="16" Height="16"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,6,0"/>
+                                <TextBlock Text="{loc:Loc AppDb_Duplicate}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ui:Button>
+                        <ui:Button Appearance="Danger"
+                                   Command="{Binding DeleteCommand}"
+                                   ToolTip="{loc:Loc AppDb_DeleteTooltip}"
+                                   AutomationProperties.Name="{loc:Loc AppDb_Delete}"
+                                   MinWidth="80">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Delete24"
+                                               Width="16" Height="16"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,6,0"/>
+                                <TextBlock Text="{loc:Loc AppDb_Delete}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ui:Button>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
         </Border>
 
         <!-- Data Grid -->
@@ -345,21 +358,24 @@
                         <!-- App ID -->
                         <DataGridTextColumn Header="{loc:Loc AppDb_Col_Id}"
                                             Binding="{Binding AppId}"
-                                            Width="180"
+                                            Width="*"
+                                            MinWidth="140"
                                             SortDirection="Ascending"/>
 
                         <!-- Name -->
                         <DataGridTextColumn Header="{loc:Loc AppDb_Col_Name}"
                                             Binding="{Binding Name}"
-                                            Width="200"/>
+                                            Width="*"
+                                            MinWidth="180"/>
 
                         <!-- Category -->
                         <DataGridTextColumn Header="{loc:Loc AppDb_Col_Category}"
                                             Binding="{Binding Category}"
-                                            Width="120"/>
+                                            Width="Auto"
+                                            MinWidth="110"/>
 
                         <!-- Sources -->
-                        <DataGridTemplateColumn Header="{loc:Loc AppDb_Col_Sources}" Width="200">
+                        <DataGridTemplateColumn Header="{loc:Loc AppDb_Col_Sources}" Width="*" MinWidth="180">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">

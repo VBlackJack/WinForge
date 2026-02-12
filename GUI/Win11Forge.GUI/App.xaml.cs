@@ -32,9 +32,14 @@ namespace Win11Forge.GUI;
 /// </summary>
 public partial class App : Application
 {
+    private const int AnimationFastMs = 150;
+    private const int AnimationNormalMs = 300;
+    private const int AnimationSlowMs = 500;
+
     private static readonly string LogPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
         "Win11Forge_startup.log");
+    private static bool? _reducedMotionOverride;
 
     /// <summary>
     /// Gets the service provider for dependency injection.
@@ -55,9 +60,20 @@ public partial class App : Application
     public static bool IsServicesInitialized => _services != null;
 
     /// <summary>
-    /// Gets whether the user prefers reduced motion (accessibility setting).
+    /// Gets whether reduced motion is enabled.
+    /// Uses user override when available, otherwise follows system preference.
     /// </summary>
-    public static bool ReducedMotion => AnimationHelper.ReducedMotion;
+    public static bool ReducedMotion => _reducedMotionOverride ?? AnimationHelper.ReducedMotion;
+
+    /// <summary>
+    /// Sets the user override for reduced motion and reapplies animation resources.
+    /// </summary>
+    /// <param name="enabled">True/False to force a value, null to follow system preference.</param>
+    internal static void SetReducedMotionOverride(bool? enabled)
+    {
+        _reducedMotionOverride = enabled;
+        ApplyAnimationResources(ReducedMotion);
+    }
 
     /// <summary>
     /// Gets a service from the DI container.
@@ -183,19 +199,36 @@ public partial class App : Application
             }
 
             // Step 5: Detect reduced motion preference for accessibility
+            SetReducedMotionOverride(settings.ReducedMotionOverride);
             Log($"Reduced motion preference: {ReducedMotion}");
             InitializeAnimationResources();
 
             // Step 6: Call base AFTER settings are applied
             base.OnStartup(e);
 
+            // Step 6b: Re-apply visual settings once the WPF startup pipeline is initialized.
+            // This prevents occasional theme mismatches on some VM/remote sessions.
+            try
+            {
+                var appTheme = settings.IsDarkTheme
+                    ? ApplicationTheme.Dark
+                    : ApplicationTheme.Light;
+                ApplicationThemeManager.Apply(appTheme, WindowBackdropType.Mica);
+                ApplyThemeResources(settings.IsDarkTheme);
+                ApplyHighContrastMode(settings.IsHighContrastEnabled);
+            }
+            catch (Exception ex)
+            {
+                Log($"Post-startup visual settings re-apply failed: {ex.Message}");
+            }
+
             // Step 7: NOW create and show MainWindow (after culture is set)
             Log("Creating MainWindow...");
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingInterface);
             var mainWindow = new MainWindow();
 
-            // Watch for OS theme changes
-            SystemThemeWatcher.Watch(mainWindow);
+            // Keep the persisted in-app theme stable across navigation and restarts.
+            // Do not auto-follow OS theme changes unless an explicit user option is added.
 
             // Set as main window FIRST (prevents shutdown when splash closes)
             MainWindow = mainWindow;
@@ -265,24 +298,103 @@ public partial class App : Application
 
     /// <summary>
     /// Initializes animation resources based on reduced motion preference.
-    /// Sets animation durations to zero if user prefers reduced motion.
+    /// Sets animation durations to zero when reduced motion is enabled.
     /// </summary>
     private void InitializeAnimationResources()
     {
         try
         {
-            if (ReducedMotion)
-            {
-                // Override animation durations with instant durations
-                Resources["AnimationFast"] = new Duration(TimeSpan.Zero);
-                Resources["AnimationNormal"] = new Duration(TimeSpan.Zero);
-                Resources["AnimationSlow"] = new Duration(TimeSpan.Zero);
-                Log("Animation durations set to zero (reduced motion enabled)");
-            }
+            ApplyAnimationResources(ReducedMotion);
+            Log($"Animation resources initialized (reduced motion: {ReducedMotion})");
         }
         catch (Exception ex)
         {
             Log($"Failed to initialize animation resources: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Applies animation duration resources for the current reduced motion mode.
+    /// </summary>
+    private static void ApplyAnimationResources(bool reducedMotion)
+    {
+        var app = Current;
+        if (app?.Resources == null)
+            return;
+
+        app.Resources["AnimationFast"] = reducedMotion
+            ? new Duration(TimeSpan.Zero)
+            : new Duration(TimeSpan.FromMilliseconds(AnimationFastMs));
+        app.Resources["AnimationNormal"] = reducedMotion
+            ? new Duration(TimeSpan.Zero)
+            : new Duration(TimeSpan.FromMilliseconds(AnimationNormalMs));
+        app.Resources["AnimationSlow"] = reducedMotion
+            ? new Duration(TimeSpan.Zero)
+            : new Duration(TimeSpan.FromMilliseconds(AnimationSlowMs));
+    }
+
+    /// <summary>
+    /// Applies or removes high contrast resources.
+    /// </summary>
+    internal static void ApplyHighContrastMode(bool enable)
+    {
+        var app = Current;
+        if (app?.Resources == null) return;
+
+        var highContrastUri = new Uri("Resources/HighContrastTheme.xaml", UriKind.Relative);
+
+        ResourceDictionary? existingDict = null;
+        foreach (var dict in app.Resources.MergedDictionaries)
+        {
+            if (dict.Source?.OriginalString.Contains("HighContrastTheme", StringComparison.Ordinal) == true)
+            {
+                existingDict = dict;
+                break;
+            }
+        }
+
+        if (existingDict != null)
+        {
+            app.Resources.MergedDictionaries.Remove(existingDict);
+        }
+
+        if (enable)
+        {
+            try
+            {
+                var highContrastDict = new ResourceDictionary { Source = highContrastUri };
+                app.Resources.MergedDictionaries.Add(highContrastDict);
+
+                // Override commonly-used Fluent brush keys so high contrast is actually visible.
+                SwapIfExists(app, "ApplicationBackgroundBrush", "HighContrastBackgroundBrush");
+                SwapIfExists(app, "CardBackgroundFillColorDefaultBrush", "HighContrastCardBrush");
+                SwapIfExists(app, "ControlFillColorDefaultBrush", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "TextFillColorPrimaryBrush", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "TextFillColorSecondaryBrush", "HighContrastTextSecondaryBrush");
+                SwapIfExists(app, "ControlStrokeColorDefaultBrush", "HighContrastBorderBrush");
+                SwapIfExists(app, "DividerStrokeColorDefaultBrush", "HighContrastBorderLightBrush");
+                SwapIfExists(app, "SystemAccentColorPrimaryBrush", "HighContrastPrimaryBrush");
+                SwapIfExists(app, "SystemAccentColorSecondaryBrush", "HighContrastSecondaryBrush");
+                SwapIfExists(app, "SystemFillColorCriticalBrush", "HighContrastErrorBrush");
+                SwapIfExists(app, "ErrorTextBrush", "HighContrastErrorBrush");
+                SwapIfExists(app, "WarningTextBrush", "HighContrastWarningBrush");
+                SwapIfExists(app, "SuccessTextBrush", "HighContrastSuccessBrush");
+            }
+            catch (Exception ex)
+            {
+                Log($"Failed to load high contrast resources: {ex.Message}");
+            }
+        }
+        else
+        {
+            // Only re-apply standard resources when we were actually leaving high contrast mode.
+            // Avoid forcing a theme change during normal settings reload when high contrast is already disabled.
+            if (existingDict != null)
+            {
+                var isDark = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
+                ApplicationThemeManager.Apply(isDark ? ApplicationTheme.Dark : ApplicationTheme.Light, WindowBackdropType.Mica);
+                ApplyThemeResources(isDark);
+            }
         }
     }
 
@@ -370,6 +482,8 @@ public partial class App : Application
         // Badge foregrounds - white text on saturated dark-theme backgrounds
         app.Resources["BadgePrimaryForegroundBrush"] = new SolidColorBrush(Colors.White);
         app.Resources["BadgeSecondaryForegroundBrush"] = new SolidColorBrush(Colors.White);
+        app.Resources["PrimaryHueLightForegroundBrush"] = new SolidColorBrush(Colors.White);
+        app.Resources["SecondaryHueLightForegroundBrush"] = new SolidColorBrush(Colors.White);
     }
 
     /// <summary>
@@ -422,10 +536,11 @@ public partial class App : Application
         app.Resources["SkeletonBaseBrush"] = new SolidColorBrush(Color.FromArgb(26, 0, 0, 0));        // 10% black
         app.Resources["SkeletonHighlightBrush"] = new SolidColorBrush(Color.FromArgb(51, 0, 0, 0));   // 20% black
 
-        // Badge foregrounds - keep white for most saturated backgrounds,
-        // but dark text for lighter secondary backgrounds
+        // Badge foregrounds - keep white for saturated primary badges, use dark text for lighter badges.
         app.Resources["BadgePrimaryForegroundBrush"] = new SolidColorBrush(Colors.White);
         app.Resources["BadgeSecondaryForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
+        app.Resources["PrimaryHueLightForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
+        app.Resources["SecondaryHueLightForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
     }
 
     /// <summary>

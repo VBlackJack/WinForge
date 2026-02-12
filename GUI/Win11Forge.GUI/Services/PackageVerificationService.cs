@@ -28,7 +28,7 @@ namespace Win11Forge.GUI.Services;
 /// </summary>
 internal static partial class PackageIdValidator
 {
-    [GeneratedRegex(@"^[a-zA-Z0-9._\-/]+$", RegexOptions.Compiled)]
+    [GeneratedRegex(@"^[a-zA-Z0-9._\-/]+$")]
     public static partial Regex SafePackageIdPattern();
 
     public static bool IsValidPackageId(string? packageId)
@@ -56,14 +56,14 @@ public partial class PackageVerificationService : IPackageVerificationService
     /// <summary>
     /// Compiled regex for validating Microsoft Store ID format (9-12 alphanumeric characters).
     /// </summary>
-    [GeneratedRegex(@"^[A-Za-z0-9]{9,12}$", RegexOptions.Compiled)]
+    [GeneratedRegex(@"^[A-Za-z0-9]{9,12}$")]
     private static partial Regex StoreIdPattern();
 
     /// <summary>
     /// Compiled regex for extracting version numbers from winget output.
     /// Matches patterns like 1.2, 1.2.3, 1.2.3.4.
     /// </summary>
-    [GeneratedRegex(@"\b(\d+\.\d+(?:\.\d+)?(?:\.\d+)?)\b", RegexOptions.Compiled)]
+    [GeneratedRegex(@"\b(\d+\.\d+(?:\.\d+)?(?:\.\d+)?)\b")]
     private static partial Regex VersionPattern();
 
     private readonly Lazy<bool> _wingetAvailable;

@@ -33,7 +33,7 @@
                     Padding="0">
                 <Grid>
                     <!-- Log Viewer Dialog -->
-                    <Border MinWidth="460" MaxWidth="900" MaxHeight="500" Padding="24"
+                    <Border MinWidth="360" MaxWidth="900" MaxHeight="500" Padding="24"
                             Visibility="{Binding IsLogViewerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -213,7 +213,10 @@
                 CornerRadius="8"
                 Padding="{StaticResource CardPadding}"
                 Margin="{StaticResource MarginNormalBottom}">
-            <Grid>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          CanContentScroll="False">
+            <Grid MinWidth="920">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -277,6 +280,7 @@
                            Appearance="Secondary"
                            ToolTip="{loc:Loc Apps_ClearProfile}"
                            Margin="8,0,0,0"
+                           AutomationProperties.Name="{loc:Loc Apps_ClearProfile}"
                            Visibility="{Binding HasProfileApplied, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <ui:SymbolIcon Symbol="Dismiss24"/>
                 </ui:Button>
@@ -325,6 +329,7 @@
                     </StackPanel>
                 </ui:Button>
             </Grid>
+            </ScrollViewer>
         </Border>
 
         <!-- Filter Bar Card -->
@@ -333,10 +338,13 @@
                 CornerRadius="8"
                 Padding="{StaticResource CardPadding}"
                 Margin="{StaticResource MarginNormalBottom}">
-            <Grid>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          CanContentScroll="False">
+            <Grid MinWidth="920">
                 <Grid.ColumnDefinitions>
                     <!-- Filters Section -->
-                    <ColumnDefinition Width="Auto" MinWidth="220"/> <!-- 0: Search -->
+                    <ColumnDefinition Width="Auto" MinWidth="180"/> <!-- 0: Search -->
                     <ColumnDefinition Width="Auto"/>                <!-- 1: Category -->
                     <ColumnDefinition Width="Auto"/>                <!-- 2: Status -->
                     <ColumnDefinition Width="Auto"/>                <!-- 3: Clear Filters -->
@@ -357,7 +365,8 @@
                 <controls:SearchBox Grid.Column="0"
                                      Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      SuggestionsSource="{Binding ApplicationNames}"
-                                     Width="220"
+                                     MinWidth="180"
+                                     MaxWidth="260"
                                      Margin="0,0,16,0"/>
 
                 <!-- Category ComboBox -->
@@ -389,6 +398,7 @@
                 <ui:Button Grid.Column="3"
                            Command="{Binding ClearFiltersCommand}"
                            Appearance="Secondary"
+                           Style="{StaticResource TouchFriendlyIconButton}"
                            ToolTip="{loc:Loc Apps_ClearFilters}"
                            Margin="8,0,0,0"
                            AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}">
@@ -586,6 +596,7 @@
                                VerticalAlignment="Center"/>
                 </StackPanel>
             </Grid>
+            </ScrollViewer>
         </Border>
 
         <!-- Selection Action Bar -->
@@ -751,7 +762,7 @@
                     <!-- Pause Button -->
                     <ui:Button Command="{Binding PauseCommand}"
                                Appearance="Transparent"
-                               Width="44" Height="44"
+                               Style="{StaticResource TouchFriendlyIconButton}"
                                ToolTip="{loc:Loc Btn_Pause}"
                                Visibility="{Binding IsPaused, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                                AutomationProperties.Name="{loc:Loc A11y_Deployment_Pause}">
@@ -760,7 +771,7 @@
                     <!-- Resume Button -->
                     <ui:Button Command="{Binding ResumeCommand}"
                                Appearance="Transparent"
-                               Width="44" Height="44"
+                               Style="{StaticResource TouchFriendlyIconButton}"
                                ToolTip="{loc:Loc Btn_Resume}"
                                Visibility="{Binding IsPaused, Converter={StaticResource BooleanToVisibilityConverter}}"
                                AutomationProperties.Name="{loc:Loc A11y_Deployment_Resume}">
@@ -769,7 +780,7 @@
                     <!-- Cancel Button -->
                     <ui:Button Command="{Binding CancelBatchCommand}"
                                Appearance="Transparent"
-                               Width="44" Height="44"
+                               Style="{StaticResource TouchFriendlyIconButton}"
                                ToolTip="{loc:Loc Btn_Cancel}"
                                Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                AutomationProperties.Name="{loc:Loc A11y_Deployment_Cancel}">

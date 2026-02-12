@@ -605,6 +605,10 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Settings saved</value>
     <comment>Toast notification when settings are auto-saved</comment>
   </data>
+  <data name="Settings_SaveFailed" xml:space="preserve">
+    <value>Failed to save settings</value>
+    <comment>Error shown when settings persistence fails</comment>
+  </data>
   <data name="Settings_Language" xml:space="preserve">
     <value>Language</value>
     <comment>Language setting label</comment>
@@ -1906,6 +1910,18 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Minimize animations for accessibility</value>
     <comment>Reduce motion setting description</comment>
   </data>
+  <data name="Settings_HighContrast" xml:space="preserve">
+    <value>High Contrast</value>
+    <comment>High contrast setting label</comment>
+  </data>
+  <data name="Settings_HighContrast_Desc" xml:space="preserve">
+    <value>Increase contrast for improved readability</value>
+    <comment>High contrast setting description</comment>
+  </data>
+  <data name="Settings_TimePlaceholder" xml:space="preserve">
+    <value>HH:mm</value>
+    <comment>Time input placeholder for scheduled deployment</comment>
+  </data>
   <!-- Profile Selection -->
   <data name="Apps_ProfileLabel" xml:space="preserve">
     <value>Profile</value>
@@ -2232,6 +2248,14 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Date and Time</value>
     <comment>Date/time selection label</comment>
   </data>
+  <data name="ScheduledDeployment_Date" xml:space="preserve">
+    <value>Deployment date</value>
+    <comment>Accessible name for the deployment date picker</comment>
+  </data>
+  <data name="ScheduledDeployment_Time" xml:space="preserve">
+    <value>Deployment time</value>
+    <comment>Accessible name for the deployment time input</comment>
+  </data>
   <data name="ScheduledDeployment_Create" xml:space="preserve">
     <value>Schedule</value>
     <comment>Create scheduled deployment button</comment>
@@ -2369,6 +2393,50 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Failed to import applications</value>
     <comment>Error message when import fails</comment>
   </data>
+  <data name="Apps_Error_PowerShell" xml:space="preserve">
+    <value>PowerShell error: {0}</value>
+    <comment>PowerShell error in apps workflows</comment>
+  </data>
+  <data name="Apps_Error_Database" xml:space="preserve">
+    <value>Database error: {0}</value>
+    <comment>Database error in apps workflows</comment>
+  </data>
+  <data name="Apps_Error_ProfilesDirectoryNotFound" xml:space="preserve">
+    <value>Could not find Profiles directory</value>
+    <comment>Profiles directory not found error</comment>
+  </data>
+  <data name="Apps_Error_ProfileLoadFailed" xml:space="preserve">
+    <value>Failed to load profile '{0}': {1}</value>
+    <comment>Profile load error (0=profile,1=details)</comment>
+  </data>
+  <data name="Apps_Error_ProfileLoadPowerShellFailed" xml:space="preserve">
+    <value>Failed to load profile (PowerShell error): {0}</value>
+    <comment>Profile load PowerShell error (0=details)</comment>
+  </data>
+  <data name="Apps_Error_ProfileLoadGeneric" xml:space="preserve">
+    <value>Failed to load profile: {0}</value>
+    <comment>Generic profile load error (0=details)</comment>
+  </data>
+  <data name="Apps_Error_DetectionFailed" xml:space="preserve">
+    <value>Detection failed: {0}</value>
+    <comment>Detection error in apps scan (0=details)</comment>
+  </data>
+  <data name="Apps_Error_SelectionExportFailed" xml:space="preserve">
+    <value>Failed to export selection: {0}</value>
+    <comment>Selection export error (0=details)</comment>
+  </data>
+  <data name="Apps_Error_SelectionImportFailed" xml:space="preserve">
+    <value>Failed to import selection: {0}</value>
+    <comment>Selection import error (0=details)</comment>
+  </data>
+  <data name="Apps_Error_FavoritesExportFailed" xml:space="preserve">
+    <value>Failed to export favorites: {0}</value>
+    <comment>Favorites export error (0=details)</comment>
+  </data>
+  <data name="Apps_Error_FavoritesImportFailed" xml:space="preserve">
+    <value>Failed to import favorites: {0}</value>
+    <comment>Favorites import error (0=details)</comment>
+  </data>
   <data name="Validation_AtLeastOneSource" xml:space="preserve">
     <value>At least one installation source is required</value>
     <comment>Validation error for missing sources</comment>
@@ -2481,6 +2549,30 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   <data name="AppDb_Deleted" xml:space="preserve">
     <value>Application deleted successfully</value>
     <comment>Deleted success message</comment>
+  </data>
+  <data name="AppDb_UndoTooltipFormat" xml:space="preserve">
+    <value>{0} (Ctrl+Z)</value>
+    <comment>Undo button tooltip format with keyboard shortcut</comment>
+  </data>
+  <data name="AppDb_RedoTooltipFormat" xml:space="preserve">
+    <value>{0} (Ctrl+Y)</value>
+    <comment>Redo button tooltip format with keyboard shortcut</comment>
+  </data>
+  <data name="AppDb_UndoTooltipDefault" xml:space="preserve">
+    <value>Undo (Ctrl+Z)</value>
+    <comment>Default undo button tooltip when no action to undo</comment>
+  </data>
+  <data name="AppDb_RedoTooltipDefault" xml:space="preserve">
+    <value>Redo (Ctrl+Y)</value>
+    <comment>Default redo button tooltip when no action to redo</comment>
+  </data>
+  <data name="AppDb_CopyIdSuffix" xml:space="preserve">
+    <value>_Copy</value>
+    <comment>Suffix appended to app ID when duplicating</comment>
+  </data>
+  <data name="AppDb_CopyNameSuffix" xml:space="preserve">
+    <value> (Copy)</value>
+    <comment>Suffix appended to app name when duplicating</comment>
   </data>
   <data name="AppDb_DeleteError" xml:space="preserve">
     <value>Failed to delete application</value>
@@ -2891,6 +2983,22 @@ No = Skip duplicates</value>
   <data name="Verify_Verifying" xml:space="preserve">
     <value>Verifying packages...</value>
     <comment>Verification in progress message</comment>
+  </data>
+  <data name="Verify_CancelledProgress" xml:space="preserve">
+    <value>Verification cancelled ({0}/{1})</value>
+    <comment>Batch verification cancelled (0=current,1=total)</comment>
+  </data>
+  <data name="Verify_ProgressItem" xml:space="preserve">
+    <value>Verifying {0}/{1}: {2}...</value>
+    <comment>Batch verification progress (0=current,1=total,2=item)</comment>
+  </data>
+  <data name="Verify_CompleteSummary" xml:space="preserve">
+    <value>Verification complete: {0} valid, {1} invalid</value>
+    <comment>Batch verification summary (0=valid,1=invalid)</comment>
+  </data>
+  <data name="Verify_CompleteSummaryWithErrors" xml:space="preserve">
+    <value>Verification complete: {0} valid, {1} invalid, {2} errors</value>
+    <comment>Batch verification summary with errors (0=valid,1=invalid,2=errors)</comment>
   </data>
   <!-- Detection Editor -->
   <data name="Detection_Method_Registry" xml:space="preserve">
@@ -3469,6 +3577,10 @@ This action cannot be undone.</value>
   <data name="A11y_Settings_ReducedMotion" xml:space="preserve">
     <value>Toggle reduced motion</value>
     <comment>Accessibility name for reduced motion toggle</comment>
+  </data>
+  <data name="A11y_Settings_HighContrast" xml:space="preserve">
+    <value>Toggle high contrast mode</value>
+    <comment>Accessibility name for high contrast toggle</comment>
   </data>
   <data name="A11y_Settings_Language" xml:space="preserve">
     <value>Select language</value>

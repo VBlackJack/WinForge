@@ -29,7 +29,7 @@
                                    Width="24" Height="24"
                                    VerticalAlignment="Center"
                                    Margin="0,0,12,0"/>
-                    <TextBlock Text="Microsoft Store"
+                    <TextBlock Text="{loc:Loc Source_Store}"
                                FontSize="16" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
@@ -38,7 +38,7 @@
                                  x:Name="EnableToggle"
                                  IsChecked="{Binding IsSourceEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                  ToolTip="{loc:Loc SourceEditor_EnableDisable}"
-                                 AutomationProperties.Name="Enable Microsoft Store source"/>
+                                 AutomationProperties.Name="{loc:Loc SourceEditor_EnableDisable}"/>
             </Grid>
 
             <!-- Store App ID -->
@@ -53,7 +53,7 @@
                          PlaceholderText="{loc:Loc AppEditor_StoreAppId}"
                          MaxLength="12"
                          CharacterCasing="Upper"
-                         AutomationProperties.Name="Microsoft Store app ID"/>
+                         AutomationProperties.Name="{loc:Loc AppEditor_StoreAppId}"/>
 
                 <!-- Validation indicator -->
                 <ui:SymbolIcon Grid.Column="1"

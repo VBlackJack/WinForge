@@ -197,12 +197,16 @@ internal class MockDashboardAppSettingsService : IAppSettingsService
     public Task<AppSettings> LoadSettingsAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult(Settings);
 
-    public void SaveSettings(AppSettings settings) => Settings = settings;
-
-    public Task SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
+    public bool SaveSettings(AppSettings settings)
     {
         Settings = settings;
-        return Task.CompletedTask;
+        return true;
+    }
+
+    public Task<bool> SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
+    {
+        Settings = settings;
+        return Task.FromResult(true);
     }
 
     public void ApplySettings(AppSettings settings) => Settings = settings;

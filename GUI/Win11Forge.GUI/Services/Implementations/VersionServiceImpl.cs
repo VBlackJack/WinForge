@@ -34,13 +34,13 @@ public partial class VersionServiceImpl : IVersionService
     /// Compiled regex for extracting version strings from winget output.
     /// Matches patterns like "3.7.7", "1.0.0-beta", "2024.1.0".
     /// </summary>
-    [GeneratedRegex(@"^[\d]+[.\d\-a-zA-Z_]*", RegexOptions.Compiled)]
+    [GeneratedRegex(@"^[\d]+[.\d\-a-zA-Z_]*")]
     private static partial Regex WingetVersionPattern();
 
     /// <summary>
     /// Compiled regex for extracting leading digits from version parts.
     /// </summary>
-    [GeneratedRegex(@"^\d+", RegexOptions.Compiled)]
+    [GeneratedRegex(@"^\d+")]
     private static partial Regex LeadingDigitsPattern();
 
     /// <summary>

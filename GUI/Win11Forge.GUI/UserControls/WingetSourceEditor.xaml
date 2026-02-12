@@ -30,7 +30,7 @@
                                    Width="24" Height="24"
                                    VerticalAlignment="Center"
                                    Margin="0,0,12,0"/>
-                    <TextBlock Text="Winget"
+                    <TextBlock Text="{loc:Loc Source_Winget}"
                                FontSize="16" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>

@@ -384,6 +384,7 @@
                                 <ui:Button Appearance="Transparent"
                                            Width="44" Height="44"
                                            ToolTip="{loc:Loc Btn_ViewLogs}"
+                                           AutomationProperties.Name="{loc:Loc Btn_ViewLogs}"
                                            Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                            CommandParameter="{Binding}"
                                            Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
@@ -417,7 +418,7 @@
                 MouseDown="DialogHost_DialogClosing"/>
 
         <!-- Dialog Content -->
-        <Border MinWidth="460" MaxWidth="900" MaxHeight="500"
+        <Border MinWidth="360" MaxWidth="900" MaxHeight="500"
                 Padding="24"
                 CornerRadius="8"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"

@@ -17,7 +17,6 @@
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
-using System.Windows;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 
@@ -120,7 +119,7 @@ public class AppSettingsService : IAppSettingsService
     }
 
     /// <inheritdoc/>
-    public void SaveSettings(AppSettings settings)
+    public bool SaveSettings(AppSettings settings)
     {
         lock (_cacheLock)
         {
@@ -135,11 +134,13 @@ public class AppSettingsService : IAppSettingsService
                 var json = JsonSerializer.Serialize(settings, JsonOptions);
                 File.WriteAllText(SettingsFilePath, json);
                 _cachedSettings = settings;
+                return true;
             }
             catch (Exception ex)
             {
                 // Settings persistence is non-critical, but log for diagnostics
                 System.Diagnostics.Debug.WriteLine($"Failed to save settings: {ex.Message}");
+                return false;
             }
         }
     }
@@ -195,7 +196,7 @@ public class AppSettingsService : IAppSettingsService
     }
 
     /// <inheritdoc/>
-    public async Task SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
+    public async Task<bool> SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -212,6 +213,7 @@ public class AppSettingsService : IAppSettingsService
             {
                 _cachedSettings = settings;
             }
+            return true;
         }
         catch (OperationCanceledException)
         {
@@ -221,6 +223,7 @@ public class AppSettingsService : IAppSettingsService
         {
             // Settings persistence is non-critical, but log for diagnostics
             System.Diagnostics.Debug.WriteLine($"Failed to save settings async: {ex.Message}");
+            return false;
         }
     }
 
@@ -244,12 +247,23 @@ public class AppSettingsService : IAppSettingsService
         // Apply high contrast mode
         try
         {
-            ApplyHighContrastMode(settings.IsHighContrastEnabled);
+            App.ApplyHighContrastMode(settings.IsHighContrastEnabled);
         }
         catch (Exception ex)
         {
             // High contrast application is non-critical, but log for diagnostics
             System.Diagnostics.Debug.WriteLine($"Failed to apply high contrast mode: {ex.Message}");
+        }
+
+        // Apply reduced motion override
+        try
+        {
+            App.SetReducedMotionOverride(settings.ReducedMotionOverride);
+        }
+        catch (Exception ex)
+        {
+            // Reduced motion application is non-critical, but log for diagnostics
+            System.Diagnostics.Debug.WriteLine($"Failed to apply reduced motion setting: {ex.Message}");
         }
 
         // Apply language/culture
@@ -269,48 +283,6 @@ public class AppSettingsService : IAppSettingsService
         {
             // Language application is non-critical, but log for diagnostics
             System.Diagnostics.Debug.WriteLine($"Failed to apply language setting: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Applies or removes high contrast theme resources.
-    /// </summary>
-    private static void ApplyHighContrastMode(bool enable)
-    {
-        var app = System.Windows.Application.Current;
-        if (app == null) return;
-
-        var highContrastUri = new Uri("Resources/HighContrastTheme.xaml", UriKind.Relative);
-
-        // Remove existing high contrast dictionary if present
-        ResourceDictionary? existingDict = null;
-        foreach (var dict in app.Resources.MergedDictionaries)
-        {
-            if (dict.Source?.OriginalString.Contains("HighContrastTheme") == true)
-            {
-                existingDict = dict;
-                break;
-            }
-        }
-
-        if (existingDict != null)
-        {
-            app.Resources.MergedDictionaries.Remove(existingDict);
-        }
-
-        // Add high contrast dictionary if enabled
-        if (enable)
-        {
-            try
-            {
-                var highContrastDict = new ResourceDictionary { Source = highContrastUri };
-                app.Resources.MergedDictionaries.Add(highContrastDict);
-            }
-            catch (Exception ex)
-            {
-                // High contrast resources may not be available
-                System.Diagnostics.Debug.WriteLine($"Failed to load high contrast resources: {ex.Message}");
-            }
         }
     }
 
@@ -347,15 +319,17 @@ public interface IAppSettingsService
     /// <summary>
     /// Saves settings to disk synchronously.
     /// Prefer SaveSettingsAsync for non-blocking operations.
+    /// Returns false when persistence fails.
     /// </summary>
-    void SaveSettings(AppSettings settings);
+    bool SaveSettings(AppSettings settings);
 
     /// <summary>
     /// Saves settings to disk asynchronously.
+    /// Returns false when persistence fails.
     /// </summary>
     /// <param name="settings">Settings to save</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    Task SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default);
+    Task<bool> SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Applies settings to the application (theme, language).
@@ -378,6 +352,12 @@ public class AppSettings : System.ComponentModel.DataAnnotations.IValidatableObj
     /// Whether high contrast mode is enabled for accessibility.
     /// </summary>
     public bool IsHighContrastEnabled { get; set; } = false;
+
+    /// <summary>
+    /// User override for reduced motion.
+    /// True/False forces the value, null follows system preference.
+    /// </summary>
+    public bool? ReducedMotionOverride { get; set; }
 
     /// <summary>
     /// ISO language code (e.g., "en", "fr").

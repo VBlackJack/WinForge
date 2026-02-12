@@ -80,6 +80,23 @@
                                                      IsChecked="{Binding ReducedMotion}"
                                                      AutomationProperties.Name="{loc:Loc A11y_Settings_ReducedMotion}"/>
                                 </Grid>
+
+                                <!-- High Contrast -->
+                                <Grid Margin="0,16,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{loc:Loc Settings_HighContrast}" FontSize="14" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_HighContrast_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+
+                                    <ui:ToggleSwitch Grid.Column="1"
+                                                     IsChecked="{Binding IsHighContrastEnabled}"
+                                                     AutomationProperties.Name="{loc:Loc A11y_Settings_HighContrast}"/>
+                                </Grid>
                             </StackPanel>
                         </Border>
 
@@ -180,6 +197,7 @@
                                 <ComboBox Grid.Column="1"
                                           ItemsSource="{Binding ParallelInstallOptions}"
                                           SelectedItem="{Binding MaxParallelInstalls}"
+                                          AutomationProperties.Name="{loc:Loc Settings_ParallelInstalls}"
                                           Width="80"/>
                             </Grid>
 
@@ -198,6 +216,7 @@
                                 <ComboBox Grid.Column="1"
                                           ItemsSource="{Binding ParallelScanOptions}"
                                           SelectedItem="{Binding MaxParallelScans}"
+                                          AutomationProperties.Name="{loc:Loc Settings_ParallelScans}"
                                           Width="80"/>
                             </Grid>
                         </StackPanel>
@@ -478,7 +497,8 @@
                                                VerticalAlignment="Center"/>
                                     <ComboBox Grid.Column="1"
                                               ItemsSource="{Binding AvailableProfiles}"
-                                              SelectedItem="{Binding NewScheduledProfile}"/>
+                                              SelectedItem="{Binding NewScheduledProfile}"
+                                              AutomationProperties.Name="{loc:Loc ScheduledDeployment_Profile}"/>
                                 </Grid>
 
                                 <!-- Trigger Type -->
@@ -493,7 +513,8 @@
                                                VerticalAlignment="Center"/>
                                     <ComboBox Grid.Column="1"
                                               ItemsSource="{Binding AvailableTriggerTypes}"
-                                              SelectedItem="{Binding NewScheduledTriggerType}"/>
+                                              SelectedItem="{Binding NewScheduledTriggerType}"
+                                              AutomationProperties.Name="{loc:Loc ScheduledDeployment_TriggerType}"/>
                                 </Grid>
 
                                 <!-- Schedule Time -->
@@ -509,9 +530,12 @@
                                                VerticalAlignment="Center"/>
                                     <DatePicker Grid.Column="1"
                                                 SelectedDate="{Binding NewScheduledTime}"
+                                                AutomationProperties.Name="{loc:Loc ScheduledDeployment_Date}"
                                                 Margin="0,0,8,0"/>
                                     <ui:TextBox Grid.Column="2"
-                                                PlaceholderText="HH:mm"
+                                                PlaceholderText="{loc:Loc Settings_TimePlaceholder}"
+                                                AutomationProperties.Name="{loc:Loc ScheduledDeployment_Time}"
+                                                AutomationProperties.HelpText="{loc:Loc Settings_TimePlaceholder}"
                                                 Text="{Binding NewScheduledTimeText, UpdateSourceTrigger=PropertyChanged}"/>
                                 </Grid>
 
@@ -547,7 +571,9 @@
                                     <ui:Button Grid.Column="1"
                                             Command="{Binding LoadScheduledDeploymentsCommand}"
                                             Appearance="Transparent"
-                                            ToolTip="{loc:Loc ScheduledDeployment_Refresh}">
+                                            Style="{StaticResource TouchFriendlyIconButton}"
+                                            ToolTip="{loc:Loc ScheduledDeployment_Refresh}"
+                                            AutomationProperties.Name="{loc:Loc ScheduledDeployment_Refresh}">
                                         <ui:SymbolIcon Symbol="ArrowSync24" Width="20" Height="20"/>
                                     </ui:Button>
                                 </Grid>

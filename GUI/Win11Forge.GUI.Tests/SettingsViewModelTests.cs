@@ -162,6 +162,124 @@ public class SettingsViewModelTests
     }
 
     /// <summary>
+    /// Verifies that save failures surface an explicit status message.
+    /// </summary>
+    [Fact]
+    public void ThemeChange_WhenSaveFails_ShouldShowSaveError()
+    {
+        // Arrange
+        var settingsService = new MockAppSettingsService
+        {
+            SaveShouldSucceed = false
+        };
+        var historyService = new MockDeploymentHistoryService();
+        var powerShellBridge = new MockPowerShellBridge();
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        var expected = Win11Forge.GUI.Resources.Resources.ResourceManager.GetString(
+            "Settings_SaveFailed",
+            Win11Forge.GUI.Resources.Resources.Culture) ?? "Failed to save settings";
+
+        // Act
+        viewModel.IsDarkTheme = !viewModel.IsDarkTheme;
+
+        // Assert
+        Assert.Equal(expected, viewModel.StatusMessage);
+    }
+
+    /// <summary>
+    /// Verifies that InitializeAsync does not reload settings when already loaded in constructor.
+    /// </summary>
+    [Fact]
+    public async Task InitializeAsync_ShouldNotReloadSettingsWhenAlreadyLoaded()
+    {
+        // Arrange
+        var settingsService = new MockAppSettingsService();
+        var historyService = new MockDeploymentHistoryService();
+        var powerShellBridge = new MockPowerShellBridge();
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+
+        // Assert precondition
+        Assert.Equal(1, settingsService.LoadSettingsCallCount);
+
+        // Act
+        await viewModel.InitializeAsync();
+
+        // Assert - no second load
+        Assert.Equal(1, settingsService.LoadSettingsCallCount);
+    }
+
+    /// <summary>
+    /// Verifies that loading persisted settings does not trigger an unintended save.
+    /// </summary>
+    [Fact]
+    public void Initialize_ShouldNotSaveDuringInitialLoad()
+    {
+        // Arrange
+        var settingsService = new MockAppSettingsService
+        {
+            SettingsToReturn = new AppSettings
+            {
+                IsDarkTheme = false,
+                IsHighContrastEnabled = true,
+                ReducedMotionOverride = true,
+                LanguageCode = "fr"
+            }
+        };
+        var historyService = new MockDeploymentHistoryService();
+        var powerShellBridge = new MockPowerShellBridge();
+
+        // Act
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+
+        // Assert
+        Assert.Null(settingsService.LastSavedSettings);
+        Assert.False(viewModel.IsDarkTheme);
+        Assert.True(viewModel.IsHighContrastEnabled);
+        Assert.True(viewModel.ReducedMotion);
+    }
+
+    /// <summary>
+    /// Verifies that high contrast preference is persisted immediately when toggled.
+    /// </summary>
+    [Fact]
+    public void HighContrastToggle_ShouldPersistImmediately()
+    {
+        // Arrange
+        var settingsService = new MockAppSettingsService();
+        var historyService = new MockDeploymentHistoryService();
+        var powerShellBridge = new MockPowerShellBridge();
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+
+        // Act
+        viewModel.IsHighContrastEnabled = true;
+
+        // Assert
+        Assert.NotNull(settingsService.LastSavedSettings);
+        Assert.True(settingsService.LastSavedSettings.IsHighContrastEnabled);
+    }
+
+    /// <summary>
+    /// Verifies that reduced motion preference is persisted as an explicit override.
+    /// </summary>
+    [Fact]
+    public void ReducedMotionToggle_ShouldPersistOverride()
+    {
+        // Arrange
+        var settingsService = new MockAppSettingsService();
+        var historyService = new MockDeploymentHistoryService();
+        var powerShellBridge = new MockPowerShellBridge();
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        var toggledValue = !viewModel.ReducedMotion;
+
+        // Act
+        viewModel.ReducedMotion = toggledValue;
+
+        // Assert
+        Assert.NotNull(settingsService.LastSavedSettings);
+        Assert.Equal(toggledValue, settingsService.LastSavedSettings.ReducedMotionOverride);
+    }
+
+    /// <summary>
     /// Verifies that same language selection does not require restart.
     /// </summary>
     [Fact]
@@ -211,21 +329,28 @@ internal class MockAppSettingsService : IAppSettingsService
 {
     public AppSettings? LastSavedSettings { get; private set; }
     public AppSettings SettingsToReturn { get; set; } = new AppSettings();
+    public bool SaveShouldSucceed { get; set; } = true;
+    public int LoadSettingsCallCount { get; private set; }
 
-    public AppSettings LoadSettings() => SettingsToReturn;
+    public AppSettings LoadSettings()
+    {
+        LoadSettingsCallCount++;
+        return SettingsToReturn;
+    }
 
     public Task<AppSettings> LoadSettingsAsync(CancellationToken cancellationToken = default)
         => Task.FromResult(SettingsToReturn);
 
-    public void SaveSettings(AppSettings settings)
+    public bool SaveSettings(AppSettings settings)
     {
         LastSavedSettings = settings;
+        return SaveShouldSucceed;
     }
 
-    public Task SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
+    public Task<bool> SaveSettingsAsync(AppSettings settings, CancellationToken cancellationToken = default)
     {
         LastSavedSettings = settings;
-        return Task.CompletedTask;
+        return Task.FromResult(SaveShouldSucceed);
     }
 
     public void ApplySettings(AppSettings settings)

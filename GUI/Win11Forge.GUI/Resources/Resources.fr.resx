@@ -434,6 +434,9 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Settings_AutoSaved" xml:space="preserve">
     <value>Parametres enregistres</value>
   </data>
+  <data name="Settings_SaveFailed" xml:space="preserve">
+    <value>Echec de l'enregistrement des parametres</value>
+  </data>
   <data name="Settings_Language" xml:space="preserve">
     <value>Langue</value>
   </data>
@@ -1498,6 +1501,12 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="ScheduledDeployment_DateTime" xml:space="preserve">
     <value>Date et heure</value>
   </data>
+  <data name="ScheduledDeployment_Date" xml:space="preserve">
+    <value>Date de déploiement</value>
+  </data>
+  <data name="ScheduledDeployment_Time" xml:space="preserve">
+    <value>Heure de déploiement</value>
+  </data>
   <data name="ScheduledDeployment_Create" xml:space="preserve">
     <value>Planifier</value>
   </data>
@@ -1601,6 +1610,39 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Apps_ImportFailed" xml:space="preserve">
     <value>Echec de l'importation des applications</value>
   </data>
+  <data name="Apps_Error_PowerShell" xml:space="preserve">
+    <value>Erreur PowerShell : {0}</value>
+  </data>
+  <data name="Apps_Error_Database" xml:space="preserve">
+    <value>Erreur base de donnees : {0}</value>
+  </data>
+  <data name="Apps_Error_ProfilesDirectoryNotFound" xml:space="preserve">
+    <value>Dossier Profiles introuvable</value>
+  </data>
+  <data name="Apps_Error_ProfileLoadFailed" xml:space="preserve">
+    <value>Echec du chargement du profil '{0}' : {1}</value>
+  </data>
+  <data name="Apps_Error_ProfileLoadPowerShellFailed" xml:space="preserve">
+    <value>Echec du chargement du profil (erreur PowerShell) : {0}</value>
+  </data>
+  <data name="Apps_Error_ProfileLoadGeneric" xml:space="preserve">
+    <value>Echec du chargement du profil : {0}</value>
+  </data>
+  <data name="Apps_Error_DetectionFailed" xml:space="preserve">
+    <value>Detection echouee : {0}</value>
+  </data>
+  <data name="Apps_Error_SelectionExportFailed" xml:space="preserve">
+    <value>Echec de l'export de la selection : {0}</value>
+  </data>
+  <data name="Apps_Error_SelectionImportFailed" xml:space="preserve">
+    <value>Echec de l'import de la selection : {0}</value>
+  </data>
+  <data name="Apps_Error_FavoritesExportFailed" xml:space="preserve">
+    <value>Echec de l'export des favoris : {0}</value>
+  </data>
+  <data name="Apps_Error_FavoritesImportFailed" xml:space="preserve">
+    <value>Echec de l'import des favoris : {0}</value>
+  </data>
   <data name="Validation_AtLeastOneSource" xml:space="preserve">
     <value>Au moins une source d'installation est requise</value>
   </data>
@@ -1684,7 +1726,25 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Suppression de l'application...</value>
   </data>
   <data name="AppDb_Deleted" xml:space="preserve">
-    <value>Application supprimee avec succes</value>
+    <value>Application supprimée avec succès</value>
+  </data>
+  <data name="AppDb_UndoTooltipFormat" xml:space="preserve">
+    <value>{0} (Ctrl+Z)</value>
+  </data>
+  <data name="AppDb_RedoTooltipFormat" xml:space="preserve">
+    <value>{0} (Ctrl+Y)</value>
+  </data>
+  <data name="AppDb_UndoTooltipDefault" xml:space="preserve">
+    <value>Annuler (Ctrl+Z)</value>
+  </data>
+  <data name="AppDb_RedoTooltipDefault" xml:space="preserve">
+    <value>Rétablir (Ctrl+Y)</value>
+  </data>
+  <data name="AppDb_CopyIdSuffix" xml:space="preserve">
+    <value>_Copie</value>
+  </data>
+  <data name="AppDb_CopyNameSuffix" xml:space="preserve">
+    <value> (Copie)</value>
   </data>
   <data name="AppDb_DeleteError" xml:space="preserve">
     <value>Echec de la suppression de l'application</value>
@@ -1978,6 +2038,18 @@ Non = Ignorer les doublons</value>
   <data name="Verify_Verifying" xml:space="preserve">
     <value>Verification des packages...</value>
   </data>
+  <data name="Verify_CancelledProgress" xml:space="preserve">
+    <value>Verification annulee ({0}/{1})</value>
+  </data>
+  <data name="Verify_ProgressItem" xml:space="preserve">
+    <value>Verification {0}/{1} : {2}...</value>
+  </data>
+  <data name="Verify_CompleteSummary" xml:space="preserve">
+    <value>Verification terminee : {0} valides, {1} invalides</value>
+  </data>
+  <data name="Verify_CompleteSummaryWithErrors" xml:space="preserve">
+    <value>Verification terminee : {0} valides, {1} invalides, {2} erreurs</value>
+  </data>
   <!-- Detection Editor -->
   <data name="Detection_Method_Registry" xml:space="preserve">
     <value>Registre</value>
@@ -2196,6 +2268,9 @@ Cette action est irreversible.</value>
   </data>
   <data name="A11y_Settings_ReducedMotion" xml:space="preserve">
     <value>Basculer les animations reduites</value>
+  </data>
+  <data name="A11y_Settings_HighContrast" xml:space="preserve">
+    <value>Basculer le mode contraste eleve</value>
   </data>
   <data name="A11y_Settings_Language" xml:space="preserve">
     <value>Selectionner la langue</value>
@@ -2491,6 +2566,15 @@ Cette action est irreversible.</value>
   </data>
   <data name="Settings_ReducedMotion_Desc" xml:space="preserve">
     <value>Minimiser les animations pour l'accessibilité</value>
+  </data>
+  <data name="Settings_HighContrast" xml:space="preserve">
+    <value>Contraste eleve</value>
+  </data>
+  <data name="Settings_HighContrast_Desc" xml:space="preserve">
+    <value>Augmenter le contraste pour ameliorer la lisibilite</value>
+  </data>
+  <data name="Settings_TimePlaceholder" xml:space="preserve">
+    <value>HH:mm</value>
   </data>
   <data name="Settings_ResetBtn" xml:space="preserve">
     <value>Réinitialiser</value>

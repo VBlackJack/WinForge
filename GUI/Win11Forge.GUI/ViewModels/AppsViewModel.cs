@@ -17,6 +17,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Windows.Data;
@@ -462,6 +463,17 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         ErrorMessage = null;
     }
 
+    private static string GetLocalizedString(string resourceKey, string fallback)
+    {
+        return Resources.Resources.ResourceManager.GetString(resourceKey, Resources.Resources.Culture) ?? fallback;
+    }
+
+    private static string FormatLocalized(string resourceKey, string fallbackFormat, params object[] args)
+    {
+        var format = GetLocalizedString(resourceKey, fallbackFormat);
+        return string.Format(CultureInfo.CurrentCulture, format, args);
+    }
+
     /// <summary>
     /// Retries the last failed operation.
     /// </summary>
@@ -662,12 +674,12 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         }
         catch (PowerShellBridgeException ex)
         {
-            ErrorMessage = $"PowerShell error: {ex.Message}";
+            ErrorMessage = FormatLocalized("Apps_Error_PowerShell", "PowerShell error: {0}", ex.Message);
             Debug.WriteLine($"PowerShellBridgeException in InitializeAsync: {ex}");
         }
         catch (ApplicationDatabaseException ex)
         {
-            ErrorMessage = $"Database error: {ex.Message}";
+            ErrorMessage = FormatLocalized("Apps_Error_Database", "Database error: {0}", ex.Message);
             Debug.WriteLine($"ApplicationDatabaseException in InitializeAsync: {ex}");
         }
         catch (Exception ex)
@@ -752,7 +764,10 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             settings.AppsShowCategoryColumn = ShowCategoryColumn;
             settings.AppsShowSourcesColumn = ShowSourcesColumn;
             settings.AppsShowLogsColumn = ShowLogsColumn;
-            _settingsService.SaveSettings(settings);
+            if (!_settingsService.SaveSettings(settings))
+            {
+                Debug.WriteLine("Failed to save filter state: settings persistence returned false");
+            }
         }
         catch (Exception ex)
         {
@@ -975,7 +990,9 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
                 var profilesDir = GetProfilesDirectory();
                 if (string.IsNullOrEmpty(profilesDir))
                 {
-                    ErrorMessage = "Could not find Profiles directory";
+                    ErrorMessage = GetLocalizedString(
+                        "Apps_Error_ProfilesDirectoryNotFound",
+                        "Could not find Profiles directory");
                     return;
                 }
 
@@ -1013,17 +1030,27 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         }
         catch (ProfileException ex)
         {
-            ErrorMessage = $"Failed to load profile '{ex.ProfileName}': {ex.Message}";
+            ErrorMessage = FormatLocalized(
+                "Apps_Error_ProfileLoadFailed",
+                "Failed to load profile '{0}': {1}",
+                ex.ProfileName ?? string.Empty,
+                ex.Message);
             Debug.WriteLine($"ProfileException in OnSelectedProfileChanged: {ex}");
         }
         catch (PowerShellBridgeException ex)
         {
-            ErrorMessage = $"Failed to load profile (PowerShell error): {ex.Message}";
+            ErrorMessage = FormatLocalized(
+                "Apps_Error_ProfileLoadPowerShellFailed",
+                "Failed to load profile (PowerShell error): {0}",
+                ex.Message);
             Debug.WriteLine($"PowerShellBridgeException in OnSelectedProfileChanged: {ex}");
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Failed to load profile: {ex.Message}";
+            ErrorMessage = FormatLocalized(
+                "Apps_Error_ProfileLoadGeneric",
+                "Failed to load profile: {0}",
+                ex.Message);
             Debug.WriteLine($"Unexpected exception in OnSelectedProfileChanged: {ex}");
         }
     }
@@ -1122,7 +1149,9 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             var profilesDir = GetProfilesDirectory();
             if (string.IsNullOrEmpty(profilesDir))
             {
-                ErrorMessage = "Could not find Profiles directory";
+                ErrorMessage = GetLocalizedString(
+                    "Apps_Error_ProfilesDirectoryNotFound",
+                    "Could not find Profiles directory");
                 return;
             }
 
@@ -1670,13 +1699,13 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         catch (DetectionException ex)
         {
             app.Status = ApplicationStatus.Failed;
-            app.StatusMessage = $"Detection failed: {ex.Message}";
+            app.StatusMessage = FormatLocalized("Apps_Error_DetectionFailed", "Detection failed: {0}", ex.Message);
             Debug.WriteLine($"DetectionException in ScanApplicationAsync for {ex.ApplicationId}: {ex}");
         }
         catch (PowerShellBridgeException ex)
         {
             app.Status = ApplicationStatus.Failed;
-            app.StatusMessage = $"PowerShell error: {ex.Message}";
+            app.StatusMessage = FormatLocalized("Apps_Error_PowerShell", "PowerShell error: {0}", ex.Message);
             Debug.WriteLine($"PowerShellBridgeException in ScanApplicationAsync: {ex}");
         }
         catch (Exception ex)
@@ -2736,9 +2765,13 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
                 });
                 await File.WriteAllTextAsync(dialog.FileName, json);
             }
-            catch
+            catch (Exception ex)
             {
-                // Silently fail
+                ErrorMessage = FormatLocalized(
+                    "Apps_Error_SelectionExportFailed",
+                    "Failed to export selection: {0}",
+                    ex.Message);
+                Debug.WriteLine($"Failed to export selection: {ex}");
             }
         }
     }
@@ -2784,9 +2817,13 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
                     UpdateSelectedCount();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Silently fail
+                ErrorMessage = FormatLocalized(
+                    "Apps_Error_SelectionImportFailed",
+                    "Failed to import selection: {0}",
+                    ex.Message);
+                Debug.WriteLine($"Failed to import selection: {ex}");
             }
         }
     }
@@ -2821,9 +2858,13 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
                 });
                 await File.WriteAllTextAsync(dialog.FileName, json);
             }
-            catch
+            catch (Exception ex)
             {
-                // Silently fail
+                ErrorMessage = FormatLocalized(
+                    "Apps_Error_FavoritesExportFailed",
+                    "Failed to export favorites: {0}",
+                    ex.Message);
+                Debug.WriteLine($"Failed to export favorites: {ex}");
             }
         }
     }
@@ -2875,9 +2916,13 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Silently fail
+                ErrorMessage = FormatLocalized(
+                    "Apps_Error_FavoritesImportFailed",
+                    "Failed to import favorites: {0}",
+                    ex.Message);
+                Debug.WriteLine($"Failed to import favorites: {ex}");
             }
         }
     }

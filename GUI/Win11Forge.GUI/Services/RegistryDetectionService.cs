@@ -45,16 +45,16 @@ public partial class RegistryDetectionService
     /// Compiled regex patterns for normalizing application names.
     /// These remove version suffixes and architecture indicators.
     /// </summary>
-    [GeneratedRegex(@"\s+v?\d+(\.\d+)+.*$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    [GeneratedRegex(@"\s+v?\d+(\.\d+)+.*$", RegexOptions.IgnoreCase)]
     private static partial Regex VersionSuffixPattern();
 
-    [GeneratedRegex(@"\s+\(x64\).*$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    [GeneratedRegex(@"\s+\(x64\).*$", RegexOptions.IgnoreCase)]
     private static partial Regex X64SuffixPattern();
 
-    [GeneratedRegex(@"\s+\(x86\).*$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    [GeneratedRegex(@"\s+\(x86\).*$", RegexOptions.IgnoreCase)]
     private static partial Regex X86SuffixPattern();
 
-    [GeneratedRegex(@"\s+-\s+\d+.*$", RegexOptions.IgnoreCase | RegexOptions.Compiled)]
+    [GeneratedRegex(@"\s+-\s+\d+.*$", RegexOptions.IgnoreCase)]
     private static partial Regex DashVersionPattern();
 
     /// <summary>

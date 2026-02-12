@@ -682,7 +682,10 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
                 if (_settingsService == null) return;
                 var settings = _settingsService.LoadSettings();
                 settings.LastNavigationIndex = viewIndex;
-                _settingsService.SaveSettings(settings);
+                if (!_settingsService.SaveSettings(settings))
+                {
+                    System.Diagnostics.Debug.WriteLine("Failed to save navigation state: settings persistence returned false");
+                }
             }
             catch (Exception ex)
             {
@@ -731,7 +734,10 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
                 {
                     var settings = _settingsService.LoadSettings();
                     settings.IsFirstRun = false;
-                    _settingsService.SaveSettings(settings);
+                    if (!_settingsService.SaveSettings(settings))
+                    {
+                        System.Diagnostics.Debug.WriteLine("Failed to persist onboarding flag: settings persistence returned false");
+                    }
                 }
             };
 
@@ -748,7 +754,10 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             {
                 var currentSettings = _settingsService.LoadSettings();
                 currentSettings.IsFirstRun = false;
-                _settingsService.SaveSettings(currentSettings);
+                if (!_settingsService.SaveSettings(currentSettings))
+                {
+                    System.Diagnostics.Debug.WriteLine("Failed to persist first-run flag: settings persistence returned false");
+                }
             }
         }
         catch (Exception ex)
