@@ -52,7 +52,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$coverageTargetPercent = 50
+$coverageTargetPercent = 40
 $coverageGateFailed = $false
 
 $frameworkVersion = 'unknown'

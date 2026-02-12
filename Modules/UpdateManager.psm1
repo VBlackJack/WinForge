@@ -100,7 +100,7 @@ function Resolve-DefaultGitHubRepository {
         Resolves default GitHub owner/repository for update checks.
     .DESCRIPTION
         Determines the best default GitHub coordinates using this precedence:
-        environment overrides, git remote origin URL, then static fallback values.
+        static fallback values, git remote origin URL, then environment overrides (highest priority).
     .OUTPUTS
         Hashtable with Owner and Repo keys.
     #>
@@ -108,16 +108,11 @@ function Resolve-DefaultGitHubRepository {
     [OutputType([hashtable])]
     param()
 
+    # 1. Static fallbacks
     $owner = 'VBlackJack'
     $repo = 'Win11Forge'
 
-    if (-not [string]::IsNullOrWhiteSpace($env:WIN11FORGE_GITHUB_OWNER)) {
-        $owner = $env:WIN11FORGE_GITHUB_OWNER.Trim()
-    }
-    if (-not [string]::IsNullOrWhiteSpace($env:WIN11FORGE_GITHUB_REPO)) {
-        $repo = $env:WIN11FORGE_GITHUB_REPO.Trim()
-    }
-
+    # 2. Try git remote (overrides fallbacks)
     if (Get-Command -Name git -ErrorAction SilentlyContinue) {
         try {
             $remoteUrl = (& git -C $script:RepositoryRoot config --get remote.origin.url 2>$null) | Select-Object -First 1
@@ -128,6 +123,14 @@ function Resolve-DefaultGitHubRepository {
         } catch {
             Write-Verbose "Unable to resolve GitHub repo from git remote: $($_.Exception.Message)"
         }
+    }
+
+    # 3. Environment overrides (highest priority)
+    if (-not [string]::IsNullOrWhiteSpace($env:WIN11FORGE_GITHUB_OWNER)) {
+        $owner = $env:WIN11FORGE_GITHUB_OWNER.Trim()
+    }
+    if (-not [string]::IsNullOrWhiteSpace($env:WIN11FORGE_GITHUB_REPO)) {
+        $repo = $env:WIN11FORGE_GITHUB_REPO.Trim()
     }
 
     return @{
@@ -695,7 +698,7 @@ function Test-UpdateAvailable {
     if (-not $latestRelease) {
         return [PSCustomObject]@{
             UpdateAvailable = $false
-            Error = 'Failed to fetch latest release information'
+            Error = (Get-LocalizedString -Key 'update.fetch_release_failed')
             CurrentVersion = $currentVersion
             LatestVersion = $null
             CheckedAt = Get-Date

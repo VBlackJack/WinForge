@@ -40,7 +40,7 @@ public partial class ApplicationEditorViewModel : ObservableObject
     private bool _isDirty;
     private const int PackageSearchLimit = 20;
 
-    [GeneratedRegex(@"[^A-Za-z0-9\.\-_]", RegexOptions.Compiled)]
+    [GeneratedRegex(@"[^A-Za-z0-9\.\-_]")]
     private static partial Regex AppIdSanitizerRegex();
 
     /// <summary>
@@ -125,11 +125,6 @@ public partial class ApplicationEditorViewModel : ObservableObject
         get => _isDirty;
         private set => SetProperty(ref _isDirty, value);
     }
-
-    /// <summary>
-    /// Special category value for adding a new category.
-    /// </summary>
-    public static string AddNewCategoryValue => "__ADD_NEW__";
 
     /// <summary>
     /// Whether the Winget source is enabled.

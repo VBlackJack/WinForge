@@ -76,6 +76,8 @@ $script:RATE_LIMIT_RETRY_SECONDS = 60      # Seconds client should wait after ra
 $script:MAX_LOG_FILE_SIZE_BYTES = 1MB      # Maximum log file size before rotation
 $script:CLEANUP_INTERVAL_MINUTES = 5       # Interval for periodic memory cleanup
 $script:STALE_ENTRY_TIMEOUT_MINUTES = 60   # Time before rate limit entries are cleaned up
+$script:ASYNC_STARTUP_TIMEOUT_SECONDS = 5  # Deadline for background job startup validation
+$script:JOB_POLL_INTERVAL_MS = 100         # Polling interval when waiting for background job
 
 # === SERVER STATE ===
 $script:ServerState = @{
@@ -525,15 +527,34 @@ function Test-LocalHostValue {
     <#
     .SYNOPSIS
         Checks whether a host value is local-only.
+
+    .DESCRIPTION
+        Validates that the provided host value resolves to a local-only address,
+        such as 'localhost', '127.0.0.1', or '::1'. Used by the API server to
+        enforce the LocalhostOnly security setting.
+
+    .PARAMETER HostName
+        The host value to validate against known localhost identifiers.
+
+    .OUTPUTS
+        System.Boolean
+
+    .EXAMPLE
+        Test-LocalHostValue -HostName 'localhost'
+        Returns $true.
+
+    .EXAMPLE
+        Test-LocalHostValue -HostName '0.0.0.0'
+        Returns $false.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
     param(
         [Parameter(Mandatory)]
-        [string]$Host
+        [string]$HostName
     )
 
-    $normalizedHost = $Host.Trim().ToLowerInvariant()
+    $normalizedHost = $HostName.Trim().ToLowerInvariant()
     return $normalizedHost -in @('localhost', '127.0.0.1', '::1')
 }
 
@@ -1376,8 +1397,8 @@ function Start-ApiServer {
         $config.Port = $Port
     }
 
-    if ($config.LocalhostOnly -and -not (Test-LocalHostValue -Host $config.Host)) {
-        Write-Status -Message "LocalhostOnly is enabled; forcing host from '$($config.Host)' to 'localhost'." -Level 'Warning' -Category 'Api'
+    if ($config.LocalhostOnly -and -not (Test-LocalHostValue -HostName $config.Host)) {
+        Write-Status -Message (Get-LocalizedString -Key 'api.security.localhost_enforced' -Parameters @{ OriginalHost = $config.Host }) -Level 'Warning' -Category 'Api'
         $config.Host = 'localhost'
     }
 
@@ -1468,10 +1489,10 @@ function Start-ApiServer {
             $script:ServerState.BackgroundJob = $serverJob
 
             # Validate that the background job did not fail immediately, otherwise report a clear startup error.
-            $startupDeadline = (Get-Date).AddSeconds(5)
+            $startupDeadline = (Get-Date).AddSeconds($script:ASYNC_STARTUP_TIMEOUT_SECONDS)
             $jobSnapshot = $null
             do {
-                Start-Sleep -Milliseconds 100
+                Start-Sleep -Milliseconds $script:JOB_POLL_INTERVAL_MS
                 $jobSnapshot = Get-Job -Id $serverJob.Id -ErrorAction SilentlyContinue
             } while ($jobSnapshot -and $jobSnapshot.State -eq 'NotStarted' -and (Get-Date) -lt $startupDeadline)
 
@@ -1495,7 +1516,7 @@ function Start-ApiServer {
                 }
 
                 if ([string]::IsNullOrWhiteSpace($jobFailureMessage)) {
-                    $jobFailureMessage = "Background API server job ended with state '$($jobSnapshot.State)'."
+                    $jobFailureMessage = Get-LocalizedString -Key 'api.server.background_job_failed' -Parameters @{ State = $jobSnapshot.State }
                 }
 
                 Stop-Job -Job $serverJob -ErrorAction SilentlyContinue
@@ -2193,5 +2214,6 @@ Export-ModuleMember -Function @(
     'Get-RateLimitStatus',
     'Clear-RateLimitState',
     # Security
-    'Get-SanitizedErrorMessage'
+    'Get-SanitizedErrorMessage',
+    'Test-LocalHostValue'
 )

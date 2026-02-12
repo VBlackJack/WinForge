@@ -2642,6 +2642,10 @@ No = Skip duplicates</value>
     <value>Name</value>
     <comment>Name field label</comment>
   </data>
+  <data name="AppEditor_PriorityLabel" xml:space="preserve">
+    <value>Priority: </value>
+    <comment>Priority label shown next to slider</comment>
+  </data>
   <data name="AppEditor_Category" xml:space="preserve">
     <value>Category</value>
     <comment>Category field label</comment>

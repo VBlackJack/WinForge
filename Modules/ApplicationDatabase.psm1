@@ -1239,7 +1239,7 @@ function Set-Application {
     # Validate unless Force
     if (-not $Force) {
         $existing = Get-ApplicationById -AppId $Application.AppId
-        $validation = Test-ApplicationConfiguration -Application $Application
+        $validation = Test-ApplicationConfiguration -Application $Application -IsNew:($null -eq $existing)
 
         if (-not $validation.IsValid) {
             return [PSCustomObject]@{

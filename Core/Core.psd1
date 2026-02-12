@@ -75,7 +75,7 @@
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
 
             # Release notes
-            ReleaseNotes = 'Core utility functions for Win11Forge framework'
+            ReleaseNotes = 'Win11Forge v3.7.2'
         }
     }
 }

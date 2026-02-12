@@ -29,13 +29,13 @@ public partial class PackageSearchService : IPackageSearchService
     private readonly Lazy<bool> _wingetAvailable;
     private readonly Lazy<bool> _chocoAvailable;
 
-    [GeneratedRegex(@"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])", RegexOptions.Compiled)]
+    [GeneratedRegex(@"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")]
     private static partial Regex AnsiEscapeRegex();
 
-    [GeneratedRegex(@"\s{2,}", RegexOptions.Compiled)]
+    [GeneratedRegex(@"\s{2,}")]
     private static partial Regex ColumnSplitRegex();
 
-    [GeneratedRegex(@"[^\p{L}\p{N}\s\.\-_+]", RegexOptions.Compiled)]
+    [GeneratedRegex(@"[^\p{L}\p{N}\s\.\-_+]")]
     private static partial Regex UnsafeQueryCharsRegex();
 
     /// <summary>

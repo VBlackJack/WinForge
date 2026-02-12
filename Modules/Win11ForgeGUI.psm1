@@ -357,9 +357,9 @@ function Show-Header {
 
     Clear-Host
     $width = 70
-    Write-Host ("═" * $width) -ForegroundColor Cyan
+    Write-Host ([string]::new([char]0x2550, $width)) -ForegroundColor Cyan
     Write-Host ("  " + $Title.PadRight($width - 4)) -ForegroundColor Cyan
-    Write-Host ("═" * $width) -ForegroundColor Cyan
+    Write-Host ([string]::new([char]0x2550, $width)) -ForegroundColor Cyan
     Write-Host ""
 }
 
@@ -438,7 +438,7 @@ function Show-ProgressBar {
     $barLength = 50
     $filledLength = [math]::Round(($Current / $Total) * $barLength)
 
-    $bar = "█" * $filledLength + "░" * ($barLength - $filledLength)
+    $bar = [string]::new([char]0x2588, $filledLength) + [string]::new([char]0x2591, ($barLength - $filledLength))
 
     Write-Host -NoNewline "`r$Activity [$bar] $percent% ($Current/$Total)"
 
@@ -1459,6 +1459,8 @@ function Test-Updates {
         [switch]$IncludePrerelease
     )
 
+    $RELEASE_NOTES_PREVIEW_LINES = 8
+
     Show-Header -Title (Get-LocalizedString -Key 'gui.updates.title')
 
     Write-Host (Get-LocalizedString -Key 'gui.updates.current_version' -Parameters @{ Version = $script:FrameworkVersion }) -ForegroundColor Yellow
@@ -1494,7 +1496,7 @@ function Test-Updates {
 
     $updateError = $null
     if ($null -eq $updateInfo) {
-        $updateError = 'No response from update service'
+        $updateError = (Get-LocalizedString -Key 'gui.updates.no_response')
     }
     elseif ($updateInfo.PSObject.Properties['Error'] -and -not [string]::IsNullOrWhiteSpace([string]$updateInfo.Error)) {
         $updateError = [string]$updateInfo.Error
@@ -1535,8 +1537,8 @@ function Test-Updates {
     if (-not [string]::IsNullOrWhiteSpace([string]$updateInfo.ReleaseNotes)) {
         Write-Host ""
         Write-Host (Get-LocalizedString -Key 'gui.updates.release_notes' -DefaultValue 'Release notes (preview):') -ForegroundColor Yellow
-        $allLines = @($updateInfo.ReleaseNotes -split "(`r`n|`n|`r)" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-        $previewLines = $allLines | Select-Object -First 8
+        $allLines = @($updateInfo.ReleaseNotes -split "(?:`r`n|`n|`r)" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+        $previewLines = @($allLines | Select-Object -First $RELEASE_NOTES_PREVIEW_LINES)
         foreach ($line in $previewLines) {
             Write-Host "  $line" -ForegroundColor Gray
         }
@@ -1821,4 +1823,3 @@ Export-ModuleMember -Function @(
     'Show-Footer',
     'Read-Choice'
 )
-

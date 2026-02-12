@@ -637,7 +637,8 @@
       "install_prompt": "Download and install this update now? (Y/N)",
       "install_cancelled": "Update installation cancelled.",
       "install_failed": "Update installation failed.",
-      "restart_hint": "Restart Win11Forge to apply the update."
+      "restart_hint": "Restart Win11Forge to apply the update.",
+      "no_response": "No response from update service"
     },
     "about": {
       "title": "About Win11Forge",
@@ -1442,7 +1443,11 @@
       "handler_dangerous_command": "SECURITY: Handler contains dangerous command '{Command}'. Handler registration denied.",
       "handler_dangerous_type": "SECURITY: Handler uses dangerous type '{TypeName}'. Handler registration denied.",
       "handler_dangerous_static_method": "SECURITY: Handler uses dangerous static method. Handler registration denied.",
-      "handler_validation_failed": "Handler validation failed"
+      "handler_validation_failed": "Handler validation failed",
+      "localhost_enforced": "Non-localhost host '{OriginalHost}' overridden to localhost for security"
+    },
+    "server": {
+      "background_job_failed": "API server background job entered unexpected state: {State}"
     },
     "csrf": {
       "validation_disabled": "CSRF validation disabled",
@@ -1530,7 +1535,8 @@
     "backup_abort": "Backup failed, aborting update",
     "restore_attempt": "Attempting to restore from backup...",
     "restore_also_failed": "Restore also failed. Manual intervention required.",
-    "installing_from": "Installing update from: {Path}"
+    "installing_from": "Installing update from: {Path}",
+    "fetch_release_failed": "Failed to fetch latest release information"
   },
   "telemetry": {
     "initialized": "Telemetry collector initialized",

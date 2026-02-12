@@ -4,6 +4,27 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [3.7.2] - 2026-02-12
 
+### New Features
+- **Added**: REST API async server mode with background job management (`Start-ApiServerAsync`)
+- **Added**: Application Editor with live package search (Winget, Chocolatey, Store) in WPF GUI
+- **Added**: Package verification service for source validation in Application Editor
+- **Added**: Log Viewer with filtering, export, and old log cleanup in WPF GUI
+- **Added**: Settings export/import functionality with JSON serialization
+- **Added**: Scheduled Deployments management UI in Settings view
+- **Added**: Plugin system with sandboxed execution (`PluginManager.psm1`, `PluginSandbox.psm1`)
+- **Added**: Structured logging module (`StructuredLogging.psm1`) with JSON log output
+- **Added**: Feature flags runtime toggle (`FeatureFlags.psm1`)
+- **Added**: Timeout configuration module (`TimeoutSettings.psm1`)
+
+### Security Improvements
+- **Added**: CSRF token protection for state-changing API endpoints
+- **Added**: Per-IP rate limiting with configurable thresholds (per-minute and per-hour)
+- **Added**: API key DPAPI-encrypted secure storage (`Set-SecureApiKey`, `Get-SecureApiKey`)
+- **Added**: Handler validation against dangerous patterns, commands, types, and static methods
+- **Added**: Request body size limiting to prevent memory exhaustion
+- **Added**: Localhost binding enforcement for API server security
+- **Added**: IP blocking after repeated authentication failures
+
 ### Bug Fixes
 - **Fixed**: SecureStorage DPAPI round-trip failures — `Get-DpapiEntropy` now persists entropy to disk on PS7 (replaced .NET Framework-only `File.Create(FileSecurity)` overload with cross-platform `FileStream` + `Set-SecureFileAcl`) and caches entropy in memory for session consistency
 - **Fixed**: Added `Add-Type -AssemblyName System.Security` to `SecureStorage.psm1` for PowerShell 5.1 compatibility (DPAPI types not auto-loaded)

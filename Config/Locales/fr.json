@@ -637,7 +637,8 @@
       "install_prompt": "Télécharger et installer cette mise à jour maintenant ? (Y/N)",
       "install_cancelled": "Installation de la mise à jour annulée.",
       "install_failed": "Échec de l'installation de la mise à jour.",
-      "restart_hint": "Redémarrez Win11Forge pour appliquer la mise à jour."
+      "restart_hint": "Redémarrez Win11Forge pour appliquer la mise à jour.",
+      "no_response": "Aucune réponse du service de mise à jour"
     },
     "about": {
       "title": "À propos de Win11Forge",
@@ -1442,7 +1443,11 @@
       "handler_dangerous_command": "SÉCURITÉ : Le handler contient une commande dangereuse '{Command}'. Enregistrement refusé.",
       "handler_dangerous_type": "SÉCURITÉ : Le handler utilise un type dangereux '{TypeName}'. Enregistrement refusé.",
       "handler_dangerous_static_method": "SÉCURITÉ : Le handler utilise une méthode statique dangereuse. Enregistrement refusé.",
-      "handler_validation_failed": "Échec de la validation du handler"
+      "handler_validation_failed": "Échec de la validation du handler",
+      "localhost_enforced": "L'hôte non-localhost '{OriginalHost}' a été remplacé par localhost pour des raisons de sécurité"
+    },
+    "server": {
+      "background_job_failed": "Le job en arrière-plan du serveur API est dans un état inattendu : {State}"
     },
     "csrf": {
       "validation_disabled": "Validation CSRF désactivée",
@@ -1530,7 +1535,8 @@
     "backup_abort": "Échec de la sauvegarde, abandon de la mise à jour",
     "restore_attempt": "Tentative de restauration depuis la sauvegarde...",
     "restore_also_failed": "La restauration a également échoué. Intervention manuelle requise.",
-    "installing_from": "Installation de la mise à jour depuis : {Path}"
+    "installing_from": "Installation de la mise à jour depuis : {Path}",
+    "fetch_release_failed": "Échec de la récupération des informations de la dernière version"
   },
   "telemetry": {
     "initialized": "Collecteur de télémétrie initialisé",

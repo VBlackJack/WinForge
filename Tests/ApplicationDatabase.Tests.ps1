@@ -38,10 +38,18 @@ BeforeAll {
 }
 
 function global:New-TestApplicationDatabaseFixture {
+    $versionFile = Join-Path $PSScriptRoot '..\Config\version.json'
+    $fixtureVersion = '0.0.0'
+    if (Test-Path $versionFile) {
+        try {
+            $vData = Get-Content -Path $versionFile -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($vData.Version) { $fixtureVersion = [string]$vData.Version }
+        } catch { }
+    }
     [PSCustomObject]@{
         '$schema'          = 'https://json-schema.org/draft-07/schema#'
-        DatabaseVersion    = '3.7.2'
-        LastUpdated        = '2026-02-12'
+        DatabaseVersion    = $fixtureVersion
+        LastUpdated        = (Get-Date -Format 'yyyy-MM-dd')
         TotalApplications  = 2
         Categories         = [PSCustomObject]@{
             Utilities = [PSCustomObject]@{

@@ -1790,6 +1790,9 @@ Non = Ignorer les doublons</value>
   <data name="AppEditor_Name" xml:space="preserve">
     <value>Nom</value>
   </data>
+  <data name="AppEditor_PriorityLabel" xml:space="preserve">
+    <value>Priorité : </value>
+  </data>
   <data name="AppEditor_Category" xml:space="preserve">
     <value>Categorie</value>
   </data>
@@ -2316,202 +2319,202 @@ Cette action est irreversible.</value>
     <value>Le contenu est en cours de chargement, veuillez patienter</value>
   </data>
   <data name="AppDb_Verify" xml:space="preserve">
-    <value>Verify</value>
+    <value>Vérifier</value>
   </data>
   <data name="AppDb_VerifySources" xml:space="preserve">
-    <value>Verify Sources</value>
+    <value>Vérifier les sources</value>
   </data>
   <data name="Confirm_ClearOldLogs_Message" xml:space="preserve">
-    <value>Delete log files older than 7 days? This action cannot be undone.</value>
+    <value>Supprimer les fichiers journaux de plus de 7 jours ? Cette action est irréversible.</value>
   </data>
   <data name="Confirm_ClearOldLogs_Title" xml:space="preserve">
-    <value>Clear Old Logs</value>
+    <value>Purger les anciens journaux</value>
   </data>
   <data name="Confirm_ResetSettings_Message" xml:space="preserve">
-    <value>Are you sure you want to reset all settings to their default values? This action cannot be undone.</value>
+    <value>Voulez-vous vraiment réinitialiser tous les paramètres à leurs valeurs par défaut ? Cette action est irréversible.</value>
   </data>
   <data name="Confirm_ResetSettings_Title" xml:space="preserve">
-    <value>Reset Settings</value>
+    <value>Réinitialiser les paramètres</value>
   </data>
   <data name="Deploy_Installing" xml:space="preserve">
-    <value>Installing {0}...</value>
+    <value>Installation de {0}...</value>
   </data>
   <data name="Deploy_TimeElapsed" xml:space="preserve">
-    <value>Time elapsed</value>
+    <value>Temps écoulé</value>
   </data>
   <data name="Deploy_TimeRemaining" xml:space="preserve">
-    <value>Estimated time remaining</value>
+    <value>Temps restant estimé</value>
   </data>
   <data name="Dialog_Error_TryThis" xml:space="preserve">
-    <value>Try this:</value>
+    <value>Essayez ceci :</value>
   </data>
   <data name="Dialog_ReportIssue" xml:space="preserve">
-    <value>Report Issue</value>
+    <value>Signaler un problème</value>
   </data>
   <data name="Logs_ClearFilters" xml:space="preserve">
-    <value>Clear Filters</value>
+    <value>Effacer les filtres</value>
   </data>
   <data name="Logs_ClearOld" xml:space="preserve">
-    <value>Clear Old Logs</value>
+    <value>Purger les anciens journaux</value>
   </data>
   <data name="Logs_CopyPath" xml:space="preserve">
-    <value>Copy Path</value>
+    <value>Copier le chemin</value>
   </data>
   <data name="Logs_Date" xml:space="preserve">
     <value>Date</value>
   </data>
   <data name="Logs_Delete" xml:space="preserve">
-    <value>Delete Log</value>
+    <value>Supprimer le journal</value>
   </data>
   <data name="Logs_Export" xml:space="preserve">
-    <value>Export</value>
+    <value>Exporter</value>
   </data>
   <data name="Logs_FileName" xml:space="preserve">
-    <value>File Name</value>
+    <value>Nom du fichier</value>
   </data>
   <data name="Logs_Files" xml:space="preserve">
-    <value>Log Files</value>
+    <value>Fichiers journaux</value>
   </data>
   <data name="Logs_FilesCount" xml:space="preserve">
-    <value>files</value>
+    <value>fichiers</value>
   </data>
   <data name="Logs_Level" xml:space="preserve">
-    <value>Log Type</value>
+    <value>Type de journal</value>
   </data>
   <data name="Logs_Loading" xml:space="preserve">
-    <value>Loading logs...</value>
+    <value>Chargement des journaux...</value>
   </data>
   <data name="Logs_NoLogs" xml:space="preserve">
-    <value>No log files found</value>
+    <value>Aucun fichier journal trouvé</value>
   </data>
   <data name="Logs_NoLogs_Hint" xml:space="preserve">
-    <value>Log files will appear here after deployments</value>
+    <value>Les fichiers journaux apparaîtront ici après les déploiements</value>
   </data>
   <data name="Logs_OpenFolder" xml:space="preserve">
-    <value>Open Folder</value>
+    <value>Ouvrir le dossier</value>
   </data>
   <data name="Logs_Refresh" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Actualiser</value>
   </data>
   <data name="Logs_SearchPlaceholder" xml:space="preserve">
-    <value>Search logs...</value>
+    <value>Rechercher dans les journaux...</value>
   </data>
   <data name="Logs_Size" xml:space="preserve">
-    <value>Size</value>
+    <value>Taille</value>
   </data>
   <data name="Logs_Subtitle" xml:space="preserve">
-    <value>View and manage application logs</value>
+    <value>Afficher et gérer les journaux d'application</value>
   </data>
   <data name="Logs_Title" xml:space="preserve">
-    <value>Logs</value>
+    <value>Journaux</value>
   </data>
   <data name="Logs_TotalSize" xml:space="preserve">
-    <value>Total size:</value>
+    <value>Taille totale :</value>
   </data>
   <data name="Logs_View" xml:space="preserve">
-    <value>View Log</value>
+    <value>Voir le journal</value>
   </data>
   <data name="Nav_Back" xml:space="preserve">
-    <value>Back</value>
+    <value>Retour</value>
   </data>
   <data name="Recovery_CheckFirewall" xml:space="preserve">
-    <value>Ensure firewall or antivirus is not blocking the connection</value>
+    <value>Vérifiez que le pare-feu ou l'antivirus ne bloque pas la connexion</value>
   </data>
   <data name="Recovery_CheckInternet" xml:space="preserve">
-    <value>Check your internet connection and try again</value>
+    <value>Vérifiez votre connexion Internet et réessayez</value>
   </data>
   <data name="Recovery_CheckPath" xml:space="preserve">
-    <value>Verify the file or folder path exists</value>
+    <value>Vérifiez que le chemin du fichier ou dossier existe</value>
   </data>
   <data name="Recovery_CheckPermissions" xml:space="preserve">
-    <value>Check that you have permission to access the required files or folders</value>
+    <value>Vérifiez que vous avez les droits d'accès aux fichiers ou dossiers requis</value>
   </data>
   <data name="Recovery_CheckPowerShell" xml:space="preserve">
-    <value>Check your PowerShell execution policy (Set-ExecutionPolicy RemoteSigned)</value>
+    <value>Vérifiez votre stratégie d'exécution PowerShell (Set-ExecutionPolicy RemoteSigned)</value>
   </data>
   <data name="Recovery_CheckPrerequisites" xml:space="preserve">
-    <value>Make sure all prerequisites are installed (Winget, Chocolatey, PowerShell 7)</value>
+    <value>Assurez-vous que tous les prérequis sont installés (Winget, Chocolatey, PowerShell 7)</value>
   </data>
   <data name="Recovery_Generic_CheckLogs" xml:space="preserve">
-    <value>Check the logs folder for more details</value>
+    <value>Consultez le dossier des journaux pour plus de détails</value>
   </data>
   <data name="Recovery_Generic_Restart" xml:space="preserve">
-    <value>Restart Win11Forge and try again</value>
+    <value>Redémarrez Win11Forge et réessayez</value>
   </data>
   <data name="Recovery_Generic_Retry" xml:space="preserve">
-    <value>Try the operation again</value>
+    <value>Réessayez l'opération</value>
   </data>
   <data name="Recovery_ManualInstall" xml:space="preserve">
-    <value>Consider installing the application manually from its official website</value>
+    <value>Envisagez d'installer l'application manuellement depuis son site officiel</value>
   </data>
   <data name="Recovery_ReinstallApp" xml:space="preserve">
-    <value>Try reinstalling the application</value>
+    <value>Essayez de réinstaller l'application</value>
   </data>
   <data name="Recovery_RetryInstall" xml:space="preserve">
-    <value>Try installing the application again</value>
+    <value>Essayez d'installer à nouveau l'application</value>
   </data>
   <data name="Recovery_RunAsAdmin" xml:space="preserve">
-    <value>Run Win11Forge as Administrator</value>
+    <value>Exécutez Win11Forge en tant qu'administrateur</value>
   </data>
   <data name="Recovery_TryAgainLater" xml:space="preserve">
-    <value>The server may be temporarily unavailable - try again later</value>
+    <value>Le serveur est peut-être temporairement indisponible — réessayez plus tard</value>
   </data>
   <data name="Recovery_UpdatePowerShell" xml:space="preserve">
-    <value>Update PowerShell to the latest version</value>
+    <value>Mettez à jour PowerShell vers la dernière version</value>
   </data>
   <data name="Settings_Export" xml:space="preserve">
-    <value>Export</value>
+    <value>Exporter</value>
   </data>
   <data name="Settings_ExportFailed" xml:space="preserve">
-    <value>Failed to export settings</value>
+    <value>Échec de l'exportation des paramètres</value>
   </data>
   <data name="Settings_ExportImport" xml:space="preserve">
-    <value>Export/Import Settings</value>
+    <value>Exporter/Importer les paramètres</value>
   </data>
   <data name="Settings_ExportImport_Desc" xml:space="preserve">
-    <value>Save or load your settings configuration</value>
+    <value>Enregistrer ou charger votre configuration</value>
   </data>
   <data name="Settings_ExportSuccess" xml:space="preserve">
-    <value>Settings exported successfully</value>
+    <value>Paramètres exportés avec succès</value>
   </data>
   <data name="Settings_Import" xml:space="preserve">
-    <value>Import</value>
+    <value>Importer</value>
   </data>
   <data name="Settings_ImportFailed" xml:space="preserve">
-    <value>Failed to import settings</value>
+    <value>Échec de l'importation des paramètres</value>
   </data>
   <data name="Settings_ImportSuccess" xml:space="preserve">
-    <value>Settings imported successfully - restart required</value>
+    <value>Paramètres importés avec succès — redémarrage requis</value>
   </data>
   <data name="Settings_ReducedMotion" xml:space="preserve">
-    <value>Reduce Motion</value>
+    <value>Réduire les animations</value>
   </data>
   <data name="Settings_ReducedMotion_Desc" xml:space="preserve">
-    <value>Minimize animations for accessibility</value>
+    <value>Minimiser les animations pour l'accessibilité</value>
   </data>
   <data name="Settings_ResetBtn" xml:space="preserve">
-    <value>Reset</value>
+    <value>Réinitialiser</value>
   </data>
   <data name="Settings_ResetDefaults" xml:space="preserve">
-    <value>Reset to Defaults</value>
+    <value>Réinitialiser les valeurs par défaut</value>
   </data>
   <data name="Settings_ResetDefaults_Desc" xml:space="preserve">
-    <value>Reset all settings to their default values</value>
+    <value>Réinitialiser tous les paramètres à leurs valeurs par défaut</value>
   </data>
   <data name="Settings_ResetFailed" xml:space="preserve">
-    <value>Failed to reset settings</value>
+    <value>Échec de la réinitialisation des paramètres</value>
   </data>
   <data name="Settings_ResetSuccess" xml:space="preserve">
-    <value>Settings reset to defaults</value>
+    <value>Paramètres réinitialisés aux valeurs par défaut</value>
   </data>
   <data name="Settings_Tab_About" xml:space="preserve">
-    <value>About</value>
+    <value>À propos</value>
   </data>
   <data name="Settings_Tab_Appearance" xml:space="preserve">
-    <value>Appearance</value>
+    <value>Apparence</value>
   </data>
   <data name="Settings_Tab_Data" xml:space="preserve">
-    <value>Data</value>
+    <value>Données</value>
   </data>
   <data name="Settings_Tab_Performance" xml:space="preserve">
     <value>Performance</value>
@@ -2529,214 +2532,214 @@ Cette action est irreversible.</value>
     <value>Winget</value>
   </data>
   <data name="Validation_DirectDownload_Checksum_Pattern" xml:space="preserve">
-    <value>Checksum format must be &apos;algorithm:hash&apos; (e.g., sha256:abc123...)</value>
+    <value>Le format du checksum doit être &apos;algorithme:hash&apos; (ex. sha256:abc123...)</value>
   </data>
   <data name="Validation_DirectDownload_InstallerType_Required" xml:space="preserve">
-    <value>Installer type is required for direct download</value>
+    <value>Le type d'installateur est requis pour le téléchargement direct</value>
   </data>
   <data name="Validation_EditApp_Category_Length" xml:space="preserve">
-    <value>Category must be between 1 and 64 characters</value>
+    <value>La catégorie doit contenir entre 1 et 64 caractères</value>
   </data>
   <data name="Validation_EditApp_Category_Required" xml:space="preserve">
-    <value>Category is required</value>
+    <value>La catégorie est requise</value>
   </data>
   <data name="Validation_EditApp_Description_MaxLength" xml:space="preserve">
-    <value>Description must not exceed 1024 characters</value>
+    <value>La description ne doit pas dépasser 1024 caractères</value>
   </data>
   <data name="Validation_EditApp_Homepage_InvalidUrl" xml:space="preserve">
-    <value>Homepage must be a valid URL</value>
+    <value>La page d'accueil doit être une URL valide</value>
   </data>
   <data name="Validation_EditApp_Id_Length" xml:space="preserve">
-    <value>ID must be between 2 and 128 characters</value>
+    <value>L'identifiant doit contenir entre 2 et 128 caractères</value>
   </data>
   <data name="Validation_EditApp_Id_Pattern" xml:space="preserve">
-    <value>ID must start with a letter or number and contain only letters, numbers, dots, dashes, and underscores</value>
+    <value>L'identifiant doit commencer par une lettre ou un chiffre et ne contenir que des lettres, chiffres, points, tirets et underscores</value>
   </data>
   <data name="Validation_EditApp_Id_Required" xml:space="preserve">
-    <value>Application ID is required</value>
+    <value>L'identifiant de l'application est requis</value>
   </data>
   <data name="Validation_EditApp_Name_Length" xml:space="preserve">
-    <value>Name must be between 1 and 256 characters</value>
+    <value>Le nom doit contenir entre 1 et 256 caractères</value>
   </data>
   <data name="Validation_EditApp_Name_Required" xml:space="preserve">
-    <value>Application name is required</value>
+    <value>Le nom de l'application est requis</value>
   </data>
   <data name="Validation_EditApp_Priority_Range" xml:space="preserve">
-    <value>Priority must be between 1 and 100</value>
+    <value>La priorité doit être comprise entre 1 et 100</value>
   </data>
   <data name="Validation_EditApp_Sources_Required" xml:space="preserve">
-    <value>At least one installation source must be configured</value>
+    <value>Au moins une source d'installation doit être configurée</value>
   </data>
   <data name="Validation_History_AppsSumExceedsTotal" xml:space="preserve">
-    <value>Sum of successful, failed, and skipped apps cannot exceed total apps</value>
+    <value>La somme des applications réussies, échouées et ignorées ne peut pas dépasser le total</value>
   </data>
   <data name="Validation_History_Duration_Range" xml:space="preserve">
-    <value>Duration must be between 0 and 7 days</value>
+    <value>La durée doit être comprise entre 0 et 7 jours</value>
   </data>
   <data name="Validation_History_FailedAllSuccessful" xml:space="preserve">
-    <value>Failed result cannot have all apps successful</value>
+    <value>Un résultat en échec ne peut pas avoir toutes les applications réussies</value>
   </data>
   <data name="Validation_History_FailedApps_Range" xml:space="preserve">
-    <value>Failed apps must be between 0 and 10000</value>
+    <value>Les applications échouées doivent être comprises entre 0 et 10000</value>
   </data>
   <data name="Validation_History_FutureDate" xml:space="preserve">
-    <value>Deployment date cannot be in the future</value>
+    <value>La date de déploiement ne peut pas être dans le futur</value>
   </data>
   <data name="Validation_History_ProfileName_Length" xml:space="preserve">
-    <value>Profile name must be between 1 and 128 characters</value>
+    <value>Le nom du profil doit contenir entre 1 et 128 caractères</value>
   </data>
   <data name="Validation_History_ProfileName_Required" xml:space="preserve">
-    <value>Profile name is required</value>
+    <value>Le nom du profil est requis</value>
   </data>
   <data name="Validation_History_SkippedApps_Range" xml:space="preserve">
-    <value>Skipped apps must be between 0 and 10000</value>
+    <value>Les applications ignorées doivent être comprises entre 0 et 10000</value>
   </data>
   <data name="Validation_History_SuccessfulApps_Range" xml:space="preserve">
-    <value>Successful apps must be between 0 and 10000</value>
+    <value>Les applications réussies doivent être comprises entre 0 et 10000</value>
   </data>
   <data name="Validation_History_SuccessWithFailedApps" xml:space="preserve">
-    <value>Success result cannot have failed apps</value>
+    <value>Un résultat réussi ne peut pas avoir d'applications échouées</value>
   </data>
   <data name="Validation_History_TotalApps_Range" xml:space="preserve">
-    <value>Total apps must be between 0 and 10000</value>
+    <value>Le total des applications doit être compris entre 0 et 10000</value>
   </data>
   <data name="Validation_Prereq_Category_MaxLength" xml:space="preserve">
-    <value>Category must not exceed 64 characters</value>
+    <value>La catégorie ne doit pas dépasser 64 caractères</value>
   </data>
   <data name="Validation_Prereq_ChocoVersion_MaxLength" xml:space="preserve">
-    <value>Chocolatey version must not exceed 64 characters</value>
+    <value>La version Chocolatey ne doit pas dépasser 64 caractères</value>
   </data>
   <data name="Validation_Prereq_ChocoVersion_Pattern" xml:space="preserve">
-    <value>Invalid version format</value>
+    <value>Format de version invalide</value>
   </data>
   <data name="Validation_Prereq_Description_MaxLength" xml:space="preserve">
-    <value>Description must not exceed 512 characters</value>
+    <value>La description ne doit pas dépasser 512 caractères</value>
   </data>
   <data name="Validation_Prereq_DotNetFrameworkVersion_MaxLength" xml:space="preserve">
-    <value>.NET Framework version must not exceed 64 characters</value>
+    <value>La version .NET Framework ne doit pas dépasser 64 caractères</value>
   </data>
   <data name="Validation_Prereq_DotNetFrameworkVersion_Pattern" xml:space="preserve">
-    <value>Invalid version format</value>
+    <value>Format de version invalide</value>
   </data>
   <data name="Validation_Prereq_DotNetVersion_MaxLength" xml:space="preserve">
-    <value>.NET version must not exceed 128 characters</value>
+    <value>La version .NET ne doit pas dépasser 128 caractères</value>
   </data>
   <data name="Validation_Prereq_JavaVersion_MaxLength" xml:space="preserve">
-    <value>Java version must not exceed 128 characters</value>
+    <value>La version Java ne doit pas dépasser 128 caractères</value>
   </data>
   <data name="Validation_Prereq_Name_Length" xml:space="preserve">
-    <value>Name must be between 1 and 128 characters</value>
+    <value>Le nom doit contenir entre 1 et 128 caractères</value>
   </data>
   <data name="Validation_Prereq_Name_Required" xml:space="preserve">
-    <value>Prerequisite name is required</value>
+    <value>Le nom du prérequis est requis</value>
   </data>
   <data name="Validation_Prereq_PSVersion_MaxLength" xml:space="preserve">
-    <value>PowerShell version must not exceed 64 characters</value>
+    <value>La version PowerShell ne doit pas dépasser 64 caractères</value>
   </data>
   <data name="Validation_Prereq_PSVersion_Pattern" xml:space="preserve">
-    <value>Invalid version format</value>
+    <value>Format de version invalide</value>
   </data>
   <data name="Validation_Prereq_VCRedistVersion_MaxLength" xml:space="preserve">
-    <value>VC++ version must not exceed 128 characters</value>
+    <value>La version VC++ ne doit pas dépasser 128 caractères</value>
   </data>
   <data name="Validation_Prereq_Version_MaxLength" xml:space="preserve">
-    <value>Version must not exceed 64 characters</value>
+    <value>La version ne doit pas dépasser 64 caractères</value>
   </data>
   <data name="Validation_Prereq_WingetVersion_MaxLength" xml:space="preserve">
-    <value>Winget version must not exceed 64 characters</value>
+    <value>La version Winget ne doit pas dépasser 64 caractères</value>
   </data>
   <data name="Validation_Prereq_WingetVersion_Pattern" xml:space="preserve">
-    <value>Invalid version format</value>
+    <value>Format de version invalide</value>
   </data>
   <data name="Validation_Profile_CircularInheritance" xml:space="preserve">
-    <value>A profile cannot inherit from itself</value>
+    <value>Un profil ne peut pas hériter de lui-même</value>
   </data>
   <data name="Validation_Profile_Description_MaxLength" xml:space="preserve">
-    <value>Description must not exceed 2048 characters</value>
+    <value>La description ne doit pas dépasser 2048 caractères</value>
   </data>
   <data name="Validation_Profile_DuplicateApps" xml:space="preserve">
-    <value>Duplicate application IDs detected in profile</value>
+    <value>Identifiants d'applications en double détectés dans le profil</value>
   </data>
   <data name="Validation_Profile_DuplicateParents" xml:space="preserve">
-    <value>Duplicate parent profiles detected</value>
+    <value>Profils parents en double détectés</value>
   </data>
   <data name="Validation_Profile_InheritedFrom_MaxCount" xml:space="preserve">
-    <value>Cannot inherit from more than 10 profiles</value>
+    <value>Impossible d'hériter de plus de 10 profils</value>
   </data>
   <data name="Validation_Profile_Name_Length" xml:space="preserve">
-    <value>Profile name must be between 1 and 128 characters</value>
+    <value>Le nom du profil doit contenir entre 1 et 128 caractères</value>
   </data>
   <data name="Validation_Profile_Name_Pattern" xml:space="preserve">
-    <value>Profile name can only contain letters, numbers, underscores, and hyphens</value>
+    <value>Le nom du profil ne peut contenir que des lettres, chiffres, underscores et tirets</value>
   </data>
   <data name="Validation_Profile_Name_Required" xml:space="preserve">
-    <value>Profile name is required</value>
+    <value>Le nom du profil est requis</value>
   </data>
   <data name="Validation_Profile_Version_MaxLength" xml:space="preserve">
-    <value>Version must not exceed 32 characters</value>
+    <value>La version ne doit pas dépasser 32 caractères</value>
   </data>
   <data name="Validation_Profile_Version_Pattern" xml:space="preserve">
-    <value>Version must be in format X.Y or X.Y.Z</value>
+    <value>La version doit être au format X.Y ou X.Y.Z</value>
   </data>
   <data name="Validation_Scheduled_CreatedBy_MaxLength" xml:space="preserve">
-    <value>Created by must not exceed 256 characters</value>
+    <value>Créé par ne doit pas dépasser 256 caractères</value>
   </data>
   <data name="Validation_Scheduled_Id_Length" xml:space="preserve">
-    <value>Deployment ID must be between 1 and 32 characters</value>
+    <value>L'identifiant de déploiement doit contenir entre 1 et 32 caractères</value>
   </data>
   <data name="Validation_Scheduled_Id_Required" xml:space="preserve">
-    <value>Deployment ID is required</value>
+    <value>L'identifiant de déploiement est requis</value>
   </data>
   <data name="Validation_Scheduled_LastRunResult_MaxLength" xml:space="preserve">
-    <value>Last run result must not exceed 256 characters</value>
+    <value>Le résultat de la dernière exécution ne doit pas dépasser 256 caractères</value>
   </data>
   <data name="Validation_Scheduled_ProfileName_Length" xml:space="preserve">
-    <value>Profile name must be between 1 and 256 characters</value>
+    <value>Le nom du profil doit contenir entre 1 et 256 caractères</value>
   </data>
   <data name="Validation_Scheduled_ProfileName_Required" xml:space="preserve">
-    <value>Profile name is required</value>
+    <value>Le nom du profil est requis</value>
   </data>
   <data name="Validation_Scheduled_TriggerType_Required" xml:space="preserve">
-    <value>Trigger type is required</value>
+    <value>Le type de déclencheur est requis</value>
   </data>
   <data name="Validation_SemanticVersion_Invalid" xml:space="preserve">
-    <value>The value must be a valid version number (e.g., 1.0.0, 2.1.3-beta).</value>
+    <value>La valeur doit être un numéro de version valide (ex. 1.0.0, 2.1.3-beta).</value>
   </data>
   <data name="Validation_Sources_Chocolatey_MaxLength" xml:space="preserve">
-    <value>Chocolatey package name must not exceed 256 characters</value>
+    <value>Le nom du paquet Chocolatey ne doit pas dépasser 256 caractères</value>
   </data>
   <data name="Validation_Sources_DirectUrl_InvalidUrl" xml:space="preserve">
-    <value>Direct URL must be a valid HTTP/HTTPS URL</value>
+    <value>L'URL directe doit être une URL HTTP/HTTPS valide</value>
   </data>
   <data name="Validation_Sources_Store_Pattern" xml:space="preserve">
-    <value>Store ID must be 12 alphanumeric characters</value>
+    <value>L'identifiant Store doit contenir 12 caractères alphanumériques</value>
   </data>
   <data name="Validation_Sources_Winget_MaxLength" xml:space="preserve">
-    <value>Winget package ID must not exceed 256 characters</value>
+    <value>L'identifiant du paquet Winget ne doit pas dépasser 256 caractères</value>
   </data>
   <data name="Validation_SystemInfo_ChocolateyVersion_MaxLength" xml:space="preserve">
-    <value>Chocolatey version must not exceed 64 characters</value>
+    <value>La version Chocolatey ne doit pas dépasser 64 caractères</value>
   </data>
   <data name="Validation_SystemInfo_Hostname_MaxLength" xml:space="preserve">
-    <value>Hostname must not exceed 256 characters</value>
+    <value>Le nom d'hôte ne doit pas dépasser 256 caractères</value>
   </data>
   <data name="Validation_SystemInfo_ProcessorCount_Range" xml:space="preserve">
-    <value>Processor count must be between 1 and 1024</value>
+    <value>Le nombre de processeurs doit être compris entre 1 et 1024</value>
   </data>
   <data name="Validation_SystemInfo_TotalMemory_Range" xml:space="preserve">
-    <value>Total memory must be between 0 and 10000 GB</value>
+    <value>La mémoire totale doit être comprise entre 0 et 10000 Go</value>
   </data>
   <data name="Validation_SystemInfo_Username_MaxLength" xml:space="preserve">
-    <value>Username must not exceed 256 characters</value>
+    <value>Le nom d'utilisateur ne doit pas dépasser 256 caractères</value>
   </data>
   <data name="Validation_SystemInfo_WindowsBuild_MaxLength" xml:space="preserve">
-    <value>Windows build must not exceed 64 characters</value>
+    <value>Le build Windows ne doit pas dépasser 64 caractères</value>
   </data>
   <data name="Validation_SystemInfo_WindowsVersion_MaxLength" xml:space="preserve">
-    <value>Windows version must not exceed 128 characters</value>
+    <value>La version Windows ne doit pas dépasser 128 caractères</value>
   </data>
   <data name="Validation_SystemInfo_WingetVersion_MaxLength" xml:space="preserve">
-    <value>Winget version must not exceed 64 characters</value>
+    <value>La version Winget ne doit pas dépasser 64 caractères</value>
   </data>
 </root>
 

@@ -117,10 +117,9 @@
                                     IsSnapToTickEnabled="False"
                                     AutomationProperties.Name="{loc:Loc Col_Priority}"/>
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding Application.DefaultPriority, StringFormat='Priority: {0}'}"
                                        VerticalAlignment="Center"
                                        Margin="16,0,0,0"
-                                       MinWidth="80"/>
+                                       MinWidth="80"><Run Text="{loc:Loc AppEditor_PriorityLabel}"/><Run Text="{Binding Application.DefaultPriority, Mode=OneWay}"/></TextBlock>
                         </Grid>
 
                         <!-- Default Required -->
