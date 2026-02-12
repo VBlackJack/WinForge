@@ -22,6 +22,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Wpf.Ui.Controls;
 using CommunityToolkit.Mvvm.Input;
+using Win11Forge.GUI.Services;
 using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.UserControls;
@@ -231,27 +232,86 @@ public partial class ChocolateySourceEditor : UserControl
     }
 
     /// <summary>
-    /// Executes the default test (placeholder - should be overridden by parent).
+    /// Executes a package verification test for the configured Chocolatey package name.
     /// </summary>
     private async Task ExecuteDefaultTestAsync()
     {
+        var packageName = PackageName?.Trim();
+        if (string.IsNullOrWhiteSpace(packageName))
+        {
+            TestSuccess = null;
+            TestResult = null;
+            return;
+        }
+
         IsTesting = true;
-        TestResult = null;
+        TestSuccess = null;
+        TestResult = Loc.Verify_Verifying;
 
         try
         {
-            await Task.Delay(1000);
-            TestSuccess = true;
-            TestResult = Loc.SourceEditor_TestPlaceholder;
+            var verificationService = ResolveVerificationService();
+
+            if (!verificationService.IsChocolateyAvailable)
+            {
+                TestSuccess = false;
+                TestResult = Loc.Verify_ChocoUnavailable;
+                return;
+            }
+
+            var result = await verificationService.VerifyChocolateyPackageAsync(packageName);
+
+            if (!result.IsSuccess)
+            {
+                TestSuccess = false;
+                TestResult = string.Format(Loc.Verify_Error, result.ErrorMessage ?? string.Empty);
+                return;
+            }
+
+            if (result.Exists)
+            {
+                var packageDisplay = string.IsNullOrWhiteSpace(result.Version)
+                    ? result.PackageId
+                    : $"{result.PackageId} ({result.Version})";
+
+                TestSuccess = true;
+                TestResult = string.Format(Loc.Verify_PackageFound, packageDisplay);
+                return;
+            }
+
+            TestSuccess = false;
+            TestResult = Loc.Verify_PackageNotFound;
+        }
+        catch (OperationCanceledException)
+        {
+            TestSuccess = false;
+            TestResult = Loc.SourceEditor_UrlTestTimeout;
         }
         catch (Exception ex)
         {
             TestSuccess = false;
-            TestResult = ex.Message;
+            TestResult = string.Format(Loc.Verify_Error, ex.Message);
         }
         finally
         {
             IsTesting = false;
         }
+    }
+
+    private static IPackageVerificationService ResolveVerificationService()
+    {
+        if (App.IsServicesInitialized)
+        {
+            try
+            {
+                return App.GetService<IPackageVerificationService>();
+            }
+            catch
+            {
+                // Fall back to direct construction if DI is not available.
+            }
+        }
+
+        return new PackageVerificationService();
     }
 }

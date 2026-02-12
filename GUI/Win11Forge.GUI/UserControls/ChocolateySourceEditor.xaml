@@ -39,7 +39,7 @@
                                  x:Name="EnableToggle"
                                  IsChecked="{Binding IsSourceEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                  ToolTip="{loc:Loc SourceEditor_EnableDisable}"
-                                 AutomationProperties.Name="Enable Chocolatey source"/>
+                                 AutomationProperties.Name="{loc:Loc SourceEditor_EnableDisable}"/>
             </Grid>
 
             <!-- Package Name -->
@@ -48,7 +48,7 @@
                      PlaceholderText="{loc:Loc AppEditor_ChocoPackageName}"
                      IsEnabled="{Binding IsChecked, ElementName=EnableToggle}"
                      Margin="0,0,0,12"
-                     AutomationProperties.Name="Chocolatey package name"/>
+                     AutomationProperties.Name="{loc:Loc AppEditor_ChocoPackageName}"/>
 
             <!-- Version -->
             <ui:TextBox Grid.Row="2"
@@ -56,7 +56,7 @@
                      PlaceholderText="{loc:Loc SourceEditor_Version}"
                      IsEnabled="{Binding IsChecked, ElementName=EnableToggle}"
                      Margin="0,0,0,12"
-                     AutomationProperties.Name="Version"/>
+                     AutomationProperties.Name="{loc:Loc SourceEditor_Version}"/>
 
             <!-- Test Button and Status -->
             <Grid Grid.Row="3" IsEnabled="{Binding IsChecked, ElementName=EnableToggle}">
@@ -70,7 +70,7 @@
                         Command="{Binding TestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         ToolTip="{loc:Loc SourceEditor_TestTooltip}"
                         MinWidth="120"
-                        AutomationProperties.Name="Test package">
+                        AutomationProperties.Name="{loc:Loc SourceEditor_Test}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Search24"
                                        Width="18" Height="18"

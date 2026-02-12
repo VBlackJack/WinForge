@@ -2,7 +2,7 @@
   "_meta": {
     "locale": "fr",
     "name": "Français",
-    "version": "3.7.1",
+    "version": "3.7.2",
     "author": "Julien Bombled"
   },
   "common": {
@@ -27,7 +27,7 @@
     "next": "Suivant",
     "exit": "Quitter",
     "retry": "Réessayer",
-    "version": "3.7.1"
+    "version": "3.7.2"
   },
   "core": {
     "admin_required": "Privilèges administrateur requis",
@@ -630,7 +630,14 @@
     "updates": {
       "title": "Vérifier les mises à jour",
       "current_version": "Version actuelle : {Version}",
-      "no_mechanism": "Aucun mécanisme de mise à jour configuré (nécessite un dépôt Git)."
+      "no_mechanism": "Aucun mécanisme de mise à jour configuré (nécessite un dépôt Git).",
+      "check_failed": "Impossible de vérifier les mises à jour : {Error}",
+      "published_at": "Publié : {Date}",
+      "release_notes": "Notes de version (aperçu) :",
+      "install_prompt": "Télécharger et installer cette mise à jour maintenant ? (Y/N)",
+      "install_cancelled": "Installation de la mise à jour annulée.",
+      "install_failed": "Échec de l'installation de la mise à jour.",
+      "restart_hint": "Redémarrez Win11Forge pour appliquer la mise à jour."
     },
     "about": {
       "title": "À propos de Win11Forge",

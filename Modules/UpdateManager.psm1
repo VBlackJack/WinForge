@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Update Manager v3.7.1
+    Win11Forge - Update Manager v3.7.2
 
 .DESCRIPTION
     Provides auto-update functionality for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 #>
 
 #
@@ -37,7 +37,7 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
-$script:VersionPath = Join-Path $script:RepositoryRoot 'version.json'
+$script:VersionPath = Join-Path $script:RepositoryRoot 'Config\version.json'
 
 # Import Core module for logging
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
@@ -94,9 +94,53 @@ if (Test-Path -Path $script:DownloadSourcesPath) {
     }
 }
 
+function Resolve-DefaultGitHubRepository {
+    <#
+    .SYNOPSIS
+        Resolves default GitHub owner/repository for update checks.
+    .DESCRIPTION
+        Determines the best default GitHub coordinates using this precedence:
+        environment overrides, git remote origin URL, then static fallback values.
+    .OUTPUTS
+        Hashtable with Owner and Repo keys.
+    #>
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    param()
+
+    $owner = 'VBlackJack'
+    $repo = 'Win11Forge'
+
+    if (-not [string]::IsNullOrWhiteSpace($env:WIN11FORGE_GITHUB_OWNER)) {
+        $owner = $env:WIN11FORGE_GITHUB_OWNER.Trim()
+    }
+    if (-not [string]::IsNullOrWhiteSpace($env:WIN11FORGE_GITHUB_REPO)) {
+        $repo = $env:WIN11FORGE_GITHUB_REPO.Trim()
+    }
+
+    if (Get-Command -Name git -ErrorAction SilentlyContinue) {
+        try {
+            $remoteUrl = (& git -C $script:RepositoryRoot config --get remote.origin.url 2>$null) | Select-Object -First 1
+            if (-not [string]::IsNullOrWhiteSpace($remoteUrl) -and $remoteUrl -match 'github\.com[:/](?<owner>[^/]+)/(?<repo>[^/.]+)(?:\.git)?$') {
+                $owner = $Matches.owner
+                $repo = $Matches.repo
+            }
+        } catch {
+            Write-Verbose "Unable to resolve GitHub repo from git remote: $($_.Exception.Message)"
+        }
+    }
+
+    return @{
+        Owner = $owner
+        Repo = $repo
+    }
+}
+
+$script:DefaultRepo = Resolve-DefaultGitHubRepository
+
 $script:UpdateConfig = @{
-    GitHubOwner = 'owner'
-    GitHubRepo = 'Win11Forge'
+    GitHubOwner = $script:DefaultRepo.Owner
+    GitHubRepo = $script:DefaultRepo.Repo
     ApiBaseUrl = $script:GitHubApiBaseUrl
     AutoCheckEnabled = $true
     CheckIntervalHours = 24

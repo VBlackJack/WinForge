@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge GUI v3.7.1
+    Win11Forge GUI v3.7.2
 
 .DESCRIPTION
     PowerShell graphical interface for Win11Forge deployment framework
@@ -8,7 +8,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
     Requires: PowerShell 5.1+, Win11Forge v3.0.0+
 #>
 
@@ -131,6 +131,12 @@ function Initialize-GUIModules {
         $sysconfigModule = Join-Path $script:RepositoryRoot 'Modules\SystemConfig.psm1'
         if (Test-Path $sysconfigModule) {
             Import-Module $sysconfigModule -Force -Global
+        }
+
+        # Load UpdateManager module
+        $updateModule = Join-Path $script:RepositoryRoot 'Modules\UpdateManager.psm1'
+        if (Test-Path $updateModule) {
+            Import-Module $updateModule -Force -Global
         }
 
         return $true
@@ -1443,19 +1449,131 @@ function Show-LogsDirectory {
 function Test-Updates {
     <#
     .SYNOPSIS
-        Checks for available Win11Forge framework updates.
+        Checks for available Win11Forge framework updates and can install them.
     .DESCRIPTION
-        Displays the current framework version and checks whether a newer version is available.
-        Currently serves as a placeholder until an automated update mechanism is implemented.
+        Displays the current framework version, checks the latest release via UpdateManager,
+        and optionally downloads and installs the update with backup/restore protection.
     #>
     [CmdletBinding()]
-    param()
+    param(
+        [switch]$IncludePrerelease
+    )
 
     Show-Header -Title (Get-LocalizedString -Key 'gui.updates.title')
 
     Write-Host (Get-LocalizedString -Key 'gui.updates.current_version' -Parameters @{ Version = $script:FrameworkVersion }) -ForegroundColor Yellow
     Write-Host ""
-    Write-Host (Get-LocalizedString -Key 'gui.updates.no_mechanism') -ForegroundColor Gray
+
+    $updateModule = Join-Path $script:RepositoryRoot 'Modules\UpdateManager.psm1'
+    if (-not (Get-Command -Name Test-UpdateAvailable -ErrorAction SilentlyContinue)) {
+        if (Test-Path $updateModule) {
+            Import-Module $updateModule -Force -Global
+        }
+    }
+
+    if (-not (Get-Command -Name Test-UpdateAvailable -ErrorAction SilentlyContinue)) {
+        Write-Host (Get-LocalizedString -Key 'gui.updates.no_mechanism') -ForegroundColor Gray
+        Write-Host ""
+        Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
+        return
+    }
+
+    Write-Host (Get-LocalizedString -Key 'update.checking') -ForegroundColor Gray
+    Write-Host ""
+
+    try {
+        $updateInfo = Test-UpdateAvailable -IncludePrerelease:$IncludePrerelease
+    }
+    catch {
+        $message = Get-LocalizedString -Key 'gui.updates.check_failed' -Parameters @{ Error = $_.Exception.Message } -DefaultValue 'Unable to check for updates: {Error}'
+        Write-Host $message -ForegroundColor Red
+        Write-Host ""
+        Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
+        return
+    }
+
+    $updateError = $null
+    if ($null -eq $updateInfo) {
+        $updateError = 'No response from update service'
+    }
+    elseif ($updateInfo.PSObject.Properties['Error'] -and -not [string]::IsNullOrWhiteSpace([string]$updateInfo.Error)) {
+        $updateError = [string]$updateInfo.Error
+    }
+
+    if ($updateError) {
+        $message = Get-LocalizedString -Key 'gui.updates.check_failed' -Parameters @{ Error = $updateError } -DefaultValue 'Unable to check for updates: {Error}'
+        Write-Host $message -ForegroundColor Red
+        Write-Host ""
+        Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
+        return
+    }
+
+    Write-Host (Get-LocalizedString -Key 'update.latest' -Parameters @{ Version = $updateInfo.LatestVersion }) -ForegroundColor Gray
+
+    if (-not $updateInfo.UpdateAvailable) {
+        Write-Host (Get-LocalizedString -Key 'update.no_update') -ForegroundColor Green
+        Write-Host ""
+        Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
+        return
+    }
+
+    Write-Host (Get-LocalizedString -Key 'update.available' -Parameters @{ Version = $updateInfo.LatestVersion }) -ForegroundColor Green
+
+    if ($updateInfo.PublishedAt) {
+        $publishedDisplay = try {
+            ([datetime]$updateInfo.PublishedAt).ToString('yyyy-MM-dd HH:mm')
+        } catch {
+            [string]$updateInfo.PublishedAt
+        }
+        Write-Host (Get-LocalizedString -Key 'gui.updates.published_at' -Parameters @{ Date = $publishedDisplay } -DefaultValue 'Published: {Date}') -ForegroundColor Gray
+    }
+
+    if ($updateInfo.IsPrerelease) {
+        Write-Host (Get-LocalizedString -Key 'update.prerelease_warning') -ForegroundColor Yellow
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$updateInfo.ReleaseNotes)) {
+        Write-Host ""
+        Write-Host (Get-LocalizedString -Key 'gui.updates.release_notes' -DefaultValue 'Release notes (preview):') -ForegroundColor Yellow
+        $allLines = @($updateInfo.ReleaseNotes -split "(`r`n|`n|`r)" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+        $previewLines = $allLines | Select-Object -First 8
+        foreach ($line in $previewLines) {
+            Write-Host "  $line" -ForegroundColor Gray
+        }
+        if ($allLines.Count -gt $previewLines.Count) {
+            Write-Host "  ..." -ForegroundColor DarkGray
+        }
+    }
+
+    Write-Host ""
+    $installNow = Read-Host (Get-LocalizedString -Key 'gui.updates.install_prompt' -DefaultValue 'Download and install this update now? (Y/N)')
+    if ($installNow -ne 'Y' -and $installNow -ne 'y') {
+        Write-Host ""
+        Write-Host (Get-LocalizedString -Key 'gui.updates.install_cancelled' -DefaultValue 'Update installation cancelled.') -ForegroundColor Gray
+        Write-Host ""
+        Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
+        return
+    }
+
+    $downloadPath = Invoke-DownloadUpdate -ReleaseInfo $updateInfo
+    if ([string]::IsNullOrWhiteSpace($downloadPath)) {
+        Write-Host ""
+        Write-Host (Get-LocalizedString -Key 'gui.updates.install_failed' -DefaultValue 'Update installation failed.') -ForegroundColor Red
+        Write-Host ""
+        Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')
+        return
+    }
+
+    $installSuccess = Install-Update -UpdatePath $downloadPath -CreateBackup
+
+    Write-Host ""
+    if ($installSuccess) {
+        Write-Host (Get-LocalizedString -Key 'update.install_success') -ForegroundColor Green
+        Write-Host (Get-LocalizedString -Key 'gui.updates.restart_hint' -DefaultValue 'Restart Win11Forge to apply the update.') -ForegroundColor Yellow
+    }
+    else {
+        Write-Host (Get-LocalizedString -Key 'gui.updates.install_failed' -DefaultValue 'Update installation failed.') -ForegroundColor Red
+    }
 
     Write-Host ""
     Read-Host (Get-LocalizedString -Key 'gui.deploy.press_enter')

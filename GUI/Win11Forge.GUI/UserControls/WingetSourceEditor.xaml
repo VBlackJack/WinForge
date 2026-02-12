@@ -39,7 +39,7 @@
                                  x:Name="EnableToggle"
                                  IsChecked="{Binding IsSourceEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                  ToolTip="{loc:Loc SourceEditor_EnableDisable}"
-                                 AutomationProperties.Name="Enable Winget source"/>
+                                 AutomationProperties.Name="{loc:Loc SourceEditor_EnableDisable}"/>
             </Grid>
 
             <!-- Package ID -->
@@ -49,7 +49,7 @@
                      PlaceholderText="{loc:Loc AppEditor_WingetPackageId}"
                      IsEnabled="{Binding IsChecked, ElementName=EnableToggle}"
                      Margin="0,0,0,12"
-                     AutomationProperties.Name="Winget package ID"/>
+                     AutomationProperties.Name="{loc:Loc AppEditor_WingetPackageId}"/>
 
             <!-- Version and Source Row -->
             <Grid Grid.Row="2" Margin="0,0,0,12"
@@ -64,13 +64,13 @@
                 <ui:TextBox Grid.Column="0"
                          Text="{Binding Version, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="{loc:Loc SourceEditor_Version}"
-                         AutomationProperties.Name="Version"/>
+                         AutomationProperties.Name="{loc:Loc SourceEditor_Version}"/>
 
                 <!-- Source Repository -->
                 <ComboBox Grid.Column="2"
                           SelectedValue="{Binding SourceRepository, RelativeSource={RelativeSource AncestorType=UserControl}}"
                           SelectedValuePath="Tag"
-                          AutomationProperties.Name="Source repository">
+                          AutomationProperties.Name="{loc:Loc SourceEditor_Repository}">
                     <ComboBoxItem Content="winget" Tag="winget"/>
                     <ComboBoxItem Content="msstore" Tag="msstore"/>
                 </ComboBox>
@@ -88,7 +88,7 @@
                         Command="{Binding TestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         ToolTip="{loc:Loc SourceEditor_TestTooltip}"
                         MinWidth="120"
-                        AutomationProperties.Name="Test package">
+                        AutomationProperties.Name="{loc:Loc SourceEditor_Test}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Search24"
                                        Width="18" Height="18"
