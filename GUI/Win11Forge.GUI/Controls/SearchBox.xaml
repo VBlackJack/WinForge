@@ -11,16 +11,16 @@
 
         <!-- Search TextBox -->
         <ui:TextBox x:Name="SearchTextBox"
-                 Grid.Row="0"
-                 PlaceholderText="{loc:Loc Apps_SearchHint}"
-                 Icon="Search24"
-                 ClearButtonEnabled="True"
-                 TextChanged="SearchTextBox_TextChanged"
-                 KeyDown="SearchTextBox_KeyDown"
-                 GotFocus="SearchTextBox_GotFocus"
-                 LostFocus="SearchTextBox_LostFocus"
-                 AutomationProperties.Name="Search applications"
-                 AutomationProperties.HelpText="Type to filter applications. Use arrow keys to navigate suggestions."/>
+                  Grid.Row="0"
+                  PlaceholderText="{loc:Loc Apps_SearchHint}"
+                  Icon="Search24"
+                  ClearButtonEnabled="True"
+                  TextChanged="SearchTextBox_TextChanged"
+                  KeyDown="SearchTextBox_KeyDown"
+                  GotFocus="SearchTextBox_GotFocus"
+                  LostFocus="SearchTextBox_LostFocus"
+                 AutomationProperties.Name="{loc:Loc A11y_AppPicker_Search}"
+                 AutomationProperties.HelpText="{loc:Loc A11y_Search_SuggestionsHelp}"/>
 
         <!-- Suggestions Popup -->
         <Popup x:Name="SuggestionsPopup"
@@ -59,6 +59,7 @@
                              Grid.Row="1"
                              MaxHeight="200"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             PreviewMouseLeftButtonUp="SuggestionsList_PreviewMouseLeftButtonUp"
                              SelectionChanged="SuggestionsList_SelectionChanged">
                         <ListBox.ItemTemplate>
                             <DataTemplate>

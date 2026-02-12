@@ -27,11 +27,13 @@ public class ApplicationEditorViewModelTests
 {
     private static ApplicationEditorViewModel CreateViewModel(
         MockApplicationDatabaseService? dbService = null,
-        MockPackageVerificationService? verificationService = null)
+        MockPackageVerificationService? verificationService = null,
+        MockPackageSearchService? searchService = null)
     {
         return new ApplicationEditorViewModel(
             dbService ?? new MockApplicationDatabaseService(),
-            verificationService ?? new MockPackageVerificationService());
+            verificationService ?? new MockPackageVerificationService(),
+            searchService ?? new MockPackageSearchService());
     }
 
     private static EditableApplicationModel CreateTestApplication()
@@ -440,6 +442,95 @@ public class ApplicationEditorViewModelTests
 
         // Assert
         Assert.Empty(viewModel.ValidationMessage);
+    }
+
+    /// <summary>
+    /// Verifies that Winget package search populates results.
+    /// </summary>
+    [Fact]
+    public async Task SearchWingetPackages_ShouldPopulateResults()
+    {
+        // Arrange
+        var searchService = new MockPackageSearchService();
+        searchService.SetWingetResults(
+            new PackageSearchResult("Microsoft.VisualStudioCode", "Visual Studio Code", "1.100.0", PackageSource.Winget));
+
+        var viewModel = CreateViewModel(searchService: searchService);
+        var app = CreateTestApplication();
+        await viewModel.InitializeAsync(app, isNew: true);
+        viewModel.WingetSearchQuery = "visual";
+
+        // Act
+        await viewModel.SearchWingetPackagesCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Single(viewModel.WingetSearchResults);
+        Assert.Equal("Microsoft.VisualStudioCode", viewModel.WingetSearchResults[0].PackageId);
+        Assert.Equal("visual", searchService.LastWingetQuery);
+    }
+
+    /// <summary>
+    /// Verifies that applying a Winget search result updates source and metadata.
+    /// </summary>
+    [Fact]
+    public async Task ApplyWingetSearchResult_ShouldPopulateSourceAndMetadata()
+    {
+        // Arrange
+        var searchService = new MockPackageSearchService();
+        searchService.SetWingetResults(
+            new PackageSearchResult("Google.Chrome", "Google Chrome", "123.0.0", PackageSource.Winget));
+
+        var viewModel = CreateViewModel(searchService: searchService);
+        var app = new EditableApplicationModel
+        {
+            AppId = string.Empty,
+            Name = string.Empty,
+            Category = "Browser",
+            Sources = new ApplicationSourcesModel
+            {
+                WingetConfig = new WingetSourceConfig(),
+                ChocolateyConfig = new ChocolateySourceConfig(),
+                DirectDownloadConfig = new DirectDownloadSourceConfig()
+            }
+        };
+
+        await viewModel.InitializeAsync(app, isNew: true);
+        viewModel.WingetSearchQuery = "chrome";
+        await viewModel.SearchWingetPackagesCommand.ExecuteAsync(null);
+
+        // Act
+        viewModel.ApplyWingetSearchResultCommand.Execute(null);
+
+        // Assert
+        Assert.Equal("Google.Chrome", viewModel.Application.Sources.Winget);
+        Assert.True(viewModel.WingetEnabled);
+        Assert.Equal("Google Chrome", viewModel.Application.Name);
+        Assert.Equal("Google.Chrome", viewModel.Application.AppId);
+    }
+
+    /// <summary>
+    /// Verifies that Store package search uses store search service and returns results.
+    /// </summary>
+    [Fact]
+    public async Task SearchStorePackages_ShouldPopulateResults()
+    {
+        // Arrange
+        var searchService = new MockPackageSearchService();
+        searchService.SetStoreResults(
+            new PackageSearchResult("9WZDNCRFJBMP", "Spotify Music", null, PackageSource.Store));
+
+        var viewModel = CreateViewModel(searchService: searchService);
+        var app = CreateTestApplication();
+        await viewModel.InitializeAsync(app, isNew: true);
+        viewModel.StoreSearchQuery = "spotify";
+
+        // Act
+        await viewModel.SearchStorePackagesCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Single(viewModel.StoreSearchResults);
+        Assert.Equal("9WZDNCRFJBMP", viewModel.StoreSearchResults[0].PackageId);
+        Assert.Equal("spotify", searchService.LastStoreQuery);
     }
 }
 

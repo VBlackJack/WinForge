@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
     This module should be imported first by other modules
 #>
 

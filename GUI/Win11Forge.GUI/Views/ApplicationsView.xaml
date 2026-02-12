@@ -60,14 +60,14 @@
                     <ui:Button Appearance="Transparent"
                                Command="{Binding UndoCommand}"
                                ToolTip="{Binding NextUndoDescription, StringFormat='{}{0} (Ctrl+Z)', FallbackValue='Undo (Ctrl+Z)'}"
-                               AutomationProperties.Name="Undo last action"
+                               AutomationProperties.Name="{loc:Loc A11y_Main_Undo}"
                                Width="44" Height="44"
                                Margin="0,0,4,0"
                                Icon="{ui:SymbolIcon ArrowUndo24}"/>
                     <ui:Button Appearance="Transparent"
                                Command="{Binding RedoCommand}"
                                ToolTip="{Binding NextRedoDescription, StringFormat='{}{0} (Ctrl+Y)', FallbackValue='Redo (Ctrl+Y)'}"
-                               AutomationProperties.Name="Redo last action"
+                               AutomationProperties.Name="{loc:Loc A11y_Main_Redo}"
                                Width="44" Height="44"
                                Margin="0,0,16,0"
                                Icon="{ui:SymbolIcon ArrowRedo24}"/>
@@ -75,7 +75,7 @@
                     <ui:Button Appearance="Primary"
                                Command="{Binding AddCommand}"
                                ToolTip="{loc:Loc AppDb_AddTooltip}"
-                               AutomationProperties.Name="Add new application"
+                               AutomationProperties.Name="{loc:Loc AppDb_Add}"
                                Margin="0,0,8,0"
                                MinWidth="100">
                         <StackPanel Orientation="Horizontal">
@@ -91,7 +91,7 @@
                     <ui:Button Appearance="Secondary"
                                Command="{Binding ImportCommand}"
                                ToolTip="{loc:Loc AppDb_ImportTooltip}"
-                               AutomationProperties.Name="Import applications"
+                               AutomationProperties.Name="{loc:Loc AppDb_Import}"
                                Margin="0,0,4,0"
                                MinWidth="80">
                         <StackPanel Orientation="Horizontal">
@@ -127,7 +127,7 @@
                     <ui:Button Appearance="Secondary"
                                Command="{Binding VerifyAllSourcesCommand}"
                                ToolTip="{loc:Loc AppDb_VerifySources}"
-                               AutomationProperties.Name="Verify all sources"
+                               AutomationProperties.Name="{loc:Loc AppDb_VerifySources}"
                                Margin="0,0,8,0"
                                MinWidth="80"
                                Visibility="{Binding IsVerifying, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
@@ -142,7 +142,7 @@
                     <ui:Button Appearance="Secondary"
                                Command="{Binding CancelVerificationCommand}"
                                ToolTip="{loc:Loc Btn_Cancel}"
-                               AutomationProperties.Name="Cancel verification"
+                               AutomationProperties.Name="{loc:Loc Btn_Cancel}"
                                Margin="0,0,8,0"
                                MinWidth="80"
                                Visibility="{Binding IsVerifying, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -157,7 +157,7 @@
                     <ui:Button Appearance="Transparent"
                                Command="{Binding RefreshCommand}"
                                ToolTip="{loc:Loc AppDb_Refresh}"
-                               AutomationProperties.Name="Refresh applications list"
+                               AutomationProperties.Name="{loc:Loc AppDb_Refresh}"
                                Width="44" Height="44"
                                Icon="{ui:SymbolIcon ArrowSync24}"/>
                 </StackPanel>
@@ -185,7 +185,7 @@
                             Icon="{ui:SymbolIcon Search24}"
                             Margin="0,0,16,0"
                             VerticalAlignment="Center"
-                            AutomationProperties.Name="Search applications">
+                            AutomationProperties.Name="{loc:Loc A11y_AppPicker_Search}">
                     <ui:TextBox.InputBindings>
                         <KeyBinding Key="Escape" Command="{Binding ClearFiltersCommand}"/>
                     </ui:TextBox.InputBindings>
@@ -197,7 +197,7 @@
                           SelectedItem="{Binding SelectedCategory}"
                           VerticalAlignment="Center"
                           Margin="0,0,16,0"
-                          AutomationProperties.Name="Filter by category"/>
+                          AutomationProperties.Name="{loc:Loc A11y_AppPicker_Category}"/>
 
                 <!-- Spacer -->
                 <Grid Grid.Column="2"/>
@@ -207,7 +207,7 @@
                     <ui:Button Appearance="Secondary"
                                Command="{Binding EditCommand}"
                                ToolTip="{loc:Loc AppDb_EditTooltip}"
-                               AutomationProperties.Name="Edit selected application"
+                               AutomationProperties.Name="{loc:Loc AppDb_Edit}"
                                Margin="0,0,8,0"
                                MinWidth="80">
                         <StackPanel Orientation="Horizontal">
@@ -221,7 +221,7 @@
                     <ui:Button Appearance="Secondary"
                                Command="{Binding DuplicateCommand}"
                                ToolTip="{loc:Loc AppDb_DuplicateTooltip}"
-                               AutomationProperties.Name="Duplicate selected application"
+                               AutomationProperties.Name="{loc:Loc AppDb_Duplicate}"
                                Margin="0,0,8,0"
                                MinWidth="80">
                         <StackPanel Orientation="Horizontal">
@@ -235,7 +235,7 @@
                     <ui:Button Appearance="Danger"
                                Command="{Binding DeleteCommand}"
                                ToolTip="{loc:Loc AppDb_DeleteTooltip}"
-                               AutomationProperties.Name="Delete selected application"
+                               AutomationProperties.Name="{loc:Loc AppDb_Delete}"
                                MinWidth="80">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Delete24"
@@ -281,7 +281,7 @@
                           HorizontalScrollBarVisibility="Auto"
                           MouseDoubleClick="DataGrid_MouseDoubleClick"
                           Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                          AutomationProperties.Name="Applications database grid"
+                          AutomationProperties.Name="{loc:Loc A11y_Applications_DbGrid}"
                           RowStyle="{StaticResource EnhancedDataGridRowStyle}"
                           CellStyle="{StaticResource EnhancedDataGridCellStyle}">
 

@@ -625,9 +625,11 @@ function Start-RollbackHandler {
                     errors = $result.Errors
                 }
             } catch {
+                Write-Verbose "Rollback execution failed: $($_.Exception.Message)"
                 return @{
                     success = $false
-                    error = $_.Exception.Message
+                    error = (Get-LocalizedString -Key 'api.error.internal_error')
+                    code = 'ROLLBACK_ERROR'
                 }
             }
         }

@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'StructuredLogging.psm1'
-    ModuleVersion = '3.7.1'
+    ModuleVersion = '3.7.2'
     GUID = 'bfc6d25e-9687-4bb8-a6c6-9244335d17e8'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Core', 'Logging', 'JSON', 'Structured')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.7.1'
+            ReleaseNotes = 'Win11Forge v3.7.2'
         }
     }
 }

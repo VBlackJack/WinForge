@@ -219,8 +219,8 @@
                         Style="{StaticResource ClickableStatsCard}"
                         ToolTip="{loc:Loc Dashboard_Stats_ProfilesHint}"
                         MinWidth="160"
-                        AutomationProperties.Name="{Binding ProfileCount, StringFormat='{}{0} profiles - Click to manage'}"
-                        AutomationProperties.HelpText="Navigate to profiles management page">
+                        AutomationProperties.Name="{loc:Loc Dashboard_Stats_Profiles}"
+                        AutomationProperties.HelpText="{loc:Loc A11y_Dashboard_ProfilesCard}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -247,8 +247,8 @@
                         Style="{StaticResource ClickableStatsCard}"
                         ToolTip="{loc:Loc Dashboard_Stats_AppsHint}"
                         MinWidth="160"
-                        AutomationProperties.Name="{Binding AppCount, StringFormat='{}{0} applications - Click to manage'}"
-                        AutomationProperties.HelpText="Navigate to applications management page">
+                        AutomationProperties.Name="{loc:Loc Dashboard_Stats_Apps}"
+                        AutomationProperties.HelpText="{loc:Loc A11y_Dashboard_AppsCard}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -276,8 +276,8 @@
                         ToolTip="{loc:Loc Dashboard_Stats_UpdatesHint}"
                         MinWidth="160"
                         Margin="0"
-                        AutomationProperties.Name="{Binding UpdateCount, StringFormat='{}{0} updates available - Click to view'}"
-                        AutomationProperties.HelpText="Navigate to updates page">
+                        AutomationProperties.Name="{loc:Loc Dashboard_Stats_Updates}"
+                        AutomationProperties.HelpText="{loc:Loc A11y_Dashboard_UpdatesCard}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>

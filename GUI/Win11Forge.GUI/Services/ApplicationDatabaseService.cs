@@ -57,7 +57,6 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         MaxDepth = 64
@@ -107,7 +106,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             // Security: Use secure JSON options with depth limit
             using var document = JsonDocument.Parse(jsonContent, SecureJsonDocumentOptions);
 
-            if (document.RootElement.TryGetProperty("Applications", out var appsElement))
+            if (TryGetPropertyCaseInsensitive(document.RootElement, "Applications", out var appsElement))
             {
                 foreach (var appProperty in appsElement.EnumerateObject())
                 {
@@ -162,8 +161,8 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             // Security: Use secure JSON options with depth limit
             using var document = JsonDocument.Parse(jsonContent, SecureJsonDocumentOptions);
 
-            if (document.RootElement.TryGetProperty("Applications", out var appsElement) &&
-                appsElement.TryGetProperty(appId, out var appData))
+            if (TryGetPropertyCaseInsensitive(document.RootElement, "Applications", out var appsElement) &&
+                TryGetPropertyCaseInsensitive(appsElement, appId, out var appData))
             {
                 var app = ParseApplicationFromJson(appData);
                 if (app != null)
@@ -370,11 +369,11 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
 
             var categories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            if (document.RootElement.TryGetProperty("Applications", out var appsElement))
+            if (TryGetPropertyCaseInsensitive(document.RootElement, "Applications", out var appsElement))
             {
                 foreach (var appProperty in appsElement.EnumerateObject())
                 {
-                    if (appProperty.Value.TryGetProperty("Category", out var categoryElement) &&
+                    if (TryGetPropertyCaseInsensitive(appProperty.Value, "Category", out var categoryElement) &&
                         categoryElement.ValueKind == JsonValueKind.String)
                     {
                         var category = categoryElement.GetString();
@@ -544,19 +543,19 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         };
 
         // Parse Sources
-        if (element.TryGetProperty("Sources", out var sourcesElement) && sourcesElement.ValueKind == JsonValueKind.Object)
+        if (TryGetPropertyCaseInsensitive(element, "Sources", out var sourcesElement) && sourcesElement.ValueKind == JsonValueKind.Object)
         {
             app.Sources = ParseSourcesFromJson(sourcesElement);
         }
 
         // Parse Detection
-        if (element.TryGetProperty("Detection", out var detectionElement) && detectionElement.ValueKind == JsonValueKind.Object)
+        if (TryGetPropertyCaseInsensitive(element, "Detection", out var detectionElement) && detectionElement.ValueKind == JsonValueKind.Object)
         {
             app.Detection = ParseDetectionFromJson(detectionElement);
         }
 
         // Parse Tags
-        if (element.TryGetProperty("Tags", out var tagsElement) && tagsElement.ValueKind == JsonValueKind.Array)
+        if (TryGetPropertyCaseInsensitive(element, "Tags", out var tagsElement) && tagsElement.ValueKind == JsonValueKind.Array)
         {
             app.Tags = tagsElement.EnumerateArray()
                 .Select(e => e.GetString())
@@ -566,7 +565,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         }
 
         // Parse EnvironmentRestrictions
-        if (element.TryGetProperty("EnvironmentRestrictions", out var envElement) && envElement.ValueKind == JsonValueKind.Array)
+        if (TryGetPropertyCaseInsensitive(element, "EnvironmentRestrictions", out var envElement) && envElement.ValueKind == JsonValueKind.Array)
         {
             app.EnvironmentRestrictions = envElement.EnumerateArray()
                 .Select(e => e.GetString())
@@ -592,7 +591,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         };
 
         // Parse extended configs
-        if (element.TryGetProperty("WingetConfig", out var wingetConfig) && wingetConfig.ValueKind == JsonValueKind.Object)
+        if (TryGetPropertyCaseInsensitive(element, "WingetConfig", out var wingetConfig) && wingetConfig.ValueKind == JsonValueKind.Object)
         {
             sources.WingetConfig = new WingetSourceConfig
             {
@@ -602,7 +601,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             };
         }
 
-        if (element.TryGetProperty("ChocolateyConfig", out var chocoConfig) && chocoConfig.ValueKind == JsonValueKind.Object)
+        if (TryGetPropertyCaseInsensitive(element, "ChocolateyConfig", out var chocoConfig) && chocoConfig.ValueKind == JsonValueKind.Object)
         {
             sources.ChocolateyConfig = new ChocolateySourceConfig
             {
@@ -611,7 +610,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             };
         }
 
-        if (element.TryGetProperty("DirectDownloadConfig", out var directConfig) && directConfig.ValueKind == JsonValueKind.Object)
+        if (TryGetPropertyCaseInsensitive(element, "DirectDownloadConfig", out var directConfig) && directConfig.ValueKind == JsonValueKind.Object)
         {
             sources.DirectDownloadConfig = new DirectDownloadSourceConfig
             {
@@ -697,7 +696,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     /// </summary>
     private static string? GetStringProperty(JsonElement element, string propertyName)
     {
-        return element.TryGetProperty(propertyName, out var prop) && prop.ValueKind == JsonValueKind.String
+        return TryGetPropertyCaseInsensitive(element, propertyName, out var prop) && prop.ValueKind == JsonValueKind.String
             ? prop.GetString()
             : null;
     }
@@ -707,7 +706,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     /// </summary>
     private static int GetIntProperty(JsonElement element, string propertyName, int defaultValue = 0)
     {
-        if (element.TryGetProperty(propertyName, out var prop))
+        if (TryGetPropertyCaseInsensitive(element, propertyName, out var prop))
         {
             if (prop.ValueKind == JsonValueKind.Number)
             {
@@ -722,7 +721,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     /// </summary>
     private static bool GetBoolProperty(JsonElement element, string propertyName, bool defaultValue = false)
     {
-        if (element.TryGetProperty(propertyName, out var prop))
+        if (TryGetPropertyCaseInsensitive(element, propertyName, out var prop))
         {
             return prop.ValueKind switch
             {
@@ -732,6 +731,27 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             };
         }
         return defaultValue;
+    }
+
+    /// <summary>
+    /// Gets a JSON property by name using case-insensitive comparison.
+    /// </summary>
+    private static bool TryGetPropertyCaseInsensitive(JsonElement element, string propertyName, out JsonElement value)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var prop in element.EnumerateObject())
+            {
+                if (string.Equals(prop.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = prop.Value;
+                    return true;
+                }
+            }
+        }
+
+        value = default;
+        return false;
     }
 
     /// <summary>

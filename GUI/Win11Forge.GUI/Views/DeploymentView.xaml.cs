@@ -56,4 +56,18 @@ public partial class DeploymentView : UserControl
             }
         }
     }
+
+    /// <summary>
+    /// Closes the log viewer with Escape.
+    /// </summary>
+    private void LogViewerOverlay_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Escape || DataContext is not DeploymentViewModel vm)
+        {
+            return;
+        }
+
+        vm.CloseLogViewerCommand.Execute(null);
+        e.Handled = true;
+    }
 }

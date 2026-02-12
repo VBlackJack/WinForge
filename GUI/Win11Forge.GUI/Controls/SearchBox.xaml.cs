@@ -108,17 +108,36 @@ public partial class SearchBox : UserControl
         switch (e.Key)
         {
             case Key.Down:
+                if (!SuggestionsPopup.IsOpen)
+                {
+                    UpdateSuggestions();
+                }
+
                 if (SuggestionsPopup.IsOpen && SuggestionsList.Items.Count > 0)
                 {
-                    SuggestionsList.SelectedIndex = Math.Min(SuggestionsList.SelectedIndex + 1, SuggestionsList.Items.Count - 1);
+                    if (SuggestionsList.SelectedIndex < 0)
+                    {
+                        SuggestionsList.SelectedIndex = 0;
+                    }
+                    else
+                    {
+                        SuggestionsList.SelectedIndex = Math.Min(SuggestionsList.SelectedIndex + 1, SuggestionsList.Items.Count - 1);
+                    }
                     e.Handled = true;
                 }
                 break;
 
             case Key.Up:
-                if (SuggestionsPopup.IsOpen && SuggestionsList.SelectedIndex > 0)
+                if (SuggestionsPopup.IsOpen && SuggestionsList.Items.Count > 0)
                 {
-                    SuggestionsList.SelectedIndex--;
+                    if (SuggestionsList.SelectedIndex <= 0)
+                    {
+                        SuggestionsList.SelectedIndex = 0;
+                    }
+                    else
+                    {
+                        SuggestionsList.SelectedIndex--;
+                    }
                     e.Handled = true;
                 }
                 break;
@@ -166,9 +185,23 @@ public partial class SearchBox : UserControl
 
     private void SuggestionsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (SuggestionsList.SelectedItem is SearchSuggestion suggestion && !string.IsNullOrEmpty(suggestion.Text))
+        // Keyboard arrows should only move focus in the suggestions list.
+        // Selection confirmation happens on Enter or explicit mouse click.
+    }
+
+    private void SuggestionsList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource is not DependencyObject source)
+        {
+            return;
+        }
+
+        // Click anywhere in a row to confirm the currently selected suggestion.
+        var container = ItemsControl.ContainerFromElement(SuggestionsList, source) as ListBoxItem;
+        if (container?.DataContext is SearchSuggestion suggestion && !string.IsNullOrEmpty(suggestion.Text))
         {
             SelectSuggestion(suggestion);
+            e.Handled = true;
         }
     }
 

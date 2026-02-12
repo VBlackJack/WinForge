@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Secure Storage v3.7.1
+    Win11Forge - Secure Storage v3.7.2
 
 .DESCRIPTION
     Provides secure storage capabilities using Windows DPAPI:
@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
     Uses Windows Data Protection API (DPAPI) for encryption
 #>
 

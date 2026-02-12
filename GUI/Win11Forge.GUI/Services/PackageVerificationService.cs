@@ -315,19 +315,19 @@ public partial class PackageVerificationService : IPackageVerificationService
     {
         // Start all verification tasks in parallel
         var wingetTask = !string.IsNullOrWhiteSpace(sources.Winget)
-            ? VerifyWingetPackageAsync(sources.Winget, cancellationToken)
+            ? ToNullableTask(VerifyWingetPackageAsync(sources.Winget, cancellationToken))
             : Task.FromResult<PackageVerificationResult?>(null);
 
         var chocoTask = !string.IsNullOrWhiteSpace(sources.Chocolatey)
-            ? VerifyChocolateyPackageAsync(sources.Chocolatey, cancellationToken)
+            ? ToNullableTask(VerifyChocolateyPackageAsync(sources.Chocolatey, cancellationToken))
             : Task.FromResult<PackageVerificationResult?>(null);
 
         var storeTask = !string.IsNullOrWhiteSpace(sources.Store)
-            ? VerifyStoreProductAsync(sources.Store, cancellationToken)
+            ? ToNullableTask(VerifyStoreProductAsync(sources.Store, cancellationToken))
             : Task.FromResult<PackageVerificationResult?>(null);
 
         var directTask = !string.IsNullOrWhiteSpace(sources.DirectUrl)
-            ? VerifyDirectUrlAsync(sources.DirectUrl, cancellationToken)
+            ? ToNullableTask(VerifyDirectUrlAsync(sources.DirectUrl, cancellationToken))
             : Task.FromResult<PackageVerificationResult?>(null);
 
         // Wait for all tasks using proper async/await pattern
@@ -340,6 +340,11 @@ public partial class PackageVerificationService : IPackageVerificationService
             await storeTask,
             await directTask
         );
+    }
+
+    private static async Task<PackageVerificationResult?> ToNullableTask(Task<PackageVerificationResult> task)
+    {
+        return await task.ConfigureAwait(false);
     }
 
     private static bool CheckWingetAvailable()

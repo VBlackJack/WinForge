@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - State Manager v3.7.1
+    Win11Forge - State Manager v3.7.2
 
 .DESCRIPTION
     Centralized state management for Win11Forge deployments:
@@ -13,7 +13,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 #>
 
 #

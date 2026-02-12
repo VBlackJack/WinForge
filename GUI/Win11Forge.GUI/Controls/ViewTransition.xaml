@@ -18,8 +18,7 @@
         </Storyboard>
     </UserControl.Resources>
 
-    <ContentPresenter x:Name="ContentHost" Content="{Binding Content, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                      AutomationProperties.Name="View content">
+    <ContentPresenter x:Name="ContentHost" Content="{Binding Content, RelativeSource={RelativeSource AncestorType=UserControl}}">
         <ContentPresenter.Triggers>
             <EventTrigger RoutedEvent="Loaded">
                 <BeginStoryboard Storyboard="{StaticResource FadeIn}"/>

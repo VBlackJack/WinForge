@@ -1,4 +1,4 @@
-﻿{
+{
   "_meta": {
     "$schema": "Win11Forge-FeatureFlags-v1.0",
     "description": "Feature flags for Win11Forge framework",
@@ -149,7 +149,7 @@
       "enabled": false,
       "description": "Retries Winget installation with --force on hash mismatch (0x8A150011). Bypasses hash validation.",
       "defaultValue": false,
-      "minVersion": "3.7.1"
+      "minVersion": "3.7.2"
     }
   },
   "experimental": {

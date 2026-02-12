@@ -3,7 +3,7 @@
     Pester tests for UserProfileManager module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge UserProfileManager v3.7.1
+    Comprehensive unit tests for Win11Forge UserProfileManager v3.7.2
     Tests profile saving, loading, import/export, copy, merge, removal,
     statistics, and edge cases with full mock isolation
 

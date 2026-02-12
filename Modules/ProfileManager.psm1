@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Profile Manager v3.7.1
+    Win11Forge - Profile Manager v3.7.2
 
 .DESCRIPTION
     Manages deployment profiles with JSON inheritance:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
     Supports multi-level inheritance (e.g., Personnel → Gaming → Office → Base)
     NEW: Supports Application Database references (AppId strings or objects)
 #>

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - JSON Schema Validation Module v3.7.1
+    Win11Forge - JSON Schema Validation Module v3.7.2
 
 .DESCRIPTION
     Module for validating JSON files against JSON Schema definitions:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
     Requires: PowerShell 5.1+
 #>
 

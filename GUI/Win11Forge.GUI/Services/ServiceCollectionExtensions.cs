@@ -68,6 +68,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IApplicationBridge, ApplicationBridge>();
         services.AddSingleton<IApplicationDatabaseService, ApplicationDatabaseService>();
         services.AddSingleton<IPackageVerificationService, PackageVerificationService>();
+        services.AddSingleton<IPackageSearchService, PackageSearchService>();
         services.AddSingleton<ToastService>();
         services.AddSingleton<IErrorHistoryService, ErrorHistoryService>();
         services.AddSingleton<INavigationService, NavigationService>();

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Plugin Sandbox v3.7.1
+    Win11Forge - Plugin Sandbox v3.7.2
 
 .DESCRIPTION
     Provides sandboxed execution environment for Win11Forge plugins:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 #>
 
 #

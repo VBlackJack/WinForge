@@ -49,15 +49,15 @@ public enum DialogAction
 /// </summary>
 public class DialogService : IDialogService
 {
-    private ContentPresenter? _contentPresenter;
+    private ContentDialogHost? _dialogHost;
 
     /// <summary>
-    /// Sets the content presenter used for hosting ContentDialogs.
+    /// Sets the dialog host used for ContentDialogs.
     /// Call this from MainWindow after initialization.
     /// </summary>
-    public void SetContentPresenter(ContentPresenter presenter)
+    public void SetDialogHost(ContentDialogHost dialogHost)
     {
-        _contentPresenter = presenter;
+        _dialogHost = dialogHost;
     }
 
     /// <inheritdoc/>
@@ -68,7 +68,7 @@ public class DialogService : IDialogService
         bool showRetry = false,
         string? helpUrl = null)
     {
-        if (_contentPresenter == null)
+        if (_dialogHost == null)
         {
             System.Windows.MessageBox.Show(
                 $"{message}\n\n{details}",
@@ -103,13 +103,16 @@ public class DialogService : IDialogService
                 });
             }
 
-            var dialog = new ContentDialog(_contentPresenter)
+            var dialog = new ContentDialog(_dialogHost)
             {
                 Title = title,
                 Content = content,
-                CloseButtonText = Loc.Common_OK ?? "OK",
-                PrimaryButtonText = showRetry ? (Loc.Common_TryAgain ?? "Retry") : null
+                CloseButtonText = Loc.Common_OK ?? "OK"
             };
+            if (showRetry)
+            {
+                dialog.PrimaryButtonText = Loc.Common_TryAgain ?? "Retry";
+            }
 
             var result = await dialog.ShowAsync();
             return result == ContentDialogResult.Primary ? DialogAction.Retry : DialogAction.Ok;
@@ -128,7 +131,7 @@ public class DialogService : IDialogService
     /// <inheritdoc/>
     public async Task ShowInfoAsync(string title, string message)
     {
-        if (_contentPresenter == null)
+        if (_dialogHost == null)
         {
             System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             return;
@@ -136,7 +139,7 @@ public class DialogService : IDialogService
 
         try
         {
-            var dialog = new ContentDialog(_contentPresenter)
+            var dialog = new ContentDialog(_dialogHost)
             {
                 Title = title,
                 Content = new System.Windows.Controls.TextBlock
@@ -157,7 +160,7 @@ public class DialogService : IDialogService
     /// <inheritdoc/>
     public async Task ShowSuccessAsync(string title, string message)
     {
-        if (_contentPresenter == null)
+        if (_dialogHost == null)
         {
             System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             return;
@@ -165,7 +168,7 @@ public class DialogService : IDialogService
 
         try
         {
-            var dialog = new ContentDialog(_contentPresenter)
+            var dialog = new ContentDialog(_dialogHost)
             {
                 Title = title,
                 Content = new System.Windows.Controls.TextBlock
@@ -186,14 +189,14 @@ public class DialogService : IDialogService
     /// <inheritdoc/>
     public async Task<bool> ShowConfirmAsync(string title, string message, string? confirmText = null, string? cancelText = null)
     {
-        if (_contentPresenter == null)
+        if (_dialogHost == null)
         {
             return System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OKCancel, System.Windows.MessageBoxImage.Question) == System.Windows.MessageBoxResult.OK;
         }
 
         try
         {
-            var dialog = new ContentDialog(_contentPresenter)
+            var dialog = new ContentDialog(_dialogHost)
             {
                 Title = title,
                 Content = new System.Windows.Controls.TextBlock

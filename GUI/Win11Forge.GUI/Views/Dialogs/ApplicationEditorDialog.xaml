@@ -10,8 +10,8 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=viewModels:ApplicationEditorViewModel}"
         Title="{Binding DialogTitle}"
-        Height="600" Width="700"
-        MinHeight="500" MinWidth="600"
+        Height="560" Width="680"
+        MinHeight="440" MinWidth="500"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         ResizeMode="CanResize"
@@ -73,20 +73,20 @@
                                     PlaceholderText="{loc:Loc AppEditor_AppId}"
                                     IsEnabled="{Binding CanEditAppId}"
                                     Margin="0,0,0,16"
-                                    AutomationProperties.Name="Application ID"/>
+                                    AutomationProperties.Name="{loc:Loc AppEditor_AppId}"/>
 
                         <!-- Name -->
                         <ui:TextBox Text="{Binding Application.Name, UpdateSourceTrigger=PropertyChanged}"
                                     PlaceholderText="{loc:Loc AppEditor_Name}"
                                     Margin="0,0,0,16"
-                                    AutomationProperties.Name="Application name"/>
+                                    AutomationProperties.Name="{loc:Loc AppEditor_Name}"/>
 
                         <!-- Category -->
                         <ComboBox ItemsSource="{Binding Categories}"
                                   SelectedItem="{Binding SelectedCategory}"
                                   IsEditable="False"
                                   Margin="0,0,0,16"
-                                  AutomationProperties.Name="Category"/>
+                                  AutomationProperties.Name="{loc:Loc Col_Category}"/>
 
                         <!-- Description -->
                         <ui:TextBox Text="{Binding Application.Description, UpdateSourceTrigger=PropertyChanged}"
@@ -97,13 +97,13 @@
                                     MaxHeight="150"
                                     VerticalScrollBarVisibility="Auto"
                                     Margin="0,0,0,16"
-                                    AutomationProperties.Name="Description"/>
+                                    AutomationProperties.Name="{loc:Loc AppEditor_Description}"/>
 
                         <!-- Homepage -->
                         <ui:TextBox Text="{Binding Application.Homepage, UpdateSourceTrigger=PropertyChanged}"
                                     PlaceholderText="{loc:Loc AppEditor_Homepage}"
                                     Margin="0,0,0,16"
-                                    AutomationProperties.Name="Homepage URL"/>
+                                    AutomationProperties.Name="{loc:Loc AppEditor_Homepage}"/>
 
                         <!-- Priority -->
                         <Grid Margin="0,0,0,16">
@@ -115,7 +115,7 @@
                                     Minimum="1" Maximum="100"
                                     TickFrequency="10"
                                     IsSnapToTickEnabled="False"
-                                    AutomationProperties.Name="Installation priority"/>
+                                    AutomationProperties.Name="{loc:Loc Col_Priority}"/>
                             <TextBlock Grid.Column="1"
                                        Text="{Binding Application.DefaultPriority, StringFormat='Priority: {0}'}"
                                        VerticalAlignment="Center"
@@ -127,7 +127,7 @@
                         <CheckBox Content="{loc:Loc AppEditor_DefaultRequired}"
                                   IsChecked="{Binding Application.DefaultRequired}"
                                   Margin="0,0,0,16"
-                                  AutomationProperties.Name="Required by default"/>
+                                  AutomationProperties.Name="{loc:Loc AppEditor_DefaultRequired}"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -136,6 +136,236 @@
             <TabItem Header="{loc:Loc AppEditor_Tab_Sources}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
                     <StackPanel>
+                        <!-- Source Discovery -->
+                        <Border CornerRadius="8"
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                Padding="16"
+                                Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Loc AppEditor_SourceSearchTitle}"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock Text="{loc:Loc AppEditor_SourceSearchDescription}"
+                                           Margin="0,4,0,0"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+
+                                <TabControl Margin="0,12,0,0">
+                                    <TabItem Header="{loc:Loc Source_Winget}">
+                                        <Grid Margin="0,8,0,0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <ui:TextBox Grid.Column="0"
+                                                            Text="{Binding WingetSearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                                            PlaceholderText="{loc:Loc AppEditor_SearchPlaceholder}"
+                                                            AutomationProperties.Name="{loc:Loc AppEditor_SearchPlaceholder}">
+                                                    <ui:TextBox.InputBindings>
+                                                        <KeyBinding Key="Enter" Command="{Binding SearchWingetPackagesCommand}"/>
+                                                    </ui:TextBox.InputBindings>
+                                                </ui:TextBox>
+
+                                                <ui:Button Grid.Column="1"
+                                                           Content="{loc:Loc AppEditor_SearchAction}"
+                                                           Command="{Binding SearchWingetPackagesCommand}"
+                                                           MinWidth="110"
+                                                           Margin="8,0,0,0"
+                                                           Appearance="Secondary"/>
+                                            </Grid>
+
+                                            <TextBlock Grid.Row="1"
+                                                       Text="{Binding WingetSearchStatus}"
+                                                       Margin="0,8,0,8"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       Visibility="{Binding WingetSearchStatus, Converter={StaticResource NullableToVisibilityConverter}}"/>
+
+                                            <DataGrid Grid.Row="2"
+                                                      ItemsSource="{Binding WingetSearchResults}"
+                                                      SelectedItem="{Binding SelectedWingetSearchResult}"
+                                                      AutoGenerateColumns="False"
+                                                      CanUserAddRows="False"
+                                                      CanUserDeleteRows="False"
+                                                      IsReadOnly="True"
+                                                      MinHeight="140"
+                                                      MaxHeight="220"
+                                                      Margin="0,0,0,8">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="{loc:Loc AppEditor_SearchColumnName}"
+                                                                        Binding="{Binding DisplayName}"
+                                                                        Width="*"/>
+                                                    <DataGridTextColumn Header="{loc:Loc AppEditor_SearchColumnId}"
+                                                                        Binding="{Binding PackageId}"
+                                                                        Width="2*"/>
+                                                    <DataGridTextColumn Header="{loc:Loc AppEditor_SearchColumnVersion}"
+                                                                        Binding="{Binding Version}"
+                                                                        Width="120"/>
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+
+                                            <ui:Button Grid.Row="3"
+                                                       Content="{loc:Loc AppEditor_ApplySelection}"
+                                                       Command="{Binding ApplyWingetSearchResultCommand}"
+                                                       IsEnabled="{Binding SelectedWingetSearchResult, Converter={StaticResource NullableToBooleanConverter}}"
+                                                       Appearance="Primary"
+                                                       MinWidth="150"
+                                                       HorizontalAlignment="Left"/>
+                                        </Grid>
+                                    </TabItem>
+
+                                    <TabItem Header="{loc:Loc Source_Chocolatey}">
+                                        <Grid Margin="0,8,0,0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <ui:TextBox Grid.Column="0"
+                                                            Text="{Binding ChocolateySearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                                            PlaceholderText="{loc:Loc AppEditor_SearchPlaceholder}"
+                                                            AutomationProperties.Name="{loc:Loc AppEditor_SearchPlaceholder}">
+                                                    <ui:TextBox.InputBindings>
+                                                        <KeyBinding Key="Enter" Command="{Binding SearchChocolateyPackagesCommand}"/>
+                                                    </ui:TextBox.InputBindings>
+                                                </ui:TextBox>
+
+                                                <ui:Button Grid.Column="1"
+                                                           Content="{loc:Loc AppEditor_SearchAction}"
+                                                           Command="{Binding SearchChocolateyPackagesCommand}"
+                                                           MinWidth="110"
+                                                           Margin="8,0,0,0"
+                                                           Appearance="Secondary"/>
+                                            </Grid>
+
+                                            <TextBlock Grid.Row="1"
+                                                       Text="{Binding ChocolateySearchStatus}"
+                                                       Margin="0,8,0,8"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       Visibility="{Binding ChocolateySearchStatus, Converter={StaticResource NullableToVisibilityConverter}}"/>
+
+                                            <DataGrid Grid.Row="2"
+                                                      ItemsSource="{Binding ChocolateySearchResults}"
+                                                      SelectedItem="{Binding SelectedChocolateySearchResult}"
+                                                      AutoGenerateColumns="False"
+                                                      CanUserAddRows="False"
+                                                      CanUserDeleteRows="False"
+                                                      IsReadOnly="True"
+                                                      MinHeight="140"
+                                                      MaxHeight="220"
+                                                      Margin="0,0,0,8">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="{loc:Loc AppEditor_SearchColumnName}"
+                                                                        Binding="{Binding DisplayName}"
+                                                                        Width="*"/>
+                                                    <DataGridTextColumn Header="{loc:Loc AppEditor_SearchColumnId}"
+                                                                        Binding="{Binding PackageId}"
+                                                                        Width="2*"/>
+                                                    <DataGridTextColumn Header="{loc:Loc AppEditor_SearchColumnVersion}"
+                                                                        Binding="{Binding Version}"
+                                                                        Width="120"/>
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+
+                                            <ui:Button Grid.Row="3"
+                                                       Content="{loc:Loc AppEditor_ApplySelection}"
+                                                       Command="{Binding ApplyChocolateySearchResultCommand}"
+                                                       IsEnabled="{Binding SelectedChocolateySearchResult, Converter={StaticResource NullableToBooleanConverter}}"
+                                                       Appearance="Primary"
+                                                       MinWidth="150"
+                                                       HorizontalAlignment="Left"/>
+                                        </Grid>
+                                    </TabItem>
+
+                                    <TabItem Header="{loc:Loc Source_Store}">
+                                        <Grid Margin="0,8,0,0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <ui:TextBox Grid.Column="0"
+                                                            Text="{Binding StoreSearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                                            PlaceholderText="{loc:Loc AppEditor_SearchPlaceholder}"
+                                                            AutomationProperties.Name="{loc:Loc AppEditor_SearchPlaceholder}">
+                                                    <ui:TextBox.InputBindings>
+                                                        <KeyBinding Key="Enter" Command="{Binding SearchStorePackagesCommand}"/>
+                                                    </ui:TextBox.InputBindings>
+                                                </ui:TextBox>
+
+                                                <ui:Button Grid.Column="1"
+                                                           Content="{loc:Loc AppEditor_SearchAction}"
+                                                           Command="{Binding SearchStorePackagesCommand}"
+                                                           MinWidth="110"
+                                                           Margin="8,0,0,0"
+                                                           Appearance="Secondary"/>
+                                            </Grid>
+
+                                            <TextBlock Grid.Row="1"
+                                                       Text="{Binding StoreSearchStatus}"
+                                                       Margin="0,8,0,8"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       Visibility="{Binding StoreSearchStatus, Converter={StaticResource NullableToVisibilityConverter}}"/>
+
+                                            <DataGrid Grid.Row="2"
+                                                      ItemsSource="{Binding StoreSearchResults}"
+                                                      SelectedItem="{Binding SelectedStoreSearchResult}"
+                                                      AutoGenerateColumns="False"
+                                                      CanUserAddRows="False"
+                                                      CanUserDeleteRows="False"
+                                                      IsReadOnly="True"
+                                                      MinHeight="140"
+                                                      MaxHeight="220"
+                                                      Margin="0,0,0,8">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="{loc:Loc AppEditor_SearchColumnName}"
+                                                                        Binding="{Binding DisplayName}"
+                                                                        Width="*"/>
+                                                    <DataGridTextColumn Header="{loc:Loc AppEditor_SearchColumnId}"
+                                                                        Binding="{Binding PackageId}"
+                                                                        Width="2*"/>
+                                                    <DataGridTextColumn Header="{loc:Loc AppEditor_SearchColumnVersion}"
+                                                                        Binding="{Binding Version}"
+                                                                        Width="120"/>
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+
+                                            <ui:Button Grid.Row="3"
+                                                       Content="{loc:Loc AppEditor_ApplySelection}"
+                                                       Command="{Binding ApplyStoreSearchResultCommand}"
+                                                       IsEnabled="{Binding SelectedStoreSearchResult, Converter={StaticResource NullableToBooleanConverter}}"
+                                                       Appearance="Primary"
+                                                       MinWidth="150"
+                                                       HorizontalAlignment="Left"/>
+                                        </Grid>
+                                    </TabItem>
+                                </TabControl>
+                            </StackPanel>
+                        </Border>
+
                         <!-- Winget Source -->
                         <uc:WingetSourceEditor Margin="0,0,0,16"
                                                 PackageId="{Binding Application.Sources.Winget, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -215,7 +445,7 @@
                            Click="VerifyButton_Click"
                            MinWidth="80"
                            Margin="0,0,12,0"
-                           AutomationProperties.Name="Verify sources"/>
+                           AutomationProperties.Name="{loc:Loc AppDb_VerifySources}"/>
 
                 <!-- Verify result -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -245,14 +475,14 @@
                            IsCancel="True"
                            MinWidth="100"
                            Margin="0,0,12,0"
-                           AutomationProperties.Name="Cancel"/>
+                           AutomationProperties.Name="{loc:Loc AppEditor_Cancel}"/>
 
                 <ui:Button Grid.Column="4"
                            Appearance="Primary"
                            Command="{Binding SaveCommand}"
                            IsDefault="True"
                            MinWidth="100"
-                           AutomationProperties.Name="Save">
+                           AutomationProperties.Name="{loc:Loc AppEditor_Save}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Save24"
                                        Width="18" Height="18"

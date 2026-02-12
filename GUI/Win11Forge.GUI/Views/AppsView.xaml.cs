@@ -63,6 +63,28 @@ public partial class AppsView : UserControl
     }
 
     /// <summary>
+    /// Handles keyboard navigation while a modal overlay is visible.
+    /// </summary>
+    private void DialogOverlay_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Escape || DataContext is not AppsViewModel viewModel)
+        {
+            return;
+        }
+
+        if (viewModel.IsLogViewerOpen)
+        {
+            viewModel.CloseLogViewerCommand.Execute(null);
+            e.Handled = true;
+        }
+        else if (viewModel.IsSummaryDialogOpen)
+        {
+            viewModel.CloseSummaryDialogCommand.Execute(null);
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>
     /// Copies the log output to clipboard.
     /// </summary>
     private void CopyLogsToClipboard_Click(object sender, RoutedEventArgs e)

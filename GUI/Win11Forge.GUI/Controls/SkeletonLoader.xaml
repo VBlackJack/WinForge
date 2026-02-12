@@ -2,11 +2,11 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
-             xmlns:local="clr-namespace:Win11Forge.GUI.Controls"
-             AutomationProperties.Name="{loc:Loc Common_Loading}"
-             AutomationProperties.HelpText="Content is being loaded, please wait"
-             AutomationProperties.LiveSetting="Polite">
+              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+              xmlns:local="clr-namespace:Win11Forge.GUI.Controls"
+              AutomationProperties.Name="{loc:Loc Common_Loading}"
+              AutomationProperties.HelpText="{loc:Loc A11y_Loading_ContentHelp}"
+              AutomationProperties.LiveSetting="Polite">
     <Border x:Name="CardBorder"
             Padding="16"
             CornerRadius="8"

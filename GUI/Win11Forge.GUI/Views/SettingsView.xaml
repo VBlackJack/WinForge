@@ -133,7 +133,7 @@
                                                 Command="{Binding RestartApplicationCommand}"
                                                 Appearance="Primary"
                                                 Margin="12,0,0,0"
-                                                AutomationProperties.Name="Restart application now">
+                                                AutomationProperties.Name="{loc:Loc Settings_RestartNow}">
                                             <StackPanel Orientation="Horizontal">
                                                 <ui:SymbolIcon Symbol="ArrowSync24" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                                 <TextBlock Text="{loc:Loc Settings_RestartNow}" VerticalAlignment="Center"/>

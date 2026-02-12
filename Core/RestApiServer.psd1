@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'RestApiServer.psm1'
-    ModuleVersion = '3.7.1'
+    ModuleVersion = '3.7.2'
     GUID = '07efc0fc-7b11-41d2-8920-d265e20a4e98'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Core', 'REST', 'API', 'Server')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.7.1'
+            ReleaseNotes = 'Win11Forge v3.7.2'
         }
     }
 }

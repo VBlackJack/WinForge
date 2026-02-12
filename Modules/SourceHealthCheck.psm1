@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Source Health Check v3.7.1
+    Win11Forge - Source Health Check v3.7.2
 
 .DESCRIPTION
     Validates installation source availability for applications in the database.
@@ -9,7 +9,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 #>
 
 #

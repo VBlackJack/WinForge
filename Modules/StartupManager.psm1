@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Startup Manager v3.7.1
+    Win11Forge - Startup Manager v3.7.2
 
 .DESCRIPTION
     Module for managing Windows startup applications:
@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
     Requires: PowerShell 5.1+, Administrator privileges
 #>
 

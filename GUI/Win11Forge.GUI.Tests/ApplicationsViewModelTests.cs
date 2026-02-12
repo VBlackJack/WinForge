@@ -676,3 +676,68 @@ internal class MockPackageVerificationService : IPackageVerificationService
         return Task.FromResult(result);
     }
 }
+
+/// <summary>
+/// Mock implementation of IPackageSearchService for unit testing.
+/// </summary>
+internal class MockPackageSearchService : IPackageSearchService
+{
+    private readonly List<PackageSearchResult> _wingetResults = new();
+    private readonly List<PackageSearchResult> _chocolateyResults = new();
+    private readonly List<PackageSearchResult> _storeResults = new();
+
+    public bool IsWingetAvailable { get; set; } = true;
+    public bool IsChocolateyAvailable { get; set; } = true;
+
+    public string? LastWingetQuery { get; private set; }
+    public string? LastChocolateyQuery { get; private set; }
+    public string? LastStoreQuery { get; private set; }
+
+    public void SetWingetResults(params PackageSearchResult[] results)
+    {
+        _wingetResults.Clear();
+        _wingetResults.AddRange(results);
+    }
+
+    public void SetChocolateyResults(params PackageSearchResult[] results)
+    {
+        _chocolateyResults.Clear();
+        _chocolateyResults.AddRange(results);
+    }
+
+    public void SetStoreResults(params PackageSearchResult[] results)
+    {
+        _storeResults.Clear();
+        _storeResults.AddRange(results);
+    }
+
+    public Task<IReadOnlyList<PackageSearchResult>> SearchWingetAsync(
+        string query,
+        int maxResults = 15,
+        CancellationToken cancellationToken = default)
+    {
+        LastWingetQuery = query;
+        return Task.FromResult<IReadOnlyList<PackageSearchResult>>(
+            _wingetResults.Take(maxResults).ToList());
+    }
+
+    public Task<IReadOnlyList<PackageSearchResult>> SearchChocolateyAsync(
+        string query,
+        int maxResults = 15,
+        CancellationToken cancellationToken = default)
+    {
+        LastChocolateyQuery = query;
+        return Task.FromResult<IReadOnlyList<PackageSearchResult>>(
+            _chocolateyResults.Take(maxResults).ToList());
+    }
+
+    public Task<IReadOnlyList<PackageSearchResult>> SearchStoreAsync(
+        string query,
+        int maxResults = 15,
+        CancellationToken cancellationToken = default)
+    {
+        LastStoreQuery = query;
+        return Task.FromResult<IReadOnlyList<PackageSearchResult>>(
+            _storeResults.Take(maxResults).ToList());
+    }
+}

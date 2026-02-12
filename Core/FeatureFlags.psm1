@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Feature Flags v3.7.1
+    Win11Forge - Feature Flags v3.7.2
 
 .DESCRIPTION
     Manages feature flags for conditional feature enablement.
@@ -8,7 +8,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 #>
 
 #

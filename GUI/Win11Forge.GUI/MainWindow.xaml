@@ -8,8 +8,8 @@
     xmlns:controls="clr-namespace:Win11Forge.GUI.Controls"
     mc:Ignorable="d"
     Title="{loc:Loc App_Title}"
-    Height="900" Width="1600"
-    MinHeight="600" MinWidth="1200"
+    Height="860" Width="1440"
+    MinHeight="640" MinWidth="1024"
     WindowStartupLocation="CenterScreen"
     WindowBackdropType="Mica"
     ExtendsContentIntoTitleBar="True"
@@ -47,7 +47,7 @@
                         </Grid.ColumnDefinitions>
                         <controls:Breadcrumb x:Name="BreadcrumbControl"
                                              Grid.Column="0"
-                                             AutomationProperties.Name="Breadcrumb navigation"/>
+                                             AutomationProperties.Name="{loc:Loc A11y_Main_Breadcrumb}"/>
                         <StackPanel Grid.Column="1"
                                     Orientation="Horizontal"
                                     Visibility="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -56,14 +56,14 @@
                                        Width="44" Height="44"
                                        Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"
                                        ToolTip="{loc:Loc Undo_Title}"
-                                       AutomationProperties.Name="Undo last action"
+                                       AutomationProperties.Name="{loc:Loc A11y_Main_Undo}"
                                        IsEnabled="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
                             <ui:Button Appearance="Transparent"
                                        Icon="{ui:SymbolIcon ArrowRedo24}"
                                        Width="44" Height="44"
                                        Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"
                                        ToolTip="{loc:Loc Undo_Redo}"
-                                       AutomationProperties.Name="Redo last undone action"
+                                       AutomationProperties.Name="{loc:Loc A11y_Main_Redo}"
                                        IsEnabled="{Binding CanRedo, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
                         </StackPanel>
                     </Grid>
@@ -76,45 +76,45 @@
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon Board24}"
                                        AutomationProperties.Name="{loc:Loc Nav_Dashboard}"
-                                       AutomationProperties.HelpText="Navigate to Dashboard view, Ctrl+1"/>
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavDashboard}"/>
                 <ui:NavigationViewItem Content="{loc:Loc Nav_Prerequisites}"
                                        Tag="1"
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon CheckmarkCircle24}"
                                        AutomationProperties.Name="{loc:Loc Nav_Prerequisites}"
-                                       AutomationProperties.HelpText="Navigate to Prerequisites view, Ctrl+2"/>
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavPrerequisites}"/>
                 <ui:NavigationViewItem Content="{loc:Loc Nav_Apps}"
                                        Tag="2"
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon Apps24}"
                                        AutomationProperties.Name="{loc:Loc Nav_Apps}"
-                                       AutomationProperties.HelpText="Navigate to Applications view, Ctrl+3"/>
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavApps}"/>
                 <ui:NavigationViewItem Content="{loc:Loc Nav_Deployment}"
                                        Tag="3"
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon Rocket24}"
                                        AutomationProperties.Name="{loc:Loc Nav_Deployment}"
-                                       AutomationProperties.HelpText="Navigate to Deployment view, Ctrl+4"/>
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavDeployment}"/>
                 <ui:NavigationViewItem Content="{loc:Loc Nav_Settings}"
                                        Tag="4"
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon Settings24}"
                                        AutomationProperties.Name="{loc:Loc Nav_Settings}"
-                                       AutomationProperties.HelpText="Navigate to Settings view, Ctrl+5"/>
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavSettings}"/>
                 <ui:NavigationViewItem Content="{loc:Loc Nav_AppDatabase}"
                                        Tag="5"
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon Database24}"
                                        AutomationProperties.Name="{loc:Loc Nav_AppDatabase}"
-                                       AutomationProperties.HelpText="Navigate to Application Database view, Ctrl+6"/>
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavAppDatabase}"/>
             </ui:NavigationView.MenuItems>
 
 
 
         </ui:NavigationView>
 
-        <!-- Content Dialog Presenter -->
-        <ContentPresenter x:Name="RootContentDialog"/>
+        <!-- Content Dialog Host -->
+        <ui:ContentDialogHost x:Name="RootContentDialog"/>
 
         <!-- Snackbar Presenter (Snackbar is created in code-behind) -->
         <ui:SnackbarPresenter x:Name="RootSnackbarPresenter"

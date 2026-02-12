@@ -18,6 +18,7 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Models;
@@ -34,8 +35,13 @@ public partial class ApplicationEditorViewModel : ObservableObject
 {
     private readonly IApplicationDatabaseService _databaseService;
     private readonly IPackageVerificationService _verificationService;
+    private readonly IPackageSearchService _packageSearchService;
     private EditableApplicationModel? _originalApplication;
     private bool _isDirty;
+    private const int PackageSearchLimit = 20;
+
+    [GeneratedRegex(@"[^A-Za-z0-9\.\-_]", RegexOptions.Compiled)]
+    private static partial Regex AppIdSanitizerRegex();
 
     /// <summary>
     /// The application being edited.
@@ -168,16 +174,118 @@ public partial class ApplicationEditorViewModel : ObservableObject
     private bool _verificationSuccess;
 
     /// <summary>
+    /// Winget package search query.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SearchWingetPackagesCommand))]
+    private string _wingetSearchQuery = string.Empty;
+
+    /// <summary>
+    /// Chocolatey package search query.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SearchChocolateyPackagesCommand))]
+    private string _chocolateySearchQuery = string.Empty;
+
+    /// <summary>
+    /// Microsoft Store package search query.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SearchStorePackagesCommand))]
+    private string _storeSearchQuery = string.Empty;
+
+    /// <summary>
+    /// Winget search results.
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<PackageSearchResult> _wingetSearchResults = new();
+
+    /// <summary>
+    /// Chocolatey search results.
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<PackageSearchResult> _chocolateySearchResults = new();
+
+    /// <summary>
+    /// Store search results.
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<PackageSearchResult> _storeSearchResults = new();
+
+    /// <summary>
+    /// Currently selected Winget search result.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ApplyWingetSearchResultCommand))]
+    private PackageSearchResult? _selectedWingetSearchResult;
+
+    /// <summary>
+    /// Currently selected Chocolatey search result.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ApplyChocolateySearchResultCommand))]
+    private PackageSearchResult? _selectedChocolateySearchResult;
+
+    /// <summary>
+    /// Currently selected Store search result.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ApplyStoreSearchResultCommand))]
+    private PackageSearchResult? _selectedStoreSearchResult;
+
+    /// <summary>
+    /// Winget search status message.
+    /// </summary>
+    [ObservableProperty]
+    private string _wingetSearchStatus = string.Empty;
+
+    /// <summary>
+    /// Chocolatey search status message.
+    /// </summary>
+    [ObservableProperty]
+    private string _chocolateySearchStatus = string.Empty;
+
+    /// <summary>
+    /// Store search status message.
+    /// </summary>
+    [ObservableProperty]
+    private string _storeSearchStatus = string.Empty;
+
+    /// <summary>
+    /// Whether Winget package search is running.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SearchWingetPackagesCommand))]
+    private bool _isWingetSearching;
+
+    /// <summary>
+    /// Whether Chocolatey package search is running.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SearchChocolateyPackagesCommand))]
+    private bool _isChocolateySearching;
+
+    /// <summary>
+    /// Whether Store package search is running.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SearchStorePackagesCommand))]
+    private bool _isStoreSearching;
+
+    /// <summary>
     /// Initializes a new instance of ApplicationEditorViewModel.
     /// </summary>
     /// <param name="databaseService">Application database service.</param>
     /// <param name="verificationService">Package verification service.</param>
+    /// <param name="packageSearchService">Package search service.</param>
     public ApplicationEditorViewModel(
         IApplicationDatabaseService databaseService,
-        IPackageVerificationService verificationService)
+        IPackageVerificationService verificationService,
+        IPackageSearchService packageSearchService)
     {
         _databaseService = databaseService ?? throw new ArgumentNullException(nameof(databaseService));
         _verificationService = verificationService ?? throw new ArgumentNullException(nameof(verificationService));
+        _packageSearchService = packageSearchService ?? throw new ArgumentNullException(nameof(packageSearchService));
     }
 
     /// <summary>
@@ -228,8 +336,32 @@ public partial class ApplicationEditorViewModel : ObservableObject
             SelectedCategory = Application.Category;
         }
 
+        ResetSearchState();
+
         IsDirty = false;
         ValidationMessage = string.Empty;
+    }
+
+    /// <summary>
+    /// Resets package discovery state for a fresh editor session.
+    /// </summary>
+    private void ResetSearchState()
+    {
+        WingetSearchQuery = string.Empty;
+        ChocolateySearchQuery = string.Empty;
+        StoreSearchQuery = string.Empty;
+
+        WingetSearchStatus = string.Empty;
+        ChocolateySearchStatus = string.Empty;
+        StoreSearchStatus = string.Empty;
+
+        WingetSearchResults.Clear();
+        ChocolateySearchResults.Clear();
+        StoreSearchResults.Clear();
+
+        SelectedWingetSearchResult = null;
+        SelectedChocolateySearchResult = null;
+        SelectedStoreSearchResult = null;
     }
 
     /// <summary>
@@ -362,6 +494,295 @@ public partial class ApplicationEditorViewModel : ObservableObject
         {
             IsVerifying = false;
         }
+    }
+
+    /// <summary>
+    /// Determines if Winget package search can execute.
+    /// </summary>
+    private bool CanSearchWingetPackages() =>
+        !IsWingetSearching && !string.IsNullOrWhiteSpace(WingetSearchQuery);
+
+    /// <summary>
+    /// Determines if Chocolatey package search can execute.
+    /// </summary>
+    private bool CanSearchChocolateyPackages() =>
+        !IsChocolateySearching && !string.IsNullOrWhiteSpace(ChocolateySearchQuery);
+
+    /// <summary>
+    /// Determines if Store package search can execute.
+    /// </summary>
+    private bool CanSearchStorePackages() =>
+        !IsStoreSearching && !string.IsNullOrWhiteSpace(StoreSearchQuery);
+
+    /// <summary>
+    /// Searches Winget packages by query.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanSearchWingetPackages))]
+    private async Task SearchWingetPackagesAsync()
+    {
+        var query = WingetSearchQuery?.Trim();
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            WingetSearchStatus = string.Empty;
+            WingetSearchResults.Clear();
+            SelectedWingetSearchResult = null;
+            return;
+        }
+
+        if (!_packageSearchService.IsWingetAvailable)
+        {
+            WingetSearchStatus = Loc.Verify_WingetUnavailable;
+            WingetSearchResults.Clear();
+            SelectedWingetSearchResult = null;
+            return;
+        }
+
+        IsWingetSearching = true;
+        WingetSearchStatus = Loc.AppEditor_Searching;
+
+        try
+        {
+            var results = await _packageSearchService.SearchWingetAsync(query, PackageSearchLimit);
+            SetSearchResults(WingetSearchResults, results);
+
+            SelectedWingetSearchResult = WingetSearchResults.FirstOrDefault();
+            WingetSearchStatus = results.Count == 0
+                ? Loc.AppEditor_NoSearchResults
+                : string.Format(Loc.AppEditor_SearchResultsCount, results.Count);
+        }
+        catch (Exception ex)
+        {
+            WingetSearchStatus = string.Format(Loc.Verify_Error, ex.Message);
+        }
+        finally
+        {
+            IsWingetSearching = false;
+        }
+    }
+
+    /// <summary>
+    /// Searches Chocolatey packages by query.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanSearchChocolateyPackages))]
+    private async Task SearchChocolateyPackagesAsync()
+    {
+        var query = ChocolateySearchQuery?.Trim();
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            ChocolateySearchStatus = string.Empty;
+            ChocolateySearchResults.Clear();
+            SelectedChocolateySearchResult = null;
+            return;
+        }
+
+        if (!_packageSearchService.IsChocolateyAvailable)
+        {
+            ChocolateySearchStatus = Loc.Verify_ChocoUnavailable;
+            ChocolateySearchResults.Clear();
+            SelectedChocolateySearchResult = null;
+            return;
+        }
+
+        IsChocolateySearching = true;
+        ChocolateySearchStatus = Loc.AppEditor_Searching;
+
+        try
+        {
+            var results = await _packageSearchService.SearchChocolateyAsync(query, PackageSearchLimit);
+            SetSearchResults(ChocolateySearchResults, results);
+
+            SelectedChocolateySearchResult = ChocolateySearchResults.FirstOrDefault();
+            ChocolateySearchStatus = results.Count == 0
+                ? Loc.AppEditor_NoSearchResults
+                : string.Format(Loc.AppEditor_SearchResultsCount, results.Count);
+        }
+        catch (Exception ex)
+        {
+            ChocolateySearchStatus = string.Format(Loc.Verify_Error, ex.Message);
+        }
+        finally
+        {
+            IsChocolateySearching = false;
+        }
+    }
+
+    /// <summary>
+    /// Searches Microsoft Store packages by query.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanSearchStorePackages))]
+    private async Task SearchStorePackagesAsync()
+    {
+        var query = StoreSearchQuery?.Trim();
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            StoreSearchStatus = string.Empty;
+            StoreSearchResults.Clear();
+            SelectedStoreSearchResult = null;
+            return;
+        }
+
+        if (!_packageSearchService.IsWingetAvailable)
+        {
+            StoreSearchStatus = Loc.Verify_WingetUnavailable;
+            StoreSearchResults.Clear();
+            SelectedStoreSearchResult = null;
+            return;
+        }
+
+        IsStoreSearching = true;
+        StoreSearchStatus = Loc.AppEditor_Searching;
+
+        try
+        {
+            var results = await _packageSearchService.SearchStoreAsync(query, PackageSearchLimit);
+            SetSearchResults(StoreSearchResults, results);
+
+            SelectedStoreSearchResult = StoreSearchResults.FirstOrDefault();
+            StoreSearchStatus = results.Count == 0
+                ? Loc.AppEditor_NoSearchResults
+                : string.Format(Loc.AppEditor_SearchResultsCount, results.Count);
+        }
+        catch (Exception ex)
+        {
+            StoreSearchStatus = string.Format(Loc.Verify_Error, ex.Message);
+        }
+        finally
+        {
+            IsStoreSearching = false;
+        }
+    }
+
+    /// <summary>
+    /// Determines if Winget search result can be applied.
+    /// </summary>
+    private bool CanApplyWingetSearchResult() => SelectedWingetSearchResult != null;
+
+    /// <summary>
+    /// Applies selected Winget search result to the editor.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanApplyWingetSearchResult))]
+    private void ApplyWingetSearchResult()
+    {
+        if (SelectedWingetSearchResult == null || Application?.Sources == null) return;
+
+        Application.Sources.Winget = SelectedWingetSearchResult.PackageId;
+        Application.Sources.WingetConfig ??= new WingetSourceConfig();
+
+        if (string.IsNullOrWhiteSpace(Application.Sources.WingetConfig.Source))
+        {
+            Application.Sources.WingetConfig.Source = "winget";
+        }
+
+        WingetEnabled = true;
+        PrefillMetadataFromSearchResult(SelectedWingetSearchResult);
+        WingetSearchStatus = string.Format(Loc.AppEditor_SearchApplied, SelectedWingetSearchResult.PackageId);
+    }
+
+    /// <summary>
+    /// Determines if Chocolatey search result can be applied.
+    /// </summary>
+    private bool CanApplyChocolateySearchResult() => SelectedChocolateySearchResult != null;
+
+    /// <summary>
+    /// Applies selected Chocolatey search result to the editor.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanApplyChocolateySearchResult))]
+    private void ApplyChocolateySearchResult()
+    {
+        if (SelectedChocolateySearchResult == null || Application?.Sources == null) return;
+
+        Application.Sources.Chocolatey = SelectedChocolateySearchResult.PackageId;
+        Application.Sources.ChocolateyConfig ??= new ChocolateySourceConfig();
+
+        ChocolateyEnabled = true;
+        PrefillMetadataFromSearchResult(SelectedChocolateySearchResult);
+        ChocolateySearchStatus = string.Format(Loc.AppEditor_SearchApplied, SelectedChocolateySearchResult.PackageId);
+    }
+
+    /// <summary>
+    /// Determines if Store search result can be applied.
+    /// </summary>
+    private bool CanApplyStoreSearchResult() => SelectedStoreSearchResult != null;
+
+    /// <summary>
+    /// Applies selected Store search result to the editor.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanApplyStoreSearchResult))]
+    private void ApplyStoreSearchResult()
+    {
+        if (SelectedStoreSearchResult == null || Application?.Sources == null) return;
+
+        Application.Sources.Store = SelectedStoreSearchResult.PackageId;
+        Application.Sources.WingetConfig ??= new WingetSourceConfig();
+
+        if (string.IsNullOrWhiteSpace(Application.Sources.WingetConfig.Source))
+        {
+            Application.Sources.WingetConfig.Source = "msstore";
+        }
+
+        StoreEnabled = true;
+        PrefillMetadataFromSearchResult(SelectedStoreSearchResult);
+        StoreSearchStatus = string.Format(Loc.AppEditor_SearchApplied, SelectedStoreSearchResult.PackageId);
+    }
+
+    /// <summary>
+    /// Replaces search collection content while preserving object reference for bindings.
+    /// </summary>
+    private static void SetSearchResults(
+        ObservableCollection<PackageSearchResult> target,
+        IReadOnlyList<PackageSearchResult> results)
+    {
+        target.Clear();
+        foreach (var result in results)
+        {
+            target.Add(result);
+        }
+    }
+
+    /// <summary>
+    /// Prefills app metadata from a package search result when fields are still empty.
+    /// </summary>
+    private void PrefillMetadataFromSearchResult(PackageSearchResult result)
+    {
+        if (Application == null) return;
+
+        if (string.IsNullOrWhiteSpace(Application.Name) && !string.IsNullOrWhiteSpace(result.DisplayName))
+        {
+            Application.Name = result.DisplayName.Trim();
+        }
+
+        if (IsNewApplication && string.IsNullOrWhiteSpace(Application.AppId))
+        {
+            var candidate = BuildAppIdCandidate(result);
+            if (!string.IsNullOrWhiteSpace(candidate))
+            {
+                Application.AppId = candidate;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Builds a valid AppId candidate from a selected package.
+    /// </summary>
+    private static string BuildAppIdCandidate(PackageSearchResult result)
+    {
+        var seed = !string.IsNullOrWhiteSpace(result.PackageId)
+            ? result.PackageId
+            : result.DisplayName;
+
+        var normalized = AppIdSanitizerRegex().Replace(seed ?? string.Empty, string.Empty);
+
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            normalized = AppIdSanitizerRegex().Replace(result.DisplayName ?? string.Empty, string.Empty);
+        }
+
+        if (normalized.Length > 64)
+        {
+            normalized = normalized[..64];
+        }
+
+        return normalized;
     }
 
     /// <summary>

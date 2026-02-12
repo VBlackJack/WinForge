@@ -3,7 +3,7 @@
     Pester tests for RollbackManager module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge RollbackManager v3.7.1
+    Comprehensive unit tests for Win11Forge RollbackManager v3.7.2
     Tests auto-rollback, failure tracking, reporting, handler registration,
     rollback execution, and edge cases
 

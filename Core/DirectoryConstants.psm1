@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Directory and Path Constants v3.7.1
+    Win11Forge - Directory and Path Constants v3.7.2
 
 .DESCRIPTION
     Centralized constants for all directory paths, registry paths, and
@@ -9,7 +9,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 #>
 
 #

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Main Deployment Script v3.7.1
+    Win11Forge - Main Deployment Script v3.7.2
 
 .DESCRIPTION
     Orchestrates complete Windows 11 environment deployment with:
@@ -436,7 +436,7 @@ if ($ValidateSources -or $RepairSources) {
 
         if ($RepairSources) {
             Write-Log -Message (Get-LocalizedString -Key 'deploy.repairing_sources') -Level 'Info'
-            $repairReport = Repair-AppSources -HealthResults $healthResults
+            $null = Repair-AppSources -HealthResults $healthResults
         }
 
         $criticalApps = @($healthResults | Where-Object { $_.HealthySourceCount -eq 0 -and $_.TotalSourceCount -gt 0 })

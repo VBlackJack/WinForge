@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Application Database v3.7.1
+    Win11Forge - Application Database v3.7.2
 
 .DESCRIPTION
     Module for interacting with the centralized application database:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
     Last Updated: 2025-10-06
 #>
 
@@ -853,7 +853,7 @@ function Save-ApplicationDatabase {
             # Create new database structure
             $database = [PSCustomObject]@{
                 '$schema' = 'https://json-schema.org/draft-07/schema#'
-                DatabaseVersion = '3.5.2'
+                DatabaseVersion = '3.7.2'
                 LastUpdated = (Get-Date).ToString('yyyy-MM-dd')
                 TotalApplications = $Applications.Count
                 Applications = [PSCustomObject]@{}
@@ -888,6 +888,7 @@ function Save-ApplicationDatabase {
             Success = $true
             BackupPath = $backupPath
             ApplicationCount = $Applications.Count
+            Error = $null
         }
     }
     catch {
@@ -943,8 +944,8 @@ function New-DatabaseBackup {
         }
 
         # Rotate old backups
-        $backups = Get-ChildItem -Path $backupDir -Filter 'applications-*.json' |
-            Sort-Object LastWriteTime -Descending
+        $backups = @(Get-ChildItem -Path $backupDir -Filter 'applications-*.json' |
+            Sort-Object LastWriteTime -Descending)
 
         if ($backups.Count -gt $MaxBackups) {
             $toDelete = $backups | Select-Object -Skip $MaxBackups
@@ -1103,8 +1104,8 @@ function Invoke-BackupRotation {
         return 0
     }
 
-    $backups = Get-ChildItem -Path $backupDir -Filter 'applications-*.json' |
-        Sort-Object LastWriteTime -Descending
+    $backups = @(Get-ChildItem -Path $backupDir -Filter 'applications-*.json' |
+        Sort-Object LastWriteTime -Descending)
 
     $deletedCount = 0
 
@@ -1233,11 +1234,12 @@ function Set-Application {
         [switch]$Force
     )
 
+    $existing = $null
+
     # Validate unless Force
     if (-not $Force) {
         $existing = Get-ApplicationById -AppId $Application.AppId
-        $isNew = ($null -eq $existing)
-        $validation = Test-ApplicationConfiguration -Application $Application -IsNew:$isNew
+        $validation = Test-ApplicationConfiguration -Application $Application
 
         if (-not $validation.IsValid) {
             return [PSCustomObject]@{
@@ -1284,12 +1286,13 @@ function Set-Application {
 
         # Save database
         $result = Save-ApplicationDatabase -Applications $apps -CreateBackup
+        $saveError = if ($result.PSObject.Properties['Error']) { $result.Error } else { $null }
 
         return [PSCustomObject]@{
             Success = $result.Success
             IsNew = ($null -eq $existing)
             BackupPath = $result.BackupPath
-            Errors = if ($result.Error) { @([PSCustomObject]@{ Field = 'Save'; Message = $result.Error }) } else { @() }
+            Errors = if ($saveError) { @([PSCustomObject]@{ Field = 'Save'; Message = $saveError }) } else { @() }
         }
     }
     catch {
@@ -1347,12 +1350,13 @@ function Remove-Application {
 
         # Save database
         $result = Save-ApplicationDatabase -Applications $apps -CreateBackup
+        $saveError = if ($result.PSObject.Properties['Error']) { $result.Error } else { $null }
 
         return [PSCustomObject]@{
             Success = $result.Success
             RemovedAppId = $AppId
             BackupPath = $result.BackupPath
-            Error = $result.Error
+            Error = $saveError
         }
     }
     catch {

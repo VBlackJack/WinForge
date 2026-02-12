@@ -4,7 +4,7 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:local="clr-namespace:Win11Forge.GUI.Controls"
-             AutomationProperties.Name="Loading overlay"
+             AutomationProperties.Name="{loc:Loc Common_Loading}"
              AutomationProperties.LiveSetting="Assertive"
              Visibility="Collapsed"
              IsHitTestVisible="True">
@@ -69,7 +69,7 @@
                         Margin="0,16,0,0"
                         Visibility="Collapsed"
                         Click="CancelButton_Click"
-                        AutomationProperties.Name="Cancel operation"/>
+                        AutomationProperties.Name="{loc:Loc Btn_Cancel}"/>
             </StackPanel>
         </Border>
     </Grid>

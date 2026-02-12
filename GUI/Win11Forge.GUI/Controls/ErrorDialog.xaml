@@ -5,7 +5,7 @@
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:helpers="clr-namespace:Win11Forge.GUI.Helpers"
              MinWidth="450" MaxWidth="650"
-             AutomationProperties.Name="Error dialog"
+             AutomationProperties.Name="{loc:Loc A11y_Dialog_Error}"
              AutomationProperties.LiveSetting="Assertive"
              Loaded="UserControl_Loaded"
              helpers:FocusTrapBehavior.IsEnabled="True"
@@ -124,17 +124,17 @@
                    </Border>
                    <!-- Copy Details Button -->
                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
-                       <ui:Button x:Name="CopyDetailsButton"
-                               Content="{loc:Loc Dialog_CopyDetails}"
-                               Appearance="Secondary"
-                               Click="CopyDetailsButton_Click"
-                               Margin="0,0,8,0"
-                               AutomationProperties.Name="Copy error details to clipboard"/>
-                       <ui:Button x:Name="ReportIssueButton"
-                               Appearance="Secondary"
-                               Click="ReportIssueButton_Click"
-                               Visibility="Collapsed"
-                               AutomationProperties.Name="Report this issue on GitHub">
+                        <ui:Button x:Name="CopyDetailsButton"
+                                Content="{loc:Loc Dialog_CopyDetails}"
+                                Appearance="Secondary"
+                                Click="CopyDetailsButton_Click"
+                                Margin="0,0,8,0"
+                                AutomationProperties.Name="{loc:Loc Dialog_CopyDetails}"/>
+                        <ui:Button x:Name="ReportIssueButton"
+                                Appearance="Secondary"
+                                Click="ReportIssueButton_Click"
+                                Visibility="Collapsed"
+                                AutomationProperties.Name="{loc:Loc Dialog_ReportIssue}">
                            <StackPanel Orientation="Horizontal">
                                <ui:SymbolIcon Symbol="Open24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                <TextBlock Text="{loc:Loc Dialog_ReportIssue}" VerticalAlignment="Center"/>

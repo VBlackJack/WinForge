@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'JsonSchemaValidation.psm1'
-    ModuleVersion = '3.7.1'
+    ModuleVersion = '3.7.2'
     GUID = 'fe451f11-2ef6-4eea-b7a2-1c2a64a4ce83'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'JSON', 'Schema', 'Validation')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.7.1'
+            ReleaseNotes = 'Win11Forge v3.7.2'
         }
     }
 }

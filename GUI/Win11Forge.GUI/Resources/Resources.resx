@@ -832,10 +832,6 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Open Website</value>
     <comment>Button to open official website</comment>
   </data>
-  <data name="Apps_ClearFilters" xml:space="preserve">
-    <value>Clear Filters</value>
-    <comment>Button to clear all active filters</comment>
-  </data>
   <data name="Apps_EmptyFilterResults" xml:space="preserve">
     <value>No applications match your filters</value>
     <comment>Title when filters produce no results</comment>
@@ -1280,10 +1276,6 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Go to Profile Editor</value>
     <comment>Ctrl+5 shortcut description</comment>
   </data>
-  <data name="Help_Shortcut_Settings" xml:space="preserve">
-    <value>Go to Settings</value>
-    <comment>Ctrl+6 shortcut description</comment>
-  </data>
   <!-- DataGrid Navigation Section -->
   <data name="Help_Section_DataGrid" xml:space="preserve">
     <value>Data Grid Navigation</value>
@@ -1418,10 +1410,6 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <comment>View details action on toast</comment>
   </data>
   <!-- Form Validation -->
-  <data name="Validation_Required" xml:space="preserve">
-    <value>This field is required</value>
-    <comment>Required field validation message</comment>
-  </data>
   <data name="Validation_InvalidChars" xml:space="preserve">
     <value>Contains invalid characters</value>
     <comment>Invalid characters validation message</comment>
@@ -1887,51 +1875,6 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <comment>Clear old logs confirmation message</comment>
   </data>
   <!-- Error Recovery Suggestions -->
-  <data name="Recovery_CheckInternet" xml:space="preserve">
-    <value>Check your internet connection and try again</value>
-  </data>
-  <data name="Recovery_CheckFirewall" xml:space="preserve">
-    <value>Ensure firewall or antivirus is not blocking the connection</value>
-  </data>
-  <data name="Recovery_TryAgainLater" xml:space="preserve">
-    <value>The server may be temporarily unavailable - try again later</value>
-  </data>
-  <data name="Recovery_RunAsAdmin" xml:space="preserve">
-    <value>Run Win11Forge as Administrator</value>
-  </data>
-  <data name="Recovery_CheckPermissions" xml:space="preserve">
-    <value>Check that you have permission to access the required files or folders</value>
-  </data>
-  <data name="Recovery_CheckPath" xml:space="preserve">
-    <value>Verify the file or folder path exists</value>
-  </data>
-  <data name="Recovery_ReinstallApp" xml:space="preserve">
-    <value>Try reinstalling the application</value>
-  </data>
-  <data name="Recovery_CheckPrerequisites" xml:space="preserve">
-    <value>Make sure all prerequisites are installed (Winget, Chocolatey, PowerShell 7)</value>
-  </data>
-  <data name="Recovery_RetryInstall" xml:space="preserve">
-    <value>Try installing the application again</value>
-  </data>
-  <data name="Recovery_ManualInstall" xml:space="preserve">
-    <value>Consider installing the application manually from its official website</value>
-  </data>
-  <data name="Recovery_CheckPowerShell" xml:space="preserve">
-    <value>Check your PowerShell execution policy (Set-ExecutionPolicy RemoteSigned)</value>
-  </data>
-  <data name="Recovery_UpdatePowerShell" xml:space="preserve">
-    <value>Update PowerShell to the latest version</value>
-  </data>
-  <data name="Recovery_Generic_Retry" xml:space="preserve">
-    <value>Try the operation again</value>
-  </data>
-  <data name="Recovery_Generic_Restart" xml:space="preserve">
-    <value>Restart Win11Forge and try again</value>
-  </data>
-  <data name="Recovery_Generic_CheckLogs" xml:space="preserve">
-    <value>Check the logs folder for more details</value>
-  </data>
   <!-- Navigation -->
   <data name="Nav_Back" xml:space="preserve">
     <value>Back</value>
@@ -2138,32 +2081,6 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>View and install available application updates</value>
     <comment>Tooltip for view updates button</comment>
   </data>
-  <data name="Dashboard_Title" xml:space="preserve">
-    <value>Dashboard</value>
-    <comment>Dashboard page title</comment>
-  </data>
-  <data name="Dashboard_SystemInfo_Title" xml:space="preserve">
-    <value>System Information</value>
-    <comment>System info card title</comment>
-  </data>
-  <data name="Dashboard_Sys_Hostname" xml:space="preserve">
-    <value>Hostname</value>
-  </data>
-  <data name="Dashboard_Sys_OS" xml:space="preserve">
-    <value>Operating System</value>
-  </data>
-  <data name="Dashboard_Sys_Build" xml:space="preserve">
-    <value>Build</value>
-  </data>
-  <data name="Dashboard_Sys_Admin" xml:space="preserve">
-    <value>Administrator</value>
-  </data>
-  <data name="Dashboard_Sys_Winget" xml:space="preserve">
-    <value>Winget</value>
-  </data>
-  <data name="Dashboard_Sys_Chocolatey" xml:space="preserve">
-    <value>Chocolatey</value>
-  </data>
   <data name="Dashboard_Sys_PowerShell" xml:space="preserve">
     <value>PowerShell</value>
   </data>
@@ -2186,10 +2103,6 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   <data name="Dashboard_QuickNav_Title" xml:space="preserve">
     <value>Quick Navigation</value>
     <comment>Quick nav card title</comment>
-  </data>
-  <data name="Status_Missing" xml:space="preserve">
-    <value>Not installed</value>
-    <comment>Status for missing prerequisite</comment>
   </data>
   <!-- Common Booleans -->
   <data name="Common_Yes" xml:space="preserve">
@@ -2817,6 +2730,54 @@ No = Skip duplicates</value>
     <value>Enter the new category name:</value>
     <comment>New category dialog prompt</comment>
   </data>
+  <data name="AppEditor_SourceSearchTitle" xml:space="preserve">
+    <value>Discover packages from sources</value>
+    <comment>Source package discovery section title</comment>
+  </data>
+  <data name="AppEditor_SourceSearchDescription" xml:space="preserve">
+    <value>Search Winget, Chocolatey, or Microsoft Store and apply the selected package to this catalog entry.</value>
+    <comment>Source package discovery section description</comment>
+  </data>
+  <data name="AppEditor_SearchPlaceholder" xml:space="preserve">
+    <value>Search package by name or ID...</value>
+    <comment>Package search textbox placeholder</comment>
+  </data>
+  <data name="AppEditor_SearchAction" xml:space="preserve">
+    <value>Search</value>
+    <comment>Package search action button</comment>
+  </data>
+  <data name="AppEditor_SearchColumnName" xml:space="preserve">
+    <value>Name</value>
+    <comment>Package search result name column</comment>
+  </data>
+  <data name="AppEditor_SearchColumnId" xml:space="preserve">
+    <value>Package ID</value>
+    <comment>Package search result ID column</comment>
+  </data>
+  <data name="AppEditor_SearchColumnVersion" xml:space="preserve">
+    <value>Version</value>
+    <comment>Package search result version column</comment>
+  </data>
+  <data name="AppEditor_ApplySelection" xml:space="preserve">
+    <value>Apply selection</value>
+    <comment>Apply selected package result button</comment>
+  </data>
+  <data name="AppEditor_Searching" xml:space="preserve">
+    <value>Searching packages...</value>
+    <comment>Package discovery in progress message</comment>
+  </data>
+  <data name="AppEditor_NoSearchResults" xml:space="preserve">
+    <value>No matching packages found</value>
+    <comment>No package search result message</comment>
+  </data>
+  <data name="AppEditor_SearchResultsCount" xml:space="preserve">
+    <value>{0} result(s) found</value>
+    <comment>Package search result count message</comment>
+  </data>
+  <data name="AppEditor_SearchApplied" xml:space="preserve">
+    <value>Applied: {0}</value>
+    <comment>Search result applied status message</comment>
+  </data>
   <!-- Source Editor Controls -->
   <data name="SourceEditor_EnableDisable" xml:space="preserve">
     <value>Enable/Disable this installation source</value>
@@ -3121,10 +3082,6 @@ This action cannot be undone.</value>
     <comment>Clipboard copy success toast</comment>
   </data>
   <!-- UX Improvements - Keyboard Shortcuts Help -->
-  <data name="Help_KeyboardShortcuts" xml:space="preserve">
-    <value>Keyboard Shortcuts</value>
-    <comment>Keyboard shortcuts help section title</comment>
-  </data>
   <data name="Help_Shortcut_Navigation" xml:space="preserve">
     <value>Navigation</value>
     <comment>Navigation shortcuts category</comment>
@@ -3589,5 +3546,85 @@ This action cannot be undone.</value>
   <data name="Detection_CommandTimeout" xml:space="preserve">
     <value>Command timed out after 5 seconds</value>
     <comment>Error when detection command times out</comment>
+  </data>
+  <data name="Undo_Title" xml:space="preserve">
+    <value>Undo</value>
+    <comment>Tooltip for undo action button</comment>
+  </data>
+  <data name="Undo_Redo" xml:space="preserve">
+    <value>Redo</value>
+    <comment>Tooltip for redo action button</comment>
+  </data>
+  <data name="A11y_Search_SuggestionsHelp" xml:space="preserve">
+    <value>Type to filter applications. Use arrow keys to navigate suggestions.</value>
+    <comment>Accessibility help text for search suggestions list</comment>
+  </data>
+  <data name="A11y_Main_Breadcrumb" xml:space="preserve">
+    <value>Breadcrumb navigation</value>
+    <comment>Accessibility name for main breadcrumb</comment>
+  </data>
+  <data name="A11y_Main_Undo" xml:space="preserve">
+    <value>Undo last action</value>
+    <comment>Accessibility name for undo action</comment>
+  </data>
+  <data name="A11y_Main_Redo" xml:space="preserve">
+    <value>Redo last action</value>
+    <comment>Accessibility name for redo action</comment>
+  </data>
+  <data name="A11y_Main_NavDashboard" xml:space="preserve">
+    <value>Navigate to Dashboard view, Ctrl+1</value>
+    <comment>Accessibility help text for dashboard navigation item</comment>
+  </data>
+  <data name="A11y_Main_NavPrerequisites" xml:space="preserve">
+    <value>Navigate to Prerequisites view, Ctrl+2</value>
+    <comment>Accessibility help text for prerequisites navigation item</comment>
+  </data>
+  <data name="A11y_Main_NavApps" xml:space="preserve">
+    <value>Navigate to Applications view, Ctrl+3</value>
+    <comment>Accessibility help text for apps navigation item</comment>
+  </data>
+  <data name="A11y_Main_NavDeployment" xml:space="preserve">
+    <value>Navigate to Deployment view, Ctrl+4</value>
+    <comment>Accessibility help text for deployment navigation item</comment>
+  </data>
+  <data name="A11y_Main_NavSettings" xml:space="preserve">
+    <value>Navigate to Settings view, Ctrl+5</value>
+    <comment>Accessibility help text for settings navigation item</comment>
+  </data>
+  <data name="A11y_Main_NavAppDatabase" xml:space="preserve">
+    <value>Navigate to Application Database view, Ctrl+6</value>
+    <comment>Accessibility help text for app database navigation item</comment>
+  </data>
+  <data name="A11y_Dialog_Confirm" xml:space="preserve">
+    <value>Confirmation dialog</value>
+    <comment>Accessibility name for confirmation dialog</comment>
+  </data>
+  <data name="A11y_Dialog_Error" xml:space="preserve">
+    <value>Error dialog</value>
+    <comment>Accessibility name for error dialog</comment>
+  </data>
+  <data name="A11y_Deployment_AppList" xml:space="preserve">
+    <value>Deployment applications list</value>
+    <comment>Accessibility name for deployment applications grid</comment>
+  </data>
+  <data name="A11y_Applications_DbGrid" xml:space="preserve">
+    <value>Applications database grid</value>
+    <comment>Accessibility name for applications database grid</comment>
+  </data>
+  <data name="A11y_Dashboard_ProfilesCard" xml:space="preserve">
+    <value>Navigate to profiles management page</value>
+    <comment>Accessibility help text for dashboard profiles card</comment>
+  </data>
+  <data name="A11y_Dashboard_AppsCard" xml:space="preserve">
+    <value>Navigate to applications management page</value>
+    <comment>Accessibility help text for dashboard applications card</comment>
+  </data>
+  <data name="A11y_Dashboard_UpdatesCard" xml:space="preserve">
+    <value>Navigate to updates page</value>
+    <comment>Accessibility help text for dashboard updates card</comment>
+  </data>
+  <data name="A11y_Loading_ContentHelp" xml:space="preserve">
+    <value>Content is being loaded, please wait</value>
+    <comment>Accessibility help text for loading placeholders</comment>
   </data>
 </root>

@@ -22,7 +22,7 @@
   "pluginTimeout": 30,
   "sandboxing": {
     "enabled": true,
-    "notes": "Plugin sandboxing enabled with AST validation and job isolation (v3.7.1)"
+    "notes": "Plugin sandboxing enabled with AST validation and job isolation (v3.7.2)"
   },
   "trustedPublishers": [],
   "pluginRegistry": {

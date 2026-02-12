@@ -5,7 +5,7 @@
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:helpers="clr-namespace:Win11Forge.GUI.Helpers"
              MinWidth="350" MaxWidth="500"
-             AutomationProperties.Name="Confirmation dialog"
+             AutomationProperties.Name="{loc:Loc A11y_Dialog_Confirm}"
              Loaded="UserControl_Loaded"
              FocusManager.FocusedElement="{Binding ElementName=CancelButton}"
              helpers:FocusTrapBehavior.IsEnabled="True"

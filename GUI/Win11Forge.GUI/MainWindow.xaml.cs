@@ -139,6 +139,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     public MainWindow()
     {
         InitializeComponent();
+        LocalizationService.ApplyFlowDirection(this);
 
         // Initialize commands
         ShowKeyboardShortcutsCommand = new AsyncRelayCommand(ShowKeyboardShortcutsAsync);
@@ -357,11 +358,11 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             var snackbar = new Snackbar(RootSnackbarPresenter) { Timeout = TimeSpan.FromSeconds(3) };
             _toastService?.SetSnackbarControl(snackbar);
 
-            // Initialize dialog service with content presenter
+            // Initialize dialog service with ContentDialog host
             var dialogService = App.GetService<IDialogService>();
             if (dialogService is DialogService ds)
             {
-                ds.SetContentPresenter(RootContentDialog);
+                ds.SetDialogHost(RootContentDialog);
             }
 
             // Initialize accessibility service with live region for screen readers
@@ -698,12 +699,15 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     {
         try
         {
+            var shortcutsPanel = new KeyboardShortcutsPanel();
             var dialog = new Wpf.Ui.Controls.ContentDialog(RootContentDialog)
             {
                 Title = Loc.Help_KeyboardShortcuts ?? "Keyboard Shortcuts",
-                Content = new KeyboardShortcutsPanel(),
+                Content = shortcutsPanel,
                 CloseButtonText = Loc.Common_OK ?? "OK"
             };
+
+            shortcutsPanel.RequestClose = () => dialog.Hide(ContentDialogResult.None);
             await dialog.ShowAsync();
         }
         catch (Exception ex)

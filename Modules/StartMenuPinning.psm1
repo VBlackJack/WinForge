@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Start Menu Pinning v3.7.1
+    Win11Forge - Start Menu Pinning v3.7.2
 
 .DESCRIPTION
     Module for managing Windows 11 Start Menu pinned items using start2.bin/start.bin method:
@@ -10,7 +10,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
     Requires: PowerShell 5.1+, Windows 11, Administrator privileges
     Method: start2.bin binary file copy (most reliable method as of 2024-2025)
 

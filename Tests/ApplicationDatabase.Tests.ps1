@@ -37,6 +37,99 @@ BeforeAll {
     $script:DatabasePath = Join-Path $PSScriptRoot '..\Apps\Database\applications.json'
 }
 
+function global:New-TestApplicationDatabaseFixture {
+    [PSCustomObject]@{
+        '$schema'          = 'https://json-schema.org/draft-07/schema#'
+        DatabaseVersion    = '3.7.2'
+        LastUpdated        = '2026-02-12'
+        TotalApplications  = 2
+        Categories         = [PSCustomObject]@{
+            Utilities = [PSCustomObject]@{
+                DisplayName = 'Utilities'
+                Count       = 1
+            }
+            Runtime   = [PSCustomObject]@{
+                DisplayName = 'Runtime'
+                Count       = 1
+            }
+        }
+        Tags               = [PSCustomObject]@{
+            essential = 'Essential apps'
+            runtime   = 'Runtime dependencies'
+        }
+        Applications       = [PSCustomObject]@{
+            BaseApp = [PSCustomObject]@{
+                Name                    = 'Base App'
+                Category                = 'Utilities'
+                Description             = 'Base test app'
+                Sources                 = [PSCustomObject]@{
+                    Winget     = 'Contoso.BaseApp'
+                    Chocolatey = $null
+                    Store      = $null
+                    DirectUrl  = $null
+                }
+                Detection               = [PSCustomObject]@{
+                    Type  = 'File'
+                    Value = 'C:\BaseApp\BaseApp.exe'
+                }
+                DefaultPriority         = 50
+                DefaultRequired         = $false
+                EnvironmentRestrictions = @()
+                Tags                    = @('essential')
+                LastVerified            = '2026-02-12'
+                Verified                = $true
+                Homepage                = 'https://example.com/baseapp'
+                Dependencies            = @(
+                    [PSCustomObject]@{
+                        AppId      = 'DepApp'
+                        Type       = 'required'
+                        MinVersion = '1.0.0'
+                        Reason     = 'Runtime is required'
+                    },
+                    [PSCustomObject]@{
+                        AppId      = 'OptionalMissing'
+                        Type       = 'optional'
+                        MinVersion = $null
+                        Reason     = 'Optional integration'
+                    }
+                )
+            }
+            DepApp  = [PSCustomObject]@{
+                Name                    = 'Dependency App'
+                Category                = 'Runtime'
+                Description             = 'Dependency app'
+                Sources                 = [PSCustomObject]@{
+                    Winget     = 'Contoso.DepApp'
+                    Chocolatey = $null
+                    Store      = $null
+                    DirectUrl  = $null
+                }
+                Detection               = [PSCustomObject]@{
+                    Type  = 'File'
+                    Value = 'C:\DepApp\DepApp.exe'
+                }
+                DefaultPriority         = 30
+                DefaultRequired         = $true
+                EnvironmentRestrictions = @()
+                Tags                    = @('runtime')
+                LastVerified            = '2026-02-12'
+                Verified                = $true
+                Homepage                = 'https://example.com/depapp'
+            }
+        }
+    }
+}
+
+function global:Write-TestApplicationDatabaseFixture {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    $fixture = New-TestApplicationDatabaseFixture
+    $fixture | ConvertTo-Json -Depth 20 | Out-File -FilePath $Path -Encoding UTF8 -Force
+}
+
 Describe 'ApplicationDatabase Module' {
     Context 'Module Loading' {
         It 'Should load without errors' {
@@ -379,6 +472,212 @@ Describe 'ApplicationDatabase Performance' {
             $duration = Measure-Command { Search-Applications -SearchTerm 'Chrome' }
             # Should complete in under 1 second
             $duration.TotalSeconds | Should -BeLessThan 1
+        }
+    }
+}
+
+Describe 'ApplicationDatabase Extended Coverage' {
+    BeforeAll {
+        $script:OriginalModuleDatabasePath = InModuleScope ApplicationDatabase { $Script:DatabasePath }
+        $script:TempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("Win11Forge-AppDbTests-" + [Guid]::NewGuid().Guid)
+        $script:TempBackupsRoot = Join-Path $script:TempRoot 'BackupsRoot'
+        $script:TempDatabasePath = Join-Path $script:TempRoot 'applications.json'
+
+        New-Item -Path $script:TempBackupsRoot -ItemType Directory -Force | Out-Null
+    }
+
+    BeforeEach {
+        Write-TestApplicationDatabaseFixture -Path $script:TempDatabasePath
+        InModuleScope ApplicationDatabase -Parameters @{ TempDatabasePath = $script:TempDatabasePath } {
+            $Script:DatabasePath = $TempDatabasePath
+            $Script:DatabaseCache = $null
+            $Script:DatabaseLastModified = $null
+        }
+    }
+
+    AfterAll {
+        InModuleScope ApplicationDatabase -Parameters @{ OriginalPath = $script:OriginalModuleDatabasePath } {
+            $Script:DatabasePath = $OriginalPath
+            $Script:DatabaseCache = $null
+            $Script:DatabaseLastModified = $null
+        }
+
+        if (Test-Path $script:TempRoot) {
+            Remove-Item -Path $script:TempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    Context 'Dependency Management' {
+        It 'Should resolve dependency metadata for an application' {
+            $deps = @(Get-ApplicationDependencies -AppId 'BaseApp' -DependencyType 'All')
+            $deps.Count | Should -Be 2
+            $deps.AppId | Should -Contain 'DepApp'
+            $deps.AppId | Should -Contain 'OptionalMissing'
+            ($deps | Where-Object { $_.AppId -eq 'DepApp' }).Resolved | Should -Be $true
+            ($deps | Where-Object { $_.AppId -eq 'OptionalMissing' }).Resolved | Should -Be $false
+        }
+
+        It 'Should resolve install order with dependencies first' {
+            $ordered = @(Resolve-ApplicationDependencies -AppIds @('BaseApp'))
+            $ordered.Count | Should -Be 2
+            $ordered[0] | Should -Be 'DepApp'
+            $ordered[1] | Should -Be 'BaseApp'
+        }
+
+        It 'Should detect missing required dependencies' {
+            $missing = Test-DependenciesSatisfied -AppId 'BaseApp' -InstalledAppIds @('UnrelatedApp')
+            $missing.Satisfied | Should -Be $false
+            $missing.MissingCount | Should -Be 1
+            $missing.MissingDeps[0].AppId | Should -Be 'DepApp'
+
+            $satisfied = Test-DependenciesSatisfied -AppId 'BaseApp' -InstalledAppIds @('DepApp')
+            $satisfied.Satisfied | Should -Be $true
+            $satisfied.MissingCount | Should -Be 0
+        }
+    }
+
+    Context 'Backup and Restore' {
+        It 'Should create and list database backups' {
+            $backupsRoot = $script:TempBackupsRoot
+            Mock Get-Win11ForgeDirectory { $backupsRoot } -ModuleName ApplicationDatabase
+
+            $backupPath = New-DatabaseBackup -MaxBackups 10
+            $backupPath | Should -Not -BeNullOrEmpty
+            Test-Path $backupPath | Should -Be $true
+
+            $backups = @(Get-DatabaseBackups)
+            $backups.Count | Should -BeGreaterThan 0
+            $backups[0].Path | Should -Not -BeNullOrEmpty
+            $backups[0].Size | Should -BeGreaterThan 0
+        }
+
+        It 'Should restore database from backup and rotate old backups' {
+            $backupsRoot = $script:TempBackupsRoot
+            Mock Get-Win11ForgeDirectory { $backupsRoot } -ModuleName ApplicationDatabase
+
+            $backupDir = Join-Path $backupsRoot 'Database'
+            New-Item -Path $backupDir -ItemType Directory -Force | Out-Null
+
+            $restoreFixture = New-TestApplicationDatabaseFixture
+            $restoreFixture.Applications.BaseApp.Name = 'Restored Base App'
+            $restoreBackupPath = Join-Path $backupDir 'applications-20990101-000000.json'
+            $restoreFixture | ConvertTo-Json -Depth 20 | Out-File -FilePath $restoreBackupPath -Encoding UTF8 -Force
+
+            $result = Restore-DatabaseFromBackup -BackupPath $restoreBackupPath -CreateBackupFirst
+            $result.Success | Should -Be $true
+
+            $db = Get-ApplicationDatabase -ForceReload
+            $db.Applications.BaseApp.Name | Should -Be 'Restored Base App'
+
+            # Create extra backup files and ensure rotation removes old ones.
+            1..3 | ForEach-Object {
+                $name = "applications-20000101-00000$_.json"
+                $path = Join-Path $backupDir $name
+                '{}' | Out-File -FilePath $path -Encoding UTF8 -Force
+                (Get-Item $path).LastWriteTime = (Get-Date).AddDays(-$_)
+            }
+            $deleted = Invoke-BackupRotation -MaxBackups 1
+            $deleted | Should -BeGreaterThan 0
+            (@(Get-ChildItem -Path $backupDir -Filter 'applications-*.json')).Count | Should -Be 1
+        }
+    }
+
+    Context 'Application Configuration and CRUD' {
+        It 'Should validate invalid application configuration' {
+            $invalid = [PSCustomObject]@{
+                AppId           = 'bad id with space'
+                Name            = ''
+                Category        = ''
+                Sources         = [PSCustomObject]@{
+                    Winget     = ''
+                    Chocolatey = ''
+                    Store      = ''
+                    DirectUrl  = 'not-a-url'
+                }
+                Homepage        = 'ftp://invalid'
+                DefaultPriority = 101
+            }
+
+            $validation = Test-ApplicationConfiguration -Application $invalid -IsNew
+            $validation.IsValid | Should -Be $false
+            $validation.Errors.Count | Should -BeGreaterThan 0
+            $validation.Errors.Field | Should -Contain 'AppId'
+            $validation.Errors.Field | Should -Contain 'Name'
+            $validation.Errors.Field | Should -Contain 'Category'
+            $validation.Errors.Field | Should -Contain 'Sources.DirectUrl'
+        }
+
+        It 'Should add and then remove an application' {
+            $backupsRoot = $script:TempBackupsRoot
+            Mock Get-Win11ForgeDirectory { $backupsRoot } -ModuleName ApplicationDatabase
+
+            $newApp = [PSCustomObject]@{
+                AppId                   = 'NewTool'
+                Name                    = 'New Tool'
+                Category                = 'Utilities'
+                Description             = 'Tool added by test'
+                Sources                 = [PSCustomObject]@{
+                    Winget     = 'Contoso.NewTool'
+                    Chocolatey = $null
+                    Store      = $null
+                    DirectUrl  = $null
+                }
+                Detection               = [PSCustomObject]@{
+                    Type  = 'File'
+                    Value = 'C:\NewTool\NewTool.exe'
+                }
+                DefaultPriority         = 45
+                DefaultRequired         = $false
+                EnvironmentRestrictions = @()
+                Tags                    = @('essential')
+                Homepage                = 'https://example.com/newtool'
+            }
+
+            $addResult = Set-Application -Application $newApp
+            $addResult.Success | Should -Be $true
+            $addResult.IsNew | Should -Be $true
+            (Get-ApplicationById -AppId 'NewTool') | Should -Not -BeNullOrEmpty
+
+            $removeResult = Remove-Application -AppId 'NewTool'
+            $removeResult.Success | Should -Be $true
+            (Get-ApplicationById -AppId 'NewTool') | Should -BeNullOrEmpty
+        }
+
+        It 'Should return not found when removing unknown application' {
+            $result = Remove-Application -AppId 'UnknownApp123'
+            $result.Success | Should -Be $false
+            $result.Error | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context 'Cache and File Change Helpers' {
+        It 'Should clear cache and detect file modification state' {
+            InModuleScope ApplicationDatabase -Parameters @{ TempDatabasePath = $script:TempDatabasePath } {
+                $Script:DatabasePath = $TempDatabasePath
+                $Script:DatabaseCache = [PSCustomObject]@{ Marker = 'cached' }
+                $Script:DatabaseLastModified = Get-Date
+            }
+
+            Clear-DatabaseCache
+
+            InModuleScope ApplicationDatabase {
+                $null -eq $Script:DatabaseCache | Should -Be $true
+                $null -eq $Script:DatabaseLastModified | Should -Be $true
+            }
+        }
+
+        It 'Should return true when database file changed after last load time' {
+            $tempDatabasePath = $script:TempDatabasePath
+            (Get-Item $tempDatabasePath).LastWriteTime = (Get-Date)
+
+            InModuleScope ApplicationDatabase -Parameters @{ TempDatabasePath = $tempDatabasePath } {
+                $Script:DatabasePath = $TempDatabasePath
+                $Script:DatabaseLastModified = (Get-Date).AddMinutes(-10)
+            }
+
+            InModuleScope ApplicationDatabase {
+                (Test-DatabaseFileChanged) | Should -Be $true
+            }
         }
     }
 }

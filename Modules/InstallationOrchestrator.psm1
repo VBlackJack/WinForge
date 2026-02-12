@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Orchestrator v3.7.1
+    Win11Forge - Installation Orchestrator v3.7.2
 
 .DESCRIPTION
     High-level orchestration logic for application installation.
@@ -17,7 +17,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 
     Changelog v3.2.2:
     - ARCHITECTURE: Extracted from InstallationEngine.psm1 for improved maintainability

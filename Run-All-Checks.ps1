@@ -92,7 +92,7 @@ if (Test-Path $dbval) {
 # 5) Tests (Pester)
 $tests = Join-Path $root 'Tests/Invoke-Tests.ps1'
 if (Test-Path $tests) {
-  Invoke-Step 'Pester tests' { & $tests; if ($LASTEXITCODE -ne 0) { throw 'Tests failed' } }
+  Invoke-Step 'Pester tests (coverage)' { & $tests -Coverage; if ($LASTEXITCODE -ne 0) { throw 'Tests failed' } }
 } else { Write-Host "[SKIP] $tests not found" -ForegroundColor DarkYellow }
 
 if ($fail) {

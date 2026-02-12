@@ -8,6 +8,7 @@
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              xmlns:models="clr-namespace:Win11Forge.GUI.Models"
              xmlns:controls="clr-namespace:Win11Forge.GUI.Controls"
+             xmlns:helpers="clr-namespace:Win11Forge.GUI.Helpers"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewModels:AppsViewModel}"
              d:DesignHeight="700" d:DesignWidth="1000">
@@ -17,7 +18,10 @@
         <!-- Dialog Overlay Layer -->
         <Grid x:Name="DialogOverlay"
               Panel.ZIndex="100"
-              Visibility="{Binding IsDialogOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+              Visibility="{Binding IsDialogOpen, Converter={StaticResource BooleanToVisibilityConverter}}"
+              Focusable="True"
+              KeyDown="DialogOverlay_KeyDown"
+              helpers:FocusTrapBehavior.IsEnabled="True">
             <!-- Semi-transparent backdrop -->
             <Border Background="{DynamicResource DialogOverlayBackgroundBrush}"
                     MouseLeftButtonDown="DialogHost_DialogClosing"/>
@@ -29,7 +33,7 @@
                     Padding="0">
                 <Grid>
                     <!-- Log Viewer Dialog -->
-                    <Border MinWidth="600" MaxWidth="900" MaxHeight="500" Padding="24"
+                    <Border MinWidth="460" MaxWidth="900" MaxHeight="500" Padding="24"
                             Visibility="{Binding IsLogViewerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -99,7 +103,7 @@
                     </Border>
 
                     <!-- Summary Dialog -->
-                    <Border MinWidth="400" MaxWidth="500" Padding="24"
+                    <Border MinWidth="360" MaxWidth="500" Padding="24"
                             Visibility="{Binding IsSummaryDialogOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -246,8 +250,8 @@
                           Margin="16,0,0,0"
                           ToolTip="{loc:Loc Apps_ProfileHelpTooltip}"
                           Visibility="{Binding HasProfiles, Converter={StaticResource BooleanToVisibilityConverter}}"
-                          AutomationProperties.Name="Select deployment profile"
-                          AutomationProperties.HelpText="Choose a profile to auto-select its applications"/>
+                          AutomationProperties.Name="{loc:Loc Help_SelectProfile}"
+                          AutomationProperties.HelpText="{loc:Loc Help_SelectProfile}"/>
 
                 <!-- No Profiles Message (visible when no profiles exist) -->
                 <StackPanel Grid.Column="1"
@@ -363,8 +367,8 @@
                           MinWidth="140"
                           MaxWidth="200"
                           Margin="0,0,0,0"
-                          AutomationProperties.Name="Filter by category"
-                          AutomationProperties.HelpText="Select a category to filter applications"/>
+                          AutomationProperties.Name="{loc:Loc A11y_AppPicker_Category}"
+                          AutomationProperties.HelpText="{loc:Loc A11y_AppPicker_Category}"/>
 
                 <!-- Status Filter ComboBox -->
                 <ComboBox Grid.Column="2"
@@ -373,8 +377,7 @@
                           MinWidth="120"
                           MaxWidth="180"
                           Margin="8,0,0,0"
-                          AutomationProperties.Name="Filter by status"
-                          AutomationProperties.HelpText="Select a status to filter applications">
+                          AutomationProperties.Name="{loc:Loc Col_Status}">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Converter={StaticResource StatusFilterToStringConverter}}"/>
@@ -388,8 +391,7 @@
                            Appearance="Secondary"
                            ToolTip="{loc:Loc Apps_ClearFilters}"
                            Margin="8,0,0,0"
-                           AutomationProperties.Name="Clear all filters"
-                           AutomationProperties.HelpText="Reset search text, category, and status filters">
+                           AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}">
                     <ui:SymbolIcon Symbol="Filter24"/>
                 </ui:Button>
 
@@ -406,8 +408,7 @@
                 <ui:DropDownButton Grid.Column="5"
                                    ToolTip="{loc:Loc Apps_ColumnVisibility}"
                                    Margin="8,0,0,0"
-                                   AutomationProperties.Name="Toggle column visibility"
-                                   AutomationProperties.HelpText="Show or hide table columns">
+                                   AutomationProperties.Name="{loc:Loc Apps_ColumnVisibility}">
                     <ui:DropDownButton.Content>
                         <ui:SymbolIcon Symbol="Table24" Width="24" Height="24"/>
                     </ui:DropDownButton.Content>
@@ -551,16 +552,14 @@
                            ToolTip="{loc:Loc Help_Tooltip_Scan}"
                            Margin="16,0,0,0"
                            Visibility="{Binding IsScanning, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                           AutomationProperties.Name="Scan for installed applications"
-                           AutomationProperties.HelpText="Check which applications are already installed on this system"/>
+                           AutomationProperties.Name="{loc:Loc Btn_Scan}"/>
                 <ui:Button Grid.Column="8"
                            Command="{Binding CancelScanCommand}"
                            Appearance="Secondary"
                            Content="{loc:Loc Btn_Cancel}"
                            Margin="16,0,0,0"
                            Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"
-                           AutomationProperties.Name="Cancel scan"
-                           AutomationProperties.HelpText="Stop the current scan operation"/>
+                           AutomationProperties.Name="{loc:Loc Btn_Cancel}"/>
 
                 <!-- Scan Updates Button -->
                 <ui:Button Grid.Column="9"
@@ -568,8 +567,7 @@
                            Appearance="Secondary"
                            Margin="8,0,0,0"
                            Visibility="{Binding IsScanningUpdates, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                           AutomationProperties.Name="Scan for updates"
-                           AutomationProperties.HelpText="Check for available updates for installed applications">
+                           AutomationProperties.Name="{loc:Loc Btn_ScanUpdates}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="ArrowSync24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <TextBlock Text="{loc:Loc Btn_ScanUpdates}" VerticalAlignment="Center"/>
@@ -623,23 +621,20 @@
                            Appearance="Secondary"
                            Padding="12,4"
                            Margin="0,0,8,0"
-                           AutomationProperties.Name="Select all applications"
-                           AutomationProperties.HelpText="Select all applications in the filtered list"/>
+                           AutomationProperties.Name="{loc:Loc Apps_SelectAll}"/>
                 <ui:Button Grid.Column="2"
                            Content="{loc:Loc Apps_SelectNone}"
                            Command="{Binding SelectNoneCommand}"
                            Appearance="Secondary"
                            Padding="12,4"
                            Margin="0,0,8,0"
-                           AutomationProperties.Name="Select none"
-                           AutomationProperties.HelpText="Deselect all applications"/>
+                           AutomationProperties.Name="{loc:Loc Apps_SelectNone}"/>
                 <ui:Button Grid.Column="3"
                            Content="{loc:Loc Apps_SelectNotInstalled}"
                            Command="{Binding SelectNotInstalledCommand}"
                            Appearance="Secondary"
                            Padding="12,4"
-                           AutomationProperties.Name="Select not installed"
-                           AutomationProperties.HelpText="Select only applications that are not yet installed"/>
+                           AutomationProperties.Name="{loc:Loc Apps_SelectNotInstalled}"/>
 
                 <!-- Install Selected Button (hidden during batch ops) -->
                 <StackPanel Grid.Column="5" Orientation="Horizontal"
@@ -651,15 +646,13 @@
                                Padding="12,4"
                                Margin="0,0,8,0"
                                Visibility="{Binding IsUninstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                               AutomationProperties.Name="Select favorites"
-                               AutomationProperties.HelpText="Select only applications marked as favorites"/>
+                               AutomationProperties.Name="{loc:Loc Apps_SelectFavorites}"/>
                     <!-- Uninstall Selected Button -->
                     <ui:Button Command="{Binding UninstallSelectedCommand}"
                                Appearance="Secondary"
                                Margin="0,0,8,0"
                                Visibility="{Binding IsUninstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                               AutomationProperties.Name="Uninstall selected applications"
-                               AutomationProperties.HelpText="Remove the selected applications from this system">
+                               AutomationProperties.Name="{loc:Loc Apps_UninstallSelected}">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Delete24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Apps_UninstallSelected}" VerticalAlignment="Center"/>
@@ -669,8 +662,7 @@
                     <ui:Button Command="{Binding InstallSelectedCommand}"
                                Appearance="Primary"
                                Visibility="{Binding IsUninstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                               AutomationProperties.Name="Install selected applications"
-                               AutomationProperties.HelpText="Download and install the selected applications">
+                               AutomationProperties.Name="{loc:Loc Apps_InstallSelected}">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Apps_InstallSelected}" VerticalAlignment="Center"/>
@@ -762,8 +754,7 @@
                                Width="44" Height="44"
                                ToolTip="{loc:Loc Btn_Pause}"
                                Visibility="{Binding IsPaused, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                               AutomationProperties.Name="Pause"
-                               AutomationProperties.HelpText="Pause the current batch operation">
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_Pause}">
                         <ui:SymbolIcon Symbol="Pause24"/>
                     </ui:Button>
                     <!-- Resume Button -->
@@ -772,8 +763,7 @@
                                Width="44" Height="44"
                                ToolTip="{loc:Loc Btn_Resume}"
                                Visibility="{Binding IsPaused, Converter={StaticResource BooleanToVisibilityConverter}}"
-                               AutomationProperties.Name="Resume"
-                               AutomationProperties.HelpText="Resume the paused batch operation">
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_Resume}">
                         <ui:SymbolIcon Symbol="Play24"/>
                     </ui:Button>
                     <!-- Cancel Button -->
@@ -782,8 +772,7 @@
                                Width="44" Height="44"
                                ToolTip="{loc:Loc Btn_Cancel}"
                                Foreground="{DynamicResource SystemFillColorCriticalBrush}"
-                               AutomationProperties.Name="Cancel"
-                               AutomationProperties.HelpText="Cancel the current batch operation">
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_Cancel}">
                         <ui:SymbolIcon Symbol="Dismiss24"/>
                     </ui:Button>
                 </StackPanel>
@@ -834,7 +823,7 @@
                                Command="{Binding ClearFiltersCommand}"
                                Appearance="Primary"
                                HorizontalAlignment="Center"
-                               AutomationProperties.Name="Clear all filters to show applications"/>
+                               AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}"/>
                 </StackPanel>
 
                 <!-- DataGrid with UI Virtualization for performance -->
@@ -861,8 +850,7 @@
                           RowHeaderWidth="0"
                           Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                           PreviewKeyDown="ApplicationsDataGrid_PreviewKeyDown"
-                          AutomationProperties.Name="Applications list"
-                          AutomationProperties.HelpText="List of available applications. Use arrow keys to navigate, Space to toggle selection.">
+                          AutomationProperties.Name="{loc:Loc A11y_AppPicker_AppList}">
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow">
                             <Setter Property="Background" Value="{Binding Status, Converter={StaticResource StatusToRowBackgroundConverter}}"/>
@@ -962,8 +950,8 @@
                                               HorizontalAlignment="Center"
                                               Checked="SelectionCheckBox_Changed"
                                               Unchecked="SelectionCheckBox_Changed"
-                                              AutomationProperties.Name="{Binding Name, StringFormat='Select {0}'}"
-                                              AutomationProperties.HelpText="Toggle selection for this application"/>
+                                              AutomationProperties.Name="{Binding Name}"
+                                              AutomationProperties.HelpText="{loc:Loc Menu_ToggleSelection}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -977,8 +965,8 @@
                                             Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}"
                                             ToolTip="{loc:Loc Menu_ToggleFavorite}"
-                                            AutomationProperties.Name="{Binding Name, StringFormat='Toggle favorite for {0}'}"
-                                            AutomationProperties.HelpText="Add or remove from favorites">
+                                            AutomationProperties.Name="{Binding Name}"
+                                            AutomationProperties.HelpText="{loc:Loc Menu_ToggleFavorite}">
                                         <ui:SymbolIcon Symbol="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteIconConverter}}"
                                                        Foreground="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteColorConverter}}"
                                                        Width="20" Height="20"/>
@@ -1155,8 +1143,8 @@
                                             Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                             CommandParameter="{Binding}"
                                             Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}"
-                                            AutomationProperties.Name="{Binding Name, StringFormat='View logs for {0}'}"
-                                            AutomationProperties.HelpText="Opens the installation logs for this application">
+                                            AutomationProperties.Name="{Binding Name}"
+                                            AutomationProperties.HelpText="{loc:Loc Btn_ViewLogs}">
                                         <ui:SymbolIcon Symbol="Document24" Width="20" Height="20"/>
                                     </Button>
                                 </DataTemplate>
@@ -1198,12 +1186,12 @@
                                Appearance="Primary"
                                Margin="0,0,8,0"
                                MinWidth="100"
-                               AutomationProperties.Name="Retry the failed operation"/>
+                               AutomationProperties.Name="{loc:Loc Common_TryAgain}"/>
                     <ui:Button Content="{loc:Loc Common_Dismiss}"
                                Command="{Binding DismissErrorCommand}"
                                Appearance="Secondary"
                                MinWidth="100"
-                               AutomationProperties.Name="Dismiss error message"/>
+                               AutomationProperties.Name="{loc:Loc Common_Dismiss}"/>
                 </StackPanel>
             </StackPanel>
         </Border>

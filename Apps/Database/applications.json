@@ -1,7 +1,7 @@
 ﻿{
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "DatabaseVersion": "3.6.8",
-  "LastUpdated": "2026-02-04",
+  "DatabaseVersion": "3.7.2",
+  "LastUpdated": "2026-02-12",
   "TotalApplications": 175,
   "PriorityRanges": {
     "Description": "Priority ranges for application installation order",

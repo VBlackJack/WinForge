@@ -6,7 +6,7 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              mc:Ignorable="d"
-             Width="700" Height="500"
+             MinWidth="520" MinHeight="420"
              d:DesignHeight="500" d:DesignWidth="700">
 
     <Grid>

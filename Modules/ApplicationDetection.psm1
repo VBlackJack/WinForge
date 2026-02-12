@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Application Detection v3.7.1
+    Win11Forge - Application Detection v3.7.2
 
 .DESCRIPTION
     Application detection and installation verification functions:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 
     Changelog v3.1.4:
     - Extracted from InstallationEngine.psm1 for modularity

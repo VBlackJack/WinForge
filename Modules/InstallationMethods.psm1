@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Methods v3.7.1
+    Win11Forge - Installation Methods v3.7.2
 
 .DESCRIPTION
     Individual installation method implementations:
@@ -13,7 +13,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 
     Changelog v3.1.4:
     - Extracted from InstallationEngine.psm1 for modularity

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Test runner for Win11Forge v2.5.0
+    Test runner for Win11Forge
 
 .DESCRIPTION
     Executes all Pester tests and generates coverage report
@@ -22,7 +22,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.5.0
+    Version: 3.7.2
     Requires: Pester v5+
 #>
 
@@ -52,6 +52,22 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+$coverageTargetPercent = 50
+$coverageGateFailed = $false
+
+$frameworkVersion = 'unknown'
+$versionFile = Join-Path (Split-Path $PSScriptRoot -Parent) 'Config\version.json'
+if (Test-Path $versionFile) {
+    try {
+        $versionData = Get-Content -Path $versionFile -Raw -Encoding UTF8 | ConvertFrom-Json
+        if ($versionData.Version) {
+            $frameworkVersion = [string]$versionData.Version
+        }
+    } catch {
+        # Keep fallback value when version file cannot be parsed
+    }
+}
+
 # Remove any pre-loaded Pester modules to avoid version conflicts
 Get-Module Pester | Remove-Module -Force -ErrorAction SilentlyContinue
 
@@ -63,7 +79,7 @@ if ($userModulesPath -and (Test-Path $userModulesPath) -and $env:PSModulePath -n
 
 # === PREREQUISITES CHECK ===
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  Win11Forge v2.5.0 - Test Runner" -ForegroundColor Cyan
+Write-Host "  Win11Forge v$frameworkVersion - Test Runner" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 
@@ -159,30 +175,72 @@ Write-Host "Duration         : $($result.Duration.TotalSeconds) seconds" -Foregr
 Write-Host ""
 
 # Coverage summary
-if ($Coverage -and $result.CodeCoverage) {
-    $coverage = $result.CodeCoverage
-    $coveragePercent = [math]::Round(($coverage.CoveredPercent), 2)
+if ($Coverage) {
+    if ($result.CodeCoverage) {
+        $coverageResult = $result.CodeCoverage
+        $coveragePercent = $null
+        $coveredCommands = $null
+        $commandsAnalyzed = $null
 
-    Write-Host "══════════════════════════════════════════════════" -ForegroundColor Cyan
-    Write-Host "  Code Coverage Summary" -ForegroundColor Cyan
-    Write-Host "══════════════════════════════════════════════════" -ForegroundColor Cyan
-    Write-Host ""
+        if ($coverageResult.PSObject.Properties['CoveredPercent']) {
+            $coveragePercent = [math]::Round([double]$coverageResult.CoveredPercent, 2)
+        } elseif ($coverageResult.PSObject.Properties['CoveragePercent']) {
+            $coveragePercent = [math]::Round([double]$coverageResult.CoveragePercent, 2)
+        }
 
-    Write-Host "Coverage         : $($coveragePercent) percent" -ForegroundColor $(if ($coveragePercent -ge 50) { 'Green' } else { 'Yellow' })
-    Write-Host "Commands Covered : $($coverage.CoveredCommands) / $($coverage.CommandsAnalyzed)" -ForegroundColor White
-    Write-Host ""
+        if ($coverageResult.PSObject.Properties['CoveredCommands']) {
+            $coveredCommands = $coverageResult.CoveredCommands
+        } elseif ($coverageResult.PSObject.Properties['NumberOfCommandsExecuted']) {
+            $coveredCommands = $coverageResult.NumberOfCommandsExecuted
+        }
 
-    if ($coveragePercent -ge 50) {
-        Write-Host "[OK] Coverage target (50 percent) achieved!" -ForegroundColor Green
+        if ($coverageResult.PSObject.Properties['CommandsAnalyzed']) {
+            $commandsAnalyzed = $coverageResult.CommandsAnalyzed
+        } elseif ($coverageResult.PSObject.Properties['NumberOfCommandsAnalyzed']) {
+            $commandsAnalyzed = $coverageResult.NumberOfCommandsAnalyzed
+        }
+
+        Write-Host "══════════════════════════════════════════════════" -ForegroundColor Cyan
+        Write-Host "  Code Coverage Summary" -ForegroundColor Cyan
+        Write-Host "══════════════════════════════════════════════════" -ForegroundColor Cyan
+        Write-Host ""
+
+        if ($null -ne $coveragePercent) {
+            Write-Host "Coverage         : $($coveragePercent) percent" -ForegroundColor $(if ($coveragePercent -ge $coverageTargetPercent) { 'Green' } else { 'Yellow' })
+        } else {
+            Write-Host "Coverage         : unavailable (Pester object shape differs)" -ForegroundColor Yellow
+        }
+
+        if ($null -ne $coveredCommands -and $null -ne $commandsAnalyzed) {
+            Write-Host "Commands Covered : $coveredCommands / $commandsAnalyzed" -ForegroundColor White
+        }
+        Write-Host ""
+
+        if ($null -ne $coveragePercent -and $coveragePercent -ge $coverageTargetPercent) {
+            Write-Host "[OK] Coverage target ($coverageTargetPercent percent) achieved!" -ForegroundColor Green
+        } elseif ($null -ne $coveragePercent) {
+            Write-Host "[WARN] Coverage below target ($coverageTargetPercent percent)" -ForegroundColor Yellow
+            $coverageGateFailed = $true
+        } else {
+            Write-Host "[WARN] Coverage target check failed (percent unavailable)" -ForegroundColor Yellow
+            $coverageGateFailed = $true
+        }
+        Write-Host ""
     } else {
-        Write-Host "[WARN] Coverage below target (50 percent)" -ForegroundColor Yellow
+        Write-Host "[WARN] Coverage was requested but no coverage result was produced" -ForegroundColor Yellow
+        Write-Host ""
+        $coverageGateFailed = $true
     }
-    Write-Host ""
 }
 
 # === EXIT CODE ===
-if ($result.FailedCount -gt 0) {
-    Write-Host "[FAILED] Tests FAILED" -ForegroundColor Red
+if ($result.FailedCount -gt 0 -or $coverageGateFailed) {
+    if ($result.FailedCount -gt 0) {
+        Write-Host "[FAILED] Tests FAILED" -ForegroundColor Red
+    }
+    if ($coverageGateFailed) {
+        Write-Host "[FAILED] Coverage gate FAILED (minimum: $coverageTargetPercent percent)" -ForegroundColor Red
+    }
     exit 1
 } else {
     Write-Host "[OK] All tests PASSED" -ForegroundColor Green

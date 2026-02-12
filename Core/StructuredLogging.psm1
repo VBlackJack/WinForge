@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Structured Logging v3.7.1
+    Win11Forge - Structured Logging v3.7.2
 
 .DESCRIPTION
     Provides JSON-based structured logging for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 #>
 
 #
@@ -370,7 +370,7 @@ function Clear-LogBuffer {
             }
         }
 
-        $lines | Add-Content -Path $script:LoggingState.JsonLogPath -Encoding UTF8
+        $lines | Add-Content -Path $script:LoggingState.JsonLogPath -Encoding UTF8 -ErrorAction Stop
 
         # Clear buffer
         $script:LoggingState.LogBuffer = @()
@@ -432,7 +432,7 @@ function Invoke-LogRotationIfNeeded {
                     newLogPath = $newLogPath
                 }
             }
-            ($rotationEntry | ConvertTo-Json -Depth 10 -Compress) | Add-Content -Path $script:LoggingState.JsonLogPath -Encoding UTF8
+            ($rotationEntry | ConvertTo-Json -Depth 10 -Compress) | Add-Content -Path $script:LoggingState.JsonLogPath -Encoding UTF8 -ErrorAction Stop
 
             # Switch to new log file
             $script:LoggingState.JsonLogPath = $newLogPath

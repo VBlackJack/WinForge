@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'PluginSandbox.psm1'
-    ModuleVersion = '3.7.1'
+    ModuleVersion = '3.7.2'
     GUID = '8a1369f8-98cd-4b7c-a5d2-29004729fd56'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Core', 'Plugin', 'Sandbox', 'Security')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.7.1'
+            ReleaseNotes = 'Win11Forge v3.7.2'
         }
     }
 }

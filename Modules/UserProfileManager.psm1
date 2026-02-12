@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - User Profile Manager v3.7.1
+    Win11Forge - User Profile Manager v3.7.2
 
 .DESCRIPTION
     Manages persistent user profiles for Win11Forge:
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 #>
 
 #

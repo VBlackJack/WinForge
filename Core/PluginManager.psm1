@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Plugin Manager v3.7.1
+    Win11Forge - Plugin Manager v3.7.2
 
 .DESCRIPTION
     Provides plugin system functionality for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 #>
 
 #

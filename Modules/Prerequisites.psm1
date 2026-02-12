@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Prerequisites installation module v3.7.1
+    Win11Forge - Prerequisites installation module v3.7.2
 
 .DESCRIPTION
     Handles installation of system prerequisites with environment refresh:
@@ -14,7 +14,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
     Fixed: Write-Status empty strings handling
     Fixed: Chocolatey installation arguments
     All bugs from deployment test have been corrected

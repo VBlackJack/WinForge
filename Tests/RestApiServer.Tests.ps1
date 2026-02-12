@@ -3,7 +3,7 @@
     Pester tests for RestApiServer module
 
 .DESCRIPTION
-    Unit tests for Win11Forge RestApiServer v3.7.1
+    Unit tests for Win11Forge RestApiServer v3.7.2
     Tests server lifecycle, endpoint registration, configuration,
     CSRF protection, rate limiting, auth blocking, and handler security
 
@@ -195,6 +195,95 @@ Describe 'RestApiServer Module' {
         It 'Should show not running when server is stopped' {
             $status = Get-ApiServerStatus
             $status.Running | Should -Be $false
+        }
+    }
+
+    Context 'Async API Server Lifecycle' {
+        BeforeEach {
+            InModuleScope -ModuleName 'RestApiServer' {
+                $script:ServerState.Listener = $null
+                $script:ServerState.Running = $false
+                $script:ServerState.StartTime = $null
+                $script:ServerState.RequestCount = 0
+                $script:ServerState.BackgroundJob = $null
+            }
+        }
+
+        It 'Should start in async mode and set BackgroundJobState to Running' {
+            InModuleScope -ModuleName 'RestApiServer' {
+                Mock Start-Job {
+                    [PSCustomObject]@{
+                        Id = 4242
+                        State = 'Running'
+                        ChildJobs = @()
+                    }
+                }
+                Mock Get-Job {
+                    [PSCustomObject]@{
+                        Id = 4242
+                        State = 'Running'
+                        ChildJobs = @()
+                    }
+                }
+                Mock Start-Sleep { }
+                Mock Write-Status { }
+
+                $job = Start-ApiServer -Port 5188 -Async
+                $status = Get-ApiServerStatus
+
+                Should -Invoke -CommandName Start-Job -Times 1
+                $job | Should -Not -BeNullOrEmpty
+                $status.Running | Should -Be $true
+                $status.BackgroundJobState | Should -Be 'Running'
+            }
+        }
+
+        It 'Should mark server as not running when background job is completed' {
+            InModuleScope -ModuleName 'RestApiServer' {
+                $script:ServerState.Running = $true
+                $script:ServerState.StartTime = Get-Date
+                $script:ServerState.BackgroundJob = [PSCustomObject]@{
+                    Id = 4243
+                    State = 'Completed'
+                    ChildJobs = @()
+                }
+
+                Mock Get-Job {
+                    [PSCustomObject]@{
+                        Id = 4243
+                        State = 'Completed'
+                        ChildJobs = @()
+                    }
+                }
+
+                $status = Get-ApiServerStatus
+                $status.BackgroundJobState | Should -Be 'Completed'
+                $status.Running | Should -Be $false
+            }
+        }
+
+        It 'Should throw and reset async state when background job fails at startup' {
+            InModuleScope -ModuleName 'RestApiServer' {
+                $failedJob = [PSCustomObject]@{
+                    Id = 4244
+                    State = 'Failed'
+                    ChildJobs = @()
+                }
+
+                Mock Start-Job { $failedJob }
+                Mock Get-Job { $failedJob }
+                Mock Start-Sleep { }
+                Mock Receive-Job { @('Mock async startup failure') }
+                Mock Stop-Job { }
+                Mock Remove-Job { }
+                Mock Write-Status { }
+
+                { Start-ApiServer -Port 5189 -Async } | Should -Throw
+
+                $script:ServerState.Running | Should -Be $false
+                $script:ServerState.BackgroundJob | Should -Be $null
+                $script:ServerState.StartTime | Should -Be $null
+            }
         }
     }
 

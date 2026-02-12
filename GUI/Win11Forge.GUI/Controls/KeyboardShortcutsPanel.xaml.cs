@@ -35,6 +35,8 @@ public class KeyboardShortcut
 /// </summary>
 public partial class KeyboardShortcutsPanel : UserControl
 {
+    public Action? RequestClose { get; set; }
+
     public KeyboardShortcutsPanel()
     {
         InitializeComponent();
@@ -66,7 +68,8 @@ public partial class KeyboardShortcutsPanel : UserControl
             new KeyboardShortcut { Key = "Ctrl+2", Description = Res.Help_Shortcut_Prerequisites },
             new KeyboardShortcut { Key = "Ctrl+3", Description = Res.Help_Shortcut_Apps },
             new KeyboardShortcut { Key = "Ctrl+4", Description = Res.Help_Shortcut_Deployment },
-            new KeyboardShortcut { Key = "Ctrl+5", Description = Res.Help_Shortcut_Settings }
+            new KeyboardShortcut { Key = "Ctrl+5", Description = Res.Help_Shortcut_Settings },
+            new KeyboardShortcut { Key = "Ctrl+6", Description = Res.Nav_AppDatabase }
         };
 
         DataGridShortcuts.ItemsSource = new[]
@@ -81,6 +84,6 @@ public partial class KeyboardShortcutsPanel : UserControl
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
-        // ContentDialog manages its own lifecycle
+        RequestClose?.Invoke();
     }
 }

@@ -2,7 +2,7 @@
 
 Note: the framework version source of truth is `Config/version.json`. Launchers and GUI read this value dynamically.
 
-## [3.7.1] - 2026-02-11
+## [3.7.2] - 2026-02-12
 
 ### Bug Fixes
 - **Fixed**: SecureStorage DPAPI round-trip failures — `Get-DpapiEntropy` now persists entropy to disk on PS7 (replaced .NET Framework-only `File.Create(FileSecurity)` overload with cross-platform `FileStream` + `Set-SecureFileAcl`) and caches entropy in memory for session consistency
@@ -39,9 +39,9 @@ Complete audit remediation addressing 225+ violations across conformity, code qu
 - **Fixed**: CI workflow no longer excludes `PSAvoidUsingEmptyCatchBlock` rule
 
 #### Version Alignment
-- **Fixed**: All profile versions aligned to 3.7.1 (Base, Office, Gaming, Personnel, Enterprise)
-- **Fixed**: Locale file versions aligned to 3.7.1 (en.json, fr.json)
-- **Fixed**: 15+ module version headers updated from 3.6.8 to 3.7.1
+- **Fixed**: All profile versions aligned to 3.7.2 (Base, Office, Gaming, Personnel, Enterprise)
+- **Fixed**: Locale file versions aligned to 3.7.2 (en.json, fr.json)
+- **Fixed**: 15+ module version headers updated from 3.6.8 to 3.7.2
 
 ### Statistics
 - **i18n Keys**: 1,450+ (up from ~1,300)

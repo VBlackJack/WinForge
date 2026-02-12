@@ -1,7 +1,7 @@
 {
   "Name": "Gaming",
-  "Description": "Gaming optimized profile - Office + gaming platforms (v3.7.1 - Database Mode)",
-  "Version": "3.7.1",
+  "Description": "Gaming optimized profile - Office + gaming platforms (v3.7.2 - Database Mode)",
+  "Version": "3.7.2",
   "Inherits": ["Office"],
   "Applications": [
     "Steam",

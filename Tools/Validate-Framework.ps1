@@ -121,8 +121,21 @@ function Test-DirectoryStructure {
 function Test-RequiredFiles {
     Write-ValidationSection "Required Files"
 
+    $launcherCandidates = @('Win11Forge.cmd', 'Deploy-Win11Forge.bat')
+    $launcherPath = $launcherCandidates |
+        ForEach-Object { Join-Path -Path $script:ScriptRoot -ChildPath $_ } |
+        Where-Object { Test-Path -Path $_ -PathType Leaf } |
+        Select-Object -First 1
+
+    Write-ValidationResult -Test 'Launcher script (Win11Forge.cmd or Deploy-Win11Forge.bat)' -Passed ($null -ne $launcherPath) -Message 'Main launcher script'
+
+    if ($launcherPath -and $Detailed) {
+        $launcherItem = Get-Item -Path $launcherPath
+        $lines = (Get-Content -Path $launcherPath).Count
+        Write-Host "      File: $($launcherItem.Name), Size: $($launcherItem.Length) bytes, Lines: $lines" -ForegroundColor Gray
+    }
+
     $requiredFiles = @{
-        'Deploy-Win11Forge.bat' = 'Main launcher script'
         'Deploy-Win11Environment.ps1' = 'Main deployment script'
         'README.md' = 'Documentation'
         'Core\Core.psm1' = 'Core module'

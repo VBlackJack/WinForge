@@ -3,7 +3,7 @@
     Pester tests for StructuredLogging module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge StructuredLogging v3.7.1
+    Comprehensive unit tests for Win11Forge StructuredLogging v3.7.2
     Tests JSON logging, buffering, export filtering, retention cleanup,
     compression, query logic, request ID correlation, and archiving functions
 

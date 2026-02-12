@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Custom Exception Classes v3.7.1
+    Win11Forge - Custom Exception Classes v3.7.2
 
 .DESCRIPTION
     Defines custom exception classes for semantic error handling
@@ -9,7 +9,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
 #>
 
 #

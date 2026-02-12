@@ -582,7 +582,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
             try
             {
                 await Task.Delay(SearchDebounceMs, _searchDebounceTokenSource.Token);
-                System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
                     _applicationsView.Refresh();
                     UpdateFilteredCount();

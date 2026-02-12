@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    PSScriptAnalyzer validation for Win11Forge v3.0.0
+    PSScriptAnalyzer validation for Win11Forge
 
 .DESCRIPTION
     Analyzes all PowerShell scripts and modules for code quality issues
@@ -29,7 +29,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.0.0
+    Version: 3.7.2
     Requires: PSScriptAnalyzer
 #>
 
@@ -62,9 +62,22 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+$frameworkVersion = 'unknown'
+$versionFile = Join-Path (Split-Path $PSScriptRoot -Parent) 'Config\version.json'
+if (Test-Path $versionFile) {
+    try {
+        $versionData = Get-Content -Path $versionFile -Raw -Encoding UTF8 | ConvertFrom-Json
+        if ($versionData.Version) {
+            $frameworkVersion = [string]$versionData.Version
+        }
+    } catch {
+        # Keep fallback when the version file cannot be read
+    }
+}
+
 # === PREREQUISITES CHECK ===
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  Win11Forge v3.0.0 - PSScriptAnalyzer" -ForegroundColor Cyan
+Write-Host "  Win11Forge v$frameworkVersion - PSScriptAnalyzer" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 
@@ -144,7 +157,7 @@ foreach ($file in $filesToAnalyze) {
         if (Test-Path $settingsPath) {
             $invokeParams['Settings'] = $settingsPath
         }
-        $issues = Invoke-ScriptAnalyzer @invokeParams
+        $issues = @(Invoke-ScriptAnalyzer @invokeParams)
 
         if ($issues) {
             $allIssues += $issues
@@ -295,7 +308,7 @@ if ($Report) {
 <html>
 <head>
     <meta charset="utf-8">
-    <title>PSScriptAnalyzer Report - Win11Forge v3.0.0</title>
+    <title>PSScriptAnalyzer Report - Win11Forge v$frameworkVersion</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f5f5f5; }
         h1 { color: #0078d4; }
@@ -314,7 +327,7 @@ if ($Report) {
 </head>
 <body>
     <h1>PSScriptAnalyzer Report</h1>
-    <p><strong>Win11Forge Framework v3.0.0</strong></p>
+    <p><strong>Win11Forge Framework v$frameworkVersion</strong></p>
     <p>Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')</p>
 
     <div class="summary">

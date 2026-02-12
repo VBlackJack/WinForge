@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Telemetry Collector v3.7.1
+    Win11Forge - Telemetry Collector v3.7.2
 
 .DESCRIPTION
     Collects and manages local deployment telemetry for Win11Forge:
@@ -12,7 +12,7 @@
 
 .NOTES
     Author: Julien Bombled
-    v3.7.1
+    v3.7.2
     Privacy: All telemetry data is stored locally and never transmitted.
 #>
 
