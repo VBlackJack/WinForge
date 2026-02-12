@@ -29,7 +29,7 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 2.5.0
+    Version: 3.7.2
     Requires: Administrator privileges
 #>
 

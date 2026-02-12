@@ -14,6 +14,9 @@ Logs/
 .url_cache.json
 *.cache
 
+# .NET SDK home (NuGet, temp packages)
+.dotnet-home-audit/
+
 # Windows shortcuts
 *.lnk
 
@@ -31,12 +34,13 @@ Test-*-Output.txt
 *-TestResults.xml
 Tests/Results/TestResults_*.NUnitXml
 Tests/Results/TestResults_*.JUnitXml
+Tests/Results/Coverage_*.xml
 
 # Generated dashboard data
 Assets/Dashboard/telemetry-data.json
 
-# Archive (old versions)
-Archive/
+# Archive (old versions, root-level only)
+/Archive/
 
 # User-specific profiles (keep templates)
 Profiles/Custom*.json
@@ -85,7 +89,7 @@ AUDIT-REPORT*.md
 Reports/
 
 # Audit process snapshots
-Tools/AuditReports/*.json
+Tools/AuditReports/
 
 # Claude Code project instructions
 CLAUDE.md

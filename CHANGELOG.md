@@ -64,9 +64,33 @@ Complete audit remediation addressing 225+ violations across conformity, code qu
 - **Fixed**: Locale file versions aligned to 3.7.2 (en.json, fr.json)
 - **Fixed**: 15+ module version headers updated from 3.6.8 to 3.7.2
 
+### GUI Audit Round 2
+
+Post-merge audit of 23 GUI files with targeted fixes for correctness, accessibility, and code quality.
+
+#### Critical / High
+- **Fixed**: `SettingsViewModel.TrySaveSettings()` — was creating a new `AppSettings` object, losing fields from other views; now loads existing settings first and updates only managed fields
+- **Fixed**: `AppSettingsService.SaveSettingsAsync()` — return type changed from `Task` to `Task<bool>` for consistency with sync method
+- **Fixed**: Duplicate `ApplyHighContrastMode` call removed from `App.xaml.cs` startup
+- **Fixed**: Duplicate `AutomationProperties.Name="ScheduledDeployment_DateTime"` on DatePicker and TextBox — now unique (`ScheduledDeployment_Date` / `ScheduledDeployment_Time`)
+- **Fixed**: Hardcoded undo/redo tooltip strings replaced with localized computed properties (`UndoButtonTooltip` / `RedoButtonTooltip`)
+
+#### Medium
+- **Fixed**: Magic animation duration numbers replaced with named constants (`AnimationFastMs`, `AnimationNormalMs`, `AnimationSlowMs`)
+- **Fixed**: `Contains("HighContrastTheme")` now uses `StringComparison.Ordinal`
+- **Fixed**: `GetLocalizedString` fallback removed — replaced with strongly-typed `Resources.Resources.Settings_SaveFailed`
+- **Fixed**: Undo/Redo buttons now use `TouchFriendlyIconButton` style (44x44px WCAG 2.1 AA)
+- **Fixed**: `DashboardView.xaml` Grid.ColumnDefinitions indentation corrected
+
+#### Low
+- **Fixed**: Redundant `RegexOptions.Compiled` removed from 9 `[GeneratedRegex]` attributes across 3 services
+- **Fixed**: GitHub URL extracted to named constant in `SettingsViewModel`
+- **Fixed**: Hardcoded `"_Copy"` / `" (Copy)"` replaced with localized resource keys
+- **Added**: 8 new resource keys to `Resources.resx` / `Resources.fr.resx` with Designer.cs accessors
+
 ### Statistics
-- **i18n Keys**: 1,450+ (up from ~1,300)
-- **Test Coverage**: 1047+ tests
+- **i18n Keys**: 1,460+ (up from ~1,300)
+- **Test Coverage**: 1047+ Pester, 309 xUnit
 - **Total Applications**: 175
 
 ---
@@ -611,7 +635,7 @@ Cette version apporte des améliorations majeures de compatibilité PowerShell 5
 
 - **Documentation complète** : `README.md`
 - **System-Audit docs** : `Tools/System-Audit-README.md` (30+ pages)
-- **Structure projet** : `PROJET_STRUCTURE.md`
+- **Structure projet** : `Docs/Archive/v2.x/` (archived)
 - **Quick Start** : `Apps/QUICK_START.md`
 
 ---
@@ -859,8 +883,8 @@ git pull
 ### 📚 Pour Plus d'Informations
 
 - Guide complet : [README.md](README.md)
-- Structure projet : [PROJET_STRUCTURE.md](PROJET_STRUCTURE.md)
-- Guide GUI : [GUI_README.md](GUI_README.md)
+- Structure projet : `Docs/Archive/v2.x/` (archived)
+- Guide GUI : `Docs/Archive/v2.x/` (archived)
 - Base de données : [Apps/README.md](Apps/README.md)
 
 ---
@@ -1118,8 +1142,8 @@ Cette version majeure introduit une refonte complète de l'architecture avec une
 ### 📚 Pour Plus d'Informations
 
 - Guide complet : [README.md](README.md)
-- Structure projet : [PROJET_STRUCTURE.md](PROJET_STRUCTURE.md)
-- Guide GUI : [GUI_README.md](GUI_README.md)
+- Structure projet : `Docs/Archive/v2.x/` (archived)
+- Guide GUI : `Docs/Archive/v2.x/` (archived)
 - Base de données : [Apps/README.md](Apps/README.md)
 
 ---
