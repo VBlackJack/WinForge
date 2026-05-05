@@ -36,9 +36,11 @@ public partial class App : Application
     private const int AnimationNormalMs = 300;
     private const int AnimationSlowMs = 500;
 
-    private static readonly string LogPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-        "Win11Forge_startup.log");
+    private static readonly string LogDirectory = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "Win11Forge",
+        "Logs");
+    private static readonly string LogPath = Path.Combine(LogDirectory, "Win11Forge_startup.log");
     private static bool? _reducedMotionOverride;
 
     /// <summary>
@@ -273,6 +275,7 @@ public partial class App : Application
     {
         try
         {
+            Directory.CreateDirectory(LogDirectory);
             File.AppendAllText(LogPath, $"[{DateTime.Now:HH:mm:ss}] {message}\n");
         }
         catch (Exception ex)
@@ -286,6 +289,7 @@ public partial class App : Application
     {
         try
         {
+            Directory.CreateDirectory(LogDirectory);
             File.AppendAllText(LogPath,
                 $"[{DateTime.Now:HH:mm:ss}] ERROR in {context}:\n{ex}\n\n");
         }

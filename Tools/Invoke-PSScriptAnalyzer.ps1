@@ -72,6 +72,7 @@ if (Test-Path $versionFile) {
         }
     } catch {
         # Keep fallback when the version file cannot be read
+        Write-Verbose "Unable to read framework version: $($_.Exception.Message)"
     }
 }
 

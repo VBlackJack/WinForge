@@ -152,10 +152,13 @@ function New-CsrfToken {
     # Generate cryptographically secure token using defined entropy constant
     $bytes = [byte[]]::new($script:CSRF_TOKEN_ENTROPY_BYTES)
     $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-    $rng.GetBytes($bytes)
+    try {
+        $rng.GetBytes($bytes)
+    } finally {
+        $rng.Dispose()
+    }
     $token = [BitConverter]::ToString($bytes) -replace '-', ''
     $token = "csrf_$($token.ToLowerInvariant())"
-    $rng.Dispose()
 
     # Store token with metadata
     $script:CsrfTokens[$token] = @{
@@ -1506,6 +1509,7 @@ function Start-ApiServer {
                     }
                 } catch {
                     # Best effort; fallback to job state reason below.
+                    Write-Verbose "Unable to read REST API server job output: $($_.Exception.Message)"
                 }
 
                 if ([string]::IsNullOrWhiteSpace($jobFailureMessage) -and $jobSnapshot.ChildJobs -and $jobSnapshot.ChildJobs.Count -gt 0) {
@@ -2009,11 +2013,14 @@ function New-ApiKey {
     # Use hex encoding to preserve full entropy (no character filtering needed)
     $bytes = [byte[]]::new($script:API_KEY_ENTROPY_BYTES)
     $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-    $rng.GetBytes($bytes)
+    try {
+        $rng.GetBytes($bytes)
+    } finally {
+        $rng.Dispose()
+    }
     # Convert to hex string (64 chars) - preserves full 256-bit entropy
     $apiKey = [BitConverter]::ToString($bytes) -replace '-', ''
     $apiKey = "w11f_$($apiKey.ToLowerInvariant())"
-    $rng.Dispose()
 
     $expiresAt = $null
     if ($ExpiresInDays -gt 0) {

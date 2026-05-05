@@ -36,8 +36,11 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Restore dependencies
+        run: dotnet restore GUI/Win11Forge.slnx --locked-mode
+
       - name: Build for CodeQL Analysis
-        run: dotnet build GUI/Win11Forge.slnx --configuration Release
+        run: dotnet build GUI/Win11Forge.slnx --configuration Release --no-restore
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
@@ -118,7 +121,6 @@ jobs:
 
       - name: Run Pester Tests with Code Coverage
         shell: pwsh
-        continue-on-error: true  # Some tests require tools (Winget, Chocolatey) not installed on CI runner
         run: |
           $config = New-PesterConfiguration
           $config.Run.Path = 'Tests'
@@ -133,6 +135,7 @@ jobs:
           $config.CodeCoverage.Path = @('Core/*.psm1', 'Modules/*.psm1')
           $config.CodeCoverage.OutputPath = 'Coverage-Pester.xml'
           $config.CodeCoverage.OutputFormat = 'JaCoCo'
+          $config.CodeCoverage.CoveragePercentTarget = 40
 
           Invoke-Pester -Configuration $config
 
@@ -202,7 +205,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore dependencies
-        run: dotnet restore GUI/Win11Forge.slnx
+        run: dotnet restore GUI/Win11Forge.slnx --locked-mode
 
       - name: Build GUI (Release)
         run: dotnet build GUI/Win11Forge.slnx --configuration Release --no-restore

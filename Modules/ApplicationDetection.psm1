@@ -200,6 +200,7 @@ function Get-RegistryInstalledApp {
                     }
                 } catch {
                     # Permission denied or path not accessible - silently continue
+                    Write-Verbose "Skipping inaccessible registry path '$path': $($_.Exception.Message)"
                 }
             }
         }
@@ -705,12 +706,20 @@ function Test-ApplicationInstalled {
                 }
             }
             'WindowsFeature' {
-                $feature = Get-WindowsOptionalFeature -Online -FeatureName $Application.Detection.Feature -ErrorAction SilentlyContinue
-                $detected = $feature -and $feature.State -eq 'Enabled'
+                try {
+                    $feature = Get-WindowsOptionalFeature -Online -FeatureName $Application.Detection.Feature -ErrorAction SilentlyContinue
+                    $detected = $feature -and $feature.State -eq 'Enabled'
+                } catch {
+                    $detected = $false
+                }
             }
             'WindowsCapability' {
-                $capability = Get-WindowsCapability -Online -Name "*$($Application.Detection.Capability)*" -ErrorAction SilentlyContinue
-                $detected = $capability -and $capability.State -eq 'Installed'
+                try {
+                    $capability = Get-WindowsCapability -Online -Name "*$($Application.Detection.Capability)*" -ErrorAction SilentlyContinue
+                    $detected = $capability -and $capability.State -eq 'Installed'
+                } catch {
+                    $detected = $false
+                }
             }
             'StoreApp' {
                 # Use cached winget list instead of Get-AppxPackage to avoid Appx module conflicts in PowerShell 7

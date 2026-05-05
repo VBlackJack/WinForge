@@ -697,6 +697,7 @@ function Get-StructuredLogs {
                 $entries += ($line | ConvertFrom-Json)
             } catch {
                 # Skip malformed JSON lines (common in log files)
+                Write-Verbose "Skipping malformed JSON log line: $($_.Exception.Message)"
             }
         }
     } else {
@@ -711,6 +712,7 @@ function Get-StructuredLogs {
                         $entries += ($line | ConvertFrom-Json)
                     } catch {
                         # Skip malformed JSON lines (common in log files)
+                        Write-Verbose "Skipping malformed JSON log line in $($file.Name): $($_.Exception.Message)"
                     }
                 }
             }

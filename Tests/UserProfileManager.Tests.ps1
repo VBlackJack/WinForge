@@ -168,7 +168,12 @@ Describe 'UserProfileManager Module' {
         # Cleanup test profiles
         Initialize-UserProfileManager
         @('TestProfile', 'TestProfile2', 'TestProfile3', 'ListTest1', 'GetTest') | ForEach-Object {
-            try { Remove-UserProfile -Name $_ -Confirm -ErrorAction SilentlyContinue } catch {}
+            $profileName = $_
+            try {
+                Remove-UserProfile -Name $profileName -Confirm -ErrorAction SilentlyContinue
+            } catch {
+                Write-Verbose "Unable to remove test profile '$profileName': $($_.Exception.Message)"
+            }
         }
     }
 }

@@ -124,7 +124,7 @@ $script:DeploymentStats = @{
 
 # === LOGGING SETUP ===
 
-$LogDirectory = Join-Path -Path $script:ScriptRoot -ChildPath 'Logs'
+$LogDirectory = Join-Path -Path (Join-Path -Path ([Environment]::GetFolderPath('LocalApplicationData')) -ChildPath 'Win11Forge') -ChildPath 'Logs'
 if (-not (Test-Path -Path $LogDirectory)) {
     New-Item -Path $LogDirectory -ItemType Directory -Force | Out-Null
 }

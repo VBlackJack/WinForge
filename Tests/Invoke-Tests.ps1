@@ -65,6 +65,7 @@ if (Test-Path $versionFile) {
         }
     } catch {
         # Keep fallback value when version file cannot be parsed
+        Write-Verbose "Unable to read framework version: $($_.Exception.Message)"
     }
 }
 
@@ -150,6 +151,7 @@ if ($Coverage) {
     )
     $config.CodeCoverage.OutputPath = Join-Path $ResultsPath "Coverage_$(Get-Date -Format 'yyyyMMdd_HHmmss').xml"
     $config.CodeCoverage.OutputFormat = 'JaCoCo'
+    $config.CodeCoverage.CoveragePercentTarget = $coverageTargetPercent
 }
 
 # === RUN TESTS ===

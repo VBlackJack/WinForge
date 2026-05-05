@@ -44,7 +44,9 @@ function global:New-TestApplicationDatabaseFixture {
         try {
             $vData = Get-Content -Path $versionFile -Raw -Encoding UTF8 | ConvertFrom-Json
             if ($vData.Version) { $fixtureVersion = [string]$vData.Version }
-        } catch { }
+        } catch {
+            Write-Verbose "Unable to read version fixture data: $($_.Exception.Message)"
+        }
     }
     [PSCustomObject]@{
         '$schema'          = 'https://json-schema.org/draft-07/schema#'
