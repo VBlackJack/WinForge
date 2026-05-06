@@ -12,6 +12,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Added GUI test hang diagnostics and a 20-minute timeout to the coverage step.
 - Converted GUI coverage enforcement to a baseline floor with an explicit 80% target warning while the MVVM coverage backlog is completed.
 - Skipped the interactive `SettingsViewModel` history-clear test until the dialog-service refactor removes the modal `MessageBox` dependency.
+- Closed audit finding I4: code-behind business logic in `ApplicationsView` and `AppsView` migrated to ViewModels via dialog services and pure XAML context menu bindings.
 
 ## [3.7.2] - 2026-02-12
 
