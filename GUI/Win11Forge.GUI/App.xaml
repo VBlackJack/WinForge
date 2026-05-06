@@ -377,11 +377,26 @@
             <!-- Touch-friendly TextBox -->
             <Style x:Key="TouchFriendlyTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                 <Setter Property="MinHeight" Value="44"/>
+                <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+                <Setter Property="CaretBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+            </Style>
+
+            <!-- Theme-aware dense controls -->
+            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+                <Setter Property="CaretBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                <Setter Property="SelectionBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}"/>
             </Style>
 
             <!-- Enhanced DataGrid Row Style with visible hover effect -->
             <Style x:Key="EnhancedDataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                 <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
@@ -403,12 +418,32 @@
             <!-- DataGrid Cell Style with improved focus visibility -->
             <Style x:Key="EnhancedDataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
                 <Style.Triggers>
                     <Trigger Property="IsKeyboardFocused" Value="True">
                         <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorSecondaryBrush}"/>
                         <Setter Property="BorderThickness" Value="2"/>
                     </Trigger>
                 </Style.Triggers>
+            </Style>
+
+            <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
+                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+                <Setter Property="RowBackground" Value="Transparent"/>
+                <Setter Property="AlternatingRowBackground" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+                <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+                <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+            </Style>
+
+            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
             </Style>
 
             <!-- Micro-animation Styles for Enhanced UX Feedback -->
@@ -529,6 +564,7 @@
             <converters:BooleanToCheckIconConverter x:Key="BooleanToCheckIconConverter"/>
             <converters:BooleanToPhaseColorConverter x:Key="BooleanToPhaseColorConverter"/>
             <converters:BooleanToPhaseOpacityConverter x:Key="BooleanToPhaseOpacityConverter"/>
+            <converters:ResxKeyConverter x:Key="ResxKeyConverter"/>
             <converters:NullableToBooleanConverter x:Key="NullableToBooleanConverter"/>
             <converters:BoolToAddEditIconConverter x:Key="BoolToAddEditIconConverter"/>
         </ResourceDictionary>

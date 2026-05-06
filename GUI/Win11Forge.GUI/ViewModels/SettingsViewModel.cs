@@ -20,9 +20,8 @@ using System.Globalization;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Wpf.Ui.Appearance;
-using Wpf.Ui.Controls;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI.ViewModels;
@@ -36,6 +35,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private const string GitHubRepositoryUrl = "https://github.com/VBlackJack/Win11Forge";
 
     private readonly IAppSettingsService _settingsService;
+    private readonly IThemeService _themeService;
     private readonly IDeploymentHistoryService _historyService;
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IErrorHistoryService? _errorHistoryService;
@@ -51,10 +51,16 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private bool? _reducedMotionOverride;
 
     /// <summary>
-    /// Whether dark theme is enabled.
+    /// Available application themes.
     /// </summary>
     [ObservableProperty]
-    private bool _isDarkTheme = true;
+    private ObservableCollection<ThemeDescriptor> _availableThemes = [];
+
+    /// <summary>
+    /// Selected application theme.
+    /// </summary>
+    [ObservableProperty]
+    private ThemeDescriptor? _selectedTheme;
 
     /// <summary>
     /// Available languages.
@@ -316,6 +322,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         IAppSettingsService settingsService,
         IDeploymentHistoryService historyService,
         IPowerShellBridge powerShellBridge,
+        IThemeService? themeService = null,
         ToastService? toastService = null,
         IErrorHistoryService? errorHistoryService = null,
         IApplicationDetectionService? detectionService = null,
@@ -325,6 +332,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         IDialogService? dialogService = null)
     {
         _settingsService = settingsService;
+        _themeService = themeService ?? new ThemeService(settingsService);
         _historyService = historyService;
         _powerShellBridge = powerShellBridge;
         _toastService = toastService;
@@ -390,8 +398,11 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         {
             var settings = _settingsService.LoadSettings();
 
-            // Get current theme from settings
-            IsDarkTheme = settings.IsDarkTheme;
+            AvailableThemes = new ObservableCollection<ThemeDescriptor>(_themeService.AvailableThemes);
+            _themeService.ApplyTheme(settings.ThemeName);
+            SelectedTheme = AvailableThemes.FirstOrDefault(theme =>
+                    string.Equals(theme.Name, _themeService.CurrentTheme, StringComparison.Ordinal))
+                ?? AvailableThemes.First(theme => theme.Name == ThemeNames.Default);
 
             // Get language from settings
             _initialLanguageCode = settings.LanguageCode;
@@ -406,8 +417,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
             ReducedMotion = _reducedMotionOverride ?? App.ReducedMotion;
             IsHighContrastEnabled = settings.IsHighContrastEnabled;
 
-            // Apply theme and accessibility immediately
-            ApplyThemeInternal(IsDarkTheme, force: true);
+            // Apply accessibility immediately
             App.ApplyHighContrastMode(IsHighContrastEnabled);
             App.SetReducedMotionOverride(_reducedMotionOverride);
             _settingsLoaded = true;
@@ -458,12 +468,13 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     }
 
     /// <summary>
-    /// Called when IsDarkTheme changes.
+    /// Called when the selected application theme changes.
     /// </summary>
-    partial void OnIsDarkThemeChanged(bool value)
+    partial void OnSelectedThemeChanged(ThemeDescriptor? value)
     {
-        if (_isLoadingSettings) return;
-        ApplyThemeInternal(value);
+        if (_isLoadingSettings || value is null) return;
+
+        _themeService.ApplyTheme(value.Name);
         if (TrySaveSettings())
         {
             StatusMessage = Resources.Resources.Settings_ThemeApplied;
@@ -497,31 +508,6 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         {
             StatusMessage = Resources.Resources.Settings_AutoSaved;
             _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
-        }
-    }
-
-    /// <summary>
-    /// Applies the theme without saving (internal use).
-    /// Delegates to App.ApplyThemeResources for centralized theme resource management.
-    /// </summary>
-    private static void ApplyThemeInternal(bool isDark, bool force = false)
-    {
-        try
-        {
-            var appTheme = isDark ? ApplicationTheme.Dark : ApplicationTheme.Light;
-
-            // Skip if theme is already applied to avoid corrupting WPF UI framework brushes
-            if (!force && ApplicationThemeManager.GetAppTheme() == appTheme)
-                return;
-
-            ApplicationThemeManager.Apply(appTheme, WindowBackdropType.Mica);
-
-            // Apply all theme-adaptive resources (accent, status, error/warning/success, skeleton, badges)
-            App.ApplyThemeResources(isDark);
-        }
-        catch
-        {
-            // Theme application is non-critical
         }
     }
 
@@ -601,7 +587,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     {
         // Load existing settings to preserve fields not managed by this view
         var settings = _settingsService.LoadSettings();
-        settings.IsDarkTheme = IsDarkTheme;
+        settings.ThemeName = SelectedTheme?.Name ?? ThemeNames.Default;
         settings.IsHighContrastEnabled = IsHighContrastEnabled;
         settings.ReducedMotionOverride = _reducedMotionOverride;
         settings.LanguageCode = SelectedLanguage?.Code ?? "en";

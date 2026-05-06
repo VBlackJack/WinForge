@@ -17,8 +17,7 @@
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
-using Wpf.Ui.Appearance;
-using Wpf.Ui.Controls;
+using Win11Forge.GUI.Resources;
 
 namespace Win11Forge.GUI.Services;
 
@@ -29,10 +28,11 @@ namespace Win11Forge.GUI.Services;
 /// </summary>
 public class AppSettingsService : IAppSettingsService
 {
-    private static readonly string SettingsFilePath;
+    private static readonly string DefaultSettingsFilePath;
     private static readonly JsonSerializerOptions JsonOptions;
-    private static readonly object _cacheLock = new();
-    private static AppSettings? _cachedSettings;
+    private readonly string _settingsFilePath;
+    private readonly object _cacheLock = new();
+    private AppSettings? _cachedSettings;
 
     static AppSettingsService()
     {
@@ -71,13 +71,32 @@ public class AppSettingsService : IAppSettingsService
             }
         }
 
-        SettingsFilePath = Path.Combine(win11ForgePath, "settings.json");
+        DefaultSettingsFilePath = Path.Combine(win11ForgePath, "settings.json");
 
         JsonOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AppSettingsService"/> class.
+    /// </summary>
+    public AppSettingsService()
+        : this(DefaultSettingsFilePath)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AppSettingsService"/> class with a custom settings path.
+    /// </summary>
+    /// <param name="settingsFilePath">Settings file path. Used by tests to isolate migration scenarios.</param>
+    public AppSettingsService(string settingsFilePath)
+    {
+        _settingsFilePath = string.IsNullOrWhiteSpace(settingsFilePath)
+            ? DefaultSettingsFilePath
+            : settingsFilePath;
     }
 
     /// <inheritdoc/>
@@ -92,14 +111,19 @@ public class AppSettingsService : IAppSettingsService
 
             try
             {
-                if (File.Exists(SettingsFilePath))
+                if (File.Exists(_settingsFilePath))
                 {
-                    var json = File.ReadAllText(SettingsFilePath);
+                    var json = File.ReadAllText(_settingsFilePath);
                     if (!string.IsNullOrEmpty(json))
                     {
                         var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
                         if (settings != null)
                         {
+                            if (TryMigrateLegacyThemeName(settings, json))
+                            {
+                                PersistMigratedSettings(settings);
+                            }
+
                             _cachedSettings = settings;
                             return settings;
                         }
@@ -125,14 +149,14 @@ public class AppSettingsService : IAppSettingsService
         {
             try
             {
-                var directory = Path.GetDirectoryName(SettingsFilePath);
+                var directory = Path.GetDirectoryName(_settingsFilePath);
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
 
                 var json = JsonSerializer.Serialize(settings, JsonOptions);
-                File.WriteAllText(SettingsFilePath, json);
+                File.WriteAllText(_settingsFilePath, json);
                 _cachedSettings = settings;
                 return true;
             }
@@ -159,18 +183,25 @@ public class AppSettingsService : IAppSettingsService
 
         try
         {
-            if (File.Exists(SettingsFilePath))
+            if (File.Exists(_settingsFilePath))
             {
-                var json = await File.ReadAllTextAsync(SettingsFilePath, cancellationToken);
+                var json = await File.ReadAllTextAsync(_settingsFilePath, cancellationToken);
                 if (!string.IsNullOrEmpty(json))
                 {
                     var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
                     if (settings != null)
                     {
+                        var migrated = TryMigrateLegacyThemeName(settings, json);
                         lock (_cacheLock)
                         {
                             _cachedSettings = settings;
                         }
+
+                        if (migrated)
+                        {
+                            await SaveSettingsAsync(settings, cancellationToken);
+                        }
+
                         return settings;
                     }
                 }
@@ -200,14 +231,14 @@ public class AppSettingsService : IAppSettingsService
     {
         try
         {
-            var directory = Path.GetDirectoryName(SettingsFilePath);
+            var directory = Path.GetDirectoryName(_settingsFilePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
             var json = JsonSerializer.Serialize(settings, JsonOptions);
-            await File.WriteAllTextAsync(SettingsFilePath, json, cancellationToken);
+            await File.WriteAllTextAsync(_settingsFilePath, json, cancellationToken);
 
             lock (_cacheLock)
             {
@@ -230,19 +261,8 @@ public class AppSettingsService : IAppSettingsService
     /// <inheritdoc/>
     public void ApplySettings(AppSettings settings)
     {
-        // Apply theme using WPF UI ApplicationThemeManager
-        try
-        {
-            var appTheme = settings.IsDarkTheme
-                ? ApplicationTheme.Dark
-                : ApplicationTheme.Light;
-            ApplicationThemeManager.Apply(appTheme, WindowBackdropType.Mica);
-        }
-        catch (Exception ex)
-        {
-            // Theme application is non-critical, but log for diagnostics
-            System.Diagnostics.Debug.WriteLine($"Failed to apply theme: {ex.Message}");
-        }
+        // Theme is applied via IThemeService by startup and SettingsViewModel callers.
+        // Keeping this method focused avoids a settings-service/theme-service dependency cycle.
 
         // Apply high contrast mode
         try
@@ -296,6 +316,78 @@ public class AppSettingsService : IAppSettingsService
         var settings = service.LoadSettings();
         service.ApplySettings(settings);
     }
+
+    private static bool TryMigrateLegacyThemeName(AppSettings settings, string json)
+    {
+        if (HasThemeNameProperty(json) && !string.IsNullOrWhiteSpace(settings.ThemeName))
+        {
+            return false;
+        }
+
+        var legacyIsDark = TryReadLegacyIsDarkTheme(json);
+        settings.ThemeName = legacyIsDark
+            ? ThemeNames.DraculaPro
+            : ThemeNames.Light;
+        return true;
+    }
+
+    private static bool HasThemeNameProperty(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            return document.RootElement.TryGetProperty("themeName", out _)
+                || document.RootElement.TryGetProperty("ThemeName", out _);
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static bool TryReadLegacyIsDarkTheme(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.TryGetProperty("isDarkTheme", out var camelCaseValue)
+                && (camelCaseValue.ValueKind is JsonValueKind.True or JsonValueKind.False))
+            {
+                return camelCaseValue.GetBoolean();
+            }
+
+            if (document.RootElement.TryGetProperty("IsDarkTheme", out var pascalCaseValue)
+                && (pascalCaseValue.ValueKind is JsonValueKind.True or JsonValueKind.False))
+            {
+                return pascalCaseValue.GetBoolean();
+            }
+        }
+        catch (JsonException)
+        {
+            return true;
+        }
+
+        return true;
+    }
+
+    private void PersistMigratedSettings(AppSettings settings)
+    {
+        try
+        {
+            var directory = Path.GetDirectoryName(_settingsFilePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var json = JsonSerializer.Serialize(settings, JsonOptions);
+            File.WriteAllText(_settingsFilePath, json);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to persist migrated settings: {ex.Message}");
+        }
+    }
 }
 
 /// <summary>
@@ -344,9 +436,21 @@ public interface IAppSettingsService
 public class AppSettings : System.ComponentModel.DataAnnotations.IValidatableObject
 {
     /// <summary>
-    /// Whether dark theme is enabled.
+    /// Canonical theme name.
     /// </summary>
-    public bool IsDarkTheme { get; set; } = true;
+    public string ThemeName { get; set; } = ThemeNames.Default;
+
+    /// <summary>
+    /// Whether the selected theme is dark. Kept for backward compatibility.
+    /// </summary>
+    [Obsolete("Use ThemeName. Property remains for backward compatibility during migration.", error: false)]
+    public bool IsDarkTheme
+    {
+        get
+        {
+            return !(ThemeName is ThemeNames.Light or ThemeNames.Alucard);
+        }
+    }
 
     /// <summary>
     /// Whether high contrast mode is enabled for accessibility.

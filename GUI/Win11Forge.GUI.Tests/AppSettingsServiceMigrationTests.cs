@@ -1,0 +1,69 @@
+/*
+ * Copyright 2026 Julien Bombled
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+using System.IO;
+using System.Text.Json;
+using Win11Forge.GUI.Resources;
+using Win11Forge.GUI.Services;
+
+namespace Win11Forge.GUI.Tests;
+
+/// <summary>
+/// Tests for legacy settings theme migration.
+/// </summary>
+public class AppSettingsServiceMigrationTests
+{
+    [Fact]
+    public void LoadSettings_LegacyDarkThemeTrue_MigratesToDraculaPro()
+    {
+        VerifyLegacyMigration(legacyIsDarkTheme: true, ThemeNames.DraculaPro);
+    }
+
+    [Fact]
+    public void LoadSettings_LegacyDarkThemeFalse_MigratesToLight()
+    {
+        VerifyLegacyMigration(legacyIsDarkTheme: false, ThemeNames.Light);
+    }
+
+    private static void VerifyLegacyMigration(bool legacyIsDarkTheme, string expectedThemeName)
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        File.WriteAllText(
+            settingsPath,
+            $$"""
+            {"isDarkTheme": {{legacyIsDarkTheme.ToString().ToLowerInvariant()}}, "languageCode": "en"}
+            """);
+
+        try
+        {
+            var service = new AppSettingsService(settingsPath);
+
+            var settings = service.LoadSettings();
+
+            Assert.Equal(expectedThemeName, settings.ThemeName);
+            using var document = JsonDocument.Parse(File.ReadAllText(settingsPath));
+            Assert.True(document.RootElement.TryGetProperty("themeName", out var themeName));
+            Assert.Equal(expectedThemeName, themeName.GetString());
+        }
+        finally
+        {
+            if (File.Exists(settingsPath))
+            {
+                File.Delete(settingsPath);
+            }
+        }
+    }
+}

@@ -426,10 +426,34 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Theme</value>
   </data>
   <data name="Settings_Theme_Desc" xml:space="preserve">
-    <value>Basculer entre le mode clair et sombre</value>
+    <value>Choisir le thème de l'application</value>
+  </data>
+  <data name="Settings_ThemeName_Light" xml:space="preserve">
+    <value>Clair</value>
+  </data>
+  <data name="Settings_ThemeName_DraculaPro" xml:space="preserve">
+    <value>Dracula Pro</value>
+  </data>
+  <data name="Settings_ThemeName_Alucard" xml:space="preserve">
+    <value>Alucard</value>
+  </data>
+  <data name="Settings_ThemeName_Blade" xml:space="preserve">
+    <value>Blade</value>
+  </data>
+  <data name="Settings_ThemeName_Buffy" xml:space="preserve">
+    <value>Buffy</value>
+  </data>
+  <data name="Settings_ThemeName_Lincoln" xml:space="preserve">
+    <value>Lincoln</value>
+  </data>
+  <data name="Settings_ThemeName_Morbius" xml:space="preserve">
+    <value>Morbius</value>
+  </data>
+  <data name="Settings_ThemeName_VanHelsing" xml:space="preserve">
+    <value>Van Helsing</value>
   </data>
   <data name="Settings_ThemeApplied" xml:space="preserve">
-    <value>Theme applique</value>
+    <value>Thème appliqué</value>
   </data>
   <data name="Settings_AutoSaved" xml:space="preserve">
     <value>Parametres enregistres</value>
@@ -2265,6 +2289,9 @@ Cette action est irreversible.</value>
   </data>
   <data name="A11y_Settings_ThemeToggle" xml:space="preserve">
     <value>Basculer le theme sombre</value>
+  </data>
+  <data name="A11y_Settings_ThemePicker" xml:space="preserve">
+    <value>Sélecteur de thème</value>
   </data>
   <data name="A11y_Settings_ReducedMotion" xml:space="preserve">
     <value>Basculer les animations reduites</value>

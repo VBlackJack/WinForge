@@ -13,6 +13,9 @@
     WindowStartupLocation="CenterScreen"
     WindowBackdropType="Mica"
     ExtendsContentIntoTitleBar="True"
+    Background="{DynamicResource ApplicationBackgroundBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Icon="Win11Forge.ico">
 
     <ui:FluentWindow.InputBindings>
@@ -29,11 +32,14 @@
         <KeyBinding Modifiers="Ctrl+Shift" Key="Z" Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
     </ui:FluentWindow.InputBindings>
 
-    <Grid>
+    <Grid Background="{DynamicResource ApplicationBackgroundBrush}"
+          TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}">
         <ui:NavigationView x:Name="RootNavigation"
                            PaneDisplayMode="Left"
                            IsBackButtonVisible="Auto"
                            OpenPaneLength="220"
+                           Background="{DynamicResource ApplicationBackgroundBrush}"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                            BackRequested="RootNavigation_BackRequested"
                            SelectionChanged="RootNavigation_SelectionChanged">
             <ui:NavigationView.Header>
@@ -131,6 +137,8 @@
         <ui:TitleBar x:Name="TitleBar"
                      Title="{loc:Loc App_Title}"
                      Icon="Win11Forge.ico"
+                     Background="{DynamicResource ApplicationBackgroundBrush}"
+                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                      VerticalAlignment="Top"/>
     </Grid>
 </ui:FluentWindow>

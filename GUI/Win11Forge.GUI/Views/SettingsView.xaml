@@ -44,7 +44,7 @@
                                     <TextBlock Text="{loc:Loc Settings_Section_Appearance}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
 
-                                <!-- Theme Toggle -->
+                                <!-- Theme Selector -->
                                 <Grid Margin="0,0,0,16">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -57,10 +57,16 @@
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                        <ui:SymbolIcon Symbol="WeatherSunny24" Width="20" Height="20" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
-                                        <ui:ToggleSwitch IsChecked="{Binding IsDarkTheme}"
-                                                         AutomationProperties.Name="{loc:Loc A11y_Settings_ThemeToggle}"/>
-                                        <ui:SymbolIcon Symbol="DarkTheme24" Width="20" Height="20" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="8,0,0,0"/>
+                                        <ComboBox ItemsSource="{Binding AvailableThemes}"
+                                                  SelectedItem="{Binding SelectedTheme, Mode=TwoWay}"
+                                                  MinWidth="180"
+                                                  AutomationProperties.Name="{loc:Loc A11y_Settings_ThemePicker}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding DisplayKey, Converter={StaticResource ResxKeyConverter}}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
                                     </StackPanel>
                                 </Grid>
 

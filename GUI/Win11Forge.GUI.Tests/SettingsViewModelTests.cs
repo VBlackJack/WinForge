@@ -15,6 +15,7 @@
  */
 
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
 using System.IO;
@@ -24,28 +25,31 @@ namespace Win11Forge.GUI.Tests;
 /// <summary>
 /// Tests for SettingsViewModel - theme, language, and history management.
 /// </summary>
+[Collection("WpfApplication")]
 public class SettingsViewModelTests
 {
     /// <summary>
-    /// Verifies that toggling theme updates the settings configuration.
+    /// Verifies that changing theme updates the settings configuration.
     /// </summary>
     [Fact]
-    public void ToggleTheme_ShouldUpdateConfiguration()
+    public void ChangeTheme_ShouldUpdateConfiguration()
     {
         // Arrange
         var settingsService = new MockAppSettingsService();
+        var themeService = new MockThemeService();
         var historyService = new MockDeploymentHistoryService();
         var powerShellBridge = new MockPowerShellBridge();
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge, themeService);
 
-        var initialTheme = viewModel.IsDarkTheme;
+        var targetTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.DraculaPro);
 
-        // Act - Toggle theme
-        viewModel.IsDarkTheme = !initialTheme;
+        // Act
+        viewModel.SelectedTheme = targetTheme;
 
         // Assert - Settings should be saved
         Assert.NotNull(settingsService.LastSavedSettings);
-        Assert.Equal(!initialTheme, settingsService.LastSavedSettings.IsDarkTheme);
+        Assert.Equal(ThemeNames.DraculaPro, settingsService.LastSavedSettings.ThemeName);
+        Assert.Equal(ThemeNames.DraculaPro, themeService.CurrentTheme);
     }
 
     /// <summary>
@@ -56,7 +60,7 @@ public class SettingsViewModelTests
     {
         // Arrange
         var settingsService = new MockAppSettingsService();
-        settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", IsDarkTheme = true };
+        settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", ThemeName = ThemeNames.DraculaPro };
         var historyService = new MockDeploymentHistoryService();
         var powerShellBridge = new MockPowerShellBridge();
         var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
@@ -78,7 +82,7 @@ public class SettingsViewModelTests
     {
         // Arrange
         var settingsService = new MockAppSettingsService();
-        settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", IsDarkTheme = true };
+        settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", ThemeName = ThemeNames.DraculaPro };
         var historyService = new MockDeploymentHistoryService();
         var powerShellBridge = new MockPowerShellBridge();
         var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
@@ -158,7 +162,7 @@ public class SettingsViewModelTests
         var settingsService = new MockAppSettingsService();
         settingsService.SettingsToReturn = new AppSettings
         {
-            IsDarkTheme = false,
+            ThemeName = ThemeNames.Light,
             LanguageCode = "fr"
         };
         var historyService = new MockDeploymentHistoryService();
@@ -168,7 +172,7 @@ public class SettingsViewModelTests
         var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Assert
-        Assert.False(viewModel.IsDarkTheme);
+        Assert.Equal(ThemeNames.Light, viewModel.SelectedTheme?.Name);
         Assert.Equal("fr", viewModel.SelectedLanguage?.Code);
     }
 
@@ -185,12 +189,12 @@ public class SettingsViewModelTests
         var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Act - Change theme multiple times
-        viewModel.IsDarkTheme = false;
+        viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.DraculaPro);
         Assert.NotNull(settingsService.LastSavedSettings);
-        Assert.False(settingsService.LastSavedSettings.IsDarkTheme);
+        Assert.Equal(ThemeNames.DraculaPro, settingsService.LastSavedSettings.ThemeName);
 
-        viewModel.IsDarkTheme = true;
-        Assert.True(settingsService.LastSavedSettings.IsDarkTheme);
+        viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Light);
+        Assert.Equal(ThemeNames.Light, settingsService.LastSavedSettings.ThemeName);
     }
 
     /// <summary>
@@ -212,7 +216,7 @@ public class SettingsViewModelTests
             Win11Forge.GUI.Resources.Resources.Culture) ?? "Failed to save settings";
 
         // Act
-        viewModel.IsDarkTheme = !viewModel.IsDarkTheme;
+        viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.DraculaPro);
 
         // Assert
         Assert.Equal(expected, viewModel.StatusMessage);
@@ -251,7 +255,7 @@ public class SettingsViewModelTests
         {
             SettingsToReturn = new AppSettings
             {
-                IsDarkTheme = false,
+                ThemeName = ThemeNames.Light,
                 IsHighContrastEnabled = true,
                 ReducedMotionOverride = true,
                 LanguageCode = "fr"
@@ -265,7 +269,7 @@ public class SettingsViewModelTests
 
         // Assert
         Assert.Null(settingsService.LastSavedSettings);
-        Assert.False(viewModel.IsDarkTheme);
+        Assert.Equal(ThemeNames.Light, viewModel.SelectedTheme?.Name);
         Assert.True(viewModel.IsHighContrastEnabled);
         Assert.True(viewModel.ReducedMotion);
     }
@@ -319,7 +323,7 @@ public class SettingsViewModelTests
     {
         // Arrange
         var settingsService = new MockAppSettingsService();
-        settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", IsDarkTheme = true };
+        settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", ThemeName = ThemeNames.DraculaPro };
         var historyService = new MockDeploymentHistoryService();
         var powerShellBridge = new MockPowerShellBridge();
         var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
@@ -389,7 +393,7 @@ public class SettingsViewModelTests
         // Arrange
         var settingsService = new MockAppSettingsService
         {
-            SettingsToReturn = new AppSettings { IsDarkTheme = false, LanguageCode = "fr" }
+            SettingsToReturn = new AppSettings { ThemeName = ThemeNames.Light, LanguageCode = "fr" }
         };
         var fileDialogService = new TestFileDialogService();
         var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
@@ -430,7 +434,7 @@ public class SettingsViewModelTests
         var settingsService = new MockAppSettingsService();
         var fileDialogService = new TestFileDialogService();
         var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
-        var importedSettings = new AppSettings { IsDarkTheme = false, LanguageCode = "fr" };
+        var importedSettings = new AppSettings { ThemeName = ThemeNames.Light, LanguageCode = "fr" };
         await File.WriteAllTextAsync(filePath, System.Text.Json.JsonSerializer.Serialize(importedSettings));
         fileDialogService.QueueOpenResult(filePath);
         var viewModel = new SettingsViewModel(
@@ -449,7 +453,7 @@ public class SettingsViewModelTests
             Assert.Equal("JSON files (*.json)|*.json|All files (*.*)|*.*", fileDialogService.OpenOptions[0].Filter);
             Assert.Equal(".json", fileDialogService.OpenOptions[0].DefaultExtension);
             Assert.NotNull(settingsService.LastSavedSettings);
-            Assert.False(settingsService.LastSavedSettings.IsDarkTheme);
+            Assert.Equal(ThemeNames.Light, settingsService.LastSavedSettings.ThemeName);
             Assert.Equal("fr", settingsService.LastSavedSettings.LanguageCode);
             Assert.True(viewModel.RestartRequired);
             Assert.Equal(Resources.Resources.Settings_ImportSuccess, viewModel.StatusMessage);
@@ -495,6 +499,46 @@ internal class MockAppSettingsService : IAppSettingsService
     public void ApplySettings(AppSettings settings)
     {
         // No-op in tests
+    }
+}
+
+/// <summary>
+/// Mock implementation of IThemeService for testing.
+/// </summary>
+internal sealed class MockThemeService : IThemeService
+{
+    private static readonly IReadOnlyList<ThemeDescriptor> ThemeCatalogue =
+    [
+        CreateTheme(ThemeNames.Light),
+        CreateTheme(ThemeNames.DraculaPro),
+        CreateTheme(ThemeNames.Alucard),
+        CreateTheme(ThemeNames.Blade),
+        CreateTheme(ThemeNames.Buffy),
+        CreateTheme(ThemeNames.Lincoln),
+        CreateTheme(ThemeNames.Morbius),
+        CreateTheme(ThemeNames.VanHelsing)
+    ];
+
+    public string CurrentTheme { get; private set; } = ThemeNames.Default;
+
+    public int ThemeRevision { get; private set; }
+
+    public IReadOnlyList<ThemeDescriptor> AvailableThemes => ThemeCatalogue;
+
+    public event Action<string>? ThemeChanged;
+
+    public void ApplyTheme(string? themeName)
+    {
+        CurrentTheme = AvailableThemes.FirstOrDefault(theme =>
+                string.Equals(theme.Name, themeName, StringComparison.OrdinalIgnoreCase))
+            ?.Name ?? ThemeNames.Default;
+        ThemeRevision++;
+        ThemeChanged?.Invoke(CurrentTheme);
+    }
+
+    private static ThemeDescriptor CreateTheme(string name)
+    {
+        return new ThemeDescriptor(name, name is not ThemeNames.Light and not ThemeNames.Alucard, null, $"Settings_ThemeName_{name}");
     }
 }
 

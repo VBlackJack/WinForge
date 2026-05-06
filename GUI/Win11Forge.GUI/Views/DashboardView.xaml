@@ -50,14 +50,6 @@
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
         </Style>
 
-        <!-- Hero CTA Button Style -->
-        <Style x:Key="HeroCtaButton" TargetType="ui:Button">
-            <Setter Property="Appearance" Value="Primary"/>
-            <Setter Property="Height" Value="56"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="32,0"/>
-        </Style>
     </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -160,7 +152,11 @@
                                        Margin="0,0,0,16"/>
                             <StackPanel Orientation="Horizontal">
                                 <ui:Button Command="{Binding StartDeploymentCommand}"
-                                           Style="{StaticResource HeroCtaButton}"
+                                           Appearance="Primary"
+                                           Height="56"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Padding="32,0"
                                            ToolTip="{loc:Loc Dashboard_StartDeployment_Hint}"
                                            Margin="0,0,12,0"
                                            AutomationProperties.Name="{loc:Loc A11y_Dashboard_StartDeployment}">

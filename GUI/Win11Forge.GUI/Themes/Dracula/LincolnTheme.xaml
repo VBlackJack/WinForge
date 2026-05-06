@@ -1,0 +1,53 @@
+<!--
+    Copyright 2026 Julien Bombled
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    Adapted from G:\_dev\SnapConnect\Heimdall.Next\src\Heimdall.App\Themes\LincolnTheme.xaml
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Dracula Lincoln Theme - https://draculatheme.com/contribute -->
+    <Color x:Key="PrimaryColor">#261F1A</Color>
+    <Color x:Key="SecondaryColor">#1E1813</Color>
+    <Color x:Key="SurfaceColor">#43372E</Color>
+    <Color x:Key="AccentColor">#C7A4FF</Color>
+    <Color x:Key="AccentHoverColor">#D9BEFF</Color>
+    <Color x:Key="AccentPressedColor">#A88AE0</Color>
+    <Color x:Key="TextPrimaryColor">#FFF7F0</Color>
+    <Color x:Key="TextSecondaryColor">#CAB8AD</Color>
+    <Color x:Key="TextDisabledColor">#B79D8B</Color>
+    <Color x:Key="SuccessColor">#93D98A</Color>
+    <Color x:Key="WarningColor">#E8A15E</Color>
+    <Color x:Key="ErrorColor">#E96E5D</Color>
+    <Color x:Key="InfoColor">#7CD7FF</Color>
+    <Color x:Key="BorderColor">#B79D8B</Color>
+    <Color x:Key="HighlightColor">#52483D</Color>
+    <Color x:Key="SuccessTextColor">#93D98A</Color>
+    <Color x:Key="WarningTextColor">#E8A15E</Color>
+    <Color x:Key="ErrorTextColor">#E96E5D</Color>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource PrimaryColor}"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SecondaryColor}"/>
+    <SolidColorBrush x:Key="CardBrush" Color="{StaticResource SurfaceColor}"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}"/>
+    <SolidColorBrush x:Key="AccentPressedBrush" Color="{StaticResource AccentPressedColor}"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
+    <SolidColorBrush x:Key="TextTertiaryBrush" Color="#C2AD9F"/>
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource TextDisabledColor}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+    <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource WarningColor}"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}"/>
+    <SolidColorBrush x:Key="InfoBrush" Color="{StaticResource InfoColor}"/>
+    <SolidColorBrush x:Key="SuccessTextBrush" Color="{StaticResource SuccessTextColor}"/>
+    <SolidColorBrush x:Key="WarningTextBrush" Color="{StaticResource WarningTextColor}"/>
+    <SolidColorBrush x:Key="ErrorTextBrush" Color="{StaticResource ErrorTextColor}"/>
+    <SolidColorBrush x:Key="BadgeTextBrush" Color="#15100D"/>
+    <SolidColorBrush x:Key="TextOnAccentBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="FocusIndicatorBrush" Color="#7CD7FF"/>
+    <SolidColorBrush x:Key="OverlayBackground" Color="#B3000000"/>
+
+</ResourceDictionary>

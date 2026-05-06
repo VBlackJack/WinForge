@@ -60,6 +60,7 @@ public static class ServiceCollectionExtensions
         // Register other application services
         services.AddSingleton<IDeploymentHistoryService, DeploymentHistoryService>();
         services.AddSingleton<IAppSettingsService, AppSettingsService>();
+        services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IProfileExportService, ProfileExportService>();
         services.AddSingleton<IDeploymentStateService, DeploymentStateService>();
         services.AddSingleton<IUndoService, UndoService>();

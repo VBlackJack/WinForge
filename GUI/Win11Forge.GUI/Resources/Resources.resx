@@ -594,8 +594,40 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <comment>Theme setting label</comment>
   </data>
   <data name="Settings_Theme_Desc" xml:space="preserve">
-    <value>Switch between light and dark mode</value>
+    <value>Choose the application theme</value>
     <comment>Theme setting description</comment>
+  </data>
+  <data name="Settings_ThemeName_Light" xml:space="preserve">
+    <value>Light</value>
+    <comment>Theme display name for WPF-UI Light</comment>
+  </data>
+  <data name="Settings_ThemeName_DraculaPro" xml:space="preserve">
+    <value>Dracula Pro</value>
+    <comment>Theme display name for Dracula Pro</comment>
+  </data>
+  <data name="Settings_ThemeName_Alucard" xml:space="preserve">
+    <value>Alucard</value>
+    <comment>Theme display name for Alucard</comment>
+  </data>
+  <data name="Settings_ThemeName_Blade" xml:space="preserve">
+    <value>Blade</value>
+    <comment>Theme display name for Blade</comment>
+  </data>
+  <data name="Settings_ThemeName_Buffy" xml:space="preserve">
+    <value>Buffy</value>
+    <comment>Theme display name for Buffy</comment>
+  </data>
+  <data name="Settings_ThemeName_Lincoln" xml:space="preserve">
+    <value>Lincoln</value>
+    <comment>Theme display name for Lincoln</comment>
+  </data>
+  <data name="Settings_ThemeName_Morbius" xml:space="preserve">
+    <value>Morbius</value>
+    <comment>Theme display name for Morbius</comment>
+  </data>
+  <data name="Settings_ThemeName_VanHelsing" xml:space="preserve">
+    <value>Van Helsing</value>
+    <comment>Theme display name for Van Helsing</comment>
   </data>
   <data name="Settings_ThemeApplied" xml:space="preserve">
     <value>Theme applied</value>
@@ -3573,6 +3605,10 @@ This action cannot be undone.</value>
   <data name="A11y_Settings_ThemeToggle" xml:space="preserve">
     <value>Toggle dark theme</value>
     <comment>Accessibility name for theme toggle</comment>
+  </data>
+  <data name="A11y_Settings_ThemePicker" xml:space="preserve">
+    <value>Theme picker</value>
+    <comment>Accessibility name for theme picker</comment>
   </data>
   <data name="A11y_Settings_ReducedMotion" xml:space="preserve">
     <value>Toggle reduced motion</value>
