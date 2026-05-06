@@ -23,6 +23,7 @@ namespace Win11Forge.GUI.Services;
 /// </summary>
 public class ProgressEstimator
 {
+    private readonly object _syncRoot = new();
     private readonly Stopwatch _stopwatch = new();
     private int _totalItems;
     private int _completedItems;
@@ -34,10 +35,13 @@ public class ProgressEstimator
     /// </summary>
     public void Start(int totalItems)
     {
-        _totalItems = totalItems;
-        _completedItems = 0;
-        _recentRates.Clear();
-        _stopwatch.Restart();
+        lock (_syncRoot)
+        {
+            _totalItems = totalItems;
+            _completedItems = 0;
+            _recentRates.Clear();
+            _stopwatch.Restart();
+        }
     }
 
     /// <summary>
@@ -45,19 +49,22 @@ public class ProgressEstimator
     /// </summary>
     public void UpdateProgress(int completedItems)
     {
-        var previousCompleted = _completedItems;
-        _completedItems = completedItems;
-
-        // Calculate rate for this batch
-        if (_completedItems > previousCompleted && _stopwatch.Elapsed.TotalSeconds > 0)
+        lock (_syncRoot)
         {
-            var rate = _completedItems / _stopwatch.Elapsed.TotalSeconds;
-            _recentRates.Enqueue(rate);
+            var previousCompleted = _completedItems;
+            _completedItems = completedItems;
 
-            // Keep only recent samples for better accuracy
-            while (_recentRates.Count > MaxRateSamples)
+            // Calculate rate for this batch
+            if (_completedItems > previousCompleted && _stopwatch.Elapsed.TotalSeconds > 0)
             {
-                _recentRates.Dequeue();
+                var rate = _completedItems / _stopwatch.Elapsed.TotalSeconds;
+                _recentRates.Enqueue(rate);
+
+                // Keep only recent samples for better accuracy
+                while (_recentRates.Count > MaxRateSamples)
+                {
+                    _recentRates.Dequeue();
+                }
             }
         }
     }
@@ -68,26 +75,29 @@ public class ProgressEstimator
     /// </summary>
     public TimeSpan? GetEstimatedTimeRemaining()
     {
-        if (_completedItems == 0 || _recentRates.Count == 0)
+        lock (_syncRoot)
         {
-            return null;
-        }
+            if (_completedItems == 0 || _recentRates.Count == 0)
+            {
+                return null;
+            }
 
-        var remainingItems = _totalItems - _completedItems;
-        if (remainingItems <= 0)
-        {
-            return TimeSpan.Zero;
-        }
+            var remainingItems = _totalItems - _completedItems;
+            if (remainingItems <= 0)
+            {
+                return TimeSpan.Zero;
+            }
 
-        // Use average of recent rates for smoother estimate
-        var avgRate = _recentRates.Average();
-        if (avgRate <= 0)
-        {
-            return null;
-        }
+            // Use average of recent rates for smoother estimate
+            var avgRate = _recentRates.Average();
+            if (avgRate <= 0)
+            {
+                return null;
+            }
 
-        var estimatedSeconds = remainingItems / avgRate;
-        return TimeSpan.FromSeconds(estimatedSeconds);
+            var estimatedSeconds = remainingItems / avgRate;
+            return TimeSpan.FromSeconds(estimatedSeconds);
+        }
     }
 
     /// <summary>
@@ -119,21 +129,37 @@ public class ProgressEstimator
     /// </summary>
     public TimeSpan Stop()
     {
-        _stopwatch.Stop();
-        return _stopwatch.Elapsed;
+        lock (_syncRoot)
+        {
+            _stopwatch.Stop();
+            return _stopwatch.Elapsed;
+        }
     }
 
     /// <summary>
     /// Gets the elapsed time.
     /// </summary>
-    public TimeSpan Elapsed => _stopwatch.Elapsed;
+    public TimeSpan Elapsed
+    {
+        get
+        {
+            lock (_syncRoot)
+            {
+                return _stopwatch.Elapsed;
+            }
+        }
+    }
 
     /// <summary>
     /// Gets a formatted string for the elapsed time.
     /// </summary>
     public string GetFormattedElapsedTime()
     {
-        var elapsed = _stopwatch.Elapsed;
+        TimeSpan elapsed;
+        lock (_syncRoot)
+        {
+            elapsed = _stopwatch.Elapsed;
+        }
 
         if (elapsed.TotalHours >= 1)
         {
