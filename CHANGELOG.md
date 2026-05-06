@@ -4,6 +4,12 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+### MVVM refactor closure
+
+The architectural refactor of the GUI ViewModels (audit findings I1, I3, I4) is complete. All four batch operation coordinators (`AppScanCoordinator`, `AppInstallationCoordinator`, `AppUpdateCoordinator`, `AppUninstallCoordinator`) are extracted under `Services/Coordinators/`, sharing the internal `AppOperationRunner` helper for parallelism, cancellation, and progress reporting. The `AppsViewModel` god class (3 002 lines, 31 RelayCommands) is now a 531-line orchestrator with twelve cluster-scoped partial classes. WPF lifetime coupling, file dialog handling, and code-behind business logic have been moved behind dedicated services (`IApplicationLifetimeService`, `IFileDialogService`, `IApplicationEditorDialogService`, `IPauseGate`).
+
+See `Docs/architecture/REFACTOR-MVVM.md` for the full architectural decision record and the closure status table in §12.
+
 ### Fixed
 - Hardened the Windows runner CI baseline after enabling strict Pester gating.
 - Replaced a fragile File detection fixture path with a stable system executable present on Windows Server runners.

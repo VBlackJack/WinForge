@@ -58,7 +58,6 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private readonly IPauseGate _pauseGate;
     private readonly IDialogService _dialogService;
     private readonly ProgressEstimator _progressEstimator = new();
-    private readonly int _maxParallelInstalls;
     private List<ApplicationModel> _allApplications = [];
     private CancellationTokenSource? _scanCancellationTokenSource;
     private CancellationTokenSource? _batchCancellationTokenSource;
@@ -296,9 +295,8 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         _deploymentStateService.ResumeRequested += OnResumeRequested;
         _deploymentStateService.CancelRequested += OnCancelRequested;
 
-        // Initialize semaphores with configured settings
+        // Restore persisted view state from settings
         var settings = _settingsService.LoadSettings();
-        _maxParallelInstalls = Math.Clamp(settings.MaxParallelInstalls, 1, 10);
 
         // Restore persisted filter state from settings
         _searchText = settings.AppsLastSearchText ?? string.Empty;
