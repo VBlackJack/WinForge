@@ -1,0 +1,78 @@
+/*
+ * Copyright 2026 Julien Bombled
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+using CommunityToolkit.Mvvm.Input;
+
+namespace Win11Forge.GUI.ViewModels;
+
+public partial class AppsViewModel
+{
+    /// <summary>
+    /// Whether the Pause command can execute.
+    /// </summary>
+    private bool CanPause => (IsInstalling || IsUninstalling) && !IsPaused;
+
+    /// <summary>
+    /// Pauses the current batch operation.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanPause))]
+    private void Pause()
+    {
+        IsPaused = true;
+        _pauseEvent.Reset();
+        _deploymentStateService.SetPaused(true);
+    }
+
+    /// <summary>
+    /// Whether the Resume command can execute.
+    /// </summary>
+    private bool CanResume => (IsInstalling || IsUninstalling) && IsPaused;
+
+    /// <summary>
+    /// Resumes the current batch operation.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanResume))]
+    private void Resume()
+    {
+        IsPaused = false;
+        _pauseEvent.Set();
+        _deploymentStateService.SetPaused(false);
+    }
+
+    /// <summary>
+    /// Cancels the current batch operation.
+    /// </summary>
+    [RelayCommand]
+    private void CancelBatch()
+    {
+        _batchCancellationTokenSource?.Cancel();
+        // Resume if paused to allow cancellation to propagate
+        if (IsPaused)
+        {
+            IsPaused = false;
+            _pauseEvent.Set();
+        }
+    }
+
+    /// <summary>
+    /// Closes the summary dialog.
+    /// </summary>
+    [RelayCommand]
+    private void CloseSummaryDialog()
+    {
+        IsSummaryDialogOpen = false;
+    }
+}
