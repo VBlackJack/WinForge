@@ -869,17 +869,19 @@
                         </Style>
                     </DataGrid.RowStyle>
                     <DataGrid.ContextMenu>
-                        <ContextMenu>
+                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                             <MenuItem x:Name="MenuLaunch"
                                       Header="{loc:Loc Menu_Launch}"
-                                      Click="ContextMenu_Launch_Click">
+                                      Command="{Binding LaunchAppCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="Play24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem x:Name="MenuOpenHomepage"
                                       Header="{loc:Loc Menu_OpenHomepage}"
-                                      Click="ContextMenu_OpenHomepage_Click">
+                                      Command="{Binding OpenWebsiteCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="Globe24"/>
                                 </MenuItem.Icon>
@@ -887,21 +889,24 @@
                             <Separator/>
                             <MenuItem x:Name="MenuInstall"
                                       Header="{loc:Loc Menu_Install}"
-                                      Click="ContextMenu_Install_Click">
+                                      Command="{Binding InstallAppCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="ArrowDownload24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem x:Name="MenuUninstall"
                                       Header="{loc:Loc Menu_Uninstall}"
-                                      Click="ContextMenu_Uninstall_Click">
+                                      Command="{Binding UninstallAppCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="Delete24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem x:Name="MenuUpdate"
                                       Header="{loc:Loc Menu_Update}"
-                                      Click="ContextMenu_Update_Click">
+                                      Command="{Binding UpdateAppCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="ArrowSync24"/>
                                 </MenuItem.Icon>
@@ -909,27 +914,30 @@
                             <Separator/>
                             <MenuItem x:Name="MenuScan"
                                       Header="{loc:Loc Menu_Scan}"
-                                      Click="ContextMenu_Scan_Click">
+                                      Command="{Binding ScanAppCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="Search24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem x:Name="MenuScanSelected"
                                       Header="{loc:Loc Menu_ScanSelected}"
-                                      Click="ContextMenu_ScanSelected_Click">
+                                      Command="{Binding ScanSelectedCommand}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="Search24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
                             <MenuItem Header="{loc:Loc Menu_ToggleSelection}"
-                                      Click="ContextMenu_ToggleSelection_Click">
+                                      Command="{Binding ToggleSelectionCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="CheckboxChecked24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem Header="{loc:Loc Menu_ToggleFavorite}"
-                                      Click="ContextMenu_ToggleFavorite_Click">
+                                      Command="{Binding ToggleFavoriteCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="Star24"/>
                                 </MenuItem.Icon>
@@ -937,14 +945,16 @@
                             <Separator/>
                             <MenuItem x:Name="MenuViewLogs"
                                       Header="{loc:Loc Menu_ViewLogs}"
-                                      Click="ContextMenu_ViewLogs_Click">
+                                      Command="{Binding ViewLogsCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="Document24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
                             <MenuItem Header="{loc:Loc Menu_CopyAppId}"
-                                      Click="ContextMenu_CopyAppId_Click">
+                                      Command="{Binding CopyAppIdCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="Copy24"/>
                                 </MenuItem.Icon>
