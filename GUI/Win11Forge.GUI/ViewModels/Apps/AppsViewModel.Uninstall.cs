@@ -29,7 +29,9 @@ public partial class AppsViewModel
     {
         if (app == null) return;
 
-        await _installSemaphore.WaitAsync();
+        // PR8 extracts this workflow.
+        using var installSemaphore = new SemaphoreSlim(_maxParallelInstalls);
+        await installSemaphore.WaitAsync();
 
         try
         {
@@ -67,7 +69,7 @@ public partial class AppsViewModel
         }
         finally
         {
-            _installSemaphore.Release();
+            installSemaphore.Release();
         }
     }
 
@@ -106,7 +108,7 @@ public partial class AppsViewModel
 
         IsUninstalling = true;
         IsPaused = false;
-        _pauseEvent.Set();
+        _pauseGate.Resume();
         _batchCancellationTokenSource = new CancellationTokenSource();
 
         BatchProgressCurrent = 0;
@@ -124,8 +126,10 @@ public partial class AppsViewModel
         try
         {
             // Create tasks for all apps to run in parallel (limited by semaphore)
+            // PR8 extracts this workflow.
+            using var installSemaphore = new SemaphoreSlim(_maxParallelInstalls);
             var tasks = selectedApps.Select(app => UninstallSingleAppAsync(
-                app, _batchCancellationTokenSource.Token));
+                app, installSemaphore, _batchCancellationTokenSource.Token));
 
             await Task.WhenAll(tasks);
 
@@ -165,7 +169,10 @@ public partial class AppsViewModel
     /// Uses Interlocked operations for thread-safe counter updates, which require backing field access.
     /// </remarks>
 #pragma warning disable MVVMTK0034 // Direct field reference required for Interlocked operations
-    private async Task UninstallSingleAppAsync(ApplicationModel app, CancellationToken cancellationToken)
+    private async Task UninstallSingleAppAsync(
+        ApplicationModel app,
+        SemaphoreSlim installSemaphore,
+        CancellationToken cancellationToken)
     {
         // Check for cancellation before acquiring semaphore
         if (cancellationToken.IsCancellationRequested)
@@ -180,7 +187,7 @@ public partial class AppsViewModel
         // Wait if paused
         try
         {
-            _pauseEvent.Wait(cancellationToken);
+            _pauseGate.Wait(cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -191,7 +198,7 @@ public partial class AppsViewModel
             return;
         }
 
-        await _installSemaphore.WaitAsync(cancellationToken);
+        await installSemaphore.WaitAsync(cancellationToken);
 
         try
         {
@@ -253,7 +260,7 @@ public partial class AppsViewModel
         }
         finally
         {
-            _installSemaphore.Release();
+            installSemaphore.Release();
             Interlocked.Increment(ref _batchProgressCurrent);
             BatchProgressPercent = (double)_batchProgressCurrent / BatchProgressTotal * 100;
             OnPropertyChanged(nameof(BatchProgressCurrent));

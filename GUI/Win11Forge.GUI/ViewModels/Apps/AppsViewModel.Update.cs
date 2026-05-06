@@ -110,7 +110,9 @@ public partial class AppsViewModel
     {
         if (app == null) return;
 
-        await _installSemaphore.WaitAsync();
+        // PR7 extracts this workflow.
+        using var installSemaphore = new SemaphoreSlim(_maxParallelInstalls);
+        await installSemaphore.WaitAsync();
 
         try
         {
@@ -163,7 +165,7 @@ public partial class AppsViewModel
         }
         finally
         {
-            _installSemaphore.Release();
+            installSemaphore.Release();
         }
     }
 

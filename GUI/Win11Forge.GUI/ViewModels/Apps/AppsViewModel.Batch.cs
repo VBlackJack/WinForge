@@ -32,7 +32,7 @@ public partial class AppsViewModel
     private void Pause()
     {
         IsPaused = true;
-        _pauseEvent.Reset();
+        _pauseGate.Pause();
         _deploymentStateService.SetPaused(true);
     }
 
@@ -48,7 +48,7 @@ public partial class AppsViewModel
     private void Resume()
     {
         IsPaused = false;
-        _pauseEvent.Set();
+        _pauseGate.Resume();
         _deploymentStateService.SetPaused(false);
     }
 
@@ -63,7 +63,7 @@ public partial class AppsViewModel
         if (IsPaused)
         {
             IsPaused = false;
-            _pauseEvent.Set();
+            _pauseGate.Resume();
         }
     }
 

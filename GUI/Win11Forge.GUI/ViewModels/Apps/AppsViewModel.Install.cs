@@ -16,6 +16,7 @@
 
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Services.Coordinators;
 
 namespace Win11Forge.GUI.ViewModels;
 
@@ -29,47 +30,14 @@ public partial class AppsViewModel
     {
         if (app == null) return;
 
-        await _installSemaphore.WaitAsync();
-
         // Notify deployment state service for monitoring
         _deploymentStateService.StartDeployment([app]);
+        _deploymentStateService.UpdateProgress(app.Name, 0, 1, Resources.Resources.Status_Installing);
 
         try
         {
-            app.Status = ApplicationStatus.Installing;
-            app.StatusMessage = Resources.Resources.Status_Installing;
-
-            _deploymentStateService.UpdateProgress(app.Name, 0, 1, Resources.Resources.Status_Installing);
-
-            var result = await _powerShellBridge.InstallApplicationAsync(
-                app,
-                isDryRun: false,
-                forceUpdate: false,
-                progress => app.StatusMessage = progress);
-
-            app.LogOutput = result.Logs;
-
-            if (result.Success)
-            {
-                app.Status = result.AlreadyInstalled
-                    ? ApplicationStatus.AlreadyInstalled
-                    : ApplicationStatus.Installed;
-                app.StatusMessage = result.AlreadyInstalled
-                    ? Resources.Resources.Status_AlreadyInstalled
-                    : Resources.Resources.Status_Installed;
-
-                if (!result.AlreadyInstalled)
-                {
-                    InstalledCount++;
-                }
-            }
-            else
-            {
-                app.Status = ApplicationStatus.Failed;
-                app.StatusMessage = Resources.Resources.Status_Failed;
-                app.ErrorMessage = result.Message;
-            }
-
+            var result = await _installationCoordinator.InstallAsync([app]);
+            InstalledCount += result.InstalledCount;
             _deploymentStateService.UpdateProgress(app.Name, 1, 1, app.StatusMessage);
         }
         catch (Exception ex)
@@ -80,7 +48,6 @@ public partial class AppsViewModel
         }
         finally
         {
-            _installSemaphore.Release();
             _deploymentStateService.EndDeployment();
         }
     }
@@ -102,7 +69,7 @@ public partial class AppsViewModel
 
         IsInstalling = true;
         IsPaused = false;
-        _pauseEvent.Set();
+        _pauseGate.Resume();
         _batchCancellationTokenSource = new CancellationTokenSource();
 
         BatchProgressCurrent = 0;
@@ -122,14 +89,19 @@ public partial class AppsViewModel
 
         try
         {
-            // Create tasks for all apps to run in parallel (limited by semaphore)
-            var tasks = selectedApps.Select(app => InstallSingleAppAsync(
-                app, _batchCancellationTokenSource.Token));
+            var result = await _installationCoordinator.InstallAsync(
+                selectedApps,
+                new Progress<AppOperationProgress>(ApplyInstallProgress),
+                _batchCancellationTokenSource.Token);
 
-            await Task.WhenAll(tasks);
+            ApplyInstallProgress(new AppOperationProgress(result.Total, result.Total, Current: null));
+            InstalledCount += result.InstalledCount;
+            SuccessCount = result.InstalledCount + result.AlreadyInstalledCount;
+            FailedCount = result.FailedCount;
+            SkippedCount = result.SkippedCount;
 
             // Determine final result
-            if (_batchCancellationTokenSource.Token.IsCancellationRequested)
+            if (result.WasCancelled)
             {
                 LastDeploymentResult = DeploymentResult.Cancelled;
             }
@@ -160,134 +132,27 @@ public partial class AppsViewModel
         }
     }
 
-    /// <summary>
-    /// Installs a single application with semaphore-controlled concurrency.
-    /// </summary>
-    /// <remarks>
-    /// Uses Interlocked operations for thread-safe counter updates, which require backing field access.
-    /// </remarks>
-#pragma warning disable MVVMTK0034 // Direct field reference required for Interlocked operations
-    private async Task InstallSingleAppAsync(ApplicationModel app, CancellationToken cancellationToken)
+    private void ApplyInstallProgress(AppOperationProgress progress)
     {
-        // Check for cancellation before acquiring semaphore
-        if (cancellationToken.IsCancellationRequested)
-        {
-            app.Status = ApplicationStatus.Skipped;
-            app.StatusMessage = Resources.Resources.Status_Skipped;
-            Interlocked.Increment(ref _skippedCount);
-            OnPropertyChanged(nameof(SkippedCount));
-            return;
-        }
+        BatchProgressTotal = progress.Total;
+        BatchProgressCurrent = progress.Completed;
+        BatchProgressPercent = progress.Total > 0
+            ? (double)progress.Completed / progress.Total * 100
+            : 0;
+        CurrentBatchAppName = progress.Current?.Name;
 
-        // Wait if paused
-        try
-        {
-            _pauseEvent.Wait(cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            app.Status = ApplicationStatus.Skipped;
-            app.StatusMessage = Resources.Resources.Status_Skipped;
-            Interlocked.Increment(ref _skippedCount);
-            OnPropertyChanged(nameof(SkippedCount));
-            return;
-        }
+        // Update time estimate
+        _progressEstimator.UpdateProgress(progress.Completed);
+        EstimatedTimeRemaining = _progressEstimator.GetFormattedTimeRemaining();
 
-        await _installSemaphore.WaitAsync(cancellationToken);
-
-        try
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                app.Status = ApplicationStatus.Skipped;
-                app.StatusMessage = Resources.Resources.Status_Skipped;
-                Interlocked.Increment(ref _skippedCount);
-                OnPropertyChanged(nameof(SkippedCount));
-                return;
-            }
-
-            app.Status = ApplicationStatus.Installing;
-            app.StatusMessage = Resources.Resources.Status_Installing;
-            CurrentBatchAppName = app.Name;
-
-            // Update shared deployment state
-            _deploymentStateService.UpdateProgress(
-                app.Name,
-                _batchProgressCurrent,
-                BatchProgressTotal,
-                Resources.Resources.Status_Installing);
-
-            var result = await _powerShellBridge.InstallApplicationAsync(
-                app,
-                isDryRun: false,
-                forceUpdate: true,
-                progress => app.StatusMessage = progress);
-
-            app.LogOutput = result.Logs;
-
-            if (result.Success)
-            {
-                app.Status = result.AlreadyInstalled
-                    ? ApplicationStatus.AlreadyInstalled
-                    : ApplicationStatus.Installed;
-                app.StatusMessage = result.AlreadyInstalled
-                    ? Resources.Resources.Status_AlreadyInstalled
-                    : Resources.Resources.Status_Installed;
-
-                Interlocked.Increment(ref _successCount);
-                OnPropertyChanged(nameof(SuccessCount));
-
-                if (!result.AlreadyInstalled)
-                {
-                    Interlocked.Increment(ref _installedCount);
-                    OnPropertyChanged(nameof(InstalledCount));
-                }
-            }
-            else
-            {
-                app.Status = ApplicationStatus.Failed;
-                app.StatusMessage = Resources.Resources.Status_Failed;
-                app.ErrorMessage = result.Message;
-                Interlocked.Increment(ref _failedCount);
-                OnPropertyChanged(nameof(FailedCount));
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            app.Status = ApplicationStatus.Skipped;
-            app.StatusMessage = Resources.Resources.Status_Skipped;
-            Interlocked.Increment(ref _skippedCount);
-            OnPropertyChanged(nameof(SkippedCount));
-        }
-        catch (Exception ex)
-        {
-            app.Status = ApplicationStatus.Failed;
-            app.StatusMessage = Resources.Resources.Status_Failed;
-            app.ErrorMessage = ex.Message;
-            Interlocked.Increment(ref _failedCount);
-            OnPropertyChanged(nameof(FailedCount));
-        }
-        finally
-        {
-            _installSemaphore.Release();
-            Interlocked.Increment(ref _batchProgressCurrent);
-            BatchProgressPercent = (double)_batchProgressCurrent / BatchProgressTotal * 100;
-            OnPropertyChanged(nameof(BatchProgressCurrent));
-
-            // Update time estimate
-            _progressEstimator.UpdateProgress(_batchProgressCurrent);
-            EstimatedTimeRemaining = _progressEstimator.GetFormattedTimeRemaining();
-
-            // Update shared deployment state with progress and time
-            _deploymentStateService.UpdateProgress(
-                null,
-                _batchProgressCurrent,
-                BatchProgressTotal,
-                Resources.Resources.Progress_Deploying);
-            _deploymentStateService.UpdateTime(
-                _progressEstimator.GetFormattedElapsedTime(),
-                EstimatedTimeRemaining);
-        }
+        // Update shared deployment state with progress and time
+        _deploymentStateService.UpdateProgress(
+            progress.Current?.Name,
+            progress.Completed,
+            progress.Total,
+            Resources.Resources.Progress_Deploying);
+        _deploymentStateService.UpdateTime(
+            _progressEstimator.GetFormattedElapsedTime(),
+            EstimatedTimeRemaining);
     }
-#pragma warning restore MVVMTK0034
 }

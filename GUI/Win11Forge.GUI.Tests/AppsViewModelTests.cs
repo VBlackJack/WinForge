@@ -74,6 +74,8 @@ public class AppsViewModelTests
         MockAppSettingsService? settings = null,
         MockDeploymentStateService? deploymentState = null,
         IAppScanCoordinator? scanCoordinator = null,
+        IAppInstallationCoordinator? installationCoordinator = null,
+        IPauseGate? pauseGate = null,
         IFileDialogService? fileDialogService = null)
     {
         return new AppsViewModel(
@@ -81,6 +83,8 @@ public class AppsViewModelTests
             settings ?? CreateMockSettingsService(),
             deploymentState ?? CreateMockDeploymentStateService(),
             scanCoordinator ?? new TestAppScanCoordinator(),
+            installationCoordinator ?? new TestAppInstallationCoordinator(),
+            pauseGate ?? new TestPauseGate(),
             fileDialogService);
     }
 
@@ -407,6 +411,32 @@ public class AppsViewModelTests
             File.Delete(filePath);
         }
     }
+
+    [Fact]
+    public async Task InstallSelected_ShouldDelegateToCoordinatorAndApplyResultCounters()
+    {
+        // Arrange
+        var installationCoordinator = new TestAppInstallationCoordinator
+        {
+            Result = new AppInstallationResult(0, 2, 1, 1, 0, WasCancelled: false)
+        };
+        var viewModel = CreateViewModel(installationCoordinator: installationCoordinator);
+        await viewModel.InitializeAsync();
+        viewModel.UpdateSelectedCount();
+
+        // Act
+        await viewModel.InstallSelectedCommand.ExecuteAsync(null);
+
+        // Assert
+        var call = Assert.Single(installationCoordinator.Calls);
+        Assert.Equal(7, call.Count);
+        Assert.Equal(2, viewModel.InstalledCount);
+        Assert.Equal(3, viewModel.SuccessCount);
+        Assert.Equal(1, viewModel.FailedCount);
+        Assert.Equal(0, viewModel.SkippedCount);
+        Assert.Equal(DeploymentResult.PartialSuccess, viewModel.LastDeploymentResult);
+        Assert.True(viewModel.IsSummaryDialogOpen);
+    }
 }
 
 /// <summary>
@@ -630,5 +660,56 @@ internal sealed class TestAppScanCoordinator : IAppScanCoordinator
         }
 
         return Task.FromResult(Result with { Total = applications.Count });
+    }
+}
+
+/// <summary>
+/// Test implementation of IAppInstallationCoordinator for AppsViewModel unit tests.
+/// </summary>
+internal sealed class TestAppInstallationCoordinator : IAppInstallationCoordinator
+{
+    public List<IReadOnlyCollection<ApplicationModel>> Calls { get; } = [];
+
+    public AppInstallationResult Result { get; set; } = new(0, 0, 0, 0, 0, WasCancelled: false);
+
+    public Task<AppInstallationResult> InstallAsync(
+        IReadOnlyCollection<ApplicationModel> applications,
+        IProgress<AppOperationProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        Calls.Add(applications);
+
+        var completed = 0;
+        foreach (var app in applications)
+        {
+            completed++;
+            progress?.Report(new AppOperationProgress(completed, applications.Count, app));
+        }
+
+        return Task.FromResult(Result with { Total = applications.Count });
+    }
+}
+
+/// <summary>
+/// Test implementation of IPauseGate for AppsViewModel unit tests.
+/// </summary>
+internal sealed class TestPauseGate : IPauseGate
+{
+    public int PauseCallCount { get; private set; }
+    public int ResumeCallCount { get; private set; }
+
+    public void Pause() => PauseCallCount++;
+
+    public void Resume() => ResumeCallCount++;
+
+    public void Wait(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+    }
+
+    public Task WaitAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.CompletedTask;
     }
 }
