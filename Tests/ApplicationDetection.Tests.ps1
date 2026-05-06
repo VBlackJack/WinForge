@@ -336,16 +336,23 @@ Describe 'ApplicationDetection Module' {
 
     Context 'Detection Methods' {
         It 'Should support File detection method' {
-            $app = [PSCustomObject]@{
-                Name = 'Notepad'
-                Sources = $null
-                Detection = @{
-                    Method = 'File'
-                    Path = '%SystemRoot%\System32\notepad.exe'
+            $fixturePath = Join-Path ([System.IO.Path]::GetTempPath()) "Win11Forge-FileDetection-$([System.Guid]::NewGuid()).tmp"
+            try {
+                Set-Content -Path $fixturePath -Value 'test fixture'
+
+                $app = [PSCustomObject]@{
+                    Name = 'FileFixtureApp'
+                    Sources = $null
+                    Detection = [PSCustomObject]@{
+                        Method = 'File'
+                        Path = $fixturePath
+                    }
                 }
+                $result = Test-ApplicationInstalled -Application $app
+                $result | Should -BeTrue
+            } finally {
+                Remove-Item -LiteralPath $fixturePath -Force -ErrorAction SilentlyContinue
             }
-            $result = Test-ApplicationInstalled -Application $app
-            $result | Should -BeTrue
         }
 
         It 'Should support Registry detection method' {

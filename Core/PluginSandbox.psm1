@@ -552,11 +552,9 @@ function Invoke-PluginLoadSandboxed {
         }
 
         $dangerousCmds = $script:DangerousCommands
+        $moduleName = [System.IO.Path]::GetFileNameWithoutExtension($PluginPath)
         $job = Start-Job -ScriptBlock {
-            param($Path, $ModuleContent, $DangerousCommands)
-
-            # Security: Enforce Constrained Language Mode
-            $ExecutionContext.SessionState.LanguageMode = 'ConstrainedLanguage'
+            param($Path, $ModuleContent, $DangerousCommands, $ModuleName)
 
             # Security: Re-validate the module content AST inside job scope (TOCTOU prevention)
             $tokens = $null
@@ -601,11 +599,14 @@ function Invoke-PluginLoadSandboxed {
                 }
             }
 
+            # Security: Enforce Constrained Language Mode for module execution.
+            $ExecutionContext.SessionState.LanguageMode = 'ConstrainedLanguage'
+
             # Try to import the module
             Import-Module $Path -Force -ErrorAction Stop
 
             # Return exported commands count as validation
-            $module = Get-Module -Name ([System.IO.Path]::GetFileNameWithoutExtension($Path))
+            $module = Get-Module -Name $ModuleName
             if ($module) {
                 return @{
                     Valid = $true
@@ -614,7 +615,7 @@ function Invoke-PluginLoadSandboxed {
             }
 
             return @{ Valid = $true; ExportedCommands = 0 }
-        } -ArgumentList $PluginPath, $moduleContent, $dangerousCmds
+        } -ArgumentList $PluginPath, $moduleContent, $dangerousCmds, $moduleName
 
         $completed = $job | Wait-Job -Timeout $loadTimeout
 

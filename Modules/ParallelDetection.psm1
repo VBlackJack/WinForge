@@ -343,7 +343,12 @@ function Test-StoreAppDetection {
     if (-not $list) { return $false }
 
     # Check by Store ID
-    if ($App.Sources.Store -and $list -match [regex]::Escape($App.Sources.Store)) {
+    $storeId = $null
+    if ($App.PSObject.Properties['Sources'] -and $App.Sources -and $App.Sources.PSObject.Properties['Store']) {
+        $storeId = $App.Sources.Store
+    }
+
+    if ($storeId -and $list -match [regex]::Escape($storeId)) {
         if ($list -notmatch "No installed package") {
             return $true
         }
