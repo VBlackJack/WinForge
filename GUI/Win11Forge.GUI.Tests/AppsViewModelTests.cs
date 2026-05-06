@@ -76,7 +76,9 @@ public class AppsViewModelTests
         IAppScanCoordinator? scanCoordinator = null,
         IAppInstallationCoordinator? installationCoordinator = null,
         IAppUpdateCoordinator? updateCoordinator = null,
+        IAppUninstallCoordinator? uninstallCoordinator = null,
         IPauseGate? pauseGate = null,
+        IDialogService? dialogService = null,
         IFileDialogService? fileDialogService = null)
     {
         return new AppsViewModel(
@@ -86,7 +88,9 @@ public class AppsViewModelTests
             scanCoordinator ?? new TestAppScanCoordinator(),
             installationCoordinator ?? new TestAppInstallationCoordinator(),
             updateCoordinator ?? new TestAppUpdateCoordinator(),
+            uninstallCoordinator ?? new TestAppUninstallCoordinator(),
             pauseGate ?? new TestPauseGate(),
+            dialogService ?? new TestDialogService(),
             fileDialogService);
     }
 
@@ -546,6 +550,135 @@ public class AppsViewModelTests
         Assert.Equal(1, viewModel.UpdatesAvailableCount);
         Assert.False(viewModel.IsInstalling);
     }
+
+    [Fact]
+    public async Task UninstallSelected_WhenCancelled_ShouldAskForConfirmationAndNotDelegate()
+    {
+        // Arrange
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(false);
+        var uninstallCoordinator = new TestAppUninstallCoordinator();
+        var viewModel = CreateViewModel(
+            uninstallCoordinator: uninstallCoordinator,
+            dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
+        foreach (var app in apps)
+        {
+            app.Status = ApplicationStatus.Installed;
+            app.IsSelected = true;
+        }
+
+        viewModel.UpdateSelectedCount();
+
+        // Act
+        await viewModel.UninstallSelectedCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Single(dialogService.ConfirmRequests);
+        Assert.Empty(uninstallCoordinator.Calls);
+        Assert.False(viewModel.IsUninstalling);
+    }
+
+    [Fact]
+    public async Task UninstallSelected_ShouldDelegateAndApplyResultCounters()
+    {
+        // Arrange
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(true);
+        var uninstallCoordinator = new TestAppUninstallCoordinator
+        {
+            Result = new AppUninstallResult(0, 2, 1, 0, WasCancelled: false)
+        };
+        var viewModel = CreateViewModel(
+            uninstallCoordinator: uninstallCoordinator,
+            dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
+        foreach (var app in apps)
+        {
+            app.Status = ApplicationStatus.Installed;
+            app.IsSelected = true;
+        }
+
+        viewModel.InstalledCount = 3;
+        viewModel.UpdateSelectedCount();
+
+        // Act
+        await viewModel.UninstallSelectedCommand.ExecuteAsync(null);
+
+        // Assert
+        var call = Assert.Single(uninstallCoordinator.Calls);
+        Assert.Equal(3, call.Count);
+        Assert.Equal(1, viewModel.InstalledCount);
+        Assert.Equal(2, viewModel.SuccessCount);
+        Assert.Equal(1, viewModel.FailedCount);
+        Assert.Equal(0, viewModel.SkippedCount);
+        Assert.Equal(DeploymentResult.PartialSuccess, viewModel.LastDeploymentResult);
+        Assert.True(viewModel.IsSummaryDialogOpen);
+        Assert.False(viewModel.IsUninstalling);
+    }
+
+    [Fact]
+    public async Task UninstallSelected_WhenCoordinatorReportsCancelled_ShouldSetCancelledResult()
+    {
+        // Arrange
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(true);
+        var uninstallCoordinator = new TestAppUninstallCoordinator
+        {
+            Result = new AppUninstallResult(0, 1, 0, 1, WasCancelled: true)
+        };
+        var viewModel = CreateViewModel(
+            uninstallCoordinator: uninstallCoordinator,
+            dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
+        foreach (var app in apps)
+        {
+            app.Status = ApplicationStatus.Installed;
+            app.IsSelected = true;
+        }
+
+        viewModel.InstalledCount = 2;
+        viewModel.UpdateSelectedCount();
+
+        // Act
+        await viewModel.UninstallSelectedCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Single(uninstallCoordinator.Calls);
+        Assert.Equal(1, viewModel.InstalledCount);
+        Assert.Equal(1, viewModel.SuccessCount);
+        Assert.Equal(0, viewModel.FailedCount);
+        Assert.Equal(1, viewModel.SkippedCount);
+        Assert.Equal(DeploymentResult.Cancelled, viewModel.LastDeploymentResult);
+        Assert.True(viewModel.IsSummaryDialogOpen);
+    }
+
+    [Fact]
+    public async Task UninstallApp_ShouldDelegateSingleAppAndDecrementInstalledCount()
+    {
+        // Arrange
+        var uninstallCoordinator = new TestAppUninstallCoordinator
+        {
+            Result = new AppUninstallResult(0, 1, 0, 0, WasCancelled: false)
+        };
+        var viewModel = CreateViewModel(uninstallCoordinator: uninstallCoordinator);
+        await viewModel.InitializeAsync();
+        var app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        app.Status = ApplicationStatus.Installed;
+        viewModel.InstalledCount = 1;
+
+        // Act
+        await viewModel.UninstallAppCommand.ExecuteAsync(app);
+
+        // Assert
+        var call = Assert.Single(uninstallCoordinator.Calls);
+        Assert.Same(app, Assert.Single(call));
+        Assert.Equal(0, viewModel.InstalledCount);
+        Assert.False(viewModel.IsSummaryDialogOpen);
+    }
 }
 
 /// <summary>
@@ -848,6 +981,33 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
         }
 
         return Task.FromResult(UpdateResult with { Total = applications.Count });
+    }
+}
+
+/// <summary>
+/// Test implementation of IAppUninstallCoordinator for AppsViewModel unit tests.
+/// </summary>
+internal sealed class TestAppUninstallCoordinator : IAppUninstallCoordinator
+{
+    public List<IReadOnlyCollection<ApplicationModel>> Calls { get; } = [];
+
+    public AppUninstallResult Result { get; set; } = new(0, 0, 0, 0, WasCancelled: false);
+
+    public Task<AppUninstallResult> UninstallAsync(
+        IReadOnlyCollection<ApplicationModel> applications,
+        IProgress<AppOperationProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        Calls.Add(applications);
+
+        var completed = 0;
+        foreach (var app in applications)
+        {
+            completed++;
+            progress?.Report(new AppOperationProgress(completed, applications.Count, app));
+        }
+
+        return Task.FromResult(Result with { Total = applications.Count });
     }
 }
 

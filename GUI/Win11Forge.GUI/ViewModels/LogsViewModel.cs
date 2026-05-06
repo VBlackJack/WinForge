@@ -37,6 +37,7 @@ public partial class LogsViewModel : ObservableObject
     private readonly string _logsPath;
     private readonly string _jsonLogsPath;
     private readonly IFileDialogService _fileDialogService;
+    private readonly IDialogService _dialogService;
 
     [ObservableProperty]
     private ObservableCollection<LogFileEntry> _logFiles = new();
@@ -69,9 +70,10 @@ public partial class LogsViewModel : ObservableObject
 
     public List<string> LogLevels { get; } = new() { "All", "Text", "JSON", "Error" };
 
-    public LogsViewModel(IFileDialogService? fileDialogService = null)
+    public LogsViewModel(IFileDialogService? fileDialogService = null, IDialogService? dialogService = null)
     {
         _fileDialogService = fileDialogService ?? new FileDialogService();
+        _dialogService = dialogService ?? new DialogService();
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         _logsPath = Path.Combine(localAppData, "Win11Forge", "Logs");
         _jsonLogsPath = Path.Combine(_logsPath, "json");
@@ -362,15 +364,15 @@ public partial class LogsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ClearOldLogs()
+    private async Task ClearOldLogsAsync()
     {
-        var result = System.Windows.MessageBox.Show(
-            Resources.Resources.Confirm_ClearOldLogs_Message ?? "Delete log files older than 7 days?",
+        var confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.Confirm_ClearOldLogs_Title ?? "Clear Old Logs",
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            Resources.Resources.Confirm_ClearOldLogs_Message ?? "Delete log files older than 7 days?",
+            Resources.Resources.Common_Yes,
+            Resources.Resources.Common_No);
 
-        if (result != System.Windows.MessageBoxResult.Yes) return;
+        if (!confirmed) return;
 
         try
         {
@@ -448,17 +450,17 @@ public partial class LogsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void DeleteLog(LogFileEntry? logFile)
+    private async Task DeleteLogAsync(LogFileEntry? logFile)
     {
         if (logFile == null) return;
 
-        var result = System.Windows.MessageBox.Show(
-            $"Delete {logFile.FileName}?",
+        var confirmed = await _dialogService.ShowConfirmAsync(
             "Delete Log File",
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            $"Delete {logFile.FileName}?",
+            Resources.Resources.Common_Yes,
+            Resources.Resources.Common_No);
 
-        if (result != System.Windows.MessageBoxResult.Yes) return;
+        if (!confirmed) return;
 
         try
         {

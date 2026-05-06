@@ -99,22 +99,53 @@ public class SettingsViewModelTests
     /// <summary>
     /// Verifies that clearing history invokes the history service.
     /// </summary>
-    [Fact(Skip = "Requires an interactive MessageBox; re-enable when SettingsViewModel dialogs are service-backed.")]
+    [Fact]
     public async Task ClearHistory_ShouldInvokeService()
     {
         // Arrange
         var settingsService = new MockAppSettingsService();
         var historyService = new MockDeploymentHistoryService();
         var powerShellBridge = new MockPowerShellBridge();
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(true);
+        var viewModel = new SettingsViewModel(
+            settingsService,
+            historyService,
+            powerShellBridge,
+            dialogService: dialogService);
 
         // Act
         await viewModel.ClearHistoryCommand.ExecuteAsync(null);
 
         // Assert
+        Assert.Single(dialogService.ConfirmRequests);
         Assert.True(historyService.WasCleared,
             "History service ClearHistoryAsync should be called");
         Assert.NotNull(viewModel.StatusMessage);
+    }
+
+    /// <summary>
+    /// Verifies that clearing history stops when confirmation is declined.
+    /// </summary>
+    [Fact]
+    public async Task ClearHistory_WhenCancelled_ShouldNotInvokeService()
+    {
+        // Arrange
+        var historyService = new MockDeploymentHistoryService();
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(false);
+        var viewModel = new SettingsViewModel(
+            new MockAppSettingsService(),
+            historyService,
+            new MockPowerShellBridge(),
+            dialogService: dialogService);
+
+        // Act
+        await viewModel.ClearHistoryCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Single(dialogService.ConfirmRequests);
+        Assert.False(historyService.WasCleared);
     }
 
     /// <summary>

@@ -83,6 +83,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppScanCoordinator, AppScanCoordinator>();
         services.AddSingleton<IAppInstallationCoordinator, AppInstallationCoordinator>();
         services.AddSingleton<IAppUpdateCoordinator, AppUpdateCoordinator>();
+        services.AddSingleton<IAppUninstallCoordinator, AppUninstallCoordinator>();
 
         // Register ViewModels as transient (new instance per request)
         services.AddTransient<DashboardViewModel>();

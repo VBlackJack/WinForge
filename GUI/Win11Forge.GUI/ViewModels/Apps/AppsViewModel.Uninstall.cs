@@ -16,6 +16,7 @@
 
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Services.Coordinators;
 
 namespace Win11Forge.GUI.ViewModels;
 
@@ -29,47 +30,16 @@ public partial class AppsViewModel
     {
         if (app == null) return;
 
-        // PR8 extracts this workflow.
-        using var installSemaphore = new SemaphoreSlim(_maxParallelInstalls);
-        await installSemaphore.WaitAsync();
-
         try
         {
-            app.Status = ApplicationStatus.Uninstalling;
-            app.StatusMessage = Resources.Resources.Status_Uninstalling;
-
-            var result = await _powerShellBridge.UninstallApplicationAsync(
-                app,
-                progress => app.StatusMessage = progress);
-
-            app.LogOutput = result.Logs;
-
-            if (result.Success)
-            {
-                app.Status = ApplicationStatus.Uninstalled;
-                app.StatusMessage = Resources.Resources.Status_Uninstalled;
-
-                if (InstalledCount > 0)
-                {
-                    InstalledCount--;
-                }
-            }
-            else
-            {
-                app.Status = ApplicationStatus.Failed;
-                app.StatusMessage = Resources.Resources.Status_Failed;
-                app.ErrorMessage = result.Message;
-            }
+            var result = await _uninstallCoordinator.UninstallAsync([app]);
+            InstalledCount = Math.Max(0, InstalledCount - result.UninstalledCount);
         }
         catch (Exception ex)
         {
             app.Status = ApplicationStatus.Failed;
             app.StatusMessage = Resources.Resources.Status_Failed;
             app.ErrorMessage = ex.Message;
-        }
-        finally
-        {
-            installSemaphore.Release();
         }
     }
 
@@ -80,7 +50,7 @@ public partial class AppsViewModel
 
     /// <summary>
     /// Uninstalls all selected applications.
-    /// Uses parallel execution with semaphore-controlled concurrency.
+    /// Uses parallel execution with coordinator-controlled concurrency.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanUninstallSelected))]
     private async Task UninstallSelectedAsync()
@@ -93,15 +63,13 @@ public partial class AppsViewModel
 
         if (selectedApps.Count == 0) return;
 
-        // Show confirmation dialog
         var confirmMessage = string.Format(Resources.Resources.Confirm_Uninstall_Message, selectedApps.Count);
-        var result = System.Windows.MessageBox.Show(
-            confirmMessage,
+        var confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.Confirm_Uninstall_Title,
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
-
-        if (result != System.Windows.MessageBoxResult.Yes)
+            confirmMessage,
+            Resources.Resources.Common_Yes,
+            Resources.Resources.Common_No);
+        if (!confirmed)
         {
             return;
         }
@@ -120,21 +88,22 @@ public partial class AppsViewModel
         SkippedCount = 0;
         EstimatedTimeRemaining = Resources.Resources.Progress_Calculating;
 
-        // Start progress estimator
         _progressEstimator.Start(selectedApps.Count);
 
         try
         {
-            // Create tasks for all apps to run in parallel (limited by semaphore)
-            // PR8 extracts this workflow.
-            using var installSemaphore = new SemaphoreSlim(_maxParallelInstalls);
-            var tasks = selectedApps.Select(app => UninstallSingleAppAsync(
-                app, installSemaphore, _batchCancellationTokenSource.Token));
+            var result = await _uninstallCoordinator.UninstallAsync(
+                selectedApps,
+                new Progress<AppOperationProgress>(ApplyUninstallProgress),
+                _batchCancellationTokenSource.Token);
 
-            await Task.WhenAll(tasks);
+            ApplyUninstallProgress(new AppOperationProgress(result.Total, result.Total, Current: null));
+            InstalledCount = Math.Max(0, InstalledCount - result.UninstalledCount);
+            SuccessCount = result.UninstalledCount;
+            FailedCount = result.FailedCount;
+            SkippedCount = result.SkippedCount;
 
-            // Determine final result
-            if (_batchCancellationTokenSource.Token.IsCancellationRequested)
+            if (result.WasCancelled)
             {
                 LastDeploymentResult = DeploymentResult.Cancelled;
             }
@@ -162,113 +131,16 @@ public partial class AppsViewModel
         }
     }
 
-    /// <summary>
-    /// Uninstalls a single application with semaphore-controlled concurrency.
-    /// </summary>
-    /// <remarks>
-    /// Uses Interlocked operations for thread-safe counter updates, which require backing field access.
-    /// </remarks>
-#pragma warning disable MVVMTK0034 // Direct field reference required for Interlocked operations
-    private async Task UninstallSingleAppAsync(
-        ApplicationModel app,
-        SemaphoreSlim installSemaphore,
-        CancellationToken cancellationToken)
+    private void ApplyUninstallProgress(AppOperationProgress progress)
     {
-        // Check for cancellation before acquiring semaphore
-        if (cancellationToken.IsCancellationRequested)
-        {
-            app.Status = ApplicationStatus.Skipped;
-            app.StatusMessage = Resources.Resources.Status_Skipped;
-            Interlocked.Increment(ref _skippedCount);
-            OnPropertyChanged(nameof(SkippedCount));
-            return;
-        }
+        BatchProgressTotal = progress.Total;
+        BatchProgressCurrent = progress.Completed;
+        BatchProgressPercent = progress.Total > 0
+            ? (double)progress.Completed / progress.Total * 100
+            : 0;
+        CurrentBatchAppName = progress.Current?.Name;
 
-        // Wait if paused
-        try
-        {
-            _pauseGate.Wait(cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            app.Status = ApplicationStatus.Skipped;
-            app.StatusMessage = Resources.Resources.Status_Skipped;
-            Interlocked.Increment(ref _skippedCount);
-            OnPropertyChanged(nameof(SkippedCount));
-            return;
-        }
-
-        await installSemaphore.WaitAsync(cancellationToken);
-
-        try
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                app.Status = ApplicationStatus.Skipped;
-                app.StatusMessage = Resources.Resources.Status_Skipped;
-                Interlocked.Increment(ref _skippedCount);
-                OnPropertyChanged(nameof(SkippedCount));
-                return;
-            }
-
-            app.Status = ApplicationStatus.Uninstalling;
-            app.StatusMessage = Resources.Resources.Status_Uninstalling;
-            CurrentBatchAppName = app.Name;
-
-            var result = await _powerShellBridge.UninstallApplicationAsync(
-                app,
-                progress => app.StatusMessage = progress);
-
-            app.LogOutput = result.Logs;
-
-            if (result.Success)
-            {
-                app.Status = ApplicationStatus.Uninstalled;
-                app.StatusMessage = Resources.Resources.Status_Uninstalled;
-                Interlocked.Increment(ref _successCount);
-                OnPropertyChanged(nameof(SuccessCount));
-
-                if (_installedCount > 0)
-                {
-                    Interlocked.Decrement(ref _installedCount);
-                    OnPropertyChanged(nameof(InstalledCount));
-                }
-            }
-            else
-            {
-                app.Status = ApplicationStatus.Failed;
-                app.StatusMessage = Resources.Resources.Status_Failed;
-                app.ErrorMessage = result.Message;
-                Interlocked.Increment(ref _failedCount);
-                OnPropertyChanged(nameof(FailedCount));
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            app.Status = ApplicationStatus.Skipped;
-            app.StatusMessage = Resources.Resources.Status_Skipped;
-            Interlocked.Increment(ref _skippedCount);
-            OnPropertyChanged(nameof(SkippedCount));
-        }
-        catch (Exception ex)
-        {
-            app.Status = ApplicationStatus.Failed;
-            app.StatusMessage = Resources.Resources.Status_Failed;
-            app.ErrorMessage = ex.Message;
-            Interlocked.Increment(ref _failedCount);
-            OnPropertyChanged(nameof(FailedCount));
-        }
-        finally
-        {
-            installSemaphore.Release();
-            Interlocked.Increment(ref _batchProgressCurrent);
-            BatchProgressPercent = (double)_batchProgressCurrent / BatchProgressTotal * 100;
-            OnPropertyChanged(nameof(BatchProgressCurrent));
-
-            // Update time estimate
-            _progressEstimator.UpdateProgress(_batchProgressCurrent);
-            EstimatedTimeRemaining = _progressEstimator.GetFormattedTimeRemaining();
-        }
+        _progressEstimator.UpdateProgress(progress.Completed);
+        EstimatedTimeRemaining = _progressEstimator.GetFormattedTimeRemaining();
     }
-#pragma warning restore MVVMTK0034
 }

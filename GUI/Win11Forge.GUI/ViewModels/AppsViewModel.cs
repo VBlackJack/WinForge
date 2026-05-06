@@ -54,7 +54,9 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private readonly IAppScanCoordinator _scanCoordinator;
     private readonly IAppInstallationCoordinator _installationCoordinator;
     private readonly IAppUpdateCoordinator _updateCoordinator;
+    private readonly IAppUninstallCoordinator _uninstallCoordinator;
     private readonly IPauseGate _pauseGate;
+    private readonly IDialogService _dialogService;
     private readonly ProgressEstimator _progressEstimator = new();
     private readonly int _maxParallelInstalls;
     private List<ApplicationModel> _allApplications = [];
@@ -273,7 +275,9 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         IAppScanCoordinator scanCoordinator,
         IAppInstallationCoordinator installationCoordinator,
         IAppUpdateCoordinator updateCoordinator,
+        IAppUninstallCoordinator uninstallCoordinator,
         IPauseGate pauseGate,
+        IDialogService? dialogService = null,
         IFileDialogService? fileDialogService = null)
     {
         _powerShellBridge = powerShellBridge;
@@ -282,7 +286,9 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         _scanCoordinator = scanCoordinator;
         _installationCoordinator = installationCoordinator;
         _updateCoordinator = updateCoordinator;
+        _uninstallCoordinator = uninstallCoordinator;
         _pauseGate = pauseGate;
+        _dialogService = dialogService ?? new DialogService();
         _fileDialogService = fileDialogService ?? new FileDialogService();
 
         // Subscribe to pause/resume/cancel requests from the monitoring view

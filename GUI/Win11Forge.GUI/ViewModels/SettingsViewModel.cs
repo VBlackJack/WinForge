@@ -44,6 +44,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private readonly IApplicationLifetimeService _applicationLifetimeService;
     private readonly IProcessLauncher _processLauncher;
     private readonly IFileDialogService _fileDialogService;
+    private readonly IDialogService _dialogService;
     private string _initialLanguageCode = string.Empty;
     private bool _isLoadingSettings;
     private bool _settingsLoaded;
@@ -320,7 +321,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         IApplicationDetectionService? detectionService = null,
         IApplicationLifetimeService? applicationLifetimeService = null,
         IProcessLauncher? processLauncher = null,
-        IFileDialogService? fileDialogService = null)
+        IFileDialogService? fileDialogService = null,
+        IDialogService? dialogService = null)
     {
         _settingsService = settingsService;
         _historyService = historyService;
@@ -331,6 +333,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         _applicationLifetimeService = applicationLifetimeService ?? new ApplicationLifetimeService();
         _processLauncher = processLauncher ?? new ProcessLauncher();
         _fileDialogService = fileDialogService ?? new FileDialogService();
+        _dialogService = dialogService ?? new DialogService();
 
         // Subscribe to error history changes
         if (_errorHistoryService != null)
@@ -623,14 +626,13 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private async Task ClearHistoryAsync()
     {
-        // Show confirmation dialog
-        var result = System.Windows.MessageBox.Show(
-            Resources.Resources.Confirm_ClearHistory_Message,
+        var confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.Confirm_ClearHistory_Title,
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            Resources.Resources.Confirm_ClearHistory_Message,
+            Resources.Resources.Common_Yes,
+            Resources.Resources.Common_No);
 
-        if (result != System.Windows.MessageBoxResult.Yes)
+        if (!confirmed)
         {
             return;
         }
@@ -764,15 +766,15 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// Resets all settings to default values.
     /// </summary>
     [RelayCommand]
-    private void ResetToDefaults()
+    private async Task ResetToDefaultsAsync()
     {
-        var result = System.Windows.MessageBox.Show(
-            Resources.Resources.Confirm_ResetSettings_Message,
+        var confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.Confirm_ResetSettings_Title,
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Warning);
+            Resources.Resources.Confirm_ResetSettings_Message,
+            Resources.Resources.Common_Yes,
+            Resources.Resources.Common_No);
 
-        if (result != System.Windows.MessageBoxResult.Yes)
+        if (!confirmed)
         {
             return;
         }
@@ -963,13 +965,13 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
             return;
         }
 
-        var result = System.Windows.MessageBox.Show(
-            Resources.Resources.ScheduledDeployment_ConfirmRemove,
+        var confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.ScheduledDeployment_ConfirmRemoveTitle,
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Question);
+            Resources.Resources.ScheduledDeployment_ConfirmRemove,
+            Resources.Resources.Common_Yes,
+            Resources.Resources.Common_No);
 
-        if (result != System.Windows.MessageBoxResult.Yes)
+        if (!confirmed)
         {
             return;
         }

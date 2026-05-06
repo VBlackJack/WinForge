@@ -15,6 +15,7 @@
  */
 
 using Win11Forge.GUI.ViewModels;
+using System.IO;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -142,5 +143,46 @@ public class LogsViewModelTests
         Assert.Equal("ZIP Archive (*.zip)|*.zip", fileDialogService.SaveOptions[0].Filter);
         Assert.Equal(".zip", fileDialogService.SaveOptions[0].DefaultExtension);
         Assert.StartsWith("Win11Forge_Logs_", fileDialogService.SaveOptions[0].DefaultFileName);
+    }
+
+    [Fact]
+    public async Task ClearOldLogs_WhenCancelled_ShouldOnlyAskForConfirmation()
+    {
+        // Arrange
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(false);
+        var viewModel = new LogsViewModel(dialogService: dialogService);
+
+        // Act
+        await viewModel.ClearOldLogsCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Single(dialogService.ConfirmRequests);
+    }
+
+    [Fact]
+    public async Task DeleteLog_WhenCancelled_ShouldNotRemoveLog()
+    {
+        // Arrange
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(false);
+        var viewModel = new LogsViewModel(dialogService: dialogService);
+        var logFile = new LogFileEntry
+        {
+            FileName = "test.log",
+            FullPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.log"),
+            LastModified = DateTime.Now,
+            LogType = "Text"
+        };
+        viewModel.LogFiles.Add(logFile);
+        viewModel.FilteredLogFiles.Add(logFile);
+
+        // Act
+        await viewModel.DeleteLogCommand.ExecuteAsync(logFile);
+
+        // Assert
+        Assert.Single(dialogService.ConfirmRequests);
+        Assert.Contains(logFile, viewModel.LogFiles);
+        Assert.Contains(logFile, viewModel.FilteredLogFiles);
     }
 }
