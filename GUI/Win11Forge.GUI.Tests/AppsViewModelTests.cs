@@ -20,6 +20,7 @@ using System.IO;
 using System.Text.Json;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
+using Win11Forge.GUI.Services.Coordinators;
 using Win11Forge.GUI.ViewModels;
 
 namespace Win11Forge.GUI.Tests;
@@ -72,12 +73,14 @@ public class AppsViewModelTests
         MockPowerShellBridge? bridge = null,
         MockAppSettingsService? settings = null,
         MockDeploymentStateService? deploymentState = null,
+        IAppScanCoordinator? scanCoordinator = null,
         IFileDialogService? fileDialogService = null)
     {
         return new AppsViewModel(
             bridge ?? CreateMockBridge(),
             settings ?? CreateMockSettingsService(),
             deploymentState ?? CreateMockDeploymentStateService(),
+            scanCoordinator ?? new TestAppScanCoordinator(),
             fileDialogService);
     }
 
@@ -600,5 +603,32 @@ internal class MockDeploymentStateService : IDeploymentStateService
     private void SuppressWarnings()
     {
         StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+}
+
+/// <summary>
+/// Test implementation of IAppScanCoordinator for AppsViewModel unit tests.
+/// </summary>
+internal sealed class TestAppScanCoordinator : IAppScanCoordinator
+{
+    public List<IReadOnlyCollection<ApplicationModel>> Calls { get; } = [];
+
+    public AppScanResult Result { get; set; } = new(0, 0, 0, WasCancelled: false);
+
+    public Task<AppScanResult> ScanAsync(
+        IReadOnlyCollection<ApplicationModel> applications,
+        IProgress<AppOperationProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        Calls.Add(applications);
+
+        var completed = 0;
+        foreach (var app in applications)
+        {
+            completed++;
+            progress?.Report(new AppOperationProgress(completed, applications.Count, app));
+        }
+
+        return Task.FromResult(Result with { Total = applications.Count });
     }
 }

@@ -48,10 +48,11 @@ public partial class AppsViewModel
 
             if (installedApps.Count == 0) return;
 
-            // Check updates in parallel with semaphore
+            // Check updates in parallel with a local semaphore. PR7 extracts this workflow.
+            using var scanSemaphore = new SemaphoreSlim(_maxParallelScans);
             var tasks = installedApps.Select(async app =>
             {
-                await _scanSemaphore.WaitAsync();
+                await scanSemaphore.WaitAsync();
                 try
                 {
                     app.StatusMessage = Resources.Resources.Common_Loading;
@@ -76,7 +77,7 @@ public partial class AppsViewModel
                 }
                 finally
                 {
-                    _scanSemaphore.Release();
+                    scanSemaphore.Release();
                 }
             });
 

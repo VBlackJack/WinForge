@@ -24,6 +24,7 @@ using Win11Forge.GUI.Messages;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services;
+using Win11Forge.GUI.Services.Coordinators;
 
 namespace Win11Forge.GUI.ViewModels;
 
@@ -50,9 +51,10 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private readonly IAppSettingsService _settingsService;
     private readonly IDeploymentStateService _deploymentStateService;
     private readonly IFileDialogService _fileDialogService;
+    private readonly IAppScanCoordinator _scanCoordinator;
     private readonly ProgressEstimator _progressEstimator = new();
-    private SemaphoreSlim _scanSemaphore;
     private SemaphoreSlim _installSemaphore;
+    private readonly int _maxParallelScans;
     private List<ApplicationModel> _allApplications = [];
     private CancellationTokenSource? _scanCancellationTokenSource;
     private CancellationTokenSource? _batchCancellationTokenSource;
@@ -267,11 +269,13 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         IPowerShellBridge powerShellBridge,
         IAppSettingsService settingsService,
         IDeploymentStateService deploymentStateService,
+        IAppScanCoordinator scanCoordinator,
         IFileDialogService? fileDialogService = null)
     {
         _powerShellBridge = powerShellBridge;
         _settingsService = settingsService;
         _deploymentStateService = deploymentStateService;
+        _scanCoordinator = scanCoordinator;
         _fileDialogService = fileDialogService ?? new FileDialogService();
 
         // Subscribe to pause/resume/cancel requests from the monitoring view
@@ -282,9 +286,8 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         // Initialize semaphores with configured settings
         var settings = _settingsService.LoadSettings();
         var maxParallelInstalls = Math.Clamp(settings.MaxParallelInstalls, 1, 10);
-        var maxParallelScans = Math.Clamp(settings.MaxParallelScans, 1, 20);
+        _maxParallelScans = Math.Clamp(settings.MaxParallelScans, 1, 20);
         _installSemaphore = new SemaphoreSlim(maxParallelInstalls);
-        _scanSemaphore = new SemaphoreSlim(maxParallelScans);
 
         // Restore persisted filter state from settings
         _searchText = settings.AppsLastSearchText ?? string.Empty;
@@ -509,7 +512,6 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             _batchCancellationTokenSource?.Dispose();
 
             // Dispose synchronization primitives
-            _scanSemaphore?.Dispose();
             _installSemaphore?.Dispose();
             _pauseEvent?.Dispose();
 

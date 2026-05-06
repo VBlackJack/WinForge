@@ -15,6 +15,7 @@
  */
 
 using Microsoft.Extensions.DependencyInjection;
+using Win11Forge.GUI.Services.Coordinators;
 using Win11Forge.GUI.Services.Implementations;
 using Win11Forge.GUI.Services.PowerShell;
 using Win11Forge.GUI.ViewModels;
@@ -78,6 +79,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IApplicationEditorDialogService, ApplicationEditorDialogService>();
         services.AddSingleton<IApplicationLifetimeService, ApplicationLifetimeService>();
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
+        services.AddSingleton<IAppScanCoordinator, AppScanCoordinator>();
 
         // Register ViewModels as transient (new instance per request)
         services.AddTransient<DashboardViewModel>();

@@ -1,0 +1,321 @@
+/*
+ * Copyright 2026 Julien Bombled
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+using System.Diagnostics;
+using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Resources;
+using Win11Forge.GUI.Services.Coordinators.Internal;
+
+namespace Win11Forge.GUI.Services.Coordinators;
+
+/// <summary>
+/// Coordinates application installation status scans and update detection.
+/// </summary>
+public sealed class AppScanCoordinator : IAppScanCoordinator
+{
+    private readonly IPowerShellBridge _powerShellBridge;
+    private readonly IApplicationDetectionService _detectionService;
+    private readonly IAppSettingsService _settingsService;
+
+    public AppScanCoordinator(
+        IPowerShellBridge powerShellBridge,
+        IApplicationDetectionService detectionService,
+        IAppSettingsService settingsService)
+    {
+        _powerShellBridge = powerShellBridge ?? throw new ArgumentNullException(nameof(powerShellBridge));
+        _detectionService = detectionService ?? throw new ArgumentNullException(nameof(detectionService));
+        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+    }
+
+    /// <inheritdoc/>
+    public async Task<AppScanResult> ScanAsync(
+        IReadOnlyCollection<ApplicationModel> applications,
+        IProgress<AppOperationProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(applications);
+
+        if (applications.Count == 0)
+        {
+            return new AppScanResult(0, 0, 0, WasCancelled: false);
+        }
+
+        var apps = applications.ToList();
+
+        try
+        {
+            var batchResults = await _powerShellBridge.GetBatchApplicationStatusAsync(apps).ConfigureAwait(false);
+            if (batchResults != null)
+            {
+                Debug.WriteLine($"Batch detection succeeded: {batchResults.Count} apps checked");
+                return await ScanWithBatchResultsAsync(
+                    apps,
+                    batchResults,
+                    progress,
+                    cancellationToken).ConfigureAwait(false);
+            }
+
+            var runner = CreateRunner();
+            var itemResults = await runner.RunAsync(
+                apps,
+                ScanApplicationAsync,
+                app => app,
+                progress,
+                cancellationToken).ConfigureAwait(false);
+
+            return BuildResult(apps.Count, itemResults, WasCancelled: false);
+        }
+        catch (OperationCanceledException)
+        {
+            return BuildResultFromCurrentState(apps, WasCancelled: true);
+        }
+    }
+
+    private async Task<AppScanResult> ScanWithBatchResultsAsync(
+        IReadOnlyList<ApplicationModel> apps,
+        IReadOnlyDictionary<string, BatchAppStatus> batchResults,
+        IProgress<AppOperationProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        var installedApps = new List<ApplicationModel>();
+        var installedCount = 0;
+        var completed = 0;
+
+        foreach (var app in apps)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (batchResults.TryGetValue(app.AppId, out var batchStatus))
+            {
+                app.Status = batchStatus.Status;
+                if (IsInstalledStatus(batchStatus.Status))
+                {
+                    app.StatusMessage = Resources.Resources.Status_Installed;
+                    if (!string.IsNullOrEmpty(batchStatus.Version))
+                    {
+                        app.CurrentVersion = batchStatus.Version;
+                    }
+
+                    installedCount++;
+                    installedApps.Add(app);
+                }
+                else
+                {
+                    app.StatusMessage = Resources.Resources.Status_Missing;
+                }
+            }
+            else
+            {
+                app.Status = ApplicationStatus.Pending;
+                app.StatusMessage = Resources.Resources.Status_Missing;
+            }
+
+            completed++;
+            progress?.Report(new AppOperationProgress(completed, apps.Count, app));
+        }
+
+        var updatesCount = installedApps.Count > 0
+            ? await CheckBatchUpdatesAsync(installedApps, cancellationToken).ConfigureAwait(false)
+            : 0;
+
+        return new AppScanResult(apps.Count, installedCount, updatesCount, WasCancelled: false);
+    }
+
+    private async Task<int> CheckBatchUpdatesAsync(
+        IReadOnlyList<ApplicationModel> installedApps,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var batchUpdates = await _detectionService.GetAvailableUpdatesAsync().ConfigureAwait(false);
+            if (batchUpdates.Count > 0)
+            {
+                var matchedUpdates = ApplyBatchUpdates(installedApps, batchUpdates, cancellationToken);
+                Debug.WriteLine($"Batch update check: {batchUpdates.Count} updates found, {matchedUpdates} matched");
+                return matchedUpdates;
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            Debug.WriteLine($"Batch update detection failed, falling back to individual checks: {ex.Message}");
+        }
+
+        var appsNeedingIndividualCheck = installedApps
+            .Where(a => string.IsNullOrEmpty(a.CurrentVersion))
+            .ToList();
+
+        if (appsNeedingIndividualCheck.Count == 0)
+        {
+            return 0;
+        }
+
+        var runner = CreateRunner();
+        var updateResults = await runner.RunAsync(
+            appsNeedingIndividualCheck,
+            CheckAppUpdateAsync,
+            app => app,
+            progress: null,
+            cancellationToken).ConfigureAwait(false);
+
+        return updateResults.Count(result => result.HasUpdate);
+    }
+
+    private int ApplyBatchUpdates(
+        IReadOnlyList<ApplicationModel> installedApps,
+        IReadOnlyList<UpdateInfo> batchUpdates,
+        CancellationToken cancellationToken)
+    {
+        var updateLookup = batchUpdates.ToDictionary(
+            u => u.Id,
+            u => u,
+            StringComparer.OrdinalIgnoreCase);
+        var matchedUpdates = 0;
+
+        foreach (var app in installedApps)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (updateLookup.TryGetValue(app.AppId, out var directUpdate))
+            {
+                if (ApplyUpdateInfo(app, directUpdate))
+                {
+                    matchedUpdates++;
+                }
+
+                continue;
+            }
+
+            var matchingUpdate = batchUpdates.FirstOrDefault(u =>
+                u.Name.Equals(app.Name, StringComparison.OrdinalIgnoreCase) ||
+                u.Id.Contains(app.Name, StringComparison.OrdinalIgnoreCase) ||
+                app.Name.Contains(u.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (matchingUpdate != null && ApplyUpdateInfo(app, matchingUpdate))
+            {
+                matchedUpdates++;
+            }
+        }
+
+        return matchedUpdates;
+    }
+
+    private static bool ApplyUpdateInfo(ApplicationModel app, UpdateInfo updateInfo)
+    {
+        var currentVersion = !string.IsNullOrEmpty(app.CurrentVersion)
+            ? app.CurrentVersion
+            : updateInfo.CurrentVersion;
+
+        if (string.IsNullOrEmpty(updateInfo.NewVersion) ||
+            string.Equals(currentVersion, updateInfo.NewVersion, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        app.Status = ApplicationStatus.UpdateAvailable;
+        app.CurrentVersion = currentVersion;
+        app.AvailableVersion = updateInfo.NewVersion;
+        app.StatusMessage = Resources.Resources.Status_UpdateAvailable;
+        return true;
+    }
+
+    private async Task<AppScanItemResult> CheckAppUpdateAsync(
+        ApplicationModel app,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var updateResult = await _powerShellBridge.CheckApplicationUpdateAsync(app).ConfigureAwait(false);
+        if (updateResult.HasUpdate)
+        {
+            app.Status = ApplicationStatus.UpdateAvailable;
+            app.CurrentVersion = updateResult.CurrentVersion;
+            app.AvailableVersion = updateResult.AvailableVersion;
+            app.StatusMessage = Resources.Resources.Status_UpdateAvailable;
+            return new AppScanItemResult(IsInstalled: true, HasUpdate: true);
+        }
+
+        app.CurrentVersion = updateResult.CurrentVersion;
+        return new AppScanItemResult(IsInstalled: true, HasUpdate: false);
+    }
+
+    private async Task<AppScanItemResult> ScanApplicationAsync(
+        ApplicationModel app,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var status = await _powerShellBridge.GetApplicationStatusAsync(app.AppId).ConfigureAwait(false);
+        if (IsInstalledStatus(status))
+        {
+            app.Status = status;
+
+            var updateResult = await _powerShellBridge.CheckApplicationUpdateAsync(app).ConfigureAwait(false);
+            if (updateResult.HasUpdate)
+            {
+                app.Status = ApplicationStatus.UpdateAvailable;
+                app.CurrentVersion = updateResult.CurrentVersion;
+                app.AvailableVersion = updateResult.AvailableVersion;
+                app.StatusMessage = Resources.Resources.Status_UpdateAvailable;
+                return new AppScanItemResult(IsInstalled: true, HasUpdate: true);
+            }
+
+            app.CurrentVersion = updateResult.CurrentVersion;
+            app.StatusMessage = Resources.Resources.Status_Installed;
+            return new AppScanItemResult(IsInstalled: true, HasUpdate: false);
+        }
+
+        app.Status = status;
+        app.StatusMessage = Resources.Resources.Status_Missing;
+        return new AppScanItemResult(IsInstalled: false, HasUpdate: false);
+    }
+
+    private AppOperationRunner CreateRunner()
+    {
+        var maxParallelScans = Math.Clamp(_settingsService.LoadSettings().MaxParallelScans, 1, 20);
+        return new AppOperationRunner(maxParallelScans);
+    }
+
+    private static AppScanResult BuildResult(
+        int total,
+        IReadOnlyList<AppScanItemResult> itemResults,
+        bool WasCancelled)
+    {
+        return new AppScanResult(
+            total,
+            itemResults.Count(result => result.IsInstalled),
+            itemResults.Count(result => result.HasUpdate),
+            WasCancelled);
+    }
+
+    private static AppScanResult BuildResultFromCurrentState(
+        IReadOnlyList<ApplicationModel> apps,
+        bool WasCancelled)
+    {
+        return new AppScanResult(
+            apps.Count,
+            apps.Count(app => IsInstalledStatus(app.Status) || app.Status == ApplicationStatus.UpdateAvailable),
+            apps.Count(app => app.Status == ApplicationStatus.UpdateAvailable),
+            WasCancelled);
+    }
+
+    private static bool IsInstalledStatus(ApplicationStatus status)
+    {
+        return status == ApplicationStatus.Installed ||
+               status == ApplicationStatus.AlreadyInstalled;
+    }
+
+    private sealed record AppScanItemResult(bool IsInstalled, bool HasUpdate);
+}
