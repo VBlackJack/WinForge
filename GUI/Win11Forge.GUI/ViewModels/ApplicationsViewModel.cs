@@ -39,6 +39,9 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     private readonly IApplicationDatabaseService _databaseService;
     private readonly IUndoService _undoService;
     private readonly IPackageVerificationService _verificationService;
+    private readonly IApplicationEditorDialogService _applicationEditorDialogService;
+    private readonly IDialogService _dialogService;
+    private readonly IFileDialogService _fileDialogService;
     private readonly ICollectionView _applicationsView;
     private CancellationTokenSource? _searchDebounceTokenSource;
     private CancellationTokenSource? _verificationCts;
@@ -170,26 +173,6 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         : Loc.AppDb_RedoTooltipDefault;
 
     /// <summary>
-    /// Event raised when an application editor dialog should be opened.
-    /// </summary>
-    public event EventHandler<ApplicationEditorEventArgs>? OpenEditorRequested;
-
-    /// <summary>
-    /// Event raised when a confirmation dialog should be shown.
-    /// </summary>
-    public event EventHandler<ConfirmDeleteEventArgs>? ConfirmDeleteRequested;
-
-    /// <summary>
-    /// Event raised when export is requested.
-    /// </summary>
-    public event EventHandler<ExportEventArgs>? ExportRequested;
-
-    /// <summary>
-    /// Event raised when import is requested.
-    /// </summary>
-    public event EventHandler? ImportRequested;
-
-    /// <summary>
     /// Initializes a new instance of ApplicationsViewModel.
     /// </summary>
     /// <param name="databaseService">Application database service.</param>
@@ -198,11 +181,17 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     public ApplicationsViewModel(
         IApplicationDatabaseService databaseService,
         IUndoService undoService,
-        IPackageVerificationService verificationService)
+        IPackageVerificationService verificationService,
+        IApplicationEditorDialogService? applicationEditorDialogService = null,
+        IDialogService? dialogService = null,
+        IFileDialogService? fileDialogService = null)
     {
         _databaseService = databaseService ?? throw new ArgumentNullException(nameof(databaseService));
         _undoService = undoService ?? throw new ArgumentNullException(nameof(undoService));
         _verificationService = verificationService ?? throw new ArgumentNullException(nameof(verificationService));
+        _applicationEditorDialogService = applicationEditorDialogService ?? new ApplicationEditorDialogService();
+        _dialogService = dialogService ?? new DialogService();
+        _fileDialogService = fileDialogService ?? new FileDialogService();
 
         // Setup collection view for filtering
         _applicationsView = CollectionViewSource.GetDefaultView(Applications);
@@ -276,28 +265,21 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     /// Command to add a new application.
     /// </summary>
     [RelayCommand]
-    private void Add()
+    private async Task AddAsync()
     {
-        var newApp = new EditableApplicationModel
-        {
-            DefaultPriority = 50,
-            Sources = new ApplicationSourcesModel()
-        };
-
-        OpenEditorRequested?.Invoke(this, new ApplicationEditorEventArgs(newApp, isNew: true));
+        await OpenEditorForAddAsync();
     }
 
     /// <summary>
     /// Command to edit the selected application.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanEditOrDelete))]
-    private void Edit()
+    private async Task EditAsync()
     {
         if (SelectedApplication == null) return;
 
         var original = SelectedApplication.Clone();
-        var clone = SelectedApplication.Clone();
-        OpenEditorRequested?.Invoke(this, new ApplicationEditorEventArgs(clone, isNew: false, originalApplication: original));
+        await OpenEditorForEditAsync(SelectedApplication, original);
     }
 
     /// <summary>
@@ -308,10 +290,8 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     {
         if (SelectedApplication == null) return;
 
-        var args = new ConfirmDeleteEventArgs(SelectedApplication.AppId, SelectedApplication.Name);
-        ConfirmDeleteRequested?.Invoke(this, args);
-
-        if (!args.Confirmed) return;
+        var confirmed = await ConfirmDeleteAsync(SelectedApplication);
+        if (!confirmed) return;
 
         IsLoading = true;
         StatusMessage = Loc.AppDb_Deleting;
@@ -352,15 +332,11 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     /// Command to duplicate the selected application.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanEditOrDelete))]
-    private void Duplicate()
+    private async Task DuplicateAsync()
     {
         if (SelectedApplication == null) return;
 
-        var clone = SelectedApplication.Clone();
-        clone.AppId = $"{clone.AppId}{Loc.AppDb_CopyIdSuffix}";
-        clone.Name = $"{clone.Name}{Loc.AppDb_CopyNameSuffix}";
-
-        OpenEditorRequested?.Invoke(this, new ApplicationEditorEventArgs(clone, isNew: true));
+        await OpenEditorForAddAsync();
     }
 
     /// <summary>
@@ -412,29 +388,157 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     /// Command to export selected applications.
     /// </summary>
     [RelayCommand(CanExecute = nameof(HasSelectedApplications))]
-    private void ExportSelected()
+    private async Task ExportSelectedAsync()
     {
         var selectedIds = GetSelectedApplicationIds();
-        ExportRequested?.Invoke(this, new ExportEventArgs(selectedIds));
+        await ExportApplicationsWithDialogAsync(selectedIds);
     }
 
     /// <summary>
     /// Command to export all applications.
     /// </summary>
     [RelayCommand]
-    private void ExportAll()
+    private async Task ExportAllAsync()
     {
         var allIds = Applications.Select(a => a.AppId).ToList();
-        ExportRequested?.Invoke(this, new ExportEventArgs(allIds));
+        await ExportApplicationsWithDialogAsync(allIds);
     }
 
     /// <summary>
     /// Command to import applications.
     /// </summary>
     [RelayCommand]
-    private void Import()
+    private async Task ImportAsync()
     {
-        ImportRequested?.Invoke(this, EventArgs.Empty);
+        await ImportApplicationsWithDialogAsync();
+    }
+
+    /// <summary>
+    /// Opens the editor for a new application and saves the result.
+    /// </summary>
+    public async Task OpenEditorForAddAsync()
+    {
+        try
+        {
+            var savedApplication = await _applicationEditorDialogService.ShowAddDialogAsync();
+            if (savedApplication != null)
+            {
+                await SaveApplicationAsync(savedApplication, isNew: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            var message = string.Format(Loc.AppDb_EditorOpenError, ex.Message, ex.StackTrace);
+            StatusMessage = message;
+            Debug.WriteLine($"Application editor add failed: {ex}");
+            await _dialogService.ShowErrorAsync(Loc.Common_Error, message);
+        }
+    }
+
+    /// <summary>
+    /// Opens the editor for an existing application and saves the result.
+    /// </summary>
+    public async Task OpenEditorForEditAsync(EditableApplicationModel application, EditableApplicationModel originalApplication)
+    {
+        ArgumentNullException.ThrowIfNull(application);
+        ArgumentNullException.ThrowIfNull(originalApplication);
+
+        try
+        {
+            var savedApplication = await _applicationEditorDialogService.ShowEditDialogAsync(application);
+            if (savedApplication != null)
+            {
+                await SaveApplicationAsync(savedApplication, isNew: false, originalApplication: originalApplication);
+            }
+        }
+        catch (Exception ex)
+        {
+            var message = string.Format(Loc.AppDb_EditorOpenError, ex.Message, ex.StackTrace);
+            StatusMessage = message;
+            Debug.WriteLine($"Application editor edit failed: {ex}");
+            await _dialogService.ShowErrorAsync(Loc.Common_Error, message);
+        }
+    }
+
+    private async Task<bool> ConfirmDeleteAsync(EditableApplicationModel application)
+    {
+        var message = string.Format(
+            Loc.AppDb_DeleteConfirm,
+            application.Name,
+            application.AppId);
+
+        return await _dialogService.ShowConfirmAsync(
+            Loc.AppDb_DeleteTitle,
+            message,
+            Loc.Common_Yes,
+            Loc.Common_No);
+    }
+
+    private async Task ImportApplicationsWithDialogAsync()
+    {
+        try
+        {
+            var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
+                Loc.AppDb_Import,
+                "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                DefaultExtension: ".json"));
+
+            if (filePath == null)
+            {
+                return;
+            }
+
+            var replaceExisting = await _dialogService.ShowYesNoCancelAsync(
+                Loc.AppDb_Import,
+                Loc.AppDb_ImportModeConfirm,
+                Loc.Common_Yes,
+                Loc.Common_No,
+                Loc.Common_Cancel);
+
+            if (!replaceExisting.HasValue)
+            {
+                return;
+            }
+
+            var mode = replaceExisting.Value ? ImportMode.Replace : ImportMode.Merge;
+            await ImportApplicationsAsync(filePath, mode);
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = string.Format(Loc.AppDb_ImportError, ex.Message);
+            Debug.WriteLine($"Import failed: {ex}");
+            await _dialogService.ShowErrorAsync(Loc.Common_Error, StatusMessage);
+        }
+    }
+
+    private async Task ExportApplicationsWithDialogAsync(IEnumerable<string> appIds)
+    {
+        var appIdList = appIds.ToList();
+        if (appIdList.Count == 0)
+        {
+            await _dialogService.ShowInfoAsync(Loc.AppDb_Export, Loc.AppDb_NoExportSelection);
+            return;
+        }
+
+        try
+        {
+            var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
+                Loc.AppDb_Export,
+                "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                DefaultFileName: $"applications-export-{DateTime.Now:yyyyMMdd}",
+                DefaultExtension: ".json"));
+
+            if (filePath != null)
+            {
+                await ExportApplicationsAsync(appIdList, filePath);
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = string.Format(Loc.AppDb_ExportError, ex.Message);
+            Debug.WriteLine($"Export failed: {ex}");
+            await _dialogService.ShowErrorAsync(Loc.Common_Error, StatusMessage);
+        }
     }
 
     /// <summary>
@@ -896,84 +1000,4 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     }
 
     #endregion
-}
-
-/// <summary>
-/// Event arguments for opening the application editor.
-/// </summary>
-public class ApplicationEditorEventArgs : EventArgs
-{
-    /// <summary>
-    /// The application to edit.
-    /// </summary>
-    public EditableApplicationModel Application { get; }
-
-    /// <summary>
-    /// The original application before editing (for undo support).
-    /// </summary>
-    public EditableApplicationModel? OriginalApplication { get; }
-
-    /// <summary>
-    /// Whether this is a new application.
-    /// </summary>
-    public bool IsNew { get; }
-
-    /// <summary>
-    /// Initializes a new instance.
-    /// </summary>
-    public ApplicationEditorEventArgs(EditableApplicationModel application, bool isNew, EditableApplicationModel? originalApplication = null)
-    {
-        Application = application;
-        IsNew = isNew;
-        OriginalApplication = originalApplication;
-    }
-}
-
-/// <summary>
-/// Event arguments for confirming delete operations.
-/// </summary>
-public class ConfirmDeleteEventArgs : EventArgs
-{
-    /// <summary>
-    /// The application ID to delete.
-    /// </summary>
-    public string AppId { get; }
-
-    /// <summary>
-    /// The application name for display.
-    /// </summary>
-    public string AppName { get; }
-
-    /// <summary>
-    /// Whether the user confirmed the deletion.
-    /// </summary>
-    public bool Confirmed { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance.
-    /// </summary>
-    public ConfirmDeleteEventArgs(string appId, string appName)
-    {
-        AppId = appId;
-        AppName = appName;
-    }
-}
-
-/// <summary>
-/// Event arguments for export operations.
-/// </summary>
-public class ExportEventArgs : EventArgs
-{
-    /// <summary>
-    /// The application IDs to export.
-    /// </summary>
-    public IReadOnlyList<string> AppIds { get; }
-
-    /// <summary>
-    /// Initializes a new instance.
-    /// </summary>
-    public ExportEventArgs(IEnumerable<string> appIds)
-    {
-        AppIds = appIds.ToList().AsReadOnly();
-    }
 }

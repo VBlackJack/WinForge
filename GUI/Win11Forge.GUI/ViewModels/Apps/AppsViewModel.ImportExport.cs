@@ -18,7 +18,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Win32;
+using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI.ViewModels;
 
@@ -37,14 +37,13 @@ public partial class AppsViewModel
 
         if (selectedIds.Count == 0) return;
 
-        var dialog = new SaveFileDialog
-        {
-            Filter = "JSON files (*.json)|*.json",
-            DefaultExt = ".json",
-            FileName = "win11forge-selection"
-        };
+        var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
+            string.Empty,
+            "JSON files (*.json)|*.json",
+            DefaultFileName: "win11forge-selection",
+            DefaultExtension: ".json"));
 
-        if (dialog.ShowDialog() == true)
+        if (filePath != null)
         {
             try
             {
@@ -52,7 +51,7 @@ public partial class AppsViewModel
                 {
                     WriteIndented = true
                 });
-                await File.WriteAllTextAsync(dialog.FileName, json);
+                await File.WriteAllTextAsync(filePath, json);
             }
             catch (Exception ex)
             {
@@ -71,17 +70,16 @@ public partial class AppsViewModel
     [RelayCommand]
     private async Task ImportSelectionAsync()
     {
-        var dialog = new OpenFileDialog
-        {
-            Filter = "JSON files (*.json)|*.json",
-            DefaultExt = ".json"
-        };
+        var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
+            string.Empty,
+            "JSON files (*.json)|*.json",
+            DefaultExtension: ".json"));
 
-        if (dialog.ShowDialog() == true)
+        if (filePath != null)
         {
             try
             {
-                var json = await File.ReadAllTextAsync(dialog.FileName);
+                var json = await File.ReadAllTextAsync(filePath);
                 var selectedIds = JsonSerializer.Deserialize<List<string>>(json);
 
                 if (selectedIds != null)
@@ -130,14 +128,13 @@ public partial class AppsViewModel
 
         if (favoriteIds.Count == 0) return;
 
-        var dialog = new SaveFileDialog
-        {
-            Filter = "JSON files (*.json)|*.json",
-            DefaultExt = ".json",
-            FileName = "win11forge-favorites"
-        };
+        var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
+            string.Empty,
+            "JSON files (*.json)|*.json",
+            DefaultFileName: "win11forge-favorites",
+            DefaultExtension: ".json"));
 
-        if (dialog.ShowDialog() == true)
+        if (filePath != null)
         {
             try
             {
@@ -145,7 +142,7 @@ public partial class AppsViewModel
                 {
                     WriteIndented = true
                 });
-                await File.WriteAllTextAsync(dialog.FileName, json);
+                await File.WriteAllTextAsync(filePath, json);
             }
             catch (Exception ex)
             {
@@ -164,17 +161,16 @@ public partial class AppsViewModel
     [RelayCommand]
     private async Task ImportFavoritesAsync()
     {
-        var dialog = new OpenFileDialog
-        {
-            Filter = "JSON files (*.json)|*.json",
-            DefaultExt = ".json"
-        };
+        var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
+            string.Empty,
+            "JSON files (*.json)|*.json",
+            DefaultExtension: ".json"));
 
-        if (dialog.ShowDialog() == true)
+        if (filePath != null)
         {
             try
             {
-                var json = await File.ReadAllTextAsync(dialog.FileName);
+                var json = await File.ReadAllTextAsync(filePath);
                 var favoriteIds = JsonSerializer.Deserialize<List<string>>(json);
 
                 if (favoriteIds != null)

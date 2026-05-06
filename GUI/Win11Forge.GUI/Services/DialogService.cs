@@ -216,6 +216,64 @@ public class DialogService : IDialogService
             return System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OKCancel, System.Windows.MessageBoxImage.Question) == System.Windows.MessageBoxResult.OK;
         }
     }
+
+    /// <inheritdoc/>
+    public async Task<bool?> ShowYesNoCancelAsync(
+        string title,
+        string message,
+        string? yesText = null,
+        string? noText = null,
+        string? cancelText = null)
+    {
+        if (_dialogHost == null)
+        {
+            return ShowYesNoCancelMessageBox(title, message);
+        }
+
+        try
+        {
+            var dialog = new ContentDialog(_dialogHost)
+            {
+                Title = title,
+                Content = new System.Windows.Controls.TextBlock
+                {
+                    Text = message,
+                    TextWrapping = TextWrapping.Wrap
+                },
+                PrimaryButtonText = yesText ?? Loc.Common_Yes ?? "Yes",
+                SecondaryButtonText = noText ?? Loc.Common_No ?? "No",
+                CloseButtonText = cancelText ?? Loc.Common_Cancel ?? "Cancel"
+            };
+
+            var result = await dialog.ShowAsync();
+            return result switch
+            {
+                ContentDialogResult.Primary => true,
+                ContentDialogResult.Secondary => false,
+                _ => null
+            };
+        }
+        catch
+        {
+            return ShowYesNoCancelMessageBox(title, message);
+        }
+    }
+
+    private static bool? ShowYesNoCancelMessageBox(string title, string message)
+    {
+        var result = System.Windows.MessageBox.Show(
+            message,
+            title,
+            System.Windows.MessageBoxButton.YesNoCancel,
+            System.Windows.MessageBoxImage.Question);
+
+        return result switch
+        {
+            System.Windows.MessageBoxResult.Yes => true,
+            System.Windows.MessageBoxResult.No => false,
+            _ => null
+        };
+    }
 }
 
 /// <summary>
@@ -247,4 +305,14 @@ public interface IDialogService
     /// Shows a confirmation dialog and returns user choice.
     /// </summary>
     Task<bool> ShowConfirmAsync(string title, string message, string? confirmText = null, string? cancelText = null);
+
+    /// <summary>
+    /// Shows a three-choice confirmation dialog and returns true for Yes, false for No, or null for Cancel.
+    /// </summary>
+    Task<bool?> ShowYesNoCancelAsync(
+        string title,
+        string message,
+        string? yesText = null,
+        string? noText = null,
+        string? cancelText = null);
 }

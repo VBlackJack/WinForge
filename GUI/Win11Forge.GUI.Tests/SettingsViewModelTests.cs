@@ -17,6 +17,7 @@
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
+using System.IO;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -349,6 +350,83 @@ public class SettingsViewModelTests
         Assert.True(processLauncher.LastStartInfo.UseShellExecute);
         Assert.Equal(1, lifetimeService.RequestShutdownCallCount);
         Assert.Equal(0, lifetimeService.LastExitCode);
+    }
+
+    [Fact]
+    public async Task ExportSettingsCommand_ShouldWriteSettingsToChosenFile()
+    {
+        // Arrange
+        var settingsService = new MockAppSettingsService
+        {
+            SettingsToReturn = new AppSettings { IsDarkTheme = false, LanguageCode = "fr" }
+        };
+        var fileDialogService = new TestFileDialogService();
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        fileDialogService.QueueSaveResult(filePath);
+        var viewModel = new SettingsViewModel(
+            settingsService,
+            new MockDeploymentHistoryService(),
+            new MockPowerShellBridge(),
+            fileDialogService: fileDialogService);
+
+        try
+        {
+            // Act
+            await viewModel.ExportSettingsCommand.ExecuteAsync(null);
+
+            // Assert
+            Assert.Single(fileDialogService.SaveOptions);
+            Assert.Equal("JSON files (*.json)|*.json|All files (*.*)|*.*", fileDialogService.SaveOptions[0].Filter);
+            Assert.Equal(".json", fileDialogService.SaveOptions[0].DefaultExtension);
+            Assert.StartsWith("Win11Forge_Settings_", fileDialogService.SaveOptions[0].DefaultFileName);
+            Assert.True(File.Exists(filePath));
+            Assert.Contains("\"LanguageCode\": \"fr\"", await File.ReadAllTextAsync(filePath));
+            Assert.Equal(Resources.Resources.Settings_ExportSuccess, viewModel.StatusMessage);
+        }
+        finally
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ImportSettingsCommand_ShouldLoadSettingsFromChosenFile()
+    {
+        // Arrange
+        var settingsService = new MockAppSettingsService();
+        var fileDialogService = new TestFileDialogService();
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var importedSettings = new AppSettings { IsDarkTheme = false, LanguageCode = "fr" };
+        await File.WriteAllTextAsync(filePath, System.Text.Json.JsonSerializer.Serialize(importedSettings));
+        fileDialogService.QueueOpenResult(filePath);
+        var viewModel = new SettingsViewModel(
+            settingsService,
+            new MockDeploymentHistoryService(),
+            new MockPowerShellBridge(),
+            fileDialogService: fileDialogService);
+
+        try
+        {
+            // Act
+            await viewModel.ImportSettingsCommand.ExecuteAsync(null);
+
+            // Assert
+            Assert.Single(fileDialogService.OpenOptions);
+            Assert.Equal("JSON files (*.json)|*.json|All files (*.*)|*.*", fileDialogService.OpenOptions[0].Filter);
+            Assert.Equal(".json", fileDialogService.OpenOptions[0].DefaultExtension);
+            Assert.NotNull(settingsService.LastSavedSettings);
+            Assert.False(settingsService.LastSavedSettings.IsDarkTheme);
+            Assert.Equal("fr", settingsService.LastSavedSettings.LanguageCode);
+            Assert.True(viewModel.RestartRequired);
+            Assert.Equal(Resources.Resources.Settings_ImportSuccess, viewModel.StatusMessage);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
     }
 }
 

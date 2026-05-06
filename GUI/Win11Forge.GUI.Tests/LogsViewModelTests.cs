@@ -125,4 +125,22 @@ public class LogsViewModelTests
         // Assert
         Assert.Equal("0 B", viewModel.TotalSizeFormatted);
     }
+
+    [Fact]
+    public async Task ExportLogs_WhenDialogCancelled_ShouldUseZipDialogOptions()
+    {
+        // Arrange
+        var fileDialogService = new TestFileDialogService();
+        fileDialogService.QueueSaveResult(null);
+        var viewModel = new LogsViewModel(fileDialogService);
+
+        // Act
+        await viewModel.ExportLogsCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Single(fileDialogService.SaveOptions);
+        Assert.Equal("ZIP Archive (*.zip)|*.zip", fileDialogService.SaveOptions[0].Filter);
+        Assert.Equal(".zip", fileDialogService.SaveOptions[0].DefaultExtension);
+        Assert.StartsWith("Win11Forge_Logs_", fileDialogService.SaveOptions[0].DefaultFileName);
+    }
 }

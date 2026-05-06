@@ -43,6 +43,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private readonly ToastService? _toastService;
     private readonly IApplicationLifetimeService _applicationLifetimeService;
     private readonly IProcessLauncher _processLauncher;
+    private readonly IFileDialogService _fileDialogService;
     private string _initialLanguageCode = string.Empty;
     private bool _isLoadingSettings;
     private bool _settingsLoaded;
@@ -303,7 +304,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// Used for XAML design-time support only.
     /// </summary>
     public SettingsViewModel()
-        : this(new AppSettingsService(), new DeploymentHistoryService(), new DesignTimePowerShellBridge(), null, null, null, null, null)
+        : this(new AppSettingsService(), new DeploymentHistoryService(), new DesignTimePowerShellBridge(), null, null, null, null, null, null)
     {
     }
 
@@ -318,7 +319,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         IErrorHistoryService? errorHistoryService = null,
         IApplicationDetectionService? detectionService = null,
         IApplicationLifetimeService? applicationLifetimeService = null,
-        IProcessLauncher? processLauncher = null)
+        IProcessLauncher? processLauncher = null,
+        IFileDialogService? fileDialogService = null)
     {
         _settingsService = settingsService;
         _historyService = historyService;
@@ -328,6 +330,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         _detectionService = detectionService;
         _applicationLifetimeService = applicationLifetimeService ?? new ApplicationLifetimeService();
         _processLauncher = processLauncher ?? new ProcessLauncher();
+        _fileDialogService = fileDialogService ?? new FileDialogService();
 
         // Subscribe to error history changes
         if (_errorHistoryService != null)
@@ -695,21 +698,20 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            var dialog = new Microsoft.Win32.SaveFileDialog
-            {
-                Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
-                DefaultExt = ".json",
-                FileName = $"Win11Forge_Settings_{DateTime.Now:yyyyMMdd}"
-            };
+            var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
+                string.Empty,
+                "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                DefaultFileName: $"Win11Forge_Settings_{DateTime.Now:yyyyMMdd}",
+                DefaultExtension: ".json"));
 
-            if (dialog.ShowDialog() == true)
+            if (filePath != null)
             {
                 var settings = _settingsService.LoadSettings();
                 var json = System.Text.Json.JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions
                 {
                     WriteIndented = true
                 });
-                await File.WriteAllTextAsync(dialog.FileName, json);
+                await File.WriteAllTextAsync(filePath, json);
                 StatusMessage = Resources.Resources.Settings_ExportSuccess;
             }
         }
@@ -727,15 +729,14 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            var dialog = new Microsoft.Win32.OpenFileDialog
-            {
-                Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
-                DefaultExt = ".json"
-            };
+            var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
+                string.Empty,
+                "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                DefaultExtension: ".json"));
 
-            if (dialog.ShowDialog() == true)
+            if (filePath != null)
             {
-                var json = await File.ReadAllTextAsync(dialog.FileName);
+                var json = await File.ReadAllTextAsync(filePath);
                 var importedSettings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json);
 
                 if (importedSettings != null)

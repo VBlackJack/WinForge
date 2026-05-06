@@ -82,15 +82,33 @@ public class ApplicationsViewModelTests
         };
     }
 
+    private static EditableApplicationModel CreateEditableApplication(string appId, string name)
+    {
+        return new EditableApplicationModel
+        {
+            AppId = appId,
+            Name = name,
+            Category = "Test",
+            DefaultPriority = 50,
+            Sources = new ApplicationSourcesModel()
+        };
+    }
+
     private static ApplicationsViewModel CreateViewModel(
         MockApplicationDatabaseService? dbService = null,
         MockUndoService? undoService = null,
-        MockPackageVerificationService? verificationService = null)
+        MockPackageVerificationService? verificationService = null,
+        IApplicationEditorDialogService? applicationEditorDialogService = null,
+        IDialogService? dialogService = null,
+        IFileDialogService? fileDialogService = null)
     {
         return new ApplicationsViewModel(
             dbService ?? new MockApplicationDatabaseService(),
             undoService ?? new MockUndoService(),
-            verificationService ?? new MockPackageVerificationService());
+            verificationService ?? new MockPackageVerificationService(),
+            applicationEditorDialogService ?? new TestApplicationEditorDialogService(),
+            dialogService ?? new TestDialogService(),
+            fileDialogService ?? new TestFileDialogService());
     }
 
     /// <summary>
@@ -131,47 +149,80 @@ public class ApplicationsViewModelTests
     }
 
     /// <summary>
-    /// Verifies that Add command triggers OpenEditorRequested event.
+    /// Verifies that Add command opens the editor and saves the returned application.
     /// </summary>
     [Fact]
-    public void Add_ShouldRaiseOpenEditorRequested()
+    public async Task Add_ShouldOpenEditorAndSaveReturnedApplication()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        ApplicationEditorEventArgs? receivedArgs = null;
-        viewModel.OpenEditorRequested += (_, args) => receivedArgs = args;
+        var dbService = new MockApplicationDatabaseService();
+        var undoService = new MockUndoService();
+        var editorDialogService = new TestApplicationEditorDialogService();
+        editorDialogService.QueueAddResult(CreateEditableApplication("NewApp", "New Application"));
+        var viewModel = CreateViewModel(
+            dbService: dbService,
+            undoService: undoService,
+            applicationEditorDialogService: editorDialogService);
 
         // Act
-        viewModel.AddCommand.Execute(null);
+        await viewModel.AddCommand.ExecuteAsync(null);
 
         // Assert
-        Assert.NotNull(receivedArgs);
-        Assert.True(receivedArgs.IsNew);
-        Assert.NotNull(receivedArgs.Application);
+        Assert.Equal(1, editorDialogService.ShowAddCallCount);
+        Assert.Equal("NewApp", dbService.LastSavedApplication?.AppId);
+        Assert.True(dbService.LastSaveWasNew);
+        Assert.NotNull(undoService.LastRecordedAction);
     }
 
     /// <summary>
-    /// Verifies that Edit command triggers OpenEditorRequested with selected app.
+    /// Verifies that Add command does not save when the editor is cancelled.
     /// </summary>
     [Fact]
-    public async Task Edit_ShouldRaiseOpenEditorRequestedWithClone()
+    public async Task Add_WhenEditorCancelled_ShouldNotSave()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        var dbService = new MockApplicationDatabaseService();
+        var editorDialogService = new TestApplicationEditorDialogService();
+        editorDialogService.QueueAddResult(null);
+        var viewModel = CreateViewModel(
+            dbService: dbService,
+            applicationEditorDialogService: editorDialogService);
+
+        // Act
+        await viewModel.AddCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Equal(1, editorDialogService.ShowAddCallCount);
+        Assert.Null(dbService.LastSavedApplication);
+    }
+
+    /// <summary>
+    /// Verifies that Edit command opens the editor with the selected application and saves the result.
+    /// </summary>
+    [Fact]
+    public async Task Edit_ShouldOpenEditorAndSaveReturnedApplication()
+    {
+        // Arrange
+        var dbService = new MockApplicationDatabaseService();
+        var undoService = new MockUndoService();
+        var editorDialogService = new TestApplicationEditorDialogService();
+        editorDialogService.QueueEditResult(CreateEditableApplication("VSCode", "Edited Visual Studio Code"));
+        var viewModel = CreateViewModel(
+            dbService: dbService,
+            undoService: undoService,
+            applicationEditorDialogService: editorDialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         viewModel.SelectedApplication = viewModel.Applications[0];
 
-        ApplicationEditorEventArgs? receivedArgs = null;
-        viewModel.OpenEditorRequested += (_, args) => receivedArgs = args;
-
         // Act
-        viewModel.EditCommand.Execute(null);
+        await viewModel.EditCommand.ExecuteAsync(null);
 
         // Assert
-        Assert.NotNull(receivedArgs);
-        Assert.False(receivedArgs.IsNew);
-        Assert.NotNull(receivedArgs.Application);
-        Assert.Equal(viewModel.SelectedApplication.AppId, receivedArgs.Application.AppId);
+        Assert.Equal(1, editorDialogService.ShowEditCallCount);
+        Assert.Equal("VSCode", editorDialogService.EditRequests[0].AppId);
+        Assert.Equal("Edited Visual Studio Code", dbService.LastSavedApplication?.Name);
+        Assert.False(dbService.LastSaveWasNew);
+        Assert.NotNull(undoService.LastRecordedAction);
     }
 
     /// <summary>
@@ -190,53 +241,75 @@ public class ApplicationsViewModelTests
     }
 
     /// <summary>
-    /// Verifies that Delete command requests confirmation.
+    /// Verifies that Delete command asks for confirmation and does not delete when cancelled.
     /// </summary>
     [Fact]
-    public async Task Delete_ShouldRequestConfirmation()
+    public async Task Delete_WhenNotConfirmed_ShouldNotDelete()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        var dbService = new MockApplicationDatabaseService();
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(false);
+        var viewModel = CreateViewModel(dbService: dbService, dialogService: dialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         viewModel.SelectedApplication = viewModel.Applications[0];
-
-        ConfirmDeleteEventArgs? receivedArgs = null;
-        viewModel.ConfirmDeleteRequested += (_, args) =>
-        {
-            receivedArgs = args;
-            args.Confirmed = false; // Don't actually delete
-        };
 
         // Act
         await viewModel.DeleteCommand.ExecuteAsync(null);
 
         // Assert
-        Assert.NotNull(receivedArgs);
-        Assert.Equal(viewModel.SelectedApplication.AppId, receivedArgs.AppId);
+        Assert.Single(dialogService.ConfirmRequests);
+        Assert.Equal(0, dbService.DeleteCallCount);
+        Assert.NotNull(viewModel.SelectedApplication);
     }
 
     /// <summary>
-    /// Verifies that Duplicate creates a copy with modified ID.
+    /// Verifies that Delete command deletes the selected application when confirmed.
     /// </summary>
     [Fact]
-    public async Task Duplicate_ShouldCreateCopyWithModifiedId()
+    public async Task Delete_WhenConfirmed_ShouldDeleteSelectedApplication()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        var dbService = new MockApplicationDatabaseService();
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(true);
+        var viewModel = CreateViewModel(dbService: dbService, dialogService: dialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         viewModel.SelectedApplication = viewModel.Applications[0];
-        var originalId = viewModel.SelectedApplication.AppId;
-
-        ApplicationEditorEventArgs? receivedArgs = null;
-        viewModel.OpenEditorRequested += (_, args) => receivedArgs = args;
 
         // Act
-        viewModel.DuplicateCommand.Execute(null);
+        await viewModel.DeleteCommand.ExecuteAsync(null);
 
         // Assert
-        Assert.NotNull(receivedArgs);
-        Assert.True(receivedArgs.IsNew);
-        Assert.Equal($"{originalId}{Win11Forge.GUI.Resources.Resources.AppDb_CopyIdSuffix}", receivedArgs.Application.AppId);
+        Assert.Single(dialogService.ConfirmRequests);
+        Assert.Equal(1, dbService.DeleteCallCount);
+        Assert.Null(viewModel.SelectedApplication);
+        Assert.Equal(4, viewModel.Applications.Count);
+    }
+
+    /// <summary>
+    /// Verifies that Duplicate command opens the add editor and saves the returned application.
+    /// </summary>
+    [Fact]
+    public async Task Duplicate_ShouldOpenEditorAndSaveReturnedApplicationAsNew()
+    {
+        // Arrange
+        var dbService = new MockApplicationDatabaseService();
+        var editorDialogService = new TestApplicationEditorDialogService();
+        editorDialogService.QueueAddResult(CreateEditableApplication("VSCode-Copy", "Visual Studio Code Copy"));
+        var viewModel = CreateViewModel(
+            dbService: dbService,
+            applicationEditorDialogService: editorDialogService);
+        await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
+        viewModel.SelectedApplication = viewModel.Applications[0];
+
+        // Act
+        await viewModel.DuplicateCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Equal(1, editorDialogService.ShowAddCallCount);
+        Assert.Equal("VSCode-Copy", dbService.LastSavedApplication?.AppId);
+        Assert.True(dbService.LastSaveWasNew);
     }
 
     /// <summary>
@@ -296,42 +369,193 @@ public class ApplicationsViewModelTests
     }
 
     /// <summary>
-    /// Verifies that ExportAll triggers ExportRequested with all IDs.
+    /// Verifies that ExportAll opens a save dialog and exports all IDs.
     /// </summary>
     [Fact]
-    public async Task ExportAll_ShouldRequestExportWithAllIds()
+    public async Task ExportAll_ShouldShowSaveDialogAndExportAllIds()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        var dbService = new MockApplicationDatabaseService();
+        var fileDialogService = new TestFileDialogService();
+        fileDialogService.QueueSaveResult(@"C:\Exports\applications.json");
+        var viewModel = CreateViewModel(dbService: dbService, fileDialogService: fileDialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
 
-        ExportEventArgs? receivedArgs = null;
-        viewModel.ExportRequested += (_, args) => receivedArgs = args;
-
         // Act
-        viewModel.ExportAllCommand.Execute(null);
+        await viewModel.ExportAllCommand.ExecuteAsync(null);
 
         // Assert
-        Assert.NotNull(receivedArgs);
-        Assert.Equal(5, receivedArgs.AppIds.Count);
+        Assert.Single(fileDialogService.SaveOptions);
+        Assert.Equal(5, dbService.LastExportAppIds?.Count);
+        Assert.Equal(@"C:\Exports\applications.json", dbService.LastExportFilePath);
     }
 
     /// <summary>
-    /// Verifies that Import triggers ImportRequested event.
+    /// Verifies that ExportAll displays an information dialog when there are no applications.
     /// </summary>
     [Fact]
-    public void Import_ShouldRaiseImportRequested()
+    public async Task ExportAll_WhenNoApplications_ShouldShowInfoAndNotExport()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var eventRaised = false;
-        viewModel.ImportRequested += (_, _) => eventRaised = true;
+        var dbService = new MockApplicationDatabaseService();
+        var dialogService = new TestDialogService();
+        var fileDialogService = new TestFileDialogService();
+        var viewModel = CreateViewModel(
+            dbService: dbService,
+            dialogService: dialogService,
+            fileDialogService: fileDialogService);
 
         // Act
-        viewModel.ImportCommand.Execute(null);
+        await viewModel.ExportAllCommand.ExecuteAsync(null);
 
         // Assert
-        Assert.True(eventRaised);
+        Assert.Single(dialogService.InfoRequests);
+        Assert.Empty(fileDialogService.SaveOptions);
+        Assert.Null(dbService.LastExportFilePath);
+    }
+
+    /// <summary>
+    /// Verifies that ExportSelected stops when the save dialog is cancelled.
+    /// </summary>
+    [Fact]
+    public async Task ExportSelected_WhenDialogCancelled_ShouldNotExport()
+    {
+        // Arrange
+        var dbService = new MockApplicationDatabaseService();
+        var fileDialogService = new TestFileDialogService();
+        fileDialogService.QueueSaveResult(null);
+        var viewModel = CreateViewModel(dbService: dbService, fileDialogService: fileDialogService);
+        await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
+        viewModel.SelectedApplication = viewModel.Applications[0];
+
+        // Act
+        await viewModel.ExportSelectedCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Single(fileDialogService.SaveOptions);
+        Assert.Null(dbService.LastExportFilePath);
+    }
+
+    /// <summary>
+    /// Verifies that Import opens a file dialog and imports in replace mode when Yes is selected.
+    /// </summary>
+    [Fact]
+    public async Task Import_WhenReplaceSelected_ShouldImportWithReplaceMode()
+    {
+        // Arrange
+        var dbService = new MockApplicationDatabaseService();
+        var dialogService = new TestDialogService();
+        var fileDialogService = new TestFileDialogService();
+        fileDialogService.QueueOpenResult(@"C:\Imports\applications.json");
+        dialogService.QueueYesNoCancelResult(true);
+        var viewModel = CreateViewModel(
+            dbService: dbService,
+            dialogService: dialogService,
+            fileDialogService: fileDialogService);
+
+        // Act
+        await viewModel.ImportCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Single(fileDialogService.OpenOptions);
+        Assert.Single(dialogService.YesNoCancelRequests);
+        Assert.Equal(@"C:\Imports\applications.json", dbService.LastImportFilePath);
+        Assert.Equal(ImportMode.Replace, dbService.LastImportMode);
+    }
+
+    /// <summary>
+    /// Verifies that Import imports in merge mode when No is selected.
+    /// </summary>
+    [Fact]
+    public async Task Import_WhenMergeSelected_ShouldImportWithMergeMode()
+    {
+        // Arrange
+        var dbService = new MockApplicationDatabaseService();
+        var dialogService = new TestDialogService();
+        var fileDialogService = new TestFileDialogService();
+        fileDialogService.QueueOpenResult(@"C:\Imports\applications.json");
+        dialogService.QueueYesNoCancelResult(false);
+        var viewModel = CreateViewModel(
+            dbService: dbService,
+            dialogService: dialogService,
+            fileDialogService: fileDialogService);
+
+        // Act
+        await viewModel.ImportCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Equal(@"C:\Imports\applications.json", dbService.LastImportFilePath);
+        Assert.Equal(ImportMode.Merge, dbService.LastImportMode);
+    }
+
+    /// <summary>
+    /// Verifies that Import stops when the import mode dialog is cancelled.
+    /// </summary>
+    [Fact]
+    public async Task Import_WhenModeCancelled_ShouldNotImport()
+    {
+        // Arrange
+        var dbService = new MockApplicationDatabaseService();
+        var dialogService = new TestDialogService();
+        var fileDialogService = new TestFileDialogService();
+        fileDialogService.QueueOpenResult(@"C:\Imports\applications.json");
+        dialogService.QueueYesNoCancelResult(null);
+        var viewModel = CreateViewModel(
+            dbService: dbService,
+            dialogService: dialogService,
+            fileDialogService: fileDialogService);
+
+        // Act
+        await viewModel.ImportCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Single(dialogService.YesNoCancelRequests);
+        Assert.Null(dbService.LastImportFilePath);
+    }
+
+    /// <summary>
+    /// Verifies that Import stops before asking for mode when the file dialog is cancelled.
+    /// </summary>
+    [Fact]
+    public async Task Import_WhenFileDialogCancelled_ShouldNotAskForMode()
+    {
+        // Arrange
+        var dbService = new MockApplicationDatabaseService();
+        var dialogService = new TestDialogService();
+        var fileDialogService = new TestFileDialogService();
+        fileDialogService.QueueOpenResult(null);
+        var viewModel = CreateViewModel(
+            dbService: dbService,
+            dialogService: dialogService,
+            fileDialogService: fileDialogService);
+
+        // Act
+        await viewModel.ImportCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Empty(dialogService.YesNoCancelRequests);
+        Assert.Null(dbService.LastImportFilePath);
+    }
+
+    /// <summary>
+    /// Verifies that Import preserves the JSON file dialog options from the code-behind flow.
+    /// </summary>
+    [Fact]
+    public async Task Import_ShouldUseJsonOpenDialogOptions()
+    {
+        // Arrange
+        var fileDialogService = new TestFileDialogService();
+        fileDialogService.QueueOpenResult(null);
+        var viewModel = CreateViewModel(fileDialogService: fileDialogService);
+
+        // Act
+        await viewModel.ImportCommand.ExecuteAsync(null);
+
+        // Assert
+        var options = Assert.Single(fileDialogService.OpenOptions);
+        Assert.Equal(Win11Forge.GUI.Resources.Resources.AppDb_Import, options.Title);
+        Assert.Equal("JSON files (*.json)|*.json|All files (*.*)|*.*", options.Filter);
+        Assert.Equal(".json", options.DefaultExtension);
     }
 
     /// <summary>
@@ -425,6 +649,104 @@ public class ApplicationsViewModelTests
     }
 }
 
+internal sealed class TestApplicationEditorDialogService : IApplicationEditorDialogService
+{
+    private readonly Queue<EditableApplicationModel?> _addResults = new();
+    private readonly Queue<EditableApplicationModel?> _editResults = new();
+
+    public int ShowAddCallCount { get; private set; }
+
+    public int ShowEditCallCount { get; private set; }
+
+    public List<EditableApplicationModel> EditRequests { get; } = [];
+
+    public void QueueAddResult(EditableApplicationModel? application)
+    {
+        _addResults.Enqueue(application);
+    }
+
+    public void QueueEditResult(EditableApplicationModel? application)
+    {
+        _editResults.Enqueue(application);
+    }
+
+    public Task<EditableApplicationModel?> ShowAddDialogAsync()
+    {
+        ShowAddCallCount++;
+        return Task.FromResult(_addResults.Count > 0 ? _addResults.Dequeue() : null);
+    }
+
+    public Task<EditableApplicationModel?> ShowEditDialogAsync(EditableApplicationModel application)
+    {
+        ShowEditCallCount++;
+        EditRequests.Add(application);
+        return Task.FromResult(_editResults.Count > 0 ? _editResults.Dequeue() : null);
+    }
+}
+
+internal sealed class TestDialogService : IDialogService
+{
+    private readonly Queue<bool> _confirmResults = new();
+    private readonly Queue<bool?> _yesNoCancelResults = new();
+
+    public List<(string Title, string Message)> InfoRequests { get; } = [];
+
+    public List<(string Title, string Message)> ErrorRequests { get; } = [];
+
+    public List<(string Title, string Message, string? ConfirmText, string? CancelText)> ConfirmRequests { get; } = [];
+
+    public List<(string Title, string Message, string? YesText, string? NoText, string? CancelText)> YesNoCancelRequests { get; } = [];
+
+    public void QueueConfirmResult(bool result)
+    {
+        _confirmResults.Enqueue(result);
+    }
+
+    public void QueueYesNoCancelResult(bool? result)
+    {
+        _yesNoCancelResults.Enqueue(result);
+    }
+
+    public Task<DialogAction> ShowErrorAsync(
+        string title,
+        string message,
+        string? details = null,
+        bool showRetry = false,
+        string? helpUrl = null)
+    {
+        ErrorRequests.Add((title, message));
+        return Task.FromResult(DialogAction.Ok);
+    }
+
+    public Task ShowInfoAsync(string title, string message)
+    {
+        InfoRequests.Add((title, message));
+        return Task.CompletedTask;
+    }
+
+    public Task ShowSuccessAsync(string title, string message)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task<bool> ShowConfirmAsync(string title, string message, string? confirmText = null, string? cancelText = null)
+    {
+        ConfirmRequests.Add((title, message, confirmText, cancelText));
+        return Task.FromResult(_confirmResults.Count > 0 && _confirmResults.Dequeue());
+    }
+
+    public Task<bool?> ShowYesNoCancelAsync(
+        string title,
+        string message,
+        string? yesText = null,
+        string? noText = null,
+        string? cancelText = null)
+    {
+        YesNoCancelRequests.Add((title, message, yesText, noText, cancelText));
+        return Task.FromResult(_yesNoCancelResults.Count > 0 ? _yesNoCancelResults.Dequeue() : null);
+    }
+}
+
 /// <summary>
 /// Mock implementation of IApplicationDatabaseService for unit testing.
 /// </summary>
@@ -432,6 +754,20 @@ internal class MockApplicationDatabaseService : IApplicationDatabaseService
 {
     private readonly List<EditableApplicationModel> _applications;
     private ApplicationValidationResult? _customValidationResult;
+
+    public EditableApplicationModel? LastSavedApplication { get; private set; }
+
+    public bool LastSaveWasNew { get; private set; }
+
+    public int DeleteCallCount { get; private set; }
+
+    public string? LastImportFilePath { get; private set; }
+
+    public ImportMode? LastImportMode { get; private set; }
+
+    public List<string>? LastExportAppIds { get; private set; }
+
+    public string? LastExportFilePath { get; private set; }
 
     public void SetValidationResult(ApplicationValidationResult result)
     {
@@ -507,6 +843,9 @@ internal class MockApplicationDatabaseService : IApplicationDatabaseService
 
     public Task<ApplicationSaveResult> SaveApplicationAsync(EditableApplicationModel application, bool isNew, CancellationToken cancellationToken = default)
     {
+        LastSavedApplication = application;
+        LastSaveWasNew = isNew;
+
         if (isNew)
         {
             _applications.Add(application);
@@ -516,6 +855,8 @@ internal class MockApplicationDatabaseService : IApplicationDatabaseService
 
     public Task<bool> DeleteApplicationAsync(string appId, CancellationToken cancellationToken = default)
     {
+        DeleteCallCount++;
+
         var app = _applications.FirstOrDefault(a => a.AppId == appId);
         if (app != null)
         {
@@ -543,10 +884,18 @@ internal class MockApplicationDatabaseService : IApplicationDatabaseService
         => Task.FromResult(_applications.Select(a => a.Category).Distinct());
 
     public Task<ApplicationImportResult> ImportApplicationsAsync(string filePath, ImportMode mode, CancellationToken cancellationToken = default)
-        => Task.FromResult(new ApplicationImportResult(true, 2, 1, 0, Enumerable.Empty<string>()));
+    {
+        LastImportFilePath = filePath;
+        LastImportMode = mode;
+        return Task.FromResult(new ApplicationImportResult(true, 2, 1, 0, Enumerable.Empty<string>()));
+    }
 
     public Task<bool> ExportApplicationsAsync(IEnumerable<string> appIds, string filePath, CancellationToken cancellationToken = default)
-        => Task.FromResult(true);
+    {
+        LastExportAppIds = appIds.ToList();
+        LastExportFilePath = filePath;
+        return Task.FromResult(true);
+    }
 
     public Task<string> CreateBackupAsync(CancellationToken cancellationToken = default)
         => Task.FromResult(@"C:\Test\backup.json");

@@ -74,6 +74,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IAccessibilityService, AccessibilityService>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IFileDialogService, FileDialogService>();
+        services.AddSingleton<IApplicationEditorDialogService, ApplicationEditorDialogService>();
         services.AddSingleton<IApplicationLifetimeService, ApplicationLifetimeService>();
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
 

@@ -24,6 +24,7 @@ using System.Windows;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Win11Forge.GUI.Services;
 using Wpf.Ui.Controls;
 
 namespace Win11Forge.GUI.ViewModels;
@@ -35,6 +36,7 @@ public partial class LogsViewModel : ObservableObject
 {
     private readonly string _logsPath;
     private readonly string _jsonLogsPath;
+    private readonly IFileDialogService _fileDialogService;
 
     [ObservableProperty]
     private ObservableCollection<LogFileEntry> _logFiles = new();
@@ -67,8 +69,9 @@ public partial class LogsViewModel : ObservableObject
 
     public List<string> LogLevels { get; } = new() { "All", "Text", "JSON", "Error" };
 
-    public LogsViewModel()
+    public LogsViewModel(IFileDialogService? fileDialogService = null)
     {
+        _fileDialogService = fileDialogService ?? new FileDialogService();
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         _logsPath = Path.Combine(localAppData, "Win11Forge", "Logs");
         _jsonLogsPath = Path.Combine(_logsPath, "json");
@@ -266,18 +269,17 @@ public partial class LogsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ExportLogs()
+    private async Task ExportLogsAsync()
     {
         try
         {
-            var dialog = new Microsoft.Win32.SaveFileDialog
-            {
-                Filter = "ZIP Archive (*.zip)|*.zip",
-                DefaultExt = ".zip",
-                FileName = $"Win11Forge_Logs_{DateTime.Now:yyyyMMdd_HHmmss}"
-            };
+            var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
+                string.Empty,
+                "ZIP Archive (*.zip)|*.zip",
+                DefaultFileName: $"Win11Forge_Logs_{DateTime.Now:yyyyMMdd_HHmmss}",
+                DefaultExtension: ".zip"));
 
-            if (dialog.ShowDialog() == true)
+            if (filePath != null)
             {
                 // Security: Use unpredictable random temp directory name
                 var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -336,8 +338,8 @@ public partial class LogsViewModel : ObservableObject
                     }
 
                     // Create ZIP
-                    System.IO.Compression.ZipFile.CreateFromDirectory(tempDir, dialog.FileName);
-                    StatusMessage = $"Logs exported to {Path.GetFileName(dialog.FileName)} ({copiedCount} files)";
+                    System.IO.Compression.ZipFile.CreateFromDirectory(tempDir, filePath);
+                    StatusMessage = $"Logs exported to {Path.GetFileName(filePath)} ({copiedCount} files)";
                 }
                 finally
                 {

@@ -212,4 +212,14 @@ internal class MockDialogServiceForPrerequisites : IDialogService
     {
         return Task.FromResult(NextConfirmResult);
     }
+
+    public Task<bool?> ShowYesNoCancelAsync(
+        string title,
+        string message,
+        string? yesText = null,
+        string? noText = null,
+        string? cancelText = null)
+    {
+        return Task.FromResult<bool?>(NextConfirmResult);
+    }
 }

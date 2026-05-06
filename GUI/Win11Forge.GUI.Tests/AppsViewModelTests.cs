@@ -16,6 +16,8 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
+using System.Text.Json;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
@@ -66,9 +68,17 @@ public class AppsViewModelTests
     /// <summary>
     /// Creates a configured AppsViewModel for testing.
     /// </summary>
-    private static AppsViewModel CreateViewModel(MockPowerShellBridge? bridge = null, MockAppSettingsService? settings = null, MockDeploymentStateService? deploymentState = null)
+    private static AppsViewModel CreateViewModel(
+        MockPowerShellBridge? bridge = null,
+        MockAppSettingsService? settings = null,
+        MockDeploymentStateService? deploymentState = null,
+        IFileDialogService? fileDialogService = null)
     {
-        return new AppsViewModel(bridge ?? CreateMockBridge(), settings ?? CreateMockSettingsService(), deploymentState ?? CreateMockDeploymentStateService());
+        return new AppsViewModel(
+            bridge ?? CreateMockBridge(),
+            settings ?? CreateMockSettingsService(),
+            deploymentState ?? CreateMockDeploymentStateService(),
+            fileDialogService);
     }
 
     /// <summary>
@@ -257,6 +267,142 @@ public class AppsViewModelTests
 
         // Assert - Should still show all apps in category
         Assert.Equal(categoryCount, GetFilteredCount(viewModel.FilteredApplications));
+    }
+
+    [Fact]
+    public async Task ExportSelection_ShouldWriteSelectedApplicationIdsToChosenFile()
+    {
+        // Arrange
+        var fileDialogService = new TestFileDialogService();
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        fileDialogService.QueueSaveResult(filePath);
+        var viewModel = CreateViewModel(fileDialogService: fileDialogService);
+        await viewModel.InitializeAsync();
+        var apps = GetFilteredApps(viewModel.FilteredApplications);
+        apps[0].IsSelected = true;
+        apps[1].IsSelected = true;
+
+        try
+        {
+            // Act
+            await viewModel.ExportSelectionCommand.ExecuteAsync(null);
+
+            // Assert
+            Assert.Single(fileDialogService.SaveOptions);
+            Assert.Equal("JSON files (*.json)|*.json", fileDialogService.SaveOptions[0].Filter);
+            Assert.Equal(".json", fileDialogService.SaveOptions[0].DefaultExtension);
+            Assert.Equal("win11forge-selection", fileDialogService.SaveOptions[0].DefaultFileName);
+
+            var exportedIds = JsonSerializer.Deserialize<List<string>>(await File.ReadAllTextAsync(filePath));
+            Assert.NotNull(exportedIds);
+            Assert.Contains("Microsoft.VisualStudioCode", exportedIds);
+            Assert.Contains("Microsoft.VisualStudio.2022.Community", exportedIds);
+        }
+        finally
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ImportSelection_ShouldApplySelectedApplicationIdsFromChosenFile()
+    {
+        // Arrange
+        var fileDialogService = new TestFileDialogService();
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "Git.Git" }));
+        fileDialogService.QueueOpenResult(filePath);
+        var viewModel = CreateViewModel(fileDialogService: fileDialogService);
+        await viewModel.InitializeAsync();
+
+        try
+        {
+            // Act
+            await viewModel.ImportSelectionCommand.ExecuteAsync(null);
+
+            // Assert
+            Assert.Single(fileDialogService.OpenOptions);
+            Assert.Equal("JSON files (*.json)|*.json", fileDialogService.OpenOptions[0].Filter);
+            Assert.Equal(".json", fileDialogService.OpenOptions[0].DefaultExtension);
+
+            var selectedApps = GetFilteredApps(viewModel.FilteredApplications)
+                .Where(app => app.IsSelected)
+                .ToList();
+            Assert.Single(selectedApps);
+            Assert.Equal("Git.Git", selectedApps[0].AppId);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public async Task ExportFavorites_ShouldWriteFavoriteApplicationIdsToChosenFile()
+    {
+        // Arrange
+        var fileDialogService = new TestFileDialogService();
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        fileDialogService.QueueSaveResult(filePath);
+        var viewModel = CreateViewModel(fileDialogService: fileDialogService);
+        await viewModel.InitializeAsync();
+        GetFilteredApps(viewModel.FilteredApplications)[0].IsFavorite = true;
+
+        try
+        {
+            // Act
+            await viewModel.ExportFavoritesCommand.ExecuteAsync(null);
+
+            // Assert
+            Assert.Single(fileDialogService.SaveOptions);
+            Assert.Equal("win11forge-favorites", fileDialogService.SaveOptions[0].DefaultFileName);
+
+            var exportedIds = JsonSerializer.Deserialize<List<string>>(await File.ReadAllTextAsync(filePath));
+            Assert.NotNull(exportedIds);
+            Assert.Single(exportedIds);
+            Assert.Equal("Microsoft.VisualStudioCode", exportedIds[0]);
+        }
+        finally
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ImportFavorites_ShouldApplyFavoriteApplicationIdsFromChosenFile()
+    {
+        // Arrange
+        var fileDialogService = new TestFileDialogService();
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "Mozilla.Firefox" }));
+        fileDialogService.QueueOpenResult(filePath);
+        var viewModel = CreateViewModel(fileDialogService: fileDialogService);
+        await viewModel.InitializeAsync();
+
+        try
+        {
+            // Act
+            await viewModel.ImportFavoritesCommand.ExecuteAsync(null);
+
+            // Assert
+            Assert.Single(fileDialogService.OpenOptions);
+            var favoriteApps = GetFilteredApps(viewModel.FilteredApplications)
+                .Where(app => app.IsFavorite)
+                .ToList();
+            Assert.Single(favoriteApps);
+            Assert.Equal("Mozilla.Firefox", favoriteApps[0].AppId);
+            Assert.Equal(1, viewModel.FavoritesCount);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
     }
 }
 

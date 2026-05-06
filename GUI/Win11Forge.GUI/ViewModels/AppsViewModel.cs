@@ -49,6 +49,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IAppSettingsService _settingsService;
     private readonly IDeploymentStateService _deploymentStateService;
+    private readonly IFileDialogService _fileDialogService;
     private readonly ProgressEstimator _progressEstimator = new();
     private SemaphoreSlim _scanSemaphore;
     private SemaphoreSlim _installSemaphore;
@@ -265,11 +266,13 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     public AppsViewModel(
         IPowerShellBridge powerShellBridge,
         IAppSettingsService settingsService,
-        IDeploymentStateService deploymentStateService)
+        IDeploymentStateService deploymentStateService,
+        IFileDialogService? fileDialogService = null)
     {
         _powerShellBridge = powerShellBridge;
         _settingsService = settingsService;
         _deploymentStateService = deploymentStateService;
+        _fileDialogService = fileDialogService ?? new FileDialogService();
 
         // Subscribe to pause/resume/cancel requests from the monitoring view
         _deploymentStateService.PauseRequested += OnPauseRequested;

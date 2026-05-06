@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+using System.Runtime.CompilerServices;
 using System.Windows;
 
-[assembly:ThemeInfo(
+[assembly: InternalsVisibleTo("Win11Forge.GUI.Tests")]
+
+[assembly: ThemeInfo(
     ResourceDictionaryLocation.None,            //where theme specific resource dictionaries are located
                                                 //(used if a resource is not found in the page,
                                                 // or application resource dictionaries)

@@ -19,10 +19,8 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Microsoft.Win32;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
-using Win11Forge.GUI.Views.Dialogs;
 using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Views;
@@ -50,18 +48,6 @@ public partial class ApplicationsView : UserControl
         {
             if (DataContext is ApplicationsViewModel viewModel)
             {
-                // Unsubscribe first to prevent duplicate handlers on re-load
-                viewModel.OpenEditorRequested -= OnOpenEditorRequested;
-                viewModel.ConfirmDeleteRequested -= OnConfirmDeleteRequested;
-                viewModel.ImportRequested -= OnImportRequested;
-                viewModel.ExportRequested -= OnExportRequested;
-
-                // Subscribe to events
-                viewModel.OpenEditorRequested += OnOpenEditorRequested;
-                viewModel.ConfirmDeleteRequested += OnConfirmDeleteRequested;
-                viewModel.ImportRequested += OnImportRequested;
-                viewModel.ExportRequested += OnExportRequested;
-
                 // Load data
                 await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
             }
@@ -69,27 +55,10 @@ public partial class ApplicationsView : UserControl
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"ApplicationsView load failed: {ex}");
-            MessageBox.Show(
-                string.Format(Loc.AppDb_LoadError, ex.Message),
+            var dialogService = App.GetService<IDialogService>();
+            await dialogService.ShowErrorAsync(
                 Loc.Common_Error,
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-        }
-    }
-
-    /// <summary>
-    /// Handles the Unloaded event to clean up event subscriptions.
-    /// Prevents memory leaks by unsubscribing from ViewModel events.
-    /// </summary>
-    private void UserControl_Unloaded(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is ApplicationsViewModel viewModel)
-        {
-            // Unsubscribe from events to prevent memory leaks
-            viewModel.OpenEditorRequested -= OnOpenEditorRequested;
-            viewModel.ConfirmDeleteRequested -= OnConfirmDeleteRequested;
-            viewModel.ImportRequested -= OnImportRequested;
-            viewModel.ExportRequested -= OnExportRequested;
+                string.Format(Loc.AppDb_LoadError, ex.Message));
         }
     }
 
@@ -104,140 +73,4 @@ public partial class ApplicationsView : UserControl
         }
     }
 
-    /// <summary>
-    /// Handles the request to open the application editor.
-    /// </summary>
-    private async void OnOpenEditorRequested(object? sender, ApplicationEditorEventArgs e)
-    {
-        var ownerWindow = Window.GetWindow(this);
-        if (ownerWindow == null)
-        {
-            MessageBox.Show(
-                Loc.AppDb_EditorOwnerNotFound,
-                Loc.Common_Error,
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-            return;
-        }
-
-        try
-        {
-            var savedApplication = e.IsNew
-                ? await ApplicationEditorDialog.ShowAddDialogAsync(ownerWindow)
-                : await ApplicationEditorDialog.ShowEditDialogAsync(ownerWindow, e.Application);
-
-            if (savedApplication != null && DataContext is ApplicationsViewModel viewModel)
-            {
-                await viewModel.SaveApplicationAsync(savedApplication, e.IsNew, e.OriginalApplication);
-            }
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(
-                string.Format(Loc.AppDb_EditorOpenError, ex.Message, ex.StackTrace),
-                Loc.Common_Error,
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-        }
-    }
-
-    /// <summary>
-    /// Handles the request to confirm deletion.
-    /// </summary>
-    private void OnConfirmDeleteRequested(object? sender, ConfirmDeleteEventArgs e)
-    {
-        var message = string.Format(
-            Loc.AppDb_DeleteConfirm,
-            e.AppName,
-            e.AppId);
-
-        var result = MessageBox.Show(
-            message,
-            Loc.AppDb_DeleteTitle,
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
-        e.Confirmed = result == MessageBoxResult.Yes;
-    }
-
-    /// <summary>
-    /// Handles the request to import applications.
-    /// </summary>
-    private async void OnImportRequested(object? sender, EventArgs e)
-    {
-        try
-        {
-            var dialog = new OpenFileDialog
-            {
-                Title = Loc.AppDb_Import,
-                Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
-                DefaultExt = ".json"
-            };
-
-            if (dialog.ShowDialog() == true && DataContext is ApplicationsViewModel viewModel)
-            {
-                // Show import mode selection dialog
-                var modeResult = MessageBox.Show(
-                    Loc.AppDb_ImportModeConfirm,
-                    Loc.AppDb_Import,
-                    MessageBoxButton.YesNoCancel,
-                    MessageBoxImage.Question);
-
-                if (modeResult == MessageBoxResult.Cancel) return;
-
-                var mode = modeResult == MessageBoxResult.Yes ? ImportMode.Replace : ImportMode.Merge;
-                await viewModel.ImportApplicationsAsync(dialog.FileName, mode);
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Import failed: {ex}");
-            MessageBox.Show(
-                string.Format(Loc.AppDb_ImportError, ex.Message),
-                Loc.Common_Error,
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-        }
-    }
-
-    /// <summary>
-    /// Handles the request to export applications.
-    /// </summary>
-    private async void OnExportRequested(object? sender, ExportEventArgs e)
-    {
-        try
-        {
-            if (e.AppIds.Count == 0)
-            {
-                MessageBox.Show(
-                    Loc.AppDb_NoExportSelection,
-                    Loc.AppDb_Export,
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                return;
-            }
-
-            var dialog = new SaveFileDialog
-            {
-                Title = Loc.AppDb_Export,
-                Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
-                DefaultExt = ".json",
-                FileName = $"applications-export-{DateTime.Now:yyyyMMdd}"
-            };
-
-            if (dialog.ShowDialog() == true && DataContext is ApplicationsViewModel viewModel)
-            {
-                await viewModel.ExportApplicationsAsync(e.AppIds, dialog.FileName);
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Export failed: {ex}");
-            MessageBox.Show(
-                string.Format(Loc.AppDb_ExportError, ex.Message),
-                Loc.Common_Error,
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-        }
-    }
 }
