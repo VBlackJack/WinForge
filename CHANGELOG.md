@@ -11,9 +11,10 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Kept plugin load sandbox validation compatible with Constrained Language Mode by performing AST validation before constrained module execution.
 - Added GUI test hang diagnostics and a 20-minute timeout to the coverage step.
 - Converted GUI coverage enforcement to a baseline floor with an explicit 80% target warning while the MVVM coverage backlog is completed.
-- Skipped the interactive `SettingsViewModel` history-clear test until the dialog-service refactor removes the modal `MessageBox` dependency.
+- Reactivated the `SettingsViewModel` history-clear test after replacing its modal `MessageBox` dependency with `IDialogService`.
 - Closed audit finding I4: code-behind business logic in `ApplicationsView` and `AppsView` migrated to ViewModels via dialog services and pure XAML context menu bindings.
 - Advanced I1 phase 2 with `AppUpdateCoordinator` extraction (PR #44): parallel scan-for-updates and sequential update-apply are modeled as separate coordinator workflows, the two PR7-tagged provisional semaphores in `AppsViewModel.Update.cs` were absorbed, and a test guard now prevents accidental re-parallelization of `UpdateAsync`.
+- Completed I1 phase 2 with `AppUninstallCoordinator` extraction (PR #45): all four coordinators (Scan, Installation, Update, Uninstall) now live under `Services/Coordinators/`. PR #45 also completed the residual `MessageBox.Show` migration to `IDialogService.ShowConfirmAsync` across ViewModels (`SettingsViewModel`, `LogsViewModel`, and Uninstall), satisfying the DoD §8.1 dialog invariant.
 
 ## [3.7.2] - 2026-02-12
 
