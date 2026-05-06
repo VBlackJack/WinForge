@@ -301,6 +301,22 @@ The following are **not** part of this PR and remain residual debt or future sco
 - [ ] Migration scenario inverse: edit `settings.json` to `{"isDarkTheme": false, ...}`. Launch app. Verify `Light` applied + `themeName: "Light"` persisted.
 - [ ] High-contrast mode toggled while a Dracula theme is active: high-contrast brushes still override correctly (existing `App.xaml.cs:ApplyHighContrastMode` still functional).
 
+#### Partial automation — opt-in UIA harness (informational, does not replace §11.7 manual smoke test)
+
+A separate test project `GUI/Win11Forge.GUI.UITests/` ships with this PR (delivered in a dedicated commit, scope-isolated from the theme port) and provides partial smoke-test coverage via UI Automation. It is **opt-in** and must be activated explicitly:
+
+- Set `WIN11FORGE_RUN_UIA=1` before running `dotnet test`. Without the flag, both UIA tests are skipped and do not affect normal CI runs.
+- The harness launches `Win11Forge.GUI.dll` via `dotnet` (not the `.exe`) to bypass the `requireAdministrator` UAC prompt on the production binary. The product manifest is unchanged.
+- Stable `AutomationId` values added across the navigation tree and key surfaces: `NavDashboard`, `NavPrerequisites`, `NavApplications`, `NavDeployment`, `NavSettings`, `NavAppCatalog`, `PageDashboard`, `PageApplications`, `PageAppCatalog`, `PageSettings`, `ThemePicker`. (`RootNavigation` was added on the WPF-UI `NavigationView` but is not used by the harness — WPF-UI does not expose it reliably through UIA; the harness traverses by leaf `AutomationId` instead.)
+- Test 1 — `CanNavigateCoreScreensAndCaptureScreenshots`: navigates Dashboard → Applications → AppCatalog → Settings via `AutomationId`, waits for a stable per-page marker, and writes `01-dashboard.png` / `02-applications.png` / `03-app-catalog.png` / `04-settings.png` to `TestResults/ui-screenshots/` (gitignored). Asserts each PNG is non-empty.
+- Test 2 — `SettingsThemePicker_IsDiscoverable`: navigates to Settings, locates the `ThemePicker` ComboBox via UIA, and writes `settings-theme-picker.png`. Asserts discoverability only — does not exercise the 8-theme cycling.
+
+**What this covers from §11.7:** clean-state startup (scenario 1), basic navigation surfaces (informational, not in the original §11.7 list), Settings ThemePicker presence (subset of scenario 2). The screenshots provide a visual artefact suitable to attach to the PR description as evidence of build sanity.
+
+**What this does NOT cover (must still be exercised manually):** the 8-theme cycling and visual-coherence checks of scenario 2 (DataGrid contrast, DWM title bar luminance, accent propagation, no black-on-black/white-on-white), persistence across restart (scenario 3), the two legacy-bool migration scenarios (4 and 5), and the HighContrast × Dracula coexistence (scenario 6, which is the highest residual risk per §13 row 6). These remain **mandatory manual gates before merge**.
+
+The opt-in UIA harness is also distinct from the xUnit coverage gaps tracked in `TODO.md` ("post-merge coverage extension"); UIA does not exercise the migration parser or the converter fallback paths. The TODO entry stands as-is.
+
 ### 11.8 Behavior change explicitly accepted
 
 - [ ] Users on `IsDarkTheme=true` (likely the majority) who had been seeing **WPF-UI Dark** will now see **DraculaPro** after migration. This is intentional (decision Q1). **Documented as a release note** in the PR description and (post-merge) in `CHANGELOG.md`.

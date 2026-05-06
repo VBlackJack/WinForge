@@ -20,7 +20,8 @@
         <TextBlock Grid.Row="0"
                    Text="{loc:Loc Settings_Title}"
                    FontSize="34" FontWeight="SemiBold"
-                   Margin="0,0,0,24"/>
+                   Margin="0,0,0,24"
+                   AutomationProperties.AutomationId="PageSettings"/>
 
         <!-- Settings Content with Tabs -->
         <TabControl Grid.Row="1"
@@ -60,6 +61,7 @@
                                         <ComboBox ItemsSource="{Binding AvailableThemes}"
                                                   SelectedItem="{Binding SelectedTheme, Mode=TwoWay}"
                                                   MinWidth="180"
+                                                  AutomationProperties.AutomationId="ThemePicker"
                                                   AutomationProperties.Name="{loc:Loc A11y_Settings_ThemePicker}">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate>
