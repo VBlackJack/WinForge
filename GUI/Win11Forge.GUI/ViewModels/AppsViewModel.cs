@@ -53,10 +53,10 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private readonly IFileDialogService _fileDialogService;
     private readonly IAppScanCoordinator _scanCoordinator;
     private readonly IAppInstallationCoordinator _installationCoordinator;
+    private readonly IAppUpdateCoordinator _updateCoordinator;
     private readonly IPauseGate _pauseGate;
     private readonly ProgressEstimator _progressEstimator = new();
     private readonly int _maxParallelInstalls;
-    private readonly int _maxParallelScans;
     private List<ApplicationModel> _allApplications = [];
     private CancellationTokenSource? _scanCancellationTokenSource;
     private CancellationTokenSource? _batchCancellationTokenSource;
@@ -272,6 +272,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         IDeploymentStateService deploymentStateService,
         IAppScanCoordinator scanCoordinator,
         IAppInstallationCoordinator installationCoordinator,
+        IAppUpdateCoordinator updateCoordinator,
         IPauseGate pauseGate,
         IFileDialogService? fileDialogService = null)
     {
@@ -280,6 +281,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         _deploymentStateService = deploymentStateService;
         _scanCoordinator = scanCoordinator;
         _installationCoordinator = installationCoordinator;
+        _updateCoordinator = updateCoordinator;
         _pauseGate = pauseGate;
         _fileDialogService = fileDialogService ?? new FileDialogService();
 
@@ -291,7 +293,6 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         // Initialize semaphores with configured settings
         var settings = _settingsService.LoadSettings();
         _maxParallelInstalls = Math.Clamp(settings.MaxParallelInstalls, 1, 10);
-        _maxParallelScans = Math.Clamp(settings.MaxParallelScans, 1, 20);
 
         // Restore persisted filter state from settings
         _searchText = settings.AppsLastSearchText ?? string.Empty;

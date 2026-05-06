@@ -16,6 +16,7 @@
 
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Services.Coordinators;
 
 namespace Win11Forge.GUI.ViewModels;
 
@@ -35,7 +36,6 @@ public partial class AppsViewModel
     private async Task ScanUpdatesAsync()
     {
         IsScanningUpdates = true;
-        var localUpdateCount = 0;
 
         try
         {
@@ -48,46 +48,8 @@ public partial class AppsViewModel
 
             if (installedApps.Count == 0) return;
 
-            // Check updates in parallel with a local semaphore. PR7 extracts this workflow.
-            using var scanSemaphore = new SemaphoreSlim(_maxParallelScans);
-            var tasks = installedApps.Select(async app =>
-            {
-                await scanSemaphore.WaitAsync();
-                try
-                {
-                    app.StatusMessage = Resources.Resources.Common_Loading;
-                    var result = await _powerShellBridge.CheckApplicationUpdateAsync(app);
-
-                    if (result.HasUpdate)
-                    {
-                        app.Status = ApplicationStatus.UpdateAvailable;
-                        app.CurrentVersion = result.CurrentVersion;
-                        app.AvailableVersion = result.AvailableVersion;
-                        app.StatusMessage = Resources.Resources.Status_UpdateAvailable;
-                        Interlocked.Increment(ref localUpdateCount);
-                    }
-                    else
-                    {
-                        // No update - mark as installed
-                        app.Status = ApplicationStatus.Installed;
-                        app.CurrentVersion = result.CurrentVersion;
-                        app.AvailableVersion = string.Empty;
-                        app.StatusMessage = Resources.Resources.Status_Installed;
-                    }
-                }
-                finally
-                {
-                    scanSemaphore.Release();
-                }
-            });
-
-            await Task.WhenAll(tasks);
-
-            // Update count on UI thread
-            System.Windows.Application.Current?.Dispatcher.InvokeAsync(() =>
-            {
-                UpdatesAvailableCount = localUpdateCount;
-            });
+            var result = await _updateCoordinator.ScanForUpdatesAsync(installedApps);
+            UpdatesAvailableCount = result.UpdatesAvailableCount;
 
             // Apply filter to refresh view
             ApplyFilter();
@@ -110,51 +72,12 @@ public partial class AppsViewModel
     {
         if (app == null) return;
 
-        // PR7 extracts this workflow.
-        using var installSemaphore = new SemaphoreSlim(_maxParallelInstalls);
-        await installSemaphore.WaitAsync();
-
         try
         {
-            app.Status = ApplicationStatus.Updating;
-            app.StatusMessage = Resources.Resources.Status_Updating;
-
-            var result = await _powerShellBridge.UpdateApplicationAsync(
-                app,
-                progress => app.StatusMessage = progress);
-
-            app.LogOutput = result.Logs;
-
-            if (result.Success)
+            var result = await _updateCoordinator.UpdateAsync([app]);
+            if (result.UpdatedCount > 0 && UpdatesAvailableCount > 0)
             {
-                // Refresh version info after successful update
-                var updateCheck = await _powerShellBridge.CheckApplicationUpdateAsync(app);
-
-                // Only update version if we got a valid one, otherwise keep the previous AvailableVersion as current
-                if (!string.IsNullOrEmpty(updateCheck.CurrentVersion))
-                {
-                    app.CurrentVersion = updateCheck.CurrentVersion;
-                }
-                else if (!string.IsNullOrEmpty(app.AvailableVersion))
-                {
-                    // Use the AvailableVersion we were updating to as the new CurrentVersion
-                    app.CurrentVersion = app.AvailableVersion;
-                }
-
-                app.AvailableVersion = string.Empty;
-                app.Status = ApplicationStatus.Installed;
-                app.StatusMessage = Resources.Resources.Status_Installed;
-
-                if (UpdatesAvailableCount > 0)
-                {
-                    UpdatesAvailableCount--;
-                }
-            }
-            else
-            {
-                app.Status = ApplicationStatus.Failed;
-                app.StatusMessage = Resources.Resources.Status_Failed;
-                app.ErrorMessage = result.Message;
+                UpdatesAvailableCount--;
             }
         }
         catch (Exception ex)
@@ -162,10 +85,6 @@ public partial class AppsViewModel
             app.Status = ApplicationStatus.Failed;
             app.StatusMessage = Resources.Resources.Status_Failed;
             app.ErrorMessage = ex.Message;
-        }
-        finally
-        {
-            installSemaphore.Release();
         }
     }
 
@@ -198,9 +117,12 @@ public partial class AppsViewModel
 
         try
         {
-            foreach (var app in appsWithUpdates)
+            var result = await _updateCoordinator.UpdateAsync(
+                appsWithUpdates,
+                new Progress<AppOperationProgress>(_ => { }));
+            if (result.UpdatedCount > 0)
             {
-                await UpdateAppAsync(app);
+                UpdatesAvailableCount = Math.Max(0, UpdatesAvailableCount - result.UpdatedCount);
             }
         }
         finally

@@ -75,6 +75,7 @@ public class AppsViewModelTests
         MockDeploymentStateService? deploymentState = null,
         IAppScanCoordinator? scanCoordinator = null,
         IAppInstallationCoordinator? installationCoordinator = null,
+        IAppUpdateCoordinator? updateCoordinator = null,
         IPauseGate? pauseGate = null,
         IFileDialogService? fileDialogService = null)
     {
@@ -84,6 +85,7 @@ public class AppsViewModelTests
             deploymentState ?? CreateMockDeploymentStateService(),
             scanCoordinator ?? new TestAppScanCoordinator(),
             installationCoordinator ?? new TestAppInstallationCoordinator(),
+            updateCoordinator ?? new TestAppUpdateCoordinator(),
             pauseGate ?? new TestPauseGate(),
             fileDialogService);
     }
@@ -461,6 +463,89 @@ public class AppsViewModelTests
         Assert.Same(app, Assert.Single(call));
         Assert.False(options.ForceUpdate);
     }
+
+    [Fact]
+    public async Task ScanUpdates_ShouldDelegateToCoordinatorAndApplyResultCount()
+    {
+        // Arrange
+        var updateCoordinator = new TestAppUpdateCoordinator
+        {
+            ScanResult = new AppUpdateScanResult(0, 2, WasCancelled: false)
+        };
+        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
+        foreach (var app in apps)
+        {
+            app.Status = ApplicationStatus.Installed;
+        }
+
+        viewModel.InstalledCount = 3;
+
+        // Act
+        await viewModel.ScanUpdatesCommand.ExecuteAsync(null);
+
+        // Assert
+        var call = Assert.Single(updateCoordinator.ScanCalls);
+        Assert.Equal(3, call.Count);
+        Assert.Equal(2, viewModel.UpdatesAvailableCount);
+        Assert.False(viewModel.IsScanningUpdates);
+    }
+
+    [Fact]
+    public async Task UpdateApp_ShouldDelegateSingleAppAndDecrementUpdateCount()
+    {
+        // Arrange
+        var updateCoordinator = new TestAppUpdateCoordinator
+        {
+            UpdateResult = new AppUpdateResult(0, 1, 0, 0, WasCancelled: false)
+        };
+        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        var app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        app.Status = ApplicationStatus.UpdateAvailable;
+        viewModel.UpdatesAvailableCount = 1;
+
+        // Act
+        await viewModel.UpdateAppCommand.ExecuteAsync(app);
+
+        // Assert
+        var call = Assert.Single(updateCoordinator.UpdateCalls);
+        Assert.Same(app, Assert.Single(call));
+        Assert.Equal(0, viewModel.UpdatesAvailableCount);
+        Assert.False(viewModel.IsInstalling);
+    }
+
+    [Fact]
+    public async Task UpdateSelected_ShouldDelegateSelectedAppsAndApplyFilter()
+    {
+        // Arrange
+        var updateCoordinator = new TestAppUpdateCoordinator
+        {
+            UpdateResult = new AppUpdateResult(0, 2, 0, 0, WasCancelled: false)
+        };
+        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
+        foreach (var app in apps)
+        {
+            app.Status = ApplicationStatus.UpdateAvailable;
+            app.IsSelected = false;
+        }
+
+        apps[0].IsSelected = true;
+        apps[1].IsSelected = true;
+        viewModel.UpdatesAvailableCount = 3;
+
+        // Act
+        await viewModel.UpdateSelectedCommand.ExecuteAsync(null);
+
+        // Assert
+        var call = Assert.Single(updateCoordinator.UpdateCalls);
+        Assert.Equal([apps[0], apps[1]], call);
+        Assert.Equal(1, viewModel.UpdatesAvailableCount);
+        Assert.False(viewModel.IsInstalling);
+    }
 }
 
 /// <summary>
@@ -715,6 +800,54 @@ internal sealed class TestAppInstallationCoordinator : IAppInstallationCoordinat
         }
 
         return Task.FromResult(Result with { Total = applications.Count });
+    }
+}
+
+/// <summary>
+/// Test implementation of IAppUpdateCoordinator for AppsViewModel unit tests.
+/// </summary>
+internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
+{
+    public List<IReadOnlyCollection<ApplicationModel>> ScanCalls { get; } = [];
+
+    public List<IReadOnlyCollection<ApplicationModel>> UpdateCalls { get; } = [];
+
+    public AppUpdateScanResult ScanResult { get; set; } = new(0, 0, WasCancelled: false);
+
+    public AppUpdateResult UpdateResult { get; set; } = new(0, 0, 0, 0, WasCancelled: false);
+
+    public Task<AppUpdateScanResult> ScanForUpdatesAsync(
+        IReadOnlyCollection<ApplicationModel> installedApps,
+        IProgress<AppOperationProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        ScanCalls.Add(installedApps);
+
+        var completed = 0;
+        foreach (var app in installedApps)
+        {
+            completed++;
+            progress?.Report(new AppOperationProgress(completed, installedApps.Count, app));
+        }
+
+        return Task.FromResult(ScanResult with { Total = installedApps.Count });
+    }
+
+    public Task<AppUpdateResult> UpdateAsync(
+        IReadOnlyCollection<ApplicationModel> applications,
+        IProgress<AppOperationProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        UpdateCalls.Add(applications);
+
+        var completed = 0;
+        foreach (var app in applications)
+        {
+            completed++;
+            progress?.Report(new AppOperationProgress(completed, applications.Count, app));
+        }
+
+        return Task.FromResult(UpdateResult with { Total = applications.Count });
     }
 }
 
