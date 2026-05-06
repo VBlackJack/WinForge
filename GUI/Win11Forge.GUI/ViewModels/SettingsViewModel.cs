@@ -41,6 +41,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private readonly IErrorHistoryService? _errorHistoryService;
     private readonly IApplicationDetectionService? _detectionService;
     private readonly ToastService? _toastService;
+    private readonly IApplicationLifetimeService _applicationLifetimeService;
+    private readonly IProcessLauncher _processLauncher;
     private string _initialLanguageCode = string.Empty;
     private bool _isLoadingSettings;
     private bool _settingsLoaded;
@@ -301,14 +303,22 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// Used for XAML design-time support only.
     /// </summary>
     public SettingsViewModel()
-        : this(new AppSettingsService(), new DeploymentHistoryService(), new DesignTimePowerShellBridge(), null, null, null)
+        : this(new AppSettingsService(), new DeploymentHistoryService(), new DesignTimePowerShellBridge(), null, null, null, null, null)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of SettingsViewModel with injected services.
     /// </summary>
-    public SettingsViewModel(IAppSettingsService settingsService, IDeploymentHistoryService historyService, IPowerShellBridge powerShellBridge, ToastService? toastService = null, IErrorHistoryService? errorHistoryService = null, IApplicationDetectionService? detectionService = null)
+    public SettingsViewModel(
+        IAppSettingsService settingsService,
+        IDeploymentHistoryService historyService,
+        IPowerShellBridge powerShellBridge,
+        ToastService? toastService = null,
+        IErrorHistoryService? errorHistoryService = null,
+        IApplicationDetectionService? detectionService = null,
+        IApplicationLifetimeService? applicationLifetimeService = null,
+        IProcessLauncher? processLauncher = null)
     {
         _settingsService = settingsService;
         _historyService = historyService;
@@ -316,6 +326,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         _toastService = toastService;
         _errorHistoryService = errorHistoryService;
         _detectionService = detectionService;
+        _applicationLifetimeService = applicationLifetimeService ?? new ApplicationLifetimeService();
+        _processLauncher = processLauncher ?? new ProcessLauncher();
 
         // Subscribe to error history changes
         if (_errorHistoryService != null)
@@ -562,12 +574,12 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
             var currentExecutablePath = Environment.ProcessPath;
             if (!string.IsNullOrEmpty(currentExecutablePath))
             {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                _processLauncher.Start(new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = currentExecutablePath,
                     UseShellExecute = true
                 });
-                System.Windows.Application.Current.Shutdown();
+                _applicationLifetimeService.RequestShutdown();
             }
         }
         catch (Exception ex)

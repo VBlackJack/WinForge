@@ -16,7 +16,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Models;
@@ -32,6 +31,8 @@ public partial class PrerequisitesViewModel : ViewModelBase
 {
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IDialogService _dialogService;
+    private readonly IApplicationLifetimeService _applicationLifetimeService;
+    private readonly IProcessLauncher _processLauncher;
 
     /// <summary>
     /// Prerequisites status.
@@ -66,10 +67,16 @@ public partial class PrerequisitesViewModel : ViewModelBase
     /// <summary>
     /// Initializes a new instance of PrerequisitesViewModel.
     /// </summary>
-    public PrerequisitesViewModel(IPowerShellBridge powerShellBridge, IDialogService dialogService)
+    public PrerequisitesViewModel(
+        IPowerShellBridge powerShellBridge,
+        IDialogService dialogService,
+        IApplicationLifetimeService? applicationLifetimeService = null,
+        IProcessLauncher? processLauncher = null)
     {
         _powerShellBridge = powerShellBridge;
         _dialogService = dialogService;
+        _applicationLifetimeService = applicationLifetimeService ?? new ApplicationLifetimeService();
+        _processLauncher = processLauncher ?? new ProcessLauncher();
     }
 
     /// <inheritdoc/>
@@ -127,7 +134,7 @@ public partial class PrerequisitesViewModel : ViewModelBase
         {
             var success = await _powerShellBridge.InstallPrerequisitesAsync(msg =>
             {
-                Application.Current.Dispatcher.BeginInvoke(() =>
+                System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
                 {
                     ProgressMessage = msg;
                     LogOutput += msg + Environment.NewLine;
@@ -191,10 +198,10 @@ public partial class PrerequisitesViewModel : ViewModelBase
                     UseShellExecute = true,
                     Verb = "runas" // Run as admin
                 };
-                Process.Start(startInfo);
+                _processLauncher.Start(startInfo);
 
                 // Shutdown current instance
-                Application.Current.Shutdown();
+                _applicationLifetimeService.RequestShutdown();
             }
         }
         catch (Exception ex)

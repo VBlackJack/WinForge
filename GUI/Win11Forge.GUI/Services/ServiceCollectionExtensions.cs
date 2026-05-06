@@ -74,6 +74,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IAccessibilityService, AccessibilityService>();
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IApplicationLifetimeService, ApplicationLifetimeService>();
+        services.AddSingleton<IProcessLauncher, ProcessLauncher>();
 
         // Register ViewModels as transient (new instance per request)
         services.AddTransient<DashboardViewModel>();

@@ -150,6 +150,35 @@ public class PrerequisitesViewModelTests
         Assert.Contains("Line 1", viewModel.LogOutput);
         Assert.Contains("Line 2", viewModel.LogOutput);
     }
+
+    /// <summary>
+    /// Verifies confirmed prerequisite restart requests shutdown through the lifetime service.
+    /// </summary>
+    [Fact]
+    public async Task InstallPrerequisitesCommand_WhenRestartConfirmed_ShouldLaunchProcessAndRequestShutdown()
+    {
+        // Arrange
+        var powerShellBridge = new MockPowerShellBridge();
+        var dialogService = new MockDialogServiceForPrerequisites { NextConfirmResult = true };
+        var lifetimeService = new MockApplicationLifetimeService();
+        var processLauncher = new MockProcessLauncher();
+        var viewModel = new PrerequisitesViewModel(
+            powerShellBridge,
+            dialogService,
+            lifetimeService,
+            processLauncher);
+
+        // Act
+        await viewModel.InstallPrerequisitesCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Equal(1, processLauncher.StartCallCount);
+        Assert.NotNull(processLauncher.LastStartInfo);
+        Assert.True(processLauncher.LastStartInfo.UseShellExecute);
+        Assert.Equal("runas", processLauncher.LastStartInfo.Verb);
+        Assert.Equal(1, lifetimeService.RequestShutdownCallCount);
+        Assert.Equal(0, lifetimeService.LastExitCode);
+    }
 }
 
 /// <summary>

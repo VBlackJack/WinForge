@@ -320,6 +320,36 @@ public class SettingsViewModelTests
         Assert.Contains(viewModel.AvailableLanguages, l => l.Code == "en");
         Assert.Contains(viewModel.AvailableLanguages, l => l.Code == "fr");
     }
+
+    /// <summary>
+    /// Verifies restart launches a new instance and requests shutdown through the lifetime service.
+    /// </summary>
+    [Fact]
+    public void RestartApplicationCommand_ShouldLaunchProcessAndRequestShutdown()
+    {
+        // Arrange
+        var settingsService = new MockAppSettingsService();
+        var historyService = new MockDeploymentHistoryService();
+        var powerShellBridge = new MockPowerShellBridge();
+        var lifetimeService = new MockApplicationLifetimeService();
+        var processLauncher = new MockProcessLauncher();
+        var viewModel = new SettingsViewModel(
+            settingsService,
+            historyService,
+            powerShellBridge,
+            applicationLifetimeService: lifetimeService,
+            processLauncher: processLauncher);
+
+        // Act
+        viewModel.RestartApplicationCommand.Execute(null);
+
+        // Assert
+        Assert.Equal(1, processLauncher.StartCallCount);
+        Assert.NotNull(processLauncher.LastStartInfo);
+        Assert.True(processLauncher.LastStartInfo.UseShellExecute);
+        Assert.Equal(1, lifetimeService.RequestShutdownCallCount);
+        Assert.Equal(0, lifetimeService.LastExitCode);
+    }
 }
 
 /// <summary>
