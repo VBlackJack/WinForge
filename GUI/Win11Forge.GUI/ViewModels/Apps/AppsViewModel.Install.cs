@@ -36,7 +36,9 @@ public partial class AppsViewModel
 
         try
         {
-            var result = await _installationCoordinator.InstallAsync([app]);
+            var result = await _installationCoordinator.InstallAsync(
+                [app],
+                new AppInstallationOptions(ForceUpdate: false));
             InstalledCount += result.InstalledCount;
             _deploymentStateService.UpdateProgress(app.Name, 1, 1, app.StatusMessage);
         }
@@ -91,6 +93,7 @@ public partial class AppsViewModel
         {
             var result = await _installationCoordinator.InstallAsync(
                 selectedApps,
+                new AppInstallationOptions(ForceUpdate: true),
                 new Progress<AppOperationProgress>(ApplyInstallProgress),
                 _batchCancellationTokenSource.Token);
 

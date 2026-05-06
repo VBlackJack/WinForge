@@ -42,10 +42,12 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
     /// <inheritdoc/>
     public async Task<AppInstallationResult> InstallAsync(
         IReadOnlyCollection<ApplicationModel> applications,
+        AppInstallationOptions options,
         IProgress<AppOperationProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(applications);
+        ArgumentNullException.ThrowIfNull(options);
 
         if (applications.Count == 0)
         {
@@ -59,7 +61,7 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
         {
             var itemResults = await runner.RunAsync(
                 apps,
-                InstallApplicationAsync,
+                (app, token) => InstallApplicationAsync(app, options, token),
                 app => app,
                 progress,
                 cancellationToken).ConfigureAwait(false);
@@ -74,6 +76,7 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
 
     private async Task<AppInstallationItemResult> InstallApplicationAsync(
         ApplicationModel app,
+        AppInstallationOptions options,
         CancellationToken cancellationToken)
     {
         try
@@ -87,7 +90,7 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
             var result = await _powerShellBridge.InstallApplicationAsync(
                 app,
                 isDryRun: false,
-                forceUpdate: true,
+                forceUpdate: options.ForceUpdate,
                 progressCallback: progress => app.StatusMessage = progress).ConfigureAwait(false);
 
             app.LogOutput = result.Logs;

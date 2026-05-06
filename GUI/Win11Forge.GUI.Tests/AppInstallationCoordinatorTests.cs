@@ -29,7 +29,7 @@ public class AppInstallationCoordinatorTests
         var bridge = CreateBridge();
         var coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.InstallAsync([]);
+        var result = await coordinator.InstallAsync([], new AppInstallationOptions(ForceUpdate: false));
 
         Assert.Equal(0, result.Total);
         Assert.Equal(0, result.InstalledCount);
@@ -53,7 +53,7 @@ public class AppInstallationCoordinatorTests
         var bridge = CreateBridge();
         var coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.InstallAsync(apps);
+        var result = await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: true));
 
         Assert.Equal(2, result.Total);
         Assert.Equal(2, result.InstalledCount);
@@ -89,7 +89,7 @@ public class AppInstallationCoordinatorTests
                 });
         var coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.InstallAsync(apps);
+        var result = await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: true));
 
         Assert.Equal(1, result.InstalledCount);
         Assert.Equal(1, result.AlreadyInstalledCount);
@@ -119,7 +119,7 @@ public class AppInstallationCoordinatorTests
         pauseGate.Pause();
         var coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate);
 
-        var installTask = coordinator.InstallAsync(apps);
+        var installTask = coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: true));
         await Task.Delay(75);
 
         Assert.Equal(0, Volatile.Read(ref installCalls));
@@ -141,7 +141,10 @@ public class AppInstallationCoordinatorTests
         var coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate);
         using var cts = new CancellationTokenSource();
 
-        var installTask = coordinator.InstallAsync(apps, cancellationToken: cts.Token);
+        var installTask = coordinator.InstallAsync(
+            apps,
+            new AppInstallationOptions(ForceUpdate: true),
+            cancellationToken: cts.Token);
         await Task.Delay(50);
         cts.Cancel();
 
@@ -150,6 +153,26 @@ public class AppInstallationCoordinatorTests
         Assert.True(result.WasCancelled);
         Assert.Equal(1, result.SkippedCount);
         Assert.Equal(ApplicationStatus.Skipped, apps[0].Status);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InstallAsync_ShouldPropagateForceUpdateOption(bool forceUpdate)
+    {
+        var apps = CreateApps("App1");
+        var bridge = CreateBridge();
+        var coordinator = CreateCoordinator(bridge.Object);
+
+        await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: forceUpdate));
+
+        bridge.Verify(
+            x => x.InstallApplicationAsync(
+                It.IsAny<ApplicationModel>(),
+                false,
+                forceUpdate,
+                It.IsAny<Action<string>?>()),
+            Times.Once);
     }
 
     private static List<ApplicationModel> CreateApps(params string[] appIds)

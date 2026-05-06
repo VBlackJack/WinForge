@@ -27,11 +27,13 @@ public interface IAppInstallationCoordinator
     /// Installs the supplied applications and returns final aggregate counters.
     /// </summary>
     /// <param name="applications">Applications to install.</param>
+    /// <param name="options">Installation options.</param>
     /// <param name="progress">Optional per-application completion progress.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>Final installation counters.</returns>
     Task<AppInstallationResult> InstallAsync(
         IReadOnlyCollection<ApplicationModel> applications,
+        AppInstallationOptions options,
         IProgress<AppOperationProgress>? progress = null,
         CancellationToken cancellationToken = default);
 }

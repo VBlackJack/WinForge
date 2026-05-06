@@ -429,13 +429,37 @@ public class AppsViewModelTests
 
         // Assert
         var call = Assert.Single(installationCoordinator.Calls);
+        var options = Assert.Single(installationCoordinator.Options);
         Assert.Equal(7, call.Count);
+        Assert.True(options.ForceUpdate);
         Assert.Equal(2, viewModel.InstalledCount);
         Assert.Equal(3, viewModel.SuccessCount);
         Assert.Equal(1, viewModel.FailedCount);
         Assert.Equal(0, viewModel.SkippedCount);
         Assert.Equal(DeploymentResult.PartialSuccess, viewModel.LastDeploymentResult);
         Assert.True(viewModel.IsSummaryDialogOpen);
+    }
+
+    [Fact]
+    public async Task InstallApp_ShouldDelegateWithForceUpdateFalse()
+    {
+        // Arrange
+        var installationCoordinator = new TestAppInstallationCoordinator
+        {
+            Result = new AppInstallationResult(0, 1, 0, 0, 0, WasCancelled: false)
+        };
+        var viewModel = CreateViewModel(installationCoordinator: installationCoordinator);
+        await viewModel.InitializeAsync();
+        var app = GetFilteredApps(viewModel.FilteredApplications)[0];
+
+        // Act
+        await viewModel.InstallAppCommand.ExecuteAsync(app);
+
+        // Assert
+        var call = Assert.Single(installationCoordinator.Calls);
+        var options = Assert.Single(installationCoordinator.Options);
+        Assert.Same(app, Assert.Single(call));
+        Assert.False(options.ForceUpdate);
     }
 }
 
@@ -670,14 +694,18 @@ internal sealed class TestAppInstallationCoordinator : IAppInstallationCoordinat
 {
     public List<IReadOnlyCollection<ApplicationModel>> Calls { get; } = [];
 
+    public List<AppInstallationOptions> Options { get; } = [];
+
     public AppInstallationResult Result { get; set; } = new(0, 0, 0, 0, 0, WasCancelled: false);
 
     public Task<AppInstallationResult> InstallAsync(
         IReadOnlyCollection<ApplicationModel> applications,
+        AppInstallationOptions options,
         IProgress<AppOperationProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         Calls.Add(applications);
+        Options.Add(options);
 
         var completed = 0;
         foreach (var app in applications)
