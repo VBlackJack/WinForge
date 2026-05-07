@@ -394,7 +394,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Enregistrer</value>
   </data>
   <data name="Msg_ProfileSaved" xml:space="preserve">
-    <value>Profil enregistre avec succès</value>
+    <value>Profil enregistré avec succès</value>
   </data>
   <!-- Application Picker Dialog -->
   <data name="Dialog_SelectApp_Title" xml:space="preserve">
@@ -420,7 +420,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Langue</value>
   </data>
   <data name="Settings_Section_Data" xml:space="preserve">
-    <value>Donnees</value>
+    <value>Données</value>
   </data>
   <data name="Settings_Theme" xml:space="preserve">
     <value>Theme</value>
@@ -456,7 +456,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Thème appliqué</value>
   </data>
   <data name="Settings_AutoSaved" xml:space="preserve">
-    <value>Paramètres enregistres</value>
+    <value>Paramètres enregistrés</value>
   </data>
   <data name="Settings_SaveFailed" xml:space="preserve">
     <value>Échec de l'enregistrement des paramètres</value>
@@ -499,7 +499,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Historique des erreurs efface</value>
   </data>
   <data name="Settings_NoErrors" xml:space="preserve">
-    <value>Aucune erreur enregistree</value>
+    <value>Aucune erreur enregistrée</value>
   </data>
   <data name="Settings_CacheStatistics" xml:space="preserve">
     <value>Statistiques du cache</value>
@@ -541,7 +541,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Nombre maximum d'installations simultanées</value>
   </data>
   <data name="Settings_ParallelInstallsApplied" xml:space="preserve">
-    <value>Paramètre applique (redémarrer les vues pour effet)</value>
+    <value>Paramètre appliqué (redémarrer les vues pour effet)</value>
   </data>
   <data name="Settings_ParallelScans" xml:space="preserve">
     <value>Scans parallèles</value>
@@ -550,10 +550,10 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Nombre maximum de vérifications simultanées</value>
   </data>
   <data name="Settings_ParallelScansApplied" xml:space="preserve">
-    <value>Paramètre applique (redémarrer les vues pour effet)</value>
+    <value>Paramètre appliqué (redémarrer les vues pour effet)</value>
   </data>
   <data name="Settings_ScanTimeoutApplied" xml:space="preserve">
-    <value>Délai d'analyse des mises à jour applique</value>
+    <value>Délai d'analyse des mises à jour appliqué</value>
   </data>
   <data name="Settings_ScanTimeout" xml:space="preserve">
     <value>Délai d'analyse des mises à jour</value>
@@ -1081,7 +1081,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Scan terminé : {0} installés</value>
   </data>
   <data name="Toast_ProfileSaved" xml:space="preserve">
-    <value>Profil enregistre</value>
+    <value>Profil enregistré</value>
   </data>
   <data name="Toast_ExportComplete" xml:space="preserve">
     <value>Export terminé</value>
@@ -1378,13 +1378,13 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Recherche de mises à jour...</value>
   </data>
   <data name="Dashboard_LastCheck_JustNow" xml:space="preserve">
-    <value>Verifie à l'instant</value>
+    <value>Vérifié à l'instant</value>
   </data>
   <data name="Dashboard_LastCheck_MinutesAgo" xml:space="preserve">
-    <value>Verifie il y a {0} min</value>
+    <value>Vérifié il y a {0} min</value>
   </data>
   <data name="Dashboard_LastCheck_HoursAgo" xml:space="preserve">
-    <value>Verifie il y a {0}h</value>
+    <value>Vérifié il y a {0}h</value>
   </data>
   <data name="Dashboard_Stats_ProfilesHint" xml:space="preserve">
     <value>Cliquez pour sélectionner un profil</value>
@@ -1638,7 +1638,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Erreur PowerShell : {0}</value>
   </data>
   <data name="Apps_Error_Database" xml:space="preserve">
-    <value>Erreur base de donnees : {0}</value>
+    <value>Erreur base de données : {0}</value>
   </data>
   <data name="Apps_Error_ProfilesDirectoryNotFound" xml:space="preserve">
     <value>Dossier Profiles introuvable</value>
@@ -1752,7 +1752,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Priorite</value>
   </data>
   <data name="AppDb_Col_Verified" xml:space="preserve">
-    <value>Verifie</value>
+    <value>Vérifié</value>
   </data>
   <data name="AppDb_Col_Description" xml:space="preserve">
     <value>Description</value>
@@ -1761,7 +1761,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Chargement des applications...</value>
   </data>
   <data name="AppDb_LoadedCount" xml:space="preserve">
-    <value>{0} applications chargees</value>
+    <value>{0} applications chargées</value>
   </data>
   <data name="AppDb_LoadError" xml:space="preserve">
     <value>Échec du chargement des applications : {0}</value>
@@ -1952,10 +1952,10 @@ Non = Ignorer les doublons</value>
     <value>Annuler</value>
   </data>
   <data name="AppEditor_UnsavedChanges" xml:space="preserve">
-    <value>Vous avez des modifications non enregistrees</value>
+    <value>Vous avez des modifications non enregistrées</value>
   </data>
   <data name="AppEditor_DiscardChanges" xml:space="preserve">
-    <value>Vous avez des modifications non enregistrees. Voulez-vous vraiment les abandonner ?</value>
+    <value>Vous avez des modifications non enregistrées. Voulez-vous vraiment les abandonner ?</value>
   </data>
   <data name="AppEditor_DiscardTitle" xml:space="preserve">
     <value>Abandonner les modifications ?</value>
@@ -2000,7 +2000,7 @@ Non = Ignorer les doublons</value>
     <value>{0} résultat(s) trouvés</value>
   </data>
   <data name="AppEditor_SearchApplied" xml:space="preserve">
-    <value>Applique : {0}</value>
+    <value>Appliqué : {0}</value>
   </data>
   <!-- Source Editor Controls -->
   <data name="SourceEditor_EnableDisable" xml:space="preserve">
@@ -2074,7 +2074,7 @@ Non = Ignorer les doublons</value>
     <value>Chocolatey n'est pas disponible sur ce système</value>
   </data>
   <data name="Verify_AllSourcesValid" xml:space="preserve">
-    <value>Toutes les sources verifiees ({0}/{1})</value>
+    <value>Toutes les sources vérifiées ({0}/{1})</value>
   </data>
   <data name="Verify_SomeSourcesInvalid" xml:space="preserve">
     <value>{0} sur {1} sources valides</value>
@@ -2228,7 +2228,7 @@ Cette action est irréversible.</value>
     <value>Icône aucun historique de déploiement</value>
   </data>
   <data name="A11y_NoDatabaseIcon" xml:space="preserve">
-    <value>Icône base de donnees vide</value>
+    <value>Icône base de données vide</value>
   </data>
   <data name="A11y_NoDeploymentIcon" xml:space="preserve">
     <value>Icône aucun déploiement actif</value>
@@ -2238,7 +2238,7 @@ Cette action est irréversible.</value>
     <value>Chargement de {0} éléments...</value>
   </data>
   <data name="Loading_Database" xml:space="preserve">
-    <value>Chargement de la base de donnees d'applications...</value>
+    <value>Chargement de la base de données d'applications...</value>
   </data>
   <!-- UX Improvements - Copy Feedback -->
   <data name="Toast_CopiedToClipboard" xml:space="preserve">
