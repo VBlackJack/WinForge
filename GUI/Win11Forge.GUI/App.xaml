@@ -29,7 +29,7 @@
                 <Setter Property="Control.Template">
                     <Setter.Value>
                         <ControlTemplate>
-                            <Border BorderBrush="{DynamicResource SystemAccentColorSecondaryBrush}"
+                            <Border BorderBrush="{DynamicResource FocusIndicatorBrush}"
                                     BorderThickness="2"
                                     CornerRadius="4"
                                     Margin="-2"/>
@@ -64,6 +64,7 @@
 
             <!-- Validation TextBox Style (shows error when text is empty) -->
             <Style x:Key="RequiredTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding Text.Length, RelativeSource={RelativeSource Self}}" Value="0">
                         <Setter Property="BorderBrush" Value="{DynamicResource ValidationErrorBorderBrush}"/>
@@ -98,90 +99,25 @@
             <Duration x:Key="AnimationFast">0:0:0.15</Duration>
             <Duration x:Key="AnimationNormal">0:0:0.3</Duration>
             <Duration x:Key="AnimationSlow">0:0:0.5</Duration>
+            <Duration x:Key="AnimationMicro">0:0:0.05</Duration>
             <Duration x:Key="AnimationNone">0:0:0</Duration>
 
-            <!-- Fade In Animation Style for Views (respects reduced motion via App.xaml.cs) -->
-            <Style x:Key="FadeInStyle" TargetType="FrameworkElement">
-                <Style.Triggers>
-                    <EventTrigger RoutedEvent="Loaded">
-                        <BeginStoryboard>
-                            <Storyboard>
-                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                                 From="0" To="1" Duration="{StaticResource AnimationNormal}">
-                                    <DoubleAnimation.EasingFunction>
-                                        <CubicEase EasingMode="EaseOut"/>
-                                    </DoubleAnimation.EasingFunction>
-                                </DoubleAnimation>
-                                <ThicknessAnimation Storyboard.TargetProperty="Margin"
-                                                    From="0,20,0,0" To="0" Duration="{StaticResource AnimationNormal}">
-                                    <ThicknessAnimation.EasingFunction>
-                                        <CubicEase EasingMode="EaseOut"/>
-                                    </ThicknessAnimation.EasingFunction>
-                                </ThicknessAnimation>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </EventTrigger>
-                </Style.Triggers>
-            </Style>
+            <!-- Kept as a compatibility style key; global XAML motion is disabled for reduced-motion safety. -->
+            <Style x:Key="FadeInStyle" TargetType="FrameworkElement"/>
 
             <!-- No Animation Style (for reduced motion or instant display) -->
             <Style x:Key="NoAnimationStyle" TargetType="FrameworkElement">
                 <Setter Property="Opacity" Value="1"/>
             </Style>
 
-            <!-- Card Hover Animation Style -->
-            <Style x:Key="AnimatedCardStyle" TargetType="Border">
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Trigger.EnterActions>
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <ThicknessAnimation Storyboard.TargetProperty="Margin"
-                                                        To="-2,-2,-2,-2" Duration="{StaticResource AnimationFast}">
-                                        <ThicknessAnimation.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </ThicknessAnimation.EasingFunction>
-                                    </ThicknessAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </Trigger.EnterActions>
-                        <Trigger.ExitActions>
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <ThicknessAnimation Storyboard.TargetProperty="Margin"
-                                                        To="0" Duration="{StaticResource AnimationFast}">
-                                        <ThicknessAnimation.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </ThicknessAnimation.EasingFunction>
-                                    </ThicknessAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </Trigger.ExitActions>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
+            <Style x:Key="AnimatedCardStyle" TargetType="Border"/>
 
             <!-- Static Card Style (no animation, for reduced motion) -->
             <Style x:Key="StaticCardStyle" TargetType="Border"/>
 
-            <!-- Success Pulse Animation Storyboard -->
-            <Storyboard x:Key="SuccessPulseAnimation">
-                <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                To="#4CAF50" Duration="{StaticResource AnimationFast}" AutoReverse="True"/>
-            </Storyboard>
-
-            <!-- Error Shake Animation Storyboard -->
-            <Storyboard x:Key="ErrorShakeAnimation">
-                <ThicknessAnimation Storyboard.TargetProperty="Margin"
-                                    From="0" To="5,0,-5,0" Duration="0:0:0.05"
-                                    AutoReverse="True" RepeatBehavior="3x"/>
-            </Storyboard>
-
-            <!-- No-Op Storyboard for reduced motion -->
-            <Storyboard x:Key="NoAnimationStoryboard"/>
-
             <!-- Theme-Adaptive Outlined Button Style -->
             <Style x:Key="ThemeAdaptiveOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
                 <Setter Property="Background" Value="Transparent"/>
@@ -189,6 +125,7 @@
 
             <!-- Destructive Action Button Style -->
             <Style x:Key="DestructiveOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ValidationErrorBorderBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBorderBrush}"/>
                 <Setter Property="Background" Value="Transparent"/>
@@ -198,6 +135,7 @@
 
             <!-- Icon Button with Hover Scale Effect -->
             <Style x:Key="HoverScaleIconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
@@ -206,79 +144,12 @@
                         <ScaleTransform ScaleX="1" ScaleY="1"/>
                     </Setter.Value>
                 </Setter>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Trigger.EnterActions>
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                                     To="1.1" Duration="{StaticResource AnimationFast}">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                                     To="1.1" Duration="{StaticResource AnimationFast}">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </Trigger.EnterActions>
-                        <Trigger.ExitActions>
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                                     To="1" Duration="{StaticResource AnimationFast}">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                                     To="1" Duration="{StaticResource AnimationFast}">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </Trigger.ExitActions>
-                    </Trigger>
-                </Style.Triggers>
             </Style>
 
             <!-- Outlined Button with Hover Background Fade -->
             <Style x:Key="HoverFadeOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Background" Value="Transparent"/>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Trigger.EnterActions>
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)"
-                                                    To="#1AFFFFFF" Duration="{StaticResource AnimationFast}">
-                                        <ColorAnimation.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </ColorAnimation.EasingFunction>
-                                    </ColorAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </Trigger.EnterActions>
-                        <Trigger.ExitActions>
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)"
-                                                    To="Transparent" Duration="{StaticResource AnimationFast}">
-                                        <ColorAnimation.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </ColorAnimation.EasingFunction>
-                                    </ColorAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </Trigger.ExitActions>
-                    </Trigger>
-                </Style.Triggers>
             </Style>
 
             <!-- Interactive Badge/Chip with Hover Effect -->
@@ -289,52 +160,13 @@
                         <ScaleTransform ScaleX="1" ScaleY="1"/>
                     </Setter.Value>
                 </Setter>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Trigger.EnterActions>
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                                     To="1.05" Duration="{StaticResource AnimationFast}">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                                     To="1.05" Duration="{StaticResource AnimationFast}">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </Trigger.EnterActions>
-                        <Trigger.ExitActions>
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                                     To="1" Duration="{StaticResource AnimationFast}">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                                     To="1" Duration="{StaticResource AnimationFast}">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </Trigger.ExitActions>
-                    </Trigger>
-                </Style.Triggers>
             </Style>
 
             <!-- Touch-Optimized Styles (WCAG 2.5.5 - minimum 44x44px touch targets) -->
 
             <!-- Touch-friendly Icon Button (min 44x44 hit area) -->
             <Style x:Key="TouchFriendlyIconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="MinWidth" Value="44"/>
                 <Setter Property="MinHeight" Value="44"/>
                 <Setter Property="Padding" Value="10"/>
@@ -344,12 +176,14 @@
 
             <!-- Touch-friendly Button with larger hit area -->
             <Style x:Key="TouchFriendlyButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="MinHeight" Value="44"/>
                 <Setter Property="Padding" Value="16,10"/>
             </Style>
 
             <!-- Touch-friendly Outlined Button -->
             <Style x:Key="TouchFriendlyOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="MinHeight" Value="44"/>
                 <Setter Property="Padding" Value="16,10"/>
                 <Setter Property="Background" Value="Transparent"/>
@@ -357,6 +191,7 @@
 
             <!-- Touch-friendly Checkbox with larger hit area -->
             <Style x:Key="TouchFriendlyCheckBox" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="MinHeight" Value="44"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                 <Setter Property="Padding" Value="8,10"/>
@@ -371,11 +206,13 @@
 
             <!-- Touch-friendly ComboBox -->
             <Style x:Key="TouchFriendlyComboBox" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="MinHeight" Value="44"/>
             </Style>
 
             <!-- Touch-friendly TextBox -->
             <Style x:Key="TouchFriendlyTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="MinHeight" Value="44"/>
                 <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -385,6 +222,7 @@
 
             <!-- Theme-aware dense controls -->
             <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
@@ -450,6 +288,7 @@
 
             <!-- Favorite Button Style with bounce animation -->
             <Style x:Key="AnimatedFavoriteButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Width" Value="44"/>
                 <Setter Property="Height" Value="44"/>
                 <Setter Property="Background" Value="Transparent"/>
@@ -460,84 +299,25 @@
                         <ScaleTransform ScaleX="1" ScaleY="1"/>
                     </Setter.Value>
                 </Setter>
-                <Style.Triggers>
-                    <EventTrigger RoutedEvent="Button.Click">
-                        <BeginStoryboard>
-                            <Storyboard>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="1"/>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.1" Value="1.3">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.25" Value="1">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="1"/>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.1" Value="1.3">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.25" Value="1">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="5"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </EventTrigger>
-                </Style.Triggers>
             </Style>
 
             <!-- Selection Checkbox Style with scale animation -->
             <Style x:Key="AnimatedSelectionCheckBox" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
                 <Setter Property="RenderTransform">
                     <Setter.Value>
                         <ScaleTransform ScaleX="1" ScaleY="1"/>
                     </Setter.Value>
                 </Setter>
-                <Style.Triggers>
-                    <EventTrigger RoutedEvent="CheckBox.Checked">
-                        <BeginStoryboard>
-                            <Storyboard>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="1"/>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.08" Value="1.15">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="1">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.0" Value="1"/>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.08" Value="1.15">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                    <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="1">
-                                        <EasingDoubleKeyFrame.EasingFunction>
-                                            <CubicEase EasingMode="EaseOut"/>
-                                        </EasingDoubleKeyFrame.EasingFunction>
-                                    </EasingDoubleKeyFrame>
-                                </DoubleAnimationUsingKeyFrames>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </EventTrigger>
-                </Style.Triggers>
+            </Style>
+
+            <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+            </Style>
+
+            <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
             </Style>
 
             <!-- Converters -->

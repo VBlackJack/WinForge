@@ -15,6 +15,8 @@
  */
 
 using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Win11Forge.GUI.Helpers;
 
 namespace Win11Forge.GUI.Views;
@@ -31,6 +33,7 @@ public partial class SplashScreen : Window
     public SplashScreen()
     {
         InitializeComponent();
+        Loaded += (_, _) => ApplyReducedMotionPreference();
     }
 
     /// <summary>
@@ -54,6 +57,28 @@ public partial class SplashScreen : Window
         Dispatcher.Invoke(() =>
         {
             VersionText.Text = $"v{version}";
+        });
+    }
+
+    /// <summary>
+    /// Starts or stops splash icon rotation according to the active motion preference.
+    /// </summary>
+    public void ApplyReducedMotionPreference()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            if (App.ReducedMotion)
+            {
+                IconRotateTransform.BeginAnimation(RotateTransform.AngleProperty, null);
+                IconRotateTransform.Angle = 0;
+                return;
+            }
+
+            var rotation = new DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(2)))
+            {
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            IconRotateTransform.BeginAnimation(RotateTransform.AngleProperty, rotation);
         });
     }
 

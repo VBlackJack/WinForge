@@ -30,6 +30,7 @@ namespace Win11Forge.GUI.Services;
 public sealed class ThemeService : IThemeService
 {
     private const string DraculaResourceMarker = "Themes/Dracula/";
+    private const string HighContrastResourceMarker = "HighContrastTheme";
     private const string ThemeFileSuffix = "Theme.xaml";
     private const string DisplayKeyPrefix = "Settings_ThemeName_";
     private const string AccentBrushKey = "AccentBrush";
@@ -161,6 +162,7 @@ public sealed class ThemeService : IThemeService
         ThemeCatalogue.ToDictionary(theme => theme.Name, StringComparer.OrdinalIgnoreCase);
 
     private readonly IAppSettingsService _settingsService;
+    private readonly Action _applyHighContrastMode;
     private int _themeRevision;
     private bool _hasAppliedTheme;
 
@@ -169,8 +171,14 @@ public sealed class ThemeService : IThemeService
     /// </summary>
     /// <param name="settingsService">Settings service used to persist canonical fallbacks.</param>
     public ThemeService(IAppSettingsService settingsService)
+        : this(settingsService, () => App.ApplyHighContrastMode(true))
+    {
+    }
+
+    internal ThemeService(IAppSettingsService settingsService, Action applyHighContrastMode)
     {
         _settingsService = settingsService;
+        _applyHighContrastMode = applyHighContrastMode;
     }
 
     /// <inheritdoc/>
@@ -207,6 +215,7 @@ public sealed class ThemeService : IThemeService
             && string.Equals(CurrentTheme, descriptor.Name, StringComparison.Ordinal)
             && HasExpectedResourceDictionary(app, descriptor))
         {
+            ReapplyHighContrastIfEnabled(app);
             return;
         }
 
@@ -217,6 +226,7 @@ public sealed class ThemeService : IThemeService
             MergeResourceDictionary(app, descriptor);
             ApplyWpfUiTheme(descriptor);
             ApplyPaletteResources(app, descriptor);
+            ReapplyHighContrastIfEnabled(app);
             CommitTheme(descriptor.Name);
         }
         catch (Exception ex)
@@ -408,6 +418,34 @@ public sealed class ThemeService : IThemeService
         }
 
         return Color.FromRgb(FallbackAccentRed, FallbackAccentGreen, FallbackAccentBlue);
+    }
+
+    internal void ReapplyHighContrastIfEnabled(bool isHighContrastEnabled)
+    {
+        if (isHighContrastEnabled)
+        {
+            _applyHighContrastMode();
+        }
+    }
+
+    private void ReapplyHighContrastIfEnabled(Application app)
+    {
+        try
+        {
+            ReapplyHighContrastIfEnabled(HasHighContrastResourceDictionary(app));
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to re-apply high contrast resources after theme change: {ex.Message}");
+        }
+    }
+
+    private static bool HasHighContrastResourceDictionary(Application app)
+    {
+        return app.Resources.MergedDictionaries.Any(dictionary =>
+            dictionary.Source?.OriginalString.Contains(
+                HighContrastResourceMarker,
+                StringComparison.OrdinalIgnoreCase) == true);
     }
 
     private void CommitTheme(string canonicalThemeName)

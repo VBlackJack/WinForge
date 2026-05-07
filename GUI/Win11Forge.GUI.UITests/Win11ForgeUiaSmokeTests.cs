@@ -56,6 +56,7 @@ public sealed class Win11ForgeUiaSmokeTests
     public void SettingsThemePicker_IsDiscoverable()
     {
         using var app = Win11ForgeAppSession.Launch();
+        app.WaitForElementByAutomationId("PageDashboard", TimeSpan.FromSeconds(10));
 
         app.NavigateByAutomationId("NavSettings");
         var themePicker = app.WaitForElementByAutomationId("ThemePicker", TimeSpan.FromSeconds(10));

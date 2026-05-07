@@ -44,17 +44,6 @@
                 <ui:SymbolIcon.RenderTransform>
                     <RotateTransform x:Name="IconRotateTransform"/>
                 </ui:SymbolIcon.RenderTransform>
-                <ui:SymbolIcon.Triggers>
-                    <EventTrigger RoutedEvent="Loaded">
-                        <BeginStoryboard>
-                            <Storyboard RepeatBehavior="Forever">
-                                <DoubleAnimation Storyboard.TargetName="IconRotateTransform"
-                                                 Storyboard.TargetProperty="Angle"
-                                                 From="0" To="360" Duration="0:0:2"/>
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </EventTrigger>
-                </ui:SymbolIcon.Triggers>
             </ui:SymbolIcon>
 
             <!-- Application Name -->
