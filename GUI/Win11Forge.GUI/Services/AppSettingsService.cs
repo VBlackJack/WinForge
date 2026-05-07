@@ -501,6 +501,11 @@ public class AppSettings : System.ComponentModel.DataAnnotations.IValidatableObj
     public int LastNavigationIndex { get; set; } = 0;
 
     /// <summary>
+    /// Last known main window restore bounds and state.
+    /// </summary>
+    public WindowPlacementSettings? MainWindowPlacement { get; set; }
+
+    /// <summary>
     /// Maximum number of undo actions to keep in history (1-100, default 50).
     /// </summary>
     [System.ComponentModel.DataAnnotations.Range(1, 100, ErrorMessage = "Max undo history must be between 1 and 100")]
@@ -581,4 +586,35 @@ public class AppSettings : System.ComponentModel.DataAnnotations.IValidatableObj
                 new[] { nameof(MaxParallelInstalls), nameof(MaxParallelScans) });
         }
     }
+}
+
+/// <summary>
+/// Persisted restore bounds and launch state for the main window.
+/// </summary>
+public sealed class WindowPlacementSettings
+{
+    /// <summary>
+    /// Restore-bounds left coordinate in WPF device-independent units.
+    /// </summary>
+    public double Left { get; set; }
+
+    /// <summary>
+    /// Restore-bounds top coordinate in WPF device-independent units.
+    /// </summary>
+    public double Top { get; set; }
+
+    /// <summary>
+    /// Restore-bounds width in WPF device-independent units.
+    /// </summary>
+    public double Width { get; set; }
+
+    /// <summary>
+    /// Restore-bounds height in WPF device-independent units.
+    /// </summary>
+    public double Height { get; set; }
+
+    /// <summary>
+    /// Persisted launch state. Only Normal and Maximized are restored.
+    /// </summary>
+    public string WindowState { get; set; } = "Normal";
 }

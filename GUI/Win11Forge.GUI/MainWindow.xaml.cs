@@ -169,6 +169,8 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             _undoService = App.GetService<IUndoService>();
             _accessibilityService = App.GetService<IAccessibilityService>();
 
+            RestoreWindowPlacement();
+
             // Subscribe to undo service state changes (store handler for cleanup)
             _undoStateChangedHandler = (s, e) =>
             {
@@ -273,7 +275,43 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     /// </summary>
     private void MainWindow_Closing(object? sender, CancelEventArgs e)
     {
+        SaveWindowPlacement();
         Dispose();
+    }
+
+    private void RestoreWindowPlacement()
+    {
+        try
+        {
+            var settings = _settingsService?.LoadSettings();
+            WindowPlacementHelper.ApplyStartupPlacement(this, settings?.MainWindowPlacement);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to restore window placement: {ex.Message}");
+        }
+    }
+
+    private void SaveWindowPlacement()
+    {
+        if (_initializationFailed || _settingsService == null)
+        {
+            return;
+        }
+
+        try
+        {
+            var settings = _settingsService.LoadSettings();
+            settings.MainWindowPlacement = WindowPlacementHelper.CapturePlacement(this);
+            if (!_settingsService.SaveSettings(settings))
+            {
+                System.Diagnostics.Debug.WriteLine("Failed to save window placement: settings persistence returned false");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to save window placement: {ex.Message}");
+        }
     }
 
     /// <summary>
