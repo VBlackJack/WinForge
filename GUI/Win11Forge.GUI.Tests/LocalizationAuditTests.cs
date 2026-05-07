@@ -16,6 +16,7 @@
 
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -87,6 +88,66 @@ public class LocalizationAuditTests
     ];
 
     /// <summary>
+    /// Regex options aligned with PowerShell's case-insensitive -match behavior
+    /// in Tools/lint-fr-diacritics.ps1.
+    /// </summary>
+    private const RegexOptions FrenchDiacriticsRegexOptions = RegexOptions.IgnoreCase;
+
+    /// <summary>
+    /// French stems that should use diacritics in localized resource values.
+    /// </summary>
+    private static readonly (string Stem, Regex Pattern)[] FrenchDiacriticsStems =
+    [
+        ("Echec", new Regex(@"\b[Ee]chec(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("echoue", new Regex(@"\b[Ee]choue(?:e|es|s)?\b", FrenchDiacriticsRegexOptions)),
+        ("Parametre", new Regex(@"\b[Pp]arametre(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("Selection", new Regex(@"\b[Ss]election(?:ner|nez|ne|nes|nee|nees|s)?\b", FrenchDiacriticsRegexOptions)),
+        ("Desinstall", new Regex(@"\b[Dd]esinstall(?:er|e|es|ee|ees|ation)?\b", FrenchDiacriticsRegexOptions)),
+        ("Detection", new Regex(@"\b[Dd]etection\b", FrenchDiacriticsRegexOptions)),
+        ("detecter", new Regex(@"\b[Dd]etecter\b", FrenchDiacriticsRegexOptions)),
+        ("Verification", new Regex(@"\b[Vv]erification\b", FrenchDiacriticsRegexOptions)),
+        ("verifier", new Regex(@"\b[Vv]erifier\b", FrenchDiacriticsRegexOptions)),
+        ("Operation", new Regex(@"\b[Oo]peration(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("Reessayer", new Regex(@"\b[Rr]eessayer\b", FrenchDiacriticsRegexOptions)),
+        ("Activite", new Regex(@"\b[Aa]ctivite\b", FrenchDiacriticsRegexOptions)),
+        ("recent", new Regex(@"\b[Rr]ecent(?:e|es|s)?\b", FrenchDiacriticsRegexOptions)),
+        ("Editeur", new Regex(@"\b[Ee]diteur\b", FrenchDiacriticsRegexOptions)),
+        ("Deploiement", new Regex(@"\b[Dd]eploiement(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("Prerequis", new Regex(@"\b[Pp]rerequis\b", FrenchDiacriticsRegexOptions)),
+        ("succes", new Regex(@"\b[Ss]ucces\b", FrenchDiacriticsRegexOptions)),
+        ("a jour", new Regex(@"\ba jour\b", FrenchDiacriticsRegexOptions)),
+        ("etre", new Regex(@"\b[Ee]tre\b", FrenchDiacriticsRegexOptions)),
+        ("ete", new Regex(@"\b[Ee]te\b", FrenchDiacriticsRegexOptions)),
+        ("resultat", new Regex(@"\b[Rr]esultat(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("element", new Regex(@"\b[Ee]lement(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("securite", new Regex(@"\b[Ss]ecurite\b", FrenchDiacriticsRegexOptions)),
+        ("delai", new Regex(@"\b[Dd]elai(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("fleche", new Regex(@"\b[Ff]leche(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("Entree", new Regex(@"\b[Ee]ntree(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("Reference", new Regex(@"\b[Rr]eference(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("methode", new Regex(@"\b[Mm]ethode(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("deja", new Regex(@"\b[Dd]eja\b", FrenchDiacriticsRegexOptions)),
+        ("irreversible", new Regex(@"\b[Ii]rreversible\b", FrenchDiacriticsRegexOptions)),
+        ("systeme", new Regex(@"\b[Ss]ysteme(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("planifie", new Regex(@"\b[Pp]lanifie(?:e|es|s)?\b", FrenchDiacriticsRegexOptions)),
+        ("cree", new Regex(@"\b[Cc]ree(?:e|es|s)?\b", FrenchDiacriticsRegexOptions)),
+        ("demarr", new Regex(@"\b[Dd]emarr(?:er|age|e|es|ee|ees)?\b", FrenchDiacriticsRegexOptions)),
+        ("categorie", new Regex(@"\b[Cc]ategorie(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("telechargement", new Regex(@"\b[Tt]elechargement\b", FrenchDiacriticsRegexOptions)),
+        ("depot", new Regex(@"\b[Dd]epot\b", FrenchDiacriticsRegexOptions)),
+        ("peut-etre", new Regex(@"\b[Pp]eut-etre\b", FrenchDiacriticsRegexOptions)),
+        ("applique", new Regex(@"\b[Aa]pplique(?:e|es|s)?\b", FrenchDiacriticsRegexOptions)),
+        ("enregistre", new Regex(@"\b[Ee]nregistre(?:e|es|s)?\b", FrenchDiacriticsRegexOptions)),
+        ("chargee", new Regex(@"\b[Cc]hargee(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("verifie", new Regex(@"\b[Vv]erifie(?:e|es|s)?\b", FrenchDiacriticsRegexOptions)),
+        ("reseau", new Regex(@"\b[Rr]eseau(?:x)?\b", FrenchDiacriticsRegexOptions)),
+        ("necessaire", new Regex(@"\b[Nn]ecessaire(?:s)?\b", FrenchDiacriticsRegexOptions)),
+        ("decouvert", new Regex(@"\b[Dd]ecouvert(?:e|es|s)?\b", FrenchDiacriticsRegexOptions)),
+        ("ignore", new Regex(@"\b[Ii]gnore(?:e|es|s)?\b", FrenchDiacriticsRegexOptions)),
+        ("donnee", new Regex(@"\b[Dd]onnee(?:s)?\b", FrenchDiacriticsRegexOptions))
+    ];
+
+    /// <summary>
     /// Gets the Views directory path by walking up from the test assembly location.
     /// </summary>
     private static string GetViewsDirectory()
@@ -123,6 +184,41 @@ public class LocalizationAuditTests
 
         throw new DirectoryNotFoundException(
             "Could not locate Views directory. Started from: " + assemblyLocation);
+    }
+
+    /// <summary>
+    /// Gets the Resources directory path by walking up from the test assembly location.
+    /// </summary>
+    private static string GetResourcesDirectory()
+    {
+        var assemblyLocation = typeof(LocalizationAuditTests).Assembly.Location;
+        var currentDir = new DirectoryInfo(Path.GetDirectoryName(assemblyLocation)!);
+
+        while (currentDir != null)
+        {
+            var resourcesPath = Path.Combine(currentDir.FullName, "Resources");
+            if (Directory.Exists(resourcesPath))
+            {
+                return resourcesPath;
+            }
+
+            var guiResourcesPath = Path.Combine(currentDir.FullName, "Win11Forge.GUI", "Resources");
+            if (Directory.Exists(guiResourcesPath))
+            {
+                return guiResourcesPath;
+            }
+
+            var guiFolderPath = Path.Combine(currentDir.FullName, "GUI", "Win11Forge.GUI", "Resources");
+            if (Directory.Exists(guiFolderPath))
+            {
+                return guiFolderPath;
+            }
+
+            currentDir = currentDir.Parent;
+        }
+
+        throw new DirectoryNotFoundException(
+            "Could not locate Resources directory. Started from: " + assemblyLocation);
     }
 
     /// <summary>
@@ -256,5 +352,52 @@ public class LocalizationAuditTests
         Assert.NotEmpty(xamlFiles);
         Assert.True(xamlFiles.Length >= 5,
             $"Expected at least 5 XAML view files, found {xamlFiles.Length}");
+    }
+
+    /// <summary>
+    /// Verifies that French resource values keep expected diacritics on common stems.
+    /// </summary>
+    [Fact]
+    public void FrenchResources_ShouldNotContainUnaccentedFrenchStems()
+    {
+        // Arrange
+        var resourcesDirectory = GetResourcesDirectory();
+        var resourcePath = Path.Combine(resourcesDirectory, "Resources.fr.resx");
+        var document = XDocument.Load(resourcePath);
+        var violations = new List<string>();
+
+        // Act
+        foreach (var data in document.Root?.Elements("data") ?? Enumerable.Empty<XElement>())
+        {
+            var key = data.Attribute("name")?.Value ?? "<unknown>";
+            var value = data.Element("value")?.Value;
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            foreach (var stem in FrenchDiacriticsStems)
+            {
+                if (stem.Pattern.IsMatch(value))
+                {
+                    violations.Add($"  [{key}] {stem.Stem}: \"{value}\"");
+                }
+            }
+        }
+
+        // Assert
+        if (violations.Count > 0)
+        {
+            var message = $"Found {violations.Count} French diacritics issue(s):\n" +
+                          string.Join("\n", violations.Take(20));
+
+            if (violations.Count > 20)
+            {
+                message += $"\n... and {violations.Count - 20} more violations.";
+            }
+
+            Assert.Fail(message);
+        }
     }
 }

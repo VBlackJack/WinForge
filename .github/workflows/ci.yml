@@ -103,6 +103,11 @@ jobs:
 
           Write-Host "PSScriptAnalyzer: No issues found" -ForegroundColor Green
 
+      - name: Lint French diacritics
+        shell: pwsh
+        run: |
+          .\Tools\lint-fr-diacritics.ps1 -Path 'GUI\Win11Forge.GUI\Resources\Resources.fr.resx'
+
   # ===========================================
   # PowerShell Pester Tests with Code Coverage
   # ===========================================

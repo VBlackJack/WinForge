@@ -77,7 +77,7 @@
     <value>Repertoire :</value>
   </data>
   <data name="Dashboard_SystemInfo_Title" xml:space="preserve">
-    <value>Informations systeme</value>
+    <value>Informations système</value>
   </data>
   <data name="Dashboard_Refresh" xml:space="preserve">
     <value>Actualiser</value>
@@ -89,7 +89,7 @@
     <value>Applications</value>
   </data>
   <data name="Dashboard_Stat_Deployments" xml:space="preserve">
-    <value>Deploiements</value>
+    <value>Déploiements</value>
   </data>
   <data name="Dashboard_Stat_Version" xml:space="preserve">
     <value>Version</value>
@@ -98,7 +98,7 @@
     <value>Nom d'hote :</value>
   </data>
   <data name="Dashboard_Sys_OS" xml:space="preserve">
-    <value>Systeme :</value>
+    <value>Système :</value>
   </data>
   <data name="Dashboard_Sys_Build" xml:space="preserve">
     <value>Build :</value>
@@ -107,26 +107,26 @@
     <value>Administrateur :</value>
   </data>
   <data name="Dashboard_RecentActivity" xml:space="preserve">
-    <value>Activite recente</value>
+    <value>Activité récente</value>
   </data>
   <data name="Dashboard_NoActivity" xml:space="preserve">
-    <value>Aucun historique de deploiement</value>
+    <value>Aucun historique de déploiement</value>
   </data>
   <data name="Dashboard_NoActivity_Hint" xml:space="preserve">
-    <value>Deployez un profil pour voir votre historique ici</value>
+    <value>Déployez un profil pour voir votre historique ici</value>
   </data>
   <data name="Dashboard_Btn_StartDeploy" xml:space="preserve">
-    <value>Demarrer un nouveau deploiement</value>
+    <value>Démarrer un nouveau déploiement</value>
   </data>
   <data name="Dashboard_QuickActions_Title" xml:space="preserve">
     <value>Actions rapides</value>
   </data>
   <!-- Deployment -->
   <data name="Deploy_Title" xml:space="preserve">
-    <value>Deploiement</value>
+    <value>Déploiement</value>
   </data>
   <data name="Breadcrumb_SelectProfile" xml:space="preserve">
-    <value>Selection du profil</value>
+    <value>Sélection du profil</value>
   </data>
   <data name="Breadcrumb_Configure" xml:space="preserve">
     <value>Configuration</value>
@@ -136,10 +136,10 @@
   </data>
   <!-- Undo/Redo Actions -->
   <data name="Undo_ActionUndone" xml:space="preserve">
-    <value>Annule : {0}</value>
+    <value>Annulé : {0}</value>
   </data>
   <data name="Undo_ActionRedone" xml:space="preserve">
-    <value>Retabli : {0}</value>
+    <value>Rétabli : {0}</value>
   </data>
   <data name="Undo_Action" xml:space="preserve">
     <value>action</value>
@@ -154,10 +154,10 @@
     <value>Supprimer l'application : {0}</value>
   </data>
   <data name="Deploy_SelectProfile" xml:space="preserve">
-    <value>Selectionner un profil :</value>
+    <value>Sélectionner un profil :</value>
   </data>
   <data name="Deploy_ProfileSummary" xml:space="preserve">
-    <value>Resume du profil</value>
+    <value>Résumé du profil</value>
   </data>
   <data name="Deploy_Applications" xml:space="preserve">
     <value>Applications</value>
@@ -169,16 +169,16 @@
     <value>Requis :</value>
   </data>
   <data name="Deploy_InheritedFrom" xml:space="preserve">
-    <value>Herite de :</value>
+    <value>Hérite de :</value>
   </data>
   <data name="Deploy_SelectAll" xml:space="preserve">
-    <value>Tout selectionner</value>
+    <value>Tout sélectionner</value>
   </data>
   <data name="Deploy_SelectNone" xml:space="preserve">
-    <value>Tout deselectionner</value>
+    <value>Tout désélectionner</value>
   </data>
   <data name="Deploy_Selected" xml:space="preserve">
-    <value>Selectionne :</value>
+    <value>Sélectionné :</value>
   </data>
   <!-- Column Headers -->
   <data name="Col_Favorites" xml:space="preserve">
@@ -191,7 +191,7 @@
     <value>Application</value>
   </data>
   <data name="Col_Category" xml:space="preserve">
-    <value>Categorie</value>
+    <value>Catégorie</value>
   </data>
   <data name="Col_Priority" xml:space="preserve">
     <value>Priorite</value>
@@ -227,13 +227,13 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Applications</value>
   </data>
   <data name="Nav_ProfileEditor" xml:space="preserve">
-    <value>Editeur de profil</value>
+    <value>Éditeur de profil</value>
   </data>
   <data name="Nav_Settings" xml:space="preserve">
-    <value>Parametres</value>
+    <value>Paramètres</value>
   </data>
   <data name="Nav_Prerequisites" xml:space="preserve">
-    <value>Prerequis</value>
+    <value>Prérequis</value>
   </data>
   <!-- Application Manager -->
   <data name="Apps_Title" xml:space="preserve">
@@ -243,10 +243,10 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Rechercher des applications...</value>
   </data>
   <data name="Search_RecentSearches" xml:space="preserve">
-    <value>Recherches recentes</value>
+    <value>Recherches récentes</value>
   </data>
   <data name="Apps_CategoryAll" xml:space="preserve">
-    <value>Toutes les categories</value>
+    <value>Toutes les catégories</value>
   </data>
   <data name="Apps_ClearFilters" xml:space="preserve">
     <value>Effacer les filtres</value>
@@ -267,14 +267,14 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Actions</value>
   </data>
   <data name="Status_Checking" xml:space="preserve">
-    <value>Verification...</value>
+    <value>Vérification...</value>
   </data>
   <data name="Status_Missing" xml:space="preserve">
-    <value>Non installe</value>
+    <value>Non installé</value>
   </data>
   <!-- Deployment Execution -->
   <data name="Btn_Deploy" xml:space="preserve">
-    <value>Lancer le deploiement</value>
+    <value>Lancer le déploiement</value>
   </data>
   <data name="Btn_Cancel" xml:space="preserve">
     <value>Annuler</value>
@@ -302,32 +302,32 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Installation en cours...</value>
   </data>
   <data name="Status_Installed" xml:space="preserve">
-    <value>Installe</value>
+    <value>Installé</value>
   </data>
   <data name="Status_Failed" xml:space="preserve">
-    <value>Echec</value>
+    <value>Échec</value>
   </data>
   <data name="Status_Skipped" xml:space="preserve">
-    <value>Ignore</value>
+    <value>Ignoré</value>
   </data>
   <data name="Status_AlreadyInstalled" xml:space="preserve">
-    <value>Deja installe</value>
+    <value>Déjà installé</value>
   </data>
   <data name="Status_Paused" xml:space="preserve">
-    <value>Deploiement en pause</value>
+    <value>Déploiement en pause</value>
   </data>
   <!-- Progress -->
   <data name="Progress_Installing" xml:space="preserve">
     <value>Installation des applications...</value>
   </data>
   <data name="Progress_Complete" xml:space="preserve">
-    <value>Deploiement termine</value>
+    <value>Déploiement terminé</value>
   </data>
   <data name="Progress_Cancelled" xml:space="preserve">
-    <value>Deploiement annule</value>
+    <value>Déploiement annulé</value>
   </data>
   <data name="Progress_Deploying" xml:space="preserve">
-    <value>Deploiement en cours...</value>
+    <value>Déploiement en cours...</value>
   </data>
   <!-- Profile Editor -->
   <data name="Editor_Title_New" xml:space="preserve">
@@ -340,28 +340,28 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Nom du profil</value>
   </data>
   <data name="Editor_Lbl_Parent" xml:space="preserve">
-    <value>Herite de</value>
+    <value>Hérite de</value>
   </data>
   <data name="Editor_Lbl_Description" xml:space="preserve">
     <value>Description</value>
   </data>
   <data name="Editor_Section_Inherited" xml:space="preserve">
-    <value>Applications heritees</value>
+    <value>Applications héritées</value>
   </data>
   <data name="Editor_Section_Added" xml:space="preserve">
-    <value>Applications ajoutees</value>
+    <value>Applications ajoutées</value>
   </data>
   <data name="Editor_NoParent" xml:space="preserve">
     <value>(Aucun)</value>
   </data>
   <data name="Editor_Empty_NoParent" xml:space="preserve">
-    <value>Aucun profil parent selectionne</value>
+    <value>Aucun profil parent sélectionné</value>
   </data>
   <data name="Editor_Empty_NoApps" xml:space="preserve">
-    <value>Aucune application ajoutee</value>
+    <value>Aucune application ajoutée</value>
   </data>
   <data name="Editor_Tooltip_Inherited" xml:space="preserve">
-    <value>Herite du parent - lecture seule</value>
+    <value>Hérite du parent - lecture seule</value>
   </data>
   <data name="Editor_Tooltip_Add" xml:space="preserve">
     <value>Ajouter une application</value>
@@ -373,13 +373,13 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Le nom du profil est requis</value>
   </data>
   <data name="Editor_Error_LoadParent" xml:space="preserve">
-    <value>Echec du chargement du profil parent : {0}</value>
+    <value>Échec du chargement du profil parent : {0}</value>
   </data>
   <data name="Editor_Error_InvalidName" xml:space="preserve">
-    <value>Le nom du profil contient des caracteres invalides</value>
+    <value>Le nom du profil contient des caractères invalides</value>
   </data>
   <data name="Editor_Error_SaveFailed" xml:space="preserve">
-    <value>Echec de l'enregistrement du profil : {0}</value>
+    <value>Échec de l'enregistrement du profil : {0}</value>
   </data>
   <data name="Editor_Hint_ProfileName" xml:space="preserve">
     <value>Entrez un nom de profil unique</value>
@@ -394,24 +394,24 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Enregistrer</value>
   </data>
   <data name="Msg_ProfileSaved" xml:space="preserve">
-    <value>Profil enregistre avec succes</value>
+    <value>Profil enregistré avec succès</value>
   </data>
   <!-- Application Picker Dialog -->
   <data name="Dialog_SelectApp_Title" xml:space="preserve">
-    <value>Selectionner une application</value>
+    <value>Sélectionner une application</value>
   </data>
   <data name="Dialog_SelectApp_Add" xml:space="preserve">
-    <value>Ajouter la selection</value>
+    <value>Ajouter la sélection</value>
   </data>
   <data name="Dialog_NoAppsAvailable" xml:space="preserve">
-    <value>Toutes les applications sont deja ajoutees</value>
+    <value>Toutes les applications sont déjà ajoutées</value>
   </data>
   <data name="Dialog_AppsAvailable" xml:space="preserve">
     <value>applications disponibles</value>
   </data>
   <!-- Settings -->
   <data name="Settings_Title" xml:space="preserve">
-    <value>Parametres</value>
+    <value>Paramètres</value>
   </data>
   <data name="Settings_Section_Appearance" xml:space="preserve">
     <value>Apparence</value>
@@ -420,7 +420,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Langue</value>
   </data>
   <data name="Settings_Section_Data" xml:space="preserve">
-    <value>Donnees</value>
+    <value>Données</value>
   </data>
   <data name="Settings_Theme" xml:space="preserve">
     <value>Theme</value>
@@ -456,31 +456,31 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Thème appliqué</value>
   </data>
   <data name="Settings_AutoSaved" xml:space="preserve">
-    <value>Parametres enregistres</value>
+    <value>Paramètres enregistrés</value>
   </data>
   <data name="Settings_SaveFailed" xml:space="preserve">
-    <value>Echec de l'enregistrement des parametres</value>
+    <value>Échec de l'enregistrement des paramètres</value>
   </data>
   <data name="Settings_Language" xml:space="preserve">
     <value>Langue</value>
   </data>
   <data name="Settings_Language_Desc" xml:space="preserve">
-    <value>Selectionner la langue de l'application</value>
+    <value>Sélectionner la langue de l'application</value>
   </data>
   <data name="Settings_Apply" xml:space="preserve">
     <value>Appliquer</value>
   </data>
   <data name="Settings_RestartRequired" xml:space="preserve">
-    <value>Redemarrage requis pour le changement de langue</value>
+    <value>Redémarrage requis pour le changement de langue</value>
   </data>
   <data name="Settings_RestartNow" xml:space="preserve">
-    <value>Redemarrer</value>
+    <value>Redémarrer</value>
   </data>
   <data name="Settings_ClearHistory" xml:space="preserve">
     <value>Effacer l'historique</value>
   </data>
   <data name="Settings_ClearHistory_Desc" xml:space="preserve">
-    <value>Supprimer toutes les entrees d'historique de deploiement</value>
+    <value>Supprimer toutes les entrées d'historique de déploiement</value>
   </data>
   <data name="Settings_ClearBtn" xml:space="preserve">
     <value>Effacer</value>
@@ -490,7 +490,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <!-- Error History -->
   <data name="Settings_ErrorHistory" xml:space="preserve">
-    <value>Erreurs recentes</value>
+    <value>Erreurs récentes</value>
   </data>
   <data name="Settings_ClearErrors" xml:space="preserve">
     <value>Effacer les erreurs</value>
@@ -499,7 +499,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Historique des erreurs efface</value>
   </data>
   <data name="Settings_NoErrors" xml:space="preserve">
-    <value>Aucune erreur enregistree</value>
+    <value>Aucune erreur enregistrée</value>
   </data>
   <data name="Settings_CacheStatistics" xml:space="preserve">
     <value>Statistiques du cache</value>
@@ -508,19 +508,19 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Paquets en cache</value>
   </data>
   <data name="Settings_CacheHits" xml:space="preserve">
-    <value>Requetes servies</value>
+    <value>Requêtes servies</value>
   </data>
   <data name="Settings_CacheMisses" xml:space="preserve">
-    <value>Echecs du cache</value>
+    <value>Échecs du cache</value>
   </data>
   <data name="Settings_CacheHitRate" xml:space="preserve">
-    <value>Taux de reussite</value>
+    <value>Taux de réussite</value>
   </data>
   <data name="Settings_LastRefresh" xml:space="preserve">
-    <value>Derniere actualisation</value>
+    <value>Dernière actualisation</value>
   </data>
   <data name="Settings_AvgDetectionTime" xml:space="preserve">
-    <value>Temps de detection moy.</value>
+    <value>Temps de détection moy.</value>
   </data>
   <data name="Settings_ClearCache" xml:space="preserve">
     <value>Vider le cache</value>
@@ -529,37 +529,37 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Actualiser</value>
   </data>
   <data name="Settings_CacheCleared" xml:space="preserve">
-    <value>Cache de detection vide</value>
+    <value>Cache de détection vide</value>
   </data>
   <data name="Common_NotAvailable" xml:space="preserve">
     <value>N/D</value>
   </data>
   <data name="Settings_ParallelInstalls" xml:space="preserve">
-    <value>Installations paralleles</value>
+    <value>Installations parallèles</value>
   </data>
   <data name="Settings_ParallelInstalls_Desc" xml:space="preserve">
-    <value>Nombre maximum d'installations simultanees</value>
+    <value>Nombre maximum d'installations simultanées</value>
   </data>
   <data name="Settings_ParallelInstallsApplied" xml:space="preserve">
-    <value>Parametre applique (redemarrer les vues pour effet)</value>
+    <value>Paramètre appliqué (redémarrer les vues pour effet)</value>
   </data>
   <data name="Settings_ParallelScans" xml:space="preserve">
-    <value>Scans paralleles</value>
+    <value>Scans parallèles</value>
   </data>
   <data name="Settings_ParallelScans_Desc" xml:space="preserve">
-    <value>Nombre maximum de verifications simultanees</value>
+    <value>Nombre maximum de vérifications simultanées</value>
   </data>
   <data name="Settings_ParallelScansApplied" xml:space="preserve">
-    <value>Parametre applique (redemarrer les vues pour effet)</value>
+    <value>Paramètre appliqué (redémarrer les vues pour effet)</value>
   </data>
   <data name="Settings_ScanTimeoutApplied" xml:space="preserve">
-    <value>Delai d'analyse des mises a jour applique</value>
+    <value>Délai d'analyse des mises à jour appliqué</value>
   </data>
   <data name="Settings_ScanTimeout" xml:space="preserve">
-    <value>Delai d'analyse des mises a jour</value>
+    <value>Délai d'analyse des mises à jour</value>
   </data>
   <data name="Settings_ScanTimeout_Hint" xml:space="preserve">
-    <value>Temps maximum d'attente pour l'analyse des mises a jour (en minutes)</value>
+    <value>Temps maximum d'attente pour l'analyse des mises à jour (en minutes)</value>
   </data>
   <data name="Settings_Section_Performance" xml:space="preserve">
     <value>Performance</value>
@@ -568,7 +568,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Ouvrir le dossier des journaux</value>
   </data>
   <data name="Settings_OpenLogs_Desc" xml:space="preserve">
-    <value>Afficher les journaux de deploiement et d'erreurs</value>
+    <value>Afficher les journaux de déploiement et d'erreurs</value>
   </data>
   <data name="Settings_Section_About" xml:space="preserve">
     <value>A propos</value>
@@ -583,7 +583,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Licence :</value>
   </data>
   <data name="About_Repository" xml:space="preserve">
-    <value>Depot :</value>
+    <value>Dépôt :</value>
   </data>
   <!-- Package Managers -->
   <data name="Dashboard_Sys_Winget" xml:space="preserve">
@@ -594,46 +594,46 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <!-- Apps Manager -->
   <data name="Apps_Installed" xml:space="preserve">
-    <value>installe(s)</value>
+    <value>installé(s)</value>
   </data>
   <data name="Apps_Selected" xml:space="preserve">
-    <value>selectionne(s)</value>
+    <value>sélectionné(s)</value>
   </data>
   <data name="Apps_InstallSelected" xml:space="preserve">
-    <value>Installer la selection</value>
+    <value>Installer la sélection</value>
   </data>
   <data name="Apps_SelectAll" xml:space="preserve">
-    <value>Tout selectionner</value>
+    <value>Tout sélectionner</value>
   </data>
   <data name="Apps_SelectNone" xml:space="preserve">
-    <value>Effacer la selection</value>
+    <value>Effacer la sélection</value>
   </data>
   <data name="Apps_SelectNotInstalled" xml:space="preserve">
-    <value>Non installes</value>
+    <value>Non installés</value>
   </data>
   <data name="Apps_StatusAll" xml:space="preserve">
     <value>Tous</value>
   </data>
   <data name="Apps_StatusInstalled" xml:space="preserve">
-    <value>Installes</value>
+    <value>Installés</value>
   </data>
   <data name="Apps_StatusNotInstalled" xml:space="preserve">
-    <value>Non installes</value>
+    <value>Non installés</value>
   </data>
   <data name="Apps_StatusSelected" xml:space="preserve">
-    <value>Selectionnes</value>
+    <value>Sélectionnés</value>
   </data>
   <data name="Apps_ManualInstall" xml:space="preserve">
     <value>Manuel</value>
   </data>
   <data name="Apps_ManualInstallTooltip" xml:space="preserve">
-    <value>Cette application necessite une installation manuelle depuis le site officiel</value>
+    <value>Cette application nécessite une installation manuelle depuis le site officiel</value>
   </data>
   <data name="Apps_OpenWebsite" xml:space="preserve">
     <value>Ouvrir le site</value>
   </data>
   <data name="Apps_EmptyFilterResults" xml:space="preserve">
-    <value>Aucune application ne correspond a vos filtres</value>
+    <value>Aucune application ne correspond à vos filtres</value>
   </data>
   <data name="Apps_EmptyFilterResultsHint" xml:space="preserve">
     <value>Essayez d'ajuster vos criteres de recherche ou de filtre</value>
@@ -658,7 +658,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Voir les logs</value>
   </data>
   <data name="Menu_ToggleSelection" xml:space="preserve">
-    <value>Basculer la selection</value>
+    <value>Basculer la sélection</value>
   </data>
   <data name="Menu_CopyAppId" xml:space="preserve">
     <value>Copier l'ID application</value>
@@ -667,14 +667,14 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Copier l'ID Winget</value>
   </data>
   <data name="Menu_Uninstall" xml:space="preserve">
-    <value>Desinstaller</value>
+    <value>Désinstaller</value>
   </data>
   <!-- Status Messages - Uninstall -->
   <data name="Status_Uninstalling" xml:space="preserve">
-    <value>Desinstallation...</value>
+    <value>Désinstallation...</value>
   </data>
   <data name="Status_Uninstalled" xml:space="preserve">
-    <value>Desinstalle</value>
+    <value>Désinstallé</value>
   </data>
   <!-- Error Messages -->
   <data name="Common_ErrorFallback" xml:space="preserve">
@@ -758,10 +758,10 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Runtime Java</value>
   </data>
   <data name="Prerequisites_PageTitle" xml:space="preserve">
-    <value>Prerequis Systeme</value>
+    <value>Prérequis Système</value>
   </data>
   <data name="Prerequisites_PageDescription" xml:space="preserve">
-    <value>Win11Forge necessite les composants suivants pour fonctionner correctement.</value>
+    <value>Win11Forge nécessite les composants suivants pour fonctionner correctement.</value>
   </data>
   <data name="Prerequisites_CategoryPackageManagers" xml:space="preserve">
     <value>Gestionnaires de paquets</value>
@@ -776,19 +776,19 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Optionnel</value>
   </data>
   <data name="Prerequisites_StatusSummary" xml:space="preserve">
-    <value>{0} sur {1} composants installes</value>
+    <value>{0} sur {1} composants installés</value>
   </data>
   <data name="Prerequisites_ClearLog" xml:space="preserve">
     <value>Effacer le journal</value>
   </data>
   <data name="Prerequisites_InstallAll" xml:space="preserve">
-    <value>Installer / Reinstaller</value>
+    <value>Installer / Réinstaller</value>
   </data>
   <data name="Prerequisites_ReinstallTooltip" xml:space="preserve">
-    <value>Installer les prerequis manquants ou reinstaller les existants</value>
+    <value>Installer les prérequis manquants ou réinstaller les existants</value>
   </data>
   <data name="Prerequisites_ComponentsInstalled" xml:space="preserve">
-    <value>composants installes</value>
+    <value>composants installés</value>
   </data>
   <data name="Prerequisites_Missing" xml:space="preserve">
     <value>manquant(s)</value>
@@ -817,10 +817,10 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Configuration des services...</value>
   </data>
   <data name="Splash_LoadingSettings" xml:space="preserve">
-    <value>Chargement des parametres...</value>
+    <value>Chargement des paramètres...</value>
   </data>
   <data name="Splash_ApplyingLanguage" xml:space="preserve">
-    <value>Application des parametres de langue...</value>
+    <value>Application des paramètres de langue...</value>
   </data>
   <data name="Splash_ApplyingTheme" xml:space="preserve">
     <value>Application du theme...</value>
@@ -836,14 +836,14 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Basculer le favori</value>
   </data>
   <data name="Apps_SelectFavorites" xml:space="preserve">
-    <value>Selectionner les favoris</value>
+    <value>Sélectionner les favoris</value>
   </data>
   <data name="Apps_Favorites" xml:space="preserve">
     <value>favoris</value>
   </data>
   <!-- Batch Operations -->
   <data name="Apps_UninstallSelected" xml:space="preserve">
-    <value>Desinstaller la selection</value>
+    <value>Désinstaller la sélection</value>
   </data>
   <data name="Btn_CancelBatch" xml:space="preserve">
     <value>Annuler</value>
@@ -853,10 +853,10 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <!-- Export/Import -->
   <data name="Btn_ExportSelection" xml:space="preserve">
-    <value>Exporter la selection</value>
+    <value>Exporter la sélection</value>
   </data>
   <data name="Btn_ImportSelection" xml:space="preserve">
-    <value>Importer une selection</value>
+    <value>Importer une sélection</value>
   </data>
   <data name="Btn_ExportFavorites" xml:space="preserve">
     <value>Exporter les favoris</value>
@@ -866,28 +866,28 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <!-- Summary Dialog -->
   <data name="Summary_Title" xml:space="preserve">
-    <value>Resume de l'operation</value>
+    <value>Résumé de l'opération</value>
   </data>
   <data name="Summary_Success" xml:space="preserve">
-    <value>Toutes les operations ont reussi</value>
+    <value>Toutes les opérations ont réussi</value>
   </data>
   <data name="Summary_PartialSuccess" xml:space="preserve">
-    <value>Certaines operations ont echoue</value>
+    <value>Certaines opérations ont échoué</value>
   </data>
   <data name="Summary_Failed" xml:space="preserve">
-    <value>Toutes les operations ont echoue</value>
+    <value>Toutes les opérations ont échoué</value>
   </data>
   <data name="Summary_Cancelled" xml:space="preserve">
-    <value>Operation annulee</value>
+    <value>Opération annulée</value>
   </data>
   <data name="Summary_Successful" xml:space="preserve">
-    <value>Reussi :</value>
+    <value>Réussi :</value>
   </data>
   <data name="Summary_FailedCount" xml:space="preserve">
-    <value>Echoue :</value>
+    <value>Échoué :</value>
   </data>
   <data name="Summary_SkippedCount" xml:space="preserve">
-    <value>Ignore :</value>
+    <value>Ignoré :</value>
   </data>
   <data name="Summary_Close" xml:space="preserve">
     <value>Fermer</value>
@@ -897,10 +897,10 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Total :</value>
   </data>
   <data name="Apps_Stats_Installed" xml:space="preserve">
-    <value>Installes :</value>
+    <value>Installés :</value>
   </data>
   <data name="Apps_Stats_Selected" xml:space="preserve">
-    <value>Selectionnes :</value>
+    <value>Sélectionnés :</value>
   </data>
   <data name="Apps_Stats_Favorites" xml:space="preserve">
     <value>Favoris :</value>
@@ -919,7 +919,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Annuler</value>
   </data>
   <data name="Dialog_Retry" xml:space="preserve">
-    <value>Reessayer</value>
+    <value>Réessayer</value>
   </data>
   <data name="Dialog_Help" xml:space="preserve">
     <value>Aide</value>
@@ -956,40 +956,40 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Actualiser la vue</value>
   </data>
   <data name="Help_Shortcut_Settings" xml:space="preserve">
-    <value>Ouvrir les parametres</value>
+    <value>Ouvrir les paramètres</value>
   </data>
   <data name="Help_Shortcut_SelectAll" xml:space="preserve">
-    <value>Tout selectionner</value>
+    <value>Tout sélectionner</value>
   </data>
   <data name="Help_Shortcut_ClearSelection" xml:space="preserve">
-    <value>Effacer la selection</value>
+    <value>Effacer la sélection</value>
   </data>
   <data name="Help_Shortcut_ToggleFavorite" xml:space="preserve">
     <value>Basculer le favori</value>
   </data>
   <data name="Help_Shortcut_Uninstall" xml:space="preserve">
-    <value>Desinstaller la selection</value>
+    <value>Désinstaller la sélection</value>
   </data>
   <data name="Help_Shortcut_Install" xml:space="preserve">
-    <value>Installer la selection</value>
+    <value>Installer la sélection</value>
   </data>
   <data name="Help_Shortcut_ToggleSelect" xml:space="preserve">
-    <value>Basculer la selection</value>
+    <value>Basculer la sélection</value>
   </data>
   <data name="Help_Shortcut_Dashboard" xml:space="preserve">
     <value>Aller au tableau de bord</value>
   </data>
   <data name="Help_Shortcut_Prerequisites" xml:space="preserve">
-    <value>Aller aux prerequis</value>
+    <value>Aller aux prérequis</value>
   </data>
   <data name="Help_Shortcut_Apps" xml:space="preserve">
     <value>Aller aux applications</value>
   </data>
   <data name="Help_Shortcut_Deployment" xml:space="preserve">
-    <value>Aller au deploiement</value>
+    <value>Aller au déploiement</value>
   </data>
   <data name="Help_Shortcut_ProfileEditor" xml:space="preserve">
-    <value>Aller a l'editeur de profil</value>
+    <value>Aller à l'éditeur de profil</value>
   </data>
   <!-- DataGrid Navigation Section -->
   <data name="Help_Section_DataGrid" xml:space="preserve">
@@ -1002,48 +1002,48 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Monter ou descendre d'une page</value>
   </data>
   <data name="Help_Shortcut_GridHomeEnd" xml:space="preserve">
-    <value>Aller a la premiere ou derniere ligne</value>
+    <value>Aller à la première ou dernière ligne</value>
   </data>
   <data name="Help_Shortcut_GridSelect" xml:space="preserve">
-    <value>Selectionner la ligne courante</value>
+    <value>Sélectionner la ligne courante</value>
   </data>
   <data name="Help_Shortcut_GridSelectAll" xml:space="preserve">
-    <value>Selectionner toutes les lignes</value>
+    <value>Sélectionner toutes les lignes</value>
   </data>
   <!-- Deployment Summary Counts -->
   <data name="Deployment_Summary_Installed" xml:space="preserve">
-    <value> installee(s), </value>
+    <value> installée(s), </value>
   </data>
   <data name="Deployment_Summary_Failed" xml:space="preserve">
-    <value> echouee(s), </value>
+    <value> échouée(s), </value>
   </data>
   <data name="Deployment_Summary_Skipped" xml:space="preserve">
-    <value> ignoree(s)</value>
+    <value> ignorée(s)</value>
   </data>
   <!-- Onboarding -->
   <data name="Onboarding_Welcome" xml:space="preserve">
     <value>Bienvenue sur Win11Forge</value>
   </data>
   <data name="Onboarding_Subtitle" xml:space="preserve">
-    <value>Votre boite a outils de deploiement Windows 11</value>
+    <value>Votre boîte à outils de déploiement Windows 11</value>
   </data>
   <data name="Onboarding_Step1_Title" xml:space="preserve">
-    <value>Verifier les prerequis</value>
+    <value>Vérifier les prérequis</value>
   </data>
   <data name="Onboarding_Step1_Desc" xml:space="preserve">
-    <value>Commencez par verifier que tous les composants requis sont installes (Winget, Chocolatey, etc.)</value>
+    <value>Commencez par vérifier que tous les composants requis sont installés (Winget, Chocolatey, etc.)</value>
   </data>
   <data name="Onboarding_Step2_Title" xml:space="preserve">
     <value>Parcourir les applications</value>
   </data>
   <data name="Onboarding_Step2_Desc" xml:space="preserve">
-    <value>Explorez plus de 100 applications, marquez vos favoris et selectionnez ce dont vous avez besoin</value>
+    <value>Explorez plus de 100 applications, marquéz vos favoris et sélectionnez ce dont vous avez besoin</value>
   </data>
   <data name="Onboarding_Step3_Title" xml:space="preserve">
     <value>Deployer avec des profils</value>
   </data>
   <data name="Onboarding_Step3_Desc" xml:space="preserve">
-    <value>Utilisez des profils de deploiement pour les installations groupees ou installez les applications individuellement</value>
+    <value>Utilisez des profils de déploiement pour les installations groupées ou installéz les applications individuellement</value>
   </data>
   <data name="Onboarding_Tip" xml:space="preserve">
     <value>Appuyez sur</value>
@@ -1072,118 +1072,118 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <!-- Toast Notifications -->
   <data name="Toast_InstallComplete" xml:space="preserve">
-    <value>Installation terminee</value>
+    <value>Installation terminée</value>
   </data>
   <data name="Toast_UninstallComplete" xml:space="preserve">
-    <value>Desinstallation terminee</value>
+    <value>Désinstallation terminée</value>
   </data>
   <data name="Toast_ScanComplete" xml:space="preserve">
-    <value>Scan termine : {0} installes</value>
+    <value>Scan terminé : {0} installés</value>
   </data>
   <data name="Toast_ProfileSaved" xml:space="preserve">
-    <value>Profil enregistre</value>
+    <value>Profil enregistré</value>
   </data>
   <data name="Toast_ExportComplete" xml:space="preserve">
-    <value>Export termine</value>
+    <value>Export terminé</value>
   </data>
   <data name="Toast_ImportComplete" xml:space="preserve">
-    <value>Import termine : {0} elements</value>
+    <value>Import terminé : {0} éléments</value>
   </data>
   <data name="Toast_ViewDetails" xml:space="preserve">
     <value>Voir les details</value>
   </data>
   <!-- Form Validation -->
   <data name="Validation_InvalidChars" xml:space="preserve">
-    <value>Contient des caracteres invalides</value>
+    <value>Contient des caractères invalides</value>
   </data>
   <data name="Validation_TooLong" xml:space="preserve">
-    <value>Maximum {0} caracteres autorises</value>
+    <value>Maximum {0} caractères autorises</value>
   </data>
   <data name="Validation_AlreadyExists" xml:space="preserve">
-    <value>Un profil avec ce nom existe deja</value>
+    <value>Un profil avec ce nom existe déjà</value>
   </data>
   <data name="Validation_ProfileNameRequired" xml:space="preserve">
     <value>Le nom du profil est obligatoire</value>
   </data>
   <data name="Validation_ProfileNameInvalidChars" xml:space="preserve">
-    <value>Le nom du profil contient des caracteres invalides</value>
+    <value>Le nom du profil contient des caractères invalides</value>
   </data>
   <data name="Validation_ProfileNameTooLong" xml:space="preserve">
-    <value>Le nom du profil ne doit pas depasser {0} caracteres</value>
+    <value>Le nom du profil ne doit pas dépasser {0} caractères</value>
   </data>
   <data name="Validation_ManualInstallCannotBeSuccess" xml:space="preserve">
-    <value>Une installation manuelle requise ne peut pas etre marquee comme reussie</value>
+    <value>Une installation manuelle requise ne peut pas être marquée comme réussie</value>
   </data>
   <data name="Validation_DryRunShouldSucceed" xml:space="preserve">
-    <value>Les resultats de simulation doivent toujours etre marques comme reussis</value>
+    <value>Les résultats de simulation doivent toujours être marqués comme réussis</value>
   </data>
   <data name="Validation_FailedInstallNeedsMessage" xml:space="preserve">
-    <value>Une installation echouee doit inclure un message d'erreur</value>
+    <value>Une installation échouée doit inclure un message d'erreur</value>
   </data>
   <data name="Validation_AppId_Required" xml:space="preserve">
     <value>L'identifiant de l'application est requis</value>
   </data>
   <data name="Validation_AppId_Length" xml:space="preserve">
-    <value>L'identifiant de l'application doit comporter entre 1 et 256 caracteres</value>
+    <value>L'identifiant de l'application doit comporter entre 1 et 256 caractères</value>
   </data>
   <data name="Validation_AppName_Required" xml:space="preserve">
     <value>Le nom de l'application est requis</value>
   </data>
   <data name="Validation_AppName_Length" xml:space="preserve">
-    <value>Le nom de l'application doit comporter entre 1 et 512 caracteres</value>
+    <value>Le nom de l'application doit comporter entre 1 et 512 caractères</value>
   </data>
   <data name="Validation_StringTooLong" xml:space="preserve">
-    <value>{0} ne doit pas depasser {1} caracteres</value>
+    <value>{0} ne doit pas dépasser {1} caractères</value>
   </data>
   <data name="Validation_RangeError" xml:space="preserve">
-    <value>{0} doit etre compris entre {1} et {2}</value>
+    <value>{0} doit être compris entre {1} et {2}</value>
   </data>
   <data name="Validation_InvalidUrl" xml:space="preserve">
-    <value>L'URL doit etre une URL HTTP ou HTTPS valide</value>
+    <value>L'URL doit être une URL HTTP ou HTTPS valide</value>
   </data>
   <data name="Error_ProfileNotFound" xml:space="preserve">
     <value>Profil introuvable</value>
   </data>
   <!-- Help System -->
   <data name="Help_Tooltip_Scan" xml:space="preserve">
-    <value>Detecter les applications installees et verifier les mises a jour disponibles</value>
+    <value>Détecter les applications installées et vérifier les mises à jour disponibles</value>
   </data>
   <data name="Help_Tooltip_Install" xml:space="preserve">
-    <value>Installer les applications selectionnees via Winget ou Chocolatey</value>
+    <value>Installer les applications sélectionnées via Winget ou Chocolatey</value>
   </data>
   <data name="Help_Tooltip_Deploy" xml:space="preserve">
-    <value>Demarrer l'installation de toutes les applications du profil selectionne</value>
+    <value>Démarrer l'installation de toutes les applications du profil sélectionné</value>
   </data>
   <data name="Help_Tooltip_DryRun" xml:space="preserve">
-    <value>Mode simulation : Previsualiser ce qui serait installe sans effectuer de modifications</value>
+    <value>Mode simulation : Previsualiser ce qui serait installé sans effectuer de modifications</value>
   </data>
   <data name="Help_SelectProfile" xml:space="preserve">
-    <value>Choisissez un profil de deploiement qui definit les applications a installer. Les profils peuvent heriter d'autres profils.</value>
+    <value>Choisissez un profil de déploiement qui définit les applications à installer. Les profils peuvent hériter d'autres profils.</value>
   </data>
   <data name="Help_DryRun" xml:space="preserve">
-    <value>Lorsqu'active, le deploiement montrera ce qui se passerait sans rien installer. Utile pour tester les profils.</value>
+    <value>Lorsqu'active, le déploiement montrera ce qui se passerait sans rien installer. Utile pour tester les profils.</value>
   </data>
   <data name="Help_Performance" xml:space="preserve">
-    <value>Ajustez les operations paralleles pour des performances optimales selon vos ressources systeme. Des valeurs plus elevees accelerent les scans mais utilisent plus de CPU.</value>
+    <value>Ajustez les opérations parallèles pour des performances optimales selon vos ressources système. Des valeurs plus élevées accélèrent les scans mais utilisent plus de CPU.</value>
   </data>
   <!-- Confirmation Dialogs -->
   <data name="Confirm_ClearHistory_Title" xml:space="preserve">
     <value>Effacer l'historique</value>
   </data>
   <data name="Confirm_ClearHistory_Message" xml:space="preserve">
-    <value>Etes-vous sur de vouloir effacer tout l'historique de deploiement ? Cette action est irreversible.</value>
+    <value>Êtes-vous sûr de vouloir effacer tout l'historique de déploiement ? Cette action est irréversible.</value>
   </data>
   <data name="Confirm_Uninstall_Title" xml:space="preserve">
-    <value>Desinstaller les applications</value>
+    <value>Désinstaller les applications</value>
   </data>
   <data name="Confirm_Uninstall_Message" xml:space="preserve">
-    <value>Etes-vous sur de vouloir desinstaller {0} application(s) ? Cette action est irreversible.</value>
+    <value>Êtes-vous sûr de vouloir désinstaller {0} application(s) ? Cette action est irréversible.</value>
   </data>
   <data name="Confirm_DeleteProfile_Title" xml:space="preserve">
     <value>Supprimer le profil</value>
   </data>
   <data name="Confirm_DeleteProfile_Message" xml:space="preserve">
-    <value>Etes-vous sur de vouloir supprimer ce profil ? Cette action est irreversible.</value>
+    <value>Êtes-vous sûr de vouloir supprimer ce profil ? Cette action est irréversible.</value>
   </data>
   <data name="Confirm_Yes" xml:space="preserve">
     <value>Oui, continuer</value>
@@ -1205,29 +1205,29 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Profil Win11Forge (*.w11fp;*.json)|*.w11fp;*.json</value>
   </data>
   <data name="Export_Success" xml:space="preserve">
-    <value>Profil exporte avec succes</value>
+    <value>Profil exporté avec succès</value>
   </data>
   <data name="Import_Success" xml:space="preserve">
-    <value>Profil importe avec succes</value>
+    <value>Profil importé avec succès</value>
   </data>
   <data name="Import_Error_Invalid" xml:space="preserve">
     <value>Format de fichier de profil invalide</value>
   </data>
   <data name="Import_Error_Validation" xml:space="preserve">
-    <value>Validation du profil echouee : {0}</value>
+    <value>Validation du profil échouée : {0}</value>
   </data>
   <!-- Application Updates -->
   <data name="Btn_ScanUpdates" xml:space="preserve">
-    <value>Actualiser mises a jour</value>
+    <value>Actualiser mises à jour</value>
   </data>
   <data name="Btn_Update" xml:space="preserve">
-    <value>Mettre a jour</value>
+    <value>Mettre à jour</value>
   </data>
   <data name="Btn_UpdateSelected" xml:space="preserve">
-    <value>Mettre a jour la selection</value>
+    <value>Mettre à jour la sélection</value>
   </data>
   <data name="Menu_Update" xml:space="preserve">
-    <value>Mettre a jour</value>
+    <value>Mettre à jour</value>
   </data>
   <data name="Menu_Launch" xml:space="preserve">
     <value>Lancer</value>
@@ -1236,22 +1236,22 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Scanner</value>
   </data>
   <data name="Menu_ScanSelected" xml:space="preserve">
-    <value>Scanner la selection</value>
+    <value>Scanner la sélection</value>
   </data>
   <data name="Error_LaunchFailed" xml:space="preserve">
-    <value>Impossible de lancer {0}. L'application n'est peut-etre pas installee ou l'executable n'a pas ete trouve.</value>
+    <value>Impossible de lancer {0}. L'application n'est peut-être pas installée ou l'executable n'a pas été trouvé.</value>
   </data>
   <data name="Status_UpdateAvailable" xml:space="preserve">
-    <value>Mise a jour disponible</value>
+    <value>Mise à jour disponible</value>
   </data>
   <data name="Status_Updating" xml:space="preserve">
-    <value>Mise a jour...</value>
+    <value>Mise à jour...</value>
   </data>
   <data name="Apps_StatusHasUpdates" xml:space="preserve">
-    <value>Mises a jour</value>
+    <value>Mises à jour</value>
   </data>
   <data name="Apps_SelectWithUpdates" xml:space="preserve">
-    <value>Selectionner avec mises a jour</value>
+    <value>Sélectionner avec mises à jour</value>
   </data>
   <data name="Col_AvailableVersion" xml:space="preserve">
     <value>Nouvelle version</value>
@@ -1260,48 +1260,48 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Version</value>
   </data>
   <data name="Toast_UpdatesFound" xml:space="preserve">
-    <value>{0} mise(s) a jour disponible(s)</value>
+    <value>{0} mise(s) à jour disponible(s)</value>
   </data>
   <data name="Apps_NoUpdates" xml:space="preserve">
-    <value>Toutes les applications sont a jour</value>
+    <value>Toutes les applications sont à jour</value>
   </data>
   <!-- Monitoring -->
   <data name="Monitoring_Title" xml:space="preserve">
     <value>Suivi</value>
   </data>
   <data name="Monitoring_Subtitle" xml:space="preserve">
-    <value>Suivez la progression de votre deploiement en cours</value>
+    <value>Suivez la progression de votre déploiement en cours</value>
   </data>
   <data name="Monitoring_NoDeployment" xml:space="preserve">
-    <value>Aucun deploiement en cours</value>
+    <value>Aucun déploiement en cours</value>
   </data>
   <data name="Monitoring_NoDeploymentHint" xml:space="preserve">
-    <value>Lancez un deploiement depuis la section Applications pour le suivre ici</value>
+    <value>Lancez un déploiement depuis la section Applications pour le suivre ici</value>
   </data>
   <!-- Profile Selection -->
   <data name="Apps_ProfileLabel" xml:space="preserve">
     <value>Profil</value>
   </data>
   <data name="Apps_SelectProfile" xml:space="preserve">
-    <value>Selectionnez un profil...</value>
+    <value>Sélectionnez un profil...</value>
   </data>
   <data name="Apps_ClearProfile" xml:space="preserve">
     <value>Effacer le profil</value>
   </data>
   <data name="Apps_AppsSelected" xml:space="preserve">
-    <value>applications selectionnees</value>
+    <value>applications sélectionnées</value>
   </data>
   <data name="Apps_ProfileHelpTooltip" xml:space="preserve">
-    <value>Selectionnez un profil pour selectionner automatiquement ses applications. Vous pouvez ensuite modifier la selection manuellement avant l'installation.</value>
+    <value>Sélectionnez un profil pour sélectionner automatiquement ses applications. Vous pouvez ensuite modifier la sélection manuellement avant l'installation.</value>
   </data>
   <data name="Apps_SelectionHelpTooltip" xml:space="preserve">
-    <value>Cochez les cases pour selectionner les applications a installer. Utilisez les filtres pour trouver des applications specifiques.</value>
+    <value>Cochez les cases pour sélectionner les applications à installer. Utilisez les filtres pour trouver des applications spécifiques.</value>
   </data>
   <data name="Apps_NoProfilesAvailable" xml:space="preserve">
     <value>Aucun profil disponible</value>
   </data>
   <data name="Apps_NoProfilesHint" xml:space="preserve">
-    <value>Selectionnez des applications manuellement ou creez un profil en selectionnant des applications et en cliquant sur Sauvegarder le profil.</value>
+    <value>Sélectionnez des applications manuellement ou crééz un profil en sélectionnant des applications et en cliquant sur Sauvegarder le profil.</value>
   </data>
   <!-- Save Profile Dialog -->
   <data name="Apps_SaveProfile" xml:space="preserve">
@@ -1311,44 +1311,44 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Sauvegarder le profil</value>
   </data>
   <data name="Dialog_SaveProfile_AppsSelected" xml:space="preserve">
-    <value>applications selectionnees</value>
+    <value>applications sélectionnées</value>
   </data>
   <data name="Dialog_SaveProfile_Overwrite" xml:space="preserve">
-    <value>Mettre a jour le profil existant :</value>
+    <value>Mettre à jour le profil existant :</value>
   </data>
   <data name="Dialog_SaveProfile_CreateNew" xml:space="preserve">
-    <value>Creer un nouveau profil</value>
+    <value>Créer un nouveau profil</value>
   </data>
   <data name="Dialog_SaveProfile_Success" xml:space="preserve">
-    <value>Profil sauvegarde avec succes</value>
+    <value>Profil sauvegarde avec succès</value>
   </data>
   <data name="Dialog_SaveProfile_Error" xml:space="preserve">
-    <value>Echec de la sauvegarde du profil : {0}</value>
+    <value>Échec de la sauvegarde du profil : {0}</value>
   </data>
   <data name="Dialog_SaveProfile_NoApps" xml:space="preserve">
-    <value>Veuillez selectionner au moins une application</value>
+    <value>Veuillez sélectionner au moins une application</value>
   </data>
   <!-- Dashboard Hero Section -->
   <data name="Dashboard_Hero_Checking" xml:space="preserve">
-    <value>Verification du systeme...</value>
+    <value>Vérification du système...</value>
   </data>
   <data name="Dashboard_Hero_Ready" xml:space="preserve">
-    <value>Pret a deployer</value>
+    <value>Prêt a deployer</value>
   </data>
   <data name="Dashboard_Hero_NeedPrereqs" xml:space="preserve">
-    <value>{0} prerequis manquant(s)</value>
+    <value>{0} prérequis manquant(s)</value>
   </data>
   <data name="Dashboard_Hero_HasUpdates" xml:space="preserve">
-    <value>Pret - {0} mise(s) a jour disponible(s)</value>
+    <value>Prêt - {0} mise(s) à jour disponible(s)</value>
   </data>
   <data name="Dashboard_Btn_StartDeployment" xml:space="preserve">
-    <value>DEMARRER LE DEPLOIEMENT</value>
+    <value>DÉMARRER LE DÉPLOIEMENT</value>
   </data>
   <data name="Dashboard_Btn_FixPrereqs" xml:space="preserve">
-    <value>Corriger les prerequis</value>
+    <value>Corriger les prérequis</value>
   </data>
   <data name="Dashboard_Btn_ViewUpdates" xml:space="preserve">
-    <value>Voir les mises a jour</value>
+    <value>Voir les mises à jour</value>
   </data>
   <data name="Dashboard_Stats_Profiles" xml:space="preserve">
     <value>profils</value>
@@ -1357,13 +1357,13 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>applications</value>
   </data>
   <data name="Dashboard_Stats_Updates" xml:space="preserve">
-    <value>mises a jour</value>
+    <value>mises à jour</value>
   </data>
   <data name="Dashboard_History_Title" xml:space="preserve">
-    <value>Deploiements recents</value>
+    <value>Déploiements récents</value>
   </data>
   <data name="Dashboard_History_Empty" xml:space="preserve">
-    <value>Aucun deploiement</value>
+    <value>Aucun déploiement</value>
   </data>
   <data name="Dashboard_History_ViewAll" xml:space="preserve">
     <value>Voir tout l'historique</value>
@@ -1372,55 +1372,55 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Chargement des informations...</value>
   </data>
   <data name="Dashboard_Phase_CheckingPrereqs" xml:space="preserve">
-    <value>Verification des prerequis...</value>
+    <value>Vérification des prérequis...</value>
   </data>
   <data name="Dashboard_Phase_ScanningUpdates" xml:space="preserve">
-    <value>Recherche de mises a jour...</value>
+    <value>Recherche de mises à jour...</value>
   </data>
   <data name="Dashboard_LastCheck_JustNow" xml:space="preserve">
-    <value>Verifie a l'instant</value>
+    <value>Vérifié à l'instant</value>
   </data>
   <data name="Dashboard_LastCheck_MinutesAgo" xml:space="preserve">
-    <value>Verifie il y a {0} min</value>
+    <value>Vérifié il y a {0} min</value>
   </data>
   <data name="Dashboard_LastCheck_HoursAgo" xml:space="preserve">
-    <value>Verifie il y a {0}h</value>
+    <value>Vérifié il y a {0}h</value>
   </data>
   <data name="Dashboard_Stats_ProfilesHint" xml:space="preserve">
-    <value>Cliquez pour selectionner un profil</value>
+    <value>Cliquez pour sélectionner un profil</value>
   </data>
   <data name="Dashboard_Stats_AppsHint" xml:space="preserve">
-    <value>Cliquez pour gerer les applications</value>
+    <value>Cliquez pour gérer les applications</value>
   </data>
   <data name="Dashboard_Stats_UpdatesHint" xml:space="preserve">
-    <value>Cliquez pour voir les mises a jour</value>
+    <value>Cliquez pour voir les mises à jour</value>
   </data>
   <data name="Dashboard_ScanBtn_Hint" xml:space="preserve">
-    <value>Analyser vos applications installees pour les mises a jour disponibles</value>
+    <value>Analyser vos applications installées pour les mises à jour disponibles</value>
   </data>
   <data name="Dashboard_Nav_PrereqsHint" xml:space="preserve">
-    <value>Verifier et installer les composants requis (Winget, Chocolatey)</value>
+    <value>Vérifier et installer les composants requis (Winget, Chocolatey)</value>
   </data>
   <data name="Dashboard_Nav_AppsHint" xml:space="preserve">
-    <value>Parcourir, rechercher et gerer les installations d'applications</value>
+    <value>Parcourir, rechercher et gérer les installations d'applications</value>
   </data>
   <data name="Dashboard_StartDeployment_Hint" xml:space="preserve">
-    <value>Demarrer le deploiement de votre profil d'applications selectionne</value>
+    <value>Démarrer le déploiement de votre profil d'applications sélectionné</value>
   </data>
   <data name="Dashboard_ViewUpdates_Hint" xml:space="preserve">
-    <value>Voir et installer les mises a jour d'applications disponibles</value>
+    <value>Voir et installer les mises à jour d'applications disponibles</value>
   </data>
   <data name="Dashboard_Sys_PowerShell" xml:space="preserve">
     <value>PowerShell</value>
   </data>
   <data name="Dashboard_Updates_Title" xml:space="preserve">
-    <value>Mises a jour</value>
+    <value>Mises à jour</value>
   </data>
   <data name="Dashboard_Updates_Available" xml:space="preserve">
-    <value>mises a jour disponibles</value>
+    <value>mises à jour disponibles</value>
   </data>
   <data name="Dashboard_Scan_Button" xml:space="preserve">
-    <value>Rechercher les mises a jour</value>
+    <value>Rechercher les mises à jour</value>
   </data>
   <data name="Dashboard_Scan_Scanning" xml:space="preserve">
     <value>Recherche en cours...</value>
@@ -1445,7 +1445,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Annuler</value>
   </data>
   <data name="Common_TryAgain" xml:space="preserve">
-    <value>Reessayer</value>
+    <value>Réessayer</value>
   </data>
   <data name="Common_Dismiss" xml:space="preserve">
     <value>Fermer</value>
@@ -1461,41 +1461,41 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Analyse... ({0}/{1})</value>
   </data>
   <data name="Dashboard_Hero_Subtitle_Ready" xml:space="preserve">
-    <value>Tous les systemes sont prets</value>
+    <value>Tous les systèmes sont prêts</value>
   </data>
   <data name="Dashboard_Hero_Subtitle_Prereqs" xml:space="preserve">
-    <value>Installez les composants manquants pour continuer</value>
+    <value>Installéz les composants manquants pour continuer</value>
   </data>
   <data name="Dashboard_Hero_Subtitle_Updates" xml:space="preserve">
-    <value>Mises a jour disponibles pour les applications installees</value>
+    <value>Mises à jour disponibles pour les applications installées</value>
   </data>
   <data name="Dashboard_Stats_ClickToView" xml:space="preserve">
     <value>Cliquer pour voir</value>
   </data>
   <!-- Accessibility -->
   <data name="Accessibility_Progress" xml:space="preserve">
-    <value>{0} sur {1} termine, {2}%</value>
+    <value>{0} sur {1} terminé, {2}%</value>
   </data>
   <data name="Accessibility_ProgressWithItem" xml:space="preserve">
-    <value>{0} sur {1} termine, traitement de {2}</value>
+    <value>{0} sur {1} terminé, traitément de {2}</value>
   </data>
   <data name="Accessibility_ProgressComplete" xml:space="preserve">
-    <value>Operation terminee. {0} elements traites.</value>
+    <value>Opération terminée. {0} éléments traités.</value>
   </data>
   <data name="Accessibility_DeploymentStarted" xml:space="preserve">
-    <value>Deploiement demarre</value>
+    <value>Déploiement démarré</value>
   </data>
   <data name="Accessibility_DeploymentComplete" xml:space="preserve">
-    <value>Deploiement termine. {0} reussis, {1} echecs, {2} ignores.</value>
+    <value>Déploiement terminé. {0} réussis, {1} échecs, {2} ignorés.</value>
   </data>
   <data name="Accessibility_InstallationStarted" xml:space="preserve">
     <value>Installation de {0}</value>
   </data>
   <data name="Accessibility_InstallationComplete" xml:space="preserve">
-    <value>{0} installe avec succes</value>
+    <value>{0} installé avec succès</value>
   </data>
   <data name="Accessibility_InstallationFailed" xml:space="preserve">
-    <value>Echec de l'installation de {0}</value>
+    <value>Échec de l'installation de {0}</value>
   </data>
   <data name="Accessibility_LiveRegion" xml:space="preserve">
     <value>Annonces de statut</value>
@@ -1511,10 +1511,10 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Planifier</value>
   </data>
   <data name="ScheduledDeployment_AdminRequired" xml:space="preserve">
-    <value>Privileges administrateur requis pour gerer les deploiements planifies. Veuillez redemarrer l'application en tant qu'administrateur.</value>
+    <value>Privilèges administrateur requis pour gérer les déploiements planifiés. Veuillez redémarrer l'application en tant qu'administrateur.</value>
   </data>
   <data name="ScheduledDeployment_CreateNew" xml:space="preserve">
-    <value>Creer un deploiement planifie</value>
+    <value>Créer un déploiement planifié</value>
   </data>
   <data name="ScheduledDeployment_Profile" xml:space="preserve">
     <value>Profil</value>
@@ -1535,13 +1535,13 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Planifier</value>
   </data>
   <data name="ScheduledDeployment_List" xml:space="preserve">
-    <value>Deploiements planifies</value>
+    <value>Déploiements planifiés</value>
   </data>
   <data name="ScheduledDeployment_Refresh" xml:space="preserve">
     <value>Actualiser la liste</value>
   </data>
   <data name="ScheduledDeployment_Empty" xml:space="preserve">
-    <value>Aucun deploiement planifie</value>
+    <value>Aucun déploiement planifié</value>
   </data>
   <data name="ScheduledDeployment_Col_Profile" xml:space="preserve">
     <value>Profil</value>
@@ -1553,7 +1553,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Statut</value>
   </data>
   <data name="ScheduledDeployment_Col_LastRun" xml:space="preserve">
-    <value>Dernier resultat</value>
+    <value>Dernier résultat</value>
   </data>
   <data name="ScheduledDeployment_RunNow" xml:space="preserve">
     <value>Executer maintenant</value>
@@ -1562,37 +1562,37 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Supprimer</value>
   </data>
   <data name="ScheduledDeployment_SelectProfile" xml:space="preserve">
-    <value>Veuillez selectionner un profil</value>
+    <value>Veuillez sélectionner un profil</value>
   </data>
   <data name="ScheduledDeployment_Created" xml:space="preserve">
-    <value>Deploiement planifie cree avec succes</value>
+    <value>Déploiement planifié créé avec succès</value>
   </data>
   <data name="ScheduledDeployment_CreateError" xml:space="preserve">
-    <value>Echec de la creation du deploiement planifie</value>
+    <value>Échec de la création du déploiement planifié</value>
   </data>
   <data name="ScheduledDeployment_ConfirmRemove" xml:space="preserve">
-    <value>Voulez-vous vraiment supprimer ce deploiement planifie ?</value>
+    <value>Voulez-vous vraiment supprimer ce déploiement planifié ?</value>
   </data>
   <data name="ScheduledDeployment_ConfirmRemoveTitle" xml:space="preserve">
-    <value>Supprimer le deploiement planifie</value>
+    <value>Supprimer le déploiement planifié</value>
   </data>
   <data name="ScheduledDeployment_Removed" xml:space="preserve">
-    <value>Deploiement planifie supprime</value>
+    <value>Déploiement planifié supprime</value>
   </data>
   <data name="ScheduledDeployment_RemoveError" xml:space="preserve">
-    <value>Echec de la suppression du deploiement planifie</value>
+    <value>Échec de la suppression du déploiement planifié</value>
   </data>
   <data name="ScheduledDeployment_Started" xml:space="preserve">
-    <value>Deploiement planifie demarre</value>
+    <value>Déploiement planifié démarré</value>
   </data>
   <data name="ScheduledDeployment_StartError" xml:space="preserve">
-    <value>Echec du demarrage du deploiement planifie</value>
+    <value>Échec du démarrage du déploiement planifié</value>
   </data>
   <data name="ScheduledDeployment_LoadError" xml:space="preserve">
-    <value>Echec du chargement des deploiements planifies</value>
+    <value>Échec du chargement des déploiements planifiés</value>
   </data>
   <data name="ScheduledDeployment_AtStartup" xml:space="preserve">
-    <value>Au demarrage</value>
+    <value>Au démarrage</value>
   </data>
   <data name="ScheduledDeployment_AtLogon" xml:space="preserve">
     <value>A la connexion</value>
@@ -1610,62 +1610,62 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>En cours</value>
   </data>
   <data name="ScheduledDeployment_Status_Completed" xml:space="preserve">
-    <value>Termine</value>
+    <value>Terminé</value>
   </data>
   <data name="ScheduledDeployment_Status_Failed" xml:space="preserve">
-    <value>Echoue</value>
+    <value>Échoué</value>
   </data>
   <data name="ScheduledDeployment_Status_Cancelled" xml:space="preserve">
-    <value>Annule</value>
+    <value>Annulé</value>
   </data>
   <data name="ScheduledDeployment_Status_Unknown" xml:space="preserve">
     <value>Inconnu</value>
   </data>
   <!-- Application Database Service -->
   <data name="Apps_ValidationFailed" xml:space="preserve">
-    <value>La validation a echoue</value>
+    <value>La validation a échoué</value>
   </data>
   <data name="Apps_SaveFailed" xml:space="preserve">
-    <value>Echec de l'enregistrement de l'application</value>
+    <value>Échec de l'enregistrement de l'application</value>
   </data>
   <data name="Apps_FileNotFound" xml:space="preserve">
     <value>Fichier introuvable</value>
   </data>
   <data name="Apps_ImportFailed" xml:space="preserve">
-    <value>Echec de l'importation des applications</value>
+    <value>Échec de l'importation des applications</value>
   </data>
   <data name="Apps_Error_PowerShell" xml:space="preserve">
     <value>Erreur PowerShell : {0}</value>
   </data>
   <data name="Apps_Error_Database" xml:space="preserve">
-    <value>Erreur base de donnees : {0}</value>
+    <value>Erreur base de données : {0}</value>
   </data>
   <data name="Apps_Error_ProfilesDirectoryNotFound" xml:space="preserve">
     <value>Dossier Profiles introuvable</value>
   </data>
   <data name="Apps_Error_ProfileLoadFailed" xml:space="preserve">
-    <value>Echec du chargement du profil '{0}' : {1}</value>
+    <value>Échec du chargement du profil '{0}' : {1}</value>
   </data>
   <data name="Apps_Error_ProfileLoadPowerShellFailed" xml:space="preserve">
-    <value>Echec du chargement du profil (erreur PowerShell) : {0}</value>
+    <value>Échec du chargement du profil (erreur PowerShell) : {0}</value>
   </data>
   <data name="Apps_Error_ProfileLoadGeneric" xml:space="preserve">
-    <value>Echec du chargement du profil : {0}</value>
+    <value>Échec du chargement du profil : {0}</value>
   </data>
   <data name="Apps_Error_DetectionFailed" xml:space="preserve">
-    <value>Detection echouee : {0}</value>
+    <value>Détection échouée : {0}</value>
   </data>
   <data name="Apps_Error_SelectionExportFailed" xml:space="preserve">
-    <value>Echec de l'export de la selection : {0}</value>
+    <value>Échec de l'export de la sélection : {0}</value>
   </data>
   <data name="Apps_Error_SelectionImportFailed" xml:space="preserve">
-    <value>Echec de l'import de la selection : {0}</value>
+    <value>Échec de l'import de la sélection : {0}</value>
   </data>
   <data name="Apps_Error_FavoritesExportFailed" xml:space="preserve">
-    <value>Echec de l'export des favoris : {0}</value>
+    <value>Échec de l'export des favoris : {0}</value>
   </data>
   <data name="Apps_Error_FavoritesImportFailed" xml:space="preserve">
-    <value>Echec de l'import des favoris : {0}</value>
+    <value>Échec de l'import des favoris : {0}</value>
   </data>
   <data name="Apps_Error_InstallSingleFailed" xml:space="preserve">
     <value>Échec de l'installation de « {0} » : {1}</value>
@@ -1691,7 +1691,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Au moins une source d'installation est requise</value>
   </data>
   <data name="Validation_DuplicateAppId" xml:space="preserve">
-    <value>L'identifiant d'application '{0}' existe deja</value>
+    <value>L'identifiant d'application '{0}' existe déjà</value>
   </data>
   <!-- Applications Catalog Management View -->
   <data name="Nav_AppDatabase" xml:space="preserve">
@@ -1701,7 +1701,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Catalogue des applications</value>
   </data>
   <data name="AppDb_Subtitle" xml:space="preserve">
-    <value>Gerer les definitions d'applications et les sources d'installation</value>
+    <value>Gérer les définitions d'applications et les sources d'installation</value>
   </data>
   <data name="AppDb_Add" xml:space="preserve">
     <value>Ajouter</value>
@@ -1713,19 +1713,19 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Modifier</value>
   </data>
   <data name="AppDb_EditTooltip" xml:space="preserve">
-    <value>Modifier l'application selectionnee (Ctrl+E)</value>
+    <value>Modifier l'application sélectionnée (Ctrl+E)</value>
   </data>
   <data name="AppDb_Delete" xml:space="preserve">
     <value>Supprimer</value>
   </data>
   <data name="AppDb_DeleteTooltip" xml:space="preserve">
-    <value>Supprimer l'application selectionnee (Suppr)</value>
+    <value>Supprimer l'application sélectionnée (Suppr)</value>
   </data>
   <data name="AppDb_Duplicate" xml:space="preserve">
     <value>Dupliquer</value>
   </data>
   <data name="AppDb_DuplicateTooltip" xml:space="preserve">
-    <value>Dupliquer l'application selectionnee (Ctrl+D)</value>
+    <value>Dupliquer l'application sélectionnée (Ctrl+D)</value>
   </data>
   <data name="AppDb_Refresh" xml:space="preserve">
     <value>Actualiser (F5)</value>
@@ -1734,7 +1734,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Rechercher par ID, nom ou tags...</value>
   </data>
   <data name="AppDb_CategoryFilter" xml:space="preserve">
-    <value>Categorie</value>
+    <value>Catégorie</value>
   </data>
   <data name="AppDb_Col_Id" xml:space="preserve">
     <value>ID</value>
@@ -1743,7 +1743,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Nom</value>
   </data>
   <data name="AppDb_Col_Category" xml:space="preserve">
-    <value>Categorie</value>
+    <value>Catégorie</value>
   </data>
   <data name="AppDb_Col_Sources" xml:space="preserve">
     <value>Sources</value>
@@ -1752,7 +1752,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Priorite</value>
   </data>
   <data name="AppDb_Col_Verified" xml:space="preserve">
-    <value>Verifie</value>
+    <value>Vérifié</value>
   </data>
   <data name="AppDb_Col_Description" xml:space="preserve">
     <value>Description</value>
@@ -1761,16 +1761,16 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Chargement des applications...</value>
   </data>
   <data name="AppDb_LoadedCount" xml:space="preserve">
-    <value>{0} applications chargees</value>
+    <value>{0} applications chargées</value>
   </data>
   <data name="AppDb_LoadError" xml:space="preserve">
-    <value>Echec du chargement des applications : {0}</value>
+    <value>Échec du chargement des applications : {0}</value>
   </data>
   <data name="AppCatalog_LoadError" xml:space="preserve">
     <value>Échec du chargement des applications : {0}</value>
   </data>
   <data name="AppCatalog_EmptyDatabase" xml:space="preserve">
-    <value>Aucune application dans la base de données. Ajoutez-en une pour commencer.</value>
+    <value>Aucune application dans la base de données. Ajoutéz-en une pour commencer.</value>
   </data>
   <data name="AppCatalog_EmptyFilter" xml:space="preserve">
     <value>Aucune application ne correspond au filtre actuel. Essayez de le réinitialiser.</value>
@@ -1800,23 +1800,23 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value> (Copie)</value>
   </data>
   <data name="AppDb_DeleteError" xml:space="preserve">
-    <value>Echec de la suppression de l'application</value>
+    <value>Échec de la suppression de l'application</value>
   </data>
   <data name="AppDb_Added" xml:space="preserve">
-    <value>Application ajoutee avec succes</value>
+    <value>Application ajoutée avec succès</value>
   </data>
   <data name="AppDb_Updated" xml:space="preserve">
-    <value>Application mise a jour avec succes</value>
+    <value>Application mise à jour avec succès</value>
   </data>
   <!-- Import/Export -->
   <data name="AppDb_ImportSuccess" xml:space="preserve">
-    <value>Import termine : {0} ajoutees, {1} mises a jour</value>
+    <value>Import terminé : {0} ajoutées, {1} mises à jour</value>
   </data>
   <data name="AppDb_ImportError" xml:space="preserve">
-    <value>Echec de l'import : {0}</value>
+    <value>Échec de l'import : {0}</value>
   </data>
   <data name="AppDb_ExportSuccess" xml:space="preserve">
-    <value>{0} applications exportees avec succes</value>
+    <value>{0} applications exportées avec succès</value>
   </data>
   <data name="AppDb_ExportError" xml:space="preserve">
     <value>Échec de l'export des applications : {0}</value>
@@ -1828,7 +1828,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Exporter</value>
   </data>
   <data name="AppDb_ExportSelected" xml:space="preserve">
-    <value>Exporter la selection</value>
+    <value>Exporter la sélection</value>
   </data>
   <data name="AppDb_ExportAll" xml:space="preserve">
     <value>Tout exporter</value>
@@ -1840,9 +1840,9 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Exporter les applications vers un fichier JSON</value>
   </data>
   <data name="AppDb_DeleteConfirm" xml:space="preserve">
-    <value>Etes-vous sur de vouloir supprimer '{0}' ({1}) ?
+    <value>Êtes-vous sûr de vouloir supprimer '{0}' ({1}) ?
 
-Cette action est irreversible.</value>
+Cette action est irréversible.</value>
   </data>
   <data name="AppDb_DeleteTitle" xml:space="preserve">
     <value>Confirmer la suppression</value>
@@ -1889,7 +1889,7 @@ Non = Ignorer les doublons</value>
     <value>Sources</value>
   </data>
   <data name="AppEditor_Tab_Detection" xml:space="preserve">
-    <value>Detection</value>
+    <value>Détection</value>
   </data>
   <data name="AppEditor_AppId" xml:space="preserve">
     <value>ID de l'application</value>
@@ -1901,7 +1901,7 @@ Non = Ignorer les doublons</value>
     <value>Priorité : </value>
   </data>
   <data name="AppEditor_Category" xml:space="preserve">
-    <value>Categorie</value>
+    <value>Catégorie</value>
   </data>
   <data name="AppEditor_Description" xml:space="preserve">
     <value>Description</value>
@@ -1913,7 +1913,7 @@ Non = Ignorer les doublons</value>
     <value>Requis par defaut dans les profils</value>
   </data>
   <data name="AppEditor_AddNewCategory" xml:space="preserve">
-    <value>+ Ajouter une nouvelle categorie...</value>
+    <value>+ Ajouter une nouvelle catégorie...</value>
   </data>
   <data name="AppEditor_WingetPackageId" xml:space="preserve">
     <value>ID du package (ex: Google.Chrome)</value>
@@ -1922,19 +1922,19 @@ Non = Ignorer les doublons</value>
     <value>Nom du package (ex: googlechrome)</value>
   </data>
   <data name="AppEditor_StoreAppId" xml:space="preserve">
-    <value>ID de l'application Store (12 caracteres)</value>
+    <value>ID de l'application Store (12 caractères)</value>
   </data>
   <data name="AppEditor_DirectDownload" xml:space="preserve">
-    <value>Telechargement direct</value>
+    <value>Téléchargement direct</value>
   </data>
   <data name="AppEditor_DirectUrl" xml:space="preserve">
-    <value>URL de telechargement</value>
+    <value>URL de téléchargement</value>
   </data>
   <data name="AppEditor_DetectionDescription" xml:space="preserve">
-    <value>Configurez la methode de detection pour verifier si l'application est deja installee sur le systeme.</value>
+    <value>Configurez la méthode de détection pour vérifier si l'application est déjà installée sur le système.</value>
   </data>
   <data name="AppEditor_DetectionMethod" xml:space="preserve">
-    <value>Methode de detection</value>
+    <value>Méthode de détection</value>
   </data>
   <data name="AppEditor_DetectionPath" xml:space="preserve">
     <value>Chemin (cle de registre, chemin de fichier ou commande)</value>
@@ -1952,25 +1952,25 @@ Non = Ignorer les doublons</value>
     <value>Annuler</value>
   </data>
   <data name="AppEditor_UnsavedChanges" xml:space="preserve">
-    <value>Vous avez des modifications non enregistrees</value>
+    <value>Vous avez des modifications non enregistrées</value>
   </data>
   <data name="AppEditor_DiscardChanges" xml:space="preserve">
-    <value>Vous avez des modifications non enregistrees. Voulez-vous vraiment les abandonner ?</value>
+    <value>Vous avez des modifications non enregistrées. Voulez-vous vraiment les abandonner ?</value>
   </data>
   <data name="AppEditor_DiscardTitle" xml:space="preserve">
     <value>Abandonner les modifications ?</value>
   </data>
   <data name="AppEditor_NewCategoryTitle" xml:space="preserve">
-    <value>Nouvelle categorie</value>
+    <value>Nouvelle catégorie</value>
   </data>
   <data name="AppEditor_NewCategoryPrompt" xml:space="preserve">
-    <value>Entrez le nom de la nouvelle categorie :</value>
+    <value>Entrez le nom de la nouvelle catégorie :</value>
   </data>
   <data name="AppEditor_SourceSearchTitle" xml:space="preserve">
     <value>Decouvrir des packages par source</value>
   </data>
   <data name="AppEditor_SourceSearchDescription" xml:space="preserve">
-    <value>Recherchez dans Winget, Chocolatey ou Microsoft Store puis appliquez le package selectionne a cette entree du catalogue.</value>
+    <value>Recherchez dans Winget, Chocolatey ou Microsoft Store puis appliquez le package sélectionné à cette entrée du catalogue.</value>
   </data>
   <data name="AppEditor_SearchPlaceholder" xml:space="preserve">
     <value>Rechercher un package par nom ou ID...</value>
@@ -1988,19 +1988,19 @@ Non = Ignorer les doublons</value>
     <value>Version</value>
   </data>
   <data name="AppEditor_ApplySelection" xml:space="preserve">
-    <value>Appliquer la selection</value>
+    <value>Appliquer la sélection</value>
   </data>
   <data name="AppEditor_Searching" xml:space="preserve">
     <value>Recherche des packages...</value>
   </data>
   <data name="AppEditor_NoSearchResults" xml:space="preserve">
-    <value>Aucun package correspondant trouve</value>
+    <value>Aucun package correspondant trouvé</value>
   </data>
   <data name="AppEditor_SearchResultsCount" xml:space="preserve">
-    <value>{0} resultat(s) trouves</value>
+    <value>{0} résultat(s) trouvés</value>
   </data>
   <data name="AppEditor_SearchApplied" xml:space="preserve">
-    <value>Applique : {0}</value>
+    <value>Appliqué : {0}</value>
   </data>
   <!-- Source Editor Controls -->
   <data name="SourceEditor_EnableDisable" xml:space="preserve">
@@ -2010,22 +2010,22 @@ Non = Ignorer les doublons</value>
     <value>Version (optionnel)</value>
   </data>
   <data name="SourceEditor_Repository" xml:space="preserve">
-    <value>Depot source</value>
+    <value>Dépôt source</value>
   </data>
   <data name="SourceEditor_Test" xml:space="preserve">
     <value>Tester le package</value>
   </data>
   <data name="SourceEditor_TestTooltip" xml:space="preserve">
-    <value>Verifier que le package existe dans le depot</value>
+    <value>Vérifier que le package existe dans le dépôt</value>
   </data>
   <data name="SourceEditor_TestPlaceholder" xml:space="preserve">
-    <value>La verification des packages sera implementee dans un sprint futur</value>
+    <value>La vérification des packages sera implémentée dans un sprint futur</value>
   </data>
   <data name="SourceEditor_StoreIdHint" xml:space="preserve">
-    <value>Format : 12 caracteres alphanumeriques (ex: 9NBLGGH4NNS1)</value>
+    <value>Format : 12 caractères alphanumeriques (ex: 9NBLGGH4NNS1)</value>
   </data>
   <data name="SourceEditor_InstallerType" xml:space="preserve">
-    <value>Type d'installeur</value>
+    <value>Type d'installéur</value>
   </data>
   <data name="SourceEditor_SilentArgs" xml:space="preserve">
     <value>Arguments silencieux</value>
@@ -2040,7 +2040,7 @@ Non = Ignorer les doublons</value>
     <value>Tester l'URL</value>
   </data>
   <data name="SourceEditor_TestUrlTooltip" xml:space="preserve">
-    <value>Verifier que l'URL de telechargement est accessible</value>
+    <value>Vérifier que l'URL de téléchargement est accessible</value>
   </data>
   <data name="SourceEditor_UrlTestSuccess" xml:space="preserve">
     <value>URL accessible ({0}, {1})</value>
@@ -2055,47 +2055,47 @@ Non = Ignorer les doublons</value>
     <value>Erreur de connexion : {0}</value>
   </data>
   <data name="SourceEditor_UrlTestTimeout" xml:space="preserve">
-    <value>Delai d'attente depasse</value>
+    <value>Délai d'attente dépassé</value>
   </data>
   <!-- Package Verification -->
   <data name="Verify_PackageFound" xml:space="preserve">
-    <value>Package trouve : {0}</value>
+    <value>Package trouvé : {0}</value>
   </data>
   <data name="Verify_PackageNotFound" xml:space="preserve">
-    <value>Package non trouve</value>
+    <value>Package non trouvé</value>
   </data>
   <data name="Verify_Error" xml:space="preserve">
-    <value>Erreur de verification : {0}</value>
+    <value>Erreur de vérification : {0}</value>
   </data>
   <data name="Verify_WingetUnavailable" xml:space="preserve">
-    <value>Winget n'est pas disponible sur ce systeme</value>
+    <value>Winget n'est pas disponible sur ce système</value>
   </data>
   <data name="Verify_ChocoUnavailable" xml:space="preserve">
-    <value>Chocolatey n'est pas disponible sur ce systeme</value>
+    <value>Chocolatey n'est pas disponible sur ce système</value>
   </data>
   <data name="Verify_AllSourcesValid" xml:space="preserve">
-    <value>Toutes les sources verifiees ({0}/{1})</value>
+    <value>Toutes les sources vérifiées ({0}/{1})</value>
   </data>
   <data name="Verify_SomeSourcesInvalid" xml:space="preserve">
     <value>{0} sur {1} sources valides</value>
   </data>
   <data name="Verify_NoValidSources" xml:space="preserve">
-    <value>Aucune source d'installation valide trouvee</value>
+    <value>Aucune source d'installation valide trouvée</value>
   </data>
   <data name="Verify_Verifying" xml:space="preserve">
-    <value>Verification des packages...</value>
+    <value>Vérification des packages...</value>
   </data>
   <data name="Verify_CancelledProgress" xml:space="preserve">
-    <value>Verification annulee ({0}/{1})</value>
+    <value>Vérification annulée ({0}/{1})</value>
   </data>
   <data name="Verify_ProgressItem" xml:space="preserve">
-    <value>Verification {0}/{1} : {2}...</value>
+    <value>Vérification {0}/{1} : {2}...</value>
   </data>
   <data name="Verify_CompleteSummary" xml:space="preserve">
-    <value>Verification terminee : {0} valides, {1} invalides</value>
+    <value>Vérification terminée : {0} valides, {1} invalides</value>
   </data>
   <data name="Verify_CompleteSummaryWithErrors" xml:space="preserve">
-    <value>Verification terminee : {0} valides, {1} invalides, {2} erreurs</value>
+    <value>Vérification terminée : {0} valides, {1} invalides, {2} erreurs</value>
   </data>
   <!-- Detection Editor -->
   <data name="Detection_Method_Registry" xml:space="preserve">
@@ -2114,13 +2114,13 @@ Non = Ignorer les doublons</value>
     <value>Application Store</value>
   </data>
   <data name="Detection_Registry_Title" xml:space="preserve">
-    <value>Detection par registre</value>
+    <value>Détection par registre</value>
   </data>
   <data name="Detection_Registry_Path" xml:space="preserve">
     <value>Chemin du registre (ex: HKLM\SOFTWARE\App)</value>
   </data>
   <data name="Detection_File_Title" xml:space="preserve">
-    <value>Detection par fichier</value>
+    <value>Détection par fichier</value>
   </data>
   <data name="Detection_File_Path" xml:space="preserve">
     <value>Chemin du fichier (ex: C:\Program Files\App\app.exe)</value>
@@ -2129,31 +2129,31 @@ Non = Ignorer les doublons</value>
     <value>Parcourir...</value>
   </data>
   <data name="Detection_Command_Title" xml:space="preserve">
-    <value>Detection par commande</value>
+    <value>Détection par commande</value>
   </data>
   <data name="Detection_Command_Path" xml:space="preserve">
     <value>Commande (ex: app --version)</value>
   </data>
   <data name="Detection_Command_Hint" xml:space="preserve">
-    <value>La commande doit retourner le code 0 si l'application est installee</value>
+    <value>La commande doit retourner le code 0 si l'application est installée</value>
   </data>
   <data name="Detection_WindowsFeature_Title" xml:space="preserve">
-    <value>Detection de fonctionnalite Windows</value>
+    <value>Détection de fonctionnalite Windows</value>
   </data>
   <data name="Detection_WindowsFeature_Name" xml:space="preserve">
     <value>Nom de la fonctionnalite (ex: Microsoft-Windows-Subsystem-Linux)</value>
   </data>
   <data name="Detection_StoreApp_Title" xml:space="preserve">
-    <value>Detection d'application Store</value>
+    <value>Détection d'application Store</value>
   </data>
   <data name="Detection_StoreApp_PackageName" xml:space="preserve">
     <value>Nom de famille du package</value>
   </data>
   <data name="Detection_TestButton" xml:space="preserve">
-    <value>Tester la detection</value>
+    <value>Tester la détection</value>
   </data>
   <data name="Detection_TestTooltip" xml:space="preserve">
-    <value>Tester si l'application est detectee sur ce systeme</value>
+    <value>Tester si l'application est détectée sur ce système</value>
   </data>
   <data name="Detection_Found" xml:space="preserve">
     <value>Detecte</value>
@@ -2171,74 +2171,74 @@ Non = Ignorer les doublons</value>
     <value>Le chemin est requis</value>
   </data>
   <data name="Detection_UnknownMethod" xml:space="preserve">
-    <value>Methode de detection inconnue</value>
+    <value>Méthode de détection inconnue</value>
   </data>
   <data name="Detection_SelectFile" xml:space="preserve">
-    <value>Selectionner le fichier a detecter</value>
+    <value>Sélectionner le fichier a détecter</value>
   </data>
   <data name="Detection_FeatureCheckNotSupported" xml:space="preserve">
-    <value>La detection de fonctionnalite Windows necessite PowerShell</value>
+    <value>La détection de fonctionnalite Windows nécessite PowerShell</value>
   </data>
   <data name="Detection_StoreAppCheckNotSupported" xml:space="preserve">
-    <value>La detection d'application Store necessite PowerShell</value>
+    <value>La détection d'application Store nécessite PowerShell</value>
   </data>
   <!-- UX Improvements - Bulk Delete -->
   <data name="AppDb_DeleteMultipleConfirm" xml:space="preserve">
-    <value>Etes-vous sur de vouloir supprimer {0} applications ?
+    <value>Êtes-vous sûr de vouloir supprimer {0} applications ?
 
-Cette action est irreversible.</value>
+Cette action est irréversible.</value>
   </data>
   <data name="AppDb_DeleteMultipleTitle" xml:space="preserve">
     <value>Supprimer plusieurs applications</value>
   </data>
   <!-- UX Improvements - Deployment Result Banner -->
   <data name="Deployment_Result_Success" xml:space="preserve">
-    <value>Deploiement termine avec succes</value>
+    <value>Déploiement terminé avec succès</value>
   </data>
   <data name="Deployment_Result_Partial" xml:space="preserve">
-    <value>Deploiement termine avec {0} echec(s)</value>
+    <value>Déploiement terminé avec {0} échec(s)</value>
   </data>
   <data name="Deployment_Result_Failed" xml:space="preserve">
-    <value>Echec du deploiement</value>
+    <value>Échec du déploiement</value>
   </data>
   <data name="Deployment_Result_Cancelled" xml:space="preserve">
-    <value>Deploiement annule</value>
+    <value>Déploiement annulé</value>
   </data>
   <data name="Deployment_Stats" xml:space="preserve">
-    <value>{0} installe(s), {1} echec(s), {2} ignore(s)</value>
+    <value>{0} installé(s), {1} échec(s), {2} ignoré(s)</value>
   </data>
   <!-- UX Improvements - Network Error Messages -->
   <data name="Recovery_NetworkTimeout" xml:space="preserve">
-    <value>La connexion a expire. Essayez d'augmenter les parametres de delai ou verifiez votre vitesse reseau.</value>
+    <value>La connexion a expiré. Essayez d'augmenter les paramètres de délai ou vérifiez votre vitesse réseau.</value>
   </data>
   <data name="Recovery_DnsResolution" xml:space="preserve">
-    <value>Impossible de resoudre l'adresse du serveur. Verifiez vos parametres DNS ou essayez un autre reseau.</value>
+    <value>Impossible de résoudre l'adresse du serveur. Vérifiez vos paramètres DNS ou essayez un autre réseau.</value>
   </data>
   <data name="Recovery_ProxySettings" xml:space="preserve">
-    <value>Si vous etes derriere un proxy, verifiez que vos parametres proxy sont correctement configures.</value>
+    <value>Si vous êtes derrière un proxy, vérifiez que vos paramètres proxy sont correctement configurés.</value>
   </data>
   <data name="Recovery_SslCertificate" xml:space="preserve">
-    <value>Il peut y avoir un probleme de certificat SSL. Verifiez la date/heure de votre systeme et votre logiciel de securite.</value>
+    <value>Il peut y avoir un problème de certificat SSL. Vérifiez la date/heure de votre système et votre logiciel de sécurité.</value>
   </data>
   <!-- UX Improvements - Empty State Accessibility -->
   <data name="A11y_EmptyStateIcon" xml:space="preserve">
-    <value>Icone decorative</value>
+    <value>Icône decorative</value>
   </data>
   <data name="A11y_NoHistoryIcon" xml:space="preserve">
-    <value>Icone aucun historique de deploiement</value>
+    <value>Icône aucun historique de déploiement</value>
   </data>
   <data name="A11y_NoDatabaseIcon" xml:space="preserve">
-    <value>Icone base de donnees vide</value>
+    <value>Icône base de données vide</value>
   </data>
   <data name="A11y_NoDeploymentIcon" xml:space="preserve">
-    <value>Icone aucun deploiement actif</value>
+    <value>Icône aucun déploiement actif</value>
   </data>
   <!-- UX Improvements - Loading Progress -->
   <data name="Loading_ItemsCount" xml:space="preserve">
-    <value>Chargement de {0} elements...</value>
+    <value>Chargement de {0} éléments...</value>
   </data>
   <data name="Loading_Database" xml:space="preserve">
-    <value>Chargement de la base de donnees d'applications...</value>
+    <value>Chargement de la base de données d'applications...</value>
   </data>
   <!-- UX Improvements - Copy Feedback -->
   <data name="Toast_CopiedToClipboard" xml:space="preserve">
@@ -2252,14 +2252,14 @@ Cette action est irreversible.</value>
     <value>Actions</value>
   </data>
   <data name="Help_Shortcut_DataGrid" xml:space="preserve">
-    <value>Dans les grilles, utilisez les fleches pour naviguer, Entree pour selectionner, et Ctrl+A pour tout selectionner.</value>
+    <value>Dans les grilles, utilisez les flèches pour naviguer, Entrée pour sélectionner, et Ctrl+A pour tout sélectionner.</value>
   </data>
   <!-- UX Improvements - Cancel Feedback -->
   <data name="Cancel_InProgress" xml:space="preserve">
     <value>Annulation en cours...</value>
   </data>
   <data name="Cancel_Complete" xml:space="preserve">
-    <value>Operation annulee</value>
+    <value>Opération annulée</value>
   </data>
   <!-- Audit Round 3 - Accessibility AutomationProperties -->
   <data name="A11y_Logs_ViewLog" xml:space="preserve">
@@ -2287,13 +2287,13 @@ Cette action est irreversible.</value>
     <value>Supprimer les anciens journaux</value>
   </data>
   <data name="A11y_Deployment_Pause" xml:space="preserve">
-    <value>Mettre en pause le deploiement</value>
+    <value>Mettre en pause le déploiement</value>
   </data>
   <data name="A11y_Deployment_Resume" xml:space="preserve">
-    <value>Reprendre le deploiement</value>
+    <value>Reprendre le déploiement</value>
   </data>
   <data name="A11y_Deployment_Cancel" xml:space="preserve">
-    <value>Annuler le deploiement</value>
+    <value>Annuler le déploiement</value>
   </data>
   <data name="A11y_Deployment_CopyLogs" xml:space="preserve">
     <value>Copier les journaux dans le presse-papiers</value>
@@ -2302,13 +2302,13 @@ Cette action est irreversible.</value>
     <value>Fermer la visionneuse de journaux</value>
   </data>
   <data name="A11y_Dashboard_StartDeployment" xml:space="preserve">
-    <value>Demarrer le deploiement</value>
+    <value>Démarrer le déploiement</value>
   </data>
   <data name="A11y_Dashboard_ViewUpdates" xml:space="preserve">
-    <value>Voir les mises a jour disponibles</value>
+    <value>Voir les mises à jour disponibles</value>
   </data>
   <data name="A11y_Dashboard_FixPrereqs" xml:space="preserve">
-    <value>Corriger les prerequis</value>
+    <value>Corriger les prérequis</value>
   </data>
   <data name="A11y_Settings_ThemeToggle" xml:space="preserve">
     <value>Basculer le theme sombre</value>
@@ -2323,7 +2323,7 @@ Cette action est irreversible.</value>
     <value>Basculer le mode contraste eleve</value>
   </data>
   <data name="A11y_Settings_Language" xml:space="preserve">
-    <value>Selectionner la langue</value>
+    <value>Sélectionner la langue</value>
   </data>
   <data name="A11y_Profile_Overwrite" xml:space="preserve">
     <value>Ecraser le profil existant</value>
@@ -2350,7 +2350,7 @@ Cette action est irreversible.</value>
     <value>Rechercher des applications</value>
   </data>
   <data name="A11y_AppPicker_Category" xml:space="preserve">
-    <value>Filtrer par categorie</value>
+    <value>Filtrer par catégorie</value>
   </data>
   <data name="A11y_AppPicker_AppList" xml:space="preserve">
     <value>Liste des applications</value>
@@ -2359,7 +2359,7 @@ Cette action est irreversible.</value>
     <value>Annuler</value>
   </data>
   <data name="A11y_AppPicker_Add" xml:space="preserve">
-    <value>Ajouter les applications selectionnees</value>
+    <value>Ajouter les applications sélectionnées</value>
   </data>
   <data name="A11y_Onboarding_DontShow" xml:space="preserve">
     <value>Ne plus afficher</value>
@@ -2372,52 +2372,52 @@ Cette action est irreversible.</value>
   </data>
   <!-- Audit Round 3 - Error Messages -->
   <data name="Error_LoadViewFailed" xml:space="preserve">
-    <value>Echec du chargement de la vue : {0}</value>
+    <value>Échec du chargement de la vue : {0}</value>
   </data>
   <data name="Detection_InvalidExpandedPath" xml:space="preserve">
     <value>Chemin invalide apres expansion des variables d'environnement</value>
   </data>
   <data name="Detection_InvalidCommandPath" xml:space="preserve">
-    <value>Chemin de commande invalide : contient des caracteres potentiellement dangereux</value>
+    <value>Chemin de commande invalide : contient des caractères potentiellement dangereux</value>
   </data>
   <data name="Detection_CommandTimeout" xml:space="preserve">
-    <value>La commande a expire apres 5 secondes</value>
+    <value>La commande a expiré apres 5 secondes</value>
   </data>
   <data name="Undo_Title" xml:space="preserve">
     <value>Annuler</value>
   </data>
   <data name="Undo_Redo" xml:space="preserve">
-    <value>Retablir</value>
+    <value>Rétablir</value>
   </data>
   <data name="A11y_Search_SuggestionsHelp" xml:space="preserve">
-    <value>Saisissez pour filtrer les applications. Utilisez les fleches pour naviguer dans les suggestions.</value>
+    <value>Saisissez pour filtrer les applications. Utilisez les flèches pour naviguer dans les suggestions.</value>
   </data>
   <data name="A11y_Main_Breadcrumb" xml:space="preserve">
     <value>Fil d'Ariane de navigation</value>
   </data>
   <data name="A11y_Main_Undo" xml:space="preserve">
-    <value>Annuler la derniere action</value>
+    <value>Annuler la dernière action</value>
   </data>
   <data name="A11y_Main_Redo" xml:space="preserve">
-    <value>Retablir la derniere action</value>
+    <value>Rétablir la dernière action</value>
   </data>
   <data name="A11y_Main_NavDashboard" xml:space="preserve">
     <value>Aller au tableau de bord, Ctrl+1</value>
   </data>
   <data name="A11y_Main_NavPrerequisites" xml:space="preserve">
-    <value>Aller aux prerequis, Ctrl+2</value>
+    <value>Aller aux prérequis, Ctrl+2</value>
   </data>
   <data name="A11y_Main_NavApps" xml:space="preserve">
     <value>Aller aux applications, Ctrl+3</value>
   </data>
   <data name="A11y_Main_NavDeployment" xml:space="preserve">
-    <value>Aller au deploiement, Ctrl+4</value>
+    <value>Aller au déploiement, Ctrl+4</value>
   </data>
   <data name="A11y_Main_NavSettings" xml:space="preserve">
-    <value>Aller aux parametres, Ctrl+5</value>
+    <value>Aller aux paramètres, Ctrl+5</value>
   </data>
   <data name="A11y_Main_NavAppDatabase" xml:space="preserve">
-    <value>Aller a la base d'applications, Ctrl+6</value>
+    <value>Aller à la base d'applications, Ctrl+6</value>
   </data>
   <data name="A11y_Dialog_Confirm" xml:space="preserve">
     <value>Boite de dialogue de confirmation</value>
@@ -2426,7 +2426,7 @@ Cette action est irreversible.</value>
     <value>Boite de dialogue d'erreur</value>
   </data>
   <data name="A11y_Deployment_AppList" xml:space="preserve">
-    <value>Liste des applications en deploiement</value>
+    <value>Liste des applications en déploiement</value>
   </data>
   <data name="A11y_Applications_DbGrid" xml:space="preserve">
     <value>Grille de la base d'applications</value>
@@ -2438,7 +2438,7 @@ Cette action est irreversible.</value>
     <value>Naviguer vers la gestion des applications</value>
   </data>
   <data name="A11y_Dashboard_UpdatesCard" xml:space="preserve">
-    <value>Naviguer vers la page des mises a jour</value>
+    <value>Naviguer vers la page des mises à jour</value>
   </data>
   <data name="A11y_Loading_ContentHelp" xml:space="preserve">
     <value>Le contenu est en cours de chargement, veuillez patienter</value>
@@ -2876,4 +2876,3 @@ Cette action est irreversible.</value>
     <value>La version Winget ne doit pas dépasser 64 caractères</value>
   </data>
 </root>
-
