@@ -1554,6 +1554,42 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Are you sure you want to clear all deployment history? This action cannot be undone.</value>
     <comment>Clear history confirmation message</comment>
   </data>
+  <data name="Confirm_ClearHistory_Btn" xml:space="preserve">
+    <value>Clear history</value>
+    <comment>Clear history confirmation button</comment>
+  </data>
+  <data name="Confirm_Uninstall_Title_Single" xml:space="preserve">
+    <value>Uninstall application</value>
+    <comment>Uninstall single application confirmation title</comment>
+  </data>
+  <data name="Confirm_Uninstall_Title_Multiple" xml:space="preserve">
+    <value>Uninstall {0} applications</value>
+    <comment>Uninstall multiple applications confirmation title (0=count)</comment>
+  </data>
+  <data name="Confirm_Uninstall_Message_Single" xml:space="preserve">
+    <value>Are you sure you want to uninstall this application? This action cannot be undone.</value>
+    <comment>Uninstall single application confirmation message</comment>
+  </data>
+  <data name="Confirm_Uninstall_Message_Multiple" xml:space="preserve">
+    <value>Are you sure you want to uninstall {0} applications? This action cannot be undone.</value>
+    <comment>Uninstall multiple applications confirmation message (0=count)</comment>
+  </data>
+  <data name="Confirm_Uninstall_Btn" xml:space="preserve">
+    <value>Uninstall</value>
+    <comment>Uninstall confirmation button</comment>
+  </data>
+  <data name="Confirm_Delete_Btn" xml:space="preserve">
+    <value>Delete</value>
+    <comment>Delete confirmation button</comment>
+  </data>
+  <data name="Confirm_Reset_Btn" xml:space="preserve">
+    <value>Reset</value>
+    <comment>Reset confirmation button</comment>
+  </data>
+  <data name="Confirm_ClearOldLogs_Btn" xml:space="preserve">
+    <value>Clear logs</value>
+    <comment>Clear old logs confirmation button</comment>
+  </data>
   <data name="Confirm_Uninstall_Title" xml:space="preserve">
     <value>Uninstall Applications</value>
     <comment>Uninstall confirmation title</comment>
@@ -2739,6 +2775,14 @@ This action cannot be undone.</value>
 Yes = Replace existing
 No = Skip duplicates</value>
     <comment>Import mode confirmation message</comment>
+  </data>
+  <data name="AppDb_Import_Replace" xml:space="preserve">
+    <value>Replace existing</value>
+    <comment>Import mode button to replace existing applications</comment>
+  </data>
+  <data name="AppDb_Import_Skip" xml:space="preserve">
+    <value>Skip duplicates</value>
+    <comment>Import mode button to skip duplicate applications</comment>
   </data>
   <data name="AppDb_NoExportSelection" xml:space="preserve">
     <value>No applications selected for export.</value>

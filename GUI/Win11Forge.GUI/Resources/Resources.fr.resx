@@ -1173,6 +1173,33 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Confirm_ClearHistory_Message" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir effacer tout l'historique de déploiement ? Cette action est irréversible.</value>
   </data>
+  <data name="Confirm_ClearHistory_Btn" xml:space="preserve">
+    <value>Effacer l'historique</value>
+  </data>
+  <data name="Confirm_Uninstall_Title_Single" xml:space="preserve">
+    <value>Désinstaller l'application</value>
+  </data>
+  <data name="Confirm_Uninstall_Title_Multiple" xml:space="preserve">
+    <value>Désinstaller {0} applications</value>
+  </data>
+  <data name="Confirm_Uninstall_Message_Single" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir désinstaller cette application ? Cette action est irréversible.</value>
+  </data>
+  <data name="Confirm_Uninstall_Message_Multiple" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir désinstaller {0} applications ? Cette action est irréversible.</value>
+  </data>
+  <data name="Confirm_Uninstall_Btn" xml:space="preserve">
+    <value>Désinstaller</value>
+  </data>
+  <data name="Confirm_Delete_Btn" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+  <data name="Confirm_Reset_Btn" xml:space="preserve">
+    <value>Réinitialiser</value>
+  </data>
+  <data name="Confirm_ClearOldLogs_Btn" xml:space="preserve">
+    <value>Effacer les journaux</value>
+  </data>
   <data name="Confirm_Uninstall_Title" xml:space="preserve">
     <value>Désinstaller les applications</value>
   </data>
@@ -1877,6 +1904,12 @@ Cette action est irréversible.</value>
 
 Oui = Remplacer les existantes
 Non = Ignorer les doublons</value>
+  </data>
+  <data name="AppDb_Import_Replace" xml:space="preserve">
+    <value>Remplacer les existantes</value>
+  </data>
+  <data name="AppDb_Import_Skip" xml:space="preserve">
+    <value>Ignorer les doublons</value>
   </data>
   <data name="AppDb_NoExportSelection" xml:space="preserve">
     <value>Aucune application sélectionnée pour l'export.</value>
