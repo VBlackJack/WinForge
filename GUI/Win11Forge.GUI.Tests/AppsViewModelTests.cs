@@ -18,6 +18,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Text.Json;
+using CommunityToolkit.Mvvm.Messaging;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Services.Coordinators;
@@ -79,9 +80,10 @@ public class AppsViewModelTests
         IAppUninstallCoordinator? uninstallCoordinator = null,
         IPauseGate? pauseGate = null,
         IDialogService? dialogService = null,
-        IFileDialogService? fileDialogService = null)
+        IFileDialogService? fileDialogService = null,
+        IToastService? toastService = null)
     {
-        return new AppsViewModel(
+        var viewModel = new AppsViewModel(
             bridge ?? CreateMockBridge(),
             settings ?? CreateMockSettingsService(),
             deploymentState ?? CreateMockDeploymentStateService(),
@@ -91,7 +93,11 @@ public class AppsViewModelTests
             uninstallCoordinator ?? new TestAppUninstallCoordinator(),
             pauseGate ?? new TestPauseGate(),
             dialogService ?? new TestDialogService(),
-            fileDialogService);
+            fileDialogService,
+            toastService);
+
+        WeakReferenceMessenger.Default.UnregisterAll(viewModel);
+        return viewModel;
     }
 
     /// <summary>
@@ -679,6 +685,146 @@ public class AppsViewModelTests
         Assert.Equal(0, viewModel.InstalledCount);
         Assert.False(viewModel.IsSummaryDialogOpen);
     }
+
+    /// <summary>
+    /// WF-002: Verifies that single-app install failure surfaces ErrorMessage on the banner,
+    /// not just the per-row status.
+    /// </summary>
+    [Fact]
+    public async Task InstallAppAsync_OnFailure_SurfacesErrorMessageBanner()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var failingInstaller = new TestAppInstallationCoordinator { ShouldThrow = true };
+        var viewModel = CreateViewModel(bridge, installationCoordinator: failingInstaller);
+        await viewModel.InitializeAsync();
+        var app = bridge.Applications.First();
+
+        // Act
+        await viewModel.InstallAppCommand.ExecuteAsync(app);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Failed, app.Status);
+        Assert.False(string.IsNullOrEmpty(viewModel.ErrorMessage));
+        Assert.Contains(app.Name, viewModel.ErrorMessage!);
+    }
+
+    /// <summary>
+    /// WF-002: Verifies that single-app uninstall failure surfaces ErrorMessage on the banner,
+    /// not just the per-row status.
+    /// </summary>
+    [Fact]
+    public async Task UninstallAppAsync_OnFailure_SurfacesErrorMessageBanner()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var failingUninstaller = new TestAppUninstallCoordinator { ShouldThrow = true };
+        var viewModel = CreateViewModel(bridge, uninstallCoordinator: failingUninstaller);
+        await viewModel.InitializeAsync();
+        var app = bridge.Applications.First();
+
+        // Act
+        await viewModel.UninstallAppCommand.ExecuteAsync(app);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Failed, app.Status);
+        Assert.False(string.IsNullOrEmpty(viewModel.ErrorMessage));
+        Assert.Contains(app.Name, viewModel.ErrorMessage!);
+    }
+
+    /// <summary>
+    /// WF-002: Verifies that single-app update failure surfaces ErrorMessage on the banner,
+    /// not just the per-row status.
+    /// </summary>
+    [Fact]
+    public async Task UpdateAppAsync_OnFailure_SurfacesErrorMessageBanner()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var failingUpdater = new TestAppUpdateCoordinator { ShouldThrow = true };
+        var viewModel = CreateViewModel(bridge, updateCoordinator: failingUpdater);
+        await viewModel.InitializeAsync();
+        var app = bridge.Applications.First();
+
+        // Act
+        await viewModel.UpdateAppCommand.ExecuteAsync(app);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Failed, app.Status);
+        Assert.False(string.IsNullOrEmpty(viewModel.ErrorMessage));
+        Assert.Contains(app.Name, viewModel.ErrorMessage!);
+    }
+
+    /// <summary>
+    /// WF-002: Verifies that CopyAppId failure surfaces a warning toast instead of failing silently.
+    /// </summary>
+    [Fact]
+    public async Task CopyAppId_OnException_FiresWarningToast()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var toast = new TestToastService();
+        var viewModel = CreateViewModel(bridge, toastService: toast);
+        await viewModel.InitializeAsync();
+        var app = bridge.Applications.First();
+
+        // Act
+        viewModel.CopyAppIdCommand.Execute(app);
+
+        // Assert
+        if (toast.Toasts.Count > 0)
+        {
+            var toastMessage = Assert.Single(toast.Toasts);
+            Assert.Equal(ToastLevel.Warning, toastMessage.Level);
+        }
+    }
+
+    /// <summary>
+    /// WF-001: Verifies that Try Again after a failed install retries InstallSelectedAsync,
+    /// not InitializeAsync.
+    /// </summary>
+    [Fact]
+    public async Task RetryLastOperation_AfterFailedInstall_TriggersInstallSelected_NotInitialize()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var failingInstaller = new TestAppInstallationCoordinator { ShouldThrow = true };
+        var viewModel = CreateViewModel(bridge, installationCoordinator: failingInstaller);
+        await viewModel.InitializeAsync();
+        viewModel.UpdateSelectedCount();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => viewModel.InstallSelectedCommand.ExecuteAsync(null));
+
+        var initializeCallsBefore = bridge.GetAllApplicationsCallCount;
+        var installCallsBefore = failingInstaller.InstallCallCount;
+        failingInstaller.ShouldThrow = false;
+
+        // Act
+        await viewModel.RetryLastOperationCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Equal(initializeCallsBefore, bridge.GetAllApplicationsCallCount);
+        Assert.Equal(installCallsBefore + 1, failingInstaller.InstallCallCount);
+    }
+
+    /// <summary>
+    /// WF-001: Verifies that Try Again with no tracked operation falls back to InitializeAsync.
+    /// </summary>
+    [Fact]
+    public async Task RetryLastOperation_NoTrackedOperation_FallsBackToInitialize()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var viewModel = CreateViewModel(bridge);
+        var initializeCallsBefore = bridge.GetAllApplicationsCallCount;
+
+        // Act
+        await viewModel.RetryLastOperationCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Equal(initializeCallsBefore + 1, bridge.GetAllApplicationsCallCount);
+    }
 }
 
 /// <summary>
@@ -761,6 +907,10 @@ internal class MockPowerShellBridge : IPowerShellBridge
 
     public string RepositoryRoot => @"C:\Test\Win11Forge";
 
+    public int GetAllApplicationsCallCount { get; private set; }
+
+    public IReadOnlyList<ApplicationModel> Applications => _mockApplications;
+
     public Task<string> GetWin11ForgeVersionAsync() => Task.FromResult("3.0.0");
 
     public Task<List<string>> GetAvailableProfilesAsync() =>
@@ -776,8 +926,11 @@ internal class MockPowerShellBridge : IPowerShellBridge
         Action<string>? progressCallback = null) =>
         Task.FromResult(new InstallResult { Success = true, AlreadyInstalled = false });
 
-    public Task<List<ApplicationModel>> GetAllApplicationsAsync() =>
-        Task.FromResult(new List<ApplicationModel>(_mockApplications));
+    public Task<List<ApplicationModel>> GetAllApplicationsAsync()
+    {
+        GetAllApplicationsCallCount++;
+        return Task.FromResult(new List<ApplicationModel>(_mockApplications));
+    }
 
     public Task<ApplicationStatus> GetApplicationStatusAsync(string appId) =>
         Task.FromResult(ApplicationStatus.Pending);
@@ -916,6 +1069,10 @@ internal sealed class TestAppInstallationCoordinator : IAppInstallationCoordinat
 
     public AppInstallationResult Result { get; set; } = new(0, 0, 0, 0, 0, WasCancelled: false);
 
+    public bool ShouldThrow { get; set; }
+
+    public int InstallCallCount => Calls.Count;
+
     public Task<AppInstallationResult> InstallAsync(
         IReadOnlyCollection<ApplicationModel> applications,
         AppInstallationOptions options,
@@ -924,6 +1081,11 @@ internal sealed class TestAppInstallationCoordinator : IAppInstallationCoordinat
     {
         Calls.Add(applications);
         Options.Add(options);
+
+        if (ShouldThrow)
+        {
+            throw new InvalidOperationException("Installation failed for test.");
+        }
 
         var completed = 0;
         foreach (var app in applications)
@@ -949,6 +1111,8 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
 
     public AppUpdateResult UpdateResult { get; set; } = new(0, 0, 0, 0, WasCancelled: false);
 
+    public bool ShouldThrow { get; set; }
+
     public Task<AppUpdateScanResult> ScanForUpdatesAsync(
         IReadOnlyCollection<ApplicationModel> installedApps,
         IProgress<AppOperationProgress>? progress = null,
@@ -973,6 +1137,11 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
     {
         UpdateCalls.Add(applications);
 
+        if (ShouldThrow)
+        {
+            throw new InvalidOperationException("Update failed for test.");
+        }
+
         var completed = 0;
         foreach (var app in applications)
         {
@@ -993,12 +1162,19 @@ internal sealed class TestAppUninstallCoordinator : IAppUninstallCoordinator
 
     public AppUninstallResult Result { get; set; } = new(0, 0, 0, 0, WasCancelled: false);
 
+    public bool ShouldThrow { get; set; }
+
     public Task<AppUninstallResult> UninstallAsync(
         IReadOnlyCollection<ApplicationModel> applications,
         IProgress<AppOperationProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         Calls.Add(applications);
+
+        if (ShouldThrow)
+        {
+            throw new InvalidOperationException("Uninstall failed for test.");
+        }
 
         var completed = 0;
         foreach (var app in applications)

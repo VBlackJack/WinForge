@@ -42,11 +42,18 @@ public partial class AppsViewModel
     {
         ErrorMessage = null;
 
-        switch (_lastOperationType)
+        var operation = _lastOperationType;
+        _lastOperationType = string.Empty;
+
+        switch (operation)
         {
             case "scan":
                 if (CanScan)
                     await ScanAsync();
+                break;
+            case "scanupdates":
+                if (CanScanUpdates)
+                    await ScanUpdatesAsync();
                 break;
             case "install":
                 await InstallSelectedAsync();

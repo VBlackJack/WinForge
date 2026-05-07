@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services.Coordinators;
@@ -35,6 +36,7 @@ public partial class AppsViewModel
     [RelayCommand(CanExecute = nameof(CanScanUpdates))]
     private async Task ScanUpdatesAsync()
     {
+        _lastOperationType = "scanupdates";
         IsScanningUpdates = true;
 
         try
@@ -46,13 +48,18 @@ public partial class AppsViewModel
                            a.Status == ApplicationStatus.UpdateAvailable)
                 .ToList();
 
-            if (installedApps.Count == 0) return;
+            if (installedApps.Count == 0)
+            {
+                _lastOperationType = string.Empty;
+                return;
+            }
 
             var result = await _updateCoordinator.ScanForUpdatesAsync(installedApps);
             UpdatesAvailableCount = result.UpdatesAvailableCount;
 
             // Apply filter to refresh view
             ApplyFilter();
+            _lastOperationType = string.Empty;
         }
         catch (Exception ex)
         {
@@ -85,6 +92,11 @@ public partial class AppsViewModel
             app.Status = ApplicationStatus.Failed;
             app.StatusMessage = Resources.Resources.Status_Failed;
             app.ErrorMessage = ex.Message;
+            ErrorMessage = string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.Resources.Apps_Error_UpdateSingleFailed,
+                app.Name,
+                ex.Message);
         }
     }
 
