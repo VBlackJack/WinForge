@@ -165,7 +165,7 @@
             <!-- Touch-Optimized Styles (WCAG 2.5.5 - minimum 44x44px touch targets) -->
 
             <!-- Touch-friendly Icon Button (min 44x44 hit area) -->
-            <Style x:Key="TouchFriendlyIconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Style x:Key="TouchFriendlyIconButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="MinWidth" Value="44"/>
                 <Setter Property="MinHeight" Value="44"/>
