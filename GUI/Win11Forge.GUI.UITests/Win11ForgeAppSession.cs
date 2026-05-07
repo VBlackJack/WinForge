@@ -58,6 +58,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
             WaitForMainWindow(process, DefaultTimeout),
             artifactDirectory);
 
+        session.BringMainWindowToFront();
         session.WaitForElementByAutomationId("NavDashboard", DefaultTimeout);
         return session;
     }
@@ -107,6 +108,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
     public void NavigateByAutomationId(string automationId)
     {
         var element = WaitForElementByAutomationId(automationId, DefaultTimeout);
+        BringMainWindowToFront();
         InvokeOrClick(element);
         WaitForIdle();
     }
@@ -133,6 +135,20 @@ internal sealed class Win11ForgeAppSession : IDisposable
         {
             MainWindow = AutomationElement.FromHandle(_process.MainWindowHandle);
         }
+    }
+
+    private void BringMainWindowToFront()
+    {
+        _process.Refresh();
+        if (_process.HasExited || _process.MainWindowHandle == IntPtr.Zero)
+        {
+            return;
+        }
+
+        NativeMethods.ShowWindow(_process.MainWindowHandle, NativeMethods.SwRestore);
+        NativeMethods.SetForegroundWindow(_process.MainWindowHandle);
+        MainWindow = AutomationElement.FromHandle(_process.MainWindowHandle);
+        Thread.Sleep(100);
     }
 
     public void Dispose()
@@ -306,6 +322,13 @@ internal sealed class Win11ForgeAppSession : IDisposable
     {
         public const uint MouseEventLeftDown = 0x0002;
         public const uint MouseEventLeftUp = 0x0004;
+        public const int SwRestore = 9;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool SetCursorPos(int x, int y);
