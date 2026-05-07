@@ -130,11 +130,124 @@ public class AccessibilityHardeningTests
             focusVisualBorder.Attribute("BorderBrush")?.Value);
     }
 
+    [Fact]
+    public void ThemeAwareFlyoutStyles_AppResourcesCoverNativeMenusAndComboBoxes()
+    {
+        var appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        var styles = appXaml.Descendants()
+            .Where(element => element.Name.LocalName == "Style")
+            .ToList();
+
+        AssertImplicitStyleBasedOn(styles, "ComboBox", "{StaticResource ThemeAwareComboBoxStyle}");
+        AssertNamedStyleSetter(styles, "ThemeAwareComboBoxStyle", "Background", "{DynamicResource ControlFillColorDefaultBrush}");
+        AssertNamedStyleSetter(styles, "ThemeAwareComboBoxStyle", "Foreground", "{DynamicResource TextFillColorPrimaryBrush}");
+        AssertNamedStyleSetter(styles, "TouchFriendlyComboBox", "MinHeight", "44");
+        AssertImplicitStyleSetter(styles, "ComboBoxItem", "Background", "{DynamicResource ControlFillColorDefaultBrush}");
+        AssertImplicitStyleSetter(styles, "ContextMenu", "Background", "{DynamicResource CardBackgroundFillColorDefaultBrush}");
+        AssertImplicitStyleSetter(styles, "MenuItem", "Foreground", "{DynamicResource TextFillColorPrimaryBrush}");
+
+        var menuItemStyle = FindImplicitStyle(styles, "MenuItem");
+        Assert.Contains(
+            menuItemStyle.Descendants(),
+            element =>
+                element.Name.LocalName == "ControlTemplate"
+                && string.Equals(element.Attribute("TargetType")?.Value, "MenuItem", StringComparison.Ordinal));
+        Assert.Contains(
+            menuItemStyle.Descendants(),
+            element =>
+                element.Name.LocalName == "Border"
+                && string.Equals(
+                    element.Attribute(XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value,
+                    "MenuItemRoot",
+                    StringComparison.Ordinal));
+
+        var selectedComboBoxItemTrigger = FindImplicitStyle(styles, "ComboBoxItem")
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Trigger"
+                && string.Equals(element.Attribute("Property")?.Value, "IsSelected", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "True", StringComparison.Ordinal));
+
+        Assert.Contains(
+            selectedComboBoxItemTrigger.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, "Foreground", StringComparison.Ordinal)
+                && string.Equals(
+                    element.Attribute("Value")?.Value,
+                    "{DynamicResource TextOnAccentFillColorPrimaryBrush}",
+                    StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ThemeAwareDataGridStyles_AppResourcesPreventSystemSelectionBrushBleed()
+    {
+        var appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        var styles = appXaml.Descendants()
+            .Where(element => element.Name.LocalName == "Style")
+            .ToList();
+
+        AssertImplicitStyleSetter(styles, "DataGrid", "CellStyle", "{StaticResource EnhancedDataGridCellStyle}");
+        AssertNamedStyleSetter(styles, "EnhancedDataGridCellStyle", "BorderThickness", "0");
+
+        var selectedRowTrigger = FindNamedStyle(styles, "EnhancedDataGridRowStyle")
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Trigger"
+                && string.Equals(element.Attribute("Property")?.Value, "IsSelected", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "True", StringComparison.Ordinal));
+
+        Assert.Contains(
+            selectedRowTrigger.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, "Background", StringComparison.Ordinal)
+                && string.Equals(
+                    element.Attribute("Value")?.Value,
+                    "{DynamicResource ControlFillColorSecondaryBrush}",
+                    StringComparison.Ordinal));
+
+        var selectedCellTrigger = FindNamedStyle(styles, "EnhancedDataGridCellStyle")
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Trigger"
+                && string.Equals(element.Attribute("Property")?.Value, "IsSelected", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "True", StringComparison.Ordinal));
+
+        Assert.Contains(
+            selectedCellTrigger.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, "Background", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "Transparent", StringComparison.Ordinal));
+        Assert.Contains(
+            selectedCellTrigger.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, "Foreground", StringComparison.Ordinal)
+                && string.Equals(
+                    element.Attribute("Value")?.Value,
+                    "{DynamicResource TextFillColorPrimaryBrush}",
+                    StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void AppsDataGridRowStyle_BasesOnEnhancedRowStyleForSelectionContrast()
+    {
+        var appsXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        var rowStyle = appsXaml.Descendants()
+            .Single(element => element.Name.LocalName == "DataGrid.RowStyle")
+            .Elements()
+            .Single(element => element.Name.LocalName == "Style");
+
+        Assert.Equal(
+            "{StaticResource EnhancedDataGridRowStyle}",
+            rowStyle.Attribute("BasedOn")?.Value);
+    }
+
     private static void AssertImplicitFocusStyle(IReadOnlyCollection<XElement> styles, string targetType)
     {
-        var style = styles.Single(element =>
-            string.Equals(element.Attribute("TargetType")?.Value, targetType, StringComparison.Ordinal)
-            && element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) is null);
+        var style = FindImplicitStyle(styles, targetType);
         var focusSetter = style.Elements()
             .SingleOrDefault(element =>
                 element.Name.LocalName == "Setter"
@@ -146,11 +259,65 @@ public class AccessibilityHardeningTests
             focusSetter.Attribute("Value")?.Value);
     }
 
-    private static void AssertNamedFocusStyle(IReadOnlyCollection<XElement> styles, string styleKey)
+    private static void AssertImplicitStyleSetter(
+        IReadOnlyCollection<XElement> styles,
+        string targetType,
+        string property,
+        string expectedValue)
+    {
+        var style = FindImplicitStyle(styles, targetType);
+        var setter = style.Elements()
+            .SingleOrDefault(element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, property, StringComparison.Ordinal));
+
+        Assert.NotNull(setter);
+        Assert.Equal(expectedValue, setter.Attribute("Value")?.Value);
+    }
+
+    private static void AssertNamedStyleSetter(
+        IReadOnlyCollection<XElement> styles,
+        string styleKey,
+        string property,
+        string expectedValue)
+    {
+        var style = FindNamedStyle(styles, styleKey);
+        var setter = style.Elements()
+            .SingleOrDefault(element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, property, StringComparison.Ordinal));
+
+        Assert.NotNull(setter);
+        Assert.Equal(expectedValue, setter.Attribute("Value")?.Value);
+    }
+
+    private static void AssertImplicitStyleBasedOn(
+        IReadOnlyCollection<XElement> styles,
+        string targetType,
+        string expectedBasedOn)
+    {
+        var style = FindImplicitStyle(styles, targetType);
+
+        Assert.Equal(expectedBasedOn, style.Attribute("BasedOn")?.Value);
+    }
+
+    private static XElement FindImplicitStyle(IReadOnlyCollection<XElement> styles, string targetType)
+    {
+        return styles.Single(element =>
+            string.Equals(element.Attribute("TargetType")?.Value, targetType, StringComparison.Ordinal)
+            && element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) is null);
+    }
+
+    private static XElement FindNamedStyle(IReadOnlyCollection<XElement> styles, string styleKey)
     {
         var xKey = XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml");
-        var style = styles.Single(element =>
+        return styles.Single(element =>
             string.Equals(element.Attribute(xKey)?.Value, styleKey, StringComparison.Ordinal));
+    }
+
+    private static void AssertNamedFocusStyle(IReadOnlyCollection<XElement> styles, string styleKey)
+    {
+        var style = FindNamedStyle(styles, styleKey);
         var focusSetter = style.Elements()
             .SingleOrDefault(element =>
                 element.Name.LocalName == "Setter"

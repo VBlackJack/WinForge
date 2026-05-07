@@ -303,7 +303,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
                 "Win11Forge.GUI",
                 "bin",
                 "Release",
-                "net8.0-windows",
+                "net10.0-windows",
                 "Win11Forge.GUI.dll");
             if (File.Exists(candidate))
             {

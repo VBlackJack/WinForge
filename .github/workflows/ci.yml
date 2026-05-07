@@ -31,10 +31,10 @@ jobs:
           languages: csharp
           queries: security-extended, security-and-quality
 
-      - name: Setup .NET 8
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Restore dependencies
         run: dotnet restore GUI/Win11Forge.slnx --locked-mode
@@ -190,19 +190,19 @@ jobs:
             coverage-summary-pester.json
 
   # ===========================================
-  # .NET 8 GUI Build & Test with Code Coverage
+  # .NET 10 GUI Build & Test with Code Coverage
   # ===========================================
   test-gui:
-    name: GUI Build & Test (.NET 8)
+    name: GUI Build & Test (.NET 10)
     runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup .NET 8
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Restore dependencies
         run: dotnet restore GUI/Win11Forge.slnx --locked-mode
@@ -402,10 +402,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup .NET 8
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Install Pester (for Build-Release tests)
         shell: pwsh

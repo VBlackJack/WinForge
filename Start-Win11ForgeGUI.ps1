@@ -83,8 +83,8 @@ function Get-Text {
 # Check for WPF GUI executable in various locations
 $wpfGuiPaths = @(
     (Join-Path $script:ScriptRoot 'Win11Forge.GUI.exe'),
-    (Join-Path $script:ScriptRoot 'GUI\Win11Forge.GUI\bin\Debug\net8.0-windows\Win11Forge.GUI.exe'),
-    (Join-Path $script:ScriptRoot 'GUI\Win11Forge.GUI\bin\Release\net8.0-windows\Win11Forge.GUI.exe'),
+    (Join-Path $script:ScriptRoot 'GUI\Win11Forge.GUI\bin\Debug\net10.0-windows\Win11Forge.GUI.exe'),
+    (Join-Path $script:ScriptRoot 'GUI\Win11Forge.GUI\bin\Release\net10.0-windows\Win11Forge.GUI.exe'),
     (Join-Path $script:ScriptRoot 'GUI\Win11Forge.GUI\bin\publish\Win11Forge.GUI.exe')
 )
 

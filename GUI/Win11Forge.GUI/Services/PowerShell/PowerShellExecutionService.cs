@@ -16,6 +16,7 @@
 
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Win11Forge.GUI.Services.PowerShell;
@@ -220,6 +221,8 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
             CreateNoWindow = true
         };
 
@@ -299,6 +302,8 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
             CreateNoWindow = true
         };
 
@@ -508,7 +513,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
         var totalBytesRead = 0;
         var truncated = false;
 
-        while (!reader.EndOfStream)
+        while (true)
         {
             var charsRead = await reader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
             if (charsRead == 0) break;
