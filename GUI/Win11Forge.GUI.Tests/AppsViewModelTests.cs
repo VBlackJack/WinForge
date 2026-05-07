@@ -681,6 +681,75 @@ public class AppsViewModelTests
     }
 
     /// <summary>
+    /// WF-002: Verifies that single-app install failure surfaces ErrorMessage on the banner,
+    /// not just the per-row status.
+    /// </summary>
+    [Fact]
+    public async Task InstallAppAsync_OnFailure_SurfacesErrorMessageBanner()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var failingInstaller = new TestAppInstallationCoordinator { ShouldThrow = true };
+        var viewModel = CreateViewModel(bridge, installationCoordinator: failingInstaller);
+        await viewModel.InitializeAsync();
+        var app = bridge.Applications.First();
+
+        // Act
+        await viewModel.InstallAppCommand.ExecuteAsync(app);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Failed, app.Status);
+        Assert.False(string.IsNullOrEmpty(viewModel.ErrorMessage));
+        Assert.Contains(app.Name, viewModel.ErrorMessage!);
+    }
+
+    /// <summary>
+    /// WF-002: Verifies that single-app uninstall failure surfaces ErrorMessage on the banner,
+    /// not just the per-row status.
+    /// </summary>
+    [Fact]
+    public async Task UninstallAppAsync_OnFailure_SurfacesErrorMessageBanner()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var failingUninstaller = new TestAppUninstallCoordinator { ShouldThrow = true };
+        var viewModel = CreateViewModel(bridge, uninstallCoordinator: failingUninstaller);
+        await viewModel.InitializeAsync();
+        var app = bridge.Applications.First();
+
+        // Act
+        await viewModel.UninstallAppCommand.ExecuteAsync(app);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Failed, app.Status);
+        Assert.False(string.IsNullOrEmpty(viewModel.ErrorMessage));
+        Assert.Contains(app.Name, viewModel.ErrorMessage!);
+    }
+
+    /// <summary>
+    /// WF-002: Verifies that single-app update failure surfaces ErrorMessage on the banner,
+    /// not just the per-row status.
+    /// </summary>
+    [Fact]
+    public async Task UpdateAppAsync_OnFailure_SurfacesErrorMessageBanner()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var failingUpdater = new TestAppUpdateCoordinator { ShouldThrow = true };
+        var viewModel = CreateViewModel(bridge, updateCoordinator: failingUpdater);
+        await viewModel.InitializeAsync();
+        var app = bridge.Applications.First();
+
+        // Act
+        await viewModel.UpdateAppCommand.ExecuteAsync(app);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.Failed, app.Status);
+        Assert.False(string.IsNullOrEmpty(viewModel.ErrorMessage));
+        Assert.Contains(app.Name, viewModel.ErrorMessage!);
+    }
+
+    /// <summary>
     /// WF-001: Verifies that Try Again after a failed install retries InstallSelectedAsync,
     /// not InitializeAsync.
     /// </summary>
@@ -809,6 +878,8 @@ internal class MockPowerShellBridge : IPowerShellBridge
     public string RepositoryRoot => @"C:\Test\Win11Forge";
 
     public int GetAllApplicationsCallCount { get; private set; }
+
+    public IReadOnlyList<ApplicationModel> Applications => _mockApplications;
 
     public Task<string> GetWin11ForgeVersionAsync() => Task.FromResult("3.0.0");
 
@@ -1010,6 +1081,8 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
 
     public AppUpdateResult UpdateResult { get; set; } = new(0, 0, 0, 0, WasCancelled: false);
 
+    public bool ShouldThrow { get; set; }
+
     public Task<AppUpdateScanResult> ScanForUpdatesAsync(
         IReadOnlyCollection<ApplicationModel> installedApps,
         IProgress<AppOperationProgress>? progress = null,
@@ -1034,6 +1107,11 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
     {
         UpdateCalls.Add(applications);
 
+        if (ShouldThrow)
+        {
+            throw new InvalidOperationException("Update failed for test.");
+        }
+
         var completed = 0;
         foreach (var app in applications)
         {
@@ -1054,12 +1132,19 @@ internal sealed class TestAppUninstallCoordinator : IAppUninstallCoordinator
 
     public AppUninstallResult Result { get; set; } = new(0, 0, 0, 0, WasCancelled: false);
 
+    public bool ShouldThrow { get; set; }
+
     public Task<AppUninstallResult> UninstallAsync(
         IReadOnlyCollection<ApplicationModel> applications,
         IProgress<AppOperationProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         Calls.Add(applications);
+
+        if (ShouldThrow)
+        {
+            throw new InvalidOperationException("Uninstall failed for test.");
+        }
 
         var completed = 0;
         foreach (var app in applications)

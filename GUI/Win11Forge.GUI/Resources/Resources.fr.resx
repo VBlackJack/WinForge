@@ -1667,6 +1667,15 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Apps_Error_FavoritesImportFailed" xml:space="preserve">
     <value>Echec de l'import des favoris : {0}</value>
   </data>
+  <data name="Apps_Error_InstallSingleFailed" xml:space="preserve">
+    <value>Échec de l'installation de « {0} » : {1}</value>
+  </data>
+  <data name="Apps_Error_UninstallSingleFailed" xml:space="preserve">
+    <value>Échec de la désinstallation de « {0} » : {1}</value>
+  </data>
+  <data name="Apps_Error_UpdateSingleFailed" xml:space="preserve">
+    <value>Échec de la mise à jour de « {0} » : {1}</value>
+  </data>
   <data name="Validation_AtLeastOneSource" xml:space="preserve">
     <value>Au moins une source d'installation est requise</value>
   </data>

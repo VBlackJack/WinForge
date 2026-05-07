@@ -2469,6 +2469,15 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Failed to import favorites: {0}</value>
     <comment>Favorites import error (0=details)</comment>
   </data>
+  <data name="Apps_Error_InstallSingleFailed" xml:space="preserve">
+    <value>Install of "{0}" failed: {1}</value>
+  </data>
+  <data name="Apps_Error_UninstallSingleFailed" xml:space="preserve">
+    <value>Uninstall of "{0}" failed: {1}</value>
+  </data>
+  <data name="Apps_Error_UpdateSingleFailed" xml:space="preserve">
+    <value>Update of "{0}" failed: {1}</value>
+  </data>
   <data name="Validation_AtLeastOneSource" xml:space="preserve">
     <value>At least one installation source is required</value>
     <comment>Validation error for missing sources</comment>

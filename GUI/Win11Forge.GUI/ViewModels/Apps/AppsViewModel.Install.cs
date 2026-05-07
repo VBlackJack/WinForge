@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services.Coordinators;
@@ -47,6 +48,11 @@ public partial class AppsViewModel
             app.Status = ApplicationStatus.Failed;
             app.StatusMessage = Resources.Resources.Status_Failed;
             app.ErrorMessage = ex.Message;
+            ErrorMessage = string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.Resources.Apps_Error_InstallSingleFailed,
+                app.Name,
+                ex.Message);
         }
         finally
         {

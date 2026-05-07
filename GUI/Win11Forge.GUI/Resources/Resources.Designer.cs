@@ -660,6 +660,9 @@ public class Resources
     public static string Apps_SaveFailed => ResourceManager.GetString("Apps_SaveFailed", resourceCulture);
     public static string Apps_FileNotFound => ResourceManager.GetString("Apps_FileNotFound", resourceCulture);
     public static string Apps_ImportFailed => ResourceManager.GetString("Apps_ImportFailed", resourceCulture);
+    public static string Apps_Error_InstallSingleFailed => ResourceManager.GetString("Apps_Error_InstallSingleFailed", resourceCulture);
+    public static string Apps_Error_UninstallSingleFailed => ResourceManager.GetString("Apps_Error_UninstallSingleFailed", resourceCulture);
+    public static string Apps_Error_UpdateSingleFailed => ResourceManager.GetString("Apps_Error_UpdateSingleFailed", resourceCulture);
     public static string Validation_AtLeastOneSource => ResourceManager.GetString("Validation_AtLeastOneSource", resourceCulture);
     public static string Validation_DuplicateAppId => ResourceManager.GetString("Validation_DuplicateAppId", resourceCulture);
     public static string Nav_AppDatabase => ResourceManager.GetString("Nav_AppDatabase", resourceCulture);
