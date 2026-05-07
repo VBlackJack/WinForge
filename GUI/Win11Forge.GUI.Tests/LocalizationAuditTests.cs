@@ -16,6 +16,7 @@
 
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -87,6 +88,51 @@ public class LocalizationAuditTests
     ];
 
     /// <summary>
+    /// French stems that should use diacritics in localized resource values.
+    /// </summary>
+    private static readonly (string Stem, Regex Pattern)[] FrenchDiacriticsStems =
+    [
+        ("Echec", new Regex(@"\b[Ee]chec(?:s)?\b")),
+        ("echoue", new Regex(@"\b[Ee]choue(?:e|es|s)?\b")),
+        ("Parametre", new Regex(@"\b[Pp]arametre(?:s)?\b")),
+        ("Selection", new Regex(@"\b[Ss]election(?:ner|nez|ne|nes|nee|nees|s)?\b")),
+        ("Desinstall", new Regex(@"\b[Dd]esinstall(?:er|e|es|ee|ees|ation)?\b")),
+        ("Detection", new Regex(@"\b[Dd]etection\b")),
+        ("detecter", new Regex(@"\b[Dd]etecter\b")),
+        ("Verification", new Regex(@"\b[Vv]erification\b")),
+        ("verifier", new Regex(@"\b[Vv]erifier\b")),
+        ("Operation", new Regex(@"\b[Oo]peration(?:s)?\b")),
+        ("Reessayer", new Regex(@"\b[Rr]eessayer\b")),
+        ("Activite", new Regex(@"\b[Aa]ctivite\b")),
+        ("recent", new Regex(@"\b[Rr]ecent(?:e|es|s)?\b")),
+        ("Editeur", new Regex(@"\b[Ee]diteur\b")),
+        ("Deploiement", new Regex(@"\b[Dd]eploiement(?:s)?\b")),
+        ("Prerequis", new Regex(@"\b[Pp]rerequis\b")),
+        ("succes", new Regex(@"\b[Ss]ucces\b")),
+        ("a jour", new Regex(@"\ba jour\b")),
+        ("etre", new Regex(@"\b[Ee]tre\b")),
+        ("ete", new Regex(@"\b[Ee]te\b")),
+        ("resultat", new Regex(@"\b[Rr]esultat(?:s)?\b")),
+        ("element", new Regex(@"\b[Ee]lement(?:s)?\b")),
+        ("securite", new Regex(@"\b[Ss]ecurite\b")),
+        ("delai", new Regex(@"\b[Dd]elai(?:s)?\b")),
+        ("fleche", new Regex(@"\b[Ff]leche(?:s)?\b")),
+        ("Entree", new Regex(@"\b[Ee]ntree(?:s)?\b")),
+        ("Reference", new Regex(@"\b[Rr]eference(?:s)?\b")),
+        ("methode", new Regex(@"\b[Mm]ethode(?:s)?\b")),
+        ("deja", new Regex(@"\b[Dd]eja\b")),
+        ("irreversible", new Regex(@"\b[Ii]rreversible\b")),
+        ("systeme", new Regex(@"\b[Ss]ysteme(?:s)?\b")),
+        ("planifie", new Regex(@"\b[Pp]lanifie(?:e|es|s)?\b")),
+        ("cree", new Regex(@"\b[Cc]ree(?:e|es|s)?\b")),
+        ("demarr", new Regex(@"\b[Dd]emarr(?:er|age|e|es|ee|ees)?\b")),
+        ("categorie", new Regex(@"\b[Cc]ategorie(?:s)?\b")),
+        ("telechargement", new Regex(@"\b[Tt]elechargement\b")),
+        ("depot", new Regex(@"\b[Dd]epot\b")),
+        ("peut-etre", new Regex(@"\b[Pp]eut-etre\b"))
+    ];
+
+    /// <summary>
     /// Gets the Views directory path by walking up from the test assembly location.
     /// </summary>
     private static string GetViewsDirectory()
@@ -123,6 +169,41 @@ public class LocalizationAuditTests
 
         throw new DirectoryNotFoundException(
             "Could not locate Views directory. Started from: " + assemblyLocation);
+    }
+
+    /// <summary>
+    /// Gets the Resources directory path by walking up from the test assembly location.
+    /// </summary>
+    private static string GetResourcesDirectory()
+    {
+        var assemblyLocation = typeof(LocalizationAuditTests).Assembly.Location;
+        var currentDir = new DirectoryInfo(Path.GetDirectoryName(assemblyLocation)!);
+
+        while (currentDir != null)
+        {
+            var resourcesPath = Path.Combine(currentDir.FullName, "Resources");
+            if (Directory.Exists(resourcesPath))
+            {
+                return resourcesPath;
+            }
+
+            var guiResourcesPath = Path.Combine(currentDir.FullName, "Win11Forge.GUI", "Resources");
+            if (Directory.Exists(guiResourcesPath))
+            {
+                return guiResourcesPath;
+            }
+
+            var guiFolderPath = Path.Combine(currentDir.FullName, "GUI", "Win11Forge.GUI", "Resources");
+            if (Directory.Exists(guiFolderPath))
+            {
+                return guiFolderPath;
+            }
+
+            currentDir = currentDir.Parent;
+        }
+
+        throw new DirectoryNotFoundException(
+            "Could not locate Resources directory. Started from: " + assemblyLocation);
     }
 
     /// <summary>
@@ -256,5 +337,52 @@ public class LocalizationAuditTests
         Assert.NotEmpty(xamlFiles);
         Assert.True(xamlFiles.Length >= 5,
             $"Expected at least 5 XAML view files, found {xamlFiles.Length}");
+    }
+
+    /// <summary>
+    /// Verifies that French resource values keep expected diacritics on common stems.
+    /// </summary>
+    [Fact]
+    public void FrenchResources_ShouldNotContainUnaccentedFrenchStems()
+    {
+        // Arrange
+        var resourcesDirectory = GetResourcesDirectory();
+        var resourcePath = Path.Combine(resourcesDirectory, "Resources.fr.resx");
+        var document = XDocument.Load(resourcePath);
+        var violations = new List<string>();
+
+        // Act
+        foreach (var data in document.Root?.Elements("data") ?? Enumerable.Empty<XElement>())
+        {
+            var key = data.Attribute("name")?.Value ?? "<unknown>";
+            var value = data.Element("value")?.Value;
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            foreach (var stem in FrenchDiacriticsStems)
+            {
+                if (stem.Pattern.IsMatch(value))
+                {
+                    violations.Add($"  [{key}] {stem.Stem}: \"{value}\"");
+                }
+            }
+        }
+
+        // Assert
+        if (violations.Count > 0)
+        {
+            var message = $"Found {violations.Count} French diacritics issue(s):\n" +
+                          string.Join("\n", violations.Take(20));
+
+            if (violations.Count > 20)
+            {
+                message += $"\n... and {violations.Count - 20} more violations.";
+            }
+
+            Assert.Fail(message);
+        }
     }
 }
