@@ -288,7 +288,7 @@ public class ApplicationsViewModelTests
     }
 
     /// <summary>
-    /// Verifies that Duplicate command opens the add editor and saves the returned application.
+    /// Verifies that Duplicate command opens the add editor with a cloned application and saves the returned application.
     /// </summary>
     [Fact]
     public async Task Duplicate_ShouldOpenEditorAndSaveReturnedApplicationAsNew()
@@ -301,15 +301,42 @@ public class ApplicationsViewModelTests
             dbService: dbService,
             applicationEditorDialogService: editorDialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
-        viewModel.SelectedApplication = viewModel.Applications[0];
+        var original = viewModel.Applications[0];
+        viewModel.SelectedApplication = original;
 
         // Act
         await viewModel.DuplicateCommand.ExecuteAsync(null);
 
         // Assert
         Assert.Equal(1, editorDialogService.ShowAddCallCount);
+        var duplicate = Assert.Single(editorDialogService.AddRequests);
+        Assert.NotNull(duplicate);
+        Assert.NotSame(original, duplicate);
+        Assert.StartsWith($"{original.AppId}-copy-", duplicate.AppId);
+        Assert.EndsWith(" (Copy)", duplicate.Name);
+        Assert.Equal(original.Category, duplicate.Category);
+        Assert.Equal(original.Description, duplicate.Description);
+        Assert.Equal(original.Sources.Winget, duplicate.Sources.Winget);
+        Assert.NotSame(original.Sources, duplicate.Sources);
         Assert.Equal("VSCode-Copy", dbService.LastSavedApplication?.AppId);
         Assert.True(dbService.LastSaveWasNew);
+    }
+
+    /// <summary>
+    /// Verifies that Duplicate command is disabled without a selected application.
+    /// </summary>
+    [Fact]
+    public async Task Duplicate_WithoutSelection_ShouldBeDisabled()
+    {
+        // Arrange
+        var editorDialogService = new TestApplicationEditorDialogService();
+        var viewModel = CreateViewModel(applicationEditorDialogService: editorDialogService);
+        await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
+        viewModel.SelectedApplication = null;
+
+        // Act & Assert
+        Assert.False(viewModel.DuplicateCommand.CanExecute(null));
+        Assert.Equal(0, editorDialogService.ShowAddCallCount);
     }
 
     /// <summary>
@@ -658,6 +685,8 @@ internal sealed class TestApplicationEditorDialogService : IApplicationEditorDia
 
     public int ShowEditCallCount { get; private set; }
 
+    public List<EditableApplicationModel?> AddRequests { get; } = [];
+
     public List<EditableApplicationModel> EditRequests { get; } = [];
 
     public void QueueAddResult(EditableApplicationModel? application)
@@ -670,9 +699,10 @@ internal sealed class TestApplicationEditorDialogService : IApplicationEditorDia
         _editResults.Enqueue(application);
     }
 
-    public Task<EditableApplicationModel?> ShowAddDialogAsync()
+    public Task<EditableApplicationModel?> ShowAddDialogAsync(EditableApplicationModel? initialApplication = null)
     {
         ShowAddCallCount++;
+        AddRequests.Add(initialApplication);
         return Task.FromResult(_addResults.Count > 0 ? _addResults.Dequeue() : null);
     }
 

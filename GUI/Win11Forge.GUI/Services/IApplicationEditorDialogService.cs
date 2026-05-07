@@ -26,7 +26,7 @@ public interface IApplicationEditorDialogService
     /// <summary>
     /// Shows the add application editor and returns the saved application, or null when cancelled.
     /// </summary>
-    Task<EditableApplicationModel?> ShowAddDialogAsync();
+    Task<EditableApplicationModel?> ShowAddDialogAsync(EditableApplicationModel? initialApplication = null);
 
     /// <summary>
     /// Shows the edit application editor and returns the saved application, or null when cancelled.

@@ -131,15 +131,17 @@ public partial class ApplicationEditorDialog : Window
     /// </summary>
     /// <param name="owner">Owner window.</param>
     /// <returns>The new application if saved, null if cancelled.</returns>
-    public static async Task<EditableApplicationModel?> ShowAddDialogAsync(Window owner)
+    public static async Task<EditableApplicationModel?> ShowAddDialogAsync(Window owner, EditableApplicationModel? initialApplication = null)
     {
         var dialog = new ApplicationEditorDialog { Owner = owner };
-        var newApp = new EditableApplicationModel
+        var newApp = initialApplication?.Clone() ?? new EditableApplicationModel
         {
             DefaultPriority = 50,
             Sources = new ApplicationSourcesModel(),
             Detection = new ApplicationDetectionModel()
         };
+        newApp.Sources ??= new ApplicationSourcesModel();
+        newApp.Detection ??= new ApplicationDetectionModel();
 
         await dialog.InitializeAsync(newApp, isNew: true);
 
