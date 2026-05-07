@@ -522,6 +522,7 @@
             <converters:StatusToIconConverter x:Key="StatusToIconConverter"/>
             <converters:StatusToColorConverter x:Key="StatusToColorConverter"/>
             <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
+            <converters:AndZeroToVisibilityConverter x:Key="AndZeroToVisibilityConverter"/>
             <converters:BoolToInstalledIconConverter x:Key="BoolToInstalledIconConverter"/>
             <converters:BoolToInstalledColorConverter x:Key="BoolToInstalledColorConverter"/>
             <converters:BoolToPauseIconConverter x:Key="BoolToPauseIconConverter"/>

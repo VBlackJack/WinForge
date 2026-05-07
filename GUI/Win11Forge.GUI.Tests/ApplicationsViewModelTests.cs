@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+using System.Globalization;
+using System.Windows;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
+using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -357,6 +360,93 @@ public class ApplicationsViewModelTests
         // Assert
         Assert.Empty(viewModel.SearchText);
         Assert.Equal(Resources.Resources.Apps_CategoryAll, viewModel.SelectedCategory);
+    }
+
+    /// <summary>
+    /// Verifies that the empty state is hidden while the database is loading.
+    /// </summary>
+    [Fact]
+    public void EmptyState_DuringLoad_NotVisible()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+        var converter = new Win11Forge.GUI.Resources.AndZeroToVisibilityConverter();
+
+        // Act
+        var result = converter.Convert(
+            new object[] { viewModel.IsLoading, viewModel.HasLoadError, viewModel.FilteredCount },
+            typeof(Visibility),
+            null!,
+            CultureInfo.InvariantCulture);
+
+        // Assert
+        Assert.True(viewModel.IsLoading);
+        Assert.Equal(Visibility.Collapsed, result);
+    }
+
+    /// <summary>
+    /// Verifies that load failures use the error state instead of the empty state.
+    /// </summary>
+    [Fact]
+    public async Task EmptyState_AfterLoadFailure_NotVisible_ErrorVisible()
+    {
+        // Arrange
+        var dbService = new MockApplicationDatabaseService();
+        dbService.SetLoadException(new InvalidOperationException("catalog unavailable"));
+        var viewModel = CreateViewModel(dbService: dbService);
+        var converter = new Win11Forge.GUI.Resources.AndZeroToVisibilityConverter();
+
+        // Act
+        await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
+        var emptyStateVisibility = converter.Convert(
+            new object[] { viewModel.IsLoading, viewModel.HasLoadError, viewModel.FilteredCount },
+            typeof(Visibility),
+            null!,
+            CultureInfo.InvariantCulture);
+
+        // Assert
+        Assert.False(viewModel.IsLoading);
+        Assert.True(viewModel.HasLoadError);
+        Assert.Contains("catalog unavailable", viewModel.LoadErrorMessage);
+        Assert.Equal(viewModel.LoadErrorMessage, viewModel.StatusMessage);
+        Assert.Equal(Visibility.Collapsed, emptyStateVisibility);
+    }
+
+    /// <summary>
+    /// Verifies that an empty database gets a distinct empty-state message.
+    /// </summary>
+    [Fact]
+    public async Task EmptyState_WhenDatabaseIsEmpty_UsesDatabaseMessage()
+    {
+        // Arrange
+        var dbService = new MockApplicationDatabaseService();
+        dbService.ReplaceApplications();
+        var viewModel = CreateViewModel(dbService: dbService);
+
+        // Act
+        await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
+
+        // Assert
+        var expected = Loc.ResourceManager.GetString("AppCatalog_EmptyDatabase", Loc.Culture);
+        Assert.Equal(0, viewModel.TotalCount);
+        Assert.Equal(expected, viewModel.EmptyStateMessage);
+    }
+
+    /// <summary>
+    /// Verifies that filtered-empty results get their own empty-state message.
+    /// </summary>
+    [Fact]
+    public void EmptyState_WhenLoadedApplicationsAreFilteredOut_UsesFilterMessage()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+
+        // Act
+        viewModel.TotalCount = 5;
+
+        // Assert
+        var expected = Loc.ResourceManager.GetString("AppCatalog_EmptyFilter", Loc.Culture);
+        Assert.Equal(expected, viewModel.EmptyStateMessage);
     }
 
     /// <summary>
@@ -784,6 +874,7 @@ internal class MockApplicationDatabaseService : IApplicationDatabaseService
 {
     private readonly List<EditableApplicationModel> _applications;
     private ApplicationValidationResult? _customValidationResult;
+    private Exception? _loadException;
 
     public EditableApplicationModel? LastSavedApplication { get; private set; }
 
@@ -861,12 +952,30 @@ internal class MockApplicationDatabaseService : IApplicationDatabaseService
         };
     }
 
+    public void SetLoadException(Exception exception)
+    {
+        _loadException = exception;
+    }
+
+    public void ReplaceApplications(params EditableApplicationModel[] applications)
+    {
+        _applications.Clear();
+        _applications.AddRange(applications);
+    }
+
     public string DatabasePath => @"C:\Test\applications.json";
 
     public event EventHandler<DatabaseChangedEventArgs>? DatabaseChanged;
 
     public Task<IEnumerable<EditableApplicationModel>> LoadApplicationsAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult<IEnumerable<EditableApplicationModel>>(_applications);
+    {
+        if (_loadException != null)
+        {
+            throw _loadException;
+        }
+
+        return Task.FromResult<IEnumerable<EditableApplicationModel>>(_applications);
+    }
 
     public Task<EditableApplicationModel?> GetApplicationAsync(string appId, CancellationToken cancellationToken = default)
         => Task.FromResult(_applications.FirstOrDefault(a => a.AppId == appId));

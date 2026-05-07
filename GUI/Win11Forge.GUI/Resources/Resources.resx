@@ -2594,6 +2594,18 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Failed to load applications: {0}</value>
     <comment>Load error message</comment>
   </data>
+  <data name="AppCatalog_LoadError" xml:space="preserve">
+    <value>Failed to load applications: {0}</value>
+    <comment>App Catalog load error message shown in the main content area</comment>
+  </data>
+  <data name="AppCatalog_EmptyDatabase" xml:space="preserve">
+    <value>No applications in database. Add one to get started.</value>
+    <comment>App Catalog empty state when the database contains no applications</comment>
+  </data>
+  <data name="AppCatalog_EmptyFilter" xml:space="preserve">
+    <value>No applications match the current filter. Try clearing it.</value>
+    <comment>App Catalog empty state when filters hide all loaded applications</comment>
+  </data>
   <data name="AppDb_Deleting" xml:space="preserve">
     <value>Deleting application...</value>
     <comment>Deleting status message</comment>

@@ -443,23 +443,48 @@
 
                 <!-- Empty State -->
                 <StackPanel HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Visibility="{Binding FilteredCount, Converter={StaticResource ZeroToVisibilityConverter}}">
+                            VerticalAlignment="Center">
+                    <StackPanel.Visibility>
+                        <MultiBinding Converter="{StaticResource AndZeroToVisibilityConverter}">
+                            <Binding Path="IsLoading"/>
+                            <Binding Path="HasLoadError"/>
+                            <Binding Path="FilteredCount"/>
+                        </MultiBinding>
+                    </StackPanel.Visibility>
                     <ui:SymbolIcon Symbol="DatabaseSearch24"
                                    Width="64" Height="64"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,16"
                                    AutomationProperties.Name="{loc:Loc A11y_NoDatabaseIcon}"/>
-                    <TextBlock Text="{loc:Loc AppDb_NoResults}"
+                    <TextBlock Text="{Binding EmptyStateMessage}"
                                FontSize="20" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                               HorizontalAlignment="Center"/>
-                    <TextBlock Text="{loc:Loc AppDb_NoResultsHint}"
-                               FontSize="12"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                HorizontalAlignment="Center"
-                               Margin="0,8,0,0"/>
+                               TextAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Load Error State -->
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding HasLoadError, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ui:SymbolIcon Symbol="ErrorCircle24"
+                                   Width="64" Height="64"
+                                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,16"/>
+                    <TextBlock Text="{Binding LoadErrorMessage}"
+                               FontSize="16" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               MaxWidth="520"/>
+                    <ui:Button Content="{loc:Loc Common_TryAgain}"
+                               Command="{Binding RetryLoadCommand}"
+                               Appearance="Primary"
+                               HorizontalAlignment="Center"
+                               Margin="0,16,0,0"/>
                 </StackPanel>
             </Grid>
         </Border>

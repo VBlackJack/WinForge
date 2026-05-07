@@ -1766,6 +1766,15 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="AppDb_LoadError" xml:space="preserve">
     <value>Echec du chargement des applications : {0}</value>
   </data>
+  <data name="AppCatalog_LoadError" xml:space="preserve">
+    <value>Échec du chargement des applications : {0}</value>
+  </data>
+  <data name="AppCatalog_EmptyDatabase" xml:space="preserve">
+    <value>Aucune application dans la base de données. Ajoutez-en une pour commencer.</value>
+  </data>
+  <data name="AppCatalog_EmptyFilter" xml:space="preserve">
+    <value>Aucune application ne correspond au filtre actuel. Essayez de le réinitialiser.</value>
+  </data>
   <data name="AppDb_Deleting" xml:space="preserve">
     <value>Suppression de l'application...</value>
   </data>
