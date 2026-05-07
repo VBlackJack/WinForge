@@ -508,7 +508,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
         var totalBytesRead = 0;
         var truncated = false;
 
-        while (!reader.EndOfStream)
+        while (true)
         {
             var charsRead = await reader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
             if (charsRead == 0) break;
