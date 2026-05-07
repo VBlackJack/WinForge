@@ -190,6 +190,23 @@ public class AccessibilityHardeningTests
         AssertImplicitStyleSetter(styles, "DataGrid", "CellStyle", "{StaticResource EnhancedDataGridCellStyle}");
         AssertNamedStyleSetter(styles, "EnhancedDataGridCellStyle", "BorderThickness", "0");
 
+        var selectedRowTrigger = FindNamedStyle(styles, "EnhancedDataGridRowStyle")
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Trigger"
+                && string.Equals(element.Attribute("Property")?.Value, "IsSelected", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "True", StringComparison.Ordinal));
+
+        Assert.Contains(
+            selectedRowTrigger.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, "Background", StringComparison.Ordinal)
+                && string.Equals(
+                    element.Attribute("Value")?.Value,
+                    "{DynamicResource ControlFillColorSecondaryBrush}",
+                    StringComparison.Ordinal));
+
         var selectedCellTrigger = FindNamedStyle(styles, "EnhancedDataGridCellStyle")
             .Descendants()
             .Single(element =>
@@ -203,6 +220,15 @@ public class AccessibilityHardeningTests
                 element.Name.LocalName == "Setter"
                 && string.Equals(element.Attribute("Property")?.Value, "Background", StringComparison.Ordinal)
                 && string.Equals(element.Attribute("Value")?.Value, "Transparent", StringComparison.Ordinal));
+        Assert.Contains(
+            selectedCellTrigger.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, "Foreground", StringComparison.Ordinal)
+                && string.Equals(
+                    element.Attribute("Value")?.Value,
+                    "{DynamicResource TextFillColorPrimaryBrush}",
+                    StringComparison.Ordinal));
     }
 
     [Fact]
