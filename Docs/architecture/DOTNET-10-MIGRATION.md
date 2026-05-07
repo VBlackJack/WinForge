@@ -47,6 +47,7 @@ Commit `38dce7e355e115c2bcfa0490b5184673bf1350fc` contains:
 - One analyzer-driven source fix in `PowerShellExecutionService.ReadStreamWithLimitAsync`: replacing `while (!reader.EndOfStream)` with a `ReadAsync` loop that exits on `charsRead == 0`. This preserves behavior and removes the new .NET 10 `CA2024` warning.
 - Two leftover `net8.0-windows` literals corrected post-audit (Drift C, audit GO-with-nits): `Start-Win11ForgeGUI.ps1` dev launcher binary path and `GUI/Win11Forge.GUI.UITests/Win11ForgeAppSession.cs` UIA harness fallback path. The harness primary path (`localCopy`) was already independent of TFM, so CI was not affected.
 - Transitive dependency note: `Microsoft.PowerShell.Native@700.0.0-rc.1` is pulled by SMA 7.6.0. RC tag is upstream's choice for the .NET 10-targeted PowerShell native interop; not a Win11Forge instability signal. Tracked for future SMA 7.6.x stable bump.
+- Manual smoke follow-up fixed two regressions before merge readiness: prerequisite install logs now force UTF-8 and use the configured app language for PowerShell localization, and native WPF `ComboBox` / `ContextMenu` / `DataGrid` selection styling is explicitly theme-aware for Application Manager and Settings.
 
 ## 5. Verification
 
@@ -61,6 +62,7 @@ Local verification on 2026-05-07:
 | `dotnet build GUI/Win11Forge.slnx --configuration Release` | Passed: 0 warnings, 0 errors. |
 | `dotnet test GUI/Win11Forge.GUI.Tests/Win11Forge.GUI.Tests.csproj --configuration Release --no-build` | Passed: 411 passed, 0 failed. |
 | `dotnet test GUI/Win11Forge.GUI.UITests/Win11Forge.GUI.UITests.csproj --configuration Release --no-build` | Passed with `WIN11FORGE_RUN_UIA=1`: 2 passed, 0 failed. |
+| `dotnet test GUI/Win11Forge.slnx -c Release` after manual smoke fixes | Passed: 422 GUI tests passed, 2 UIA tests skipped by default. |
 
 Evidence path for UIA screenshots:
 
@@ -84,7 +86,7 @@ The following smoke items are intentionally left for PR review / local operator 
 
 - Install / uninstall workflow on a real package such as 7-Zip.
 - DPI 100% / 125% / 150% switching.
-- Full visual theme cycle across all 8 themes beyond the automated core-screen captures.
+- Full visual theme cycle across all 8 themes beyond the automated core-screen captures. Application Manager and Settings native dropdown/menu regressions found during manual smoke were fixed before merge readiness.
 - High Contrast and Reduced Motion toggles beyond the existing regression coverage from PR #49 and PR #51.
 
 Do not merge PR #52 until these are either executed manually or explicitly waived by the reviewer.
@@ -131,3 +133,4 @@ The migration is scope-isolated to framework/dependency/build changes plus one a
 | 2026-05-07 | Phase Étude / CONDITIONAL GO | Cowork-Claude | Initial study; Q1..Q8 awaiting answers. |
 | 2026-05-07 | GO | Cowork-Claude + user | Q1..Q9 locked all-recommended; Heimdall config verified. |
 | 2026-05-07 | In review via PR #52 | Codex executor | Migration commit executed, automated build/tests/UIA smoke green; manual state-changing smoke pending. |
+| 2026-05-07 | Manual smoke fixes | Cowork-Claude + user | Prerequisite log locale/encoding and native WPF dropdown/context-menu theming regressions fixed; Release suite green after patch. |

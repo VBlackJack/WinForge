@@ -864,7 +864,7 @@
                           PreviewKeyDown="ApplicationsDataGrid_PreviewKeyDown"
                           AutomationProperties.Name="{loc:Loc A11y_AppPicker_AppList}">
                     <DataGrid.RowStyle>
-                        <Style TargetType="DataGridRow">
+                        <Style TargetType="DataGridRow" BasedOn="{StaticResource EnhancedDataGridRowStyle}">
                             <Setter Property="Background" Value="{Binding Status, Converter={StaticResource StatusToRowBackgroundConverter}}"/>
                             <Setter Property="MinHeight" Value="56"/>
                         </Style>

@@ -34,6 +34,7 @@ public class PrerequisitesServiceImpl : IPrerequisitesService
     private readonly IPowerShellExecutionService _executionService;
     private readonly IVersionService _versionService;
     private readonly ISystemInfoService _systemInfoService;
+    private readonly IAppSettingsService _settingsService;
 
     /// <summary>
     /// Initializes a new instance of the PrerequisitesServiceImpl.
@@ -42,12 +43,14 @@ public class PrerequisitesServiceImpl : IPrerequisitesService
         IRepositoryPathService pathService,
         IPowerShellExecutionService executionService,
         IVersionService versionService,
-        ISystemInfoService systemInfoService)
+        ISystemInfoService systemInfoService,
+        IAppSettingsService settingsService)
     {
         _pathService = pathService ?? throw new ArgumentNullException(nameof(pathService));
         _executionService = executionService ?? throw new ArgumentNullException(nameof(executionService));
         _versionService = versionService ?? throw new ArgumentNullException(nameof(versionService));
         _systemInfoService = systemInfoService ?? throw new ArgumentNullException(nameof(systemInfoService));
+        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
     }
 
     /// <inheritdoc/>
@@ -228,6 +231,7 @@ $result | ConvertTo-Json -Compress
         var corePath = _pathService.GetPathForPowerShell("Core", "Core.psm1");
         var localizationPath = _pathService.GetPathForPowerShell("Core", "Localization.psm1");
         var moduleLoaderPath = _pathService.GetPathForPowerShell("Core", "ModuleLoader.psm1");
+        var powerShellLocale = ResolvePowerShellLocaleCode(GetConfiguredLanguageCode());
 
         progressCallback?.Invoke(Loc.Prerequisites_Starting);
 
@@ -238,12 +242,17 @@ $result | ConvertTo-Json -Compress
             var script = $@"
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
 $ErrorActionPreference = 'Continue'
+$utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = $utf8NoBom
+[Console]::InputEncoding = $utf8NoBom
+$OutputEncoding = $utf8NoBom
 
 try {{
     # Load core modules explicitly to ensure all dependencies are available
     Import-Module '{moduleLoaderPath}' -Force -ErrorAction SilentlyContinue
     Import-Module '{corePath}' -Force -ErrorAction SilentlyContinue
     Import-Module '{localizationPath}' -Force -ErrorAction SilentlyContinue
+    Initialize-Localization -Locale '{powerShellLocale}'
     Import-Module '{prerequisitesModule}' -Force -ErrorAction Stop
 
     # Run prerequisites installation
@@ -340,6 +349,33 @@ try {{
         using var identity = WindowsIdentity.GetCurrent();
         var principal = new WindowsPrincipal(identity);
         return principal.IsInRole(WindowsBuiltInRole.Administrator);
+    }
+
+    internal static string ResolvePowerShellLocaleCode(string? languageCode)
+    {
+        if (string.IsNullOrWhiteSpace(languageCode))
+        {
+            return "en";
+        }
+
+        var twoLetterCode = languageCode
+            .Split('-', StringSplitOptions.RemoveEmptyEntries)[0]
+            .Trim()
+            .ToLowerInvariant();
+
+        return twoLetterCode == "fr" ? "fr" : "en";
+    }
+
+    private string GetConfiguredLanguageCode()
+    {
+        try
+        {
+            return _settingsService.LoadSettings().LanguageCode;
+        }
+        catch
+        {
+            return "en";
+        }
     }
 
     /// <summary>
