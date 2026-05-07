@@ -46,7 +46,8 @@
                                    Margin="0,0,16,0"/>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="{loc:Loc AppDb_Title}"
-                                   FontSize="24" FontWeight="SemiBold"/>
+                                   FontSize="24" FontWeight="SemiBold"
+                                   AutomationProperties.AutomationId="PageAppCatalog"/>
                         <TextBlock Text="{loc:Loc AppDb_Subtitle}"
                                    FontSize="12"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>

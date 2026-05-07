@@ -13,6 +13,9 @@
     WindowStartupLocation="CenterScreen"
     WindowBackdropType="Mica"
     ExtendsContentIntoTitleBar="True"
+    Background="{DynamicResource ApplicationBackgroundBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
     Icon="Win11Forge.ico">
 
     <ui:FluentWindow.InputBindings>
@@ -29,11 +32,15 @@
         <KeyBinding Modifiers="Ctrl+Shift" Key="Z" Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
     </ui:FluentWindow.InputBindings>
 
-    <Grid>
+    <Grid Background="{DynamicResource ApplicationBackgroundBrush}"
+          TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}">
         <ui:NavigationView x:Name="RootNavigation"
                            PaneDisplayMode="Left"
                            IsBackButtonVisible="Auto"
                            OpenPaneLength="220"
+                           Background="{DynamicResource ApplicationBackgroundBrush}"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                           AutomationProperties.AutomationId="RootNavigation"
                            BackRequested="RootNavigation_BackRequested"
                            SelectionChanged="RootNavigation_SelectionChanged">
             <ui:NavigationView.Header>
@@ -75,36 +82,42 @@
                                        Tag="0"
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon Board24}"
+                                       AutomationProperties.AutomationId="NavDashboard"
                                        AutomationProperties.Name="{loc:Loc Nav_Dashboard}"
                                        AutomationProperties.HelpText="{loc:Loc A11y_Main_NavDashboard}"/>
                 <ui:NavigationViewItem Content="{loc:Loc Nav_Prerequisites}"
                                        Tag="1"
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon CheckmarkCircle24}"
+                                       AutomationProperties.AutomationId="NavPrerequisites"
                                        AutomationProperties.Name="{loc:Loc Nav_Prerequisites}"
                                        AutomationProperties.HelpText="{loc:Loc A11y_Main_NavPrerequisites}"/>
                 <ui:NavigationViewItem Content="{loc:Loc Nav_Apps}"
                                        Tag="2"
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon Apps24}"
+                                       AutomationProperties.AutomationId="NavApplications"
                                        AutomationProperties.Name="{loc:Loc Nav_Apps}"
                                        AutomationProperties.HelpText="{loc:Loc A11y_Main_NavApps}"/>
                 <ui:NavigationViewItem Content="{loc:Loc Nav_Deployment}"
                                        Tag="3"
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon Rocket24}"
+                                       AutomationProperties.AutomationId="NavDeployment"
                                        AutomationProperties.Name="{loc:Loc Nav_Deployment}"
                                        AutomationProperties.HelpText="{loc:Loc A11y_Main_NavDeployment}"/>
                 <ui:NavigationViewItem Content="{loc:Loc Nav_Settings}"
                                        Tag="4"
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon Settings24}"
+                                       AutomationProperties.AutomationId="NavSettings"
                                        AutomationProperties.Name="{loc:Loc Nav_Settings}"
                                        AutomationProperties.HelpText="{loc:Loc A11y_Main_NavSettings}"/>
                 <ui:NavigationViewItem Content="{loc:Loc Nav_AppDatabase}"
                                        Tag="5"
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon Database24}"
+                                       AutomationProperties.AutomationId="NavAppCatalog"
                                        AutomationProperties.Name="{loc:Loc Nav_AppDatabase}"
                                        AutomationProperties.HelpText="{loc:Loc A11y_Main_NavAppDatabase}"/>
             </ui:NavigationView.MenuItems>
@@ -131,6 +144,8 @@
         <ui:TitleBar x:Name="TitleBar"
                      Title="{loc:Loc App_Title}"
                      Icon="Win11Forge.ico"
+                     Background="{DynamicResource ApplicationBackgroundBrush}"
+                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                      VerticalAlignment="Top"/>
     </Grid>
 </ui:FluentWindow>

@@ -34,6 +34,8 @@ Test-*-Output.txt
 *-TestResults.xml
 Tests/Results/TestResults_*.NUnitXml
 Tests/Results/TestResults_*.JUnitXml
+TestResults/
+**/TestResults/
 Tests/Results/Coverage_*.xml
 
 # Generated dashboard data

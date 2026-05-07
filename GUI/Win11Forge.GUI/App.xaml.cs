@@ -19,9 +19,9 @@ using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using Wpf.Ui.Appearance;
-using Wpf.Ui.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Win11Forge.GUI.Helpers;
+using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Views;
 
@@ -35,6 +35,7 @@ public partial class App : Application
     private const int AnimationFastMs = 150;
     private const int AnimationNormalMs = 300;
     private const int AnimationSlowMs = 500;
+    private const string DraculaThemePathMarker = "Themes/Dracula/";
 
     private static readonly string LogDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -182,18 +183,13 @@ public partial class App : Application
                 }
             }
 
-            // Step 4: Apply theme using WPF UI ApplicationThemeManager
-            Log($"Applying theme: {(settings.IsDarkTheme ? "Dark" : "Light")}");
+            // Step 4: Apply theme through the centralized theme service
+            Log($"Applying theme: {settings.ThemeName}");
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_ApplyingTheme);
             try
             {
-                var appTheme = settings.IsDarkTheme
-                    ? ApplicationTheme.Dark
-                    : ApplicationTheme.Light;
-                ApplicationThemeManager.Apply(appTheme, WindowBackdropType.Mica);
-
-                // Apply all theme-adaptive resources (accent, status, error/warning/success, skeleton)
-                ApplyThemeResources(settings.IsDarkTheme);
+                var themeService = Services.GetRequiredService<IThemeService>();
+                themeService.ApplyTheme(settings.ThemeName);
             }
             catch (Exception ex)
             {
@@ -212,11 +208,8 @@ public partial class App : Application
             // This prevents occasional theme mismatches on some VM/remote sessions.
             try
             {
-                var appTheme = settings.IsDarkTheme
-                    ? ApplicationTheme.Dark
-                    : ApplicationTheme.Light;
-                ApplicationThemeManager.Apply(appTheme, WindowBackdropType.Mica);
-                ApplyThemeResources(settings.IsDarkTheme);
+                var themeService = Services.GetRequiredService<IThemeService>();
+                themeService.ApplyTheme(settings.ThemeName);
                 ApplyHighContrastMode(settings.IsHighContrastEnabled);
             }
             catch (Exception ex)
@@ -395,10 +388,46 @@ public partial class App : Application
             // Avoid forcing a theme change during normal settings reload when high contrast is already disabled.
             if (existingDict != null)
             {
-                var isDark = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
-                ApplicationThemeManager.Apply(isDark ? ApplicationTheme.Dark : ApplicationTheme.Light, WindowBackdropType.Mica);
-                ApplyThemeResources(isDark);
+                try
+                {
+                    if (IsServicesInitialized)
+                    {
+                        var themeService = GetService<IThemeService>();
+                        if (themeService.CurrentTheme is ThemeNames.Light)
+                        {
+                            ApplyThemeResources(false);
+                        }
+                        else
+                        {
+                            RemoveDraculaThemeDictionaries(app);
+                            themeService.ApplyTheme(themeService.CurrentTheme);
+                        }
+                    }
+                    else
+                    {
+                        var isDark = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
+                        ApplyThemeResources(isDark);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"Failed to restore standard resources after high contrast: {ex.Message}");
+                }
             }
+        }
+    }
+
+    private static void RemoveDraculaThemeDictionaries(Application app)
+    {
+        var dictionaries = app.Resources.MergedDictionaries
+            .Where(dictionary => dictionary.Source?.OriginalString.Contains(
+                DraculaThemePathMarker,
+                StringComparison.OrdinalIgnoreCase) == true)
+            .ToList();
+
+        foreach (var dictionary in dictionaries)
+        {
+            app.Resources.MergedDictionaries.Remove(dictionary);
         }
     }
 

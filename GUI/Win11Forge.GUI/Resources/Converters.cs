@@ -21,6 +21,7 @@ using System.Windows.Media;
 using Wpf.Ui;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using IWinThemeService = Win11Forge.GUI.Services.IThemeService;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.ViewModels;
 
@@ -533,27 +534,82 @@ public class BooleanToPhaseOpacityConverter : IValueConverter
 }
 
 /// <summary>
+/// Resolves a resource key to a localized string.
+/// </summary>
+public class ResxKeyConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is not string key || string.IsNullOrWhiteSpace(key))
+        {
+            return string.Empty;
+        }
+
+        return Resources.ResourceManager.GetString(key, culture) ?? key;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
 /// Returns the appropriate accent brush based on current theme.
-/// Dark theme = Secondary (lime), Light theme = Primary (purple).
+/// Dracula themes use the active palette accent; Light falls back to the legacy fluent brushes.
 /// Used for theme-adaptive button styling.
 /// </summary>
 public class ThemeAdaptiveBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        var isDark = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
-
         var app = Application.Current;
+        if (app is null)
+        {
+            return new SolidColorBrush(Color.FromRgb(96, 205, 255));
+        }
+
+        try
+        {
+            var themeService = ResolveThemeService(value);
+            if (themeService?.CurrentTheme is not null
+                && themeService.CurrentTheme is not ThemeNames.Light)
+            {
+                var accent = app.TryFindResource("AccentBrush") as Brush;
+                if (accent is not null)
+                {
+                    return accent;
+                }
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // Services may not be initialized during very early startup.
+        }
+
+        var isDark = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
         if (isDark)
         {
-            return app?.TryFindResource("SecondaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(205, 220, 57));
+            return app.TryFindResource("SecondaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(205, 220, 57));
         }
-        return app?.TryFindResource("PrimaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(103, 58, 183));
+        return app.TryFindResource("PrimaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(103, 58, 183));
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         throw new NotSupportedException();
+    }
+
+    private static IWinThemeService? ResolveThemeService(object value)
+    {
+        if (value is IWinThemeService themeService)
+        {
+            return themeService;
+        }
+
+        return App.IsServicesInitialized
+            ? App.GetService<IWinThemeService>()
+            : null;
     }
 }
 

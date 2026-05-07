@@ -205,7 +205,8 @@
         <TextBlock Grid.Row="0"
                    Text="{loc:Loc Apps_Title}"
                    FontSize="28" FontWeight="SemiBold"
-                   Margin="0,0,0,16"/>
+                   Margin="0,0,0,16"
+                   AutomationProperties.AutomationId="PageApplications"/>
 
         <!-- Profile Selector Card -->
         <Border Grid.Row="1"
