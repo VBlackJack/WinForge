@@ -8,7 +8,7 @@
     xmlns:controls="clr-namespace:Win11Forge.GUI.Controls"
     mc:Ignorable="d"
     Title="{loc:Loc App_Title}"
-    Height="860" Width="1440"
+    Height="960" Width="1680"
     MinHeight="640" MinWidth="900"
     WindowStartupLocation="CenterScreen"
     WindowBackdropType="Mica"
