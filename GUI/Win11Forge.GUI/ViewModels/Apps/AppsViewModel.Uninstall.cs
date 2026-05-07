@@ -74,6 +74,7 @@ public partial class AppsViewModel
             return;
         }
 
+        _lastOperationType = "uninstall";
         IsUninstalling = true;
         IsPaused = false;
         _pauseGate.Resume();
@@ -121,6 +122,7 @@ public partial class AppsViewModel
             }
 
             IsSummaryDialogOpen = true;
+            _lastOperationType = string.Empty;
         }
         finally
         {

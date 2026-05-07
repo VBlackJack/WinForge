@@ -381,6 +381,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     {
         IsLoading = true;
         ErrorMessage = null;
+        _lastOperationType = "load";
 
         try
         {
@@ -442,6 +443,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
 
             // Notify that Scan command can now execute (applications loaded)
             ScanCommand.NotifyCanExecuteChanged();
+            _lastOperationType = string.Empty;
         }
         catch (PowerShellBridgeException ex)
         {

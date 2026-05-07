@@ -69,6 +69,7 @@ public partial class AppsViewModel
         var selectedApps = _allApplications.Where(a => a.IsSelected).ToList();
         if (selectedApps.Count == 0) return;
 
+        _lastOperationType = "install";
         IsInstalling = true;
         IsPaused = false;
         _pauseGate.Resume();
@@ -122,6 +123,7 @@ public partial class AppsViewModel
             }
 
             IsSummaryDialogOpen = true;
+            _lastOperationType = string.Empty;
         }
         finally
         {

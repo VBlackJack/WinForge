@@ -49,6 +49,7 @@ public partial class AppsViewModel
         }
         AppScanResult? scanResult = null;
         var completionCallback = _externalCompletionCallback;
+        _lastOperationType = "scan";
         IsScanning = true;
         ResetScanState(appsToScan, resetGlobalCounters: !hasActiveFilter);
         _scanCancellationTokenSource = new CancellationTokenSource();
@@ -58,6 +59,7 @@ public partial class AppsViewModel
                 appsToScan,
                 CreateScanProgress(),
                 _scanCancellationTokenSource.Token);
+            _lastOperationType = string.Empty;
         }
         finally
         {
