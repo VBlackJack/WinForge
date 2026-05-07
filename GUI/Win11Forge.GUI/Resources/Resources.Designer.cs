@@ -449,12 +449,17 @@ public class Resources
     // Confirmation Dialogs
     public static string Confirm_ClearHistory_Title => ResourceManager.GetString("Confirm_ClearHistory_Title", resourceCulture);
     public static string Confirm_ClearHistory_Message => ResourceManager.GetString("Confirm_ClearHistory_Message", resourceCulture);
-    public static string Confirm_Uninstall_Title => ResourceManager.GetString("Confirm_Uninstall_Title", resourceCulture);
-    public static string Confirm_Uninstall_Message => ResourceManager.GetString("Confirm_Uninstall_Message", resourceCulture);
+    public static string Confirm_ClearHistory_Btn => ResourceManager.GetString("Confirm_ClearHistory_Btn", resourceCulture);
+    public static string Confirm_Uninstall_Title_Single => ResourceManager.GetString("Confirm_Uninstall_Title_Single", resourceCulture);
+    public static string Confirm_Uninstall_Title_Multiple => ResourceManager.GetString("Confirm_Uninstall_Title_Multiple", resourceCulture);
+    public static string Confirm_Uninstall_Message_Single => ResourceManager.GetString("Confirm_Uninstall_Message_Single", resourceCulture);
+    public static string Confirm_Uninstall_Message_Multiple => ResourceManager.GetString("Confirm_Uninstall_Message_Multiple", resourceCulture);
+    public static string Confirm_Uninstall_Btn => ResourceManager.GetString("Confirm_Uninstall_Btn", resourceCulture);
+    public static string Confirm_Delete_Btn => ResourceManager.GetString("Confirm_Delete_Btn", resourceCulture);
+    public static string Confirm_Reset_Btn => ResourceManager.GetString("Confirm_Reset_Btn", resourceCulture);
+    public static string Confirm_ClearOldLogs_Btn => ResourceManager.GetString("Confirm_ClearOldLogs_Btn", resourceCulture);
     public static string Confirm_DeleteProfile_Title => ResourceManager.GetString("Confirm_DeleteProfile_Title", resourceCulture);
     public static string Confirm_DeleteProfile_Message => ResourceManager.GetString("Confirm_DeleteProfile_Message", resourceCulture);
-    public static string Confirm_Yes => ResourceManager.GetString("Confirm_Yes", resourceCulture);
-    public static string Confirm_No => ResourceManager.GetString("Confirm_No", resourceCulture);
 
     // Profile Export/Import
     public static string Editor_Btn_Export => ResourceManager.GetString("Editor_Btn_Export", resourceCulture);
@@ -719,6 +724,8 @@ public class Resources
     public static string AppDb_EditorOwnerNotFound => ResourceManager.GetString("AppDb_EditorOwnerNotFound", resourceCulture);
     public static string AppDb_EditorOpenError => ResourceManager.GetString("AppDb_EditorOpenError", resourceCulture);
     public static string AppDb_ImportModeConfirm => ResourceManager.GetString("AppDb_ImportModeConfirm", resourceCulture);
+    public static string AppDb_Import_Replace => ResourceManager.GetString("AppDb_Import_Replace", resourceCulture);
+    public static string AppDb_Import_Skip => ResourceManager.GetString("AppDb_Import_Skip", resourceCulture);
     public static string AppDb_NoExportSelection => ResourceManager.GetString("AppDb_NoExportSelection", resourceCulture);
     public static string AppEditor_Tab_General => ResourceManager.GetString("AppEditor_Tab_General", resourceCulture);
     public static string AppEditor_Tab_Sources => ResourceManager.GetString("AppEditor_Tab_Sources", resourceCulture);

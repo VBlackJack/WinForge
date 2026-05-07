@@ -505,8 +505,8 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         return await _dialogService.ShowConfirmAsync(
             Loc.AppDb_DeleteTitle,
             message,
-            Loc.Common_Yes,
-            Loc.Common_No);
+            Loc.Confirm_Delete_Btn,
+            Loc.Common_Cancel);
     }
 
     private async Task ImportApplicationsWithDialogAsync()
@@ -526,8 +526,8 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
             var replaceExisting = await _dialogService.ShowYesNoCancelAsync(
                 Loc.AppDb_Import,
                 Loc.AppDb_ImportModeConfirm,
-                Loc.Common_Yes,
-                Loc.Common_No,
+                Loc.AppDb_Import_Replace,
+                Loc.AppDb_Import_Skip,
                 Loc.Common_Cancel);
 
             if (!replaceExisting.HasValue)

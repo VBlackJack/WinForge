@@ -69,12 +69,18 @@ public partial class AppsViewModel
 
         if (selectedApps.Count == 0) return;
 
-        var confirmMessage = string.Format(Resources.Resources.Confirm_Uninstall_Message, selectedApps.Count);
+        var isSingle = selectedApps.Count == 1;
+        var confirmTitle = isSingle
+            ? Resources.Resources.Confirm_Uninstall_Title_Single
+            : string.Format(Resources.Resources.Confirm_Uninstall_Title_Multiple, selectedApps.Count);
+        var confirmMessage = isSingle
+            ? Resources.Resources.Confirm_Uninstall_Message_Single
+            : string.Format(Resources.Resources.Confirm_Uninstall_Message_Multiple, selectedApps.Count);
         var confirmed = await _dialogService.ShowConfirmAsync(
-            Resources.Resources.Confirm_Uninstall_Title,
+            confirmTitle,
             confirmMessage,
-            Resources.Resources.Common_Yes,
-            Resources.Resources.Common_No);
+            Resources.Resources.Confirm_Uninstall_Btn,
+            Resources.Resources.Common_Cancel);
         if (!confirmed)
         {
             return;
