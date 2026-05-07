@@ -305,6 +305,32 @@ public class ApplicationsViewModelTests
             applicationEditorDialogService: editorDialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         var original = viewModel.Applications[0];
+        original.Sources.Chocolatey = "vscode";
+        original.Sources.DirectUrl = "https://example.com/vscode.exe";
+        original.Sources.WingetConfig = new WingetSourceConfig
+        {
+            Version = "1.2.3",
+            Source = "winget",
+            AdditionalArgs = "--scope machine"
+        };
+        original.Sources.ChocolateyConfig = new ChocolateySourceConfig
+        {
+            Version = "1.2.3",
+            AdditionalArgs = "--params global"
+        };
+        original.Sources.DirectDownloadConfig = new DirectDownloadSourceConfig
+        {
+            InstallerType = "exe",
+            SilentArgs = "/S",
+            FileName = "vscode.exe"
+        };
+        original.Detection = new ApplicationDetectionModel
+        {
+            Method = "Registry",
+            Path = @"HKLM\Software\VSCode",
+            VersionKey = "Version",
+            MinVersion = "1.0.0"
+        };
         viewModel.SelectedApplication = original;
 
         // Act
@@ -321,6 +347,18 @@ public class ApplicationsViewModelTests
         Assert.Equal(original.Description, duplicate.Description);
         Assert.Equal(original.Sources.Winget, duplicate.Sources.Winget);
         Assert.NotSame(original.Sources, duplicate.Sources);
+        Assert.NotSame(original.Sources.WingetConfig, duplicate.Sources.WingetConfig);
+        Assert.NotSame(original.Sources.ChocolateyConfig, duplicate.Sources.ChocolateyConfig);
+        Assert.NotSame(original.Sources.DirectDownloadConfig, duplicate.Sources.DirectDownloadConfig);
+        Assert.NotSame(original.Detection, duplicate.Detection);
+        Assert.Equal(original.Sources.WingetConfig.Version, duplicate.Sources.WingetConfig?.Version);
+        Assert.Equal(original.Sources.ChocolateyConfig.AdditionalArgs, duplicate.Sources.ChocolateyConfig?.AdditionalArgs);
+        Assert.Equal(original.Sources.DirectDownloadConfig.SilentArgs, duplicate.Sources.DirectDownloadConfig?.SilentArgs);
+        Assert.Equal(original.Detection.Path, duplicate.Detection?.Path);
+
+        duplicate.Sources.WingetConfig!.Version = "modified-by-clone";
+        Assert.NotEqual(duplicate.Sources.WingetConfig.Version, original.Sources.WingetConfig.Version);
+
         Assert.Equal("VSCode-Copy", dbService.LastSavedApplication?.AppId);
         Assert.True(dbService.LastSaveWasNew);
     }
