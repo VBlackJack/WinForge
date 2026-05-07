@@ -615,8 +615,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         var confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.Confirm_ClearHistory_Title,
             Resources.Resources.Confirm_ClearHistory_Message,
-            Resources.Resources.Common_Yes,
-            Resources.Resources.Common_No);
+            Resources.Resources.Confirm_ClearHistory_Btn,
+            Resources.Resources.Common_Cancel);
 
         if (!confirmed)
         {
@@ -757,8 +757,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         var confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.Confirm_ResetSettings_Title,
             Resources.Resources.Confirm_ResetSettings_Message,
-            Resources.Resources.Common_Yes,
-            Resources.Resources.Common_No);
+            Resources.Resources.Confirm_Reset_Btn,
+            Resources.Resources.Common_Cancel);
 
         if (!confirmed)
         {
@@ -954,8 +954,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         var confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.ScheduledDeployment_ConfirmRemoveTitle,
             Resources.Resources.ScheduledDeployment_ConfirmRemove,
-            Resources.Resources.Common_Yes,
-            Resources.Resources.Common_No);
+            Resources.Resources.Confirm_Delete_Btn,
+            Resources.Resources.Common_Cancel);
 
         if (!confirmed)
         {

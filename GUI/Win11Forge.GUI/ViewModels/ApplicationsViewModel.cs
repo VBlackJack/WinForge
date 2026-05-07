@@ -505,8 +505,8 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         return await _dialogService.ShowConfirmAsync(
             Loc.AppDb_DeleteTitle,
             message,
-            Loc.Common_Yes,
-            Loc.Common_No);
+            Loc.Confirm_Delete_Btn,
+            Loc.Common_Cancel);
     }
 
     private async Task ImportApplicationsWithDialogAsync()
