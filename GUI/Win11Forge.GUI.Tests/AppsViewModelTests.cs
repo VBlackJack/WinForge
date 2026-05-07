@@ -18,6 +18,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Text.Json;
+using CommunityToolkit.Mvvm.Messaging;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Services.Coordinators;
@@ -82,7 +83,7 @@ public class AppsViewModelTests
         IFileDialogService? fileDialogService = null,
         IToastService? toastService = null)
     {
-        return new AppsViewModel(
+        var viewModel = new AppsViewModel(
             bridge ?? CreateMockBridge(),
             settings ?? CreateMockSettingsService(),
             deploymentState ?? CreateMockDeploymentStateService(),
@@ -94,6 +95,9 @@ public class AppsViewModelTests
             dialogService ?? new TestDialogService(),
             fileDialogService,
             toastService);
+
+        WeakReferenceMessenger.Default.UnregisterAll(viewModel);
+        return viewModel;
     }
 
     /// <summary>
