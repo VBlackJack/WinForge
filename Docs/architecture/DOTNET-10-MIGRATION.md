@@ -47,7 +47,7 @@ Commit `38dce7e355e115c2bcfa0490b5184673bf1350fc` contains:
 - One analyzer-driven source fix in `PowerShellExecutionService.ReadStreamWithLimitAsync`: replacing `while (!reader.EndOfStream)` with a `ReadAsync` loop that exits on `charsRead == 0`. This preserves behavior and removes the new .NET 10 `CA2024` warning.
 - Two leftover `net8.0-windows` literals corrected post-audit (Drift C, audit GO-with-nits): `Start-Win11ForgeGUI.ps1` dev launcher binary path and `GUI/Win11Forge.GUI.UITests/Win11ForgeAppSession.cs` UIA harness fallback path. The harness primary path (`localCopy`) was already independent of TFM, so CI was not affected.
 - Transitive dependency note: `Microsoft.PowerShell.Native@700.0.0-rc.1` is pulled by SMA 7.6.0. RC tag is upstream's choice for the .NET 10-targeted PowerShell native interop; not a Win11Forge instability signal. Tracked for future SMA 7.6.x stable bump.
-- Manual smoke follow-up fixed two regressions before merge readiness: prerequisite install logs now force UTF-8 and use the configured app language for PowerShell localization, and native WPF `ComboBox` / `ContextMenu` / `DataGrid` selection styling is explicitly theme-aware for Application Manager and Settings.
+- Manual smoke follow-up fixed the regressions found before merge readiness: prerequisite install logs now force UTF-8 and use the configured app language for PowerShell localization, native WPF `ComboBox` / `ContextMenu` styling is explicitly theme-aware for Application Manager and Settings, and Application Manager selected-row contrast no longer uses bright accent-fill colors.
 
 ## 5. Verification
 
@@ -63,6 +63,7 @@ Local verification on 2026-05-07:
 | `dotnet test GUI/Win11Forge.GUI.Tests/Win11Forge.GUI.Tests.csproj --configuration Release --no-build` | Passed: 411 passed, 0 failed. |
 | `dotnet test GUI/Win11Forge.GUI.UITests/Win11Forge.GUI.UITests.csproj --configuration Release --no-build` | Passed with `WIN11FORGE_RUN_UIA=1`: 2 passed, 0 failed. |
 | `dotnet test GUI/Win11Forge.slnx -c Release` after manual smoke fixes | Passed: 422 GUI tests passed, 2 UIA tests skipped by default. |
+| Manual smoke per ADR §6 | Passed by local operator on 2026-05-07 after prerequisite log locale/encoding, native dropdown/menu theming, and selected-row contrast fixes. |
 
 Evidence path for UIA screenshots:
 
@@ -82,23 +83,23 @@ An initial isolated run of `SettingsThemePicker_IsDiscoverable` timed out once. 
 
 ## 6. Manual Smoke Scope
 
-The following smoke items are intentionally left for PR review / local operator confirmation because they change machine state or require user-visible desktop settings:
+The following smoke items were executed by the local operator on 2026-05-07 because they change machine state or require user-visible desktop settings:
 
-- Install / uninstall workflow on a real package such as 7-Zip.
-- DPI 100% / 125% / 150% switching.
-- Full visual theme cycle across all 8 themes beyond the automated core-screen captures. Application Manager and Settings native dropdown/menu regressions found during manual smoke were fixed before merge readiness.
-- High Contrast and Reduced Motion toggles beyond the existing regression coverage from PR #49 and PR #51.
+- Install / uninstall workflow on a real package such as 7-Zip: passed.
+- DPI 100% / 125% / 150% switching: passed.
+- Full visual theme cycle across all 8 themes beyond the automated core-screen captures: passed after native dropdown/menu theming and selected-row contrast fixes.
+- High Contrast and Reduced Motion toggles beyond the existing regression coverage from PR #49 and PR #51: passed.
 
-Do not merge PR #52 until these are either executed manually or explicitly waived by the reviewer.
+Manual smoke gate is satisfied for PR #52 merge readiness.
 
 ## 7. Behavior Changes
 
 - **WPF-UI 4.2 → 4.3:** no code-level API migration was required. Automated UIA screenshots for core screens are non-empty and the Settings theme picker remains discoverable after rerun.
-- **SMA 7.4.6 → 7.6.0:** restore/build/test succeeded. Real install/uninstall workflow validation is pending manual smoke because it modifies the local machine.
+- **SMA 7.4.6 → 7.6.0:** restore/build/test succeeded. Real install/uninstall workflow validation passed during manual smoke.
 - **.NET 10 analyzers:** `CA2024` surfaced a pre-existing async stream-read pattern; fixed in commit 1.
 - **C# language version:** implicit C# version advances with `net10.0-windows`, but this PR intentionally adopts no C# 14 syntax.
 - **PowerShell sub-process encoding & locale (smoke fix, commit 4):** `PowerShellExecutionService` now sets `StandardOutputEncoding = StandardErrorEncoding = UTF8` on every spawned PowerShell sub-process and propagates the configured `settings.LanguageCode` to the `Initialize-Localization` script. Scope is centralized at the execution-service layer, so the encoding fix benefits all consumers (Prerequisites install/uninstall, ApplicationManagementServiceImpl, PowerShellBridgeFacade), not only the prerequisites flow that surfaced the regression. Behavior is non-regressive: UTF-8 is a superset of ASCII for the parse contracts (`INSTALLED` / `NOT_INSTALLED` / JSON payloads), and the locale propagation falls back cleanly when the configured language is unrecognized.
-- **Native WPF control theming (smoke fix, commit 4):** explicit theme-aware templates added for native `ComboBox`, `ContextMenu`, `MenuItem`, `ComboBoxItem`, and `DataGrid` row selection in the Application Manager and Settings views. Templates bind to `DynamicResource` keys already defined in the WPF-UI palette, so HC-mode overrides (A11Y-001 closure post-PR #49) and `HighVisibilityFocusVisual` (A11Y-003 closure post-PR #49) continue to win across all 8 themes — verified during the commit 4 re-audit.
+- **Native WPF control theming (smoke fixes, commits 4 and 6):** explicit theme-aware templates added for native `ComboBox`, `ContextMenu`, `MenuItem`, and `ComboBoxItem` in the Application Manager and Settings views. Application Manager selected `DataGrid` rows now use `ControlFillColorSecondaryBrush` with primary text instead of bright accent-fill colors, preserving contrast for row content that has explicit source/status text brushes. Templates bind to `DynamicResource` keys already defined in the WPF-UI palette, so HC-mode overrides (A11Y-001 closure post-PR #49) and `HighVisibilityFocusVisual` (A11Y-003 closure post-PR #49) continue to win across all 8 themes.
 
 ## 8. Rollback Note
 
@@ -136,3 +137,4 @@ The migration is scope-isolated to framework/dependency/build changes plus one a
 | 2026-05-07 | GO | Cowork-Claude + user | Q1..Q9 locked all-recommended; Heimdall config verified. |
 | 2026-05-07 | In review via PR #52 | Codex executor | Migration commit executed, automated build/tests/UIA smoke green; manual state-changing smoke pending. |
 | 2026-05-07 | Manual smoke fixes | Cowork-Claude + user | Prerequisite log locale/encoding and native WPF dropdown/context-menu theming regressions fixed; Release suite green after patch. |
+| 2026-05-07 | Manual smoke sign-off | User + Codex | ADR §6 smoke passed after selected-row contrast fix; PR #52 ready to exit draft after CI green. |
