@@ -60,6 +60,15 @@ $patterns = @(
     @{ Stem = 'telechargement'; Pattern = '\b[Tt]elechargement\b'; Expected = 'accented form' }
     @{ Stem = 'depot'; Pattern = '\b[Dd]epot\b'; Expected = 'accented form' }
     @{ Stem = 'peut-etre'; Pattern = '\b[Pp]eut-etre\b'; Expected = 'accented form' }
+    @{ Stem = 'applique'; Pattern = '\b[Aa]pplique(?:e|es|s)?\b'; Expected = 'accented form' }
+    @{ Stem = 'enregistre'; Pattern = '\b[Ee]nregistre(?:e|es|s)?\b'; Expected = 'accented form' }
+    @{ Stem = 'chargee'; Pattern = '\b[Cc]hargee(?:s)?\b'; Expected = 'accented form' }
+    @{ Stem = 'verifie'; Pattern = '\b[Vv]erifie(?:e|es|s)?\b'; Expected = 'accented form' }
+    @{ Stem = 'reseau'; Pattern = '\b[Rr]eseau(?:x)?\b'; Expected = 'accented form' }
+    @{ Stem = 'necessaire'; Pattern = '\b[Nn]ecessaire(?:s)?\b'; Expected = 'accented form' }
+    @{ Stem = 'decouvert'; Pattern = '\b[Dd]ecouvert(?:e|es|s)?\b'; Expected = 'accented form' }
+    @{ Stem = 'ignore'; Pattern = '\b[Ii]gnore(?:e|es|s)?\b'; Expected = 'accented form' }
+    @{ Stem = 'donnee'; Pattern = '\b[Dd]onnee(?:s)?\b'; Expected = 'accented form' }
 )
 
 $failures = [System.Collections.Generic.List[object]]::new()
