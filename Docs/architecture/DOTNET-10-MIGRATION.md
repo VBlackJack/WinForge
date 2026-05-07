@@ -45,6 +45,8 @@ Commit `38dce7e355e115c2bcfa0490b5184673bf1350fc` contains:
 - CI setup-dotnet updates from `8.0.x` to `10.0.x`.
 - 3 regenerated `packages.lock.json` files from `dotnet restore --force-evaluate`.
 - One analyzer-driven source fix in `PowerShellExecutionService.ReadStreamWithLimitAsync`: replacing `while (!reader.EndOfStream)` with a `ReadAsync` loop that exits on `charsRead == 0`. This preserves behavior and removes the new .NET 10 `CA2024` warning.
+- Two leftover `net8.0-windows` literals corrected post-audit (Drift C, audit GO-with-nits): `Start-Win11ForgeGUI.ps1` dev launcher binary path and `GUI/Win11Forge.GUI.UITests/Win11ForgeAppSession.cs` UIA harness fallback path. The harness primary path (`localCopy`) was already independent of TFM, so CI was not affected.
+- Transitive dependency note: `Microsoft.PowerShell.Native@700.0.0-rc.1` is pulled by SMA 7.6.0. RC tag is upstream's choice for the .NET 10-targeted PowerShell native interop; not a Win11Forge instability signal. Tracked for future SMA 7.6.x stable bump.
 
 ## 5. Verification
 
