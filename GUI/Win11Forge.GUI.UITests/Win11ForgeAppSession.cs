@@ -145,10 +145,37 @@ internal sealed class Win11ForgeAppSession : IDisposable
             return;
         }
 
-        NativeMethods.ShowWindow(_process.MainWindowHandle, NativeMethods.SwRestore);
-        NativeMethods.SetForegroundWindow(_process.MainWindowHandle);
-        MainWindow = AutomationElement.FromHandle(_process.MainWindowHandle);
-        Thread.Sleep(100);
+        var windowHandle = _process.MainWindowHandle;
+        NativeMethods.ShowWindow(windowHandle, NativeMethods.SwRestore);
+        NativeMethods.SetWindowPos(
+            windowHandle,
+            NativeMethods.HwndTopMost,
+            0,
+            0,
+            0,
+            0,
+            NativeMethods.SwpNoMove | NativeMethods.SwpNoSize | NativeMethods.SwpShowWindow);
+        NativeMethods.SetWindowPos(
+            windowHandle,
+            NativeMethods.HwndNoTopMost,
+            0,
+            0,
+            0,
+            0,
+            NativeMethods.SwpNoMove | NativeMethods.SwpNoSize | NativeMethods.SwpShowWindow);
+        NativeMethods.SetForegroundWindow(windowHandle);
+        MainWindow = AutomationElement.FromHandle(windowHandle);
+
+        try
+        {
+            MainWindow.SetFocus();
+        }
+        catch (InvalidOperationException)
+        {
+            // WPF can temporarily reject focus while starting; foreground placement above is enough for click fallback.
+        }
+
+        Thread.Sleep(150);
     }
 
     public void Dispose()
@@ -175,12 +202,6 @@ internal sealed class Win11ForgeAppSession : IDisposable
 
     private static void InvokeOrClick(AutomationElement element)
     {
-        if (element.TryGetCurrentPattern(InvokePattern.Pattern, out var invokePattern))
-        {
-            ((InvokePattern)invokePattern).Invoke();
-            return;
-        }
-
         var rect = element.Current.BoundingRectangle;
         if (!rect.IsEmpty)
         {
@@ -189,6 +210,12 @@ internal sealed class Win11ForgeAppSession : IDisposable
             NativeMethods.SetCursorPos(x, y);
             NativeMethods.mouse_event(NativeMethods.MouseEventLeftDown, 0, 0, 0, UIntPtr.Zero);
             NativeMethods.mouse_event(NativeMethods.MouseEventLeftUp, 0, 0, 0, UIntPtr.Zero);
+            return;
+        }
+
+        if (element.TryGetCurrentPattern(InvokePattern.Pattern, out var invokePattern))
+        {
+            ((InvokePattern)invokePattern).Invoke();
             return;
         }
 
@@ -323,9 +350,17 @@ internal sealed class Win11ForgeAppSession : IDisposable
         public const uint MouseEventLeftDown = 0x0002;
         public const uint MouseEventLeftUp = 0x0004;
         public const int SwRestore = 9;
+        public const uint SwpNoSize = 0x0001;
+        public const uint SwpNoMove = 0x0002;
+        public const uint SwpShowWindow = 0x0040;
+        public static readonly IntPtr HwndTopMost = new(-1);
+        public static readonly IntPtr HwndNoTopMost = new(-2);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool SetForegroundWindow(IntPtr hWnd);

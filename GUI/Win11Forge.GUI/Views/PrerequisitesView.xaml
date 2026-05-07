@@ -30,7 +30,8 @@
 
                 <StackPanel Grid.Column="0">
                     <TextBlock Text="{loc:Loc Prerequisites_PageTitle}"
-                               FontSize="28" FontWeight="SemiBold"/>
+                               FontSize="28" FontWeight="SemiBold"
+                               AutomationProperties.AutomationId="PagePrerequisites"/>
                     <TextBlock Text="{loc:Loc Prerequisites_PageDescription}"
                                FontSize="14"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"

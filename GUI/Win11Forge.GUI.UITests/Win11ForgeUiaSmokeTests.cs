@@ -39,7 +39,9 @@ public sealed class Win11ForgeUiaSmokeTests
             app.CaptureWindow("01-dashboard"),
             CaptureAfterNavigation(app, "NavApplications", "PageApplications", "02-applications"),
             CaptureAfterNavigation(app, "NavAppCatalog", "PageAppCatalog", "03-app-catalog"),
-            CaptureAfterNavigation(app, "NavSettings", "ThemePicker", "04-settings")
+            CaptureAfterNavigation(app, "NavSettings", "ThemePicker", "04-settings"),
+            CaptureAfterNavigation(app, "NavDeployment", "PageDeployment", "05-deployment"),
+            CaptureAfterNavigation(app, "NavPrerequisites", "PagePrerequisites", "06-prerequisites")
         };
 
         foreach (var screenshot in screenshots)
@@ -54,6 +56,7 @@ public sealed class Win11ForgeUiaSmokeTests
     public void SettingsThemePicker_IsDiscoverable()
     {
         using var app = Win11ForgeAppSession.Launch();
+        app.WaitForElementByAutomationId("PageDashboard", TimeSpan.FromSeconds(10));
 
         app.NavigateByAutomationId("NavSettings");
         var themePicker = app.WaitForElementByAutomationId("ThemePicker", TimeSpan.FromSeconds(10));
@@ -72,6 +75,7 @@ public sealed class Win11ForgeUiaSmokeTests
     {
         app.NavigateByAutomationId(automationId);
         app.WaitForElementByAutomationId(expectedPageAutomationId, TimeSpan.FromSeconds(10));
+        app.WaitForIdle();
         return app.CaptureWindow(screenshotName);
     }
 }

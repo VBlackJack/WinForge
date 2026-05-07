@@ -119,4 +119,7 @@
     <!-- Theme-Adaptive Accent Brush (updated dynamically by App.xaml.cs) -->
     <SolidColorBrush x:Key="ThemeAdaptiveAccentBrush" Color="#60CDFF"/>
 
+    <!-- Focus indicator fallback for WPF-UI Light and non-Dracula resources -->
+    <SolidColorBrush x:Key="FocusIndicatorBrush" Color="#005FB8"/>
+
 </ResourceDictionary>

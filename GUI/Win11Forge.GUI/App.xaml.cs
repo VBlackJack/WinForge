@@ -35,6 +35,7 @@ public partial class App : Application
     private const int AnimationFastMs = 150;
     private const int AnimationNormalMs = 300;
     private const int AnimationSlowMs = 500;
+    private const int AnimationMicroMs = 50;
     private const string DraculaThemePathMarker = "Themes/Dracula/";
 
     private static readonly string LogDirectory = Path.Combine(
@@ -198,6 +199,7 @@ public partial class App : Application
 
             // Step 5: Detect reduced motion preference for accessibility
             SetReducedMotionOverride(settings.ReducedMotionOverride);
+            splash.ApplyReducedMotionPreference();
             Log($"Reduced motion preference: {ReducedMotion}");
             InitializeAnimationResources();
 
@@ -319,15 +321,28 @@ public partial class App : Application
         if (app?.Resources == null)
             return;
 
-        app.Resources["AnimationFast"] = reducedMotion
+        ApplyAnimationResources(app.Resources, reducedMotion);
+    }
+
+    /// <summary>
+    /// Applies animation duration resources to a target dictionary.
+    /// </summary>
+    internal static void ApplyAnimationResources(ResourceDictionary resources, bool reducedMotion)
+    {
+        ArgumentNullException.ThrowIfNull(resources);
+
+        resources["AnimationFast"] = reducedMotion
             ? new Duration(TimeSpan.Zero)
             : new Duration(TimeSpan.FromMilliseconds(AnimationFastMs));
-        app.Resources["AnimationNormal"] = reducedMotion
+        resources["AnimationNormal"] = reducedMotion
             ? new Duration(TimeSpan.Zero)
             : new Duration(TimeSpan.FromMilliseconds(AnimationNormalMs));
-        app.Resources["AnimationSlow"] = reducedMotion
+        resources["AnimationSlow"] = reducedMotion
             ? new Duration(TimeSpan.Zero)
             : new Duration(TimeSpan.FromMilliseconds(AnimationSlowMs));
+        resources["AnimationMicro"] = reducedMotion
+            ? new Duration(TimeSpan.Zero)
+            : new Duration(TimeSpan.FromMilliseconds(AnimationMicroMs));
     }
 
     /// <summary>
@@ -372,6 +387,7 @@ public partial class App : Application
                 SwapIfExists(app, "DividerStrokeColorDefaultBrush", "HighContrastBorderLightBrush");
                 SwapIfExists(app, "SystemAccentColorPrimaryBrush", "HighContrastPrimaryBrush");
                 SwapIfExists(app, "SystemAccentColorSecondaryBrush", "HighContrastSecondaryBrush");
+                SwapIfExists(app, "FocusIndicatorBrush", "HighContrastFocusBorderBrush");
                 SwapIfExists(app, "SystemFillColorCriticalBrush", "HighContrastErrorBrush");
                 SwapIfExists(app, "ErrorTextBrush", "HighContrastErrorBrush");
                 SwapIfExists(app, "WarningTextBrush", "HighContrastWarningBrush");
