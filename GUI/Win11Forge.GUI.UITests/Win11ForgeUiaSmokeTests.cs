@@ -67,6 +67,24 @@ public sealed class Win11ForgeUiaSmokeTests
         Assert.True(new FileInfo(screenshot).Length > 4096, $"Screenshot appears empty: {screenshot}");
     }
 
+    [UiaFact]
+    public void AppCatalog_UndoRedoButtons_HaveNonEmptyBounds()
+    {
+        using var app = Win11ForgeAppSession.Launch();
+        app.WaitForElementByAutomationId("PageDashboard", TimeSpan.FromSeconds(10));
+
+        app.NavigateByAutomationId("NavAppCatalog");
+        app.WaitForElementByAutomationId("PageAppCatalog", TimeSpan.FromSeconds(10));
+
+        var undoButton = app.WaitForElementByName("Undo last action", TimeSpan.FromSeconds(10));
+        var redoButton = app.WaitForElementByName("Redo last action", TimeSpan.FromSeconds(10));
+
+        Assert.True(undoButton.Current.BoundingRectangle.Width > 0, "Undo button should render with visible width.");
+        Assert.True(undoButton.Current.BoundingRectangle.Height > 0, "Undo button should render with visible height.");
+        Assert.True(redoButton.Current.BoundingRectangle.Width > 0, "Redo button should render with visible width.");
+        Assert.True(redoButton.Current.BoundingRectangle.Height > 0, "Redo button should render with visible height.");
+    }
+
     private static string CaptureAfterNavigation(
         Win11ForgeAppSession app,
         string automationId,

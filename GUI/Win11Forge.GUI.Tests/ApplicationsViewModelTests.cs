@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+using System.Globalization;
+using System.Windows;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
+using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -288,7 +291,7 @@ public class ApplicationsViewModelTests
     }
 
     /// <summary>
-    /// Verifies that Duplicate command opens the add editor and saves the returned application.
+    /// Verifies that Duplicate command opens the add editor with a cloned application and saves the returned application.
     /// </summary>
     [Fact]
     public async Task Duplicate_ShouldOpenEditorAndSaveReturnedApplicationAsNew()
@@ -301,15 +304,42 @@ public class ApplicationsViewModelTests
             dbService: dbService,
             applicationEditorDialogService: editorDialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
-        viewModel.SelectedApplication = viewModel.Applications[0];
+        var original = viewModel.Applications[0];
+        viewModel.SelectedApplication = original;
 
         // Act
         await viewModel.DuplicateCommand.ExecuteAsync(null);
 
         // Assert
         Assert.Equal(1, editorDialogService.ShowAddCallCount);
+        var duplicate = Assert.Single(editorDialogService.AddRequests);
+        Assert.NotNull(duplicate);
+        Assert.NotSame(original, duplicate);
+        Assert.StartsWith($"{original.AppId}-copy-", duplicate.AppId);
+        Assert.EndsWith(" (Copy)", duplicate.Name);
+        Assert.Equal(original.Category, duplicate.Category);
+        Assert.Equal(original.Description, duplicate.Description);
+        Assert.Equal(original.Sources.Winget, duplicate.Sources.Winget);
+        Assert.NotSame(original.Sources, duplicate.Sources);
         Assert.Equal("VSCode-Copy", dbService.LastSavedApplication?.AppId);
         Assert.True(dbService.LastSaveWasNew);
+    }
+
+    /// <summary>
+    /// Verifies that Duplicate command is disabled without a selected application.
+    /// </summary>
+    [Fact]
+    public async Task Duplicate_WithoutSelection_ShouldBeDisabled()
+    {
+        // Arrange
+        var editorDialogService = new TestApplicationEditorDialogService();
+        var viewModel = CreateViewModel(applicationEditorDialogService: editorDialogService);
+        await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
+        viewModel.SelectedApplication = null;
+
+        // Act & Assert
+        Assert.False(viewModel.DuplicateCommand.CanExecute(null));
+        Assert.Equal(0, editorDialogService.ShowAddCallCount);
     }
 
     /// <summary>
@@ -330,6 +360,93 @@ public class ApplicationsViewModelTests
         // Assert
         Assert.Empty(viewModel.SearchText);
         Assert.Equal(Resources.Resources.Apps_CategoryAll, viewModel.SelectedCategory);
+    }
+
+    /// <summary>
+    /// Verifies that the empty state is hidden while the database is loading.
+    /// </summary>
+    [Fact]
+    public void EmptyState_DuringLoad_NotVisible()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+        var converter = new Win11Forge.GUI.Resources.AndZeroToVisibilityConverter();
+
+        // Act
+        var result = converter.Convert(
+            new object[] { viewModel.IsLoading, viewModel.HasLoadError, viewModel.FilteredCount },
+            typeof(Visibility),
+            null!,
+            CultureInfo.InvariantCulture);
+
+        // Assert
+        Assert.True(viewModel.IsLoading);
+        Assert.Equal(Visibility.Collapsed, result);
+    }
+
+    /// <summary>
+    /// Verifies that load failures use the error state instead of the empty state.
+    /// </summary>
+    [Fact]
+    public async Task EmptyState_AfterLoadFailure_NotVisible_ErrorVisible()
+    {
+        // Arrange
+        var dbService = new MockApplicationDatabaseService();
+        dbService.SetLoadException(new InvalidOperationException("catalog unavailable"));
+        var viewModel = CreateViewModel(dbService: dbService);
+        var converter = new Win11Forge.GUI.Resources.AndZeroToVisibilityConverter();
+
+        // Act
+        await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
+        var emptyStateVisibility = converter.Convert(
+            new object[] { viewModel.IsLoading, viewModel.HasLoadError, viewModel.FilteredCount },
+            typeof(Visibility),
+            null!,
+            CultureInfo.InvariantCulture);
+
+        // Assert
+        Assert.False(viewModel.IsLoading);
+        Assert.True(viewModel.HasLoadError);
+        Assert.Contains("catalog unavailable", viewModel.LoadErrorMessage);
+        Assert.Equal(viewModel.LoadErrorMessage, viewModel.StatusMessage);
+        Assert.Equal(Visibility.Collapsed, emptyStateVisibility);
+    }
+
+    /// <summary>
+    /// Verifies that an empty database gets a distinct empty-state message.
+    /// </summary>
+    [Fact]
+    public async Task EmptyState_WhenDatabaseIsEmpty_UsesDatabaseMessage()
+    {
+        // Arrange
+        var dbService = new MockApplicationDatabaseService();
+        dbService.ReplaceApplications();
+        var viewModel = CreateViewModel(dbService: dbService);
+
+        // Act
+        await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
+
+        // Assert
+        var expected = Loc.ResourceManager.GetString("AppCatalog_EmptyDatabase", Loc.Culture);
+        Assert.Equal(0, viewModel.TotalCount);
+        Assert.Equal(expected, viewModel.EmptyStateMessage);
+    }
+
+    /// <summary>
+    /// Verifies that filtered-empty results get their own empty-state message.
+    /// </summary>
+    [Fact]
+    public void EmptyState_WhenLoadedApplicationsAreFilteredOut_UsesFilterMessage()
+    {
+        // Arrange
+        var viewModel = CreateViewModel();
+
+        // Act
+        viewModel.TotalCount = 5;
+
+        // Assert
+        var expected = Loc.ResourceManager.GetString("AppCatalog_EmptyFilter", Loc.Culture);
+        Assert.Equal(expected, viewModel.EmptyStateMessage);
     }
 
     /// <summary>
@@ -658,6 +775,8 @@ internal sealed class TestApplicationEditorDialogService : IApplicationEditorDia
 
     public int ShowEditCallCount { get; private set; }
 
+    public List<EditableApplicationModel?> AddRequests { get; } = [];
+
     public List<EditableApplicationModel> EditRequests { get; } = [];
 
     public void QueueAddResult(EditableApplicationModel? application)
@@ -670,9 +789,10 @@ internal sealed class TestApplicationEditorDialogService : IApplicationEditorDia
         _editResults.Enqueue(application);
     }
 
-    public Task<EditableApplicationModel?> ShowAddDialogAsync()
+    public Task<EditableApplicationModel?> ShowAddDialogAsync(EditableApplicationModel? initialApplication = null)
     {
         ShowAddCallCount++;
+        AddRequests.Add(initialApplication);
         return Task.FromResult(_addResults.Count > 0 ? _addResults.Dequeue() : null);
     }
 
@@ -754,6 +874,7 @@ internal class MockApplicationDatabaseService : IApplicationDatabaseService
 {
     private readonly List<EditableApplicationModel> _applications;
     private ApplicationValidationResult? _customValidationResult;
+    private Exception? _loadException;
 
     public EditableApplicationModel? LastSavedApplication { get; private set; }
 
@@ -831,12 +952,30 @@ internal class MockApplicationDatabaseService : IApplicationDatabaseService
         };
     }
 
+    public void SetLoadException(Exception exception)
+    {
+        _loadException = exception;
+    }
+
+    public void ReplaceApplications(params EditableApplicationModel[] applications)
+    {
+        _applications.Clear();
+        _applications.AddRange(applications);
+    }
+
     public string DatabasePath => @"C:\Test\applications.json";
 
     public event EventHandler<DatabaseChangedEventArgs>? DatabaseChanged;
 
     public Task<IEnumerable<EditableApplicationModel>> LoadApplicationsAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult<IEnumerable<EditableApplicationModel>>(_applications);
+    {
+        if (_loadException != null)
+        {
+            throw _loadException;
+        }
+
+        return Task.FromResult<IEnumerable<EditableApplicationModel>>(_applications);
+    }
 
     public Task<EditableApplicationModel?> GetApplicationAsync(string appId, CancellationToken cancellationToken = default)
         => Task.FromResult(_applications.FirstOrDefault(a => a.AppId == appId));

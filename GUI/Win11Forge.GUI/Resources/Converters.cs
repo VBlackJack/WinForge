@@ -252,6 +252,39 @@ public class ZeroToVisibilityConverter : IValueConverter
 }
 
 /// <summary>
+/// Multi-value converter: visible when loading is complete, no load error exists, and count is zero.
+/// </summary>
+public sealed class AndZeroToVisibilityConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (values.Length != 3)
+        {
+            return Visibility.Collapsed;
+        }
+
+        if (values[0] is bool isLoading && isLoading)
+        {
+            return Visibility.Collapsed;
+        }
+
+        if (values[1] is bool hasLoadError && hasLoadError)
+        {
+            return Visibility.Collapsed;
+        }
+
+        return values[2] is int filteredCount && filteredCount == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
 /// Converts boolean (IsInstalled) to Fluent icon symbol.
 /// True = CheckmarkCircle, False = ErrorCircle.
 /// </summary>

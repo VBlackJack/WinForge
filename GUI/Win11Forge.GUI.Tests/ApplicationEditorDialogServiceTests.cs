@@ -50,6 +50,34 @@ public class ApplicationEditorDialogServiceTests
     }
 
     [Fact]
+    public async Task ShowAddDialogAsync_WhenInitialApplicationProvided_PassesItToDialog()
+    {
+        // Arrange
+        var owner = new object();
+        var initialApplication = CreateApplication("SeedApp");
+        object? receivedOwner = null;
+        EditableApplicationModel? receivedApplication = null;
+
+        var service = new ApplicationEditorDialogService(
+            () => owner,
+            (dialogOwner, application) =>
+            {
+                receivedOwner = dialogOwner;
+                receivedApplication = application;
+                return Task.FromResult<EditableApplicationModel?>(application);
+            },
+            (_, _) => Task.FromResult<EditableApplicationModel?>(null));
+
+        // Act
+        var result = await service.ShowAddDialogAsync(initialApplication);
+
+        // Assert
+        Assert.Same(initialApplication, result);
+        Assert.Same(owner, receivedOwner);
+        Assert.Same(initialApplication, receivedApplication);
+    }
+
+    [Fact]
     public async Task ShowEditDialogAsync_WhenDialogReturnsApplication_ReturnsApplicationAndPassesInput()
     {
         // Arrange

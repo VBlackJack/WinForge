@@ -46,6 +46,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     private CancellationTokenSource? _searchDebounceTokenSource;
     private CancellationTokenSource? _verificationCts;
     private const int SearchDebounceMs = 300;
+    private const int DuplicateAppIdMaxLength = 128;
 
     private static string GetLocalizedString(string resourceKey, string fallback)
     {
@@ -97,7 +98,19 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     /// Indicates if data is currently loading.
     /// </summary>
     [ObservableProperty]
-    private bool _isLoading;
+    private bool _isLoading = true;
+
+    /// <summary>
+    /// Indicates if the last database load failed.
+    /// </summary>
+    [ObservableProperty]
+    private bool _hasLoadError;
+
+    /// <summary>
+    /// Error message from the last failed database load.
+    /// </summary>
+    [ObservableProperty]
+    private string? _loadErrorMessage;
 
     /// <summary>
     /// Indicates if verification is in progress.
@@ -122,6 +135,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     /// Total count of applications in the database.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EmptyStateMessage))]
     private int _totalCount;
 
     /// <summary>
@@ -173,6 +187,13 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         : Loc.AppDb_RedoTooltipDefault;
 
     /// <summary>
+    /// Message shown when the App Catalog is cleanly loaded but has no visible rows.
+    /// </summary>
+    public string EmptyStateMessage => TotalCount == 0
+        ? GetLocalizedString("AppCatalog_EmptyDatabase", "No applications in database. Add one to get started.")
+        : GetLocalizedString("AppCatalog_EmptyFilter", "No applications match the current filter. Try clearing it.");
+
+    /// <summary>
     /// Initializes a new instance of ApplicationsViewModel.
     /// </summary>
     /// <param name="databaseService">Application database service.</param>
@@ -217,6 +238,8 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     private async Task LoadApplicationsAsync()
     {
         IsLoading = true;
+        HasLoadError = false;
+        LoadErrorMessage = null;
         StatusMessage = Loc.AppDb_Loading;
 
         try
@@ -240,6 +263,8 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
             SelectedCategory = Loc.Apps_CategoryAll;
             TotalCount = Applications.Count;
             UpdateFilteredCount();
+            HasLoadError = false;
+            LoadErrorMessage = null;
             StatusMessage = string.Format(Loc.AppDb_LoadedCount, TotalCount);
 
             // Notify commands that depend on Applications.Count
@@ -247,12 +272,12 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         }
         catch (ApplicationDatabaseException ex)
         {
-            StatusMessage = string.Format(Loc.AppDb_LoadError, ex.Message);
+            SetLoadError(ex);
             Debug.WriteLine($"ApplicationDatabaseException in LoadApplicationsAsync: {ex}");
         }
         catch (Exception ex)
         {
-            StatusMessage = string.Format(Loc.AppDb_LoadError, ex.Message);
+            SetLoadError(ex);
             Debug.WriteLine($"Unexpected exception in LoadApplicationsAsync: {ex}");
         }
         finally
@@ -331,12 +356,13 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Command to duplicate the selected application.
     /// </summary>
-    [RelayCommand(CanExecute = nameof(CanEditOrDelete))]
+    [RelayCommand(CanExecute = nameof(CanDuplicate))]
     private async Task DuplicateAsync()
     {
         if (SelectedApplication == null) return;
 
-        await OpenEditorForAddAsync();
+        var duplicate = CreateDuplicateApplication(SelectedApplication);
+        await OpenEditorForAddAsync(duplicate);
     }
 
     /// <summary>
@@ -344,6 +370,15 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     /// </summary>
     [RelayCommand]
     private async Task RefreshAsync()
+    {
+        await LoadApplicationsAsync();
+    }
+
+    /// <summary>
+    /// Command to retry loading the applications database after a load failure.
+    /// </summary>
+    [RelayCommand]
+    private async Task RetryLoadAsync()
     {
         await LoadApplicationsAsync();
     }
@@ -416,11 +451,11 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Opens the editor for a new application and saves the result.
     /// </summary>
-    public async Task OpenEditorForAddAsync()
+    public async Task OpenEditorForAddAsync(EditableApplicationModel? initialApplication = null)
     {
         try
         {
-            var savedApplication = await _applicationEditorDialogService.ShowAddDialogAsync();
+            var savedApplication = await _applicationEditorDialogService.ShowAddDialogAsync(initialApplication);
             if (savedApplication != null)
             {
                 await SaveApplicationAsync(savedApplication, isNew: true);
@@ -699,6 +734,11 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     private bool CanVerifySelected() => SelectedApplication != null && !IsVerifying;
 
     /// <summary>
+    /// Determines if the selected application can be duplicated.
+    /// </summary>
+    private bool CanDuplicate() => SelectedApplication != null;
+
+    /// <summary>
     /// Determines if edit/delete operations can be performed.
     /// </summary>
     private bool CanEditOrDelete() => SelectedApplication != null;
@@ -805,6 +845,47 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         {
             await LoadApplicationsAsync();
         });
+    }
+
+    private static EditableApplicationModel CreateDuplicateApplication(EditableApplicationModel application)
+    {
+        ArgumentNullException.ThrowIfNull(application);
+
+        var duplicate = application.Clone();
+        duplicate.AppId = CreateDuplicateAppId(application.AppId);
+        duplicate.Name = $"{application.Name} (Copy)";
+        return duplicate;
+    }
+
+    private static string CreateDuplicateAppId(string appId)
+    {
+        var sourceAppId = string.IsNullOrWhiteSpace(appId) ? "App" : appId.Trim();
+        var suffix = $"-copy-{Guid.NewGuid():N}";
+        var maxBaseLength = Math.Max(1, DuplicateAppIdMaxLength - suffix.Length);
+
+        if (sourceAppId.Length > maxBaseLength)
+        {
+            sourceAppId = sourceAppId[..maxBaseLength].TrimEnd('.', '-', '_');
+        }
+
+        if (string.IsNullOrEmpty(sourceAppId) || !char.IsLetterOrDigit(sourceAppId[0]))
+        {
+            sourceAppId = "App";
+        }
+
+        return $"{sourceAppId}{suffix}";
+    }
+
+    private void SetLoadError(Exception ex)
+    {
+        var message = FormatLocalized(
+            "AppCatalog_LoadError",
+            "Failed to load applications: {0}",
+            ex.Message);
+
+        HasLoadError = true;
+        LoadErrorMessage = message;
+        StatusMessage = message;
     }
 
     /// <summary>
