@@ -15,6 +15,7 @@
  */
 
 using System.Diagnostics;
+using System.Globalization;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Models;
 
@@ -61,7 +62,12 @@ public partial class AppsViewModel
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to open website: {ex.Message}");
+            _toastService?.ShowWarning(string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.Resources.Apps_Toast_OpenWebsiteFailed,
+                app.Name,
+                ex.Message));
+            Debug.WriteLine($"Failed to open website: {ex.Message}");
         }
     }
 
@@ -112,9 +118,12 @@ public partial class AppsViewModel
         {
             System.Windows.Clipboard.SetText(app.AppId);
         }
-        catch
+        catch (Exception ex)
         {
-            // Silently fail if clipboard is unavailable
+            _toastService?.ShowWarning(string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.Resources.Apps_Toast_CopyAppIdFailed,
+                ex.Message));
         }
     }
 

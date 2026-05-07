@@ -2478,6 +2478,12 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   <data name="Apps_Error_UpdateSingleFailed" xml:space="preserve">
     <value>Update of "{0}" failed: {1}</value>
   </data>
+  <data name="Apps_Toast_OpenWebsiteFailed" xml:space="preserve">
+    <value>Could not open website for "{0}": {1}</value>
+  </data>
+  <data name="Apps_Toast_CopyAppIdFailed" xml:space="preserve">
+    <value>Could not copy to clipboard: {0}</value>
+  </data>
   <data name="Validation_AtLeastOneSource" xml:space="preserve">
     <value>At least one installation source is required</value>
     <comment>Validation error for missing sources</comment>

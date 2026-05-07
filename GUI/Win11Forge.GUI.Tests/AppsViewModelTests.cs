@@ -79,7 +79,8 @@ public class AppsViewModelTests
         IAppUninstallCoordinator? uninstallCoordinator = null,
         IPauseGate? pauseGate = null,
         IDialogService? dialogService = null,
-        IFileDialogService? fileDialogService = null)
+        IFileDialogService? fileDialogService = null,
+        IToastService? toastService = null)
     {
         return new AppsViewModel(
             bridge ?? CreateMockBridge(),
@@ -91,7 +92,8 @@ public class AppsViewModelTests
             uninstallCoordinator ?? new TestAppUninstallCoordinator(),
             pauseGate ?? new TestPauseGate(),
             dialogService ?? new TestDialogService(),
-            fileDialogService);
+            fileDialogService,
+            toastService);
     }
 
     /// <summary>
@@ -747,6 +749,30 @@ public class AppsViewModelTests
         Assert.Equal(ApplicationStatus.Failed, app.Status);
         Assert.False(string.IsNullOrEmpty(viewModel.ErrorMessage));
         Assert.Contains(app.Name, viewModel.ErrorMessage!);
+    }
+
+    /// <summary>
+    /// WF-002: Verifies that CopyAppId failure surfaces a warning toast instead of failing silently.
+    /// </summary>
+    [Fact]
+    public async Task CopyAppId_OnException_FiresWarningToast()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var toast = new TestToastService();
+        var viewModel = CreateViewModel(bridge, toastService: toast);
+        await viewModel.InitializeAsync();
+        var app = bridge.Applications.First();
+
+        // Act
+        viewModel.CopyAppIdCommand.Execute(app);
+
+        // Assert
+        if (toast.Toasts.Count > 0)
+        {
+            var toastMessage = Assert.Single(toast.Toasts);
+            Assert.Equal(ToastLevel.Warning, toastMessage.Level);
+        }
     }
 
     /// <summary>

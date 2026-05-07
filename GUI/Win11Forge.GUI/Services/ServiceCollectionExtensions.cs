@@ -72,6 +72,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPackageVerificationService, PackageVerificationService>();
         services.AddSingleton<IPackageSearchService, PackageSearchService>();
         services.AddSingleton<ToastService>();
+        services.AddSingleton<IToastService>(sp => sp.GetRequiredService<ToastService>());
         services.AddSingleton<IErrorHistoryService, ErrorHistoryService>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IAccessibilityService, AccessibilityService>();

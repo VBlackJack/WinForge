@@ -57,6 +57,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private readonly IAppUninstallCoordinator _uninstallCoordinator;
     private readonly IPauseGate _pauseGate;
     private readonly IDialogService _dialogService;
+    private readonly IToastService? _toastService;
     private readonly ProgressEstimator _progressEstimator = new();
     private List<ApplicationModel> _allApplications = [];
     private CancellationTokenSource? _scanCancellationTokenSource;
@@ -277,7 +278,8 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         IAppUninstallCoordinator uninstallCoordinator,
         IPauseGate pauseGate,
         IDialogService? dialogService = null,
-        IFileDialogService? fileDialogService = null)
+        IFileDialogService? fileDialogService = null,
+        IToastService? toastService = null)
     {
         _powerShellBridge = powerShellBridge;
         _settingsService = settingsService;
@@ -289,6 +291,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         _pauseGate = pauseGate;
         _dialogService = dialogService ?? new DialogService();
         _fileDialogService = fileDialogService ?? new FileDialogService();
+        _toastService = toastService;
 
         // Subscribe to pause/resume/cancel requests from the monitoring view
         _deploymentStateService.PauseRequested += OnPauseRequested;

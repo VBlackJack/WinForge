@@ -1676,6 +1676,12 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Apps_Error_UpdateSingleFailed" xml:space="preserve">
     <value>Échec de la mise à jour de « {0} » : {1}</value>
   </data>
+  <data name="Apps_Toast_OpenWebsiteFailed" xml:space="preserve">
+    <value>Impossible d'ouvrir le site web de « {0} » : {1}</value>
+  </data>
+  <data name="Apps_Toast_CopyAppIdFailed" xml:space="preserve">
+    <value>Impossible de copier dans le presse-papiers : {0}</value>
+  </data>
   <data name="Validation_AtLeastOneSource" xml:space="preserve">
     <value>Au moins une source d'installation est requise</value>
   </data>
