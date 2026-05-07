@@ -1853,12 +1853,6 @@ Cette action est irreversible.</value>
   <data name="AppDb_EditTitle" xml:space="preserve">
     <value>Modifier l'application</value>
   </data>
-  <data name="AppDb_NoResults" xml:space="preserve">
-    <value>Aucune application trouvee</value>
-  </data>
-  <data name="AppDb_NoResultsHint" xml:space="preserve">
-    <value>Essayez de modifier votre recherche ou vos filtres</value>
-  </data>
   <data name="AppDb_Showing" xml:space="preserve">
     <value>Affichage de</value>
   </data>

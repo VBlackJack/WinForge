@@ -713,8 +713,6 @@ public class Resources
     public static string AppDb_DeleteTitle => ResourceManager.GetString("AppDb_DeleteTitle", resourceCulture);
     public static string AppDb_AddTitle => ResourceManager.GetString("AppDb_AddTitle", resourceCulture);
     public static string AppDb_EditTitle => ResourceManager.GetString("AppDb_EditTitle", resourceCulture);
-    public static string AppDb_NoResults => ResourceManager.GetString("AppDb_NoResults", resourceCulture);
-    public static string AppDb_NoResultsHint => ResourceManager.GetString("AppDb_NoResultsHint", resourceCulture);
     public static string AppDb_Showing => ResourceManager.GetString("AppDb_Showing", resourceCulture);
     public static string AppDb_Of => ResourceManager.GetString("AppDb_Of", resourceCulture);
     public static string AppDb_Applications => ResourceManager.GetString("AppDb_Applications", resourceCulture);
