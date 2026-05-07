@@ -138,6 +138,20 @@ public class ConfirmDialogTests
         var logsRequest = Assert.Single(logsDialog.ConfirmRequests);
         Assert.Equal(Loc.Confirm_ClearOldLogs_Btn, logsRequest.ConfirmText);
         Assert.Equal(Loc.Common_Cancel, logsRequest.CancelText);
+
+        var resetDialog = new TestDialogService();
+        resetDialog.QueueConfirmResult(false);
+        var resetSettingsViewModel = new SettingsViewModel(
+            new MockAppSettingsService(),
+            new MockDeploymentHistoryService(),
+            new MockPowerShellBridge(),
+            dialogService: resetDialog);
+
+        await resetSettingsViewModel.ResetToDefaultsCommand.ExecuteAsync(null);
+
+        var resetRequest = Assert.Single(resetDialog.ConfirmRequests);
+        Assert.Equal(Loc.Confirm_Reset_Btn, resetRequest.ConfirmText);
+        Assert.Equal(Loc.Common_Cancel, resetRequest.CancelText);
     }
 
     [Fact]
