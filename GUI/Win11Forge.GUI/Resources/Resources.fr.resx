@@ -1200,23 +1200,11 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Confirm_ClearOldLogs_Btn" xml:space="preserve">
     <value>Effacer les journaux</value>
   </data>
-  <data name="Confirm_Uninstall_Title" xml:space="preserve">
-    <value>Désinstaller les applications</value>
-  </data>
-  <data name="Confirm_Uninstall_Message" xml:space="preserve">
-    <value>Êtes-vous sûr de vouloir désinstaller {0} application(s) ? Cette action est irréversible.</value>
-  </data>
   <data name="Confirm_DeleteProfile_Title" xml:space="preserve">
     <value>Supprimer le profil</value>
   </data>
   <data name="Confirm_DeleteProfile_Message" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir supprimer ce profil ? Cette action est irréversible.</value>
-  </data>
-  <data name="Confirm_Yes" xml:space="preserve">
-    <value>Oui, continuer</value>
-  </data>
-  <data name="Confirm_No" xml:space="preserve">
-    <value>Non, annuler</value>
   </data>
   <!-- Profile Export/Import -->
   <data name="Editor_Btn_Export" xml:space="preserve">

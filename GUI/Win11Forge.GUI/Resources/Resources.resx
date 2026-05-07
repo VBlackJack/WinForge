@@ -1590,14 +1590,6 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Clear logs</value>
     <comment>Clear old logs confirmation button</comment>
   </data>
-  <data name="Confirm_Uninstall_Title" xml:space="preserve">
-    <value>Uninstall Applications</value>
-    <comment>Uninstall confirmation title</comment>
-  </data>
-  <data name="Confirm_Uninstall_Message" xml:space="preserve">
-    <value>Are you sure you want to uninstall {0} application(s)? This action cannot be undone.</value>
-    <comment>Uninstall confirmation message (0=count)</comment>
-  </data>
   <data name="Confirm_DeleteProfile_Title" xml:space="preserve">
     <value>Delete Profile</value>
     <comment>Delete profile confirmation title</comment>
@@ -1605,14 +1597,6 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   <data name="Confirm_DeleteProfile_Message" xml:space="preserve">
     <value>Are you sure you want to delete this profile? This action cannot be undone.</value>
     <comment>Delete profile confirmation message</comment>
-  </data>
-  <data name="Confirm_Yes" xml:space="preserve">
-    <value>Yes, proceed</value>
-    <comment>Confirmation yes button</comment>
-  </data>
-  <data name="Confirm_No" xml:space="preserve">
-    <value>No, cancel</value>
-    <comment>Confirmation no button</comment>
   </data>
   <!-- Profile Export/Import -->
   <data name="Editor_Btn_Export" xml:space="preserve">

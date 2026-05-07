@@ -458,12 +458,8 @@ public class Resources
     public static string Confirm_Delete_Btn => ResourceManager.GetString("Confirm_Delete_Btn", resourceCulture);
     public static string Confirm_Reset_Btn => ResourceManager.GetString("Confirm_Reset_Btn", resourceCulture);
     public static string Confirm_ClearOldLogs_Btn => ResourceManager.GetString("Confirm_ClearOldLogs_Btn", resourceCulture);
-    public static string Confirm_Uninstall_Title => ResourceManager.GetString("Confirm_Uninstall_Title", resourceCulture);
-    public static string Confirm_Uninstall_Message => ResourceManager.GetString("Confirm_Uninstall_Message", resourceCulture);
     public static string Confirm_DeleteProfile_Title => ResourceManager.GetString("Confirm_DeleteProfile_Title", resourceCulture);
     public static string Confirm_DeleteProfile_Message => ResourceManager.GetString("Confirm_DeleteProfile_Message", resourceCulture);
-    public static string Confirm_Yes => ResourceManager.GetString("Confirm_Yes", resourceCulture);
-    public static string Confirm_No => ResourceManager.GetString("Confirm_No", resourceCulture);
 
     // Profile Export/Import
     public static string Editor_Btn_Export => ResourceManager.GetString("Editor_Btn_Export", resourceCulture);
