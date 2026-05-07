@@ -2770,10 +2770,7 @@ This action cannot be undone.</value>
     <comment>Error opening editor (0=message, 1=stack trace)</comment>
   </data>
   <data name="AppDb_ImportModeConfirm" xml:space="preserve">
-    <value>Do you want to replace existing applications with the same ID?
-
-Yes = Replace existing
-No = Skip duplicates</value>
+    <value>Choose how to handle existing applications.</value>
     <comment>Import mode confirmation message</comment>
   </data>
   <data name="AppDb_Import_Replace" xml:space="preserve">
