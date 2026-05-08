@@ -553,7 +553,7 @@ public class Resources
     public static string Dialog_SaveProfile_Error => ResourceManager.GetString("Dialog_SaveProfile_Error", resourceCulture);
     public static string Dialog_SaveProfile_NoApps => ResourceManager.GetString("Dialog_SaveProfile_NoApps", resourceCulture);
     public static string Profile_Apply_Title => ResourceManager.GetString("Profile_Apply_Title", resourceCulture);
-    public static string Profile_Apply_Message => ResourceManager.GetString("Profile_Apply_Message", resourceCulture);
+    public static string Profile_Apply_Message_HasManualSelection => ResourceManager.GetString("Profile_Apply_Message_HasManualSelection", resourceCulture);
     public static string Profile_Apply_Replace => ResourceManager.GetString("Profile_Apply_Replace", resourceCulture);
     public static string Profile_Apply_Merge => ResourceManager.GetString("Profile_Apply_Merge", resourceCulture);
 

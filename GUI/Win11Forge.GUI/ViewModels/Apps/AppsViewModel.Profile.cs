@@ -294,9 +294,16 @@ public partial class AppsViewModel
             var mergeWithManualSelection = false;
             if (ShouldPromptBeforeApplyingProfile())
             {
+                var manualCount = _allApplications.Count(app => app.IsSelected);
+                var applyMessage = string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    Resources.Resources.Profile_Apply_Message_HasManualSelection,
+                    manualCount,
+                    selectedProfile);
+
                 var applyMode = await _dialogService.ShowYesNoCancelAsync(
                     Resources.Resources.Profile_Apply_Title,
-                    Resources.Resources.Profile_Apply_Message,
+                    applyMessage,
                     Resources.Resources.Profile_Apply_Replace,
                     Resources.Resources.Profile_Apply_Merge,
                     Resources.Resources.Common_Cancel);

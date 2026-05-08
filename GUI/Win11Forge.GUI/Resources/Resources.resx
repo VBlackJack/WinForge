@@ -2040,9 +2040,9 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Apply profile?</value>
     <comment>Title for profile apply conflict dialog</comment>
   </data>
-  <data name="Profile_Apply_Message" xml:space="preserve">
-    <value>You already have manually selected applications. Replace them with the selected profile or merge the profile into the current selection?</value>
-    <comment>Message for profile apply conflict dialog</comment>
+  <data name="Profile_Apply_Message_HasManualSelection" xml:space="preserve">
+    <value>You have {0} manually selected applications. Replace them with the "{1}" profile or merge?</value>
+    <comment>Message for profile apply conflict dialog. {0} = count of manually selected apps. {1} = name of the profile being applied.</comment>
   </data>
   <data name="Profile_Apply_Replace" xml:space="preserve">
     <value>Replace selection</value>

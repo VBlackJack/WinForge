@@ -1343,8 +1343,8 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Profile_Apply_Title" xml:space="preserve">
     <value>Appliquer le profil ?</value>
   </data>
-  <data name="Profile_Apply_Message" xml:space="preserve">
-    <value>Vous avez déjà sélectionné des applications manuellement. Remplacer la sélection par le profil choisi ou fusionner le profil avec la sélection actuelle ?</value>
+  <data name="Profile_Apply_Message_HasManualSelection" xml:space="preserve">
+    <value>Vous avez {0} applications sélectionnées manuellement. Remplacer par le profil « {1} » ou fusionner ?</value>
   </data>
   <data name="Profile_Apply_Replace" xml:space="preserve">
     <value>Remplacer la sélection</value>

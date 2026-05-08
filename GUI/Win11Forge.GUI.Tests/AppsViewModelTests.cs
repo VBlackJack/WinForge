@@ -942,6 +942,13 @@ public class AppsViewModelTests
 
         // Assert
         var request = Assert.Single(dialogService.YesNoCancelRequests);
+        Assert.Equal(
+            string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                Resources.Resources.Profile_Apply_Message_HasManualSelection,
+                1,
+                "Work"),
+            request.Message);
         Assert.Equal(Resources.Resources.Profile_Apply_Replace, request.YesText);
         Assert.Equal(Resources.Resources.Profile_Apply_Merge, request.NoText);
         Assert.Equal(Resources.Resources.Common_Cancel, request.CancelText);
