@@ -85,7 +85,7 @@
                                                  Width="32" Height="32"
                                                  Margin="0,0,16,0"/>
                                 <TextBlock Text="{Binding HeroTitle}"
-                                           FontSize="24" FontWeight="SemiBold"
+                                           Style="{StaticResource PageTitleTextStyle}"
                                            VerticalAlignment="Center"
                                            AutomationProperties.AutomationId="PageDashboard"/>
                             </StackPanel>
@@ -103,7 +103,7 @@
                                                Margin="0,0,16,0"
                                                VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding HeroTitle}"
-                                           FontSize="24" FontWeight="SemiBold"
+                                           Style="{StaticResource PageTitleTextStyle}"
                                            VerticalAlignment="Center"
                                            AutomationProperties.AutomationId="PageDashboard"/>
                             </StackPanel>
@@ -145,7 +145,7 @@
                                                VerticalAlignment="Center"
                                                Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                 <TextBlock Text="{Binding HeroTitle}"
-                                           FontSize="24" FontWeight="SemiBold"
+                                           Style="{StaticResource PageTitleTextStyle}"
                                            VerticalAlignment="Center"
                                            AutomationProperties.AutomationId="PageDashboard"/>
                             </StackPanel>

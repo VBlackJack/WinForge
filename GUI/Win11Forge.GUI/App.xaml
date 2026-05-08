@@ -95,6 +95,19 @@
             <Thickness x:Key="MarginLargeBottom">0,0,0,24</Thickness>
             <Thickness x:Key="ContentPadding">24</Thickness>
 
+            <!-- Page header typography tokens -->
+            <Style x:Key="PageTitleTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="28"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            </Style>
+
+            <Style x:Key="PageSubtitleTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <Setter Property="Margin" Value="0,8,0,0"/>
+            </Style>
+
             <!-- Animation Durations (set to 0 by App.xaml.cs when reduced motion enabled) -->
             <Duration x:Key="AnimationFast">0:0:0.15</Duration>
             <Duration x:Key="AnimationNormal">0:0:0.3</Duration>

@@ -204,7 +204,7 @@
         <!-- Title -->
         <TextBlock Grid.Row="0"
                    Text="{loc:Loc Apps_Title}"
-                   FontSize="28" FontWeight="SemiBold"
+                   Style="{StaticResource PageTitleTextStyle}"
                    Margin="0,0,0,16"
                    AutomationProperties.AutomationId="PageApplications"/>
 
