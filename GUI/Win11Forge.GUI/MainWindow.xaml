@@ -106,13 +106,7 @@
                                        AutomationProperties.AutomationId="NavDeployment"
                                        AutomationProperties.Name="{loc:Loc Nav_Deployment}"
                                        AutomationProperties.HelpText="{loc:Loc A11y_Main_NavDeployment}"/>
-                <ui:NavigationViewItem Content="{loc:Loc Nav_Settings}"
-                                       Tag="4"
-                                       Click="NavigationViewItem_Click"
-                                       Icon="{ui:SymbolIcon Settings24}"
-                                       AutomationProperties.AutomationId="NavSettings"
-                                       AutomationProperties.Name="{loc:Loc Nav_Settings}"
-                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavSettings}"/>
+                <ui:NavigationViewItemSeparator/>
                 <ui:NavigationViewItem Content="{loc:Loc Nav_AppCatalog}"
                                        Tag="5"
                                        Click="NavigationViewItem_Click"
@@ -120,6 +114,13 @@
                                        AutomationProperties.AutomationId="NavAppCatalog"
                                        AutomationProperties.Name="{loc:Loc Nav_AppCatalog}"
                                        AutomationProperties.HelpText="{loc:Loc A11y_Main_NavAppDatabase}"/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Settings}"
+                                       Tag="4"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon Settings24}"
+                                       AutomationProperties.AutomationId="NavSettings"
+                                       AutomationProperties.Name="{loc:Loc Nav_Settings}"
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavSettings}"/>
             </ui:NavigationView.MenuItems>
 
 

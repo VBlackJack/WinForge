@@ -273,6 +273,10 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Applications</value>
     <comment>Applications view title</comment>
   </data>
+  <data name="Apps_Subtitle" xml:space="preserve">
+    <value>Install, update, and manage your applications</value>
+    <comment>Applications view subtitle</comment>
+  </data>
   <data name="Apps_SearchHint" xml:space="preserve">
     <value>Search applications...</value>
     <comment>Search box placeholder text</comment>
