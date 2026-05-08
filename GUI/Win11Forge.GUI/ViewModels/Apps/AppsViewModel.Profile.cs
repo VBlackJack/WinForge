@@ -71,6 +71,12 @@ public partial class AppsViewModel
     /// </summary>
     private Dictionary<string, List<string>> _rawProfileAppIdsCache = [];
 
+    /// <summary>
+    /// Cache of resolved profile inheritance chains.
+    /// Key = profile name, Value = parent-to-child profile chain used for tier badges.
+    /// </summary>
+    private Dictionary<string, List<string>> _profileInheritanceCache = [];
+
     private string? _lastAppliedProfile;
     private bool _isRestoringProfile;
 
@@ -95,6 +101,7 @@ public partial class AppsViewModel
     {
         _resolvedProfileAppIdsCache.Clear();
         _rawProfileAppIdsCache.Clear();
+        _profileInheritanceCache.Clear();
 
         // Get profiles directory path
         var profilesDir = GetProfilesDirectory();
@@ -190,8 +197,10 @@ public partial class AppsViewModel
     {
         var allAppIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var profileChain = new List<string>();
 
-        await ResolveProfileRecursiveAsync(profilesDir, profileName, allAppIds, visited);
+        await ResolveProfileRecursiveAsync(profilesDir, profileName, allAppIds, visited, profileChain);
+        _profileInheritanceCache[profileName] = profileChain;
 
         return allAppIds;
     }
@@ -203,7 +212,8 @@ public partial class AppsViewModel
         string profilesDir,
         string profileName,
         HashSet<string> allAppIds,
-        HashSet<string> visited)
+        HashSet<string> visited,
+        List<string> profileChain)
     {
         if (visited.Contains(profileName))
         {
@@ -230,12 +240,13 @@ public partial class AppsViewModel
                 var parentName = parentElement.GetString();
                 if (!string.IsNullOrEmpty(parentName))
                 {
-                    await ResolveProfileRecursiveAsync(profilesDir, parentName, allAppIds, visited);
+                    await ResolveProfileRecursiveAsync(profilesDir, parentName, allAppIds, visited, profileChain);
                 }
             }
         }
 
         // Then add this profile's applications
+        var rawAppIds = new List<string>();
         if (root.TryGetProperty("Applications", out var appsElement) &&
             appsElement.ValueKind == JsonValueKind.Array)
         {
@@ -246,11 +257,15 @@ public partial class AppsViewModel
                     var appId = appElement.GetString();
                     if (!string.IsNullOrEmpty(appId))
                     {
+                        rawAppIds.Add(appId);
                         allAppIds.Add(appId);
                     }
                 }
             }
         }
+
+        _rawProfileAppIdsCache[profileName] = rawAppIds;
+        profileChain.Add(profileName);
     }
 
     /// <summary>
@@ -399,19 +414,10 @@ public partial class AppsViewModel
     /// </summary>
     private void BuildProfileTierMapping(string profileName)
     {
-        // Define the profile hierarchy (from base to most specific)
-        var profileHierarchy = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "Personnel", ["Base", "Office", "Gaming", "Personnel"] },
-            { "Gaming", ["Base", "Office", "Gaming"] },
-            { "Office", ["Base", "Office"] },
-            { "Base", ["Base"] }
-        };
-
-        if (!profileHierarchy.TryGetValue(profileName, out var hierarchy))
-        {
-            hierarchy = [profileName];
-        }
+        var hierarchy = _profileInheritanceCache.TryGetValue(profileName, out var cachedHierarchy) &&
+            cachedHierarchy.Count > 0
+                ? cachedHierarchy
+                : new List<string> { profileName };
 
         // Build tier mapping (most specific wins, so iterate from base to specific)
         foreach (var tier in hierarchy)
@@ -535,6 +541,21 @@ public partial class AppsViewModel
                 _rawProfileAppIdsCache[saveResult.ProfileName] = ownAppIds.ToList();
             }
 
+            var inheritanceChain = new List<string>();
+            if (!string.IsNullOrEmpty(saveResult.ParentProfile))
+            {
+                if (_profileInheritanceCache.TryGetValue(saveResult.ParentProfile, out var parentChain))
+                {
+                    inheritanceChain.AddRange(parentChain);
+                }
+                else
+                {
+                    inheritanceChain.Add(saveResult.ParentProfile);
+                }
+            }
+            inheritanceChain.Add(saveResult.ProfileName);
+            _profileInheritanceCache[saveResult.ProfileName] = inheritanceChain;
+
             // Add to available profiles if new
             if (!AvailableProfiles.Contains(saveResult.ProfileName))
             {
@@ -561,5 +582,6 @@ public partial class AppsViewModel
     {
         _resolvedProfileAppIdsCache.Clear();
         _rawProfileAppIdsCache.Clear();
+        _profileInheritanceCache.Clear();
     }
 }
