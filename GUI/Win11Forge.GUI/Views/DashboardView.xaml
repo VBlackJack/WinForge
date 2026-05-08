@@ -85,13 +85,13 @@
                                                  Width="32" Height="32"
                                                  Margin="0,0,16,0"/>
                                 <TextBlock Text="{Binding HeroTitle}"
-                                           FontSize="24" FontWeight="SemiBold"
+                                           Style="{StaticResource PageTitleTextStyle}"
                                            VerticalAlignment="Center"
                                            AutomationProperties.AutomationId="PageDashboard"/>
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
-                                       FontSize="14"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                       Style="{StaticResource PageSubtitleTextStyle}"
+                                       Margin="0"/>
                         </StackPanel>
 
                         <!-- State: NeedPrereqs -->
@@ -103,13 +103,12 @@
                                                Margin="0,0,16,0"
                                                VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding HeroTitle}"
-                                           FontSize="24" FontWeight="SemiBold"
+                                           Style="{StaticResource PageTitleTextStyle}"
                                            VerticalAlignment="Center"
                                            AutomationProperties.AutomationId="PageDashboard"/>
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
-                                       FontSize="14"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Style="{StaticResource PageSubtitleTextStyle}"
                                        Margin="0,0,0,16"/>
                             <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
                                        Appearance="Primary"
@@ -145,13 +144,12 @@
                                                VerticalAlignment="Center"
                                                Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                 <TextBlock Text="{Binding HeroTitle}"
-                                           FontSize="24" FontWeight="SemiBold"
+                                           Style="{StaticResource PageTitleTextStyle}"
                                            VerticalAlignment="Center"
                                            AutomationProperties.AutomationId="PageDashboard"/>
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
-                                       FontSize="14"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Style="{StaticResource PageSubtitleTextStyle}"
                                        Margin="0,0,0,16"/>
                             <StackPanel Orientation="Horizontal">
                                 <ui:Button Command="{Binding StartDeploymentCommand}"

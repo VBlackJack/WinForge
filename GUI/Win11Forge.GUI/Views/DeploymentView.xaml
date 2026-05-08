@@ -24,12 +24,10 @@
         <!-- Title -->
         <StackPanel Grid.Row="0" Margin="0,0,0,24">
             <TextBlock Text="{loc:Loc Monitoring_Title}"
-                       FontSize="28" FontWeight="SemiBold"
+                       Style="{StaticResource PageTitleTextStyle}"
                        AutomationProperties.AutomationId="PageDeployment"/>
             <TextBlock Text="{loc:Loc Monitoring_Subtitle}"
-                       FontSize="12"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                       Margin="0,8,0,0"/>
+                       Style="{StaticResource PageSubtitleTextStyle}"/>
         </StackPanel>
 
         <!-- Deployment Progress Card -->

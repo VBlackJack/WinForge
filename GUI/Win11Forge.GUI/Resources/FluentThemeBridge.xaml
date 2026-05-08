@@ -40,6 +40,7 @@
     <SolidColorBrush x:Key="IconSecondaryBrush" Color="#9E9E9E"/>
     <SolidColorBrush x:Key="IconHintBrush" Color="#757575"/>
     <SolidColorBrush x:Key="IconDisabledBrush" Color="#616161"/>
+    <SolidColorBrush x:Key="SubtleDataGridLineBrush" Color="#338A90A8"/>
 
     <!-- Error Display Colors -->
     <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="#33F44336"/>
@@ -99,6 +100,7 @@
     <SolidColorBrush x:Key="FavoriteTextLightBrush" Color="#BF6C00"/>
     <SolidColorBrush x:Key="RequiredLightBrush" Color="#E6A100"/>
     <SolidColorBrush x:Key="ManualInstallBadgeLightBrush" Color="#CC6D00"/>
+    <SolidColorBrush x:Key="SubtleDataGridLineLightBrush" Color="#E5E7EB"/>
 
     <!-- Status Colors optimized for light theme -->
     <SolidColorBrush x:Key="StatusInstalledLightBrush" Color="#2E7D32"/>
@@ -112,6 +114,32 @@
     <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="SecondaryHueLightBrush" Color="#40A3D9A0"/>
     <SolidColorBrush x:Key="SecondaryHueLightForegroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SourceWingetBadgeBackgroundBrush" Color="#263B82F6"/>
+    <SolidColorBrush x:Key="SourceWingetBadgeBorderBrush" Color="#3B82F6"/>
+    <SolidColorBrush x:Key="SourceWingetBadgeForegroundBrush" Color="#93C5FD"/>
+    <SolidColorBrush x:Key="SourceChocolateyBadgeBackgroundBrush" Color="#2616A34A"/>
+    <SolidColorBrush x:Key="SourceChocolateyBadgeBorderBrush" Color="#22C55E"/>
+    <SolidColorBrush x:Key="SourceChocolateyBadgeForegroundBrush" Color="#86EFAC"/>
+    <SolidColorBrush x:Key="SourceStoreBadgeBackgroundBrush" Color="#2614B8A6"/>
+    <SolidColorBrush x:Key="SourceStoreBadgeBorderBrush" Color="#14B8A6"/>
+    <SolidColorBrush x:Key="SourceStoreBadgeForegroundBrush" Color="#5EEAD4"/>
+    <SolidColorBrush x:Key="SourceDirectBadgeBackgroundBrush" Color="#2AF97316"/>
+    <SolidColorBrush x:Key="SourceDirectBadgeBorderBrush" Color="#F97316"/>
+    <SolidColorBrush x:Key="SourceDirectBadgeForegroundBrush" Color="#FDBA74"/>
+
+    <!-- Light Theme Source Badge variants -->
+    <SolidColorBrush x:Key="SourceWingetBadgeBackgroundLightBrush" Color="#DBEAFE"/>
+    <SolidColorBrush x:Key="SourceWingetBadgeBorderLightBrush" Color="#60A5FA"/>
+    <SolidColorBrush x:Key="SourceWingetBadgeForegroundLightBrush" Color="#1D4ED8"/>
+    <SolidColorBrush x:Key="SourceChocolateyBadgeBackgroundLightBrush" Color="#DCFCE7"/>
+    <SolidColorBrush x:Key="SourceChocolateyBadgeBorderLightBrush" Color="#4ADE80"/>
+    <SolidColorBrush x:Key="SourceChocolateyBadgeForegroundLightBrush" Color="#166534"/>
+    <SolidColorBrush x:Key="SourceStoreBadgeBackgroundLightBrush" Color="#CCFBF1"/>
+    <SolidColorBrush x:Key="SourceStoreBadgeBorderLightBrush" Color="#2DD4BF"/>
+    <SolidColorBrush x:Key="SourceStoreBadgeForegroundLightBrush" Color="#0F766E"/>
+    <SolidColorBrush x:Key="SourceDirectBadgeBackgroundLightBrush" Color="#FFEDD5"/>
+    <SolidColorBrush x:Key="SourceDirectBadgeBorderLightBrush" Color="#FB923C"/>
+    <SolidColorBrush x:Key="SourceDirectBadgeForegroundLightBrush" Color="#C2410C"/>
 
     <!-- Dialog Overlay Backdrop (semi-transparent, swapped by App.ApplyThemeResources) -->
     <SolidColorBrush x:Key="DialogOverlayBackgroundBrush" Color="#80000000"/>

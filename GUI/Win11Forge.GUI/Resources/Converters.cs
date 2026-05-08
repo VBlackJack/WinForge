@@ -117,6 +117,32 @@ public class InverseNullableToVisibilityConverter : IValueConverter
 }
 
 /// <summary>
+/// Converts a comma-separated source summary to Visibility for one source token.
+/// </summary>
+public class SourceStringToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is not string sources || parameter is not string sourceName)
+        {
+            return Visibility.Collapsed;
+        }
+
+        var tokens = sources
+            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+        return tokens.Any(token => token.Equals(sourceName, StringComparison.OrdinalIgnoreCase))
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
+
+/// <summary>
 /// Converts boolean (IsRequired) to Fluent icon symbol.
 /// </summary>
 public class BoolToRequiredIconConverter : IValueConverter

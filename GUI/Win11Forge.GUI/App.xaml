@@ -95,6 +95,19 @@
             <Thickness x:Key="MarginLargeBottom">0,0,0,24</Thickness>
             <Thickness x:Key="ContentPadding">24</Thickness>
 
+            <!-- Page header typography tokens -->
+            <Style x:Key="PageTitleTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="28"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            </Style>
+
+            <Style x:Key="PageSubtitleTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <Setter Property="Margin" Value="0,8,0,0"/>
+            </Style>
+
             <!-- Animation Durations (set to 0 by App.xaml.cs when reduced motion enabled) -->
             <Duration x:Key="AnimationFast">0:0:0.15</Duration>
             <Duration x:Key="AnimationNormal">0:0:0.3</Duration>
@@ -160,6 +173,45 @@
                         <ScaleTransform ScaleX="1" ScaleY="1"/>
                     </Setter.Value>
                 </Setter>
+            </Style>
+
+            <!-- Shared source badge taxonomy -->
+            <Style x:Key="SourceBadgeStyle" TargetType="Border">
+                <Setter Property="CornerRadius" Value="4"/>
+                <Setter Property="Padding" Value="6,2"/>
+                <Setter Property="Margin" Value="0,0,4,0"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+
+            <Style x:Key="SourceBadgeTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+
+            <Style x:Key="SourceWingetBadgeStyle" TargetType="Border" BasedOn="{StaticResource SourceBadgeStyle}">
+                <Setter Property="Background" Value="{DynamicResource SourceWingetBadgeBackgroundBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SourceWingetBadgeBorderBrush}"/>
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource SourceWingetBadgeForegroundBrush}"/>
+            </Style>
+
+            <Style x:Key="SourceChocolateyBadgeStyle" TargetType="Border" BasedOn="{StaticResource SourceBadgeStyle}">
+                <Setter Property="Background" Value="{DynamicResource SourceChocolateyBadgeBackgroundBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SourceChocolateyBadgeBorderBrush}"/>
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource SourceChocolateyBadgeForegroundBrush}"/>
+            </Style>
+
+            <Style x:Key="SourceStoreBadgeStyle" TargetType="Border" BasedOn="{StaticResource SourceBadgeStyle}">
+                <Setter Property="Background" Value="{DynamicResource SourceStoreBadgeBackgroundBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SourceStoreBadgeBorderBrush}"/>
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource SourceStoreBadgeForegroundBrush}"/>
+            </Style>
+
+            <Style x:Key="SourceDirectBadgeStyle" TargetType="Border" BasedOn="{StaticResource SourceBadgeStyle}">
+                <Setter Property="Background" Value="{DynamicResource SourceDirectBadgeBackgroundBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SourceDirectBadgeBorderBrush}"/>
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource SourceDirectBadgeForegroundBrush}"/>
             </Style>
 
             <!-- Touch-Optimized Styles (WCAG 2.5.5 - minimum 44x44px touch targets) -->
@@ -338,7 +390,7 @@
             <Style x:Key="EnhancedDataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
@@ -362,7 +414,7 @@
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Style.Triggers>
                     <Trigger Property="IsSelected" Value="True">
@@ -379,18 +431,21 @@
             <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
                 <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="GridLinesVisibility" Value="Horizontal"/>
                 <Setter Property="RowBackground" Value="Transparent"/>
                 <Setter Property="AlternatingRowBackground" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
-                <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
-                <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+                <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
+                <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
                 <Setter Property="CellStyle" Value="{StaticResource EnhancedDataGridCellStyle}"/>
             </Style>
 
             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                 <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
+                <Setter Property="BorderThickness" Value="0,0,0,1"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
             </Style>
 
@@ -517,6 +572,7 @@
             <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
             <converters:NullableToVisibilityConverter x:Key="NullableToVisibilityConverter"/>
             <converters:InverseNullableToVisibilityConverter x:Key="InverseNullableToVisibilityConverter"/>
+            <converters:SourceStringToVisibilityConverter x:Key="SourceStringToVisibilityConverter"/>
             <converters:BoolToRequiredIconConverter x:Key="BoolToRequiredIconConverter"/>
             <converters:BoolToRequiredColorConverter x:Key="BoolToRequiredColorConverter"/>
             <converters:StatusToIconConverter x:Key="StatusToIconConverter"/>

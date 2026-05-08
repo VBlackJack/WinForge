@@ -30,12 +30,10 @@
 
                 <StackPanel Grid.Column="0">
                     <TextBlock Text="{loc:Loc Prerequisites_PageTitle}"
-                               FontSize="28" FontWeight="SemiBold"
+                               Style="{StaticResource PageTitleTextStyle}"
                                AutomationProperties.AutomationId="PagePrerequisites"/>
                     <TextBlock Text="{loc:Loc Prerequisites_PageDescription}"
-                               FontSize="14"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                               Margin="0,8,0,0"/>
+                               Style="{StaticResource PageSubtitleTextStyle}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
