@@ -86,7 +86,8 @@
 
                                     <ui:ToggleSwitch Grid.Column="1"
                                                      IsChecked="{Binding ReducedMotion}"
-                                                     AutomationProperties.Name="{loc:Loc A11y_Settings_ReducedMotion}"/>
+                                                     AutomationProperties.Name="{loc:Loc A11y_Settings_ReducedMotion}"
+                                                     AutomationProperties.HelpText="{loc:Loc Settings_ReducedMotion_Desc}"/>
                                 </Grid>
 
                                 <!-- High Contrast -->
@@ -103,7 +104,8 @@
 
                                     <ui:ToggleSwitch Grid.Column="1"
                                                      IsChecked="{Binding IsHighContrastEnabled}"
-                                                     AutomationProperties.Name="{loc:Loc A11y_Settings_HighContrast}"/>
+                                                     AutomationProperties.Name="{loc:Loc A11y_Settings_HighContrast}"
+                                                     AutomationProperties.HelpText="{loc:Loc Settings_HighContrast_Desc}"/>
                                 </Grid>
                             </StackPanel>
                         </Border>

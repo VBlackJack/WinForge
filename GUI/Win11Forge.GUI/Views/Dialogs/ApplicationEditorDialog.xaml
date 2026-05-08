@@ -178,6 +178,7 @@
                                                            Command="{Binding SearchWingetPackagesCommand}"
                                                            MinWidth="110"
                                                            Margin="8,0,0,0"
+                                                           AutomationProperties.Name="{loc:Loc AppEditor_SearchAction}"
                                                            Appearance="Secondary"/>
                                             </Grid>
 
@@ -214,6 +215,7 @@
                                                        Content="{loc:Loc AppEditor_ApplySelection}"
                                                        Command="{Binding ApplyWingetSearchResultCommand}"
                                                        IsEnabled="{Binding SelectedWingetSearchResult, Converter={StaticResource NullableToBooleanConverter}}"
+                                                       AutomationProperties.Name="{loc:Loc AppEditor_ApplySelection}"
                                                        Appearance="Primary"
                                                        MinWidth="150"
                                                        HorizontalAlignment="Left"/>
@@ -249,6 +251,7 @@
                                                            Command="{Binding SearchChocolateyPackagesCommand}"
                                                            MinWidth="110"
                                                            Margin="8,0,0,0"
+                                                           AutomationProperties.Name="{loc:Loc AppEditor_SearchAction}"
                                                            Appearance="Secondary"/>
                                             </Grid>
 
@@ -285,6 +288,7 @@
                                                        Content="{loc:Loc AppEditor_ApplySelection}"
                                                        Command="{Binding ApplyChocolateySearchResultCommand}"
                                                        IsEnabled="{Binding SelectedChocolateySearchResult, Converter={StaticResource NullableToBooleanConverter}}"
+                                                       AutomationProperties.Name="{loc:Loc AppEditor_ApplySelection}"
                                                        Appearance="Primary"
                                                        MinWidth="150"
                                                        HorizontalAlignment="Left"/>
@@ -320,6 +324,7 @@
                                                            Command="{Binding SearchStorePackagesCommand}"
                                                            MinWidth="110"
                                                            Margin="8,0,0,0"
+                                                           AutomationProperties.Name="{loc:Loc AppEditor_SearchAction}"
                                                            Appearance="Secondary"/>
                                             </Grid>
 
@@ -356,6 +361,7 @@
                                                        Content="{loc:Loc AppEditor_ApplySelection}"
                                                        Command="{Binding ApplyStoreSearchResultCommand}"
                                                        IsEnabled="{Binding SelectedStoreSearchResult, Converter={StaticResource NullableToBooleanConverter}}"
+                                                       AutomationProperties.Name="{loc:Loc AppEditor_ApplySelection}"
                                                        Appearance="Primary"
                                                        MinWidth="150"
                                                        HorizontalAlignment="Left"/>
