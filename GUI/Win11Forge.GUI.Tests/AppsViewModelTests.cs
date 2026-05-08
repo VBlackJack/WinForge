@@ -67,6 +67,36 @@ public class AppsViewModelTests
         return new MockDeploymentStateService();
     }
 
+    private static ApplicationModel FindApp(AppsViewModel viewModel, string appId)
+    {
+        return GetFilteredApps(viewModel.FilteredApplications).Single(app => app.AppId == appId);
+    }
+
+    private static async Task WaitForConditionAsync(Func<bool> condition)
+    {
+        for (var i = 0; i < 50; i++)
+        {
+            if (condition())
+            {
+                return;
+            }
+
+            await Task.Delay(20);
+        }
+
+        Assert.True(condition());
+    }
+
+    private static void ClearSelection(AppsViewModel viewModel)
+    {
+        foreach (var app in GetFilteredApps(viewModel.FilteredApplications))
+        {
+            app.IsSelected = false;
+        }
+
+        viewModel.UpdateSelectedCount();
+    }
+
     /// <summary>
     /// Creates a configured AppsViewModel for testing.
     /// </summary>
@@ -666,11 +696,15 @@ public class AppsViewModelTests
     public async Task UninstallApp_ShouldDelegateSingleAppAndDecrementInstalledCount()
     {
         // Arrange
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(true);
         var uninstallCoordinator = new TestAppUninstallCoordinator
         {
             Result = new AppUninstallResult(0, 1, 0, 0, WasCancelled: false)
         };
-        var viewModel = CreateViewModel(uninstallCoordinator: uninstallCoordinator);
+        var viewModel = CreateViewModel(
+            uninstallCoordinator: uninstallCoordinator,
+            dialogService: dialogService);
         await viewModel.InitializeAsync();
         var app = GetFilteredApps(viewModel.FilteredApplications)[0];
         app.Status = ApplicationStatus.Installed;
@@ -680,10 +714,37 @@ public class AppsViewModelTests
         await viewModel.UninstallAppCommand.ExecuteAsync(app);
 
         // Assert
+        var confirmation = Assert.Single(dialogService.ConfirmRequests);
+        Assert.Equal(Resources.Resources.Confirm_Uninstall_Btn, confirmation.ConfirmText);
+        Assert.Equal(Resources.Resources.Common_Cancel, confirmation.CancelText);
         var call = Assert.Single(uninstallCoordinator.Calls);
         Assert.Same(app, Assert.Single(call));
         Assert.Equal(0, viewModel.InstalledCount);
         Assert.False(viewModel.IsSummaryDialogOpen);
+    }
+
+    [Fact]
+    public async Task UninstallApp_WhenCancelled_ShouldAskForConfirmationAndNotDelegate()
+    {
+        // Arrange
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(false);
+        var uninstallCoordinator = new TestAppUninstallCoordinator();
+        var viewModel = CreateViewModel(
+            uninstallCoordinator: uninstallCoordinator,
+            dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        var app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        app.Status = ApplicationStatus.Installed;
+        viewModel.InstalledCount = 1;
+
+        // Act
+        await viewModel.UninstallAppCommand.ExecuteAsync(app);
+
+        // Assert
+        Assert.Single(dialogService.ConfirmRequests);
+        Assert.Empty(uninstallCoordinator.Calls);
+        Assert.Equal(1, viewModel.InstalledCount);
     }
 
     /// <summary>
@@ -718,8 +779,13 @@ public class AppsViewModelTests
     {
         // Arrange
         var bridge = CreateMockBridge();
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(true);
         var failingUninstaller = new TestAppUninstallCoordinator { ShouldThrow = true };
-        var viewModel = CreateViewModel(bridge, uninstallCoordinator: failingUninstaller);
+        var viewModel = CreateViewModel(
+            bridge,
+            uninstallCoordinator: failingUninstaller,
+            dialogService: dialogService);
         await viewModel.InitializeAsync();
         var app = bridge.Applications.First();
 
@@ -825,6 +891,201 @@ public class AppsViewModelTests
         // Assert
         Assert.Equal(initializeCallsBefore + 1, bridge.GetAllApplicationsCallCount);
     }
+
+    [Fact]
+    public async Task ProfileSelection_WithManualSelectionAndCancel_RestoresManualSelection()
+    {
+        // Arrange
+        using var profiles = new TestProfilesDirectory(
+            ("Work", [], ["Git.Git"]));
+        var bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Work"];
+        var dialogService = new TestDialogService();
+        dialogService.QueueYesNoCancelResult(null);
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+        var manualApp = FindApp(viewModel, "Mozilla.Firefox");
+        manualApp.IsSelected = true;
+        viewModel.UpdateSelectedCount();
+
+        // Act
+        viewModel.SelectedProfile = "Work";
+        await WaitForConditionAsync(() => dialogService.YesNoCancelRequests.Count == 1 && viewModel.SelectedProfile is null);
+
+        // Assert
+        Assert.True(manualApp.IsSelected);
+        Assert.False(FindApp(viewModel, "Git.Git").IsSelected);
+        Assert.Equal(1, viewModel.SelectedCount);
+    }
+
+    [Fact]
+    public async Task ProfileSelection_WithManualSelectionAndReplace_ReplacesManualSelection()
+    {
+        // Arrange
+        using var profiles = new TestProfilesDirectory(
+            ("Work", [], ["Git.Git"]));
+        var bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Work"];
+        var dialogService = new TestDialogService();
+        dialogService.QueueYesNoCancelResult(true);
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+        var manualApp = FindApp(viewModel, "Mozilla.Firefox");
+        manualApp.IsSelected = true;
+        viewModel.UpdateSelectedCount();
+
+        // Act
+        viewModel.SelectedProfile = "Work";
+        await WaitForConditionAsync(() => FindApp(viewModel, "Git.Git").IsSelected && !manualApp.IsSelected);
+
+        // Assert
+        var request = Assert.Single(dialogService.YesNoCancelRequests);
+        Assert.Equal(Resources.Resources.Profile_Apply_Replace, request.YesText);
+        Assert.Equal(Resources.Resources.Profile_Apply_Merge, request.NoText);
+        Assert.Equal(Resources.Resources.Common_Cancel, request.CancelText);
+        Assert.Equal(1, viewModel.SelectedCount);
+    }
+
+    [Fact]
+    public async Task ProfileSelection_WithManualSelectionAndMerge_PreservesManualSelection()
+    {
+        // Arrange
+        using var profiles = new TestProfilesDirectory(
+            ("Work", [], ["Git.Git"]));
+        var bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Work"];
+        var dialogService = new TestDialogService();
+        dialogService.QueueYesNoCancelResult(false);
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+        var manualApp = FindApp(viewModel, "Mozilla.Firefox");
+        manualApp.IsSelected = true;
+        viewModel.UpdateSelectedCount();
+
+        // Act
+        viewModel.SelectedProfile = "Work";
+        await WaitForConditionAsync(() => FindApp(viewModel, "Git.Git").IsSelected && manualApp.IsSelected);
+
+        // Assert
+        Assert.Single(dialogService.YesNoCancelRequests);
+        Assert.Equal(2, viewModel.SelectedCount);
+    }
+
+    [Fact]
+    public async Task ProfileSelection_WithoutManualSelection_AppliesSilently()
+    {
+        // Arrange
+        using var profiles = new TestProfilesDirectory(
+            ("Work", [], ["Git.Git"]));
+        var bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Work"];
+        var dialogService = new TestDialogService();
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+
+        // Act
+        viewModel.SelectedProfile = "Work";
+        await WaitForConditionAsync(() => FindApp(viewModel, "Git.Git").IsSelected);
+
+        // Assert
+        Assert.Empty(dialogService.YesNoCancelRequests);
+        Assert.Equal(1, viewModel.SelectedCount);
+    }
+
+    [Fact]
+    public async Task ProfileTierMapping_UsesCustomInheritanceChain()
+    {
+        // Arrange
+        using var profiles = new TestProfilesDirectory(
+            ("Base", [], ["Git.Git"]),
+            ("Enterprise", ["Base"], ["Microsoft.VisualStudioCode"]),
+            ("Developer", ["Enterprise"], ["Mozilla.Firefox"]));
+        var bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Base", "Enterprise", "Developer"];
+        var viewModel = CreateViewModel(bridge);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+
+        // Act
+        viewModel.SelectedProfile = "Developer";
+        await WaitForConditionAsync(() => FindApp(viewModel, "Mozilla.Firefox").IsSelected);
+
+        // Assert
+        Assert.Equal("Base", FindApp(viewModel, "Git.Git").ProfileTier);
+        Assert.Equal("Enterprise", FindApp(viewModel, "Microsoft.VisualStudioCode").ProfileTier);
+        Assert.Equal("Developer", FindApp(viewModel, "Mozilla.Firefox").ProfileTier);
+    }
+
+    [Fact]
+    public async Task ProfileTierMapping_MostSpecificProfileWinsForDuplicateApps()
+    {
+        // Arrange
+        using var profiles = new TestProfilesDirectory(
+            ("Base", [], ["Git.Git"]),
+            ("Enterprise", ["Base"], ["Git.Git"]));
+        var bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Base", "Enterprise"];
+        var viewModel = CreateViewModel(bridge);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+
+        // Act
+        viewModel.SelectedProfile = "Enterprise";
+        await WaitForConditionAsync(() => FindApp(viewModel, "Git.Git").IsSelected);
+
+        // Assert
+        Assert.Equal("Enterprise", FindApp(viewModel, "Git.Git").ProfileTier);
+    }
+
+    private sealed class TestProfilesDirectory : IDisposable
+    {
+        private readonly string _profilesPath;
+        private readonly string? _backupPath;
+
+        public TestProfilesDirectory(params (string Name, string[] Inherits, string[] Applications)[] profiles)
+        {
+            _profilesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Profiles");
+            if (Directory.Exists(_profilesPath))
+            {
+                _backupPath = Path.Combine(
+                    Path.GetTempPath(),
+                    $"Win11ForgeProfilesBackup-{Guid.NewGuid():N}");
+                Directory.Move(_profilesPath, _backupPath);
+            }
+
+            Directory.CreateDirectory(_profilesPath);
+            foreach (var profile in profiles)
+            {
+                var payload = new
+                {
+                    profile.Name,
+                    Description = $"{profile.Name} test profile",
+                    Version = "1.0.0",
+                    Inherits = profile.Inherits,
+                    Applications = profile.Applications
+                };
+                var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(Path.Combine(_profilesPath, $"{profile.Name}.json"), json);
+            }
+        }
+
+        public void Dispose()
+        {
+            if (Directory.Exists(_profilesPath))
+            {
+                Directory.Delete(_profilesPath, recursive: true);
+            }
+
+            if (!string.IsNullOrEmpty(_backupPath) && Directory.Exists(_backupPath))
+            {
+                Directory.Move(_backupPath, _profilesPath);
+            }
+        }
+    }
 }
 
 /// <summary>
@@ -905,7 +1166,9 @@ internal class MockPowerShellBridge : IPowerShellBridge
         ];
     }
 
-    public string RepositoryRoot => @"C:\Test\Win11Forge";
+    public string RepositoryRoot { get; set; } = @"C:\Test\Win11Forge";
+
+    public List<string> AvailableProfiles { get; set; } = ["Base", "Developer", "Gaming"];
 
     public int GetAllApplicationsCallCount { get; private set; }
 
@@ -914,7 +1177,7 @@ internal class MockPowerShellBridge : IPowerShellBridge
     public Task<string> GetWin11ForgeVersionAsync() => Task.FromResult("3.0.0");
 
     public Task<List<string>> GetAvailableProfilesAsync() =>
-        Task.FromResult(new List<string> { "Base", "Developer", "Gaming" });
+        Task.FromResult(new List<string>(AvailableProfiles));
 
     public Task<DeploymentProfileModel> LoadProfileAsync(string profileName) =>
         Task.FromResult(new DeploymentProfileModel { Name = profileName });
