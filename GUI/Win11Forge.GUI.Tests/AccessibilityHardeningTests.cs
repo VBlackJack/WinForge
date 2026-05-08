@@ -28,6 +28,16 @@ namespace Win11Forge.GUI.Tests;
 [Collection("WpfApplication")]
 public class AccessibilityHardeningTests
 {
+    public static IEnumerable<object[]> RequiredA11yLocKeyCases =>
+    [
+        ["Views/AppsView.xaml", new[] { "LogViewer_Copy", "LogViewer_Close", "Summary_Close", "Apps_SaveProfile", "Apps_ResetColumns" }],
+        ["Views/Dialogs/ApplicationEditorDialog.xaml", new[] { "AppEditor_SearchAction", "AppEditor_ApplySelection" }],
+        ["Views/PrerequisitesView.xaml", new[] { "Prerequisites_Check" }],
+        ["Views/SettingsView.xaml", new[] { "Settings_ReducedMotion_Desc", "Settings_HighContrast_Desc" }],
+        ["Controls/ConfirmDialog.xaml", new[] { "Dialog_Cancel", "Dialog_Confirm" }],
+        ["Controls/ErrorDialog.xaml", new[] { "Dialog_Help", "Dialog_Retry", "Dialog_OK" }]
+    ];
+
     [Fact]
     public void ThemeServiceHc_HighContrastEnabled_ReappliesHighContrastResources()
     {
@@ -243,6 +253,48 @@ public class AccessibilityHardeningTests
         Assert.Equal(
             "{StaticResource EnhancedDataGridRowStyle}",
             rowStyle.Attribute("BasedOn")?.Value);
+    }
+
+    [Theory]
+    [MemberData(nameof(RequiredA11yLocKeyCases))]
+    public void RequiredA11yLocKeys_ArePresentInXaml(string relativePath, string[] requiredKeys)
+    {
+        var xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", relativePath));
+
+        foreach (var key in requiredKeys)
+        {
+            Assert.Contains($"{{loc:Loc {key}}}", xaml, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void HighContrastMode_TextOnAccentBrushes_AreRemapped()
+    {
+        var src = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml.cs"));
+
+        Assert.Contains("SwapIfExists(app, \"TextOnAccentFillColorPrimaryBrush\"", src, StringComparison.Ordinal);
+        Assert.Contains("SwapIfExists(app, \"TextOnAccentFillColorSecondaryBrush\"", src, StringComparison.Ordinal);
+        Assert.Contains("SwapIfExists(app, \"TextOnAccentFillColorDisabledBrush\"", src, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void HighContrastTheme_ImplicitlyStylesWpfUiButton()
+    {
+        var xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "HighContrastTheme.xaml"));
+        var implicitUiButtonStyle = xaml.Descendants()
+            .Where(element => element.Name.LocalName == "Style")
+            .FirstOrDefault(element =>
+            {
+                var target = element.Attribute("TargetType")?.Value ?? string.Empty;
+                var hasKey = element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) is not null;
+                return target.Contains("ui:Button", StringComparison.Ordinal) && !hasKey;
+            });
+
+        Assert.NotNull(implicitUiButtonStyle);
+        Assert.Contains(
+            "HighContrastButtonStyle",
+            implicitUiButtonStyle.Attribute("BasedOn")?.Value ?? string.Empty,
+            StringComparison.Ordinal);
     }
 
     private static void AssertImplicitFocusStyle(IReadOnlyCollection<XElement> styles, string targetType)
