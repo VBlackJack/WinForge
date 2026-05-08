@@ -72,11 +72,25 @@ public partial class AppsViewModel
     private Dictionary<string, List<string>> _rawProfileAppIdsCache = [];
 
     /// <summary>
+    /// Cache of resolved profile inheritance chains.
+    /// Key = profile name, Value = parent-to-child profile chain used for tier badges.
+    /// </summary>
+    private Dictionary<string, List<string>> _profileInheritanceCache = [];
+
+    private string? _lastAppliedProfile;
+    private bool _isRestoringProfile;
+
+    /// <summary>
     /// Called when SelectedProfile changes.
     /// </summary>
     partial void OnSelectedProfileChanged(string? value)
     {
         OnPropertyChanged(nameof(HasProfileApplied));
+        if (_isRestoringProfile)
+        {
+            return;
+        }
+
         _ = ApplyProfileSelectionAsync();
     }
 
@@ -87,6 +101,7 @@ public partial class AppsViewModel
     {
         _resolvedProfileAppIdsCache.Clear();
         _rawProfileAppIdsCache.Clear();
+        _profileInheritanceCache.Clear();
 
         // Get profiles directory path
         var profilesDir = GetProfilesDirectory();
@@ -182,8 +197,10 @@ public partial class AppsViewModel
     {
         var allAppIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var profileChain = new List<string>();
 
-        await ResolveProfileRecursiveAsync(profilesDir, profileName, allAppIds, visited);
+        await ResolveProfileRecursiveAsync(profilesDir, profileName, allAppIds, visited, profileChain);
+        _profileInheritanceCache[profileName] = profileChain;
 
         return allAppIds;
     }
@@ -195,7 +212,8 @@ public partial class AppsViewModel
         string profilesDir,
         string profileName,
         HashSet<string> allAppIds,
-        HashSet<string> visited)
+        HashSet<string> visited,
+        List<string> profileChain)
     {
         if (visited.Contains(profileName))
         {
@@ -222,12 +240,13 @@ public partial class AppsViewModel
                 var parentName = parentElement.GetString();
                 if (!string.IsNullOrEmpty(parentName))
                 {
-                    await ResolveProfileRecursiveAsync(profilesDir, parentName, allAppIds, visited);
+                    await ResolveProfileRecursiveAsync(profilesDir, parentName, allAppIds, visited, profileChain);
                 }
             }
         }
 
         // Then add this profile's applications
+        var rawAppIds = new List<string>();
         if (root.TryGetProperty("Applications", out var appsElement) &&
             appsElement.ValueKind == JsonValueKind.Array)
         {
@@ -238,11 +257,15 @@ public partial class AppsViewModel
                     var appId = appElement.GetString();
                     if (!string.IsNullOrEmpty(appId))
                     {
+                        rawAppIds.Add(appId);
                         allAppIds.Add(appId);
                     }
                 }
             }
         }
+
+        _rawProfileAppIdsCache[profileName] = rawAppIds;
+        profileChain.Add(profileName);
     }
 
     /// <summary>
@@ -250,6 +273,8 @@ public partial class AppsViewModel
     /// </summary>
     private async Task ApplyProfileSelectionAsync()
     {
+        var selectedProfile = SelectedProfile;
+
         // Clear all profile tiers first
         foreach (var app in _allApplications)
         {
@@ -257,18 +282,45 @@ public partial class AppsViewModel
         }
         _profileAppTiers.Clear();
 
-        if (string.IsNullOrEmpty(SelectedProfile))
+        if (string.IsNullOrEmpty(selectedProfile))
         {
+            _lastAppliedProfile = null;
             ApplyFilter();
             return;
         }
 
         try
         {
+            var mergeWithManualSelection = false;
+            if (ShouldPromptBeforeApplyingProfile())
+            {
+                var manualCount = _allApplications.Count(app => app.IsSelected);
+                var applyMessage = string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    Resources.Resources.Profile_Apply_Message_HasManualSelection,
+                    manualCount,
+                    selectedProfile);
+
+                var applyMode = await _dialogService.ShowYesNoCancelAsync(
+                    Resources.Resources.Profile_Apply_Title,
+                    applyMessage,
+                    Resources.Resources.Profile_Apply_Replace,
+                    Resources.Resources.Profile_Apply_Merge,
+                    Resources.Resources.Common_Cancel);
+
+                if (applyMode is null)
+                {
+                    RestoreSelectedProfile(_lastAppliedProfile);
+                    return;
+                }
+
+                mergeWithManualSelection = applyMode == false;
+            }
+
             HashSet<string> profileAppIds;
 
             // Try cache first
-            if (_resolvedProfileAppIdsCache.TryGetValue(SelectedProfile, out var cachedIds) && cachedIds.Count > 0)
+            if (_resolvedProfileAppIdsCache.TryGetValue(selectedProfile, out var cachedIds) && cachedIds.Count > 0)
             {
                 profileAppIds = cachedIds;
             }
@@ -284,15 +336,15 @@ public partial class AppsViewModel
                     return;
                 }
 
-                profileAppIds = await ResolveProfileInheritanceAsync(profilesDir, SelectedProfile);
-                _resolvedProfileAppIdsCache[SelectedProfile] = profileAppIds;
+                profileAppIds = await ResolveProfileInheritanceAsync(profilesDir, selectedProfile);
+                _resolvedProfileAppIdsCache[selectedProfile] = profileAppIds;
 
-                var rawAppIds = await ReadProfileAppIdsFromJsonAsync(profilesDir, SelectedProfile);
-                _rawProfileAppIdsCache[SelectedProfile] = rawAppIds;
+                var rawAppIds = await ReadProfileAppIdsFromJsonAsync(profilesDir, selectedProfile);
+                _rawProfileAppIdsCache[selectedProfile] = rawAppIds;
             }
 
             // Build tier mapping using cached raw profiles
-            BuildProfileTierMapping(SelectedProfile);
+            BuildProfileTierMapping(selectedProfile);
 
             // Select apps from the profile
             foreach (var app in _allApplications)
@@ -307,12 +359,13 @@ public partial class AppsViewModel
                         app.ProfileTier = tier;
                     }
                 }
-                else
+                else if (!mergeWithManualSelection)
                 {
                     app.IsSelected = false;
                 }
             }
 
+            _lastAppliedProfile = selectedProfile;
             ApplyFilter();
             UpdateSelectedCount();
         }
@@ -343,25 +396,35 @@ public partial class AppsViewModel
         }
     }
 
+    private bool ShouldPromptBeforeApplyingProfile()
+    {
+        return string.IsNullOrEmpty(_lastAppliedProfile) &&
+            _allApplications.Any(app => app.IsSelected);
+    }
+
+    private void RestoreSelectedProfile(string? profileName)
+    {
+        _isRestoringProfile = true;
+        try
+        {
+            SelectedProfile = profileName;
+        }
+        finally
+        {
+            _isRestoringProfile = false;
+        }
+    }
+
     /// <summary>
     /// Builds a mapping of app IDs to their originating profile tier.
     /// Uses the raw profile cache (apps defined directly in each profile).
     /// </summary>
     private void BuildProfileTierMapping(string profileName)
     {
-        // Define the profile hierarchy (from base to most specific)
-        var profileHierarchy = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "Personnel", ["Base", "Office", "Gaming", "Personnel"] },
-            { "Gaming", ["Base", "Office", "Gaming"] },
-            { "Office", ["Base", "Office"] },
-            { "Base", ["Base"] }
-        };
-
-        if (!profileHierarchy.TryGetValue(profileName, out var hierarchy))
-        {
-            hierarchy = [profileName];
-        }
+        var hierarchy = _profileInheritanceCache.TryGetValue(profileName, out var cachedHierarchy) &&
+            cachedHierarchy.Count > 0
+                ? cachedHierarchy
+                : new List<string> { profileName };
 
         // Build tier mapping (most specific wins, so iterate from base to specific)
         foreach (var tier in hierarchy)
@@ -485,6 +548,21 @@ public partial class AppsViewModel
                 _rawProfileAppIdsCache[saveResult.ProfileName] = ownAppIds.ToList();
             }
 
+            var inheritanceChain = new List<string>();
+            if (!string.IsNullOrEmpty(saveResult.ParentProfile))
+            {
+                if (_profileInheritanceCache.TryGetValue(saveResult.ParentProfile, out var parentChain))
+                {
+                    inheritanceChain.AddRange(parentChain);
+                }
+                else
+                {
+                    inheritanceChain.Add(saveResult.ParentProfile);
+                }
+            }
+            inheritanceChain.Add(saveResult.ProfileName);
+            _profileInheritanceCache[saveResult.ProfileName] = inheritanceChain;
+
             // Add to available profiles if new
             if (!AvailableProfiles.Contains(saveResult.ProfileName))
             {
@@ -492,6 +570,7 @@ public partial class AppsViewModel
             }
 
             // Select the saved profile
+            _lastAppliedProfile = saveResult.ProfileName;
             SelectedProfile = saveResult.ProfileName;
 
             // Clear any error message to indicate success
@@ -510,5 +589,6 @@ public partial class AppsViewModel
     {
         _resolvedProfileAppIdsCache.Clear();
         _rawProfileAppIdsCache.Clear();
+        _profileInheritanceCache.Clear();
     }
 }

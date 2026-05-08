@@ -1340,6 +1340,18 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Dialog_SaveProfile_NoApps" xml:space="preserve">
     <value>Veuillez sélectionner au moins une application</value>
   </data>
+  <data name="Profile_Apply_Title" xml:space="preserve">
+    <value>Appliquer le profil ?</value>
+  </data>
+  <data name="Profile_Apply_Message_HasManualSelection" xml:space="preserve">
+    <value>Vous avez {0} applications sélectionnées manuellement. Remplacer par le profil « {1} » ou fusionner ?</value>
+  </data>
+  <data name="Profile_Apply_Replace" xml:space="preserve">
+    <value>Remplacer la sélection</value>
+  </data>
+  <data name="Profile_Apply_Merge" xml:space="preserve">
+    <value>Fusionner les sélections</value>
+  </data>
   <!-- Dashboard Hero Section -->
   <data name="Dashboard_Hero_Checking" xml:space="preserve">
     <value>Vérification du système...</value>
