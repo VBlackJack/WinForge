@@ -90,8 +90,8 @@
                                            AutomationProperties.AutomationId="PageDashboard"/>
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
-                                       FontSize="14"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                       Style="{StaticResource PageSubtitleTextStyle}"
+                                       Margin="0"/>
                         </StackPanel>
 
                         <!-- State: NeedPrereqs -->
@@ -108,8 +108,7 @@
                                            AutomationProperties.AutomationId="PageDashboard"/>
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
-                                       FontSize="14"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Style="{StaticResource PageSubtitleTextStyle}"
                                        Margin="0,0,0,16"/>
                             <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
                                        Appearance="Primary"
@@ -150,8 +149,7 @@
                                            AutomationProperties.AutomationId="PageDashboard"/>
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
-                                       FontSize="14"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Style="{StaticResource PageSubtitleTextStyle}"
                                        Margin="0,0,0,16"/>
                             <StackPanel Orientation="Horizontal">
                                 <ui:Button Command="{Binding StartDeploymentCommand}"
