@@ -38,6 +38,34 @@
                 </Setter>
             </Style>
 
+            <!-- Implicit focus visuals for vanilla WPF focusable controls.
+                 WPF resolves implicit styles by concrete DefaultStyleKey, so each
+                 focusable TargetType needs its own style. -->
+            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+            </Style>
+
+            <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+            </Style>
+
+            <Style TargetType="RadioButton" BasedOn="{StaticResource {x:Type RadioButton}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+            </Style>
+
+            <Style TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+            </Style>
+
+            <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+            </Style>
+
+            <!-- WPF-UI buttons use a separate target type and do not pick up WPF Button implicit styles. -->
+            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+            </Style>
+
             <!-- Keyboard-focused Button Style with enhanced visibility -->
             <Style x:Key="KeyboardFocusableButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
@@ -560,10 +588,6 @@
 
             <Style TargetType="Separator">
                 <Setter Property="Background" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
-            </Style>
-
-            <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
-                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
             </Style>
 
             <!-- Converters -->
