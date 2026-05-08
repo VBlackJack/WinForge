@@ -94,9 +94,11 @@
                                 <ui:Button Content="{loc:Loc LogViewer_Copy}"
                                            Appearance="Secondary"
                                            Click="CopyLogsToClipboard_Click"
+                                           AutomationProperties.Name="{loc:Loc LogViewer_Copy}"
                                            Margin="0,0,12,0"/>
                                 <ui:Button Content="{loc:Loc LogViewer_Close}"
                                            Appearance="Primary"
+                                           AutomationProperties.Name="{loc:Loc LogViewer_Close}"
                                            Command="{Binding CloseLogViewerCommand}"/>
                             </StackPanel>
                         </Grid>
@@ -184,6 +186,7 @@
                             <ui:Button Grid.Row="2"
                                        Content="{loc:Loc Summary_Close}"
                                        Appearance="Primary"
+                                       AutomationProperties.Name="{loc:Loc Summary_Close}"
                                        Command="{Binding CloseSummaryDialogCommand}"
                                        HorizontalAlignment="Right"/>
                         </Grid>
@@ -291,6 +294,7 @@
                            Command="{Binding ShowSaveProfileDialogCommand}"
                            Appearance="Secondary"
                            ToolTip="{loc:Loc Apps_SaveProfile}"
+                           AutomationProperties.Name="{loc:Loc Apps_SaveProfile}"
                            Margin="8,0,0,0">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Save24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -451,6 +455,7 @@
                                 <ui:Button Content="{loc:Loc Apps_ResetColumns}"
                                            Command="{Binding ResetColumnsToDefaultsCommand}"
                                            Appearance="Transparent"
+                                           AutomationProperties.Name="{loc:Loc Apps_ResetColumns}"
                                            HorizontalAlignment="Stretch"
                                            Margin="4,0"/>
                             </StackPanel>
