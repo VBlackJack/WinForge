@@ -63,9 +63,6 @@ public class Resources
     public static string Dashboard_Repository_Prefix => ResourceManager.GetString("Dashboard_Repository_Prefix", resourceCulture);
     public static string Dashboard_SystemInfo_Title => ResourceManager.GetString("Dashboard_SystemInfo_Title", resourceCulture);
 
-    // Deployment
-    public static string Deploy_Title => ResourceManager.GetString("Deploy_Title", resourceCulture);
-
     // Breadcrumb Steps
     public static string Breadcrumb_SelectProfile => ResourceManager.GetString("Breadcrumb_SelectProfile", resourceCulture);
     public static string Breadcrumb_Configure => ResourceManager.GetString("Breadcrumb_Configure", resourceCulture);

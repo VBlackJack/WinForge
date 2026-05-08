@@ -122,9 +122,6 @@
     <value>Actions rapides</value>
   </data>
   <!-- Deployment -->
-  <data name="Deploy_Title" xml:space="preserve">
-    <value>Déploiement</value>
-  </data>
   <data name="Breadcrumb_SelectProfile" xml:space="preserve">
     <value>Sélection du profil</value>
   </data>

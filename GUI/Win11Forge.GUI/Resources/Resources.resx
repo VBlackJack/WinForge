@@ -115,10 +115,6 @@
     <comment>System information card title</comment>
   </data>
   <!-- Deployment / Monitoring -->
-  <data name="Deploy_Title" xml:space="preserve">
-    <value>Deployment</value>
-    <comment>Deployment view title</comment>
-  </data>
   <data name="Monitoring_Title" xml:space="preserve">
     <value>Monitoring</value>
     <comment>Monitoring view title</comment>
