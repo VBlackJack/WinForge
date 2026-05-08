@@ -136,6 +136,25 @@
                 <Setter Property="Margin" Value="0,8,0,0"/>
             </Style>
 
+            <!-- Reinforced TabItem indicator for accessibility and visual hierarchy. -->
+            <Style x:Key="ReinforcedTabItemStyle" TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+                <Setter Property="Padding" Value="16,8"/>
+                <Setter Property="BorderThickness" Value="0,0,0,3"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}"/>
+                        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource ReinforcedTabItemStyle}"/>
+
             <!-- Animation Durations (set to 0 by App.xaml.cs when reduced motion enabled) -->
             <Duration x:Key="AnimationFast">0:0:0.15</Duration>
             <Duration x:Key="AnimationNormal">0:0:0.3</Duration>
