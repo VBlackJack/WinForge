@@ -24,6 +24,7 @@ Completed the P0/P1 remediation sweep from `Docs/audit/Win11Forge-UX-Audit-2026-
 - **Closed UX-001 and DC-002** (PR #63/#64): The admin catalog surface is consistently named App Catalog, including `AppCatalogView*`, `AppCatalog_*` resource keys, and navigation IDs.
 - **Closed DC-001/DC-004/DC-011** (PR #65/#66): Page typography tokens, shared source badge styling, and subtler DataGrid gridlines now apply consistently across the GUI.
 - **Closed DC-005/DC-006/DC-007/DC-008** (PR #79): AppsView now follows the icon/title/subtitle header pattern, profile/filter cards reflow without forced horizontal card scroll, Settings tabs have a reinforced selected indicator, and navigation separates workflow pages from configuration pages while preserving `ViewIndex` tags.
+- **Closed DC-012/DC-013/DC-014** (PR #80): Post-smoke polish hides unavailable AppCatalog actions, removes the duplicate AppsView install CTA, and gives shared TabItems a theme-aware selected template.
 
 #### Workflow safety
 - **Closed WF-003/WF-005/WF-006** (PR #73/#74): Single-app uninstall now confirms destructive action; profile changes protect manual selections with Replace/Merge/Cancel; profile tier badges are derived from JSON inheritance instead of hardcoded tiers.
@@ -34,8 +35,12 @@ Completed the P0/P1 remediation sweep from `Docs/audit/Win11Forge-UX-Audit-2026-
 
 - **Test coverage** — `AccessibilityHardeningTests` adds three static-analysis guards: `RequiredA11yLocKeys_ArePresentInXaml` (theory across the 6 a11y-touched XAML files), `HighContrastMode_TextOnAccentBrushes_AreRemapped` (asserts the 3 `SwapIfExists` entries in `App.xaml.cs`), and `HighContrastTheme_ImplicitlyStylesWpfUiButton` (asserts the implicit `ui:Button` style based on `HighContrastButtonStyle` in `HighContrastTheme.xaml`). Total test count: 527 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
 - **Test coverage** — `AccessibilityHardeningTests` adds four static visual-hierarchy guards for CodexP-15: AppsView header pattern, AppsView filter/profile reflow without `MinWidth="920"`, implicit `ReinforcedTabItemStyle`, and workflow/config navigation clustering. Total test count: 531 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
+- **Test coverage** — `AccessibilityHardeningTests` adds three post-smoke guards for DC-012/DC-013/DC-014: AppCatalog unavailable action visibility, AppsView install CTA deduplication, and theme-aware TabItem template states. Total test count: 534 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
 
 ### Fixed
+- **Visual hierarchy (DC-012)** — AppCatalog now hides Undo/Redo and row actions when unavailable instead of rendering large disabled blocks. Closes DC-012 (PR #80).
+- **Information architecture (DC-013)** — AppsView keeps `Install Selected` only in the selection action bar, removing the duplicate Profile-card CTA. Closes DC-013 (PR #80).
+- **Visual hierarchy (DC-014)** — Shared WPF `TabItem` styling now uses a theme-aware template with explicit hover, focus, selected, and disabled states. Closes DC-014 (PR #80).
 - **Visual hierarchy (DC-005)** — AppsView now mirrors the app-wide page header structure with an `Apps24` icon, `PageTitleTextStyle`, `PageSubtitleTextStyle`, and new localized `Apps_Subtitle` resource. EN/FR resource parity is 920/920. Closes DC-005 (PR #79).
 - **Visual hierarchy (DC-006)** — AppsView profile and filter cards no longer force internal horizontal scrolling through `MinWidth="920"`; both surfaces now reflow in a two-row responsive layout. Closes DC-006 (PR #79).
 - **Visual hierarchy (DC-007)** — Settings and shared WPF `TabItem` surfaces use `ReinforcedTabItemStyle` with a stronger selected underline and selected-state tint. Closes the DC-007 implementation scope; stronger post-smoke tab treatment is tracked separately as DC-014. Closes DC-007 (PR #79).
