@@ -31,10 +31,10 @@ using Loc = Win11Forge.GUI.Resources.Resources;
 namespace Win11Forge.GUI.ViewModels;
 
 /// <summary>
-/// ViewModel for the Applications Database Management view.
+/// ViewModel for the App Catalog view.
 /// Provides CRUD operations for managing application definitions.
 /// </summary>
-public partial class ApplicationsViewModel : ObservableObject, IDisposable
+public partial class AppCatalogViewModel : ObservableObject, IDisposable
 {
     private readonly IApplicationDatabaseService _databaseService;
     private readonly IUndoService _undoService;
@@ -194,12 +194,12 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         : GetLocalizedString("AppCatalog_EmptyFilter", "No applications match the current filter. Try clearing it.");
 
     /// <summary>
-    /// Initializes a new instance of ApplicationsViewModel.
+    /// Initializes a new instance of AppCatalogViewModel.
     /// </summary>
     /// <param name="databaseService">Application database service.</param>
     /// <param name="undoService">Undo/redo service.</param>
     /// <param name="verificationService">Package verification service.</param>
-    public ApplicationsViewModel(
+    public AppCatalogViewModel(
         IApplicationDatabaseService databaseService,
         IUndoService undoService,
         IPackageVerificationService verificationService,
@@ -229,7 +229,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Gets the filtered view of applications.
     /// </summary>
-    public ICollectionView ApplicationsView => _applicationsView;
+    public ICollectionView AppCatalogView => _applicationsView;
 
     /// <summary>
     /// Command to load applications from the database.
@@ -1054,7 +1054,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     private bool _disposed;
 
     /// <summary>
-    /// Releases all resources used by the ApplicationsViewModel.
+    /// Releases all resources used by the AppCatalogViewModel.
     /// </summary>
     public void Dispose()
     {

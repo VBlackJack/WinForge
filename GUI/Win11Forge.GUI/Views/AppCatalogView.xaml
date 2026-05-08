@@ -1,4 +1,4 @@
-<UserControl x:Class="Win11Forge.GUI.Views.ApplicationsView"
+<UserControl x:Class="Win11Forge.GUI.Views.AppCatalogView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -7,7 +7,7 @@
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance Type=viewModels:ApplicationsViewModel}"
+             d:DataContext="{d:DesignInstance Type=viewModels:AppCatalogViewModel}"
              d:DesignHeight="700" d:DesignWidth="1000"
              Loaded="UserControl_Loaded">
 
@@ -280,7 +280,7 @@
                 </StackPanel>
 
                 <!-- Applications DataGrid -->
-                <DataGrid ItemsSource="{Binding ApplicationsView}"
+                <DataGrid ItemsSource="{Binding AppCatalogView}"
                           SelectedItem="{Binding SelectedApplication}"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"

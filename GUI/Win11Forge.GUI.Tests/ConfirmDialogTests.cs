@@ -80,7 +80,7 @@ public class ConfirmDialogTests
     {
         var dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var viewModel = CreateApplicationsViewModel(dialogService: dialogService);
+        var viewModel = CreateAppCatalogViewModel(dialogService: dialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         viewModel.SelectedApplication = viewModel.Applications[0];
 
@@ -98,7 +98,7 @@ public class ConfirmDialogTests
         var fileDialogService = new TestFileDialogService();
         fileDialogService.QueueOpenResult(@"C:\Imports\applications.json");
         dialogService.QueueYesNoCancelResult(null);
-        var viewModel = CreateApplicationsViewModel(
+        var viewModel = CreateAppCatalogViewModel(
             dialogService: dialogService,
             fileDialogService: fileDialogService);
 
@@ -209,11 +209,11 @@ public class ConfirmDialogTests
         return viewModel;
     }
 
-    private static ApplicationsViewModel CreateApplicationsViewModel(
+    private static AppCatalogViewModel CreateAppCatalogViewModel(
         IDialogService? dialogService = null,
         IFileDialogService? fileDialogService = null)
     {
-        return new ApplicationsViewModel(
+        return new AppCatalogViewModel(
             new MockApplicationDatabaseService(),
             new MockUndoService(),
             new MockPackageVerificationService(),

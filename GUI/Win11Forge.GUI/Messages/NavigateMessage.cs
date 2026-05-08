@@ -28,7 +28,7 @@ public enum ViewIndex
     Apps = 2,
     Deployment = 3,
     Settings = 4,
-    Applications = 5
+    AppCatalog = 5
 }
 
 /// <summary>
@@ -47,7 +47,7 @@ public class NavigateMessage
         public const int Apps = 2;
         public const int Deployment = 3;
         public const int Settings = 4;
-        public const int Applications = 5;
+        public const int AppCatalog = 5;
     }
 
     /// <summary>

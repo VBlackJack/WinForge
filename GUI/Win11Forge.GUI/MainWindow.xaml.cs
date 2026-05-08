@@ -54,7 +54,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     private readonly AppsViewModel? _appsViewModel;
     private readonly SettingsViewModel? _settingsViewModel;
     private readonly PrerequisitesViewModel? _prerequisitesViewModel;
-    private readonly ApplicationsViewModel? _applicationsViewModel;
+    private readonly AppCatalogViewModel? _appCatalogViewModel;
     private readonly IAccessibilityService? _accessibilityService;
 
     // Event handlers stored for cleanup
@@ -69,7 +69,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     private bool _appsInitialized;
     private bool _settingsInitialized;
     private bool _prerequisitesInitialized;
-    private bool _applicationsInitialized;
+    private bool _appCatalogInitialized;
     private bool _isNavigatingFromService;
     private bool _isNavigating;
     private int _currentViewIndex = -1;
@@ -204,7 +204,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             _appsViewModel = App.GetService<AppsViewModel>();
             _settingsViewModel = App.GetService<SettingsViewModel>();
             _prerequisitesViewModel = App.GetService<PrerequisitesViewModel>();
-            _applicationsViewModel = App.GetService<ApplicationsViewModel>();
+            _appCatalogViewModel = App.GetService<AppCatalogViewModel>();
 
             // Initialize on window load
             Loaded += MainWindow_Loaded;
@@ -250,7 +250,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             ViewIndex.Apps => new AppsView { DataContext = _appsViewModel },
             ViewIndex.Deployment => new DeploymentView { DataContext = _deploymentViewModel },
             ViewIndex.Settings => new SettingsView { DataContext = _settingsViewModel },
-            ViewIndex.Applications => new ApplicationsView { DataContext = _applicationsViewModel },
+            ViewIndex.AppCatalog => new AppCatalogView { DataContext = _appCatalogViewModel },
             _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
 
@@ -621,8 +621,8 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
                     SafeInitializeAsync(InitializeSettingsAsync, "Settings").SafeFireAndForget();
                     break;
 
-                case ViewIndex.Applications:
-                    SafeInitializeAsync(InitializeApplicationsAsync, "Applications").SafeFireAndForget();
+                case ViewIndex.AppCatalog:
+                    SafeInitializeAsync(InitializeAppCatalogAsync, "AppCatalog").SafeFireAndForget();
                     break;
             }
         }
@@ -690,12 +690,12 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         _prerequisitesInitialized = true;
     }
 
-    private async Task InitializeApplicationsAsync()
+    private async Task InitializeAppCatalogAsync()
     {
-        if (_applicationsInitialized || _applicationsViewModel == null) return;
+        if (_appCatalogInitialized || _appCatalogViewModel == null) return;
 
-        await _applicationsViewModel.LoadApplicationsCommand.ExecuteAsync(null);
-        _applicationsInitialized = true;
+        await _appCatalogViewModel.LoadApplicationsCommand.ExecuteAsync(null);
+        _appCatalogInitialized = true;
     }
 
     /// <summary>
@@ -846,7 +846,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             (_dashboardViewModel as IDisposable)?.Dispose();
             (_settingsViewModel as IDisposable)?.Dispose();
             (_prerequisitesViewModel as IDisposable)?.Dispose();
-            (_applicationsViewModel as IDisposable)?.Dispose();
+            (_appCatalogViewModel as IDisposable)?.Dispose();
         }
 
         _disposed = true;
