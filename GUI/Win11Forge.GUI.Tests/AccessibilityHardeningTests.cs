@@ -305,14 +305,19 @@ public class AccessibilityHardeningTests
         Assert.Contains("Symbol=\"Apps24\"", xaml, StringComparison.Ordinal);
         Assert.Contains("{loc:Loc Apps_Title}", xaml, StringComparison.Ordinal);
         Assert.Contains("{loc:Loc Apps_Subtitle}", xaml, StringComparison.Ordinal);
+        Assert.Contains("AutomationProperties.AutomationId=\"PageApplications\"", xaml, StringComparison.Ordinal);
     }
 
     [Fact]
     public void AppsView_DoesNotForceHorizontalScrollOnFilterCards()
     {
         var xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        var profileSelector = ExtractXamlSection(xaml, "<!-- Profile Selector Card -->", "<!-- Filter Bar Card -->");
+        var filterBar = ExtractXamlSection(xaml, "<!-- Filter Bar Card -->", "<!-- Selection Action Bar -->");
 
         Assert.DoesNotContain("MinWidth=\"920\"", xaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("HorizontalScrollBarVisibility=\"Auto\"", profileSelector, StringComparison.Ordinal);
+        Assert.DoesNotContain("HorizontalScrollBarVisibility=\"Auto\"", filterBar, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -335,6 +340,33 @@ public class AccessibilityHardeningTests
             implicitTabItemStyle.Attribute("BasedOn")?.Value ?? string.Empty,
             StringComparison.Ordinal);
         AssertNamedStyleSetter(styles, "ReinforcedTabItemStyle", "BorderThickness", "0,0,0,3");
+        AssertNamedStyleSetter(styles, "ReinforcedTabItemStyle", "BorderBrush", "Transparent");
+
+        var selectedTrigger = FindNamedStyle(styles, "ReinforcedTabItemStyle")
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Trigger"
+                && string.Equals(element.Attribute("Property")?.Value, "IsSelected", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "True", StringComparison.Ordinal));
+
+        Assert.Contains(
+            selectedTrigger.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, "BorderBrush", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "{DynamicResource SystemAccentColorPrimaryBrush}", StringComparison.Ordinal));
+        Assert.Contains(
+            selectedTrigger.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, "Background", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "{DynamicResource SubtleFillColorSecondaryBrush}", StringComparison.Ordinal));
+        Assert.Contains(
+            selectedTrigger.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, "FontWeight", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "SemiBold", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -348,6 +380,17 @@ public class AccessibilityHardeningTests
         Assert.True(sepIdx > 0);
         Assert.True(appCatalogIdx > sepIdx);
         Assert.True(settingsIdx > appCatalogIdx);
+    }
+
+    private static string ExtractXamlSection(string xaml, string startMarker, string endMarker)
+    {
+        var start = xaml.IndexOf(startMarker, StringComparison.Ordinal);
+        Assert.True(start >= 0, $"Could not find section start marker: {startMarker}");
+
+        var end = xaml.IndexOf(endMarker, start + startMarker.Length, StringComparison.Ordinal);
+        Assert.True(end > start, $"Could not find section end marker: {endMarker}");
+
+        return xaml[start..end];
     }
 
     private static void AssertImplicitFocusStyle(IReadOnlyCollection<XElement> styles, string targetType)
