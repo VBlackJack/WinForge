@@ -1143,9 +1143,24 @@
                             </DataGridTemplateColumn.Header>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                    <TextBlock Text="{Binding Sources}"
-                                               FontSize="12"
-                                               Foreground="{DynamicResource AccentGreenTextBrush}"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border Style="{StaticResource SourceWingetBadgeStyle}"
+                                                Visibility="{Binding Sources, Converter={StaticResource SourceStringToVisibilityConverter}, ConverterParameter=Winget}">
+                                            <TextBlock Text="{loc:Loc Source_Winget}" Style="{StaticResource SourceBadgeTextStyle}"/>
+                                        </Border>
+                                        <Border Style="{StaticResource SourceChocolateyBadgeStyle}"
+                                                Visibility="{Binding Sources, Converter={StaticResource SourceStringToVisibilityConverter}, ConverterParameter=Chocolatey}">
+                                            <TextBlock Text="{loc:Loc Source_Chocolatey}" Style="{StaticResource SourceBadgeTextStyle}"/>
+                                        </Border>
+                                        <Border Style="{StaticResource SourceStoreBadgeStyle}"
+                                                Visibility="{Binding Sources, Converter={StaticResource SourceStringToVisibilityConverter}, ConverterParameter=Store}">
+                                            <TextBlock Text="{loc:Loc Source_Store}" Style="{StaticResource SourceBadgeTextStyle}"/>
+                                        </Border>
+                                        <Border Style="{StaticResource SourceDirectBadgeStyle}"
+                                                Visibility="{Binding Sources, Converter={StaticResource SourceStringToVisibilityConverter}, ConverterParameter=Direct}">
+                                            <TextBlock Text="{loc:Loc Source_Direct}" Style="{StaticResource SourceBadgeTextStyle}"/>
+                                        </Border>
+                                    </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

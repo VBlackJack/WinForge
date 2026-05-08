@@ -175,6 +175,45 @@
                 </Setter>
             </Style>
 
+            <!-- Shared source badge taxonomy -->
+            <Style x:Key="SourceBadgeStyle" TargetType="Border">
+                <Setter Property="CornerRadius" Value="4"/>
+                <Setter Property="Padding" Value="6,2"/>
+                <Setter Property="Margin" Value="0,0,4,0"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+
+            <Style x:Key="SourceBadgeTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+
+            <Style x:Key="SourceWingetBadgeStyle" TargetType="Border" BasedOn="{StaticResource SourceBadgeStyle}">
+                <Setter Property="Background" Value="{DynamicResource SourceWingetBadgeBackgroundBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SourceWingetBadgeBorderBrush}"/>
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource SourceWingetBadgeForegroundBrush}"/>
+            </Style>
+
+            <Style x:Key="SourceChocolateyBadgeStyle" TargetType="Border" BasedOn="{StaticResource SourceBadgeStyle}">
+                <Setter Property="Background" Value="{DynamicResource SourceChocolateyBadgeBackgroundBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SourceChocolateyBadgeBorderBrush}"/>
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource SourceChocolateyBadgeForegroundBrush}"/>
+            </Style>
+
+            <Style x:Key="SourceStoreBadgeStyle" TargetType="Border" BasedOn="{StaticResource SourceBadgeStyle}">
+                <Setter Property="Background" Value="{DynamicResource SourceStoreBadgeBackgroundBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SourceStoreBadgeBorderBrush}"/>
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource SourceStoreBadgeForegroundBrush}"/>
+            </Style>
+
+            <Style x:Key="SourceDirectBadgeStyle" TargetType="Border" BasedOn="{StaticResource SourceBadgeStyle}">
+                <Setter Property="Background" Value="{DynamicResource SourceDirectBadgeBackgroundBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SourceDirectBadgeBorderBrush}"/>
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource SourceDirectBadgeForegroundBrush}"/>
+            </Style>
+
             <!-- Touch-Optimized Styles (WCAG 2.5.5 - minimum 44x44px touch targets) -->
 
             <!-- Touch-friendly Icon Button (min 44x44 hit area) -->
@@ -530,6 +569,7 @@
             <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
             <converters:NullableToVisibilityConverter x:Key="NullableToVisibilityConverter"/>
             <converters:InverseNullableToVisibilityConverter x:Key="InverseNullableToVisibilityConverter"/>
+            <converters:SourceStringToVisibilityConverter x:Key="SourceStringToVisibilityConverter"/>
             <converters:BoolToRequiredIconConverter x:Key="BoolToRequiredIconConverter"/>
             <converters:BoolToRequiredColorConverter x:Key="BoolToRequiredColorConverter"/>
             <converters:StatusToIconConverter x:Key="StatusToIconConverter"/>

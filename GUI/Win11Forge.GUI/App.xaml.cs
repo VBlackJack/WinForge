@@ -392,6 +392,18 @@ public partial class App : Application
                 SwapIfExists(app, "ErrorTextBrush", "HighContrastErrorBrush");
                 SwapIfExists(app, "WarningTextBrush", "HighContrastWarningBrush");
                 SwapIfExists(app, "SuccessTextBrush", "HighContrastSuccessBrush");
+                SwapIfExists(app, "SourceWingetBadgeBackgroundBrush", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "SourceWingetBadgeBorderBrush", "HighContrastBorderBrush");
+                SwapIfExists(app, "SourceWingetBadgeForegroundBrush", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "SourceChocolateyBadgeBackgroundBrush", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "SourceChocolateyBadgeBorderBrush", "HighContrastBorderBrush");
+                SwapIfExists(app, "SourceChocolateyBadgeForegroundBrush", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "SourceStoreBadgeBackgroundBrush", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "SourceStoreBadgeBorderBrush", "HighContrastBorderBrush");
+                SwapIfExists(app, "SourceStoreBadgeForegroundBrush", "HighContrastTextPrimaryBrush");
+                SwapIfExists(app, "SourceDirectBadgeBackgroundBrush", "HighContrastSurfaceBrush");
+                SwapIfExists(app, "SourceDirectBadgeBorderBrush", "HighContrastBorderBrush");
+                SwapIfExists(app, "SourceDirectBadgeForegroundBrush", "HighContrastTextPrimaryBrush");
             }
             catch (Exception ex)
             {
@@ -533,6 +545,19 @@ public partial class App : Application
         app.Resources["BadgeSecondaryForegroundBrush"] = new SolidColorBrush(Colors.White);
         app.Resources["PrimaryHueLightForegroundBrush"] = new SolidColorBrush(Colors.White);
         app.Resources["SecondaryHueLightForegroundBrush"] = new SolidColorBrush(Colors.White);
+
+        app.Resources["SourceWingetBadgeBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(38, 59, 130, 246));      // #263B82F6
+        app.Resources["SourceWingetBadgeBorderBrush"] = new SolidColorBrush(Color.FromRgb(59, 130, 246));              // #3B82F6
+        app.Resources["SourceWingetBadgeForegroundBrush"] = new SolidColorBrush(Color.FromRgb(147, 197, 253));         // #93C5FD
+        app.Resources["SourceChocolateyBadgeBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(38, 22, 163, 74));  // #2616A34A
+        app.Resources["SourceChocolateyBadgeBorderBrush"] = new SolidColorBrush(Color.FromRgb(34, 197, 94));           // #22C55E
+        app.Resources["SourceChocolateyBadgeForegroundBrush"] = new SolidColorBrush(Color.FromRgb(134, 239, 172));     // #86EFAC
+        app.Resources["SourceStoreBadgeBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(38, 20, 184, 166));      // #2614B8A6
+        app.Resources["SourceStoreBadgeBorderBrush"] = new SolidColorBrush(Color.FromRgb(20, 184, 166));               // #14B8A6
+        app.Resources["SourceStoreBadgeForegroundBrush"] = new SolidColorBrush(Color.FromRgb(94, 234, 212));           // #5EEAD4
+        app.Resources["SourceDirectBadgeBackgroundBrush"] = new SolidColorBrush(Color.FromArgb(42, 249, 115, 22));     // #2AF97316
+        app.Resources["SourceDirectBadgeBorderBrush"] = new SolidColorBrush(Color.FromRgb(249, 115, 22));              // #F97316
+        app.Resources["SourceDirectBadgeForegroundBrush"] = new SolidColorBrush(Color.FromRgb(253, 186, 116));         // #FDBA74
     }
 
     /// <summary>
@@ -590,6 +615,19 @@ public partial class App : Application
         app.Resources["BadgeSecondaryForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
         app.Resources["PrimaryHueLightForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
         app.Resources["SecondaryHueLightForegroundBrush"] = new SolidColorBrush(Color.FromRgb(33, 33, 33)); // #212121
+
+        SwapIfExists(app, "SourceWingetBadgeBackgroundBrush", "SourceWingetBadgeBackgroundLightBrush");
+        SwapIfExists(app, "SourceWingetBadgeBorderBrush", "SourceWingetBadgeBorderLightBrush");
+        SwapIfExists(app, "SourceWingetBadgeForegroundBrush", "SourceWingetBadgeForegroundLightBrush");
+        SwapIfExists(app, "SourceChocolateyBadgeBackgroundBrush", "SourceChocolateyBadgeBackgroundLightBrush");
+        SwapIfExists(app, "SourceChocolateyBadgeBorderBrush", "SourceChocolateyBadgeBorderLightBrush");
+        SwapIfExists(app, "SourceChocolateyBadgeForegroundBrush", "SourceChocolateyBadgeForegroundLightBrush");
+        SwapIfExists(app, "SourceStoreBadgeBackgroundBrush", "SourceStoreBadgeBackgroundLightBrush");
+        SwapIfExists(app, "SourceStoreBadgeBorderBrush", "SourceStoreBadgeBorderLightBrush");
+        SwapIfExists(app, "SourceStoreBadgeForegroundBrush", "SourceStoreBadgeForegroundLightBrush");
+        SwapIfExists(app, "SourceDirectBadgeBackgroundBrush", "SourceDirectBadgeBackgroundLightBrush");
+        SwapIfExists(app, "SourceDirectBadgeBorderBrush", "SourceDirectBadgeBorderLightBrush");
+        SwapIfExists(app, "SourceDirectBadgeForegroundBrush", "SourceDirectBadgeForegroundLightBrush");
     }
 
     /// <summary>

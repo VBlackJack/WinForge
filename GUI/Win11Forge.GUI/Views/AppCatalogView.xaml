@@ -379,37 +379,24 @@
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
                                         <!-- Winget -->
-                                        <Border Background="{DynamicResource PrimaryHueLightBrush}"
-                                                CornerRadius="4"
-                                                Padding="6,2"
-                                                Margin="0,0,4,0"
+                                        <Border Style="{StaticResource SourceWingetBadgeStyle}"
                                                 Visibility="{Binding Sources.Winget, Converter={StaticResource NullableToVisibilityConverter}}">
-                                            <TextBlock Text="{loc:Loc Source_Winget}" FontSize="11"
-                                                       Foreground="{DynamicResource PrimaryHueLightForegroundBrush}"/>
+                                            <TextBlock Text="{loc:Loc Source_Winget}" Style="{StaticResource SourceBadgeTextStyle}"/>
                                         </Border>
                                         <!-- Chocolatey -->
-                                        <Border Background="{DynamicResource SecondaryHueLightBrush}"
-                                                CornerRadius="4"
-                                                Padding="6,2"
-                                                Margin="0,0,4,0"
+                                        <Border Style="{StaticResource SourceChocolateyBadgeStyle}"
                                                 Visibility="{Binding Sources.Chocolatey, Converter={StaticResource NullableToVisibilityConverter}}">
-                                            <TextBlock Text="{loc:Loc Source_Chocolatey}" FontSize="11"
-                                                       Foreground="{DynamicResource SecondaryHueLightForegroundBrush}"/>
+                                            <TextBlock Text="{loc:Loc Source_Chocolatey}" Style="{StaticResource SourceBadgeTextStyle}"/>
                                         </Border>
                                         <!-- Store -->
-                                        <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
-                                                CornerRadius="4"
-                                                Padding="6,2"
-                                                Margin="0,0,4,0"
+                                        <Border Style="{StaticResource SourceStoreBadgeStyle}"
                                                 Visibility="{Binding Sources.Store, Converter={StaticResource NullableToVisibilityConverter}}">
-                                            <TextBlock Text="{loc:Loc Source_Store}" FontSize="11"/>
+                                            <TextBlock Text="{loc:Loc Source_Store}" Style="{StaticResource SourceBadgeTextStyle}"/>
                                         </Border>
                                         <!-- Direct -->
-                                        <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
-                                                CornerRadius="4"
-                                                Padding="6,2"
+                                        <Border Style="{StaticResource SourceDirectBadgeStyle}"
                                                 Visibility="{Binding Sources.DirectUrl, Converter={StaticResource NullableToVisibilityConverter}}">
-                                            <TextBlock Text="{loc:Loc Source_Direct}" FontSize="11"/>
+                                            <TextBlock Text="{loc:Loc Source_Direct}" Style="{StaticResource SourceBadgeTextStyle}"/>
                                         </Border>
                                     </StackPanel>
                                 </DataTemplate>
