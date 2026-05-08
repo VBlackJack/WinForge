@@ -29,7 +29,15 @@ Completed the P0/P1 remediation sweep from `Docs/audit/Win11Forge-UX-Audit-2026-
 - **Closed WF-007** (PR #75/#76): Update Selected now mirrors Install progress UX with current app, progress percentage, ETA, cancellation, and final summary.
 - **Confirmed WF-008 closure** (PR #55/#56): App Catalog empty states are gated on loading and load-error state, with distinct empty-database and empty-filter copy.
 
+### Added
+
+- **Test coverage** — `AccessibilityHardeningTests` adds three static-analysis guards: `RequiredA11yLocKeys_ArePresentInXaml` (theory across the 6 a11y-touched XAML files), `HighContrastMode_TextOnAccentBrushes_AreRemapped` (asserts the 3 `SwapIfExists` entries in `App.xaml.cs`), and `HighContrastTheme_ImplicitlyStylesWpfUiButton` (asserts the implicit `ui:Button` style based on `HighContrastButtonStyle` in `HighContrastTheme.xaml`). Total test count: 527 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
+
 ### Fixed
+- **Accessibility (A11Y-007)** — Sweep `AutomationProperties.Name` on AppsView toolbar buttons (LogViewer Copy/Close, Summary Close, Save Profile, Reset Columns) and ApplicationEditorDialog source actions (Search + Apply Selection × 3 sources). Screen readers now announce explicit names instead of relying on inferred Content text. Closes A11Y-007 from `Docs/audit/Win11Forge-UX-Audit-2026-05.md` (PR #78).
+- **Accessibility (A11Y-008)** — High-contrast mode now remaps `TextOnAccentFillColor*` brushes (Primary/Secondary/Disabled) to high-contrast foreground variants in `App.ApplyHighContrastMode`, and selectively applies `HighContrastButtonStyle` to `ui:Button` only (WPF-UI). Resolves the 1.07:1 white-on-cyan hover regression on accent-painted buttons in HC mode. Plain WPF `Button` controls remain untouched to preserve custom-styled buttons. Closes A11Y-008 (PR #78).
+- **Accessibility (A11Y-009)** — Settings toggle switches (Reduce Motion, High Contrast) now expose their descriptive subtitle via `AutomationProperties.HelpText`, in addition to the existing `Name`. Closes A11Y-009 (PR #78).
+- **Accessibility (A11Y-010)** — Explicit `AutomationProperties.Name` added to templated/dialog buttons that previously relied on inferred announcement: Prerequisites Check (StackPanel-wrapped Button with ProgressRing), ConfirmDialog Cancel/Confirm, ErrorDialog Help/Retry/OK. Closes A11Y-010 (PR #78).
 - Hardened the Windows runner CI baseline after enabling strict Pester gating.
 - Replaced a fragile File detection fixture path with a stable system executable present on Windows Server runners.
 - Made Store app detection tolerate app definitions without optional `Sources.Store` metadata.
