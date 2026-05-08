@@ -15,12 +15,11 @@
  */
 
 using System.IO;
-using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Media;
 using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services;
+using Win11Forge.GUI.Tests.TestInfrastructure;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -186,7 +185,7 @@ public class ThemeServiceTests
     [Fact]
     public void ApplyTheme_WithHighContrastDictionary_ReappliesHighContrastOnThemeApply()
     {
-        RunOnStaThread(() =>
+        WpfApplicationScope.RunOnStaThread(() =>
         {
             using var scope = WpfApplicationScope.Create();
             scope.AddHighContrastDictionaryMarker();
@@ -209,7 +208,7 @@ public class ThemeServiceTests
         service.ApplyTheme(ThemeNames.Light);
         var revisionAfterInitialApply = service.ThemeRevision;
 
-        RunOnStaThread(() =>
+        WpfApplicationScope.RunOnStaThread(() =>
         {
             using var scope = WpfApplicationScope.Create();
             scope.AddHighContrastDictionaryMarker();
@@ -282,27 +281,6 @@ public class ThemeServiceTests
         return new ThemeService(new MockAppSettingsService(), applyHighContrastMode);
     }
 
-    private static void RunOnStaThread(Action action)
-    {
-        ExceptionDispatchInfo? exception = null;
-        var thread = new Thread(() =>
-        {
-            try
-            {
-                action();
-            }
-            catch (Exception ex)
-            {
-                exception = ExceptionDispatchInfo.Capture(ex);
-            }
-        });
-
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-        exception?.Throw();
-    }
-
     private static string ReadThemeServiceSource()
     {
         return File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Services", "ThemeService.cs"));
@@ -341,76 +319,6 @@ public class ThemeServiceTests
     {
         var brush = Assert.IsType<SolidColorBrush>(actual);
         Assert.Equal(Color(expectedColor), brush.Color);
-    }
-
-    private sealed class WpfApplicationScope : IDisposable
-    {
-        private static readonly FieldInfo AppCreatedInThisAppDomainField =
-            GetApplicationField("_appCreatedInThisAppDomain");
-
-        private static readonly FieldInfo AppInstanceField =
-            GetApplicationField("_appInstance");
-
-        private static readonly FieldInfo IsShuttingDownField =
-            GetApplicationField("_isShuttingDown");
-
-        private readonly Application _application;
-        private readonly ResourceDictionary _originalResources;
-        private bool _disposed;
-
-        private WpfApplicationScope(Application application)
-        {
-            _application = application;
-            _originalResources = application.Resources;
-            _application.Resources = new ResourceDictionary();
-        }
-
-        public static WpfApplicationScope Create()
-        {
-            var app = Application.Current;
-            app ??= new Application
-            {
-                ShutdownMode = ShutdownMode.OnExplicitShutdown
-            };
-
-            return new WpfApplicationScope(app);
-        }
-
-        public void AddHighContrastDictionaryMarker()
-        {
-            _application.Resources.MergedDictionaries.Add(new ResourceDictionary
-            {
-                Source = new Uri(
-                    "pack://application:,,,/Win11Forge.GUI;component/Resources/HighContrastTheme.xaml",
-                    UriKind.Absolute)
-            });
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _application.Resources = _originalResources;
-            _application.Shutdown();
-
-            // WPF keeps Application singleton state after Shutdown; reset it so legacy
-            // ThemeService tests still exercise the no-Application.Current path.
-            AppInstanceField.SetValue(null, null);
-            IsShuttingDownField.SetValue(null, false);
-            AppCreatedInThisAppDomainField.SetValue(null, false);
-            _disposed = true;
-        }
-
-        private static FieldInfo GetApplicationField(string name)
-        {
-            return typeof(Application).GetField(
-                name,
-                BindingFlags.Static | BindingFlags.NonPublic)
-                ?? throw new MissingFieldException(typeof(Application).FullName, name);
-        }
     }
 
 }
