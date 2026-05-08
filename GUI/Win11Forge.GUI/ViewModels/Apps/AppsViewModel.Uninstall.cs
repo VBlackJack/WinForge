@@ -33,6 +33,16 @@ public partial class AppsViewModel
 
         try
         {
+            var confirmed = await _dialogService.ShowConfirmAsync(
+                Resources.Resources.Confirm_Uninstall_Title_Single,
+                Resources.Resources.Confirm_Uninstall_Message_Single,
+                Resources.Resources.Confirm_Uninstall_Btn,
+                Resources.Resources.Common_Cancel);
+            if (!confirmed)
+            {
+                return;
+            }
+
             var result = await _uninstallCoordinator.UninstallAsync([app]);
             InstalledCount = Math.Max(0, InstalledCount - result.UninstalledCount);
         }
