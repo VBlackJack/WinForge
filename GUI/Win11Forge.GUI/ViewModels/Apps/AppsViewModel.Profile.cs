@@ -71,12 +71,20 @@ public partial class AppsViewModel
     /// </summary>
     private Dictionary<string, List<string>> _rawProfileAppIdsCache = [];
 
+    private string? _lastAppliedProfile;
+    private bool _isRestoringProfile;
+
     /// <summary>
     /// Called when SelectedProfile changes.
     /// </summary>
     partial void OnSelectedProfileChanged(string? value)
     {
         OnPropertyChanged(nameof(HasProfileApplied));
+        if (_isRestoringProfile)
+        {
+            return;
+        }
+
         _ = ApplyProfileSelectionAsync();
     }
 
@@ -250,6 +258,8 @@ public partial class AppsViewModel
     /// </summary>
     private async Task ApplyProfileSelectionAsync()
     {
+        var selectedProfile = SelectedProfile;
+
         // Clear all profile tiers first
         foreach (var app in _allApplications)
         {
@@ -257,18 +267,38 @@ public partial class AppsViewModel
         }
         _profileAppTiers.Clear();
 
-        if (string.IsNullOrEmpty(SelectedProfile))
+        if (string.IsNullOrEmpty(selectedProfile))
         {
+            _lastAppliedProfile = null;
             ApplyFilter();
             return;
         }
 
         try
         {
+            var mergeWithManualSelection = false;
+            if (ShouldPromptBeforeApplyingProfile())
+            {
+                var applyMode = await _dialogService.ShowYesNoCancelAsync(
+                    Resources.Resources.Profile_Apply_Title,
+                    Resources.Resources.Profile_Apply_Message,
+                    Resources.Resources.Profile_Apply_Replace,
+                    Resources.Resources.Profile_Apply_Merge,
+                    Resources.Resources.Common_Cancel);
+
+                if (applyMode is null)
+                {
+                    RestoreSelectedProfile(_lastAppliedProfile);
+                    return;
+                }
+
+                mergeWithManualSelection = applyMode == false;
+            }
+
             HashSet<string> profileAppIds;
 
             // Try cache first
-            if (_resolvedProfileAppIdsCache.TryGetValue(SelectedProfile, out var cachedIds) && cachedIds.Count > 0)
+            if (_resolvedProfileAppIdsCache.TryGetValue(selectedProfile, out var cachedIds) && cachedIds.Count > 0)
             {
                 profileAppIds = cachedIds;
             }
@@ -284,15 +314,15 @@ public partial class AppsViewModel
                     return;
                 }
 
-                profileAppIds = await ResolveProfileInheritanceAsync(profilesDir, SelectedProfile);
-                _resolvedProfileAppIdsCache[SelectedProfile] = profileAppIds;
+                profileAppIds = await ResolveProfileInheritanceAsync(profilesDir, selectedProfile);
+                _resolvedProfileAppIdsCache[selectedProfile] = profileAppIds;
 
-                var rawAppIds = await ReadProfileAppIdsFromJsonAsync(profilesDir, SelectedProfile);
-                _rawProfileAppIdsCache[SelectedProfile] = rawAppIds;
+                var rawAppIds = await ReadProfileAppIdsFromJsonAsync(profilesDir, selectedProfile);
+                _rawProfileAppIdsCache[selectedProfile] = rawAppIds;
             }
 
             // Build tier mapping using cached raw profiles
-            BuildProfileTierMapping(SelectedProfile);
+            BuildProfileTierMapping(selectedProfile);
 
             // Select apps from the profile
             foreach (var app in _allApplications)
@@ -307,12 +337,13 @@ public partial class AppsViewModel
                         app.ProfileTier = tier;
                     }
                 }
-                else
+                else if (!mergeWithManualSelection)
                 {
                     app.IsSelected = false;
                 }
             }
 
+            _lastAppliedProfile = selectedProfile;
             ApplyFilter();
             UpdateSelectedCount();
         }
@@ -340,6 +371,25 @@ public partial class AppsViewModel
                 "Failed to load profile: {0}",
                 ex.Message);
             Debug.WriteLine($"Unexpected exception in OnSelectedProfileChanged: {ex}");
+        }
+    }
+
+    private bool ShouldPromptBeforeApplyingProfile()
+    {
+        return string.IsNullOrEmpty(_lastAppliedProfile) &&
+            _allApplications.Any(app => app.IsSelected);
+    }
+
+    private void RestoreSelectedProfile(string? profileName)
+    {
+        _isRestoringProfile = true;
+        try
+        {
+            SelectedProfile = profileName;
+        }
+        finally
+        {
+            _isRestoringProfile = false;
         }
     }
 
@@ -492,6 +542,7 @@ public partial class AppsViewModel
             }
 
             // Select the saved profile
+            _lastAppliedProfile = saveResult.ProfileName;
             SelectedProfile = saveResult.ProfileName;
 
             // Clear any error message to indicate success
