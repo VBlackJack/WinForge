@@ -65,6 +65,7 @@
                                ToolTip="{Binding UndoButtonTooltip}"
                                AutomationProperties.Name="{loc:Loc A11y_Main_Undo}"
                                Style="{StaticResource TouchFriendlyIconButton}"
+                               Visibility="{Binding CanUndo, Converter={StaticResource BooleanToVisibilityConverter}}"
                                Margin="0,0,4,0"
                                Icon="{ui:SymbolIcon ArrowUndo24}"/>
                     <ui:Button Appearance="Transparent"
@@ -72,6 +73,7 @@
                                ToolTip="{Binding RedoButtonTooltip}"
                                AutomationProperties.Name="{loc:Loc A11y_Main_Redo}"
                                Style="{StaticResource TouchFriendlyIconButton}"
+                               Visibility="{Binding CanRedo, Converter={StaticResource BooleanToVisibilityConverter}}"
                                Margin="0,0,16,0"
                                Icon="{ui:SymbolIcon ArrowRedo24}"/>
 
@@ -214,7 +216,9 @@
                     <Grid Grid.Column="2"/>
 
                     <!-- Selection Actions -->
-                    <StackPanel Grid.Column="3" Orientation="Horizontal">
+                    <StackPanel Grid.Column="3"
+                                Orientation="Horizontal"
+                                Visibility="{Binding SelectedApplication, Converter={StaticResource NullableToVisibilityConverter}}">
                         <ui:Button Appearance="Secondary"
                                    Command="{Binding EditCommand}"
                                    ToolTip="{loc:Loc AppCatalog_EditTooltip}"
