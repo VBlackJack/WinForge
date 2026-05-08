@@ -23,6 +23,7 @@ Completed the P0/P1 remediation sweep from `Docs/audit/Win11Forge-UX-Audit-2026-
 #### Naming and visual hierarchy
 - **Closed UX-001 and DC-002** (PR #63/#64): The admin catalog surface is consistently named App Catalog, including `AppCatalogView*`, `AppCatalog_*` resource keys, and navigation IDs.
 - **Closed DC-001/DC-004/DC-011** (PR #65/#66): Page typography tokens, shared source badge styling, and subtler DataGrid gridlines now apply consistently across the GUI.
+- **Closed DC-005/DC-006/DC-007/DC-008** (PR #79): AppsView now follows the icon/title/subtitle header pattern, profile/filter cards reflow without forced horizontal card scroll, Settings tabs have a reinforced selected indicator, and navigation separates workflow pages from configuration pages while preserving `ViewIndex` tags.
 
 #### Workflow safety
 - **Closed WF-003/WF-005/WF-006** (PR #73/#74): Single-app uninstall now confirms destructive action; profile changes protect manual selections with Replace/Merge/Cancel; profile tier badges are derived from JSON inheritance instead of hardcoded tiers.
@@ -32,8 +33,13 @@ Completed the P0/P1 remediation sweep from `Docs/audit/Win11Forge-UX-Audit-2026-
 ### Added
 
 - **Test coverage** — `AccessibilityHardeningTests` adds three static-analysis guards: `RequiredA11yLocKeys_ArePresentInXaml` (theory across the 6 a11y-touched XAML files), `HighContrastMode_TextOnAccentBrushes_AreRemapped` (asserts the 3 `SwapIfExists` entries in `App.xaml.cs`), and `HighContrastTheme_ImplicitlyStylesWpfUiButton` (asserts the implicit `ui:Button` style based on `HighContrastButtonStyle` in `HighContrastTheme.xaml`). Total test count: 527 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
+- **Test coverage** — `AccessibilityHardeningTests` adds four static visual-hierarchy guards for CodexP-15: AppsView header pattern, AppsView filter/profile reflow without `MinWidth="920"`, implicit `ReinforcedTabItemStyle`, and workflow/config navigation clustering. Total test count: 531 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
 
 ### Fixed
+- **Visual hierarchy (DC-005)** — AppsView now mirrors the app-wide page header structure with an `Apps24` icon, `PageTitleTextStyle`, `PageSubtitleTextStyle`, and new localized `Apps_Subtitle` resource. EN/FR resource parity is 920/920. Closes DC-005 (PR #79).
+- **Visual hierarchy (DC-006)** — AppsView profile and filter cards no longer force internal horizontal scrolling through `MinWidth="920"`; both surfaces now reflow in a two-row responsive layout. Closes DC-006 (PR #79).
+- **Visual hierarchy (DC-007)** — Settings and shared WPF `TabItem` surfaces use `ReinforcedTabItemStyle` with a stronger selected underline and selected-state tint. Closes the DC-007 implementation scope; stronger post-smoke tab treatment is tracked separately as DC-014. Closes DC-007 (PR #79).
+- **Information architecture (DC-008)** — Main navigation now separates workflow and configuration clusters with `NavigationViewItemSeparator`, moving App Catalog next to Settings while keeping Settings `Tag="4"` and App Catalog `Tag="5"` stable. Closes DC-008 (PR #79).
 - **Accessibility (A11Y-007)** — Sweep `AutomationProperties.Name` on AppsView toolbar buttons (LogViewer Copy/Close, Summary Close, Save Profile, Reset Columns) and ApplicationEditorDialog source actions (Search + Apply Selection × 3 sources). Screen readers now announce explicit names instead of relying on inferred Content text. Closes A11Y-007 from `Docs/audit/Win11Forge-UX-Audit-2026-05.md` (PR #78).
 - **Accessibility (A11Y-008)** — High-contrast mode now remaps `TextOnAccentFillColor*` brushes (Primary/Secondary/Disabled) to high-contrast foreground variants in `App.ApplyHighContrastMode`, and selectively applies `HighContrastButtonStyle` to `ui:Button` only (WPF-UI). Resolves the 1.07:1 white-on-cyan hover regression on accent-painted buttons in HC mode. Plain WPF `Button` controls remain untouched to preserve custom-styled buttons. Closes A11Y-008 (PR #78).
 - **Accessibility (A11Y-009)** — Settings toggle switches (Reduce Motion, High Contrast) now expose their descriptive subtitle via `AutomationProperties.HelpText`, in addition to the existing `Name`. Closes A11Y-009 (PR #78).
