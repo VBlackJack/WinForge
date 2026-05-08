@@ -205,11 +205,19 @@
         </Grid.RowDefinitions>
 
         <!-- Title -->
-        <TextBlock Grid.Row="0"
-                   Text="{loc:Loc Apps_Title}"
-                   Style="{StaticResource PageTitleTextStyle}"
-                   Margin="0,0,0,16"
-                   AutomationProperties.AutomationId="PageApplications"/>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+            <ui:SymbolIcon Symbol="Apps24"
+                           Width="32" Height="32"
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0"/>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="{loc:Loc Apps_Title}"
+                           Style="{StaticResource PageTitleTextStyle}"
+                           AutomationProperties.AutomationId="PageApplications"/>
+                <TextBlock Text="{loc:Loc Apps_Subtitle}"
+                           Style="{StaticResource PageSubtitleTextStyle}"/>
+            </StackPanel>
+        </StackPanel>
 
         <!-- Profile Selector Card -->
         <Border Grid.Row="1"

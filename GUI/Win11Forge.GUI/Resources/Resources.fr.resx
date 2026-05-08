@@ -236,6 +236,9 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Apps_Title" xml:space="preserve">
     <value>Applications</value>
   </data>
+  <data name="Apps_Subtitle" xml:space="preserve">
+    <value>Installez, mettez à jour et gérez vos applications</value>
+  </data>
   <data name="Apps_SearchHint" xml:space="preserve">
     <value>Rechercher des applications...</value>
   </data>
