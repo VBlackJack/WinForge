@@ -26,15 +26,15 @@ using Loc = Win11Forge.GUI.Resources.Resources;
 namespace Win11Forge.GUI.Views;
 
 /// <summary>
-/// Code-behind for ApplicationsView.xaml.
+/// Code-behind for AppCatalogView.xaml.
 /// Handles view-specific logic and events.
 /// </summary>
-public partial class ApplicationsView : UserControl
+public partial class AppCatalogView : UserControl
 {
     /// <summary>
-    /// Initializes a new instance of ApplicationsView.
+    /// Initializes a new instance of AppCatalogView.
     /// </summary>
-    public ApplicationsView()
+    public AppCatalogView()
     {
         InitializeComponent();
     }
@@ -46,7 +46,7 @@ public partial class ApplicationsView : UserControl
     {
         try
         {
-            if (DataContext is ApplicationsViewModel viewModel)
+            if (DataContext is AppCatalogViewModel viewModel)
             {
                 // Load data
                 await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
@@ -54,11 +54,11 @@ public partial class ApplicationsView : UserControl
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"ApplicationsView load failed: {ex}");
+            System.Diagnostics.Debug.WriteLine($"AppCatalogView load failed: {ex}");
             var dialogService = App.GetService<IDialogService>();
             await dialogService.ShowErrorAsync(
                 Loc.Common_Error,
-                string.Format(Loc.AppDb_LoadError, ex.Message));
+                string.Format(Loc.AppCatalog_LoadError, ex.Message));
         }
     }
 
@@ -67,7 +67,7 @@ public partial class ApplicationsView : UserControl
     /// </summary>
     private void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (DataContext is ApplicationsViewModel viewModel && viewModel.EditCommand.CanExecute(null))
+        if (DataContext is AppCatalogViewModel viewModel && viewModel.EditCommand.CanExecute(null))
         {
             viewModel.EditCommand.Execute(null);
         }

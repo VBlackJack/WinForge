@@ -59,7 +59,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <!-- Application Manager Section -->
+                    <!-- Applications Section -->
                     <TextBlock Text="{loc:Loc Help_Section_AppManager}"
                                FontSize="14" FontWeight="Medium"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"

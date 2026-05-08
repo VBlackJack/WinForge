@@ -42,7 +42,7 @@ public enum StatusFilterOption
 }
 
 /// <summary>
-/// ViewModel for the Application Manager view.
+/// ViewModel for the Applications view.
 /// Displays all applications with search and category filtering.
 /// </summary>
 public partial class AppsViewModel : ViewModelBase, IDisposable

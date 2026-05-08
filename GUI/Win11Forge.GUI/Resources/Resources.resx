@@ -115,10 +115,6 @@
     <comment>System information card title</comment>
   </data>
   <!-- Deployment / Monitoring -->
-  <data name="Deploy_Title" xml:space="preserve">
-    <value>Deployment</value>
-    <comment>Deployment view title</comment>
-  </data>
   <data name="Monitoring_Title" xml:space="preserve">
     <value>Monitoring</value>
     <comment>Monitoring view title</comment>
@@ -272,10 +268,10 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Applications</value>
     <comment>Applications navigation item</comment>
   </data>
-  <!-- Application Manager -->
+  <!-- Applications -->
   <data name="Apps_Title" xml:space="preserve">
-    <value>Application Manager</value>
-    <comment>Application Manager view title</comment>
+    <value>Applications</value>
+    <comment>Applications view title</comment>
   </data>
   <data name="Apps_SearchHint" xml:space="preserve">
     <value>Search applications...</value>
@@ -1249,8 +1245,8 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <comment>General shortcuts section</comment>
   </data>
   <data name="Help_Section_AppManager" xml:space="preserve">
-    <value>Application Manager</value>
-    <comment>App manager shortcuts section</comment>
+    <value>Applications</value>
+    <comment>Applications shortcuts section</comment>
   </data>
   <data name="Help_Section_Navigation" xml:space="preserve">
     <value>Navigation</value>
@@ -2517,102 +2513,98 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Application ID '{0}' already exists</value>
     <comment>Validation error for duplicate application ID</comment>
   </data>
-  <!-- Applications Catalog Management View -->
-  <data name="Nav_AppDatabase" xml:space="preserve">
+  <!-- App Catalog Management View -->
+  <data name="Nav_AppCatalog" xml:space="preserve">
     <value>App Catalog</value>
     <comment>Navigation item for application catalog management</comment>
   </data>
-  <data name="AppDb_Title" xml:space="preserve">
+  <data name="AppCatalog_Title" xml:space="preserve">
     <value>App Catalog</value>
     <comment>Title of the application catalog view</comment>
   </data>
-  <data name="AppDb_Subtitle" xml:space="preserve">
+  <data name="AppCatalog_Subtitle" xml:space="preserve">
     <value>Manage application definitions and installation sources</value>
     <comment>Subtitle of the application database view</comment>
   </data>
-  <data name="AppDb_Add" xml:space="preserve">
+  <data name="AppCatalog_Add" xml:space="preserve">
     <value>Add</value>
     <comment>Add button text</comment>
   </data>
-  <data name="AppDb_AddTooltip" xml:space="preserve">
+  <data name="AppCatalog_AddTooltip" xml:space="preserve">
     <value>Add a new application (Ctrl+N)</value>
     <comment>Add button tooltip</comment>
   </data>
-  <data name="AppDb_Edit" xml:space="preserve">
+  <data name="AppCatalog_Edit" xml:space="preserve">
     <value>Edit</value>
     <comment>Edit button text</comment>
   </data>
-  <data name="AppDb_EditTooltip" xml:space="preserve">
+  <data name="AppCatalog_EditTooltip" xml:space="preserve">
     <value>Edit selected application (Ctrl+E)</value>
     <comment>Edit button tooltip</comment>
   </data>
-  <data name="AppDb_Delete" xml:space="preserve">
+  <data name="AppCatalog_Delete" xml:space="preserve">
     <value>Delete</value>
     <comment>Delete button text</comment>
   </data>
-  <data name="AppDb_DeleteTooltip" xml:space="preserve">
+  <data name="AppCatalog_DeleteTooltip" xml:space="preserve">
     <value>Delete selected application (Del)</value>
     <comment>Delete button tooltip</comment>
   </data>
-  <data name="AppDb_Duplicate" xml:space="preserve">
+  <data name="AppCatalog_Duplicate" xml:space="preserve">
     <value>Duplicate</value>
     <comment>Duplicate button text</comment>
   </data>
-  <data name="AppDb_DuplicateTooltip" xml:space="preserve">
+  <data name="AppCatalog_DuplicateTooltip" xml:space="preserve">
     <value>Duplicate selected application (Ctrl+D)</value>
     <comment>Duplicate button tooltip</comment>
   </data>
-  <data name="AppDb_Refresh" xml:space="preserve">
+  <data name="AppCatalog_Refresh" xml:space="preserve">
     <value>Refresh (F5)</value>
     <comment>Refresh button tooltip</comment>
   </data>
-  <data name="AppDb_SearchHint" xml:space="preserve">
+  <data name="AppCatalog_SearchHint" xml:space="preserve">
     <value>Search by ID, name, or tags...</value>
     <comment>Search box placeholder</comment>
   </data>
-  <data name="AppDb_CategoryFilter" xml:space="preserve">
+  <data name="AppCatalog_CategoryFilter" xml:space="preserve">
     <value>Category</value>
     <comment>Category filter label</comment>
   </data>
-  <data name="AppDb_Col_Id" xml:space="preserve">
+  <data name="AppCatalog_Col_Id" xml:space="preserve">
     <value>ID</value>
     <comment>Column header for app ID</comment>
   </data>
-  <data name="AppDb_Col_Name" xml:space="preserve">
+  <data name="AppCatalog_Col_Name" xml:space="preserve">
     <value>Name</value>
     <comment>Column header for app name</comment>
   </data>
-  <data name="AppDb_Col_Category" xml:space="preserve">
+  <data name="AppCatalog_Col_Category" xml:space="preserve">
     <value>Category</value>
     <comment>Column header for category</comment>
   </data>
-  <data name="AppDb_Col_Sources" xml:space="preserve">
+  <data name="AppCatalog_Col_Sources" xml:space="preserve">
     <value>Sources</value>
     <comment>Column header for installation sources</comment>
   </data>
-  <data name="AppDb_Col_Priority" xml:space="preserve">
+  <data name="AppCatalog_Col_Priority" xml:space="preserve">
     <value>Priority</value>
     <comment>Column header for priority</comment>
   </data>
-  <data name="AppDb_Col_Verified" xml:space="preserve">
+  <data name="AppCatalog_Col_Verified" xml:space="preserve">
     <value>Verified</value>
     <comment>Column header for verified status</comment>
   </data>
-  <data name="AppDb_Col_Description" xml:space="preserve">
+  <data name="AppCatalog_Col_Description" xml:space="preserve">
     <value>Description</value>
     <comment>Column header for description</comment>
   </data>
-  <data name="AppDb_Loading" xml:space="preserve">
+  <data name="AppCatalog_Loading" xml:space="preserve">
     <value>Loading applications...</value>
     <comment>Loading status message</comment>
   </data>
-  <data name="AppDb_LoadedCount" xml:space="preserve">
+  <data name="AppCatalog_LoadedCount" xml:space="preserve">
     <value>{0} applications loaded</value>
     <comment>Loaded count message</comment>
-  </data>
-  <data name="AppDb_LoadError" xml:space="preserve">
-    <value>Failed to load applications: {0}</value>
-    <comment>Load error message</comment>
   </data>
   <data name="AppCatalog_LoadError" xml:space="preserve">
     <value>Failed to load applications: {0}</value>
@@ -2626,126 +2618,126 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>No applications match the current filter. Try clearing it.</value>
     <comment>App Catalog empty state when filters hide all loaded applications</comment>
   </data>
-  <data name="AppDb_Deleting" xml:space="preserve">
+  <data name="AppCatalog_Deleting" xml:space="preserve">
     <value>Deleting application...</value>
     <comment>Deleting status message</comment>
   </data>
-  <data name="AppDb_Deleted" xml:space="preserve">
+  <data name="AppCatalog_Deleted" xml:space="preserve">
     <value>Application deleted successfully</value>
     <comment>Deleted success message</comment>
   </data>
-  <data name="AppDb_UndoTooltipFormat" xml:space="preserve">
+  <data name="AppCatalog_UndoTooltipFormat" xml:space="preserve">
     <value>{0} (Ctrl+Z)</value>
     <comment>Undo button tooltip format with keyboard shortcut</comment>
   </data>
-  <data name="AppDb_RedoTooltipFormat" xml:space="preserve">
+  <data name="AppCatalog_RedoTooltipFormat" xml:space="preserve">
     <value>{0} (Ctrl+Y)</value>
     <comment>Redo button tooltip format with keyboard shortcut</comment>
   </data>
-  <data name="AppDb_UndoTooltipDefault" xml:space="preserve">
+  <data name="AppCatalog_UndoTooltipDefault" xml:space="preserve">
     <value>Undo (Ctrl+Z)</value>
     <comment>Default undo button tooltip when no action to undo</comment>
   </data>
-  <data name="AppDb_RedoTooltipDefault" xml:space="preserve">
+  <data name="AppCatalog_RedoTooltipDefault" xml:space="preserve">
     <value>Redo (Ctrl+Y)</value>
     <comment>Default redo button tooltip when no action to redo</comment>
   </data>
-  <data name="AppDb_CopyIdSuffix" xml:space="preserve">
+  <data name="AppCatalog_CopyIdSuffix" xml:space="preserve">
     <value>_Copy</value>
     <comment>Suffix appended to app ID when duplicating</comment>
   </data>
-  <data name="AppDb_CopyNameSuffix" xml:space="preserve">
+  <data name="AppCatalog_CopyNameSuffix" xml:space="preserve">
     <value> (Copy)</value>
     <comment>Suffix appended to app name when duplicating</comment>
   </data>
-  <data name="AppDb_DeleteError" xml:space="preserve">
+  <data name="AppCatalog_DeleteError" xml:space="preserve">
     <value>Failed to delete application</value>
     <comment>Delete error message</comment>
   </data>
-  <data name="AppDb_Added" xml:space="preserve">
+  <data name="AppCatalog_Added" xml:space="preserve">
     <value>Application added successfully</value>
     <comment>Added success message</comment>
   </data>
-  <data name="AppDb_Updated" xml:space="preserve">
+  <data name="AppCatalog_Updated" xml:space="preserve">
     <value>Application updated successfully</value>
     <comment>Updated success message</comment>
   </data>
   <!-- Import/Export -->
-  <data name="AppDb_ImportSuccess" xml:space="preserve">
+  <data name="AppCatalog_ImportSuccess" xml:space="preserve">
     <value>Import complete: {0} added, {1} updated</value>
     <comment>Import success message</comment>
   </data>
-  <data name="AppDb_ImportError" xml:space="preserve">
+  <data name="AppCatalog_ImportError" xml:space="preserve">
     <value>Import failed: {0}</value>
     <comment>Import error message</comment>
   </data>
-  <data name="AppDb_ExportSuccess" xml:space="preserve">
+  <data name="AppCatalog_ExportSuccess" xml:space="preserve">
     <value>Exported {0} applications successfully</value>
     <comment>Export success message</comment>
   </data>
-  <data name="AppDb_ExportError" xml:space="preserve">
+  <data name="AppCatalog_ExportError" xml:space="preserve">
     <value>Failed to export applications: {0}</value>
     <comment>Export error message (0=error details)</comment>
   </data>
-  <data name="AppDb_Import" xml:space="preserve">
+  <data name="AppCatalog_Import" xml:space="preserve">
     <value>Import</value>
     <comment>Import button text</comment>
   </data>
-  <data name="AppDb_Export" xml:space="preserve">
+  <data name="AppCatalog_Export" xml:space="preserve">
     <value>Export</value>
     <comment>Export button text</comment>
   </data>
-  <data name="AppDb_ExportSelected" xml:space="preserve">
+  <data name="AppCatalog_ExportSelected" xml:space="preserve">
     <value>Export Selected</value>
     <comment>Export selected button text</comment>
   </data>
-  <data name="AppDb_ExportAll" xml:space="preserve">
+  <data name="AppCatalog_ExportAll" xml:space="preserve">
     <value>Export All</value>
     <comment>Export all button text</comment>
   </data>
-  <data name="AppDb_ImportTooltip" xml:space="preserve">
+  <data name="AppCatalog_ImportTooltip" xml:space="preserve">
     <value>Import applications from JSON file</value>
     <comment>Import button tooltip</comment>
   </data>
-  <data name="AppDb_ExportTooltip" xml:space="preserve">
+  <data name="AppCatalog_ExportTooltip" xml:space="preserve">
     <value>Export applications to JSON file</value>
     <comment>Export button tooltip</comment>
   </data>
-  <data name="AppDb_DeleteConfirm" xml:space="preserve">
+  <data name="AppCatalog_DeleteConfirm" xml:space="preserve">
     <value>Are you sure you want to delete '{0}' ({1})?
 
 This action cannot be undone.</value>
     <comment>Delete confirmation message</comment>
   </data>
-  <data name="AppDb_DeleteTitle" xml:space="preserve">
+  <data name="AppCatalog_DeleteTitle" xml:space="preserve">
     <value>Confirm Delete</value>
     <comment>Delete confirmation dialog title</comment>
   </data>
-  <data name="AppDb_AddTitle" xml:space="preserve">
+  <data name="AppCatalog_AddTitle" xml:space="preserve">
     <value>Add Application</value>
     <comment>Add dialog title</comment>
   </data>
-  <data name="AppDb_EditTitle" xml:space="preserve">
+  <data name="AppCatalog_EditTitle" xml:space="preserve">
     <value>Edit Application</value>
     <comment>Edit dialog title</comment>
   </data>
-  <data name="AppDb_Showing" xml:space="preserve">
+  <data name="AppCatalog_Showing" xml:space="preserve">
     <value>Showing</value>
     <comment>Status bar showing prefix</comment>
   </data>
-  <data name="AppDb_Of" xml:space="preserve">
+  <data name="AppCatalog_Of" xml:space="preserve">
     <value>of</value>
     <comment>Status bar of separator</comment>
   </data>
-  <data name="AppDb_Applications" xml:space="preserve">
+  <data name="AppCatalog_Applications" xml:space="preserve">
     <value>applications</value>
     <comment>Status bar applications suffix</comment>
   </data>
-  <data name="AppDb_EditorOwnerNotFound" xml:space="preserve">
+  <data name="AppCatalog_EditorOwnerNotFound" xml:space="preserve">
     <value>Cannot open editor: Owner window not found.</value>
     <comment>Error when editor cannot find parent window</comment>
   </data>
-  <data name="AppDb_EditorOpenError" xml:space="preserve">
+  <data name="AppCatalog_EditorOpenError" xml:space="preserve">
     <value>Error opening application editor:
 
 {0}
@@ -2753,27 +2745,27 @@ This action cannot be undone.</value>
 {1}</value>
     <comment>Error opening editor (0=message, 1=stack trace)</comment>
   </data>
-  <data name="AppDb_ImportModeConfirm" xml:space="preserve">
+  <data name="AppCatalog_ImportModeConfirm" xml:space="preserve">
     <value>Choose how to handle existing applications.</value>
     <comment>Import mode confirmation message</comment>
   </data>
-  <data name="AppDb_Import_Replace" xml:space="preserve">
+  <data name="AppCatalog_Import_Replace" xml:space="preserve">
     <value>Replace existing</value>
     <comment>Import mode button to replace existing applications</comment>
   </data>
-  <data name="AppDb_Import_Skip" xml:space="preserve">
+  <data name="AppCatalog_Import_Skip" xml:space="preserve">
     <value>Skip duplicates</value>
     <comment>Import mode button to skip duplicate applications</comment>
   </data>
-  <data name="AppDb_NoExportSelection" xml:space="preserve">
+  <data name="AppCatalog_NoExportSelection" xml:space="preserve">
     <value>No applications selected for export.</value>
     <comment>Message when no apps selected for export</comment>
   </data>
-  <data name="AppDb_Verify" xml:space="preserve">
+  <data name="AppCatalog_Verify" xml:space="preserve">
     <value>Verify</value>
     <comment>Verify button text</comment>
   </data>
-  <data name="AppDb_VerifySources" xml:space="preserve">
+  <data name="AppCatalog_VerifySources" xml:space="preserve">
     <value>Verify Sources</value>
     <comment>Context menu item to verify application sources</comment>
   </data>
@@ -3195,13 +3187,13 @@ This action cannot be undone.</value>
     <comment>Store app check not supported message</comment>
   </data>
   <!-- UX Improvements - Bulk Delete -->
-  <data name="AppDb_DeleteMultipleConfirm" xml:space="preserve">
+  <data name="AppCatalog_DeleteMultipleConfirm" xml:space="preserve">
     <value>Are you sure you want to delete {0} applications?
 
 This action cannot be undone.</value>
     <comment>Bulk delete confirmation message (0=count)</comment>
   </data>
-  <data name="AppDb_DeleteMultipleTitle" xml:space="preserve">
+  <data name="AppCatalog_DeleteMultipleTitle" xml:space="preserve">
     <value>Delete Multiple Applications</value>
     <comment>Bulk delete confirmation title</comment>
   </data>

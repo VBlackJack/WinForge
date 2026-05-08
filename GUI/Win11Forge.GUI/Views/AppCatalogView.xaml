@@ -1,4 +1,4 @@
-<UserControl x:Class="Win11Forge.GUI.Views.ApplicationsView"
+<UserControl x:Class="Win11Forge.GUI.Views.AppCatalogView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -7,7 +7,7 @@
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance Type=viewModels:ApplicationsViewModel}"
+             d:DataContext="{d:DesignInstance Type=viewModels:AppCatalogViewModel}"
              d:DesignHeight="700" d:DesignWidth="1000"
              Loaded="UserControl_Loaded">
 
@@ -45,10 +45,10 @@
                                    VerticalAlignment="Center"
                                    Margin="0,0,16,0"/>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="{loc:Loc AppDb_Title}"
+                        <TextBlock Text="{loc:Loc AppCatalog_Title}"
                                    FontSize="24" FontWeight="SemiBold"
                                    AutomationProperties.AutomationId="PageAppCatalog"/>
-                        <TextBlock Text="{loc:Loc AppDb_Subtitle}"
+                        <TextBlock Text="{loc:Loc AppCatalog_Subtitle}"
                                    FontSize="12"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
@@ -78,8 +78,8 @@
 
                     <ui:Button Appearance="Primary"
                                Command="{Binding AddCommand}"
-                               ToolTip="{loc:Loc AppDb_AddTooltip}"
-                               AutomationProperties.Name="{loc:Loc AppDb_Add}"
+                               ToolTip="{loc:Loc AppCatalog_AddTooltip}"
+                               AutomationProperties.Name="{loc:Loc AppCatalog_Add}"
                                Margin="0,0,8,0"
                                MinWidth="100">
                         <StackPanel Orientation="Horizontal">
@@ -87,15 +87,15 @@
                                            Width="18" Height="18"
                                            VerticalAlignment="Center"
                                            Margin="0,0,8,0"/>
-                            <TextBlock Text="{loc:Loc AppDb_Add}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{loc:Loc AppCatalog_Add}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
 
                     <!-- Import/Export -->
                     <ui:Button Appearance="Secondary"
                                Command="{Binding ImportCommand}"
-                               ToolTip="{loc:Loc AppDb_ImportTooltip}"
-                               AutomationProperties.Name="{loc:Loc AppDb_Import}"
+                               ToolTip="{loc:Loc AppCatalog_ImportTooltip}"
+                               AutomationProperties.Name="{loc:Loc AppCatalog_Import}"
                                Margin="0,0,4,0"
                                MinWidth="80">
                         <StackPanel Orientation="Horizontal">
@@ -103,10 +103,10 @@
                                            Width="16" Height="16"
                                            VerticalAlignment="Center"
                                            Margin="0,0,6,0"/>
-                            <TextBlock Text="{loc:Loc AppDb_Import}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{loc:Loc AppCatalog_Import}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
-                    <ui:DropDownButton ToolTip="{loc:Loc AppDb_ExportTooltip}"
+                    <ui:DropDownButton ToolTip="{loc:Loc AppCatalog_ExportTooltip}"
                                        Margin="0,0,8,0">
                         <ui:DropDownButton.Content>
                             <StackPanel Orientation="Horizontal">
@@ -114,14 +114,14 @@
                                                Width="16" Height="16"
                                                VerticalAlignment="Center"
                                                Margin="0,0,6,0"/>
-                                <TextBlock Text="{loc:Loc AppDb_Export}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{loc:Loc AppCatalog_Export}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ui:DropDownButton.Content>
                         <ui:DropDownButton.Flyout>
                             <ContextMenu>
-                                <MenuItem Header="{loc:Loc AppDb_ExportSelected}"
+                                <MenuItem Header="{loc:Loc AppCatalog_ExportSelected}"
                                           Command="{Binding ExportSelectedCommand}"/>
-                                <MenuItem Header="{loc:Loc AppDb_ExportAll}"
+                                <MenuItem Header="{loc:Loc AppCatalog_ExportAll}"
                                           Command="{Binding ExportAllCommand}"/>
                             </ContextMenu>
                         </ui:DropDownButton.Flyout>
@@ -130,8 +130,8 @@
                     <!-- Verify All -->
                     <ui:Button Appearance="Secondary"
                                Command="{Binding VerifyAllSourcesCommand}"
-                               ToolTip="{loc:Loc AppDb_VerifySources}"
-                               AutomationProperties.Name="{loc:Loc AppDb_VerifySources}"
+                               ToolTip="{loc:Loc AppCatalog_VerifySources}"
+                               AutomationProperties.Name="{loc:Loc AppCatalog_VerifySources}"
                                Margin="0,0,8,0"
                                MinWidth="80"
                                Visibility="{Binding IsVerifying, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
@@ -140,7 +140,7 @@
                                            Width="16" Height="16"
                                            VerticalAlignment="Center"
                                            Margin="0,0,6,0"/>
-                            <TextBlock Text="{loc:Loc AppDb_Verify}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{loc:Loc AppCatalog_Verify}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
                     <ui:Button Appearance="Secondary"
@@ -160,8 +160,8 @@
 
                     <ui:Button Appearance="Transparent"
                                Command="{Binding RefreshCommand}"
-                               ToolTip="{loc:Loc AppDb_Refresh}"
-                               AutomationProperties.Name="{loc:Loc AppDb_Refresh}"
+                               ToolTip="{loc:Loc AppCatalog_Refresh}"
+                               AutomationProperties.Name="{loc:Loc AppCatalog_Refresh}"
                                Width="44" Height="44"
                                Icon="{ui:SymbolIcon ArrowSync24}"/>
                 </StackPanel>
@@ -189,7 +189,7 @@
                     <!-- Search Box -->
                     <ui:TextBox Grid.Column="0"
                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                PlaceholderText="{loc:Loc AppDb_SearchHint}"
+                                PlaceholderText="{loc:Loc AppCatalog_SearchHint}"
                                 Icon="{ui:SymbolIcon Search24}"
                                 Margin="0,0,16,0"
                                 MinWidth="220"
@@ -218,8 +218,8 @@
                     <StackPanel Grid.Column="3" Orientation="Horizontal">
                         <ui:Button Appearance="Secondary"
                                    Command="{Binding EditCommand}"
-                                   ToolTip="{loc:Loc AppDb_EditTooltip}"
-                                   AutomationProperties.Name="{loc:Loc AppDb_Edit}"
+                                   ToolTip="{loc:Loc AppCatalog_EditTooltip}"
+                                   AutomationProperties.Name="{loc:Loc AppCatalog_Edit}"
                                    Margin="0,0,8,0"
                                    MinWidth="80">
                             <StackPanel Orientation="Horizontal">
@@ -227,13 +227,13 @@
                                                Width="16" Height="16"
                                                VerticalAlignment="Center"
                                                Margin="0,0,6,0"/>
-                                <TextBlock Text="{loc:Loc AppDb_Edit}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{loc:Loc AppCatalog_Edit}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="Secondary"
                                    Command="{Binding DuplicateCommand}"
-                                   ToolTip="{loc:Loc AppDb_DuplicateTooltip}"
-                                   AutomationProperties.Name="{loc:Loc AppDb_Duplicate}"
+                                   ToolTip="{loc:Loc AppCatalog_DuplicateTooltip}"
+                                   AutomationProperties.Name="{loc:Loc AppCatalog_Duplicate}"
                                    Margin="0,0,8,0"
                                    MinWidth="80">
                             <StackPanel Orientation="Horizontal">
@@ -241,20 +241,20 @@
                                                Width="16" Height="16"
                                                VerticalAlignment="Center"
                                                Margin="0,0,6,0"/>
-                                <TextBlock Text="{loc:Loc AppDb_Duplicate}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{loc:Loc AppCatalog_Duplicate}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="Danger"
                                    Command="{Binding DeleteCommand}"
-                                   ToolTip="{loc:Loc AppDb_DeleteTooltip}"
-                                   AutomationProperties.Name="{loc:Loc AppDb_Delete}"
+                                   ToolTip="{loc:Loc AppCatalog_DeleteTooltip}"
+                                   AutomationProperties.Name="{loc:Loc AppCatalog_Delete}"
                                    MinWidth="80">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="Delete24"
                                                Width="16" Height="16"
                                                VerticalAlignment="Center"
                                                Margin="0,0,6,0"/>
-                                <TextBlock Text="{loc:Loc AppDb_Delete}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{loc:Loc AppCatalog_Delete}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ui:Button>
                     </StackPanel>
@@ -280,7 +280,7 @@
                 </StackPanel>
 
                 <!-- Applications DataGrid -->
-                <DataGrid ItemsSource="{Binding ApplicationsView}"
+                <DataGrid ItemsSource="{Binding AppCatalogView}"
                           SelectedItem="{Binding SelectedApplication}"
                           AutoGenerateColumns="False"
                           CanUserAddRows="False"
@@ -301,7 +301,7 @@
                     <!-- Context Menu -->
                     <DataGrid.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="{loc:Loc AppDb_Add}"
+                            <MenuItem Header="{loc:Loc AppCatalog_Add}"
                                       Command="{Binding AddCommand}"
                                       InputGestureText="Ctrl+N">
                                 <MenuItem.Icon>
@@ -309,21 +309,21 @@
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
-                            <MenuItem Header="{loc:Loc AppDb_Edit}"
+                            <MenuItem Header="{loc:Loc AppCatalog_Edit}"
                                       Command="{Binding EditCommand}"
                                       InputGestureText="Ctrl+E">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="Edit24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{loc:Loc AppDb_Duplicate}"
+                            <MenuItem Header="{loc:Loc AppCatalog_Duplicate}"
                                       Command="{Binding DuplicateCommand}"
                                       InputGestureText="Ctrl+D">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="Copy24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{loc:Loc AppDb_Delete}"
+                            <MenuItem Header="{loc:Loc AppCatalog_Delete}"
                                       Command="{Binding DeleteCommand}"
                                       InputGestureText="Del">
                                 <MenuItem.Icon>
@@ -331,20 +331,20 @@
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
-                            <MenuItem Header="{loc:Loc AppDb_VerifySources}"
+                            <MenuItem Header="{loc:Loc AppCatalog_VerifySources}"
                                       Command="{Binding VerifySelectedCommand}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="CheckmarkStarburst24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{loc:Loc AppDb_ExportSelected}"
+                            <MenuItem Header="{loc:Loc AppCatalog_ExportSelected}"
                                       Command="{Binding ExportSelectedCommand}">
                                 <MenuItem.Icon>
                                     <ui:SymbolIcon Symbol="ArrowExportLtr24"/>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator/>
-                            <MenuItem Header="{loc:Loc AppDb_Refresh}"
+                            <MenuItem Header="{loc:Loc AppCatalog_Refresh}"
                                       Command="{Binding RefreshCommand}"
                                       InputGestureText="F5">
                                 <MenuItem.Icon>
@@ -356,26 +356,26 @@
 
                     <DataGrid.Columns>
                         <!-- App ID -->
-                        <DataGridTextColumn Header="{loc:Loc AppDb_Col_Id}"
+                        <DataGridTextColumn Header="{loc:Loc AppCatalog_Col_Id}"
                                             Binding="{Binding AppId}"
                                             Width="*"
                                             MinWidth="140"
                                             SortDirection="Ascending"/>
 
                         <!-- Name -->
-                        <DataGridTextColumn Header="{loc:Loc AppDb_Col_Name}"
+                        <DataGridTextColumn Header="{loc:Loc AppCatalog_Col_Name}"
                                             Binding="{Binding Name}"
                                             Width="*"
                                             MinWidth="180"/>
 
                         <!-- Category -->
-                        <DataGridTextColumn Header="{loc:Loc AppDb_Col_Category}"
+                        <DataGridTextColumn Header="{loc:Loc AppCatalog_Col_Category}"
                                             Binding="{Binding Category}"
                                             Width="Auto"
                                             MinWidth="110"/>
 
                         <!-- Sources -->
-                        <DataGridTemplateColumn Header="{loc:Loc AppDb_Col_Sources}" Width="*" MinWidth="180">
+                        <DataGridTemplateColumn Header="{loc:Loc AppCatalog_Col_Sources}" Width="*" MinWidth="180">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
@@ -418,12 +418,12 @@
                         </DataGridTemplateColumn>
 
                         <!-- Priority -->
-                        <DataGridTextColumn Header="{loc:Loc AppDb_Col_Priority}"
+                        <DataGridTextColumn Header="{loc:Loc AppCatalog_Col_Priority}"
                                             Binding="{Binding DefaultPriority}"
                                             Width="80"/>
 
                         <!-- Verified -->
-                        <DataGridTemplateColumn Header="{loc:Loc AppDb_Col_Verified}" Width="80">
+                        <DataGridTemplateColumn Header="{loc:Loc AppCatalog_Col_Verified}" Width="80">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ui:SymbolIcon Symbol="{Binding Verified, Converter={StaticResource BoolToInstalledIconConverter}}"
@@ -435,7 +435,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Description (expandable) -->
-                        <DataGridTextColumn Header="{loc:Loc AppDb_Col_Description}"
+                        <DataGridTextColumn Header="{loc:Loc AppCatalog_Col_Description}"
                                             Binding="{Binding Description}"
                                             Width="*"/>
                     </DataGrid.Columns>
@@ -505,11 +505,11 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center" Margin="0,0,16,0">
-                        <Run Text="{loc:Loc AppDb_Showing}"/>
+                        <Run Text="{loc:Loc AppCatalog_Showing}"/>
                         <Run Text="{Binding FilteredCount, Mode=OneWay}" FontWeight="SemiBold"/>
-                        <Run Text="{loc:Loc AppDb_Of}"/>
+                        <Run Text="{loc:Loc AppCatalog_Of}"/>
                         <Run Text="{Binding TotalCount, Mode=OneWay}" FontWeight="SemiBold"/>
-                        <Run Text="{loc:Loc AppDb_Applications}"/>
+                        <Run Text="{loc:Loc AppCatalog_Applications}"/>
                     </TextBlock>
                 </StackPanel>
             </Grid>

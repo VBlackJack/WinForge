@@ -80,7 +80,7 @@ public class ConfirmDialogTests
     {
         var dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var viewModel = CreateApplicationsViewModel(dialogService: dialogService);
+        var viewModel = CreateAppCatalogViewModel(dialogService: dialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         viewModel.SelectedApplication = viewModel.Applications[0];
 
@@ -98,15 +98,15 @@ public class ConfirmDialogTests
         var fileDialogService = new TestFileDialogService();
         fileDialogService.QueueOpenResult(@"C:\Imports\applications.json");
         dialogService.QueueYesNoCancelResult(null);
-        var viewModel = CreateApplicationsViewModel(
+        var viewModel = CreateAppCatalogViewModel(
             dialogService: dialogService,
             fileDialogService: fileDialogService);
 
         await viewModel.ImportCommand.ExecuteAsync(null);
 
         var request = Assert.Single(dialogService.YesNoCancelRequests);
-        Assert.Equal(Loc.AppDb_Import_Replace, request.YesText);
-        Assert.Equal(Loc.AppDb_Import_Skip, request.NoText);
+        Assert.Equal(Loc.AppCatalog_Import_Replace, request.YesText);
+        Assert.Equal(Loc.AppCatalog_Import_Skip, request.NoText);
         Assert.Equal(Loc.Common_Cancel, request.CancelText);
         Assert.DoesNotContain("Yes", request.Message, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("No", request.Message, StringComparison.OrdinalIgnoreCase);
@@ -209,11 +209,11 @@ public class ConfirmDialogTests
         return viewModel;
     }
 
-    private static ApplicationsViewModel CreateApplicationsViewModel(
+    private static AppCatalogViewModel CreateAppCatalogViewModel(
         IDialogService? dialogService = null,
         IFileDialogService? fileDialogService = null)
     {
-        return new ApplicationsViewModel(
+        return new AppCatalogViewModel(
             new MockApplicationDatabaseService(),
             new MockUndoService(),
             new MockPackageVerificationService(),

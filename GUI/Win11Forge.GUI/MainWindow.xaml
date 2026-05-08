@@ -113,12 +113,12 @@
                                        AutomationProperties.AutomationId="NavSettings"
                                        AutomationProperties.Name="{loc:Loc Nav_Settings}"
                                        AutomationProperties.HelpText="{loc:Loc A11y_Main_NavSettings}"/>
-                <ui:NavigationViewItem Content="{loc:Loc Nav_AppDatabase}"
+                <ui:NavigationViewItem Content="{loc:Loc Nav_AppCatalog}"
                                        Tag="5"
                                        Click="NavigationViewItem_Click"
                                        Icon="{ui:SymbolIcon Database24}"
                                        AutomationProperties.AutomationId="NavAppCatalog"
-                                       AutomationProperties.Name="{loc:Loc Nav_AppDatabase}"
+                                       AutomationProperties.Name="{loc:Loc Nav_AppCatalog}"
                                        AutomationProperties.HelpText="{loc:Loc A11y_Main_NavAppDatabase}"/>
             </ui:NavigationView.MenuItems>
 

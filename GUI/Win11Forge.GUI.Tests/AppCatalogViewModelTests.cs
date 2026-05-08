@@ -24,9 +24,9 @@ using Loc = Win11Forge.GUI.Resources.Resources;
 namespace Win11Forge.GUI.Tests;
 
 /// <summary>
-/// Tests for ApplicationsViewModel - application database management functionality.
+/// Tests for AppCatalogViewModel - App Catalog management functionality.
 /// </summary>
-public class ApplicationsViewModelTests
+public class AppCatalogViewModelTests
 {
     private static List<EditableApplicationModel> CreateMockApplications()
     {
@@ -97,7 +97,7 @@ public class ApplicationsViewModelTests
         };
     }
 
-    private static ApplicationsViewModel CreateViewModel(
+    private static AppCatalogViewModel CreateViewModel(
         MockApplicationDatabaseService? dbService = null,
         MockUndoService? undoService = null,
         MockPackageVerificationService? verificationService = null,
@@ -105,7 +105,7 @@ public class ApplicationsViewModelTests
         IDialogService? dialogService = null,
         IFileDialogService? fileDialogService = null)
     {
-        return new ApplicationsViewModel(
+        return new AppCatalogViewModel(
             dbService ?? new MockApplicationDatabaseService(),
             undoService ?? new MockUndoService(),
             verificationService ?? new MockPackageVerificationService(),
@@ -708,7 +708,7 @@ public class ApplicationsViewModelTests
 
         // Assert
         var options = Assert.Single(fileDialogService.OpenOptions);
-        Assert.Equal(Win11Forge.GUI.Resources.Resources.AppDb_Import, options.Title);
+        Assert.Equal(Win11Forge.GUI.Resources.Resources.AppCatalog_Import, options.Title);
         Assert.Equal("JSON files (*.json)|*.json|All files (*.*)|*.*", options.Filter);
         Assert.Equal(".json", options.DefaultExtension);
     }

@@ -58,8 +58,8 @@ public class PluralizationTests
     public void ImportConfirmationResources_DoNotDescribeGenericYesNoButtons()
     {
         var frenchCulture = CultureInfo.GetCultureInfo("fr");
-        var englishMessage = Loc.AppDb_ImportModeConfirm;
-        var frenchMessage = GetString("AppDb_ImportModeConfirm", frenchCulture);
+        var englishMessage = Loc.AppCatalog_ImportModeConfirm;
+        var frenchMessage = GetString("AppCatalog_ImportModeConfirm", frenchCulture);
 
         Assert.DoesNotContain("Yes", englishMessage, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("No", englishMessage, StringComparison.OrdinalIgnoreCase);

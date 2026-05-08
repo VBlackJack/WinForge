@@ -31,10 +31,10 @@ using Loc = Win11Forge.GUI.Resources.Resources;
 namespace Win11Forge.GUI.ViewModels;
 
 /// <summary>
-/// ViewModel for the Applications Database Management view.
+/// ViewModel for the App Catalog view.
 /// Provides CRUD operations for managing application definitions.
 /// </summary>
-public partial class ApplicationsViewModel : ObservableObject, IDisposable
+public partial class AppCatalogViewModel : ObservableObject, IDisposable
 {
     private readonly IApplicationDatabaseService _databaseService;
     private readonly IUndoService _undoService;
@@ -176,15 +176,15 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     /// Localized tooltip for the Undo button.
     /// </summary>
     public string UndoButtonTooltip => NextUndoDescription != null
-        ? string.Format(CultureInfo.CurrentCulture, Loc.AppDb_UndoTooltipFormat, NextUndoDescription)
-        : Loc.AppDb_UndoTooltipDefault;
+        ? string.Format(CultureInfo.CurrentCulture, Loc.AppCatalog_UndoTooltipFormat, NextUndoDescription)
+        : Loc.AppCatalog_UndoTooltipDefault;
 
     /// <summary>
     /// Localized tooltip for the Redo button.
     /// </summary>
     public string RedoButtonTooltip => NextRedoDescription != null
-        ? string.Format(CultureInfo.CurrentCulture, Loc.AppDb_RedoTooltipFormat, NextRedoDescription)
-        : Loc.AppDb_RedoTooltipDefault;
+        ? string.Format(CultureInfo.CurrentCulture, Loc.AppCatalog_RedoTooltipFormat, NextRedoDescription)
+        : Loc.AppCatalog_RedoTooltipDefault;
 
     /// <summary>
     /// Message shown when the App Catalog is cleanly loaded but has no visible rows.
@@ -194,12 +194,12 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         : GetLocalizedString("AppCatalog_EmptyFilter", "No applications match the current filter. Try clearing it.");
 
     /// <summary>
-    /// Initializes a new instance of ApplicationsViewModel.
+    /// Initializes a new instance of AppCatalogViewModel.
     /// </summary>
     /// <param name="databaseService">Application database service.</param>
     /// <param name="undoService">Undo/redo service.</param>
     /// <param name="verificationService">Package verification service.</param>
-    public ApplicationsViewModel(
+    public AppCatalogViewModel(
         IApplicationDatabaseService databaseService,
         IUndoService undoService,
         IPackageVerificationService verificationService,
@@ -229,7 +229,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Gets the filtered view of applications.
     /// </summary>
-    public ICollectionView ApplicationsView => _applicationsView;
+    public ICollectionView AppCatalogView => _applicationsView;
 
     /// <summary>
     /// Command to load applications from the database.
@@ -240,7 +240,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         IsLoading = true;
         HasLoadError = false;
         LoadErrorMessage = null;
-        StatusMessage = Loc.AppDb_Loading;
+        StatusMessage = Loc.AppCatalog_Loading;
 
         try
         {
@@ -265,7 +265,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
             UpdateFilteredCount();
             HasLoadError = false;
             LoadErrorMessage = null;
-            StatusMessage = string.Format(Loc.AppDb_LoadedCount, TotalCount);
+            StatusMessage = string.Format(Loc.AppCatalog_LoadedCount, TotalCount);
 
             // Notify commands that depend on Applications.Count
             VerifyAllSourcesCommand.NotifyCanExecuteChanged();
@@ -319,7 +319,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         if (!confirmed) return;
 
         IsLoading = true;
-        StatusMessage = Loc.AppDb_Deleting;
+        StatusMessage = Loc.AppCatalog_Deleting;
 
         try
         {
@@ -330,21 +330,21 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
                 SelectedApplication = null;
                 TotalCount = Applications.Count;
                 UpdateFilteredCount();
-                StatusMessage = Loc.AppDb_Deleted;
+                StatusMessage = Loc.AppCatalog_Deleted;
             }
             else
             {
-                StatusMessage = Loc.AppDb_DeleteError;
+                StatusMessage = Loc.AppCatalog_DeleteError;
             }
         }
         catch (ApplicationDatabaseException ex)
         {
-            StatusMessage = string.Format(Loc.AppDb_DeleteError, ex.Message);
+            StatusMessage = string.Format(Loc.AppCatalog_DeleteError, ex.Message);
             Debug.WriteLine($"ApplicationDatabaseException in DeleteSelectedApplicationAsync: {ex}");
         }
         catch (Exception ex)
         {
-            StatusMessage = string.Format(Loc.AppDb_DeleteError, ex.Message);
+            StatusMessage = string.Format(Loc.AppCatalog_DeleteError, ex.Message);
             Debug.WriteLine($"Unexpected exception in DeleteSelectedApplicationAsync: {ex}");
         }
         finally
@@ -463,7 +463,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            var message = string.Format(Loc.AppDb_EditorOpenError, ex.Message, ex.StackTrace);
+            var message = string.Format(Loc.AppCatalog_EditorOpenError, ex.Message, ex.StackTrace);
             StatusMessage = message;
             Debug.WriteLine($"Application editor add failed: {ex}");
             await _dialogService.ShowErrorAsync(Loc.Common_Error, message);
@@ -488,7 +488,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            var message = string.Format(Loc.AppDb_EditorOpenError, ex.Message, ex.StackTrace);
+            var message = string.Format(Loc.AppCatalog_EditorOpenError, ex.Message, ex.StackTrace);
             StatusMessage = message;
             Debug.WriteLine($"Application editor edit failed: {ex}");
             await _dialogService.ShowErrorAsync(Loc.Common_Error, message);
@@ -498,12 +498,12 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     private async Task<bool> ConfirmDeleteAsync(EditableApplicationModel application)
     {
         var message = string.Format(
-            Loc.AppDb_DeleteConfirm,
+            Loc.AppCatalog_DeleteConfirm,
             application.Name,
             application.AppId);
 
         return await _dialogService.ShowConfirmAsync(
-            Loc.AppDb_DeleteTitle,
+            Loc.AppCatalog_DeleteTitle,
             message,
             Loc.Confirm_Delete_Btn,
             Loc.Common_Cancel);
@@ -514,7 +514,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         try
         {
             var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
-                Loc.AppDb_Import,
+                Loc.AppCatalog_Import,
                 "JSON files (*.json)|*.json|All files (*.*)|*.*",
                 DefaultExtension: ".json"));
 
@@ -524,10 +524,10 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
             }
 
             var replaceExisting = await _dialogService.ShowYesNoCancelAsync(
-                Loc.AppDb_Import,
-                Loc.AppDb_ImportModeConfirm,
-                Loc.AppDb_Import_Replace,
-                Loc.AppDb_Import_Skip,
+                Loc.AppCatalog_Import,
+                Loc.AppCatalog_ImportModeConfirm,
+                Loc.AppCatalog_Import_Replace,
+                Loc.AppCatalog_Import_Skip,
                 Loc.Common_Cancel);
 
             if (!replaceExisting.HasValue)
@@ -540,7 +540,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            StatusMessage = string.Format(Loc.AppDb_ImportError, ex.Message);
+            StatusMessage = string.Format(Loc.AppCatalog_ImportError, ex.Message);
             Debug.WriteLine($"Import failed: {ex}");
             await _dialogService.ShowErrorAsync(Loc.Common_Error, StatusMessage);
         }
@@ -551,14 +551,14 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         var appIdList = appIds.ToList();
         if (appIdList.Count == 0)
         {
-            await _dialogService.ShowInfoAsync(Loc.AppDb_Export, Loc.AppDb_NoExportSelection);
+            await _dialogService.ShowInfoAsync(Loc.AppCatalog_Export, Loc.AppCatalog_NoExportSelection);
             return;
         }
 
         try
         {
             var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
-                Loc.AppDb_Export,
+                Loc.AppCatalog_Export,
                 "JSON files (*.json)|*.json|All files (*.*)|*.*",
                 DefaultFileName: $"applications-export-{DateTime.Now:yyyyMMdd}",
                 DefaultExtension: ".json"));
@@ -570,7 +570,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            StatusMessage = string.Format(Loc.AppDb_ExportError, ex.Message);
+            StatusMessage = string.Format(Loc.AppCatalog_ExportError, ex.Message);
             Debug.WriteLine($"Export failed: {ex}");
             await _dialogService.ShowErrorAsync(Loc.Common_Error, StatusMessage);
         }
@@ -913,7 +913,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         var result = await _databaseService.SaveApplicationAsync(application, isNew);
         if (result.Success)
         {
-            StatusMessage = isNew ? Loc.AppDb_Added : Loc.AppDb_Updated;
+            StatusMessage = isNew ? Loc.AppCatalog_Added : Loc.AppCatalog_Updated;
 
             // Record undoable action
             if (isNew)
@@ -1008,11 +1008,11 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         var result = await _databaseService.ImportApplicationsAsync(filePath, mode);
         if (result.Success)
         {
-            StatusMessage = string.Format(Loc.AppDb_ImportSuccess, result.AddedCount, result.UpdatedCount);
+            StatusMessage = string.Format(Loc.AppCatalog_ImportSuccess, result.AddedCount, result.UpdatedCount);
         }
         else
         {
-            StatusMessage = string.Format(Loc.AppDb_ImportError, string.Join(", ", result.Errors));
+            StatusMessage = string.Format(Loc.AppCatalog_ImportError, string.Join(", ", result.Errors));
         }
         return result;
     }
@@ -1027,11 +1027,11 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
         var success = await _databaseService.ExportApplicationsAsync(appIds, filePath);
         if (success)
         {
-            StatusMessage = string.Format(Loc.AppDb_ExportSuccess, appIds.Count());
+            StatusMessage = string.Format(Loc.AppCatalog_ExportSuccess, appIds.Count());
         }
         else
         {
-            StatusMessage = Loc.AppDb_ExportError;
+            StatusMessage = Loc.AppCatalog_ExportError;
         }
         return success;
     }
@@ -1054,7 +1054,7 @@ public partial class ApplicationsViewModel : ObservableObject, IDisposable
     private bool _disposed;
 
     /// <summary>
-    /// Releases all resources used by the ApplicationsViewModel.
+    /// Releases all resources used by the AppCatalogViewModel.
     /// </summary>
     public void Dispose()
     {
