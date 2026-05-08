@@ -110,7 +110,7 @@ public class Resources
     public static string Nav_Deployment => ResourceManager.GetString("Nav_Deployment", resourceCulture);
     public static string Nav_Apps => ResourceManager.GetString("Nav_Apps", resourceCulture);
 
-    // Application Manager
+    // Applications
     public static string Apps_Title => ResourceManager.GetString("Apps_Title", resourceCulture);
     public static string Apps_SearchHint => ResourceManager.GetString("Apps_SearchHint", resourceCulture);
     public static string Search_RecentSearches => ResourceManager.GetString("Search_RecentSearches", resourceCulture);

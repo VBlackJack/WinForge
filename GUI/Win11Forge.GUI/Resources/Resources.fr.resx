@@ -235,9 +235,9 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Nav_Prerequisites" xml:space="preserve">
     <value>Prérequis</value>
   </data>
-  <!-- Application Manager -->
+  <!-- Applications -->
   <data name="Apps_Title" xml:space="preserve">
-    <value>Gestionnaire d'applications</value>
+    <value>Applications</value>
   </data>
   <data name="Apps_SearchHint" xml:space="preserve">
     <value>Rechercher des applications...</value>
@@ -944,7 +944,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>General</value>
   </data>
   <data name="Help_Section_AppManager" xml:space="preserve">
-    <value>Gestionnaire d'applications</value>
+    <value>Applications</value>
   </data>
   <data name="Help_Section_Navigation" xml:space="preserve">
     <value>Navigation</value>

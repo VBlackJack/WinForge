@@ -272,10 +272,10 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Applications</value>
     <comment>Applications navigation item</comment>
   </data>
-  <!-- Application Manager -->
+  <!-- Applications -->
   <data name="Apps_Title" xml:space="preserve">
-    <value>Application Manager</value>
-    <comment>Application Manager view title</comment>
+    <value>Applications</value>
+    <comment>Applications view title</comment>
   </data>
   <data name="Apps_SearchHint" xml:space="preserve">
     <value>Search applications...</value>
@@ -1249,8 +1249,8 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <comment>General shortcuts section</comment>
   </data>
   <data name="Help_Section_AppManager" xml:space="preserve">
-    <value>Application Manager</value>
-    <comment>App manager shortcuts section</comment>
+    <value>Applications</value>
+    <comment>Applications shortcuts section</comment>
   </data>
   <data name="Help_Section_Navigation" xml:space="preserve">
     <value>Navigation</value>
