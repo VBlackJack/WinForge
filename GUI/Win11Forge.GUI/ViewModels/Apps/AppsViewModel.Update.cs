@@ -125,21 +125,70 @@ public partial class AppsViewModel
 
         if (appsWithUpdates.Count == 0) return;
 
+        _lastOperationType = "update";
         IsInstalling = true;
+        IsPaused = false;
+        _pauseGate.Resume();
+        _batchCancellationTokenSource = new CancellationTokenSource();
+
+        BatchProgressCurrent = 0;
+        BatchProgressTotal = appsWithUpdates.Count;
+        BatchProgressPercent = 0;
+        CurrentBatchAppName = null;
+        SuccessCount = 0;
+        FailedCount = 0;
+        SkippedCount = 0;
+        EstimatedTimeRemaining = Resources.Resources.Progress_Calculating;
+
+        _progressEstimator.Start(appsWithUpdates.Count);
+        _deploymentStateService.StartDeployment(appsWithUpdates);
 
         try
         {
             var result = await _updateCoordinator.UpdateAsync(
                 appsWithUpdates,
-                new Progress<AppOperationProgress>(_ => { }));
+                new Progress<AppOperationProgress>(ApplyBatchProgress),
+                _batchCancellationTokenSource.Token);
+
+            ApplyBatchProgress(new AppOperationProgress(result.Total, result.Total, Current: null));
+
             if (result.UpdatedCount > 0)
             {
                 UpdatesAvailableCount = Math.Max(0, UpdatesAvailableCount - result.UpdatedCount);
             }
+
+            SuccessCount = result.UpdatedCount;
+            FailedCount = result.FailedCount;
+            SkippedCount = result.SkippedCount;
+
+            if (result.WasCancelled)
+            {
+                LastDeploymentResult = DeploymentResult.Cancelled;
+            }
+            else if (FailedCount == 0)
+            {
+                LastDeploymentResult = DeploymentResult.Success;
+            }
+            else if (SuccessCount > 0)
+            {
+                LastDeploymentResult = DeploymentResult.PartialSuccess;
+            }
+            else
+            {
+                LastDeploymentResult = DeploymentResult.Failed;
+            }
+
+            IsSummaryDialogOpen = true;
+            _lastOperationType = string.Empty;
         }
         finally
         {
             IsInstalling = false;
+            IsPaused = false;
+            _batchCancellationTokenSource?.Dispose();
+            _batchCancellationTokenSource = null;
+
+            _deploymentStateService.EndDeployment();
             ApplyFilter();
         }
     }
