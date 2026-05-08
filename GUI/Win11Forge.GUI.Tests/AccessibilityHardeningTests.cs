@@ -297,6 +297,59 @@ public class AccessibilityHardeningTests
             StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void AppsView_HeaderUsesIconTitleSubtitlePattern()
+    {
+        var xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+
+        Assert.Contains("Symbol=\"Apps24\"", xaml, StringComparison.Ordinal);
+        Assert.Contains("{loc:Loc Apps_Title}", xaml, StringComparison.Ordinal);
+        Assert.Contains("{loc:Loc Apps_Subtitle}", xaml, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AppsView_DoesNotForceHorizontalScrollOnFilterCards()
+    {
+        var xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+
+        Assert.DoesNotContain("MinWidth=\"920\"", xaml, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AppXaml_DefinesReinforcedTabItemStyleAsImplicit()
+    {
+        var xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        var styles = xaml.Descendants()
+            .Where(element => element.Name.LocalName == "Style")
+            .ToList();
+        var implicitTabItemStyle = styles.FirstOrDefault(element =>
+        {
+            var target = element.Attribute("TargetType")?.Value ?? string.Empty;
+            var hasKey = element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) is not null;
+            return target.Contains("TabItem", StringComparison.Ordinal) && !hasKey;
+        });
+
+        Assert.NotNull(implicitTabItemStyle);
+        Assert.Contains(
+            "ReinforcedTabItemStyle",
+            implicitTabItemStyle.Attribute("BasedOn")?.Value ?? string.Empty,
+            StringComparison.Ordinal);
+        AssertNamedStyleSetter(styles, "ReinforcedTabItemStyle", "BorderThickness", "0,0,0,3");
+    }
+
+    [Fact]
+    public void MainWindow_NavSplitsWorkflowAndConfigClusters()
+    {
+        var xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml"));
+        var sepIdx = xaml.IndexOf("<ui:NavigationViewItemSeparator", StringComparison.Ordinal);
+        var appCatalogIdx = xaml.IndexOf("Tag=\"5\"", sepIdx, StringComparison.Ordinal);
+        var settingsIdx = xaml.IndexOf("Tag=\"4\"", sepIdx, StringComparison.Ordinal);
+
+        Assert.True(sepIdx > 0);
+        Assert.True(appCatalogIdx > sepIdx);
+        Assert.True(settingsIdx > appCatalogIdx);
+    }
+
     private static void AssertImplicitFocusStyle(IReadOnlyCollection<XElement> styles, string targetType)
     {
         var style = FindImplicitStyle(styles, targetType);
