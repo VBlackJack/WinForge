@@ -10,6 +10,25 @@ The architectural refactor of the GUI ViewModels (audit findings I1, I3, I4) is 
 
 See `Docs/architecture/REFACTOR-MVVM.md` for the full architectural decision record and the closure status table in §12.
 
+### UX audit closures - May 2026
+
+Completed the P0/P1 remediation sweep from `Docs/audit/Win11Forge-UX-Audit-2026-05.md`. All critical and high-friction UX audit findings are now closed.
+
+#### Accessibility
+- **Closed A11Y-001** (PR #67/#68): High Contrast resources are preserved when switching Dracula themes.
+- **Closed A11Y-002** (PR #69/#70): Reduced Motion now gates code-driven animations; stale storyboard-only controls were removed.
+- **Closed A11Y-003** (PR #71/#72): High-visibility focus visuals cascade through implicit WPF and WPF-UI button styles.
+- **Closed A11Y-004/A11Y-005/A11Y-006** (PR #61/#62): Live region announcements stay in the automation tree; DraculaPro text contrast and Light-theme orange contrast now meet WCAG AA.
+
+#### Naming and visual hierarchy
+- **Closed UX-001 and DC-002** (PR #63/#64): The admin catalog surface is consistently named App Catalog, including `AppCatalogView*`, `AppCatalog_*` resource keys, and navigation IDs.
+- **Closed DC-001/DC-004/DC-011** (PR #65/#66): Page typography tokens, shared source badge styling, and subtler DataGrid gridlines now apply consistently across the GUI.
+
+#### Workflow safety
+- **Closed WF-003/WF-005/WF-006** (PR #73/#74): Single-app uninstall now confirms destructive action; profile changes protect manual selections with Replace/Merge/Cancel; profile tier badges are derived from JSON inheritance instead of hardcoded tiers.
+- **Closed WF-007** (PR #75/#76): Update Selected now mirrors Install progress UX with current app, progress percentage, ETA, cancellation, and final summary.
+- **Confirmed WF-008 closure** (PR #55/#56): App Catalog empty states are gated on loading and load-error state, with distinct empty-database and empty-filter copy.
+
 ### Fixed
 - Hardened the Windows runner CI baseline after enabling strict Pester gating.
 - Replaced a fragile File detection fixture path with a stable system executable present on Windows Server runners.
