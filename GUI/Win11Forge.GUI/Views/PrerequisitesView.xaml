@@ -40,6 +40,7 @@
                     <Button Command="{Binding CheckPrerequisitesCommand}"
                             Style="{StaticResource ThemeAdaptiveOutlinedButton}"
                             Margin="0,0,8,0"
+                            AutomationProperties.Name="{loc:Loc Prerequisites_Check}"
                             IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}">
                         <StackPanel Orientation="Horizontal">
                             <ui:ProgressRing IsIndeterminate="True"

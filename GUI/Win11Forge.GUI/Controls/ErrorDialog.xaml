@@ -171,6 +171,7 @@
                        Appearance="Secondary"
                        Click="HelpButton_Click"
                        Margin="0,0,8,0"
+                       AutomationProperties.Name="{loc:Loc Dialog_Help}"
                        Visibility="Collapsed"/>
 
                <!-- Retry Button -->
@@ -179,6 +180,7 @@
                        Appearance="Secondary"
                        Click="RetryButton_Click"
                        Margin="0,0,8,0"
+                       AutomationProperties.Name="{loc:Loc Dialog_Retry}"
                        Visibility="Collapsed"/>
 
                <!-- OK Button -->
@@ -186,6 +188,7 @@
                        Content="{loc:Loc Dialog_OK}"
                        Appearance="Primary"
                        Click="OkButton_Click"
+                       AutomationProperties.Name="{loc:Loc Dialog_OK}"
                        IsDefault="True"/>
            </StackPanel>
        </Grid>
