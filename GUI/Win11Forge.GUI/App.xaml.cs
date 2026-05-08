@@ -385,6 +385,7 @@ public partial class App : Application
                 SwapIfExists(app, "TextFillColorSecondaryBrush", "HighContrastTextSecondaryBrush");
                 SwapIfExists(app, "ControlStrokeColorDefaultBrush", "HighContrastBorderBrush");
                 SwapIfExists(app, "DividerStrokeColorDefaultBrush", "HighContrastBorderLightBrush");
+                SwapIfExists(app, "SubtleDataGridLineBrush", "HighContrastBorderLightBrush");
                 SwapIfExists(app, "SystemAccentColorPrimaryBrush", "HighContrastPrimaryBrush");
                 SwapIfExists(app, "SystemAccentColorSecondaryBrush", "HighContrastSecondaryBrush");
                 SwapIfExists(app, "FocusIndicatorBrush", "HighContrastFocusBorderBrush");
@@ -535,6 +536,7 @@ public partial class App : Application
         app.Resources["FavoriteTextBrush"] = new SolidColorBrush(Color.FromRgb(255, 143, 0));         // #FF8F00
         app.Resources["RequiredBrush"] = new SolidColorBrush(Color.FromRgb(255, 193, 7));             // #FFC107
         app.Resources["ManualInstallBadgeBrush"] = new SolidColorBrush(Color.FromRgb(255, 138, 0));   // #FF8A00
+        app.Resources["SubtleDataGridLineBrush"] = new SolidColorBrush(Color.FromArgb(51, 138, 144, 168)); // #338A90A8
 
         // Skeleton - restore dark theme (white-based opacity)
         app.Resources["SkeletonBaseBrush"] = new SolidColorBrush(Color.FromArgb(26, 255, 255, 255));   // #1AFFFFFF
@@ -601,6 +603,7 @@ public partial class App : Application
         SwapIfExists(app, "FavoriteTextBrush", "FavoriteTextLightBrush");
         SwapIfExists(app, "RequiredBrush", "RequiredLightBrush");
         SwapIfExists(app, "ManualInstallBadgeBrush", "ManualInstallBadgeLightBrush");
+        SwapIfExists(app, "SubtleDataGridLineBrush", "SubtleDataGridLineLightBrush");
 
         // Card/control borders - stronger for light theme visual hierarchy
         app.Resources["ControlElevationBorderBrush"] = new SolidColorBrush(Color.FromRgb(200, 200, 200));  // #C8C8C8

@@ -390,7 +390,7 @@
             <Style x:Key="EnhancedDataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
@@ -414,7 +414,7 @@
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Style.Triggers>
                     <Trigger Property="IsSelected" Value="True">
@@ -431,18 +431,21 @@
             <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
                 <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="GridLinesVisibility" Value="Horizontal"/>
                 <Setter Property="RowBackground" Value="Transparent"/>
                 <Setter Property="AlternatingRowBackground" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
-                <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
-                <Setter Property="VerticalGridLinesBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+                <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
+                <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
                 <Setter Property="CellStyle" Value="{StaticResource EnhancedDataGridCellStyle}"/>
             </Style>
 
             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                 <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
+                <Setter Property="BorderThickness" Value="0,0,0,1"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
             </Style>
 

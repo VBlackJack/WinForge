@@ -40,6 +40,7 @@
     <SolidColorBrush x:Key="IconSecondaryBrush" Color="#9E9E9E"/>
     <SolidColorBrush x:Key="IconHintBrush" Color="#757575"/>
     <SolidColorBrush x:Key="IconDisabledBrush" Color="#616161"/>
+    <SolidColorBrush x:Key="SubtleDataGridLineBrush" Color="#338A90A8"/>
 
     <!-- Error Display Colors -->
     <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="#33F44336"/>
@@ -99,6 +100,7 @@
     <SolidColorBrush x:Key="FavoriteTextLightBrush" Color="#BF6C00"/>
     <SolidColorBrush x:Key="RequiredLightBrush" Color="#E6A100"/>
     <SolidColorBrush x:Key="ManualInstallBadgeLightBrush" Color="#CC6D00"/>
+    <SolidColorBrush x:Key="SubtleDataGridLineLightBrush" Color="#E5E7EB"/>
 
     <!-- Status Colors optimized for light theme -->
     <SolidColorBrush x:Key="StatusInstalledLightBrush" Color="#2E7D32"/>
