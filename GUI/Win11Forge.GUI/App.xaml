@@ -61,6 +61,11 @@
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
             </Style>
 
+            <!-- WPF-UI buttons use a separate target type and do not pick up WPF Button implicit styles. -->
+            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+            </Style>
+
             <!-- Keyboard-focused Button Style with enhanced visibility -->
             <Style x:Key="KeyboardFocusableButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
