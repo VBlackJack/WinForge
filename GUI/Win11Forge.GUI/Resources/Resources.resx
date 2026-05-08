@@ -2036,6 +2036,22 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Please select at least one application</value>
     <comment>Error when no apps selected</comment>
   </data>
+  <data name="Profile_Apply_Title" xml:space="preserve">
+    <value>Apply profile?</value>
+    <comment>Title for profile apply conflict dialog</comment>
+  </data>
+  <data name="Profile_Apply_Message" xml:space="preserve">
+    <value>You already have manually selected applications. Replace them with the selected profile or merge the profile into the current selection?</value>
+    <comment>Message for profile apply conflict dialog</comment>
+  </data>
+  <data name="Profile_Apply_Replace" xml:space="preserve">
+    <value>Replace selection</value>
+    <comment>Replace current manual selection with the selected profile</comment>
+  </data>
+  <data name="Profile_Apply_Merge" xml:space="preserve">
+    <value>Merge selections</value>
+    <comment>Merge selected profile applications into the current manual selection</comment>
+  </data>
   <!-- Dashboard Hero Section -->
   <data name="Dashboard_Hero_Checking" xml:space="preserve">
     <value>Checking system status...</value>
