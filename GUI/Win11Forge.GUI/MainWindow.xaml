@@ -136,7 +136,11 @@
 
         <!-- Screen Reader Live Region (invisible but announced) -->
         <TextBlock x:Name="ScreenReaderLiveRegion"
-                   Visibility="Collapsed"
+                   Width="0"
+                   Height="0"
+                   Opacity="0"
+                   IsHitTestVisible="False"
+                   Focusable="False"
                    AutomationProperties.LiveSetting="Polite"
                    AutomationProperties.Name="{loc:Loc Accessibility_LiveRegion}"/>
 

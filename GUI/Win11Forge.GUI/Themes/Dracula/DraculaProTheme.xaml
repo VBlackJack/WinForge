@@ -15,7 +15,7 @@
     <Color x:Key="AccentHoverColor">#D8BFFF</Color>
     <Color x:Key="AccentPressedColor">#A88BE0</Color>
     <Color x:Key="TextPrimaryColor">#F7F7F3</Color>
-    <Color x:Key="TextSecondaryColor">#9AA5C8</Color>
+    <Color x:Key="TextSecondaryColor">#B0BAD9</Color>
     <Color x:Key="TextDisabledColor">#7E88B6</Color>
     <Color x:Key="SuccessColor">#6CF7A1</Color>
     <Color x:Key="WarningColor">#FFBE75</Color>
@@ -34,7 +34,7 @@
     <SolidColorBrush x:Key="AccentPressedBrush" Color="{StaticResource AccentPressedColor}"/>
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}"/>
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}"/>
-    <SolidColorBrush x:Key="TextTertiaryBrush" Color="#8890B0"/>
+    <SolidColorBrush x:Key="TextTertiaryBrush" Color="#A8B0CC"/>
     <SolidColorBrush x:Key="TextDisabledBrush" Color="{StaticResource TextDisabledColor}"/>
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
     <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}"/>

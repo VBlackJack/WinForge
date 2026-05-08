@@ -77,7 +77,7 @@
     <SolidColorBrush x:Key="ErrorIconLightBrush" Color="#C62828"/>
     <SolidColorBrush x:Key="ErrorBorderLightBrush" Color="#C62828"/>
     <SolidColorBrush x:Key="ErrorBackgroundLightBrush" Color="#1AF44336"/>
-    <SolidColorBrush x:Key="WarningTextLightBrush" Color="#E65100"/>
+    <SolidColorBrush x:Key="WarningTextLightBrush" Color="#BF360A"/>
     <SolidColorBrush x:Key="WarningIconLightBrush" Color="#F57C00"/>
     <SolidColorBrush x:Key="WarningBorderLightBrush" Color="#EF6C00"/>
     <SolidColorBrush x:Key="WarningBackgroundLightBrush" Color="#1AF57C00"/>
@@ -88,7 +88,7 @@
 
     <!-- Light Theme Accent Text variants (darker for white backgrounds) -->
     <SolidColorBrush x:Key="AccentGreenTextLightBrush" Color="#2E7D32"/>
-    <SolidColorBrush x:Key="AccentOrangeTextLightBrush" Color="#E65100"/>
+    <SolidColorBrush x:Key="AccentOrangeTextLightBrush" Color="#BF360A"/>
 
     <!-- Light Theme Primary/Secondary Hue (muted for white backgrounds) -->
     <SolidColorBrush x:Key="PrimaryHueMidLightBrush" Color="#0078D4"/>
@@ -104,7 +104,7 @@
     <SolidColorBrush x:Key="StatusInstalledLightBrush" Color="#2E7D32"/>
     <SolidColorBrush x:Key="StatusFailedLightBrush" Color="#C62828"/>
     <SolidColorBrush x:Key="StatusInstallingLightBrush" Color="#1565C0"/>
-    <SolidColorBrush x:Key="StatusSkippedLightBrush" Color="#E65100"/>
+    <SolidColorBrush x:Key="StatusSkippedLightBrush" Color="#BF360A"/>
     <SolidColorBrush x:Key="StatusPendingLightBrush" Color="#616161"/>
 
     <!-- Source Badge Colors (for package manager badges) -->
