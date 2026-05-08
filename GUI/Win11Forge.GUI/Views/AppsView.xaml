@@ -225,21 +225,19 @@
                 CornerRadius="8"
                 Padding="{StaticResource CardPadding}"
                 Margin="{StaticResource MarginNormalBottom}">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Disabled"
-                          CanContentScroll="False">
-            <Grid MinWidth="920">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Profile Icon and Label with Help -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:SymbolIcon Symbol="Folder24"
                                    Width="24" Height="24"
                                    VerticalAlignment="Center"
@@ -258,18 +256,20 @@
                 </StackPanel>
 
                 <!-- Profile ComboBox (visible when profiles exist) -->
-                <ComboBox Grid.Column="1"
+                <ComboBox Grid.Row="0" Grid.Column="1"
                           ItemsSource="{Binding AvailableProfiles}"
                           SelectedItem="{Binding SelectedProfile}"
                           MinWidth="180"
+                          MaxWidth="360"
                           Margin="16,0,0,0"
+                          HorizontalAlignment="Left"
                           ToolTip="{loc:Loc Apps_ProfileHelpTooltip}"
                           Visibility="{Binding HasProfiles, Converter={StaticResource BooleanToVisibilityConverter}}"
                           AutomationProperties.Name="{loc:Loc Help_SelectProfile}"
                           AutomationProperties.HelpText="{loc:Loc Help_SelectProfile}"/>
 
                 <!-- No Profiles Message (visible when no profiles exist) -->
-                <StackPanel Grid.Column="1"
+                <StackPanel Grid.Row="0" Grid.Column="1"
                             Orientation="Horizontal"
                             Margin="16,0,0,0"
                             VerticalAlignment="Center"
@@ -286,32 +286,8 @@
                                ToolTip="{loc:Loc Apps_NoProfilesHint}"/>
                 </StackPanel>
 
-                <!-- Clear Profile Button -->
-                <ui:Button Grid.Column="2"
-                           Command="{Binding ClearProfileCommand}"
-                           Appearance="Secondary"
-                           ToolTip="{loc:Loc Apps_ClearProfile}"
-                           Margin="8,0,0,0"
-                           AutomationProperties.Name="{loc:Loc Apps_ClearProfile}"
-                           Visibility="{Binding HasProfileApplied, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <ui:SymbolIcon Symbol="Dismiss24"/>
-                </ui:Button>
-
-                <!-- Save Profile Button -->
-                <ui:Button Grid.Column="3"
-                           Command="{Binding ShowSaveProfileDialogCommand}"
-                           Appearance="Secondary"
-                           ToolTip="{loc:Loc Apps_SaveProfile}"
-                           AutomationProperties.Name="{loc:Loc Apps_SaveProfile}"
-                           Margin="8,0,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Save24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <TextBlock Text="{loc:Loc Apps_SaveProfile}" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </ui:Button>
-
                 <!-- Profile Info Badge -->
-                <Border Grid.Column="4"
+                <Border Grid.Row="0" Grid.Column="2"
                         Background="{DynamicResource PrimaryHueMidBrush}"
                         CornerRadius="4"
                         Padding="12,6"
@@ -330,19 +306,46 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Install Selected Button (prominent) -->
-                <ui:Button Grid.Column="5"
-                           Command="{Binding InstallSelectedCommand}"
-                           Appearance="Primary"
-                           ToolTip="{loc:Loc Apps_InstallSelected}"
-                           Visibility="{Binding HasSelectedApps, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="{loc:Loc Apps_InstallSelected}" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </ui:Button>
+                <!-- Profile actions -->
+                <StackPanel Grid.Row="1"
+                            Grid.ColumnSpan="3"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            Margin="0,12,0,0">
+                    <!-- Clear Profile Button -->
+                    <ui:Button Command="{Binding ClearProfileCommand}"
+                               Appearance="Secondary"
+                               ToolTip="{loc:Loc Apps_ClearProfile}"
+                               Margin="0,0,8,0"
+                               AutomationProperties.Name="{loc:Loc Apps_ClearProfile}"
+                               Visibility="{Binding HasProfileApplied, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ui:SymbolIcon Symbol="Dismiss24"/>
+                    </ui:Button>
+
+                    <!-- Save Profile Button -->
+                    <ui:Button Command="{Binding ShowSaveProfileDialogCommand}"
+                               Appearance="Secondary"
+                               ToolTip="{loc:Loc Apps_SaveProfile}"
+                               AutomationProperties.Name="{loc:Loc Apps_SaveProfile}"
+                               Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Save24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="{loc:Loc Apps_SaveProfile}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+
+                    <!-- Install Selected Button (prominent) -->
+                    <ui:Button Command="{Binding InstallSelectedCommand}"
+                               Appearance="Primary"
+                               ToolTip="{loc:Loc Apps_InstallSelected}"
+                               Visibility="{Binding HasSelectedApps, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Apps_InstallSelected}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+                </StackPanel>
             </Grid>
-            </ScrollViewer>
         </Border>
 
         <!-- Filter Bar Card -->
@@ -351,266 +354,257 @@
                 CornerRadius="8"
                 Padding="{StaticResource CardPadding}"
                 Margin="{StaticResource MarginNormalBottom}">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Disabled"
-                          CanContentScroll="False">
-            <Grid MinWidth="920">
-                <Grid.ColumnDefinitions>
-                    <!-- Filters Section -->
-                    <ColumnDefinition Width="Auto" MinWidth="180"/> <!-- 0: Search -->
-                    <ColumnDefinition Width="Auto"/>                <!-- 1: Category -->
-                    <ColumnDefinition Width="Auto"/>                <!-- 2: Status -->
-                    <ColumnDefinition Width="Auto"/>                <!-- 3: Clear Filters -->
-                    <!-- Separator -->
-                    <ColumnDefinition Width="Auto"/>                <!-- 4: Separator -->
-                    <!-- View Options Section -->
-                    <ColumnDefinition Width="Auto"/>                <!-- 5: Column Visibility -->
-                    <ColumnDefinition Width="Auto"/>                <!-- 6: Active Filter Badges -->
-                    <ColumnDefinition Width="*"/>                   <!-- 7: Stats (flexible) -->
-                    <!-- Actions Section -->
-                    <ColumnDefinition Width="Auto"/>                <!-- 8: Scan -->
-                    <ColumnDefinition Width="Auto"/>                <!-- 9: Scan Updates -->
-                </Grid.ColumnDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <!-- FILTERS SECTION -->
+                <!-- Filters Section -->
+                <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="180"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <!-- Search Box with Auto-complete -->
-                <controls:SearchBox Grid.Column="0"
-                                     Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     SuggestionsSource="{Binding ApplicationNames}"
-                                     MinWidth="180"
-                                     MaxWidth="260"
-                                     Margin="0,0,16,0"/>
+                    <!-- Search Box with Auto-complete -->
+                    <controls:SearchBox Grid.Column="0"
+                                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         SuggestionsSource="{Binding ApplicationNames}"
+                                         MinWidth="180"
+                                         MaxWidth="260"
+                                         Margin="0,0,16,0"/>
 
-                <!-- Category ComboBox -->
-                <ComboBox Grid.Column="1"
-                          ItemsSource="{Binding Categories}"
-                          SelectedItem="{Binding SelectedCategory}"
-                          MinWidth="140"
-                          MaxWidth="200"
-                          Margin="0,0,0,0"
-                          AutomationProperties.Name="{loc:Loc A11y_AppPicker_Category}"
-                          AutomationProperties.HelpText="{loc:Loc A11y_AppPicker_Category}"/>
+                    <!-- Category ComboBox -->
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding SelectedCategory}"
+                              MinWidth="140"
+                              MaxWidth="200"
+                              Margin="0"
+                              AutomationProperties.Name="{loc:Loc A11y_AppPicker_Category}"
+                              AutomationProperties.HelpText="{loc:Loc A11y_AppPicker_Category}"/>
 
-                <!-- Status Filter ComboBox -->
-                <ComboBox Grid.Column="2"
-                          ItemsSource="{Binding StatusFilters}"
-                          SelectedItem="{Binding SelectedStatusFilter}"
-                          MinWidth="120"
-                          MaxWidth="180"
-                          Margin="8,0,0,0"
-                          AutomationProperties.Name="{loc:Loc Col_Status}">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Converter={StaticResource StatusFilterToStringConverter}}"/>
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                    <!-- Status Filter ComboBox -->
+                    <ComboBox Grid.Column="2"
+                              ItemsSource="{Binding StatusFilters}"
+                              SelectedItem="{Binding SelectedStatusFilter}"
+                              MinWidth="120"
+                              MaxWidth="180"
+                              Margin="8,0,0,0"
+                              AutomationProperties.Name="{loc:Loc Col_Status}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource StatusFilterToStringConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
-                <!-- Clear Filters Button -->
-                <ui:Button Grid.Column="3"
-                           Command="{Binding ClearFiltersCommand}"
-                           Appearance="Secondary"
-                           Style="{StaticResource TouchFriendlyIconButton}"
-                           ToolTip="{loc:Loc Apps_ClearFilters}"
-                           Margin="8,0,0,0"
-                           AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}">
-                    <ui:SymbolIcon Symbol="Filter24"/>
-                </ui:Button>
+                    <!-- Clear Filters Button -->
+                    <ui:Button Grid.Column="3"
+                               Command="{Binding ClearFiltersCommand}"
+                               Appearance="Secondary"
+                               Style="{StaticResource TouchFriendlyIconButton}"
+                               ToolTip="{loc:Loc Apps_ClearFilters}"
+                               Margin="8,0,0,0"
+                               AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}">
+                        <ui:SymbolIcon Symbol="Filter24"/>
+                    </ui:Button>
+                </Grid>
 
-                <!-- VIEW OPTIONS SECTION -->
+                <!-- View Options and Actions Section -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <!-- Separator between Filters and View Options -->
-                <Border Grid.Column="4"
-                        Width="1"
-                        Background="{DynamicResource ControlStrokeColorDefaultBrush}"
-                        Margin="16,4"
-                        VerticalAlignment="Stretch"/>
+                    <!-- Column Visibility Toggle Button with Popup -->
+                    <ui:DropDownButton Grid.Column="0"
+                                       ToolTip="{loc:Loc Apps_ColumnVisibility}"
+                                       AutomationProperties.Name="{loc:Loc Apps_ColumnVisibility}">
+                        <ui:DropDownButton.Content>
+                            <ui:SymbolIcon Symbol="Table24" Width="24" Height="24"/>
+                        </ui:DropDownButton.Content>
+                        <ui:DropDownButton.Flyout>
+                            <ui:Flyout>
+                                <StackPanel Orientation="Vertical" MinWidth="180" Margin="8">
+                                    <TextBlock Text="{loc:Loc Apps_ColumnVisibility}"
+                                               FontSize="14" FontWeight="Medium"
+                                               Margin="8,4,8,12"/>
+                                    <CheckBox Content="{loc:Loc Col_Favorites}"
+                                              IsChecked="{Binding ShowFavoritesColumn, Mode=TwoWay}"
+                                              Margin="8,4"/>
+                                    <CheckBox Content="{loc:Loc Col_Version}"
+                                              IsChecked="{Binding ShowVersionColumn, Mode=TwoWay}"
+                                              Margin="8,4"/>
+                                    <CheckBox Content="{loc:Loc Col_Status}"
+                                              IsChecked="{Binding ShowStatusColumn, Mode=TwoWay}"
+                                              Margin="8,4"/>
+                                    <CheckBox Content="{loc:Loc Col_Category}"
+                                              IsChecked="{Binding ShowCategoryColumn, Mode=TwoWay}"
+                                              Margin="8,4"/>
+                                    <CheckBox Content="{loc:Loc Apps_Col_Sources}"
+                                              IsChecked="{Binding ShowSourcesColumn, Mode=TwoWay}"
+                                              Margin="8,4"/>
+                                    <CheckBox Content="{loc:Loc Col_Logs}"
+                                              IsChecked="{Binding ShowLogsColumn, Mode=TwoWay}"
+                                              Margin="8,4"/>
+                                    <Separator Margin="8,8"/>
+                                    <ui:Button Content="{loc:Loc Apps_ResetColumns}"
+                                               Command="{Binding ResetColumnsToDefaultsCommand}"
+                                               Appearance="Transparent"
+                                               AutomationProperties.Name="{loc:Loc Apps_ResetColumns}"
+                                               HorizontalAlignment="Stretch"
+                                               Margin="4,0"/>
+                                </StackPanel>
+                            </ui:Flyout>
+                        </ui:DropDownButton.Flyout>
+                    </ui:DropDownButton>
 
-                <!-- Column Visibility Toggle Button with Popup -->
-                <ui:DropDownButton Grid.Column="5"
-                                   ToolTip="{loc:Loc Apps_ColumnVisibility}"
-                                   Margin="8,0,0,0"
-                                   AutomationProperties.Name="{loc:Loc Apps_ColumnVisibility}">
-                    <ui:DropDownButton.Content>
-                        <ui:SymbolIcon Symbol="Table24" Width="24" Height="24"/>
-                    </ui:DropDownButton.Content>
-                    <ui:DropDownButton.Flyout>
-                        <ui:Flyout>
-                            <StackPanel Orientation="Vertical" MinWidth="180" Margin="8">
-                                <TextBlock Text="{loc:Loc Apps_ColumnVisibility}"
-                                           FontSize="14" FontWeight="Medium"
-                                           Margin="8,4,8,12"/>
-                                <CheckBox Content="{loc:Loc Col_Favorites}"
-                                          IsChecked="{Binding ShowFavoritesColumn, Mode=TwoWay}"
-                                          Margin="8,4"/>
-                                <CheckBox Content="{loc:Loc Col_Version}"
-                                          IsChecked="{Binding ShowVersionColumn, Mode=TwoWay}"
-                                          Margin="8,4"/>
-                                <CheckBox Content="{loc:Loc Col_Status}"
-                                          IsChecked="{Binding ShowStatusColumn, Mode=TwoWay}"
-                                          Margin="8,4"/>
-                                <CheckBox Content="{loc:Loc Col_Category}"
-                                          IsChecked="{Binding ShowCategoryColumn, Mode=TwoWay}"
-                                          Margin="8,4"/>
-                                <CheckBox Content="{loc:Loc Apps_Col_Sources}"
-                                          IsChecked="{Binding ShowSourcesColumn, Mode=TwoWay}"
-                                          Margin="8,4"/>
-                                <CheckBox Content="{loc:Loc Col_Logs}"
-                                          IsChecked="{Binding ShowLogsColumn, Mode=TwoWay}"
-                                          Margin="8,4"/>
-                                <Separator Margin="8,8"/>
-                                <ui:Button Content="{loc:Loc Apps_ResetColumns}"
-                                           Command="{Binding ResetColumnsToDefaultsCommand}"
-                                           Appearance="Transparent"
-                                           AutomationProperties.Name="{loc:Loc Apps_ResetColumns}"
-                                           HorizontalAlignment="Stretch"
-                                           Margin="4,0"/>
-                            </StackPanel>
-                        </ui:Flyout>
-                    </ui:DropDownButton.Flyout>
-                </ui:DropDownButton>
-
-                <!-- Active Filter Indicators (moved after separator) -->
-                <StackPanel Grid.Column="6"
-                            Orientation="Horizontal"
-                            VerticalAlignment="Center"
-                            Margin="8,0,0,0">
-                    <!-- Search Filter Badge -->
-                    <Border Style="{StaticResource HoverBadgeStyle}"
-                            Background="{DynamicResource PrimaryHueMidBrush}"
-                            CornerRadius="12"
-                            Padding="8,4"
-                            Margin="0,0,8,0"
-                            Cursor="Hand"
-                            Visibility="{Binding HasSearchFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Search24" Width="14" Height="14" VerticalAlignment="Center"
-                                           Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
-                            <TextBlock Text="{Binding SearchText}"
-                                       FontSize="12"
-                                       MaxWidth="80"
-                                       TextTrimming="CharacterEllipsis"
-                                       VerticalAlignment="Center"
-                                       Margin="4,0,0,0"
-                                       Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
-                        </StackPanel>
-                    </Border>
-                    <!-- Category Filter Badge -->
-                    <Border Style="{StaticResource HoverBadgeStyle}"
-                            Background="{DynamicResource SecondaryHueMidBrush}"
-                            CornerRadius="12"
-                            Padding="8,4"
-                            Margin="0,0,8,0"
-                            Cursor="Hand"
-                            Visibility="{Binding HasCategoryFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Folder24" Width="14" Height="14" VerticalAlignment="Center"
-                                           Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
-                            <TextBlock Text="{Binding SelectedCategory}"
-                                       FontSize="12"
-                                       VerticalAlignment="Center"
-                                       Margin="4,0,0,0"
-                                       Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
-                        </StackPanel>
-                    </Border>
-                    <!-- Status Filter Badge -->
-                    <Border Style="{StaticResource HoverBadgeStyle}"
-                            Background="{DynamicResource ControlFillColorDefaultBrush}"
-                            CornerRadius="12"
-                            Padding="8,4"
-                            Cursor="Hand"
-                            Visibility="{Binding HasStatusFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Filter24" Width="14" Height="14" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding SelectedStatusFilter, Converter={StaticResource StatusFilterToStringConverter}}"
-                                       FontSize="12"
-                                       VerticalAlignment="Center"
-                                       Margin="4,0,0,0"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-
-                <!-- Stats Display -->
-                <StackPanel Grid.Column="7"
-                            Orientation="Horizontal"
-                            VerticalAlignment="Center">
-                    <!-- Normal stats -->
-                    <TextBlock FontSize="12"
+                    <!-- Active Filter Indicators and Stats -->
+                    <WrapPanel Grid.Column="1"
                                VerticalAlignment="Center"
-                               Visibility="{Binding IsScanning, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                        <Run Text="{Binding FilteredCount, Mode=OneWay}"/>
-                        <Run Text="/"/>
-                        <Run Text="{Binding TotalApplicationsCount, Mode=OneWay}"/>
-                        <Run Text=" | "/>
-                        <Run Text="{Binding InstalledCount, Mode=OneWay}" Foreground="{DynamicResource AccentGreenTextBrush}"/>
-                        <Run Text=" "/><Run Text="{loc:Loc Apps_Installed}"/>
-                        <Run Text=" | "/>
-                        <Run Text="{Binding SelectedCount, Mode=OneWay}" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
-                        <Run Text=" "/><Run Text="{loc:Loc Apps_Selected}"/>
-                        <Run Text=" | "/>
-                        <Run Text="{Binding FavoritesCount, Mode=OneWay}" Foreground="{DynamicResource FavoriteTextBrush}"/>
-                        <Run Text=" "/><Run Text="{loc:Loc Apps_Favorites}"/>
-                    </TextBlock>
-                    <!-- Scan progress -->
-                    <StackPanel Orientation="Horizontal"
-                                Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}">
+                               Margin="8,0,0,0">
+                        <!-- Search Filter Badge -->
+                        <Border Style="{StaticResource HoverBadgeStyle}"
+                                Background="{DynamicResource PrimaryHueMidBrush}"
+                                CornerRadius="12"
+                                Padding="8,4"
+                                Margin="0,0,8,0"
+                                Cursor="Hand"
+                                Visibility="{Binding HasSearchFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Search24" Width="14" Height="14" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
+                                <TextBlock Text="{Binding SearchText}"
+                                           FontSize="12"
+                                           MaxWidth="80"
+                                           TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center"
+                                           Margin="4,0,0,0"
+                                           Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
+                            </StackPanel>
+                        </Border>
+                        <!-- Category Filter Badge -->
+                        <Border Style="{StaticResource HoverBadgeStyle}"
+                                Background="{DynamicResource SecondaryHueMidBrush}"
+                                CornerRadius="12"
+                                Padding="8,4"
+                                Margin="0,0,8,0"
+                                Cursor="Hand"
+                                Visibility="{Binding HasCategoryFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Folder24" Width="14" Height="14" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
+                                <TextBlock Text="{Binding SelectedCategory}"
+                                           FontSize="12"
+                                           VerticalAlignment="Center"
+                                           Margin="4,0,0,0"
+                                           Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
+                            </StackPanel>
+                        </Border>
+                        <!-- Status Filter Badge -->
+                        <Border Style="{StaticResource HoverBadgeStyle}"
+                                Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                CornerRadius="12"
+                                Padding="8,4"
+                                Margin="0,0,8,0"
+                                Cursor="Hand"
+                                Visibility="{Binding HasStatusFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Filter24" Width="14" Height="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding SelectedStatusFilter, Converter={StaticResource StatusFilterToStringConverter}}"
+                                           FontSize="12"
+                                           VerticalAlignment="Center"
+                                           Margin="4,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Stats Display -->
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <!-- Normal stats -->
+                            <TextBlock FontSize="12"
+                                       VerticalAlignment="Center"
+                                       Visibility="{Binding IsScanning, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                <Run Text="{Binding FilteredCount, Mode=OneWay}"/>
+                                <Run Text="/"/>
+                                <Run Text="{Binding TotalApplicationsCount, Mode=OneWay}"/>
+                                <Run Text=" | "/>
+                                <Run Text="{Binding InstalledCount, Mode=OneWay}" Foreground="{DynamicResource AccentGreenTextBrush}"/>
+                                <Run Text=" "/><Run Text="{loc:Loc Apps_Installed}"/>
+                                <Run Text=" | "/>
+                                <Run Text="{Binding SelectedCount, Mode=OneWay}" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                                <Run Text=" "/><Run Text="{loc:Loc Apps_Selected}"/>
+                                <Run Text=" | "/>
+                                <Run Text="{Binding FavoritesCount, Mode=OneWay}" Foreground="{DynamicResource FavoriteTextBrush}"/>
+                                <Run Text=" "/><Run Text="{loc:Loc Apps_Favorites}"/>
+                            </TextBlock>
+                            <!-- Scan progress -->
+                            <StackPanel Orientation="Horizontal"
+                                        Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <ui:ProgressRing IsIndeterminate="True"
+                                                 Width="20"
+                                                 Height="20"
+                                                 Margin="0,0,8,0"/>
+                                <TextBlock FontSize="12"
+                                           VerticalAlignment="Center">
+                                    <Run Text="{Binding ScannedCount, Mode=OneWay}"/>
+                                    <Run Text="/"/>
+                                    <Run Text="{Binding ScanTotalCount, Mode=OneWay}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </StackPanel>
+                    </WrapPanel>
+
+                    <!-- Scan/Cancel Button -->
+                    <ui:Button Grid.Column="2"
+                               Command="{Binding ScanCommand}"
+                               Appearance="Primary"
+                               Content="{loc:Loc Btn_Scan}"
+                               ToolTip="{loc:Loc Help_Tooltip_Scan}"
+                               Margin="16,0,0,0"
+                               Visibility="{Binding IsScanning, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="{loc:Loc Btn_Scan}"/>
+                    <ui:Button Grid.Column="2"
+                               Command="{Binding CancelScanCommand}"
+                               Appearance="Secondary"
+                               Content="{loc:Loc Btn_Cancel}"
+                               Margin="16,0,0,0"
+                               Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="{loc:Loc Btn_Cancel}"/>
+
+                    <!-- Scan Updates Button -->
+                    <ui:Button Grid.Column="3"
+                               Command="{Binding ScanUpdatesCommand}"
+                               Appearance="Secondary"
+                               Margin="8,0,0,0"
+                               Visibility="{Binding IsScanningUpdates, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="{loc:Loc Btn_ScanUpdates}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ArrowSync24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Btn_ScanUpdates}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+                    <StackPanel Grid.Column="3"
+                                Orientation="Horizontal"
+                                Margin="8,0,0,0"
+                                Visibility="{Binding IsScanningUpdates, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <ui:ProgressRing IsIndeterminate="True"
                                          Width="20"
                                          Height="20"
                                          Margin="0,0,8,0"/>
-                        <TextBlock FontSize="12"
-                                   VerticalAlignment="Center">
-                            <Run Text="{Binding ScannedCount, Mode=OneWay}"/>
-                            <Run Text="/"/>
-                            <Run Text="{Binding ScanTotalCount, Mode=OneWay}"/>
-                        </TextBlock>
+                        <TextBlock Text="{loc:Loc Common_Loading}"
+                                   FontSize="12"
+                                   VerticalAlignment="Center"/>
                     </StackPanel>
-                </StackPanel>
-
-                <!-- Scan/Cancel Button -->
-                <ui:Button Grid.Column="8"
-                           Command="{Binding ScanCommand}"
-                           Appearance="Primary"
-                           Content="{loc:Loc Btn_Scan}"
-                           ToolTip="{loc:Loc Help_Tooltip_Scan}"
-                           Margin="16,0,0,0"
-                           Visibility="{Binding IsScanning, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                           AutomationProperties.Name="{loc:Loc Btn_Scan}"/>
-                <ui:Button Grid.Column="8"
-                           Command="{Binding CancelScanCommand}"
-                           Appearance="Secondary"
-                           Content="{loc:Loc Btn_Cancel}"
-                           Margin="16,0,0,0"
-                           Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"
-                           AutomationProperties.Name="{loc:Loc Btn_Cancel}"/>
-
-                <!-- Scan Updates Button -->
-                <ui:Button Grid.Column="9"
-                           Command="{Binding ScanUpdatesCommand}"
-                           Appearance="Secondary"
-                           Margin="8,0,0,0"
-                           Visibility="{Binding IsScanningUpdates, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
-                           AutomationProperties.Name="{loc:Loc Btn_ScanUpdates}">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="ArrowSync24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="{loc:Loc Btn_ScanUpdates}" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </ui:Button>
-                <StackPanel Grid.Column="9"
-                            Orientation="Horizontal"
-                            Margin="8,0,0,0"
-                            Visibility="{Binding IsScanningUpdates, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <ui:ProgressRing IsIndeterminate="True"
-                                     Width="20"
-                                     Height="20"
-                                     Margin="0,0,8,0"/>
-                    <TextBlock Text="{loc:Loc Common_Loading}"
-                               FontSize="12"
-                               VerticalAlignment="Center"/>
-                </StackPanel>
+                </Grid>
             </Grid>
-            </ScrollViewer>
         </Border>
 
         <!-- Selection Action Bar -->
