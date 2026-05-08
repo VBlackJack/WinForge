@@ -393,6 +393,10 @@ public partial class App : Application
                 SwapIfExists(app, "ErrorTextBrush", "HighContrastErrorBrush");
                 SwapIfExists(app, "WarningTextBrush", "HighContrastWarningBrush");
                 SwapIfExists(app, "SuccessTextBrush", "HighContrastSuccessBrush");
+                // WPF-UI uses these foregrounds for accent-painted Button states.
+                SwapIfExists(app, "TextOnAccentFillColorPrimaryBrush", "HighContrastPrimaryForegroundBrush");
+                SwapIfExists(app, "TextOnAccentFillColorSecondaryBrush", "HighContrastPrimaryForegroundBrush");
+                SwapIfExists(app, "TextOnAccentFillColorDisabledBrush", "HighContrastTextDisabledBrush");
                 SwapIfExists(app, "SourceWingetBadgeBackgroundBrush", "HighContrastSurfaceBrush");
                 SwapIfExists(app, "SourceWingetBadgeBorderBrush", "HighContrastBorderBrush");
                 SwapIfExists(app, "SourceWingetBadgeForegroundBrush", "HighContrastTextPrimaryBrush");

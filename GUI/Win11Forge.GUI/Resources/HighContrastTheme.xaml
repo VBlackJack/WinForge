@@ -15,6 +15,7 @@
 -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                     xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
 
     <!-- High Contrast Color Palette (WCAG AAA compliant - 7:1 minimum contrast) -->
@@ -94,6 +95,9 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+
+    <!-- Bind high contrast styling to WPF-UI buttons while this dictionary is merged. -->
+    <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource HighContrastButtonStyle}"/>
 
     <!-- High Contrast Outlined Button Style -->
     <Style x:Key="HighContrastOutlinedButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
