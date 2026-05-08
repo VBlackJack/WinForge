@@ -564,7 +564,10 @@ public class AppsViewModelTests
         {
             UpdateResult = new AppUpdateResult(0, 2, 0, 0, WasCancelled: false)
         };
-        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        var deploymentState = CreateMockDeploymentStateService();
+        var viewModel = CreateViewModel(
+            deploymentState: deploymentState,
+            updateCoordinator: updateCoordinator);
         await viewModel.InitializeAsync();
         var apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
         foreach (var app in apps)
@@ -585,6 +588,164 @@ public class AppsViewModelTests
         Assert.Equal([apps[0], apps[1]], call);
         Assert.Equal(1, viewModel.UpdatesAvailableCount);
         Assert.False(viewModel.IsInstalling);
+        Assert.True(viewModel.IsSummaryDialogOpen);
+        Assert.Equal(2, viewModel.BatchProgressTotal);
+        Assert.Equal(2, viewModel.BatchProgressCurrent);
+        Assert.Equal(100, viewModel.BatchProgressPercent);
+        Assert.Equal(2, viewModel.SuccessCount);
+        Assert.Equal(0, viewModel.FailedCount);
+        Assert.Equal(0, viewModel.SkippedCount);
+        Assert.Equal(DeploymentResult.Success, viewModel.LastDeploymentResult);
+        Assert.True(updateCoordinator.LastCancellationToken.CanBeCanceled);
+        Assert.Equal(1, deploymentState.StartDeploymentCallCount);
+        Assert.Equal(1, deploymentState.EndDeploymentCallCount);
+        Assert.NotEmpty(deploymentState.ProgressUpdates);
+        Assert.NotEmpty(deploymentState.TimeUpdates);
+    }
+
+    [Fact]
+    public async Task UpdateSelected_WhenNothingSelected_ShouldUpdateAllAvailableUpdates()
+    {
+        // Arrange
+        var updateCoordinator = new TestAppUpdateCoordinator
+        {
+            UpdateResult = new AppUpdateResult(0, 2, 0, 0, WasCancelled: false)
+        };
+        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
+        foreach (var app in apps)
+        {
+            app.Status = ApplicationStatus.UpdateAvailable;
+            app.IsSelected = false;
+        }
+        apps[2].Status = ApplicationStatus.Installed;
+        viewModel.UpdatesAvailableCount = 2;
+
+        // Act
+        await viewModel.UpdateSelectedCommand.ExecuteAsync(null);
+
+        // Assert
+        var call = Assert.Single(updateCoordinator.UpdateCalls);
+        Assert.Equal([apps[0], apps[1]], call);
+        Assert.Equal(0, viewModel.UpdatesAvailableCount);
+        Assert.True(viewModel.IsSummaryDialogOpen);
+    }
+
+    [Fact]
+    public async Task UpdateSelected_WhenPartialFailure_ShouldShowPartialSummary()
+    {
+        // Arrange
+        var updateCoordinator = new TestAppUpdateCoordinator
+        {
+            UpdateResult = new AppUpdateResult(0, 1, 1, 0, WasCancelled: false)
+        };
+        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
+        foreach (var app in apps)
+        {
+            app.Status = ApplicationStatus.UpdateAvailable;
+            app.IsSelected = true;
+        }
+        viewModel.UpdatesAvailableCount = 2;
+
+        // Act
+        await viewModel.UpdateSelectedCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Equal(1, viewModel.UpdatesAvailableCount);
+        Assert.Equal(1, viewModel.SuccessCount);
+        Assert.Equal(1, viewModel.FailedCount);
+        Assert.Equal(0, viewModel.SkippedCount);
+        Assert.Equal(DeploymentResult.PartialSuccess, viewModel.LastDeploymentResult);
+        Assert.True(viewModel.IsSummaryDialogOpen);
+    }
+
+    [Fact]
+    public async Task UpdateSelected_WhenCancelled_ShouldShowCancelledSummary()
+    {
+        // Arrange
+        var updateCoordinator = new TestAppUpdateCoordinator
+        {
+            UpdateResult = new AppUpdateResult(0, 1, 0, 1, WasCancelled: true)
+        };
+        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
+        foreach (var app in apps)
+        {
+            app.Status = ApplicationStatus.UpdateAvailable;
+            app.IsSelected = true;
+        }
+        viewModel.UpdatesAvailableCount = 2;
+
+        // Act
+        await viewModel.UpdateSelectedCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Equal(1, viewModel.UpdatesAvailableCount);
+        Assert.Equal(1, viewModel.SuccessCount);
+        Assert.Equal(0, viewModel.FailedCount);
+        Assert.Equal(1, viewModel.SkippedCount);
+        Assert.Equal(DeploymentResult.Cancelled, viewModel.LastDeploymentResult);
+        Assert.True(viewModel.IsSummaryDialogOpen);
+    }
+
+    [Fact]
+    public async Task UpdateSelected_WhenAllFail_ShouldShowFailedSummary()
+    {
+        // Arrange
+        var updateCoordinator = new TestAppUpdateCoordinator
+        {
+            UpdateResult = new AppUpdateResult(0, 0, 2, 0, WasCancelled: false)
+        };
+        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
+        foreach (var app in apps)
+        {
+            app.Status = ApplicationStatus.UpdateAvailable;
+            app.IsSelected = true;
+        }
+        viewModel.UpdatesAvailableCount = 2;
+
+        // Act
+        await viewModel.UpdateSelectedCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Equal(2, viewModel.UpdatesAvailableCount);
+        Assert.Equal(0, viewModel.SuccessCount);
+        Assert.Equal(2, viewModel.FailedCount);
+        Assert.Equal(0, viewModel.SkippedCount);
+        Assert.Equal(DeploymentResult.Failed, viewModel.LastDeploymentResult);
+        Assert.True(viewModel.IsSummaryDialogOpen);
+    }
+
+    [Fact]
+    public async Task UpdateSelected_WhenCoordinatorThrows_ShouldCleanupDeploymentState()
+    {
+        // Arrange
+        var updateCoordinator = new TestAppUpdateCoordinator { ShouldThrow = true };
+        var deploymentState = CreateMockDeploymentStateService();
+        var viewModel = CreateViewModel(
+            deploymentState: deploymentState,
+            updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        var app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        app.Status = ApplicationStatus.UpdateAvailable;
+        app.IsSelected = true;
+        viewModel.UpdatesAvailableCount = 1;
+
+        // Act
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => viewModel.UpdateSelectedCommand.ExecuteAsync(null));
+
+        // Assert
+        Assert.False(viewModel.IsInstalling);
+        Assert.False(viewModel.IsPaused);
+        Assert.Equal(1, deploymentState.StartDeploymentCallCount);
+        Assert.Equal(1, deploymentState.EndDeploymentCallCount);
     }
 
     [Fact]
@@ -1266,29 +1427,87 @@ internal class MockPowerShellBridge : IPowerShellBridge
 /// </summary>
 internal class MockDeploymentStateService : IDeploymentStateService
 {
-    public bool IsDeploying => false;
-    public bool IsPaused => false;
-    public bool IsCancelled => false;
-    public string? StatusMessage => null;
-    public string? CurrentAppName => null;
-    public int CompletedCount => 0;
-    public int TotalCount => 0;
-    public double ProgressPercentage => 0;
-    public string? ElapsedTime => null;
-    public string? EstimatedTimeRemaining => null;
+    public bool IsDeploying { get; private set; }
+    public bool IsPaused { get; private set; }
+    public bool IsCancelled { get; private set; }
+    public string? StatusMessage { get; private set; }
+    public string? CurrentAppName { get; private set; }
+    public int CompletedCount { get; private set; }
+    public int TotalCount { get; private set; }
+    public double ProgressPercentage => TotalCount > 0 ? CompletedCount * 100.0 / TotalCount : 0;
+    public string? ElapsedTime { get; private set; }
+    public string? EstimatedTimeRemaining { get; private set; }
     public ObservableCollection<ApplicationModel> Applications { get; } = new();
+    public int StartDeploymentCallCount { get; private set; }
+    public int EndDeploymentCallCount { get; private set; }
+    public List<IReadOnlyList<ApplicationModel>> StartedDeployments { get; } = [];
+    public List<(string? CurrentAppName, int Completed, int Total, string? StatusMessage)> ProgressUpdates { get; } = [];
+    public List<(string? Elapsed, string? Remaining)> TimeUpdates { get; } = [];
 
     public event EventHandler? StateChanged;
     public event EventHandler? PauseRequested;
     public event EventHandler? ResumeRequested;
     public event EventHandler? CancelRequested;
 
-    public void StartDeployment(IEnumerable<ApplicationModel> apps) { }
-    public void UpdateProgress(string? currentAppName, int completed, int total, string? statusMessage) { }
-    public void UpdateTime(string? elapsed, string? remaining) { }
-    public void SetPaused(bool isPaused) { }
-    public void EndDeployment() { }
-    public void ClearApplicationLogs() { }
+    public void StartDeployment(IEnumerable<ApplicationModel> apps)
+    {
+        var appList = apps.ToList();
+        StartDeploymentCallCount++;
+        StartedDeployments.Add(appList);
+        IsDeploying = true;
+        IsCancelled = false;
+        CurrentAppName = null;
+        CompletedCount = 0;
+        TotalCount = appList.Count;
+        Applications.Clear();
+        foreach (var app in appList)
+        {
+            Applications.Add(app);
+        }
+
+        StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void UpdateProgress(string? currentAppName, int completed, int total, string? statusMessage)
+    {
+        CurrentAppName = currentAppName;
+        CompletedCount = completed;
+        TotalCount = total;
+        StatusMessage = statusMessage;
+        ProgressUpdates.Add((currentAppName, completed, total, statusMessage));
+        StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void UpdateTime(string? elapsed, string? remaining)
+    {
+        ElapsedTime = elapsed;
+        EstimatedTimeRemaining = remaining;
+        TimeUpdates.Add((elapsed, remaining));
+        StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SetPaused(bool isPaused)
+    {
+        IsPaused = isPaused;
+        StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void EndDeployment()
+    {
+        EndDeploymentCallCount++;
+        IsDeploying = false;
+        StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void ClearApplicationLogs()
+    {
+        foreach (var app in Applications)
+        {
+            app.LogOutput = string.Empty;
+        }
+
+        StateChanged?.Invoke(this, EventArgs.Empty);
+    }
     public void RequestPause() => PauseRequested?.Invoke(this, EventArgs.Empty);
     public void RequestResume() => ResumeRequested?.Invoke(this, EventArgs.Empty);
     public void RequestCancel() => CancelRequested?.Invoke(this, EventArgs.Empty);
@@ -1383,6 +1602,8 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
 
     public bool ShouldThrow { get; set; }
 
+    public CancellationToken LastCancellationToken { get; private set; }
+
     public Task<AppUpdateScanResult> ScanForUpdatesAsync(
         IReadOnlyCollection<ApplicationModel> installedApps,
         IProgress<AppOperationProgress>? progress = null,
@@ -1406,6 +1627,7 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
         CancellationToken cancellationToken = default)
     {
         UpdateCalls.Add(applications);
+        LastCancellationToken = cancellationToken;
 
         if (ShouldThrow)
         {
