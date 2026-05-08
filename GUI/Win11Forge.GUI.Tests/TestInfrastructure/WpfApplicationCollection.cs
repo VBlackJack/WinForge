@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-using System.Windows.Controls;
+using Xunit;
 
-namespace Win11Forge.GUI.Controls;
+namespace Win11Forge.GUI.Tests.TestInfrastructure;
 
 /// <summary>
-/// Control that applies fade-in transition to its content when loaded.
+/// Serializes tests that manipulate WPF application singleton state.
 /// </summary>
-public partial class ViewTransition : UserControl
+[CollectionDefinition("WpfApplication", DisableParallelization = true)]
+public sealed class WpfApplicationCollection
 {
-    public ViewTransition()
-    {
-        InitializeComponent();
-    }
 }
