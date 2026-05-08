@@ -321,6 +321,45 @@ public class AccessibilityHardeningTests
     }
 
     [Fact]
+    public void AppCatalog_HidesUnavailableActionGroups()
+    {
+        var xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml"));
+
+        AssertButtonVisibilityBinding(xaml, "UndoCommand", "CanUndo");
+        AssertButtonVisibilityBinding(xaml, "RedoCommand", "CanRedo");
+
+        var selectionActions = xaml.Descendants()
+            .Single(element =>
+                element.Name.LocalName == "StackPanel"
+                && string.Equals(element.Attribute("Grid.Column")?.Value, "3", StringComparison.Ordinal)
+                && element.Descendants().Any(child =>
+                    child.Name.LocalName == "Button"
+                    && string.Equals(child.Attribute("Command")?.Value, "{Binding EditCommand}", StringComparison.Ordinal))
+                && element.Descendants().Any(child =>
+                    child.Name.LocalName == "Button"
+                    && string.Equals(child.Attribute("Command")?.Value, "{Binding DuplicateCommand}", StringComparison.Ordinal))
+                && element.Descendants().Any(child =>
+                    child.Name.LocalName == "Button"
+                    && string.Equals(child.Attribute("Command")?.Value, "{Binding DeleteCommand}", StringComparison.Ordinal)));
+
+        Assert.Equal(
+            "{Binding SelectedApplication, Converter={StaticResource NullableToVisibilityConverter}}",
+            selectionActions.Attribute("Visibility")?.Value);
+    }
+
+    [Fact]
+    public void AppsView_ProfileCardDoesNotDuplicateInstallSelected()
+    {
+        var xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        var profileSelector = ExtractXamlSection(xaml, "<!-- Profile Selector Card -->", "<!-- Filter Bar Card -->");
+        var selectionActionBar = ExtractXamlSection(xaml, "<!-- Selection Action Bar -->", "<!-- Applications DataGrid -->");
+
+        Assert.DoesNotContain("InstallSelectedCommand", profileSelector, StringComparison.Ordinal);
+        Assert.Contains("InstallSelectedCommand", selectionActionBar, StringComparison.Ordinal);
+        Assert.Equal(1, CountOccurrences(xaml, "InstallSelectedCommand"));
+    }
+
+    [Fact]
     public void AppXaml_DefinesReinforcedTabItemStyleAsImplicit()
     {
         var xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
@@ -370,6 +409,65 @@ public class AccessibilityHardeningTests
     }
 
     [Fact]
+    public void AppXaml_TabItemUsesThemeAwareTemplate()
+    {
+        var xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        var styles = xaml.Descendants()
+            .Where(element => element.Name.LocalName == "Style")
+            .ToList();
+        var tabItemStyle = FindNamedStyle(styles, "ReinforcedTabItemStyle");
+
+        AssertNamedStyleSetter(styles, "ReinforcedTabItemStyle", "Background", "Transparent");
+        AssertNamedStyleSetter(styles, "ReinforcedTabItemStyle", "Foreground", "{DynamicResource TextFillColorPrimaryBrush}");
+        AssertNamedStyleSetter(styles, "ReinforcedTabItemStyle", "FocusVisualStyle", "{StaticResource HighVisibilityFocusVisual}");
+
+        var template = tabItemStyle.Descendants()
+            .Single(element =>
+                element.Name.LocalName == "ControlTemplate"
+                && string.Equals(element.Attribute("TargetType")?.Value, "{x:Type TabItem}", StringComparison.Ordinal));
+
+        Assert.Contains(
+            template.Descendants(),
+            element =>
+                element.Name.LocalName == "ContentPresenter"
+                && string.Equals(
+                    element.Attribute("ContentSource")?.Value,
+                    "Header",
+                    StringComparison.Ordinal)
+                && string.Equals(
+                    element.Attribute("TextElement.Foreground")?.Value,
+                    "{TemplateBinding Foreground}",
+                    StringComparison.Ordinal));
+
+        Assert.Contains(
+            template.Descendants(),
+            element =>
+                element.Name.LocalName == "Trigger"
+                && string.Equals(element.Attribute("Property")?.Value, "IsEnabled", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "False", StringComparison.Ordinal));
+
+        Assert.Contains(
+            tabItemStyle.Descendants(),
+            element =>
+                element.Name.LocalName == "Trigger"
+                && string.Equals(element.Attribute("Property")?.Value, "IsKeyboardFocused", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "True", StringComparison.Ordinal));
+
+        var selectedTrigger = tabItemStyle.Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Trigger"
+                && string.Equals(element.Attribute("Property")?.Value, "IsSelected", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "True", StringComparison.Ordinal));
+
+        Assert.Contains(
+            selectedTrigger.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, "Foreground", StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Value")?.Value, "{DynamicResource TextFillColorPrimaryBrush}", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void MainWindow_NavSplitsWorkflowAndConfigClusters()
     {
         var xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml"));
@@ -391,6 +489,31 @@ public class AccessibilityHardeningTests
         Assert.True(end > start, $"Could not find section end marker: {endMarker}");
 
         return xaml[start..end];
+    }
+
+    private static void AssertButtonVisibilityBinding(XDocument xaml, string commandName, string visibilitySource)
+    {
+        var button = xaml.Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Button"
+                && string.Equals(element.Attribute("Command")?.Value, $"{{Binding {commandName}}}", StringComparison.Ordinal));
+
+        Assert.Equal(
+            $"{{Binding {visibilitySource}, Converter={{StaticResource BooleanToVisibilityConverter}}}}",
+            button.Attribute("Visibility")?.Value);
+    }
+
+    private static int CountOccurrences(string value, string pattern)
+    {
+        var count = 0;
+        var index = 0;
+        while ((index = value.IndexOf(pattern, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += pattern.Length;
+        }
+
+        return count;
     }
 
     private static void AssertImplicitFocusStyle(IReadOnlyCollection<XElement> styles, string targetType)
