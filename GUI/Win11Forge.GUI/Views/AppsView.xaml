@@ -327,21 +327,10 @@
                                Appearance="Secondary"
                                ToolTip="{loc:Loc Apps_SaveProfile}"
                                AutomationProperties.Name="{loc:Loc Apps_SaveProfile}"
-                               Margin="0,0,8,0">
+                               Margin="0">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Save24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <TextBlock Text="{loc:Loc Apps_SaveProfile}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ui:Button>
-
-                    <!-- Install Selected Button (prominent) -->
-                    <ui:Button Command="{Binding InstallSelectedCommand}"
-                               Appearance="Primary"
-                               ToolTip="{loc:Loc Apps_InstallSelected}"
-                               Visibility="{Binding HasSelectedApps, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock Text="{loc:Loc Apps_InstallSelected}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
                 </StackPanel>
