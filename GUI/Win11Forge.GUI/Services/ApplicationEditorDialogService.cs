@@ -80,6 +80,6 @@ public sealed class ApplicationEditorDialogService : IApplicationEditorDialogSer
 
     private object GetOwner()
     {
-        return _ownerProvider() ?? throw new InvalidOperationException(Loc.AppDb_EditorOwnerNotFound);
+        return _ownerProvider() ?? throw new InvalidOperationException(Loc.AppCatalog_EditorOwnerNotFound);
     }
 }

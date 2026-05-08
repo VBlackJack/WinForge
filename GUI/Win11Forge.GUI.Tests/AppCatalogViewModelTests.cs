@@ -708,7 +708,7 @@ public class ApplicationsViewModelTests
 
         // Assert
         var options = Assert.Single(fileDialogService.OpenOptions);
-        Assert.Equal(Win11Forge.GUI.Resources.Resources.AppDb_Import, options.Title);
+        Assert.Equal(Win11Forge.GUI.Resources.Resources.AppCatalog_Import, options.Title);
         Assert.Equal("JSON files (*.json)|*.json|All files (*.*)|*.*", options.Filter);
         Assert.Equal(".json", options.DefaultExtension);
     }

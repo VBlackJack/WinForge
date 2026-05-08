@@ -109,8 +109,8 @@ public partial class ApplicationEditorViewModel : ObservableObject
     /// Dialog title based on mode.
     /// </summary>
     public string DialogTitle => IsNewApplication
-        ? Loc.AppDb_AddTitle
-        : Loc.AppDb_EditTitle;
+        ? Loc.AppCatalog_AddTitle
+        : Loc.AppCatalog_EditTitle;
 
     /// <summary>
     /// Whether the App ID field can be edited (only for new apps).

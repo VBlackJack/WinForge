@@ -375,7 +375,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             Loc.Nav_Apps,
             Loc.Nav_Deployment,
             Loc.Nav_Settings,
-            Loc.Nav_AppDatabase
+            Loc.Nav_AppCatalog
         };
 
         // Current view is always the last item, previous views are clickable

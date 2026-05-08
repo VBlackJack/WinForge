@@ -1708,78 +1708,75 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Validation_DuplicateAppId" xml:space="preserve">
     <value>L'identifiant d'application '{0}' existe déjà</value>
   </data>
-  <!-- Applications Catalog Management View -->
-  <data name="Nav_AppDatabase" xml:space="preserve">
+  <!-- App Catalog Management View -->
+  <data name="Nav_AppCatalog" xml:space="preserve">
     <value>Catalogue</value>
   </data>
-  <data name="AppDb_Title" xml:space="preserve">
+  <data name="AppCatalog_Title" xml:space="preserve">
     <value>Catalogue des applications</value>
   </data>
-  <data name="AppDb_Subtitle" xml:space="preserve">
+  <data name="AppCatalog_Subtitle" xml:space="preserve">
     <value>Gérer les définitions d'applications et les sources d'installation</value>
   </data>
-  <data name="AppDb_Add" xml:space="preserve">
+  <data name="AppCatalog_Add" xml:space="preserve">
     <value>Ajouter</value>
   </data>
-  <data name="AppDb_AddTooltip" xml:space="preserve">
+  <data name="AppCatalog_AddTooltip" xml:space="preserve">
     <value>Ajouter une nouvelle application (Ctrl+N)</value>
   </data>
-  <data name="AppDb_Edit" xml:space="preserve">
+  <data name="AppCatalog_Edit" xml:space="preserve">
     <value>Modifier</value>
   </data>
-  <data name="AppDb_EditTooltip" xml:space="preserve">
+  <data name="AppCatalog_EditTooltip" xml:space="preserve">
     <value>Modifier l'application sélectionnée (Ctrl+E)</value>
   </data>
-  <data name="AppDb_Delete" xml:space="preserve">
+  <data name="AppCatalog_Delete" xml:space="preserve">
     <value>Supprimer</value>
   </data>
-  <data name="AppDb_DeleteTooltip" xml:space="preserve">
+  <data name="AppCatalog_DeleteTooltip" xml:space="preserve">
     <value>Supprimer l'application sélectionnée (Suppr)</value>
   </data>
-  <data name="AppDb_Duplicate" xml:space="preserve">
+  <data name="AppCatalog_Duplicate" xml:space="preserve">
     <value>Dupliquer</value>
   </data>
-  <data name="AppDb_DuplicateTooltip" xml:space="preserve">
+  <data name="AppCatalog_DuplicateTooltip" xml:space="preserve">
     <value>Dupliquer l'application sélectionnée (Ctrl+D)</value>
   </data>
-  <data name="AppDb_Refresh" xml:space="preserve">
+  <data name="AppCatalog_Refresh" xml:space="preserve">
     <value>Actualiser (F5)</value>
   </data>
-  <data name="AppDb_SearchHint" xml:space="preserve">
+  <data name="AppCatalog_SearchHint" xml:space="preserve">
     <value>Rechercher par ID, nom ou tags...</value>
   </data>
-  <data name="AppDb_CategoryFilter" xml:space="preserve">
+  <data name="AppCatalog_CategoryFilter" xml:space="preserve">
     <value>Catégorie</value>
   </data>
-  <data name="AppDb_Col_Id" xml:space="preserve">
+  <data name="AppCatalog_Col_Id" xml:space="preserve">
     <value>ID</value>
   </data>
-  <data name="AppDb_Col_Name" xml:space="preserve">
+  <data name="AppCatalog_Col_Name" xml:space="preserve">
     <value>Nom</value>
   </data>
-  <data name="AppDb_Col_Category" xml:space="preserve">
+  <data name="AppCatalog_Col_Category" xml:space="preserve">
     <value>Catégorie</value>
   </data>
-  <data name="AppDb_Col_Sources" xml:space="preserve">
+  <data name="AppCatalog_Col_Sources" xml:space="preserve">
     <value>Sources</value>
   </data>
-  <data name="AppDb_Col_Priority" xml:space="preserve">
+  <data name="AppCatalog_Col_Priority" xml:space="preserve">
     <value>Priorite</value>
   </data>
-  <data name="AppDb_Col_Verified" xml:space="preserve">
+  <data name="AppCatalog_Col_Verified" xml:space="preserve">
     <value>Vérifié</value>
   </data>
-  <data name="AppDb_Col_Description" xml:space="preserve">
+  <data name="AppCatalog_Col_Description" xml:space="preserve">
     <value>Description</value>
   </data>
-  <data name="AppDb_Loading" xml:space="preserve">
+  <data name="AppCatalog_Loading" xml:space="preserve">
     <value>Chargement des applications...</value>
   </data>
-  <data name="AppDb_LoadedCount" xml:space="preserve">
+  <data name="AppCatalog_LoadedCount" xml:space="preserve">
     <value>{0} applications chargées</value>
-  </data>
-  <data name="AppDb_LoadError" xml:space="preserve">
-    <value>Échec du chargement des applications : {0}</value>
   </data>
   <data name="AppCatalog_LoadError" xml:space="preserve">
     <value>Échec du chargement des applications : {0}</value>
@@ -1790,113 +1787,113 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="AppCatalog_EmptyFilter" xml:space="preserve">
     <value>Aucune application ne correspond au filtre actuel. Essayez de le réinitialiser.</value>
   </data>
-  <data name="AppDb_Deleting" xml:space="preserve">
+  <data name="AppCatalog_Deleting" xml:space="preserve">
     <value>Suppression de l'application...</value>
   </data>
-  <data name="AppDb_Deleted" xml:space="preserve">
+  <data name="AppCatalog_Deleted" xml:space="preserve">
     <value>Application supprimée avec succès</value>
   </data>
-  <data name="AppDb_UndoTooltipFormat" xml:space="preserve">
+  <data name="AppCatalog_UndoTooltipFormat" xml:space="preserve">
     <value>{0} (Ctrl+Z)</value>
   </data>
-  <data name="AppDb_RedoTooltipFormat" xml:space="preserve">
+  <data name="AppCatalog_RedoTooltipFormat" xml:space="preserve">
     <value>{0} (Ctrl+Y)</value>
   </data>
-  <data name="AppDb_UndoTooltipDefault" xml:space="preserve">
+  <data name="AppCatalog_UndoTooltipDefault" xml:space="preserve">
     <value>Annuler (Ctrl+Z)</value>
   </data>
-  <data name="AppDb_RedoTooltipDefault" xml:space="preserve">
+  <data name="AppCatalog_RedoTooltipDefault" xml:space="preserve">
     <value>Rétablir (Ctrl+Y)</value>
   </data>
-  <data name="AppDb_CopyIdSuffix" xml:space="preserve">
+  <data name="AppCatalog_CopyIdSuffix" xml:space="preserve">
     <value>_Copie</value>
   </data>
-  <data name="AppDb_CopyNameSuffix" xml:space="preserve">
+  <data name="AppCatalog_CopyNameSuffix" xml:space="preserve">
     <value> (Copie)</value>
   </data>
-  <data name="AppDb_DeleteError" xml:space="preserve">
+  <data name="AppCatalog_DeleteError" xml:space="preserve">
     <value>Échec de la suppression de l'application</value>
   </data>
-  <data name="AppDb_Added" xml:space="preserve">
+  <data name="AppCatalog_Added" xml:space="preserve">
     <value>Application ajoutée avec succès</value>
   </data>
-  <data name="AppDb_Updated" xml:space="preserve">
+  <data name="AppCatalog_Updated" xml:space="preserve">
     <value>Application mise à jour avec succès</value>
   </data>
   <!-- Import/Export -->
-  <data name="AppDb_ImportSuccess" xml:space="preserve">
+  <data name="AppCatalog_ImportSuccess" xml:space="preserve">
     <value>Import terminé : {0} ajoutées, {1} mises à jour</value>
   </data>
-  <data name="AppDb_ImportError" xml:space="preserve">
+  <data name="AppCatalog_ImportError" xml:space="preserve">
     <value>Échec de l'import : {0}</value>
   </data>
-  <data name="AppDb_ExportSuccess" xml:space="preserve">
+  <data name="AppCatalog_ExportSuccess" xml:space="preserve">
     <value>{0} applications exportées avec succès</value>
   </data>
-  <data name="AppDb_ExportError" xml:space="preserve">
+  <data name="AppCatalog_ExportError" xml:space="preserve">
     <value>Échec de l'export des applications : {0}</value>
   </data>
-  <data name="AppDb_Import" xml:space="preserve">
+  <data name="AppCatalog_Import" xml:space="preserve">
     <value>Importer</value>
   </data>
-  <data name="AppDb_Export" xml:space="preserve">
+  <data name="AppCatalog_Export" xml:space="preserve">
     <value>Exporter</value>
   </data>
-  <data name="AppDb_ExportSelected" xml:space="preserve">
+  <data name="AppCatalog_ExportSelected" xml:space="preserve">
     <value>Exporter la sélection</value>
   </data>
-  <data name="AppDb_ExportAll" xml:space="preserve">
+  <data name="AppCatalog_ExportAll" xml:space="preserve">
     <value>Tout exporter</value>
   </data>
-  <data name="AppDb_ImportTooltip" xml:space="preserve">
+  <data name="AppCatalog_ImportTooltip" xml:space="preserve">
     <value>Importer des applications depuis un fichier JSON</value>
   </data>
-  <data name="AppDb_ExportTooltip" xml:space="preserve">
+  <data name="AppCatalog_ExportTooltip" xml:space="preserve">
     <value>Exporter les applications vers un fichier JSON</value>
   </data>
-  <data name="AppDb_DeleteConfirm" xml:space="preserve">
+  <data name="AppCatalog_DeleteConfirm" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir supprimer '{0}' ({1}) ?
 
 Cette action est irréversible.</value>
   </data>
-  <data name="AppDb_DeleteTitle" xml:space="preserve">
+  <data name="AppCatalog_DeleteTitle" xml:space="preserve">
     <value>Confirmer la suppression</value>
   </data>
-  <data name="AppDb_AddTitle" xml:space="preserve">
+  <data name="AppCatalog_AddTitle" xml:space="preserve">
     <value>Ajouter une application</value>
   </data>
-  <data name="AppDb_EditTitle" xml:space="preserve">
+  <data name="AppCatalog_EditTitle" xml:space="preserve">
     <value>Modifier l'application</value>
   </data>
-  <data name="AppDb_Showing" xml:space="preserve">
+  <data name="AppCatalog_Showing" xml:space="preserve">
     <value>Affichage de</value>
   </data>
-  <data name="AppDb_Of" xml:space="preserve">
+  <data name="AppCatalog_Of" xml:space="preserve">
     <value>sur</value>
   </data>
-  <data name="AppDb_Applications" xml:space="preserve">
+  <data name="AppCatalog_Applications" xml:space="preserve">
     <value>applications</value>
   </data>
-  <data name="AppDb_EditorOwnerNotFound" xml:space="preserve">
+  <data name="AppCatalog_EditorOwnerNotFound" xml:space="preserve">
     <value>Impossible d'ouvrir l'éditeur : fenêtre parente introuvable.</value>
   </data>
-  <data name="AppDb_EditorOpenError" xml:space="preserve">
+  <data name="AppCatalog_EditorOpenError" xml:space="preserve">
     <value>Erreur lors de l'ouverture de l'éditeur d'application :
 
 {0}
 
 {1}</value>
   </data>
-  <data name="AppDb_ImportModeConfirm" xml:space="preserve">
+  <data name="AppCatalog_ImportModeConfirm" xml:space="preserve">
     <value>Choisissez comment traiter les applications existantes.</value>
   </data>
-  <data name="AppDb_Import_Replace" xml:space="preserve">
+  <data name="AppCatalog_Import_Replace" xml:space="preserve">
     <value>Remplacer les existantes</value>
   </data>
-  <data name="AppDb_Import_Skip" xml:space="preserve">
+  <data name="AppCatalog_Import_Skip" xml:space="preserve">
     <value>Ignorer les doublons</value>
   </data>
-  <data name="AppDb_NoExportSelection" xml:space="preserve">
+  <data name="AppCatalog_NoExportSelection" xml:space="preserve">
     <value>Aucune application sélectionnée pour l'export.</value>
   </data>
   <!-- Application Editor Dialog -->
@@ -2201,12 +2198,12 @@ Cette action est irréversible.</value>
     <value>La détection d'application Store nécessite PowerShell</value>
   </data>
   <!-- UX Improvements - Bulk Delete -->
-  <data name="AppDb_DeleteMultipleConfirm" xml:space="preserve">
+  <data name="AppCatalog_DeleteMultipleConfirm" xml:space="preserve">
     <value>Êtes-vous sûr de vouloir supprimer {0} applications ?
 
 Cette action est irréversible.</value>
   </data>
-  <data name="AppDb_DeleteMultipleTitle" xml:space="preserve">
+  <data name="AppCatalog_DeleteMultipleTitle" xml:space="preserve">
     <value>Supprimer plusieurs applications</value>
   </data>
   <!-- UX Improvements - Deployment Result Banner -->
@@ -2461,10 +2458,10 @@ Cette action est irréversible.</value>
   <data name="A11y_Loading_ContentHelp" xml:space="preserve">
     <value>Le contenu est en cours de chargement, veuillez patienter</value>
   </data>
-  <data name="AppDb_Verify" xml:space="preserve">
+  <data name="AppCatalog_Verify" xml:space="preserve">
     <value>Vérifier</value>
   </data>
-  <data name="AppDb_VerifySources" xml:space="preserve">
+  <data name="AppCatalog_VerifySources" xml:space="preserve">
     <value>Vérifier les sources</value>
   </data>
   <data name="Confirm_ClearOldLogs_Message" xml:space="preserve">

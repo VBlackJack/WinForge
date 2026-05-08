@@ -439,12 +439,12 @@
                 <!-- Verify button -->
                 <ui:Button Grid.Column="0"
                            x:Name="VerifyButton"
-                           Content="{loc:Loc AppDb_Verify}"
+                           Content="{loc:Loc AppCatalog_Verify}"
                            Appearance="Primary"
                            Click="VerifyButton_Click"
                            MinWidth="80"
                            Margin="0,0,12,0"
-                           AutomationProperties.Name="{loc:Loc AppDb_VerifySources}"/>
+                           AutomationProperties.Name="{loc:Loc AppCatalog_VerifySources}"/>
 
                 <!-- Verify result -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">

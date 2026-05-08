@@ -105,8 +105,8 @@ public class ConfirmDialogTests
         await viewModel.ImportCommand.ExecuteAsync(null);
 
         var request = Assert.Single(dialogService.YesNoCancelRequests);
-        Assert.Equal(Loc.AppDb_Import_Replace, request.YesText);
-        Assert.Equal(Loc.AppDb_Import_Skip, request.NoText);
+        Assert.Equal(Loc.AppCatalog_Import_Replace, request.YesText);
+        Assert.Equal(Loc.AppCatalog_Import_Skip, request.NoText);
         Assert.Equal(Loc.Common_Cancel, request.CancelText);
         Assert.DoesNotContain("Yes", request.Message, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("No", request.Message, StringComparison.OrdinalIgnoreCase);

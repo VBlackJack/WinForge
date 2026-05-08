@@ -58,7 +58,7 @@ public partial class AppCatalogView : UserControl
             var dialogService = App.GetService<IDialogService>();
             await dialogService.ShowErrorAsync(
                 Loc.Common_Error,
-                string.Format(Loc.AppDb_LoadError, ex.Message));
+                string.Format(Loc.AppCatalog_LoadError, ex.Message));
         }
     }
 
