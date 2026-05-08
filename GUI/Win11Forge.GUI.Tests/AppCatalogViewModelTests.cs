@@ -26,7 +26,7 @@ namespace Win11Forge.GUI.Tests;
 /// <summary>
 /// Tests for AppCatalogViewModel - App Catalog management functionality.
 /// </summary>
-public class ApplicationsViewModelTests
+public class AppCatalogViewModelTests
 {
     private static List<EditableApplicationModel> CreateMockApplications()
     {
