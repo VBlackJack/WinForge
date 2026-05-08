@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using Win11Forge.GUI.Resources;
@@ -158,9 +159,110 @@ public class ThemeServiceTests
         Assert.False(resources.Contains("SystemAccentColor"));
     }
 
+    [Fact]
+    public void ReapplyHighContrastIfEnabled_WhenEnabled_InvokesHighContrastAction()
+    {
+        var applyCount = 0;
+        var service = CreateService(() => applyCount++);
+
+        service.ReapplyHighContrastIfEnabled(isHighContrastEnabled: true);
+
+        Assert.Equal(1, applyCount);
+    }
+
+    [Fact]
+    public void ReapplyHighContrastIfEnabled_WhenDisabled_DoesNotInvokeHighContrastAction()
+    {
+        var applyCount = 0;
+        var service = CreateService(() => applyCount++);
+
+        service.ReapplyHighContrastIfEnabled(isHighContrastEnabled: false);
+
+        Assert.Equal(0, applyCount);
+    }
+
+    [Fact]
+    public void ApplyTheme_SourceReappliesHighContrastOnSameThemeEarlyReturn()
+    {
+        var source = ReadThemeServiceSource();
+        var expectedDictionaryCheck = source.IndexOf("&& HasExpectedResourceDictionary(app, descriptor)", StringComparison.Ordinal);
+        var branchStart = source.LastIndexOf("if (_hasAppliedTheme", expectedDictionaryCheck, StringComparison.Ordinal);
+        var branchEnd = source.IndexOf("try", expectedDictionaryCheck, StringComparison.Ordinal);
+        var branch = source[branchStart..branchEnd];
+
+        Assert.Contains("ReapplyHighContrastIfEnabled(app);", branch, StringComparison.Ordinal);
+        Assert.True(
+            branch.IndexOf("ReapplyHighContrastIfEnabled(app);", StringComparison.Ordinal)
+            < branch.IndexOf("return;", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void ApplyTheme_SourceReappliesHighContrastAfterPaletteResourcesBeforeCommit()
+    {
+        var source = ReadThemeServiceSource();
+        var paletteIndex = source.IndexOf("ApplyPaletteResources(app, descriptor);", StringComparison.Ordinal);
+        var reapplyIndex = source.IndexOf("ReapplyHighContrastIfEnabled(app);", paletteIndex, StringComparison.Ordinal);
+        var commitIndex = source.IndexOf("CommitTheme(descriptor.Name);", paletteIndex, StringComparison.Ordinal);
+
+        Assert.True(paletteIndex >= 0);
+        Assert.True(reapplyIndex > paletteIndex);
+        Assert.True(commitIndex > reapplyIndex);
+    }
+
+    [Fact]
+    public void ReapplyHighContrastIfEnabled_SourceUsesHighContrastDictionaryMarker()
+    {
+        var source = ReadThemeServiceSource();
+
+        Assert.Contains("private const string HighContrastResourceMarker = \"HighContrastTheme\";", source, StringComparison.Ordinal);
+        Assert.Contains("ReapplyHighContrastIfEnabled(HasHighContrastResourceDictionary(app));", source, StringComparison.Ordinal);
+        Assert.Contains("HighContrastResourceMarker", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RemoveDraculaResourceDictionaries_SourceDoesNotRemoveHighContrastDictionary()
+    {
+        var source = ReadThemeServiceSource();
+        var methodStart = source.IndexOf("private static bool IsDraculaResourceDictionary", StringComparison.Ordinal);
+        var methodEnd = source.IndexOf("private static void RemoveDraculaResourceDictionaries", methodStart, StringComparison.Ordinal);
+        var draculaPredicate = source[methodStart..methodEnd];
+
+        Assert.Contains("DraculaResourceMarker", draculaPredicate, StringComparison.Ordinal);
+        Assert.DoesNotContain("HighContrastResourceMarker", draculaPredicate, StringComparison.Ordinal);
+    }
+
     private static ThemeService CreateService()
     {
-        return new ThemeService(new MockAppSettingsService());
+        return CreateService(() => { });
+    }
+
+    private static ThemeService CreateService(Action applyHighContrastMode)
+    {
+        return new ThemeService(new MockAppSettingsService(), applyHighContrastMode);
+    }
+
+    private static string ReadThemeServiceSource()
+    {
+        return File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Services", "ThemeService.cs"));
+    }
+
+    private static string FindRepoFile(params string[] relativeParts)
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (directory is not null)
+        {
+            var candidate = Path.Combine([directory.FullName, .. relativeParts]);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new FileNotFoundException(
+            $"Could not locate {Path.Combine(relativeParts)} from {AppContext.BaseDirectory}.");
     }
 
     private static SolidColorBrush Brush(string color)
@@ -178,4 +280,5 @@ public class ThemeServiceTests
         var brush = Assert.IsType<SolidColorBrush>(actual);
         Assert.Equal(Color(expectedColor), brush.Color);
     }
+
 }
