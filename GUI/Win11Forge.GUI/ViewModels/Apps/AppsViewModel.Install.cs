@@ -101,10 +101,10 @@ public partial class AppsViewModel
             var result = await _installationCoordinator.InstallAsync(
                 selectedApps,
                 new AppInstallationOptions(ForceUpdate: true),
-                new Progress<AppOperationProgress>(ApplyInstallProgress),
+                new Progress<AppOperationProgress>(ApplyBatchProgress),
                 _batchCancellationTokenSource.Token);
 
-            ApplyInstallProgress(new AppOperationProgress(result.Total, result.Total, Current: null));
+            ApplyBatchProgress(new AppOperationProgress(result.Total, result.Total, Current: null));
             InstalledCount += result.InstalledCount;
             SuccessCount = result.InstalledCount + result.AlreadyInstalledCount;
             FailedCount = result.FailedCount;
@@ -143,7 +143,7 @@ public partial class AppsViewModel
         }
     }
 
-    private void ApplyInstallProgress(AppOperationProgress progress)
+    private void ApplyBatchProgress(AppOperationProgress progress)
     {
         BatchProgressTotal = progress.Total;
         BatchProgressCurrent = progress.Completed;
