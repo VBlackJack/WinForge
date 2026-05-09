@@ -38,4 +38,23 @@ internal static class RepositoryPathHelper
         throw new DirectoryNotFoundException(
             $"Could not locate {Path.Combine(relativeParts)} from {AppContext.BaseDirectory}.");
     }
+
+    public static string FindFile(params string[] relativeParts)
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (directory is not null)
+        {
+            var candidate = Path.Combine([directory.FullName, .. relativeParts]);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new FileNotFoundException(
+            $"Could not locate {Path.Combine(relativeParts)} from {AppContext.BaseDirectory}.");
+    }
 }

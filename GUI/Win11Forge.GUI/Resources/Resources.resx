@@ -1922,6 +1922,90 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Loading logs...</value>
     <comment>Loading logs message</comment>
   </data>
+  <data name="Logs_Filter_All" xml:space="preserve">
+    <value>All</value>
+    <comment>All log types filter option</comment>
+  </data>
+  <data name="Logs_Filter_Text" xml:space="preserve">
+    <value>Text</value>
+    <comment>Text log type filter option</comment>
+  </data>
+  <data name="Logs_Filter_Json" xml:space="preserve">
+    <value>JSON</value>
+    <comment>JSON log type filter option</comment>
+  </data>
+  <data name="Logs_Filter_Error" xml:space="preserve">
+    <value>Error</value>
+    <comment>Error log type filter option</comment>
+  </data>
+  <data name="Logs_Status_FilesFound" xml:space="preserve">
+    <value>{0} log files found</value>
+    <comment>Status message after loading log files</comment>
+  </data>
+  <data name="Logs_Error_LoadFailed" xml:space="preserve">
+    <value>Error loading logs: {0}</value>
+    <comment>Status message when loading log files fails</comment>
+  </data>
+  <data name="Logs_Error_OpenFolderFailed" xml:space="preserve">
+    <value>Error opening folder: {0}</value>
+    <comment>Status message when opening the logs folder fails</comment>
+  </data>
+  <data name="Logs_Export_Filter" xml:space="preserve">
+    <value>ZIP Archive (*.zip)|*.zip</value>
+    <comment>File dialog filter for exporting logs</comment>
+  </data>
+  <data name="Logs_Export_None" xml:space="preserve">
+    <value>No log files could be exported</value>
+    <comment>Status message when no log files were copied into the export archive</comment>
+  </data>
+  <data name="Logs_Export_Success" xml:space="preserve">
+    <value>Logs exported to {0} ({1} files)</value>
+    <comment>Status message after exporting logs; {0}=file name, {1}=count</comment>
+  </data>
+  <data name="Logs_Export_Failed" xml:space="preserve">
+    <value>Export failed: {0}</value>
+    <comment>Status message when exporting logs fails</comment>
+  </data>
+  <data name="Logs_ClearOld_Success" xml:space="preserve">
+    <value>Deleted {0} old log files</value>
+    <comment>Status message after deleting old log files</comment>
+  </data>
+  <data name="Logs_ClearOld_Failed" xml:space="preserve">
+    <value>Error clearing logs: {0}</value>
+    <comment>Status message when deleting old log files fails</comment>
+  </data>
+  <data name="Logs_Error_EmptyPath" xml:space="preserve">
+    <value>Log file path is empty</value>
+    <comment>Status message when a selected log file has no path</comment>
+  </data>
+  <data name="Logs_Error_NotFound" xml:space="preserve">
+    <value>Log file not found: {0}</value>
+    <comment>Status message when a selected log file no longer exists</comment>
+  </data>
+  <data name="Logs_Error_OpenLogFailed" xml:space="preserve">
+    <value>Error opening log: {0}</value>
+    <comment>Status message when opening a log file fails</comment>
+  </data>
+  <data name="Logs_Status_PathCopied" xml:space="preserve">
+    <value>Path copied to clipboard</value>
+    <comment>Status message after copying a log path</comment>
+  </data>
+  <data name="Logs_Delete_Success" xml:space="preserve">
+    <value>Deleted {0}</value>
+    <comment>Status message after deleting a log file</comment>
+  </data>
+  <data name="Logs_Delete_Failed" xml:space="preserve">
+    <value>Error deleting log: {0}</value>
+    <comment>Status message when deleting a log file fails</comment>
+  </data>
+  <data name="Confirm_DeleteLog_Title" xml:space="preserve">
+    <value>Delete Log File</value>
+    <comment>Delete log confirmation title</comment>
+  </data>
+  <data name="Confirm_DeleteLog_Message" xml:space="preserve">
+    <value>Delete {0}?</value>
+    <comment>Delete log confirmation message; {0}=file name</comment>
+  </data>
   <data name="Confirm_ClearOldLogs_Title" xml:space="preserve">
     <value>Clear Old Logs</value>
     <comment>Clear old logs confirmation title</comment>

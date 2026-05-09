@@ -52,7 +52,7 @@ public partial class LogsViewModel : ObservableObject
     private string _searchText = string.Empty;
 
     [ObservableProperty]
-    private string _selectedLogLevel = "All";
+    private string _selectedLogLevel = Resources.Resources.Logs_Filter_All;
 
     [ObservableProperty]
     private DateTime? _filterDate;
@@ -68,7 +68,13 @@ public partial class LogsViewModel : ObservableObject
 
     public bool HasNoLogs => !IsLoading && FilteredLogFiles.Count == 0;
 
-    public List<string> LogLevels { get; } = new() { "All", "Text", "JSON", "Error" };
+    public List<string> LogLevels { get; } =
+    [
+        Resources.Resources.Logs_Filter_All,
+        Resources.Resources.Logs_Filter_Text,
+        Resources.Resources.Logs_Filter_Json,
+        Resources.Resources.Logs_Filter_Error
+    ];
 
     public LogsViewModel(IFileDialogService? fileDialogService = null, IDialogService? dialogService = null)
     {
@@ -100,7 +106,7 @@ public partial class LogsViewModel : ObservableObject
     private async Task RefreshAsync()
     {
         IsLoading = true;
-        StatusMessage = Resources.Resources.Logs_Loading ?? "Loading logs...";
+        StatusMessage = Resources.Resources.Logs_Loading;
 
         try
         {
@@ -123,7 +129,7 @@ public partial class LogsViewModel : ObservableObject
                             FileName = info.Name,
                             Size = info.Length,
                             LastModified = info.LastWriteTime,
-                            LogType = "Text",
+                            LogType = Resources.Resources.Logs_Filter_Text,
                             Icon = SymbolRegular.Document24,
                             IconColor = Brushes.Gray
                         });
@@ -144,7 +150,7 @@ public partial class LogsViewModel : ObservableObject
                             FileName = info.Name,
                             Size = info.Length,
                             LastModified = info.LastWriteTime,
-                            LogType = "JSON",
+                            LogType = Resources.Resources.Logs_Filter_Json,
                             Icon = SymbolRegular.BracesVariable24,
                             IconColor = Brushes.DodgerBlue
                         });
@@ -166,7 +172,7 @@ public partial class LogsViewModel : ObservableObject
                             FileName = info.Name,
                             Size = info.Length,
                             LastModified = info.LastWriteTime,
-                            LogType = "Error",
+                            LogType = Resources.Resources.Logs_Filter_Error,
                             Icon = SymbolRegular.ErrorCircle24,
                             IconColor = Brushes.Red
                         });
@@ -189,11 +195,11 @@ public partial class LogsViewModel : ObservableObject
             });
 
             ApplyFilters();
-            StatusMessage = $"{LogFiles.Count} log files found";
+            StatusMessage = string.Format(Resources.Resources.Logs_Status_FilesFound, LogFiles.Count);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error loading logs: {ex.Message}";
+            StatusMessage = string.Format(Resources.Resources.Logs_Error_LoadFailed, ex.Message);
         }
         finally
         {
@@ -212,7 +218,7 @@ public partial class LogsViewModel : ObservableObject
     private void ClearFilters()
     {
         SearchText = string.Empty;
-        SelectedLogLevel = "All";
+        SelectedLogLevel = Resources.Resources.Logs_Filter_All;
         FilterDate = null;
         ApplyFilters();
     }
@@ -229,7 +235,7 @@ public partial class LogsViewModel : ObservableObject
         }
 
         // Apply log level filter
-        if (SelectedLogLevel != "All")
+        if (SelectedLogLevel != Resources.Resources.Logs_Filter_All)
         {
             filtered = filtered.Where(f => f.LogType == SelectedLogLevel);
         }
@@ -266,7 +272,7 @@ public partial class LogsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error opening folder: {ex.Message}";
+            StatusMessage = string.Format(Resources.Resources.Logs_Error_OpenFolderFailed, ex.Message);
         }
     }
 
@@ -277,7 +283,7 @@ public partial class LogsViewModel : ObservableObject
         {
             var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
                 string.Empty,
-                "ZIP Archive (*.zip)|*.zip",
+                Resources.Resources.Logs_Export_Filter,
                 DefaultFileName: $"Win11Forge_Logs_{DateTime.Now:yyyyMMdd_HHmmss}",
                 DefaultExtension: ".zip"));
 
@@ -335,13 +341,16 @@ public partial class LogsViewModel : ObservableObject
 
                     if (copiedCount == 0)
                     {
-                        StatusMessage = "No log files could be exported";
+                        StatusMessage = Resources.Resources.Logs_Export_None;
                         return;
                     }
 
                     // Create ZIP
                     System.IO.Compression.ZipFile.CreateFromDirectory(tempDir, filePath);
-                    StatusMessage = $"Logs exported to {Path.GetFileName(filePath)} ({copiedCount} files)";
+                    StatusMessage = string.Format(
+                        Resources.Resources.Logs_Export_Success,
+                        Path.GetFileName(filePath),
+                        copiedCount);
                 }
                 finally
                 {
@@ -359,7 +368,7 @@ public partial class LogsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Export failed: {ex.Message}";
+            StatusMessage = string.Format(Resources.Resources.Logs_Export_Failed, ex.Message);
         }
     }
 
@@ -393,11 +402,11 @@ public partial class LogsViewModel : ObservableObject
             }
 
             _ = RefreshAsync();
-            StatusMessage = $"Deleted {deletedCount} old log files";
+            StatusMessage = string.Format(Resources.Resources.Logs_ClearOld_Success, deletedCount);
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error clearing logs: {ex.Message}";
+            StatusMessage = string.Format(Resources.Resources.Logs_ClearOld_Failed, ex.Message);
         }
     }
 
@@ -410,13 +419,13 @@ public partial class LogsViewModel : ObservableObject
         {
             if (string.IsNullOrWhiteSpace(logFile.FullPath))
             {
-                StatusMessage = "Log file path is empty";
+                StatusMessage = Resources.Resources.Logs_Error_EmptyPath;
                 return;
             }
 
             if (!File.Exists(logFile.FullPath))
             {
-                StatusMessage = $"Log file not found: {logFile.FileName}";
+                StatusMessage = string.Format(Resources.Resources.Logs_Error_NotFound, logFile.FileName);
                 _ = RefreshAsync();
                 return;
             }
@@ -429,7 +438,7 @@ public partial class LogsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error opening log: {ex.Message}";
+            StatusMessage = string.Format(Resources.Resources.Logs_Error_OpenLogFailed, ex.Message);
         }
     }
 
@@ -441,7 +450,7 @@ public partial class LogsViewModel : ObservableObject
         try
         {
             Clipboard.SetText(logFile.FullPath);
-            StatusMessage = "Path copied to clipboard";
+            StatusMessage = Resources.Resources.Logs_Status_PathCopied;
         }
         catch
         {
@@ -455,8 +464,8 @@ public partial class LogsViewModel : ObservableObject
         if (logFile == null) return;
 
         var confirmed = await _dialogService.ShowConfirmAsync(
-            "Delete Log File",
-            $"Delete {logFile.FileName}?",
+            Resources.Resources.Confirm_DeleteLog_Title,
+            string.Format(Resources.Resources.Confirm_DeleteLog_Message, logFile.FileName),
             Resources.Resources.Confirm_Delete_Btn,
             Resources.Resources.Common_Cancel);
 
@@ -467,12 +476,12 @@ public partial class LogsViewModel : ObservableObject
             File.Delete(logFile.FullPath);
             LogFiles.Remove(logFile);
             FilteredLogFiles.Remove(logFile);
-            StatusMessage = $"Deleted {logFile.FileName}";
+            StatusMessage = string.Format(Resources.Resources.Logs_Delete_Success, logFile.FileName);
             OnPropertyChanged(nameof(HasNoLogs));
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Error deleting log: {ex.Message}";
+            StatusMessage = string.Format(Resources.Resources.Logs_Delete_Failed, ex.Message);
         }
     }
 
@@ -499,7 +508,7 @@ public class LogFileEntry
     public string FileName { get; set; } = string.Empty;
     public long Size { get; set; }
     public DateTime LastModified { get; set; }
-    public string LogType { get; set; } = "Text";
+    public string LogType { get; set; } = Resources.Resources.Logs_Filter_Text;
     public SymbolRegular Icon { get; set; } = SymbolRegular.Document24;
     public Brush IconColor { get; set; } = Brushes.Gray;
 
