@@ -48,9 +48,7 @@
     FunctionsToExport = @(
         'Write-Status',
         'Test-CommandExists',
-        'Test-AdminRights',
-        'Format-FileSize',
-        'Get-FrameworkVersion'
+        'Format-FileSize'
     )
 
     # Cmdlets to export from this module
