@@ -15,10 +15,11 @@
  */
 
 using System.Globalization;
-using System.Runtime.ExceptionServices;
-using System.Windows;
 using System.Windows.Media;
+using Win11Forge.GUI;
 using Win11Forge.GUI.Resources;
+using Win11Forge.GUI.Tests.TestInfrastructure;
+using Wpf.Ui.Appearance;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -33,7 +34,8 @@ public class ThemeAdaptiveBrushConverterTests
     {
         RunOnStaThread(() =>
         {
-            var app = Application.Current ?? new Application();
+            using var scope = WpfApplicationScope.Create();
+            var app = scope.Application;
             var expectedBrush = new SolidColorBrush(Colors.MediumPurple);
             app.Resources["AccentBrush"] = expectedBrush;
 
@@ -48,29 +50,61 @@ public class ThemeAdaptiveBrushConverterTests
                 CultureInfo.InvariantCulture);
 
             Assert.Same(expectedBrush, result);
-            app.Resources.Clear();
-            app.Shutdown();
         });
     }
 
-    private static void RunOnStaThread(Action action)
+    [Fact]
+    public void Convert_LightThemeActive_ReturnsFluentFallback()
     {
-        ExceptionDispatchInfo? exception = null;
-        var thread = new Thread(() =>
+        RunOnStaThread(() =>
         {
-            try
-            {
-                action();
-            }
-            catch (Exception ex)
-            {
-                exception = ExceptionDispatchInfo.Capture(ex);
-            }
-        });
+            using var scope = WpfApplicationScope.Create();
+            ApplicationThemeManager.Apply(ApplicationTheme.Light);
 
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.Start();
-        thread.Join();
-        exception?.Throw();
+            var app = scope.Application;
+            var accentBrush = new SolidColorBrush(Colors.MediumPurple);
+            var expectedBrush = new SolidColorBrush(Colors.MediumSeaGreen);
+            app.Resources["AccentBrush"] = accentBrush;
+            app.Resources["PrimaryHueMidBrush"] = expectedBrush;
+
+            var themeService = new MockThemeService();
+            themeService.ApplyTheme(ThemeNames.Light);
+            var converter = new ThemeAdaptiveBrushConverter();
+
+            var result = converter.Convert(
+                themeService,
+                typeof(Brush),
+                null!,
+                CultureInfo.InvariantCulture);
+
+            Assert.Same(expectedBrush, result);
+        });
     }
+
+    [Fact]
+    public void Convert_ServiceUnavailable_FallsThroughToLegacyPath()
+    {
+        RunOnStaThread(() =>
+        {
+            using var scope = WpfApplicationScope.Create();
+            ApplicationThemeManager.Apply(ApplicationTheme.Dark);
+
+            var app = scope.Application;
+            var expectedBrush = new SolidColorBrush(Colors.Gold);
+            app.Resources["SecondaryHueMidBrush"] = expectedBrush;
+
+            var converter = new ThemeAdaptiveBrushConverter();
+
+            var result = converter.Convert(
+                null!,
+                typeof(Brush),
+                null!,
+                CultureInfo.InvariantCulture);
+
+            Assert.False(App.IsServicesInitialized);
+            Assert.Same(expectedBrush, result);
+        });
+    }
+
+    private static void RunOnStaThread(Action action) => WpfApplicationScope.RunOnStaThread(action);
 }

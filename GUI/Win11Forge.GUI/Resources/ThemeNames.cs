@@ -34,4 +34,9 @@ public static class ThemeNames
     /// Fallback theme for fresh installs and unknown values.
     /// </summary>
     public const string Default = Light;
+
+    /// <summary>
+    /// Relative resource path prefix for Dracula theme dictionaries.
+    /// </summary>
+    public const string DraculaResourcePathPrefix = "Themes/Dracula/";
 }

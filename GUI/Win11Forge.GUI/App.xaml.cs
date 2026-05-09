@@ -36,7 +36,6 @@ public partial class App : Application
     private const int AnimationNormalMs = 300;
     private const int AnimationSlowMs = 500;
     private const int AnimationMicroMs = 50;
-    private const string DraculaThemePathMarker = "Themes/Dracula/";
 
     private static readonly string LogDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -457,7 +456,7 @@ public partial class App : Application
     {
         var dictionaries = app.Resources.MergedDictionaries
             .Where(dictionary => dictionary.Source?.OriginalString.Contains(
-                DraculaThemePathMarker,
+                ThemeNames.DraculaResourcePathPrefix,
                 StringComparison.OrdinalIgnoreCase) == true)
             .ToList();
 
