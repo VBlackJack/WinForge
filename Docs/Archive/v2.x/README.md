@@ -9,5 +9,5 @@ The original files were removed during project cleanup. Historical details for t
 For current documentation, see:
 - `README.md` (root) — Project overview
 - `Docs/API_DOCUMENTATION.md` — REST API reference
-- `Docs/USER_GUIDE_v3.md` — User guide
+- `Docs/USER_GUIDE.md` — User guide
 - `CHANGELOG.md` — Full version history

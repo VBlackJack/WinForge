@@ -14,12 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# Win11Forge User Guide v3
+# Win11Forge User Guide
+
+Current framework display version: `2026050901`.
 
 ## Quick Start
 1. Extract the release archive.
 2. Run `Win11Forge.cmd` or start the GUI executable.
-3. Select a profile.
+3. Select a profile or adjust the application selection manually.
 4. Start deployment and monitor progress.
 
 ## Profiles
@@ -36,11 +38,17 @@ limitations under the License.
 4. Check logs if any step fails.
 5. Use rollback if needed.
 
+## Application Catalog
+- Browse and edit the application database from the GUI.
+- Edits preserve verification metadata when the application payload does not change.
+- Use `Tools/Validate-AppDatabase.ps1` after database changes.
+
 ## Troubleshooting
 - Verify admin rights for system-level operations.
 - Ensure internet connectivity for package sources.
 - Re-run checks with `Run-All-Checks.ps1`.
 - Validate the app database with `Tools/Validate-AppDatabase.ps1`.
+- Run the opt-in GUI smoke with `Tools/Invoke-WinsightSmoke.ps1` when changing desktop UI workflows.
 
 ## Additional References
 - API documentation: `Docs/API_DOCUMENTATION.md`

@@ -1,5 +1,7 @@
 # ADR — .NET 8 → .NET 10 Migration
 
+> Archived 2026-05-09. This document preserves the original PR #52 execution record. The migration is closed; see `TODO.md` and `CHANGELOG.md` for current status.
+
 **Status:** In review via PR #52; migration executed in commit `38dce7e355e115c2bcfa0490b5184673bf1350fc`, merge pending.
 **Last updated:** 2026-05-07.
 **Sister ADRs:** [`REFACTOR-MVVM.md`](REFACTOR-MVVM.md), [`THEME-PORT.md`](THEME-PORT.md), [`COWORK-RESUME-PROMPT.md`](COWORK-RESUME-PROMPT.md).
