@@ -107,6 +107,16 @@ Describe 'UpdateManager Module' {
             Compare-SemanticVersions -Version1 'v1.0.0' -Version2 '1.0.0' | Should -Be 0
         }
 
+        It 'Should compare calendar display versions' {
+            Compare-SemanticVersions -Version1 '2026050902' -Version2 '2026050901' | Should -Be 1
+            Compare-SemanticVersions -Version1 '2026050901' -Version2 '2026050902' | Should -Be -1
+        }
+
+        It 'Should normalize Heimdall-style calendar tags' {
+            Compare-SemanticVersions -Version1 '2026.050901' -Version2 '2026050901' | Should -Be 0
+            Compare-SemanticVersions -Version1 'v2026.050902' -Version2 '2026050901' | Should -Be 1
+        }
+
         It 'Should handle prerelease (stable > prerelease)' {
             Compare-SemanticVersions -Version1 '1.0.0' -Version2 '1.0.0-beta' | Should -Be 1
         }

@@ -17,6 +17,9 @@
 # Update all manifest versions from the repo display version (Config/version.json)
 param([string]$RootPath = (Split-Path $PSScriptRoot -Parent))
 
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
 $versionPath = Join-Path $RootPath 'Config\version.json'
 function ConvertTo-ManifestVersion {
     param([Parameter(Mandatory)][string]$DisplayVersion)
@@ -40,9 +43,10 @@ function ConvertTo-ManifestVersion {
 
 if (Test-Path $versionPath) {
     try {
-        $versionJson = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
-        if ($versionJson.version) {
-            $targetDisplayVersion = [string]$versionJson.version
+        $versionJson = Get-Content -Path $versionPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $versionProperty = $versionJson.PSObject.Properties['Version']
+        if ($versionProperty -and $versionProperty.Value) {
+            $targetDisplayVersion = [string]$versionProperty.Value
             $targetVersion = ConvertTo-ManifestVersion -DisplayVersion $targetDisplayVersion
         } else {
             throw "Version property missing in $versionPath"
@@ -56,7 +60,7 @@ if (Test-Path $versionPath) {
 
 $updated = 0
 Get-ChildItem -Path "$RootPath\Core","$RootPath\Modules" -Filter *.psd1 | ForEach-Object {
-    $content = Get-Content $_.FullName -Raw
+    $content = Get-Content $_.FullName -Raw -Encoding UTF8
     $newContent = $content
     $changes = @()
 
@@ -79,7 +83,7 @@ Get-ChildItem -Path "$RootPath\Core","$RootPath\Modules" -Filter *.psd1 | ForEac
     if ($newContent -ne $content) {
         Set-Content -Path $_.FullName -Value $newContent -Encoding UTF8 -NoNewline
         Write-Host "Updated $($_.Name): $($changes -join '; ')" -ForegroundColor Green
-        $script:updated++
+        $updated++
     }
 }
 Write-Host "Updated $updated manifests"

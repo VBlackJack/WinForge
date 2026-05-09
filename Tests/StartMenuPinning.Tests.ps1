@@ -177,6 +177,46 @@ Describe 'StartMenuPinning Module' {
             $result -is [array] -or $result.Count -ge 0 | Should -BeTrue
         }
 
+        It 'Should return an empty array when the backup directory is empty' {
+            InModuleScope StartMenuPinning {
+                $originalBackupDirectory = $script:BackupDirectory
+                $tempBackupDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "Win11ForgeStartMenuPinning_$([guid]::NewGuid())"
+                New-Item -Path $tempBackupDirectory -ItemType Directory -Force | Out-Null
+
+                try {
+                    $script:BackupDirectory = $tempBackupDirectory
+                    $result = Get-BackedUpLayouts
+
+                    $result -is [array] | Should -BeTrue
+                    $result.Count | Should -Be 0
+                } finally {
+                    $script:BackupDirectory = $originalBackupDirectory
+                    Remove-Item -Path $tempBackupDirectory -Recurse -Force -ErrorAction SilentlyContinue
+                }
+            }
+        }
+
+        It 'Should return an array when the backup directory has one file' {
+            InModuleScope StartMenuPinning {
+                $originalBackupDirectory = $script:BackupDirectory
+                $tempBackupDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "Win11ForgeStartMenuPinning_$([guid]::NewGuid())"
+                New-Item -Path $tempBackupDirectory -ItemType Directory -Force | Out-Null
+                New-Item -Path (Join-Path $tempBackupDirectory 'Single.bin') -ItemType File -Force | Out-Null
+
+                try {
+                    $script:BackupDirectory = $tempBackupDirectory
+                    $result = Get-BackedUpLayouts
+
+                    $result -is [array] | Should -BeTrue
+                    $result.Count | Should -Be 1
+                    $result[0].Name | Should -Be 'Single.bin'
+                } finally {
+                    $script:BackupDirectory = $originalBackupDirectory
+                    Remove-Item -Path $tempBackupDirectory -Recurse -Force -ErrorAction SilentlyContinue
+                }
+            }
+        }
+
         It 'Should complete without throwing' {
             { Get-BackedUpLayouts } | Should -Not -Throw
         }

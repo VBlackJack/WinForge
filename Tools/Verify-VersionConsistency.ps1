@@ -155,13 +155,14 @@ $manifestRoots = @(
 
 foreach ($manifest in Get-ChildItem -Path $manifestRoots -Filter *.psd1 -ErrorAction SilentlyContinue) {
     $content = Get-Content -Path $manifest.FullName -Raw -Encoding UTF8
-    if ($content -notmatch "ModuleVersion = '([^']+)'") {
+    if ($content -match "ModuleVersion = '([^']+)'") {
+        $moduleVersion = $Matches[1]
+    } else {
         Write-Host "[MISMATCH] $($manifest.FullName) missing ModuleVersion" -ForegroundColor Red
         $fail = $true
         continue
     }
 
-    $moduleVersion = $Matches[1]
     if ($moduleVersion -ne $versionInfo.AssemblyVersion) {
         Write-Host "[MISMATCH] $($manifest.FullName) ModuleVersion should be $($versionInfo.AssemblyVersion), found $moduleVersion" -ForegroundColor Red
         $fail = $true
