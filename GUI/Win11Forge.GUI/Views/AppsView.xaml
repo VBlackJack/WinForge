@@ -1194,7 +1194,7 @@
                 BorderBrush="{DynamicResource ErrorBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="8"
-                Padding="16"
+                Padding="{StaticResource CardPadding}"
                 Margin="24"
                 Visibility="{Binding ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}"
                 HorizontalAlignment="Center"

@@ -197,7 +197,7 @@
         <!-- Deployment Result Banner -->
         <Border Grid.Row="2"
                 Margin="0,0,0,16"
-                Padding="16"
+                Padding="{StaticResource CardPadding}"
                 CornerRadius="8"
                 Visibility="{Binding IsDeploymentComplete, Converter={StaticResource BooleanToVisibilityConverter}}"
                 AutomationProperties.LiveSetting="Polite">

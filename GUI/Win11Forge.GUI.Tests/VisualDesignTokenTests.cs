@@ -136,13 +136,29 @@ public class VisualDesignTokenTests
         Assert.Equal(Visibility.Collapsed, converter.Convert("Winget", typeof(Visibility), null!, CultureInfo.InvariantCulture));
     }
 
-    [Fact]
-    public void SettingsView_PrimaryCardsUseCardPaddingToken()
+    [Theory]
+    [InlineData("Views/AppCatalogView.xaml")]
+    [InlineData("Views/AppsView.xaml")]
+    [InlineData("Views/DashboardView.xaml")]
+    [InlineData("Views/DeploymentView.xaml")]
+    [InlineData("Views/LogsView.xaml")]
+    [InlineData("Views/PrerequisitesView.xaml")]
+    [InlineData("Views/SettingsView.xaml")]
+    public void CardBorders_UseCardPaddingToken_AcrossAuditedViews(string relativePath)
     {
-        var settingsXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "SettingsView.xaml"));
+        var viewPath = FindRepoFile("GUI", "Win11Forge.GUI", relativePath);
+        var viewXaml = File.ReadAllText(viewPath);
+        var viewDoc = XDocument.Load(viewPath);
 
-        Assert.DoesNotContain("Border Padding=\"16\"", settingsXaml, StringComparison.Ordinal);
-        Assert.Contains("Padding=\"{StaticResource CardPadding}\"", settingsXaml, StringComparison.Ordinal);
+        var literalCardPaddings = viewDoc.Descendants()
+            .Where(element =>
+                element.Name.LocalName == "Border"
+                && element.Attribute("Padding")?.Value is "16" or "20")
+            .Select(element => element.Attribute("Padding")?.Value)
+            .ToList();
+
+        Assert.Empty(literalCardPaddings);
+        Assert.Contains("Padding=\"{StaticResource CardPadding}\"", viewXaml, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -61,7 +61,7 @@
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                     BorderThickness="1"
-                    Padding="16"
+                    Padding="{StaticResource CardPadding}"
                     Margin="0,0,0,16"
                     Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Grid>
@@ -118,7 +118,7 @@
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                     BorderThickness="1"
-                    Padding="16"
+                    Padding="{StaticResource CardPadding}"
                     Margin="0,0,0,16"
                     Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Grid>
@@ -231,7 +231,7 @@
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                     BorderThickness="1"
-                    Padding="16"
+                    Padding="{StaticResource CardPadding}"
                     Margin="0,0,0,16"
                     Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Grid>
@@ -371,7 +371,7 @@
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                     BorderThickness="1"
-                    Padding="16"
+                    Padding="{StaticResource CardPadding}"
                     Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Grid>
                     <Grid.RowDefinitions>
