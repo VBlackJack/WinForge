@@ -137,6 +137,11 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// </summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(InstallSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PauseCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ResumeCommand))]
+    [NotifyPropertyChangedFor(nameof(CanShowBatchPauseResume))]
+    [NotifyPropertyChangedFor(nameof(ShowPauseButton))]
+    [NotifyPropertyChangedFor(nameof(ShowResumeButton))]
     private bool _isInstalling;
 
     /// <summary>
@@ -162,7 +167,23 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// </summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(UninstallSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PauseCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ResumeCommand))]
+    [NotifyPropertyChangedFor(nameof(CanShowBatchPauseResume))]
+    [NotifyPropertyChangedFor(nameof(ShowPauseButton))]
+    [NotifyPropertyChangedFor(nameof(ShowResumeButton))]
     private bool _isUninstalling;
+
+    /// <summary>
+    /// Whether a batch update is in progress.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(PauseCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ResumeCommand))]
+    [NotifyPropertyChangedFor(nameof(CanShowBatchPauseResume))]
+    [NotifyPropertyChangedFor(nameof(ShowPauseButton))]
+    [NotifyPropertyChangedFor(nameof(ShowResumeButton))]
+    private bool _isUpdating;
 
     /// <summary>
     /// Current progress in batch operation (number of apps processed).
@@ -194,7 +215,24 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(PauseCommand))]
     [NotifyCanExecuteChangedFor(nameof(ResumeCommand))]
+    [NotifyPropertyChangedFor(nameof(ShowPauseButton))]
+    [NotifyPropertyChangedFor(nameof(ShowResumeButton))]
     private bool _isPaused;
+
+    /// <summary>
+    /// Whether pause/resume controls should be visible for the active batch operation.
+    /// </summary>
+    public bool CanShowBatchPauseResume => (IsInstalling || IsUninstalling) && !IsUpdating;
+
+    /// <summary>
+    /// Whether the pause button should be visible.
+    /// </summary>
+    public bool ShowPauseButton => CanShowBatchPauseResume && !IsPaused;
+
+    /// <summary>
+    /// Whether the resume button should be visible.
+    /// </summary>
+    public bool ShowResumeButton => CanShowBatchPauseResume && IsPaused;
 
     /// <summary>
     /// Number of favorited applications.
