@@ -24,7 +24,7 @@ public partial class AppsViewModel
     /// <summary>
     /// Whether the Pause command can execute.
     /// </summary>
-    private bool CanPause => (IsInstalling || IsUninstalling) && !IsPaused;
+    private bool CanPause => (IsInstalling || IsUninstalling) && !IsUpdating && !IsPaused;
 
     /// <summary>
     /// Pauses the current batch operation.
@@ -40,7 +40,7 @@ public partial class AppsViewModel
     /// <summary>
     /// Whether the Resume command can execute.
     /// </summary>
-    private bool CanResume => (IsInstalling || IsUninstalling) && IsPaused;
+    private bool CanResume => (IsInstalling || IsUninstalling) && !IsUpdating && IsPaused;
 
     /// <summary>
     /// Resumes the current batch operation.

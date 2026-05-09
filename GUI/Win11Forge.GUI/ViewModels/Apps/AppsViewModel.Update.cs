@@ -127,6 +127,7 @@ public partial class AppsViewModel
 
         _lastOperationType = "update";
         IsInstalling = true;
+        IsUpdating = true;
         IsPaused = false;
         _pauseGate.Resume();
         _batchCancellationTokenSource = new CancellationTokenSource();
@@ -183,6 +184,7 @@ public partial class AppsViewModel
         }
         finally
         {
+            IsUpdating = false;
             IsInstalling = false;
             IsPaused = false;
             _batchCancellationTokenSource?.Dispose();

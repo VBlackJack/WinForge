@@ -791,6 +791,49 @@ public class AppsViewModelTests
     }
 
     [Fact]
+    public async Task UpdateSelected_WhileRunning_ShouldHidePauseResumeControls()
+    {
+        // Arrange
+        var updateBlocker = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var updateCoordinator = new TestAppUpdateCoordinator
+        {
+            UpdateBlocker = updateBlocker,
+            UpdateResult = new AppUpdateResult(0, 1, 0, 0, WasCancelled: false)
+        };
+        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        var app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        app.Status = ApplicationStatus.UpdateAvailable;
+        app.IsSelected = true;
+        viewModel.UpdatesAvailableCount = 1;
+
+        // Act
+        var updateTask = viewModel.UpdateSelectedCommand.ExecuteAsync(null);
+
+        try
+        {
+            await WaitForConditionAsync(() => viewModel.IsUpdating);
+
+            // Assert
+            Assert.True(viewModel.IsInstalling);
+            Assert.True(viewModel.IsUpdating);
+            Assert.False(viewModel.ShowPauseButton);
+            Assert.False(viewModel.ShowResumeButton);
+            Assert.False(viewModel.PauseCommand.CanExecute(null));
+            Assert.False(viewModel.ResumeCommand.CanExecute(null));
+        }
+        finally
+        {
+            updateBlocker.TrySetResult(true);
+        }
+
+        await updateTask;
+        Assert.False(viewModel.IsUpdating);
+        Assert.False(viewModel.IsInstalling);
+        Assert.False(viewModel.IsPaused);
+    }
+
+    [Fact]
     public async Task CancelBatch_WhenDeclined_ShouldNotRequestCancellation()
     {
         // Arrange
@@ -1833,6 +1876,8 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
 
     public AppUpdateResult UpdateResult { get; set; } = new(0, 0, 0, 0, WasCancelled: false);
 
+    public TaskCompletionSource<bool>? UpdateBlocker { get; set; }
+
     public bool ShouldThrow { get; set; }
 
     public CancellationToken LastCancellationToken { get; private set; }
@@ -1854,7 +1899,7 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
         return Task.FromResult(ScanResult with { Total = installedApps.Count });
     }
 
-    public Task<AppUpdateResult> UpdateAsync(
+    public async Task<AppUpdateResult> UpdateAsync(
         IReadOnlyCollection<ApplicationModel> applications,
         IProgress<AppOperationProgress>? progress = null,
         CancellationToken cancellationToken = default)
@@ -1867,6 +1912,11 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
             throw new InvalidOperationException("Update failed for test.");
         }
 
+        if (UpdateBlocker is not null)
+        {
+            await UpdateBlocker.Task.WaitAsync(cancellationToken);
+        }
+
         var completed = 0;
         foreach (var app in applications)
         {
@@ -1874,7 +1924,7 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
             progress?.Report(new AppOperationProgress(completed, applications.Count, app));
         }
 
-        return Task.FromResult(UpdateResult with { Total = applications.Count });
+        return UpdateResult with { Total = applications.Count };
     }
 }
 

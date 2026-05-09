@@ -761,7 +761,7 @@
                                Appearance="Transparent"
                                Style="{StaticResource TouchFriendlyIconButton}"
                                ToolTip="{loc:Loc Btn_Pause}"
-                               Visibility="{Binding IsPaused, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                               Visibility="{Binding ShowPauseButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                                AutomationProperties.Name="{loc:Loc A11y_Deployment_Pause}">
                         <ui:SymbolIcon Symbol="Pause24"/>
                     </ui:Button>
@@ -770,7 +770,7 @@
                                Appearance="Transparent"
                                Style="{StaticResource TouchFriendlyIconButton}"
                                ToolTip="{loc:Loc Btn_Resume}"
-                               Visibility="{Binding IsPaused, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               Visibility="{Binding ShowResumeButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                                AutomationProperties.Name="{loc:Loc A11y_Deployment_Resume}">
                         <ui:SymbolIcon Symbol="Play24"/>
                     </ui:Button>
