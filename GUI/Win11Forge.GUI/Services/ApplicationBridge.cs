@@ -16,7 +16,6 @@
 
 #nullable enable
 
-using System.Diagnostics;
 using System.IO;
 using Win11Forge.GUI.Models;
 
@@ -154,127 +153,6 @@ public class ApplicationBridge : IApplicationBridge
     {
         ValidateApplication(app);
         return await _powerShellBridge.LaunchApplicationAsync(app);
-    }
-
-    /// <inheritdoc/>
-    public async Task<BatchInstallResult> InstallApplicationsAsync(
-        IReadOnlyList<ApplicationModel> apps,
-        bool isDryRun,
-        int parallelism = 1,
-        IProgress<BatchInstallProgress>? progress = null,
-        CancellationToken cancellationToken = default)
-    {
-        if (apps == null || apps.Count == 0)
-        {
-            return new BatchInstallResult
-            {
-                SuccessCount = 0,
-                FailureCount = 0,
-                SkippedCount = 0,
-                Results = Array.Empty<InstallResult>(),
-                TotalDuration = TimeSpan.Zero
-            };
-        }
-
-        var stopwatch = Stopwatch.StartNew();
-        var results = new List<InstallResult>();
-
-        // Ensure parallelism is within reasonable bounds
-        parallelism = Math.Max(1, Math.Min(parallelism, 4));
-
-        if (parallelism == 1)
-        {
-            // Sequential installation
-            for (int i = 0; i < apps.Count; i++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var app = apps[i];
-                progress?.Report(new BatchInstallProgress
-                {
-                    CurrentApp = app.Name,
-                    CurrentIndex = i + 1,
-                    TotalCount = apps.Count,
-                    Message = string.Format(
-                        Win11Forge.GUI.Resources.Resources.Deploy_Installing,
-                        app.Name)
-                });
-
-                var appProgress = new Progress<string>(msg =>
-                {
-                    progress?.Report(new BatchInstallProgress
-                    {
-                        CurrentApp = app.Name,
-                        CurrentIndex = i + 1,
-                        TotalCount = apps.Count,
-                        Message = msg
-                    });
-                });
-
-                var result = await InstallApplicationAsync(app, isDryRun, false, appProgress, cancellationToken);
-                results.Add(result);
-            }
-        }
-        else
-        {
-            // Parallel installation with semaphore
-            using var semaphore = new SemaphoreSlim(parallelism);
-            var tasks = new List<Task<InstallResult>>();
-            var progressLock = new object();
-            var currentIndex = 0;
-
-            foreach (var app in apps)
-            {
-                var localApp = app;
-                var task = Task.Run(async () =>
-                {
-                    await semaphore.WaitAsync(cancellationToken);
-                    try
-                    {
-                        int index;
-                        lock (progressLock)
-                        {
-                            index = ++currentIndex;
-                        }
-
-                        progress?.Report(new BatchInstallProgress
-                        {
-                            CurrentApp = localApp.Name,
-                            CurrentIndex = index,
-                            TotalCount = apps.Count,
-                            Message = string.Format(
-                                Win11Forge.GUI.Resources.Resources.Deploy_Installing,
-                                localApp.Name)
-                        });
-
-                        return await _powerShellBridge.InstallApplicationAsync(localApp, isDryRun, false, null);
-                    }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
-                }, cancellationToken);
-
-                tasks.Add(task);
-            }
-
-            results.AddRange(await Task.WhenAll(tasks));
-        }
-
-        stopwatch.Stop();
-
-        var successCount = results.Count(r => r.Success);
-        var failureCount = results.Count(r => !r.Success && !r.AlreadyInstalled);
-        var skippedCount = results.Count(r => r.AlreadyInstalled);
-
-        return new BatchInstallResult
-        {
-            SuccessCount = successCount,
-            FailureCount = failureCount,
-            SkippedCount = skippedCount,
-            Results = results,
-            TotalDuration = stopwatch.Elapsed
-        };
     }
 
     /// <summary>
