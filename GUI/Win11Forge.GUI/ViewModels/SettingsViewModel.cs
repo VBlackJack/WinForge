@@ -20,6 +20,7 @@ using System.Globalization;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Localization;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
@@ -33,8 +34,6 @@ namespace Win11Forge.GUI.ViewModels;
 /// </summary>
 public partial class SettingsViewModel : ViewModelBase, IDisposable
 {
-    private const string GitHubRepositoryUrl = "https://github.com/VBlackJack/Win11Forge";
-
     private readonly IAppSettingsService _settingsService;
     private readonly IThemeService _themeService;
     private readonly IDeploymentHistoryService _historyService;
@@ -661,7 +660,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         {
             using var process = Process.Start(new ProcessStartInfo
             {
-                FileName = GitHubRepositoryUrl,
+                FileName = ProjectLinks.Repository,
                 UseShellExecute = true
             });
         }
