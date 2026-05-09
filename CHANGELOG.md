@@ -12,7 +12,7 @@ See `Docs/architecture/REFACTOR-MVVM.md` for the full architectural decision rec
 
 ### UX audit closures - May 2026
 
-Completed the P0/P1 remediation sweep from `Docs/audit/Win11Forge-UX-Audit-2026-05.md`. All critical and high-friction UX audit findings are now closed.
+Completed the P0/P1 remediation sweep from `Docs/audit/Win11Forge-UX-Audit-2026-05.md`, then closed the remaining P2/P3 UX backlog through PR #81. The May 2026 UX audit is now fully closed.
 
 #### Accessibility
 - **Closed A11Y-001** (PR #67/#68): High Contrast resources are preserved when switching Dracula themes.
@@ -25,19 +25,34 @@ Completed the P0/P1 remediation sweep from `Docs/audit/Win11Forge-UX-Audit-2026-
 - **Closed DC-001/DC-004/DC-011** (PR #65/#66): Page typography tokens, shared source badge styling, and subtler DataGrid gridlines now apply consistently across the GUI.
 - **Closed DC-005/DC-006/DC-007/DC-008** (PR #79): AppsView now follows the icon/title/subtitle header pattern, profile/filter cards reflow without forced horizontal card scroll, Settings tabs have a reinforced selected indicator, and navigation separates workflow pages from configuration pages while preserving `ViewIndex` tags.
 - **Closed DC-012/DC-013/DC-014** (PR #80): Post-smoke polish hides unavailable AppCatalog actions, removes the duplicate AppsView install CTA, and gives shared TabItems a theme-aware selected template.
+- **Closed DC-009/DC-010** (PR #81): Settings card headers no longer repeat tab-strip icons, and audited card borders now use the shared `CardPadding` token across views.
 
 #### Workflow safety
 - **Closed WF-003/WF-005/WF-006** (PR #73/#74): Single-app uninstall now confirms destructive action; profile changes protect manual selections with Replace/Merge/Cancel; profile tier badges are derived from JSON inheritance instead of hardcoded tiers.
 - **Closed WF-007** (PR #75/#76): Update Selected now mirrors Install progress UX with current app, progress percentage, ETA, cancellation, and final summary.
 - **Confirmed WF-008 closure** (PR #55/#56): App Catalog empty states are gated on loading and load-error state, with distinct empty-database and empty-filter copy.
+- **Closed WF-011/WF-012/WF-013/WF-014** (PR #81): Selection helpers respect active filters, import selection/favorites uses Replace/Merge/Cancel previews, Settings auto-save no longer spams info toasts, and cancellation paths now confirm with progress context.
 
 ### Added
 
 - **Test coverage** — `AccessibilityHardeningTests` adds three static-analysis guards: `RequiredA11yLocKeys_ArePresentInXaml` (theory across the 6 a11y-touched XAML files), `HighContrastMode_TextOnAccentBrushes_AreRemapped` (asserts the 3 `SwapIfExists` entries in `App.xaml.cs`), and `HighContrastTheme_ImplicitlyStylesWpfUiButton` (asserts the implicit `ui:Button` style based on `HighContrastButtonStyle` in `HighContrastTheme.xaml`). Total test count: 527 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
 - **Test coverage** — `AccessibilityHardeningTests` adds four static visual-hierarchy guards for CodexP-15: AppsView header pattern, AppsView filter/profile reflow without `MinWidth="920"`, implicit `ReinforcedTabItemStyle`, and workflow/config navigation clustering. Total test count: 531 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
 - **Test coverage** — `AccessibilityHardeningTests` adds three post-smoke guards for DC-012/DC-013/DC-014: AppCatalog unavailable action visibility, AppsView install CTA deduplication, and theme-aware TabItem template states. Total test count: 534 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
+- **Test coverage** — PR #81 adds guards for filtered Apps selection helpers, import Replace/Merge/Cancel behavior, cancel confirmations, Settings no-toast auto-save, AppEditor source-specific a11y keys, AppCatalog HC contrast, dead resource cleanup, Settings icon de-duplication, and cross-view `CardPadding` token usage. Total test count: 554 passed (`dotnet test -c Release GUI\Win11Forge.slnx --filter "FullyQualifiedName!~UIA"`).
+
+### Changed
+
+- **Applications workflow** — `SelectAll`, `SelectNotInstalled`, `SelectFavorites`, and `SelectWithUpdates` now operate on the active filtered application list; `SelectNone` remains global to clear hidden selections deliberately. Closes WF-011 (PR #81).
 
 ### Fixed
+- **Workflow safety (WF-012)** — Import Selection and Import Favorites now show Replace / Merge / Cancel previews when current state is non-empty, summarize matched/missing/final counts, and leave state untouched on cancel. Closes WF-012 (PR #81).
+- **Workflow feedback (WF-013)** — Settings auto-save updates continue to set inline status, but no longer fire repetitive info toasts during every keystroke/toggle change. Closes WF-013 (PR #81).
+- **Workflow safety (WF-014)** — Apps batch cancellation and Monitoring/Deployment cancellation now prompt before requesting cooperative cancellation, including completed/total context. Closes WF-014 (PR #81).
+- **Visual hierarchy (DC-009)** — Settings keeps tab icons but removes redundant repeated icons from section headers inside cards. Closes DC-009 (PR #81).
+- **Visual hierarchy (DC-010)** — Audited card borders across Apps, AppCatalog, Dashboard, Deployment, Logs, Prerequisites, and Settings now use `{StaticResource CardPadding}` instead of literal `16`/`20` card padding. Closes DC-010 (PR #81).
+- **Accessibility follow-up** — ApplicationEditorDialog source action buttons now use source-specific automation names for Winget, Chocolatey, and Microsoft Store search/apply actions. Resolves the AppEditor P3 a11y follow-up (PR #81).
+- **Accessibility follow-up** — High Contrast AppCatalog header contrast is guarded by WCAG AA tests and HC brush mappings for mapped surface brushes. Resolves A11Y-011 candidate (PR #81).
+- **Resource cleanup** — Removed dead `AppCatalog_DeleteMultiple*` EN/FR resource keys and hardcoded English fallbacks in `LogsViewModel.ClearOldLogsAsync`. Resolves TODO cleanup follow-ups (PR #81).
 - **Visual hierarchy (DC-012)** — AppCatalog now hides Undo/Redo and row actions when unavailable instead of rendering large disabled blocks. Closes DC-012 (PR #80).
 - **Information architecture (DC-013)** — AppsView keeps `Install Selected` only in the selection action bar, removing the duplicate Profile-card CTA. Closes DC-013 (PR #80).
 - **Visual hierarchy (DC-014)** — Shared WPF `TabItem` styling now uses a theme-aware template with explicit hover, focus, selected, and disabled states. Closes DC-014 (PR #80).
