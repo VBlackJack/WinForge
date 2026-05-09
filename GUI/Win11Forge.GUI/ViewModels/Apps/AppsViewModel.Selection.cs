@@ -27,12 +27,12 @@ public partial class AppsViewModel
     [RelayCommand]
     private void SelectWithUpdates()
     {
-        foreach (var app in _allApplications)
+        foreach (var app in FilteredApplications.Cast<ApplicationModel>())
         {
             app.IsSelected = app.Status == ApplicationStatus.UpdateAvailable;
         }
 
-        SelectedCount = _allApplications.Count(a => a.IsSelected);
+        UpdateSelectedCount();
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public partial class AppsViewModel
     [RelayCommand]
     private void SelectNotInstalled()
     {
-        foreach (var app in _allApplications)
+        foreach (var app in FilteredApplications.Cast<ApplicationModel>())
         {
             app.IsSelected = app.Status != ApplicationStatus.Installed &&
                              app.Status != ApplicationStatus.AlreadyInstalled;
@@ -92,12 +92,9 @@ public partial class AppsViewModel
     [RelayCommand]
     private void SelectFavorites()
     {
-        foreach (var app in _allApplications)
+        foreach (var app in FilteredApplications.Cast<ApplicationModel>())
         {
-            if (app.IsFavorite)
-            {
-                app.IsSelected = true;
-            }
+            app.IsSelected = app.IsFavorite;
         }
         UpdateSelectedCount();
     }

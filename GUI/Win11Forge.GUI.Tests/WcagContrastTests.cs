@@ -84,6 +84,26 @@ public class WcagContrastTests
         AssertContrastMeetsAA("#FFFFFF", colors[brushKey], $"{brushKey} with white foreground");
     }
 
+    [Fact]
+    public void HighContrast_AppCatalogHeaderTextOnMappedSurface_MeetsAA()
+    {
+        var colors = ParseHighContrastBrushColors();
+        var appSource = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml.cs"));
+
+        Assert.Contains(
+            "SwapIfExists(app, \"SolidBackgroundFillColorSecondaryBrush\", \"HighContrastSurfaceBrush\")",
+            appSource,
+            StringComparison.Ordinal);
+        AssertContrastMeetsAA(
+            colors["HighContrastTextPrimaryBrush"],
+            colors["HighContrastSurfaceBrush"],
+            "High contrast AppCatalog header primary text");
+        AssertContrastMeetsAA(
+            colors["HighContrastTextSecondaryBrush"],
+            colors["HighContrastSurfaceBrush"],
+            "High contrast AppCatalog header secondary text");
+    }
+
     public static IEnumerable<object[]> DraculaThemeNames =>
         DraculaThemes.Select(theme => new object[] { theme });
 
@@ -129,6 +149,26 @@ public class WcagContrastTests
             var color = element.Attribute("Color")?.Value;
 
             if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(color) && color.StartsWith("#", StringComparison.Ordinal))
+            {
+                colors[key] = NormalizeHexColor(color);
+            }
+        }
+
+        return colors;
+    }
+
+    private static Dictionary<string, string> ParseHighContrastBrushColors()
+    {
+        var doc = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "HighContrastTheme.xaml"));
+        XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
+        var colors = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var element in doc.Descendants().Where(element => element.Name.LocalName == "SolidColorBrush"))
+        {
+            var key = element.Attribute(x + "Key")?.Value;
+            var color = element.Attribute("Color")?.Value;
+
+            if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(color))
             {
                 colors[key] = NormalizeHexColor(color);
             }

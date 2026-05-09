@@ -136,6 +136,62 @@ public class VisualDesignTokenTests
         Assert.Equal(Visibility.Collapsed, converter.Convert("Winget", typeof(Visibility), null!, CultureInfo.InvariantCulture));
     }
 
+    [Theory]
+    [InlineData("Views/AppCatalogView.xaml")]
+    [InlineData("Views/AppsView.xaml")]
+    [InlineData("Views/DashboardView.xaml")]
+    [InlineData("Views/DeploymentView.xaml")]
+    [InlineData("Views/LogsView.xaml")]
+    [InlineData("Views/PrerequisitesView.xaml")]
+    [InlineData("Views/SettingsView.xaml")]
+    public void CardBorders_UseCardPaddingToken_AcrossAuditedViews(string relativePath)
+    {
+        var viewPath = FindRepoFile("GUI", "Win11Forge.GUI", relativePath);
+        var viewXaml = File.ReadAllText(viewPath);
+        var viewDoc = XDocument.Load(viewPath);
+
+        var literalCardPaddings = viewDoc.Descendants()
+            .Where(element =>
+                element.Name.LocalName == "Border"
+                && element.Attribute("Padding")?.Value is "16" or "20")
+            .Select(element => element.Attribute("Padding")?.Value)
+            .ToList();
+
+        Assert.Empty(literalCardPaddings);
+        Assert.Contains("Padding=\"{StaticResource CardPadding}\"", viewXaml, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SettingsView_SectionHeadersDoNotRepeatTabIcons()
+    {
+        var settingsPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "SettingsView.xaml");
+        var settingsXaml = File.ReadAllText(settingsPath);
+        var settingsDoc = XDocument.Load(settingsPath);
+        var removedSectionIcons = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "Color24",
+            "Translate24",
+            "Gauge24",
+            "Database24",
+            "CalendarAdd24",
+            "CalendarMultiple24"
+        };
+        var repeatedSectionIcons = settingsDoc.Descendants()
+            .Where(element =>
+                element.Name.LocalName == "SymbolIcon"
+                && removedSectionIcons.Contains(element.Attribute("Symbol")?.Value ?? string.Empty)
+                && string.Equals(element.Attribute("Width")?.Value, "24", StringComparison.Ordinal))
+            .Select(element => element.Attribute("Symbol")?.Value)
+            .ToList();
+
+        Assert.Empty(repeatedSectionIcons);
+
+        Assert.Contains("Symbol=\"Color24\" Width=\"18\"", settingsXaml, StringComparison.Ordinal);
+        Assert.Contains("Symbol=\"Gauge24\" Width=\"18\"", settingsXaml, StringComparison.Ordinal);
+        Assert.Contains("Symbol=\"Database24\" Width=\"18\"", settingsXaml, StringComparison.Ordinal);
+        Assert.Contains("Symbol=\"CalendarClock24\" Width=\"18\"", settingsXaml, StringComparison.Ordinal);
+    }
+
     private static IEnumerable<string> SourceBadgeStyles()
     {
         yield return "SourceBadgeStyle";

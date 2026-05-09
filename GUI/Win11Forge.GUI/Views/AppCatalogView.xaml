@@ -266,7 +266,7 @@
         </Border>
 
         <!-- Data Grid -->
-        <Border Grid.Row="2" Padding="16">
+        <Border Grid.Row="2" Padding="{StaticResource CardPadding}">
             <Grid>
                 <!-- Loading Indicator with message -->
                 <StackPanel HorizontalAlignment="Center"

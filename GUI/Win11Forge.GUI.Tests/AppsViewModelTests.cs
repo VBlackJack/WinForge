@@ -16,6 +16,7 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.Messaging;
@@ -95,6 +96,16 @@ public class AppsViewModelTests
         }
 
         viewModel.UpdateSelectedCount();
+    }
+
+    private static string Loc(string key)
+    {
+        return Resources.Resources.ResourceManager.GetString(key, Resources.Resources.Culture) ?? key;
+    }
+
+    private static string FormatLoc(string key, params object[] args)
+    {
+        return string.Format(CultureInfo.CurrentCulture, Loc(key), args);
     }
 
     /// <summary>
@@ -319,6 +330,73 @@ public class AppsViewModelTests
     }
 
     [Fact]
+    public async Task SelectWithUpdates_ShouldOnlyMutateFilteredApplications()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var viewModel = CreateViewModel(bridge);
+        await viewModel.InitializeAsync();
+
+        var visibleUpdate = bridge.Applications.Single(app => app.AppId == "Git.Git");
+        var hiddenUpdate = bridge.Applications.Single(app => app.AppId == "Mozilla.Firefox");
+        visibleUpdate.Status = ApplicationStatus.UpdateAvailable;
+        hiddenUpdate.Status = ApplicationStatus.UpdateAvailable;
+        hiddenUpdate.IsSelected = false;
+        viewModel.SelectedCategory = "Development";
+
+        // Act
+        viewModel.SelectWithUpdatesCommand.Execute(null);
+
+        // Assert
+        Assert.True(visibleUpdate.IsSelected);
+        Assert.False(hiddenUpdate.IsSelected);
+    }
+
+    [Fact]
+    public async Task SelectNotInstalled_ShouldOnlyMutateFilteredApplications()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var viewModel = CreateViewModel(bridge);
+        await viewModel.InitializeAsync();
+
+        var hiddenNotInstalled = bridge.Applications.Single(app => app.AppId == "Mozilla.Firefox");
+        hiddenNotInstalled.Status = ApplicationStatus.Pending;
+        hiddenNotInstalled.IsSelected = false;
+        viewModel.SelectedCategory = "Development";
+
+        // Act
+        viewModel.SelectNotInstalledCommand.Execute(null);
+
+        // Assert
+        Assert.All(GetFilteredApps(viewModel.FilteredApplications), app => Assert.True(app.IsSelected));
+        Assert.False(hiddenNotInstalled.IsSelected);
+    }
+
+    [Fact]
+    public async Task SelectFavorites_ShouldOnlyMutateFilteredApplications()
+    {
+        // Arrange
+        var bridge = CreateMockBridge();
+        var viewModel = CreateViewModel(bridge);
+        await viewModel.InitializeAsync();
+
+        var visibleFavorite = bridge.Applications.Single(app => app.AppId == "Git.Git");
+        var hiddenFavorite = bridge.Applications.Single(app => app.AppId == "Mozilla.Firefox");
+        visibleFavorite.IsFavorite = true;
+        hiddenFavorite.IsFavorite = true;
+        hiddenFavorite.IsSelected = false;
+        viewModel.SelectedCategory = "Development";
+
+        // Act
+        viewModel.SelectFavoritesCommand.Execute(null);
+
+        // Assert
+        Assert.True(visibleFavorite.IsSelected);
+        Assert.False(hiddenFavorite.IsSelected);
+    }
+
+    [Fact]
     public async Task ExportSelection_ShouldWriteSelectedApplicationIdsToChosenFile()
     {
         // Arrange
@@ -366,6 +444,7 @@ public class AppsViewModelTests
         fileDialogService.QueueOpenResult(filePath);
         var viewModel = CreateViewModel(fileDialogService: fileDialogService);
         await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
 
         try
         {
@@ -433,6 +512,11 @@ public class AppsViewModelTests
         fileDialogService.QueueOpenResult(filePath);
         var viewModel = CreateViewModel(fileDialogService: fileDialogService);
         await viewModel.InitializeAsync();
+        foreach (var app in GetFilteredApps(viewModel.FilteredApplications))
+        {
+            app.IsFavorite = false;
+        }
+        viewModel.FavoritesCount = 0;
 
         try
         {
@@ -447,6 +531,109 @@ public class AppsViewModelTests
             Assert.Single(favoriteApps);
             Assert.Equal("Mozilla.Firefox", favoriteApps[0].AppId);
             Assert.Equal(1, viewModel.FavoritesCount);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public async Task ImportSelection_WithExistingSelectionAndReplace_ShouldClearCurrentAndSummarizeMissing()
+    {
+        // Arrange
+        var fileDialogService = new TestFileDialogService();
+        var dialogService = new TestDialogService();
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "git.git", "Missing.App", " " }));
+        fileDialogService.QueueOpenResult(filePath);
+        dialogService.QueueYesNoCancelResult(true);
+        var viewModel = CreateViewModel(fileDialogService: fileDialogService, dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        FindApp(viewModel, "Mozilla.Firefox").IsSelected = true;
+        viewModel.UpdateSelectedCount();
+
+        try
+        {
+            // Act
+            await viewModel.ImportSelectionCommand.ExecuteAsync(null);
+
+            // Assert
+            var request = Assert.Single(dialogService.YesNoCancelRequests);
+            Assert.Equal(Loc("Apps_Import_Replace"), request.YesText);
+            Assert.Equal(Loc("Apps_Import_Merge"), request.NoText);
+            Assert.Equal(Resources.Resources.Common_Cancel, request.CancelText);
+            Assert.True(FindApp(viewModel, "Git.Git").IsSelected);
+            Assert.False(FindApp(viewModel, "Mozilla.Firefox").IsSelected);
+            Assert.Equal(1, viewModel.SelectedCount);
+            Assert.Equal(FormatLoc("Apps_ImportSelection_Status", 1, 1, 1), viewModel.StatusMessage);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public async Task ImportFavorites_WithExistingFavoritesAndMerge_ShouldPreserveCurrentAndAddMatches()
+    {
+        // Arrange
+        var fileDialogService = new TestFileDialogService();
+        var dialogService = new TestDialogService();
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "mozilla.firefox", "Mozilla.Firefox", "Missing.App" }));
+        fileDialogService.QueueOpenResult(filePath);
+        dialogService.QueueYesNoCancelResult(false);
+        var viewModel = CreateViewModel(fileDialogService: fileDialogService, dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        FindApp(viewModel, "Google.Chrome").IsFavorite = true;
+        viewModel.FavoritesCount = 1;
+
+        try
+        {
+            // Act
+            await viewModel.ImportFavoritesCommand.ExecuteAsync(null);
+
+            // Assert
+            Assert.Single(dialogService.YesNoCancelRequests);
+            Assert.True(FindApp(viewModel, "Google.Chrome").IsFavorite);
+            Assert.True(FindApp(viewModel, "Mozilla.Firefox").IsFavorite);
+            Assert.Equal(2, viewModel.FavoritesCount);
+            Assert.Equal(FormatLoc("Apps_ImportFavorites_Status", 1, 1, 2), viewModel.StatusMessage);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
+    public async Task ImportSelection_WhenConflictCancelled_ShouldLeaveCurrentSelectionUntouched()
+    {
+        // Arrange
+        var fileDialogService = new TestFileDialogService();
+        var dialogService = new TestDialogService();
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "Mozilla.Firefox" }));
+        fileDialogService.QueueOpenResult(filePath);
+        dialogService.QueueYesNoCancelResult(null);
+        var viewModel = CreateViewModel(fileDialogService: fileDialogService, dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+        FindApp(viewModel, "Git.Git").IsSelected = true;
+        viewModel.UpdateSelectedCount();
+
+        try
+        {
+            // Act
+            await viewModel.ImportSelectionCommand.ExecuteAsync(null);
+
+            // Assert
+            Assert.Single(dialogService.YesNoCancelRequests);
+            Assert.True(FindApp(viewModel, "Git.Git").IsSelected);
+            Assert.False(FindApp(viewModel, "Mozilla.Firefox").IsSelected);
+            Assert.Equal(1, viewModel.SelectedCount);
+            Assert.Null(viewModel.StatusMessage);
         }
         finally
         {
@@ -601,6 +788,52 @@ public class AppsViewModelTests
         Assert.Equal(1, deploymentState.EndDeploymentCallCount);
         Assert.NotEmpty(deploymentState.ProgressUpdates);
         Assert.NotEmpty(deploymentState.TimeUpdates);
+    }
+
+    [Fact]
+    public async Task CancelBatch_WhenDeclined_ShouldNotRequestCancellation()
+    {
+        // Arrange
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(false);
+        var pauseGate = new TestPauseGate();
+        var viewModel = CreateViewModel(dialogService: dialogService, pauseGate: pauseGate);
+        viewModel.BatchProgressCurrent = 2;
+        viewModel.BatchProgressTotal = 7;
+        viewModel.IsPaused = true;
+
+        // Act
+        await viewModel.CancelBatchCommand.ExecuteAsync(null);
+
+        // Assert
+        var request = Assert.Single(dialogService.ConfirmRequests);
+        Assert.Contains("2", request.Message, StringComparison.Ordinal);
+        Assert.Contains("7", request.Message, StringComparison.Ordinal);
+        Assert.True(viewModel.IsPaused);
+        Assert.Equal(0, pauseGate.ResumeCallCount);
+        Assert.Null(viewModel.StatusMessage);
+    }
+
+    [Fact]
+    public async Task CancelBatch_WhenConfirmed_ShouldSetStatusAndResumePausedBatch()
+    {
+        // Arrange
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(true);
+        var pauseGate = new TestPauseGate();
+        var viewModel = CreateViewModel(dialogService: dialogService, pauseGate: pauseGate);
+        viewModel.BatchProgressCurrent = 3;
+        viewModel.BatchProgressTotal = 8;
+        viewModel.IsPaused = true;
+
+        // Act
+        await viewModel.CancelBatchCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Single(dialogService.ConfirmRequests);
+        Assert.Equal(Loc("Cancel_InProgress"), viewModel.StatusMessage);
+        Assert.False(viewModel.IsPaused);
+        Assert.Equal(1, pauseGate.ResumeCallCount);
     }
 
     [Fact]

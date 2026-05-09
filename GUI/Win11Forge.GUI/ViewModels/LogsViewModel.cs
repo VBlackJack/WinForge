@@ -367,8 +367,8 @@ public partial class LogsViewModel : ObservableObject
     private async Task ClearOldLogsAsync()
     {
         var confirmed = await _dialogService.ShowConfirmAsync(
-            Resources.Resources.Confirm_ClearOldLogs_Title ?? "Clear Old Logs",
-            Resources.Resources.Confirm_ClearOldLogs_Message ?? "Delete log files older than 7 days?",
+            Resources.Resources.Confirm_ClearOldLogs_Title,
+            Resources.Resources.Confirm_ClearOldLogs_Message,
             Resources.Resources.Confirm_ClearOldLogs_Btn,
             Resources.Resources.Common_Cancel);
 

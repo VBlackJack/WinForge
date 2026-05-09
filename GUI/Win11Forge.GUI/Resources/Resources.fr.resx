@@ -1661,6 +1661,30 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Apps_ImportFailed" xml:space="preserve">
     <value>Échec de l'importation des applications</value>
   </data>
+  <data name="Apps_Import_Replace" xml:space="preserve">
+    <value>Remplacer</value>
+  </data>
+  <data name="Apps_Import_Merge" xml:space="preserve">
+    <value>Fusionner</value>
+  </data>
+  <data name="Apps_ImportSelection_Title" xml:space="preserve">
+    <value>Importer la sélection</value>
+  </data>
+  <data name="Apps_ImportFavorites_Title" xml:space="preserve">
+    <value>Importer les favoris</value>
+  </data>
+  <data name="Apps_ImportSelection_Message" xml:space="preserve">
+    <value>La sélection importée correspond à {0} application(s), avec {1} ID manquant(s). La sélection actuelle contient {2} application(s). La remplacer ou fusionner ?</value>
+  </data>
+  <data name="Apps_ImportFavorites_Message" xml:space="preserve">
+    <value>Les favoris importés correspondent à {0} application(s), avec {1} ID manquant(s). Les favoris actuels contiennent {2} application(s). Les remplacer ou fusionner ?</value>
+  </data>
+  <data name="Apps_ImportSelection_Status" xml:space="preserve">
+    <value>Import de sélection terminé : {0} correspondance(s), {1} manquant(s), {2} sélectionnée(s)</value>
+  </data>
+  <data name="Apps_ImportFavorites_Status" xml:space="preserve">
+    <value>Import de favoris terminé : {0} correspondance(s), {1} manquant(s), {2} favori(s)</value>
+  </data>
   <data name="Apps_Error_PowerShell" xml:space="preserve">
     <value>Erreur PowerShell : {0}</value>
   </data>
@@ -2005,6 +2029,15 @@ Cette action est irréversible.</value>
   <data name="AppEditor_SearchAction" xml:space="preserve">
     <value>Rechercher</value>
   </data>
+  <data name="A11y_AppEditor_SearchWinget" xml:space="preserve">
+    <value>Rechercher des packages Winget</value>
+  </data>
+  <data name="A11y_AppEditor_SearchChocolatey" xml:space="preserve">
+    <value>Rechercher des packages Chocolatey</value>
+  </data>
+  <data name="A11y_AppEditor_SearchStore" xml:space="preserve">
+    <value>Rechercher des packages Microsoft Store</value>
+  </data>
   <data name="AppEditor_SearchColumnName" xml:space="preserve">
     <value>Nom</value>
   </data>
@@ -2016,6 +2049,15 @@ Cette action est irréversible.</value>
   </data>
   <data name="AppEditor_ApplySelection" xml:space="preserve">
     <value>Appliquer la sélection</value>
+  </data>
+  <data name="A11y_AppEditor_ApplyWinget" xml:space="preserve">
+    <value>Appliquer le package Winget sélectionné</value>
+  </data>
+  <data name="A11y_AppEditor_ApplyChocolatey" xml:space="preserve">
+    <value>Appliquer le package Chocolatey sélectionné</value>
+  </data>
+  <data name="A11y_AppEditor_ApplyStore" xml:space="preserve">
+    <value>Appliquer le package Microsoft Store sélectionné</value>
   </data>
   <data name="AppEditor_Searching" xml:space="preserve">
     <value>Recherche des packages...</value>
@@ -2209,15 +2251,6 @@ Cette action est irréversible.</value>
   <data name="Detection_StoreAppCheckNotSupported" xml:space="preserve">
     <value>La détection d'application Store nécessite PowerShell</value>
   </data>
-  <!-- UX Improvements - Bulk Delete -->
-  <data name="AppCatalog_DeleteMultipleConfirm" xml:space="preserve">
-    <value>Êtes-vous sûr de vouloir supprimer {0} applications ?
-
-Cette action est irréversible.</value>
-  </data>
-  <data name="AppCatalog_DeleteMultipleTitle" xml:space="preserve">
-    <value>Supprimer plusieurs applications</value>
-  </data>
   <!-- UX Improvements - Deployment Result Banner -->
   <data name="Deployment_Result_Success" xml:space="preserve">
     <value>Déploiement terminé avec succès</value>
@@ -2284,6 +2317,18 @@ Cette action est irréversible.</value>
   <!-- UX Improvements - Cancel Feedback -->
   <data name="Cancel_InProgress" xml:space="preserve">
     <value>Annulation en cours...</value>
+  </data>
+  <data name="Apps_CancelBatch_Title" xml:space="preserve">
+    <value>Annuler l'opération</value>
+  </data>
+  <data name="Apps_CancelBatch_Message" xml:space="preserve">
+    <value>Annuler l'opération en cours ? {0} élément(s) sur {1} sont terminés.</value>
+  </data>
+  <data name="Deployment_Cancel_Title" xml:space="preserve">
+    <value>Annuler le déploiement</value>
+  </data>
+  <data name="Deployment_Cancel_Message" xml:space="preserve">
+    <value>Annuler le déploiement en cours ? {0} élément(s) sur {1} sont terminés.</value>
   </data>
   <data name="Cancel_Complete" xml:space="preserve">
     <value>Opération annulée</value>

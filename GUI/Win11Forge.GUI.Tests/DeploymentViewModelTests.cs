@@ -95,17 +95,42 @@ public class DeploymentViewModelTests
     /// Verifies that CancelCommand invokes service cancel.
     /// </summary>
     [Fact]
-    public void CancelCommand_ShouldInvokeServiceCancel()
+    public async Task CancelCommand_WhenConfirmed_ShouldInvokeServiceCancel()
     {
         // Arrange
         var stateService = new MockDeploymentStateServiceForTests { MockIsDeploying = true };
-        var viewModel = new DeploymentViewModel(stateService);
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(true);
+        var viewModel = new DeploymentViewModel(stateService, dialogService);
 
         // Act
-        viewModel.CancelDeploymentCommand.Execute(null);
+        await viewModel.CancelDeploymentCommand.ExecuteAsync(null);
 
         // Assert
+        var request = Assert.Single(dialogService.ConfirmRequests);
+        Assert.Contains("5", request.Message, StringComparison.Ordinal);
+        Assert.Contains("10", request.Message, StringComparison.Ordinal);
         Assert.True(stateService.CancelRequestedFlag);
+    }
+
+    /// <summary>
+    /// Verifies that declining cancel confirmation does not notify the deployment service.
+    /// </summary>
+    [Fact]
+    public async Task CancelCommand_WhenDeclined_ShouldNotInvokeServiceCancel()
+    {
+        // Arrange
+        var stateService = new MockDeploymentStateServiceForTests { MockIsDeploying = true };
+        var dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(false);
+        var viewModel = new DeploymentViewModel(stateService, dialogService);
+
+        // Act
+        await viewModel.CancelDeploymentCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Single(dialogService.ConfirmRequests);
+        Assert.False(stateService.CancelRequestedFlag);
     }
 
     /// <summary>
