@@ -1488,18 +1488,6 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Cliquer pour voir</value>
   </data>
   <!-- Accessibility -->
-  <data name="Accessibility_Progress" xml:space="preserve">
-    <value>{0} sur {1} terminé, {2}%</value>
-  </data>
-  <data name="Accessibility_ProgressWithItem" xml:space="preserve">
-    <value>{0} sur {1} terminé, traitément de {2}</value>
-  </data>
-  <data name="Accessibility_ProgressComplete" xml:space="preserve">
-    <value>Opération terminée. {0} éléments traités.</value>
-  </data>
-  <data name="Accessibility_DeploymentStarted" xml:space="preserve">
-    <value>Déploiement démarré</value>
-  </data>
   <data name="Accessibility_DeploymentComplete" xml:space="preserve">
     <value>Déploiement terminé. {0} réussis, {1} échecs, {2} ignorés.</value>
   </data>

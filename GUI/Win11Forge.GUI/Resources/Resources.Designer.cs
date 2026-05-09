@@ -630,10 +630,6 @@ public class Resources
     public static string Recovery_Generic_CheckLogs => ResourceManager.GetString("Recovery_Generic_CheckLogs", resourceCulture);
 
     // Accessibility
-    public static string Accessibility_Progress => ResourceManager.GetString("Accessibility_Progress", resourceCulture);
-    public static string Accessibility_ProgressWithItem => ResourceManager.GetString("Accessibility_ProgressWithItem", resourceCulture);
-    public static string Accessibility_ProgressComplete => ResourceManager.GetString("Accessibility_ProgressComplete", resourceCulture);
-    public static string Accessibility_DeploymentStarted => ResourceManager.GetString("Accessibility_DeploymentStarted", resourceCulture);
     public static string Accessibility_DeploymentComplete => ResourceManager.GetString("Accessibility_DeploymentComplete", resourceCulture);
     public static string Accessibility_InstallationStarted => ResourceManager.GetString("Accessibility_InstallationStarted", resourceCulture);
     public static string Accessibility_InstallationComplete => ResourceManager.GetString("Accessibility_InstallationComplete", resourceCulture);

@@ -320,7 +320,11 @@ public class AccessibilityHardeningTests
             "Help_Shortcut_Navigation",
             "Recovery_NetworkTimeout",
             "SourceEditor_TestPlaceholder",
-            "Toast_UninstallComplete"
+            "Toast_UninstallComplete",
+            "Accessibility_Progress",
+            "Accessibility_ProgressWithItem",
+            "Accessibility_ProgressComplete",
+            "Accessibility_DeploymentStarted"
         ];
 
         foreach (var key in removedKeys)

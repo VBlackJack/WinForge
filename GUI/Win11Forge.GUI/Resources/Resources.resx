@@ -2311,22 +2311,6 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <comment>Tooltip hint for clickable stats</comment>
   </data>
   <!-- Accessibility -->
-  <data name="Accessibility_Progress" xml:space="preserve">
-    <value>{0} of {1} completed, {2}%</value>
-    <comment>Progress announcement (0=current, 1=total, 2=percent)</comment>
-  </data>
-  <data name="Accessibility_ProgressWithItem" xml:space="preserve">
-    <value>{0} of {1} completed, processing {2}</value>
-    <comment>Progress with item name (0=current, 1=total, 2=item name)</comment>
-  </data>
-  <data name="Accessibility_ProgressComplete" xml:space="preserve">
-    <value>Operation complete. {0} items processed.</value>
-    <comment>Progress complete announcement (0=total items)</comment>
-  </data>
-  <data name="Accessibility_DeploymentStarted" xml:space="preserve">
-    <value>Deployment started</value>
-    <comment>Announcement when deployment begins</comment>
-  </data>
   <data name="Accessibility_DeploymentComplete" xml:space="preserve">
     <value>Deployment complete. {0} successful, {1} failed, {2} skipped.</value>
     <comment>Deployment complete announcement (0=success, 1=failed, 2=skipped)</comment>
