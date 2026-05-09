@@ -1,11 +1,12 @@
 # GUI VM Visual Checklist
 
 ## Scope
-Manual visual/accessibility validation for Win11Forge GUI in VM after recent UI fixes:
+Manual visual/accessibility validation for the current Win11Forge GUI after the May 2026 backlog closure:
 - theme persistence and consistency
 - light/dark/high-contrast readability
 - reduced-motion behavior
 - responsiveness at lower resolutions and high DPI scaling
+- App Catalog and Apps workflow safety states
 
 ## Test Matrix
 Run the checklist on these combinations:
@@ -40,7 +41,7 @@ Validate each page:
 - `Deployment`
 - `Settings`
 - `Logs`
-- `App Database`
+- `App Catalog`
 
 For each page:
 1. Resize window to minimum width.
@@ -60,11 +61,13 @@ Expected:
 1. Open filter bar at narrow width.
 2. Confirm horizontal scroll appears when needed.
 3. Confirm scan/update actions remain accessible.
-4. Start a scan and check progress row controls (pause/resume/cancel).
+4. Start an install batch and check progress row controls (pause/resume/cancel).
+5. Start a selected update batch and confirm Pause/Resume are hidden while Update runs.
 
 Expected:
 - Filter area remains usable at small width.
 - Touch-size icon buttons are still properly aligned.
+- Pause/Resume are visible only for pause-aware batches.
 
 ### Logs
 1. Check filter row at narrow width.
@@ -75,7 +78,7 @@ Expected:
 - No clipped filter controls at `1366x768` + `150%`.
 
 ### Settings
-1. Toggle `Dark theme`.
+1. Change the theme from the theme picker.
 2. Toggle `Reduced motion`.
 3. Toggle `High contrast`.
 4. Restart app and confirm all 3 settings persisted.
@@ -83,6 +86,7 @@ Expected:
 Expected:
 - Toggles take effect immediately.
 - No mismatch between toggle state and visual result.
+- Theme selection persists across restart.
 
 ### Deployment
 1. Open log viewer dialog.
@@ -110,6 +114,22 @@ Expected:
 2. Perform Undo/Redo from header buttons.
 3. Open App Picker dialog and verify category/search layout at narrow width.
 4. Open Logs and Apps pages and confirm no functional regression in filtering.
+5. Apply a profile, manually change the selection, then switch profiles and confirm Replace/Merge/Cancel appears.
+6. Save an unchanged App Catalog entry and confirm no visible metadata reset.
+
+## WinSight Smoke
+
+For an opt-in agent-side smoke pass with screenshots, run from the repository root:
+
+```powershell
+pwsh -NoProfile -File Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot G:\_Projects\winsight
+```
+
+Expected screenshots:
+
+- `TestResults\winsight\01-dashboard.png`
+- `TestResults\winsight\02-settings.png`
+- `TestResults\winsight\03-app-catalog.png`
 
 ## Defect Template
 Use this format for each finding:

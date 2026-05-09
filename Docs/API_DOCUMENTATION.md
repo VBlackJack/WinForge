@@ -26,7 +26,7 @@ Authentication:
 - CSRF header for mutating calls: `X-CSRF-Token`
 
 ## Core Endpoints
-- `GET /api/version`: Returns framework version.
+- `GET /api/version`: Returns the framework display version (`YYYYMMDDxx`, sourced from `Config/version.json`).
 - `GET /api/profiles`: Lists available deployment profiles.
 - `GET /api/applications`: Lists application catalog entries.
 - `GET /api/status`: Returns API/server status.

@@ -22,6 +22,21 @@ Two-axis cleanup pass closing 18 findings from `Docs/audit/Win11Forge-DeadCode-i
 
 Resx parity after this pass: 943/943.
 
+### Post-audit debt closure - May 2026
+
+Closed the remaining non-audit and technical debt backlog through PR #82-#91. The baseline is now `2026050901`, with `Config/version.json` as the display-version source of truth.
+
+- **Localization SSoT** (PR #82): supported GUI locales now flow through `SupportedLocales`, with runtime resolver, Settings language picker, and resx parity tests aligned.
+- **Logs localization sweep** (PR #83): user-facing Logs status strings, filters, export filter, and delete confirmations now come from EN/FR resources. Resource parity moved to 957/957.
+- **Calendar versioning** (PR #84): release tooling, GUI project properties, manifests, schema, and version consistency checks now use `YYYYMMDDxx` display versions with assembly versions derived as `1.0.MMDD.sequence`.
+- **WinSight smoke harness** (PR #85): added opt-in `Tools/Invoke-WinsightSmoke.ps1` for local desktop smoke checks through the sibling WinSight MCP server. The legacy xUnit UIA harness remains opt-in.
+- **Application editor save fidelity** (PR #86): application saves preserve entry order, UTF-8 BOM state, unchanged metadata, and no-op saves avoid rewriting `applications.json`.
+- **Update Pause/Resume clarity** (PR #87): `IsUpdating` now hides batch Pause/Resume controls during selected updates instead of exposing inert actions.
+- **WF-005 strict profile safety** (PR #88): switching away from an applied profile now detects manual selection drift and reuses Replace / Merge / Cancel safety semantics.
+- **ExportSelection flake hardening** (PR #89): import/export tests now use isolated temporary directories, retry-safe cleanup, explicit success/error assertions, and no shared dialog service state.
+- **Application bridge cleanup** (PR #90): removed unused `IApplicationBridge.InstallApplicationsAsync` and its batch progress/result types; batch install remains owned by `IAppInstallationCoordinator`.
+- **Theme cleanup + coverage** (PR #91): `ThemeNames.DraculaResourcePathPrefix` is the single Dracula resource path prefix, and migration/converter fallback coverage was added.
+
 ### MVVM refactor closure
 
 The architectural refactor of the GUI ViewModels (audit findings I1, I3, I4) is complete. All four batch operation coordinators (`AppScanCoordinator`, `AppInstallationCoordinator`, `AppUpdateCoordinator`, `AppUninstallCoordinator`) are extracted under `Services/Coordinators/`, sharing the internal `AppOperationRunner` helper for parallelism, cancellation, and progress reporting. The `AppsViewModel` god class (3 002 lines, 31 RelayCommands) is now a 531-line orchestrator with twelve cluster-scoped partial classes. WPF lifetime coupling, file dialog handling, and code-behind business logic have been moved behind dedicated services (`IApplicationLifetimeService`, `IFileDialogService`, `IApplicationEditorDialogService`, `IPauseGate`).

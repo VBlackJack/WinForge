@@ -1,8 +1,8 @@
-# Win11Forge v3.7.2
+# Win11Forge v2026050901
 
 **Configurez votre PC Windows 11 en quelques clics**
 
-[![Version](https://img.shields.io/badge/version-3.7.2-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2026050901-blue.svg)](CHANGELOG.md)
 [![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
@@ -20,7 +20,7 @@ Win11Forge installe automatiquement toutes vos applications preferees sur un nou
 
 ### 1. Telecharger
 
-Telechargez la derniere version : [Win11Forge_v3.7.2.zip](https://github.com/VBlackJack/Win11Forge/releases/latest)
+Telechargez la derniere version : [Win11Forge_v2026050901.zip](https://github.com/VBlackJack/Win11Forge/releases/latest)
 
 ### 2. Extraire et lancer
 
@@ -54,7 +54,7 @@ Telechargez la derniere version : [Win11Forge_v3.7.2.zip](https://github.com/VBl
 - Detecte les applications deja installees (pas de doublons)
 - Installe jusqu'a 10 applications en parallele (configurable)
 - Logs d'installation en temps reel
-- Pause et reprise possible a tout moment
+- Pause et reprise pour les lots d'installation et de desinstallation
 - Rollback automatique en cas d'echec
 
 ### Gestionnaire d'applications
@@ -121,7 +121,8 @@ R: Consultez la [documentation API](Docs/API_DOCUMENTATION.md) pour les details.
 
 ## Besoin d'aide ?
 
-- [Guide utilisateur complet](Docs/USER_GUIDE_v3.md)
+- [Guide utilisateur complet](Docs/USER_GUIDE.md)
+- [Index documentation](Docs/README.md)
 - [Documentation API](Docs/API_DOCUMENTATION.md)
 - [Signaler un probleme](https://github.com/VBlackJack/Win11Forge/issues)
 

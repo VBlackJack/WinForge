@@ -16,12 +16,12 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 - Interface web standalone (aucun serveur requis)
 - Création guidée en 6 étapes
 - Héritage de profils existants (Base → Office → Gaming → Personnel)
-- Sélection parmi 66 applications prédéfinies
+- Sélection parmi les applications prédéfinies du bundle `applications-data.js`
 - Ajout d'applications personnalisées avec sources (Winget/Choco/Store/URL)
 - Configuration système complète
 - Aperçu JSON et téléchargement
 
-**Base de données** : `applications-data.js` (66 applications)
+**Base de données** : `applications-data.js` (65 applications pour l'outil standalone)
 
 ---
 
@@ -87,7 +87,7 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 ```
 
 **Fonctionnalités** :
-- Teste les 66 applications de la base de données
+- Teste les 175 applications de `Apps/Database/applications.json`
 - Vérifie les IDs Winget, Chocolatey, Store
 - Génère un rapport HTML de validation
 - Calcule le taux de succès
@@ -112,6 +112,53 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 - Chargement des modules PowerShell
 - Validation des profils JSON
 - Tests de fonctionnalités de base
+
+---
+
+### Invoke-PSScriptAnalyzer.ps1
+**Analyse statique PowerShell**
+
+```powershell
+.\Tools\Invoke-PSScriptAnalyzer.ps1
+```
+
+**Vérifications** :
+- Analyse les scripts/modules principaux avec PSScriptAnalyzer
+- Échoue sur warnings/errors selon le seuil configuré
+- Utilisé dans la validation pré-merge
+
+---
+
+### Verify-VersionConsistency.ps1
+**Vérification de la chaîne de version calendrier**
+
+```powershell
+.\Tools\Verify-VersionConsistency.ps1
+```
+
+**Vérifications** :
+- `Config/version.json` au format `YYYYMMDDxx`
+- Cohérence `ReleaseDate`
+- Versions GUI `AssemblyVersion` / `FileVersion` / `InformationalVersion`
+- `ModuleVersion` et `ReleaseNotes` des manifests PowerShell
+
+---
+
+### Invoke-WinsightSmoke.ps1
+**Smoke GUI opt-in via WinSight MCP**
+
+```powershell
+.\Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot G:\_Projects\winsight
+```
+
+**Vérifications** :
+- Build du serveur MCP WinSight et de la GUI Win11Forge si nécessaire
+- Lancement de `Win11Forge.GUI.dll`
+- Inspection `list_windows` / `inspect_ui_tree`
+- Navigation Dashboard → Settings → App Catalog
+- Captures sous `TestResults\winsight`
+
+WinSight reste un repo frère local, configurable par `-WinsightRoot` ou `$env:WINSIGHT_ROOT`. Aucun chemin machine ni `.mcp.json` ne doit être tracké.
 
 ---
 
@@ -254,7 +301,7 @@ $proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThr
 
 | Fichier | Description |
 |---------|-------------|
-| `applications-data.js` | Base de données JS pour ProfileCreator (66 apps) |
+| `applications-data.js` | Base de données JS pour ProfileCreator (65 apps) |
 | `ProfileCreator_Features.md` | Documentation des fonctionnalités du ProfileCreator |
 | `StartupManager.html` | Interface de gestion du démarrage automatique |
 | `Launch-TrustedInstallerGUI.ps1` | Script PowerShell pour TrustedInstaller launcher |
@@ -311,15 +358,16 @@ $proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThr
 
 ---
 
-## ✅ Résultats de Validation (v2.4.0)
+## ✅ Résultats de Validation (2026050901)
 
-- **66 applications** dans la base de données
+- **175 applications** dans la base de données principale
+- **65 applications** dans le bundle standalone ProfileCreator
 - **100% de taux de validation** sur les sources principales
 - **TrustedInstaller launcher** : Testé et fonctionnel
-- **ProfileCreator** : Support complet des 66 apps + custom
+- **ProfileCreator** : Support complet du bundle standalone + custom
 
 ---
 
-**Version** : 2.4.0
-**Dernière mise à jour** : 2025-10-06
+**Version** : 2026050901
+**Dernière mise à jour** : 2026-05-09
 **Auteur** : Julien Bombled

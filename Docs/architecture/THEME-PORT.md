@@ -1,19 +1,19 @@
 # ADR — Theme Port from Heimdall.Next
 
-**Status:** DRAFT — Decisions Q1..Q9 acted; ready for execution PR1.
+**Status:** COMPLETE — theme port merged in PR #47; post-merge cleanup and coverage closed by PR #91.
 **Author:** Julien Bombled (with Cowork-Claude as architect, Codex as executor).
-**Pre-requisite:** `REFACTOR-MVVM.md` Status COMPLETE (all PRs merged, 384 tests passing). Verified.
+**Pre-requisite:** `REFACTOR-MVVM.md` Status COMPLETE. Verified.
 **Source project:** `G:\_dev\SnapConnect\Heimdall.Next` (sister project, same author).
 **Scope:** Port Heimdall's color palette system + `ThemeService` to Win11Forge. **Strategy 1 strict** (palette + service only, keep WPF-UI 4.2).
 **Type:** Feature port (not an audit-finding closure). No `§12 Audit Follow-up` section needed.
 
-> All `[TO DECIDE]` sections from the brainstorming session have been resolved. Decisions Q1..Q9 are marked `[DECIDED]`. Section 12 holds the Codex-ready execution backlog (single PR for this scope).
+> All `[TO DECIDE]` sections from the brainstorming session have been resolved. Decisions Q1..Q9 are marked `[DECIDED]`. Sections 11-12 retain historical checklist/execution context; closed execution prompts and phase reports are archived under `Docs/Archive/2026-05-closed-work/`.
 
 ---
 
 ## 1. Context
 
-Win11Forge is a .NET 8 WPF GUI consuming **WPF-UI 4.2** (`Wpf.Ui.Appearance.ApplicationThemeManager`, `Wpf.Ui.Controls`, `WindowBackdropType.Mica`) for Fluent design. The current theme system supports **two themes** (Light, Dark) via:
+At the time of this ADR, Win11Forge was a .NET 8 WPF GUI consuming **WPF-UI 4.2** (`Wpf.Ui.Appearance.ApplicationThemeManager`, `Wpf.Ui.Controls`, `WindowBackdropType.Mica`) for Fluent design. The codebase has since moved to .NET 10; the theme architecture described here remains current. The pre-port theme system supported **two themes** (Light, Dark) via:
 
 - `AppSettings.IsDarkTheme: bool` persisted in `%LOCALAPPDATA%\Win11Forge\settings.json`
 - `App.xaml.cs:OnStartup` calling `ApplicationThemeManager.Apply(Dark|Light, Mica)` + `ApplyThemeResources(isDark)` which programmatically constructs ~25 `SolidColorBrush` instances and assigns them to `Application.Current.Resources`
@@ -315,24 +315,24 @@ A separate test project `GUI/Win11Forge.GUI.UITests/` ships with this PR (delive
 
 **What this does NOT cover (must still be exercised manually):** the 8-theme cycling and visual-coherence checks of scenario 2 (DataGrid contrast, DWM title bar luminance, accent propagation, no black-on-black/white-on-white), persistence across restart (scenario 3), the two legacy-bool migration scenarios (4 and 5), and the HighContrast × Dracula coexistence (scenario 6, which is the highest residual risk per §13 row 6). These remain **mandatory manual gates before merge**.
 
-The opt-in UIA harness is also distinct from the xUnit coverage gaps tracked in `TODO.md` ("post-merge coverage extension"); UIA does not exercise the migration parser or the converter fallback paths. The TODO entry stands as-is.
+The opt-in UIA harness is also distinct from the xUnit coverage gaps that were later closed by PR #91. UIA does not exercise the migration parser or the converter fallback paths; those are covered by focused xUnit tests.
 
 ### 11.8 Behavior change explicitly accepted
 
-- [ ] Users on `IsDarkTheme=true` (likely the majority) who had been seeing **WPF-UI Dark** will now see **DraculaPro** after migration. This is intentional (decision Q1). **Documented as a release note** in the PR description and (post-merge) in `CHANGELOG.md`.
-- [ ] No automatic bool-revert path: once `ThemeName` is written, `IsDarkTheme` is derived. Users who want strict WPF-UI Dark have no theme to select (closest = DraculaPro). Acknowledged risk; the 7 Dracula dark variants offer richer choice in exchange.
+- [x] Users on `IsDarkTheme=true` (likely the majority) who had been seeing **WPF-UI Dark** now see **DraculaPro** after migration. This is intentional (decision Q1) and documented in `CHANGELOG.md`.
+- [x] No automatic bool-revert path: once `ThemeName` is written, `IsDarkTheme` is derived. Users who want strict WPF-UI Dark have no theme to select (closest = DraculaPro). Acknowledged risk; the 7 Dracula dark variants offer richer choice in exchange.
 
 ### 11.9 Delivery criteria
 
-- [ ] Apache 2.0 header on every new file (author: Julien Bombled, year 2026).
-- [ ] English-only code, comments, identifiers, XML doc.
-- [ ] Zero hardcoding: theme names → `ThemeNames` consts, brush keys referenced in code-behind → const strings, display labels → `Resources.resx`.
-- [ ] No new `using System.Windows.Media.Brushes.Black` or hex-coded brushes in code-behind for any theme decision (must come from `Application.Current.Resources`).
-- [ ] PR description references this ADR; `TODO.md` "UI/Theme port from Heimdall.Next" entry updated to `In progress` until merge, then `Closed`.
+- [x] Apache 2.0 header on every new file (author: Julien Bombled, year 2026).
+- [x] English-only code, comments, identifiers, XML doc.
+- [x] Zero hardcoding: theme names → `ThemeNames` consts, brush keys referenced in code-behind → const strings, display labels → `Resources.resx`.
+- [x] No new `using System.Windows.Media.Brushes.Black` or hex-coded brushes in code-behind for any theme decision (must come from `Application.Current.Resources`).
+- [x] PR description references this ADR; `TODO.md` "UI/Theme port from Heimdall.Next" entry is closed.
 
 ---
 
-## 12. Implementation Plan — Codex-ready PR
+## 12. Implementation Plan — Historical Execution Context
 
 Single-PR scope. Constraints inherited from `REFACTOR-MVVM.md §9` apply identically (Apache 2.0, English-only, zero hardcoding, `Nullable` + `WaE`, immutable audit reports, no out-of-scope file modifications).
 
@@ -372,7 +372,7 @@ Single-PR scope. Constraints inherited from `REFACTOR-MVVM.md §9` apply identic
 - `GUI/Win11Forge.GUI/Views/SettingsView.xaml` — replace ToggleSwitch (line 61) with ComboBox bound to `AvailableThemes`/`SelectedTheme`.
 - `GUI/Win11Forge.GUI/Resources/Resources.resx` — add 8 new keys `Settings_ThemeName_*`.
 - `GUI/Win11Forge.GUI/Resources/Resources.fr.resx` — same 8 keys, French translations.
-- `TODO.md` — update entry status to `In progress`, link to this ADR.
+- `TODO.md` — closed by PR #47; post-merge cleanup/coverage closed by PR #91.
 
 **Constraints:**
 
@@ -419,14 +419,14 @@ The implementation kept the ADR's behavioral decisions but tightened a few mecha
 | HighContrast + Dracula interaction breaks (HC overlay swap targets WPF-UI keys, not Dracula keys) | Medium | Medium | Smoke test § 11.7 covers HC + Dracula combo. If broken: scope reduction — HC only available with Light theme (one-line guard in `ApplyHighContrastMode`). Track as follow-up if discovered. |
 | Big-bang PR diff size makes review harder | High | Low | Mitigated by clear ADR + Codex prompt structure. Reviewer can take palettes en bloc (mechanical), service + tests separately (logic). |
 | `ThemeAdaptiveBrushConverter` migration introduces null-ref if `IThemeService` not yet initialized at first XAML load | Low | Medium | App.xaml.cs:OnStartup configures DI before any window shows; converter accesses `IThemeService` only post-startup. Fallback to `Light` defaults in converter if service not available (defensive). |
-| `ApplyTheme(null)` called from a non-startup path persists `"Light"` silently via `PersistCanonicalThemeIfNeeded` | Very low | Low | Currently dead code: all production callsites pass a non-null name (`App.xaml.cs:OnStartup` reads `settings.ThemeName` which has a non-null default; `SettingsViewModel.OnSelectedThemeChanged` early-outs on `value is null`). Documented as known theoretical race per Phase C audit (`THEME-PORT-PHASE-C-REPORT.md` Section 4 row 1). If a future callsite emerges, guard at the call boundary or short-circuit `ApplyTheme(null)` to no-op. |
+| `ApplyTheme(null)` called from a non-startup path persists `"Light"` silently via `PersistCanonicalThemeIfNeeded` | Very low | Low | Currently dead code: all production callsites pass a non-null name (`App.xaml.cs:OnStartup` reads `settings.ThemeName` which has a non-null default; `SettingsViewModel.OnSelectedThemeChanged` early-outs on `value is null`). Documented as known theoretical race per archived Phase C audit (`Docs/Archive/2026-05-closed-work/architecture/THEME-PORT-PHASE-C-REPORT.md` Section 4 row 1). If a future callsite emerges, guard at the call boundary or short-circuit `ApplyTheme(null)` to no-op. |
 
 ---
 
 ## 14. References
 
 - ADR sibling: `Docs/architecture/REFACTOR-MVVM.md` (status COMPLETE — pre-requisite met).
-- `TODO.md` entry "UI/Theme port from Heimdall.Next" — superseded by this ADR; kept as `In progress` pointer.
+- `TODO.md` entry "UI/Theme port from Heimdall.Next" — closed by PR #47, with follow-up coverage/cleanup closed by PR #91.
 - Heimdall.Next source (read-only reference): `G:\_dev\SnapConnect\Heimdall.Next\src\Heimdall.App\`
   - `Services/ThemeService.cs` (180 lines) — pattern reference for `ApplyTheme`, `ThemeRevision`, migration.
   - `Themes/DraculaProTheme.xaml` and 6 siblings — palette source.
