@@ -94,6 +94,31 @@ public class FocusedInterfacesTests
     }
 
     /// <summary>
+    /// IApplicationBridge should not expose the unused legacy batch installation API.
+    /// </summary>
+    [Fact]
+    public void IApplicationBridge_Should_Not_Expose_Unused_BatchInstall_Api()
+    {
+        // Arrange
+        var interfaceType = typeof(IApplicationBridge);
+
+        // Act
+        var methods = interfaceType.GetMethods()
+            .Where(m => !m.IsSpecialName)
+            .Select(m => m.Name)
+            .ToList();
+
+        var serviceTypeNames = interfaceType.Assembly.GetTypes()
+            .Select(t => t.Name)
+            .ToList();
+
+        // Assert
+        Assert.DoesNotContain("InstallApplicationsAsync", methods);
+        Assert.DoesNotContain("BatchInstallResult", serviceTypeNames);
+        Assert.DoesNotContain("BatchInstallProgress", serviceTypeNames);
+    }
+
+    /// <summary>
     /// ISystemInfoService should have system info related members.
     /// </summary>
     [Fact]
