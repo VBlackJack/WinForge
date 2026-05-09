@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'StateManager.psm1'
-    ModuleVersion = '3.7.2'
+    ModuleVersion = '1.0.0509.1'
     GUID = '7b634acc-e0bf-4318-96e9-74a2ef93608d'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'State', 'Persistence', 'Recovery')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.7.2'
+            ReleaseNotes = 'Win11Forge v2026050901'
         }
     }
 }

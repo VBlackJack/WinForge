@@ -191,7 +191,7 @@ function Compare-SemanticVersions {
         Compares two semantic version strings.
 
     .DESCRIPTION
-        Compares versions in the format X.Y.Z (optionally with -prerelease suffix).
+        Compares semantic versions and Win11Forge calendar versions.
         Returns: -1 if Version1 < Version2, 0 if equal, 1 if Version1 > Version2
 
     .PARAMETER Version1
@@ -248,6 +248,13 @@ function Compare-SemanticVersions {
     $v2Core = $v2Parts[0]
     $v1Pre = if ($v1Parts.Count -gt 1) { $v1Parts[1] } else { $null }
     $v2Pre = if ($v2Parts.Count -gt 1) { $v2Parts[1] } else { $null }
+
+    # Normalize Heimdall-style calendar tags so YYYY.MMDDxx and YYYYMMDDxx compare identically.
+    foreach ($versionCoreRef in @([ref]$v1Core, [ref]$v2Core)) {
+        if ($versionCoreRef.Value -match '^(?<year>\d{4})\.(?<mmddseq>\d{6})$') {
+            $versionCoreRef.Value = "$($Matches.year)$($Matches.mmddseq)"
+        }
+    }
 
     # Parse version numbers safely (handle invalid input gracefully)
     $v1NumsList = [System.Collections.ArrayList]::new()

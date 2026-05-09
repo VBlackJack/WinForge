@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'Win11ForgeGUI.psm1'
-    ModuleVersion = '3.7.2'
+    ModuleVersion = '1.0.0509.1'
     GUID = '711bc72b-1310-4c07-8cb1-53c24ebaeccb'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'GUI', 'WPF', 'Integration')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.7.2'
+            ReleaseNotes = 'Win11Forge v2026050901'
         }
     }
 }

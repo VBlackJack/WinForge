@@ -148,7 +148,7 @@ public class VersionServiceIntegrationTests
         // Assert
         Assert.False(string.IsNullOrEmpty(version),
             "Version should not be null or empty");
-        Assert.Matches(@"^\d+\.\d+\.\d+", version);
+        Assert.Matches(@"^\d{10}$", version);
     }
 }
 

@@ -21,7 +21,7 @@
     RootModule = 'RollbackManager.psm1'
 
     # Version number of this module
-    ModuleVersion = '3.7.2'
+    ModuleVersion = '1.0.0509.1'
 
     # ID used to uniquely identify this module
     GUID = 'a5c9d2e6-8f7b-4a3c-0d1e-2f3a4b5c6d7e'

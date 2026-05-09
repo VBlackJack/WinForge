@@ -331,14 +331,14 @@ function Get-BackedUpLayouts {
 
     if (-not (Test-Path $script:BackupDirectory)) {
         Write-Status -Message (Get-LocalizedString -Key 'startmenu.no_backups_dir') -Level 'Info'
-        return @()
+        return ,@()
     }
 
-    $backups = Get-ChildItem -Path $script:BackupDirectory -Filter "*.bin" -ErrorAction SilentlyContinue
+    $backups = @(Get-ChildItem -Path $script:BackupDirectory -Filter "*.bin" -ErrorAction SilentlyContinue)
 
     if (-not $backups -or $backups.Count -eq 0) {
         Write-Status -Message (Get-LocalizedString -Key 'startmenu.no_backups_found' -Parameters @{ Path = $script:BackupDirectory }) -Level 'Info'
-        return @()
+        return ,@()
     }
 
     Write-Status -Message (Get-LocalizedString -Key 'startmenu.found_backups' -Parameters @{ Count = $backups.Count }) -Level 'Info'
@@ -348,7 +348,7 @@ function Get-BackedUpLayouts {
         Write-Status -Message "  - $($backup.Name) ($size KB) - Modified: $($backup.LastWriteTime)" -Level 'Info'
     }
 
-    return $backups
+    return ,$backups
 }
 
 <#
