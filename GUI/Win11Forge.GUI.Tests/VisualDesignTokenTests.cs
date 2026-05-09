@@ -136,6 +136,46 @@ public class VisualDesignTokenTests
         Assert.Equal(Visibility.Collapsed, converter.Convert("Winget", typeof(Visibility), null!, CultureInfo.InvariantCulture));
     }
 
+    [Fact]
+    public void SettingsView_PrimaryCardsUseCardPaddingToken()
+    {
+        var settingsXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "SettingsView.xaml"));
+
+        Assert.DoesNotContain("Border Padding=\"16\"", settingsXaml, StringComparison.Ordinal);
+        Assert.Contains("Padding=\"{StaticResource CardPadding}\"", settingsXaml, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SettingsView_SectionHeadersDoNotRepeatTabIcons()
+    {
+        var settingsPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "SettingsView.xaml");
+        var settingsXaml = File.ReadAllText(settingsPath);
+        var settingsDoc = XDocument.Load(settingsPath);
+        var removedSectionIcons = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "Color24",
+            "Translate24",
+            "Gauge24",
+            "Database24",
+            "CalendarAdd24",
+            "CalendarMultiple24"
+        };
+        var repeatedSectionIcons = settingsDoc.Descendants()
+            .Where(element =>
+                element.Name.LocalName == "SymbolIcon"
+                && removedSectionIcons.Contains(element.Attribute("Symbol")?.Value ?? string.Empty)
+                && string.Equals(element.Attribute("Width")?.Value, "24", StringComparison.Ordinal))
+            .Select(element => element.Attribute("Symbol")?.Value)
+            .ToList();
+
+        Assert.Empty(repeatedSectionIcons);
+
+        Assert.Contains("Symbol=\"Color24\" Width=\"18\"", settingsXaml, StringComparison.Ordinal);
+        Assert.Contains("Symbol=\"Gauge24\" Width=\"18\"", settingsXaml, StringComparison.Ordinal);
+        Assert.Contains("Symbol=\"Database24\" Width=\"18\"", settingsXaml, StringComparison.Ordinal);
+        Assert.Contains("Symbol=\"CalendarClock24\" Width=\"18\"", settingsXaml, StringComparison.Ordinal);
+    }
+
     private static IEnumerable<string> SourceBadgeStyles()
     {
         yield return "SourceBadgeStyle";

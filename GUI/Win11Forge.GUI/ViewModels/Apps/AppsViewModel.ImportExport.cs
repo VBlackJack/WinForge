@@ -15,15 +15,23 @@
  */
 
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.Input;
+using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI.ViewModels;
 
 public partial class AppsViewModel
 {
+    private enum ImportStateTarget
+    {
+        Selection,
+        Favorites
+    }
+
     /// <summary>
     /// Exports the current selection to a JSON file.
     /// </summary>
@@ -80,29 +88,8 @@ public partial class AppsViewModel
             try
             {
                 var json = await File.ReadAllTextAsync(filePath);
-                var selectedIds = JsonSerializer.Deserialize<List<string>>(json);
-
-                if (selectedIds != null)
-                {
-                    // Clear current selection
-                    foreach (var app in _allApplications)
-                    {
-                        app.IsSelected = false;
-                    }
-
-                    // Apply imported selection
-                    foreach (var appId in selectedIds)
-                    {
-                        var app = _allApplications.FirstOrDefault(a =>
-                            a.AppId.Equals(appId, StringComparison.OrdinalIgnoreCase));
-                        if (app != null)
-                        {
-                            app.IsSelected = true;
-                        }
-                    }
-
-                    UpdateSelectedCount();
-                }
+                var selectedIds = NormalizeImportedIds(JsonSerializer.Deserialize<List<string>>(json));
+                await ImportApplicationStateAsync(selectedIds, ImportStateTarget.Selection);
             }
             catch (Exception ex)
             {
@@ -171,35 +158,8 @@ public partial class AppsViewModel
             try
             {
                 var json = await File.ReadAllTextAsync(filePath);
-                var favoriteIds = JsonSerializer.Deserialize<List<string>>(json);
-
-                if (favoriteIds != null)
-                {
-                    // Clear current favorites
-                    foreach (var app in _allApplications)
-                    {
-                        app.IsFavorite = false;
-                    }
-
-                    // Apply imported favorites
-                    foreach (var appId in favoriteIds)
-                    {
-                        var app = _allApplications.FirstOrDefault(a =>
-                            a.AppId.Equals(appId, StringComparison.OrdinalIgnoreCase));
-                        if (app != null)
-                        {
-                            app.IsFavorite = true;
-                        }
-                    }
-
-                    FavoritesCount = _allApplications.Count(a => a.IsFavorite);
-
-                    // Refresh filter if viewing favorites
-                    if (SelectedStatusFilter == StatusFilterOption.Favorites)
-                    {
-                        ApplyFilter();
-                    }
-                }
+                var favoriteIds = NormalizeImportedIds(JsonSerializer.Deserialize<List<string>>(json));
+                await ImportApplicationStateAsync(favoriteIds, ImportStateTarget.Favorites);
             }
             catch (Exception ex)
             {
@@ -210,5 +170,148 @@ public partial class AppsViewModel
                 Debug.WriteLine($"Failed to import favorites: {ex}");
             }
         }
+    }
+
+    private async Task ImportApplicationStateAsync(HashSet<string> importedIds, ImportStateTarget target)
+    {
+        var matchedApps = _allApplications
+            .Where(app => importedIds.Contains(app.AppId))
+            .ToList();
+        var matchedIds = matchedApps
+            .Select(app => app.AppId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var missingCount = importedIds.Count(id => !matchedIds.Contains(id));
+        var currentCount = CountCurrentState(target);
+        var replace = true;
+
+        if (currentCount > 0)
+        {
+            var mode = await _dialogService.ShowYesNoCancelAsync(
+                GetImportTitle(target),
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    GetImportMessage(target),
+                    matchedApps.Count,
+                    missingCount,
+                    currentCount),
+                GetLocalizedString("Apps_Import_Replace", "Replace"),
+                GetLocalizedString("Apps_Import_Merge", "Merge"),
+                Resources.Resources.Common_Cancel);
+
+            if (mode is null)
+            {
+                return;
+            }
+
+            replace = mode.Value;
+        }
+
+        if (replace)
+        {
+            foreach (var app in _allApplications)
+            {
+                SetImportedState(app, target, false);
+            }
+        }
+
+        foreach (var app in matchedApps)
+        {
+            SetImportedState(app, target, true);
+        }
+
+        UpdateImportedState(target);
+
+        StatusMessage = string.Format(
+            CultureInfo.CurrentCulture,
+            GetImportStatusMessage(target),
+            matchedApps.Count,
+            missingCount,
+            CountCurrentState(target));
+    }
+
+    private static HashSet<string> NormalizeImportedIds(IEnumerable<string>? importedIds)
+    {
+        var normalizedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (importedIds is null)
+        {
+            return normalizedIds;
+        }
+
+        foreach (var appId in importedIds)
+        {
+            if (!string.IsNullOrWhiteSpace(appId))
+            {
+                normalizedIds.Add(appId.Trim());
+            }
+        }
+
+        return normalizedIds;
+    }
+
+    private int CountCurrentState(ImportStateTarget target)
+    {
+        return target == ImportStateTarget.Selection
+            ? _allApplications.Count(app => app.IsSelected)
+            : _allApplications.Count(app => app.IsFavorite);
+    }
+
+    private static void SetImportedState(ApplicationModel app, ImportStateTarget target, bool value)
+    {
+        if (target == ImportStateTarget.Selection)
+        {
+            app.IsSelected = value;
+        }
+        else
+        {
+            app.IsFavorite = value;
+        }
+    }
+
+    private void UpdateImportedState(ImportStateTarget target)
+    {
+        if (target == ImportStateTarget.Selection)
+        {
+            UpdateSelectedCount();
+            if (SelectedStatusFilter == StatusFilterOption.Selected)
+            {
+                ApplyFilter();
+            }
+            return;
+        }
+
+        FavoritesCount = _allApplications.Count(app => app.IsFavorite);
+        if (SelectedStatusFilter == StatusFilterOption.Favorites)
+        {
+            ApplyFilter();
+        }
+    }
+
+    private static string GetImportTitle(ImportStateTarget target)
+    {
+        return target == ImportStateTarget.Selection
+            ? GetLocalizedString("Apps_ImportSelection_Title", "Import selection")
+            : GetLocalizedString("Apps_ImportFavorites_Title", "Import favorites");
+    }
+
+    private static string GetImportMessage(ImportStateTarget target)
+    {
+        return target == ImportStateTarget.Selection
+            ? GetLocalizedString(
+                "Apps_ImportSelection_Message",
+                "The imported selection matches {0} application(s), with {1} missing ID(s). Current selection has {2} application(s). Replace it or merge?")
+            : GetLocalizedString(
+                "Apps_ImportFavorites_Message",
+                "The imported favorites match {0} application(s), with {1} missing ID(s). Current favorites contain {2} application(s). Replace them or merge?");
+    }
+
+    private static string GetImportStatusMessage(ImportStateTarget target)
+    {
+        return target == ImportStateTarget.Selection
+            ? GetLocalizedString(
+                "Apps_ImportSelection_Status",
+                "Selection import complete: {0} matched, {1} missing, {2} selected")
+            : GetLocalizedString(
+                "Apps_ImportFavorites_Status",
+                "Favorites import complete: {0} matched, {1} missing, {2} favorites");
     }
 }

@@ -40,7 +40,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IErrorHistoryService? _errorHistoryService;
     private readonly IApplicationDetectionService? _detectionService;
-    private readonly ToastService? _toastService;
+    private readonly IToastService? _toastService;
     private readonly IApplicationLifetimeService _applicationLifetimeService;
     private readonly IProcessLauncher _processLauncher;
     private readonly IFileDialogService _fileDialogService;
@@ -323,7 +323,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         IDeploymentHistoryService historyService,
         IPowerShellBridge powerShellBridge,
         IThemeService? themeService = null,
-        ToastService? toastService = null,
+        IToastService? toastService = null,
         IErrorHistoryService? errorHistoryService = null,
         IApplicationDetectionService? detectionService = null,
         IApplicationLifetimeService? applicationLifetimeService = null,
@@ -437,7 +437,6 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         if (TrySaveSettings())
         {
             StatusMessage = Resources.Resources.Settings_ParallelInstallsApplied;
-            _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
         }
     }
 
@@ -450,7 +449,6 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         if (TrySaveSettings())
         {
             StatusMessage = Resources.Resources.Settings_ParallelScansApplied;
-            _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
         }
     }
 
@@ -463,7 +461,6 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         if (TrySaveSettings())
         {
             StatusMessage = Resources.Resources.Settings_ScanTimeoutApplied;
-            _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
         }
     }
 
@@ -478,7 +475,6 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         if (TrySaveSettings())
         {
             StatusMessage = Resources.Resources.Settings_ThemeApplied;
-            _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
         }
     }
 
@@ -493,7 +489,6 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         if (TrySaveSettings())
         {
             StatusMessage = Resources.Resources.Settings_AutoSaved;
-            _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
         }
     }
 
@@ -507,7 +502,6 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         if (TrySaveSettings())
         {
             StatusMessage = Resources.Resources.Settings_AutoSaved;
-            _toastService?.ShowInfo(Resources.Resources.Settings_AutoSaved);
         }
     }
 

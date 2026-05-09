@@ -379,7 +379,10 @@ public partial class App : Application
 
                 // Override commonly-used Fluent brush keys so high contrast is actually visible.
                 SwapIfExists(app, "ApplicationBackgroundBrush", "HighContrastBackgroundBrush");
+                SwapIfExists(app, "SolidBackgroundFillColorBaseBrush", "HighContrastBackgroundBrush");
+                SwapIfExists(app, "SolidBackgroundFillColorSecondaryBrush", "HighContrastSurfaceBrush");
                 SwapIfExists(app, "CardBackgroundFillColorDefaultBrush", "HighContrastCardBrush");
+                SwapIfExists(app, "CardBackgroundFillColorSecondaryBrush", "HighContrastSurfaceBrush");
                 SwapIfExists(app, "ControlFillColorDefaultBrush", "HighContrastSurfaceBrush");
                 SwapIfExists(app, "TextFillColorPrimaryBrush", "HighContrastTextPrimaryBrush");
                 SwapIfExists(app, "TextFillColorSecondaryBrush", "HighContrastTextSecondaryBrush");

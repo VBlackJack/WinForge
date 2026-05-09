@@ -31,7 +31,18 @@ public class AccessibilityHardeningTests
     public static IEnumerable<object[]> RequiredA11yLocKeyCases =>
     [
         ["Views/AppsView.xaml", new[] { "LogViewer_Copy", "LogViewer_Close", "Summary_Close", "Apps_SaveProfile", "Apps_ResetColumns" }],
-        ["Views/Dialogs/ApplicationEditorDialog.xaml", new[] { "AppEditor_SearchAction", "AppEditor_ApplySelection" }],
+        [
+            "Views/Dialogs/ApplicationEditorDialog.xaml",
+            new[]
+            {
+                "A11y_AppEditor_SearchWinget",
+                "A11y_AppEditor_SearchChocolatey",
+                "A11y_AppEditor_SearchStore",
+                "A11y_AppEditor_ApplyWinget",
+                "A11y_AppEditor_ApplyChocolatey",
+                "A11y_AppEditor_ApplyStore"
+            }
+        ],
         ["Views/PrerequisitesView.xaml", new[] { "Prerequisites_Check" }],
         ["Views/SettingsView.xaml", new[] { "Settings_ReducedMotion_Desc", "Settings_HighContrast_Desc" }],
         ["Controls/ConfirmDialog.xaml", new[] { "Dialog_Cancel", "Dialog_Confirm" }],
@@ -275,6 +286,21 @@ public class AccessibilityHardeningTests
         Assert.Contains("SwapIfExists(app, \"TextOnAccentFillColorPrimaryBrush\"", src, StringComparison.Ordinal);
         Assert.Contains("SwapIfExists(app, \"TextOnAccentFillColorSecondaryBrush\"", src, StringComparison.Ordinal);
         Assert.Contains("SwapIfExists(app, \"TextOnAccentFillColorDisabledBrush\"", src, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DeadResourceCleanup_RemovesBulkDeleteKeysAndLogsFallbacks()
+    {
+        var enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
+        var frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
+        var logsViewModel = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "ViewModels", "LogsViewModel.cs"));
+
+        Assert.DoesNotContain("AppCatalog_DeleteMultipleConfirm", enResx, StringComparison.Ordinal);
+        Assert.DoesNotContain("AppCatalog_DeleteMultipleTitle", enResx, StringComparison.Ordinal);
+        Assert.DoesNotContain("AppCatalog_DeleteMultipleConfirm", frResx, StringComparison.Ordinal);
+        Assert.DoesNotContain("AppCatalog_DeleteMultipleTitle", frResx, StringComparison.Ordinal);
+        Assert.DoesNotContain("?? \"Clear Old Logs\"", logsViewModel, StringComparison.Ordinal);
+        Assert.DoesNotContain("Delete log files older than 7 days?", logsViewModel, StringComparison.Ordinal);
     }
 
     [Fact]

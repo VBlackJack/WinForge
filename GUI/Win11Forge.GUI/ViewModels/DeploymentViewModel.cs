@@ -15,6 +15,7 @@
  */
 
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Models;
@@ -46,6 +47,7 @@ public enum DeploymentResultType
 public partial class DeploymentViewModel : ViewModelBase, IDisposable
 {
     private readonly IDeploymentStateService _deploymentStateService;
+    private readonly IDialogService _dialogService;
     private bool _disposed;
 
     /// <summary>
@@ -178,9 +180,10 @@ public partial class DeploymentViewModel : ViewModelBase, IDisposable
     /// <summary>
     /// Initializes a new instance of DeploymentViewModel.
     /// </summary>
-    public DeploymentViewModel(IDeploymentStateService deploymentStateService)
+    public DeploymentViewModel(IDeploymentStateService deploymentStateService, IDialogService? dialogService = null)
     {
         _deploymentStateService = deploymentStateService;
+        _dialogService = dialogService ?? new DialogService();
 
         // Subscribe to state changes
         _deploymentStateService.StateChanged += OnDeploymentStateChanged;
@@ -313,9 +316,22 @@ public partial class DeploymentViewModel : ViewModelBase, IDisposable
     /// Cancels the current deployment.
     /// </summary>
     [RelayCommand(CanExecute = nameof(IsDeploying))]
-    private void CancelDeployment()
+    private async Task CancelDeploymentAsync()
     {
-        _deploymentStateService.RequestCancel();
+        var confirmed = await _dialogService.ShowConfirmAsync(
+            GetLocalizedString("Deployment_Cancel_Title", "Cancel deployment"),
+            string.Format(
+                CultureInfo.CurrentCulture,
+                GetLocalizedString("Deployment_Cancel_Message", "Cancel the current deployment? {0} of {1} items have completed."),
+                CompletedCount,
+                TotalToInstall),
+            Resources.Resources.Btn_Cancel,
+            Resources.Resources.Common_Cancel);
+
+        if (confirmed)
+        {
+            _deploymentStateService.RequestCancel();
+        }
     }
 
     /// <summary>
@@ -364,5 +380,10 @@ public partial class DeploymentViewModel : ViewModelBase, IDisposable
         }
 
         _disposed = true;
+    }
+
+    private static string GetLocalizedString(string resourceKey, string fallback)
+    {
+        return Resources.Resources.ResourceManager.GetString(resourceKey, Resources.Resources.Culture) ?? fallback;
     }
 }

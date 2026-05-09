@@ -15,6 +15,7 @@
  */
 
 using CommunityToolkit.Mvvm.Input;
+using System.Globalization;
 
 namespace Win11Forge.GUI.ViewModels;
 
@@ -56,8 +57,27 @@ public partial class AppsViewModel
     /// Cancels the current batch operation.
     /// </summary>
     [RelayCommand]
-    private void CancelBatch()
+    private async Task CancelBatchAsync()
     {
+        var confirmed = await _dialogService.ShowConfirmAsync(
+            GetLocalizedString("Apps_CancelBatch_Title", "Cancel operation"),
+            string.Format(
+                CultureInfo.CurrentCulture,
+                GetLocalizedString("Apps_CancelBatch_Message", "Cancel the current operation? {0} of {1} items have completed."),
+                BatchProgressCurrent,
+                BatchProgressTotal),
+            Resources.Resources.Btn_CancelBatch,
+            Resources.Resources.Common_Cancel);
+
+        if (confirmed)
+        {
+            RequestBatchCancellation();
+        }
+    }
+
+    private void RequestBatchCancellation()
+    {
+        StatusMessage = GetLocalizedString("Cancel_InProgress", "Cancelling operation...");
         _batchCancellationTokenSource?.Cancel();
         // Resume if paused to allow cancellation to propagate
         if (IsPaused)

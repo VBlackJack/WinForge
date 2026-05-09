@@ -197,6 +197,34 @@ public class SettingsViewModelTests
         Assert.Equal(ThemeNames.Light, settingsService.LastSavedSettings.ThemeName);
     }
 
+    [Fact]
+    public void AutoSaveChanges_ShouldUpdateStatusWithoutInfoToastSpam()
+    {
+        // Arrange
+        var settingsService = new MockAppSettingsService();
+        var historyService = new MockDeploymentHistoryService();
+        var powerShellBridge = new MockPowerShellBridge();
+        var toastService = new TestToastService();
+        var viewModel = new SettingsViewModel(
+            settingsService,
+            historyService,
+            powerShellBridge,
+            toastService: toastService);
+
+        // Act
+        viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Light);
+        viewModel.ReducedMotion = !viewModel.ReducedMotion;
+        viewModel.IsHighContrastEnabled = !viewModel.IsHighContrastEnabled;
+        viewModel.MaxParallelInstalls = 3;
+        viewModel.MaxParallelScans = 4;
+        viewModel.UpdateScanTimeoutMinutes = 10;
+
+        // Assert
+        Assert.NotNull(settingsService.LastSavedSettings);
+        Assert.NotNull(viewModel.StatusMessage);
+        Assert.DoesNotContain(toastService.Toasts, toast => toast.Level == ToastLevel.Info);
+    }
+
     /// <summary>
     /// Verifies that save failures surface an explicit status message.
     /// </summary>

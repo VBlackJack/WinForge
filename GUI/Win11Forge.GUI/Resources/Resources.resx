@@ -2461,6 +2461,38 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Failed to import applications</value>
     <comment>Error message when import fails</comment>
   </data>
+  <data name="Apps_Import_Replace" xml:space="preserve">
+    <value>Replace</value>
+    <comment>Import conflict dialog replace action</comment>
+  </data>
+  <data name="Apps_Import_Merge" xml:space="preserve">
+    <value>Merge</value>
+    <comment>Import conflict dialog merge action</comment>
+  </data>
+  <data name="Apps_ImportSelection_Title" xml:space="preserve">
+    <value>Import selection</value>
+    <comment>Selection import conflict dialog title</comment>
+  </data>
+  <data name="Apps_ImportFavorites_Title" xml:space="preserve">
+    <value>Import favorites</value>
+    <comment>Favorites import conflict dialog title</comment>
+  </data>
+  <data name="Apps_ImportSelection_Message" xml:space="preserve">
+    <value>The imported selection matches {0} application(s), with {1} missing ID(s). Current selection has {2} application(s). Replace it or merge?</value>
+    <comment>Selection import conflict dialog message (0=matched,1=missing,2=current)</comment>
+  </data>
+  <data name="Apps_ImportFavorites_Message" xml:space="preserve">
+    <value>The imported favorites match {0} application(s), with {1} missing ID(s). Current favorites contain {2} application(s). Replace them or merge?</value>
+    <comment>Favorites import conflict dialog message (0=matched,1=missing,2=current)</comment>
+  </data>
+  <data name="Apps_ImportSelection_Status" xml:space="preserve">
+    <value>Selection import complete: {0} matched, {1} missing, {2} selected</value>
+    <comment>Selection import completion status (0=matched,1=missing,2=final selected count)</comment>
+  </data>
+  <data name="Apps_ImportFavorites_Status" xml:space="preserve">
+    <value>Favorites import complete: {0} matched, {1} missing, {2} favorites</value>
+    <comment>Favorites import completion status (0=matched,1=missing,2=final favorite count)</comment>
+  </data>
   <data name="Apps_Error_PowerShell" xml:space="preserve">
     <value>PowerShell error: {0}</value>
     <comment>PowerShell error in apps workflows</comment>
@@ -2935,6 +2967,18 @@ This action cannot be undone.</value>
     <value>Search</value>
     <comment>Package search action button</comment>
   </data>
+  <data name="A11y_AppEditor_SearchWinget" xml:space="preserve">
+    <value>Search Winget packages</value>
+    <comment>Accessible name for the Winget source search button</comment>
+  </data>
+  <data name="A11y_AppEditor_SearchChocolatey" xml:space="preserve">
+    <value>Search Chocolatey packages</value>
+    <comment>Accessible name for the Chocolatey source search button</comment>
+  </data>
+  <data name="A11y_AppEditor_SearchStore" xml:space="preserve">
+    <value>Search Microsoft Store packages</value>
+    <comment>Accessible name for the Microsoft Store source search button</comment>
+  </data>
   <data name="AppEditor_SearchColumnName" xml:space="preserve">
     <value>Name</value>
     <comment>Package search result name column</comment>
@@ -2950,6 +2994,18 @@ This action cannot be undone.</value>
   <data name="AppEditor_ApplySelection" xml:space="preserve">
     <value>Apply selection</value>
     <comment>Apply selected package result button</comment>
+  </data>
+  <data name="A11y_AppEditor_ApplyWinget" xml:space="preserve">
+    <value>Apply selected Winget package</value>
+    <comment>Accessible name for applying the selected Winget package</comment>
+  </data>
+  <data name="A11y_AppEditor_ApplyChocolatey" xml:space="preserve">
+    <value>Apply selected Chocolatey package</value>
+    <comment>Accessible name for applying the selected Chocolatey package</comment>
+  </data>
+  <data name="A11y_AppEditor_ApplyStore" xml:space="preserve">
+    <value>Apply selected Microsoft Store package</value>
+    <comment>Accessible name for applying the selected Microsoft Store package</comment>
   </data>
   <data name="AppEditor_Searching" xml:space="preserve">
     <value>Searching packages...</value>
@@ -3206,17 +3262,6 @@ This action cannot be undone.</value>
     <value>Store App detection requires PowerShell</value>
     <comment>Store app check not supported message</comment>
   </data>
-  <!-- UX Improvements - Bulk Delete -->
-  <data name="AppCatalog_DeleteMultipleConfirm" xml:space="preserve">
-    <value>Are you sure you want to delete {0} applications?
-
-This action cannot be undone.</value>
-    <comment>Bulk delete confirmation message (0=count)</comment>
-  </data>
-  <data name="AppCatalog_DeleteMultipleTitle" xml:space="preserve">
-    <value>Delete Multiple Applications</value>
-    <comment>Bulk delete confirmation title</comment>
-  </data>
   <!-- UX Improvements - Deployment Result Banner -->
   <data name="Deployment_Result_Success" xml:space="preserve">
     <value>Deployment completed successfully</value>
@@ -3303,6 +3348,22 @@ This action cannot be undone.</value>
   <data name="Cancel_InProgress" xml:space="preserve">
     <value>Cancelling operation...</value>
     <comment>Cancellation in progress message</comment>
+  </data>
+  <data name="Apps_CancelBatch_Title" xml:space="preserve">
+    <value>Cancel operation</value>
+    <comment>Apps batch cancellation confirmation title</comment>
+  </data>
+  <data name="Apps_CancelBatch_Message" xml:space="preserve">
+    <value>Cancel the current operation? {0} of {1} items have completed.</value>
+    <comment>Apps batch cancellation confirmation message (0=completed,1=total)</comment>
+  </data>
+  <data name="Deployment_Cancel_Title" xml:space="preserve">
+    <value>Cancel deployment</value>
+    <comment>Deployment cancellation confirmation title</comment>
+  </data>
+  <data name="Deployment_Cancel_Message" xml:space="preserve">
+    <value>Cancel the current deployment? {0} of {1} items have completed.</value>
+    <comment>Deployment cancellation confirmation message (0=completed,1=total)</comment>
   </data>
   <data name="Cancel_Complete" xml:space="preserve">
     <value>Operation cancelled</value>

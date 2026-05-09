@@ -257,6 +257,12 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     private string _estimatedTimeRemaining = string.Empty;
 
+    /// <summary>
+    /// Last non-error workflow status message.
+    /// </summary>
+    [ObservableProperty]
+    private string? _statusMessage;
+
     private static string GetLocalizedString(string resourceKey, string fallback)
     {
         return Resources.Resources.ResourceManager.GetString(resourceKey, Resources.Resources.Culture) ?? fallback;
@@ -376,7 +382,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
 
     private void OnCancelRequested(object? sender, EventArgs e)
     {
-        CancelBatch();
+        RequestBatchCancellation();
     }
 
     /// <inheritdoc/>

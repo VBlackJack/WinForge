@@ -38,10 +38,9 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
                         <!-- Theme Section -->
-                        <Border Padding="16" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                        <Border Padding="{StaticResource CardPadding}" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                    <ui:SymbolIcon Symbol="Color24" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                     <TextBlock Text="{loc:Loc Settings_Section_Appearance}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
 
@@ -111,10 +110,9 @@
                         </Border>
 
                         <!-- Language Section -->
-                        <Border Padding="16" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                        <Border Padding="{StaticResource CardPadding}" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                    <ui:SymbolIcon Symbol="Translate24" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                     <TextBlock Text="{loc:Loc Settings_Section_Language}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
 
@@ -183,10 +181,9 @@
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
-                    <Border Padding="16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                    <Border Padding="{StaticResource CardPadding}" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <ui:SymbolIcon Symbol="Gauge24" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                 <TextBlock Text="{loc:Loc Settings_Section_Performance}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 <ui:SymbolIcon Symbol="QuestionCircle24" Width="18" Height="18" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                           VerticalAlignment="Center" Margin="8,0,0,0" ToolTip="{loc:Loc Help_Performance}"/>
@@ -244,14 +241,10 @@
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
-                    <Border Padding="16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                    <Border Padding="{StaticResource CardPadding}" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                     <StackPanel>
                         <!-- Section Header -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                            <ui:SymbolIcon Symbol="Database24"
-                                                      Width="24" Height="24"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,12,0"/>
                             <TextBlock Text="{loc:Loc Settings_Section_Data}"
                                        FontSize="20" FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
@@ -369,7 +362,7 @@
                     </Border>
 
                     <!-- Error History Section -->
-                    <Border Padding="16" Margin="0,16,0,0" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                    <Border Padding="{StaticResource CardPadding}" Margin="0,16,0,0" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                         <Expander IsExpanded="{Binding HasErrors}">
                             <Expander.Header>
                                 <StackPanel Orientation="Horizontal">
@@ -471,7 +464,7 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
                         <!-- Admin Required Warning -->
-                        <Border Padding="16" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        <Border Padding="{StaticResource CardPadding}" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                               Visibility="{Binding IsScheduledDeploymentsAvailable, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="ErrorCircle24" Width="24" Height="24"
@@ -485,11 +478,10 @@
                         </Border>
 
                         <!-- Create New Scheduled Deployment -->
-                        <Border Padding="16" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        <Border Padding="{StaticResource CardPadding}" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                               IsEnabled="{Binding IsScheduledDeploymentsAvailable}">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                    <ui:SymbolIcon Symbol="CalendarAdd24" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                     <TextBlock Text="{loc:Loc ScheduledDeployment_CreateNew}"
                                                FontSize="20" FontWeight="SemiBold"
                                                VerticalAlignment="Center"/>
@@ -562,7 +554,7 @@
                         </Border>
 
                         <!-- Scheduled Deployments List -->
-                        <Border Padding="16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        <Border Padding="{StaticResource CardPadding}" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                               IsEnabled="{Binding IsScheduledDeploymentsAvailable}">
                             <StackPanel>
                                 <Grid Margin="0,0,0,16">
@@ -572,7 +564,6 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal">
-                                        <ui:SymbolIcon Symbol="CalendarMultiple24" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0"/>
                                         <TextBlock Text="{loc:Loc ScheduledDeployment_List}"
                                                    FontSize="20" FontWeight="SemiBold"
                                                    VerticalAlignment="Center"/>
@@ -666,7 +657,7 @@
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
-                        <Border Padding="16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                        <Border Padding="{StaticResource CardPadding}" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
