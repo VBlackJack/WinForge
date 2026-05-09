@@ -149,8 +149,8 @@ if (-not (Test-Path $guiProjectPath)) {
 }
 
 $manifestRoots = @(
-    Join-Path $repoRoot 'Core',
-    Join-Path $repoRoot 'Modules'
+    (Join-Path $repoRoot 'Core'),
+    (Join-Path $repoRoot 'Modules')
 )
 
 foreach ($manifest in Get-ChildItem -Path $manifestRoots -Filter *.psd1 -ErrorAction SilentlyContinue) {
