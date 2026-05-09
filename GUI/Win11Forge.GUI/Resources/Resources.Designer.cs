@@ -520,6 +520,27 @@ public class Resources
     public static string Settings_OpenLogs => ResourceManager.GetString("Settings_OpenLogs", resourceCulture);
     public static string Settings_OpenLogs_Desc => ResourceManager.GetString("Settings_OpenLogs_Desc", resourceCulture);
     public static string Logs_Loading => ResourceManager.GetString("Logs_Loading", resourceCulture);
+    public static string Logs_Filter_All => ResourceManager.GetString("Logs_Filter_All", resourceCulture);
+    public static string Logs_Filter_Text => ResourceManager.GetString("Logs_Filter_Text", resourceCulture);
+    public static string Logs_Filter_Json => ResourceManager.GetString("Logs_Filter_Json", resourceCulture);
+    public static string Logs_Filter_Error => ResourceManager.GetString("Logs_Filter_Error", resourceCulture);
+    public static string Logs_Status_FilesFound => ResourceManager.GetString("Logs_Status_FilesFound", resourceCulture);
+    public static string Logs_Error_LoadFailed => ResourceManager.GetString("Logs_Error_LoadFailed", resourceCulture);
+    public static string Logs_Error_OpenFolderFailed => ResourceManager.GetString("Logs_Error_OpenFolderFailed", resourceCulture);
+    public static string Logs_Export_Filter => ResourceManager.GetString("Logs_Export_Filter", resourceCulture);
+    public static string Logs_Export_None => ResourceManager.GetString("Logs_Export_None", resourceCulture);
+    public static string Logs_Export_Success => ResourceManager.GetString("Logs_Export_Success", resourceCulture);
+    public static string Logs_Export_Failed => ResourceManager.GetString("Logs_Export_Failed", resourceCulture);
+    public static string Logs_ClearOld_Success => ResourceManager.GetString("Logs_ClearOld_Success", resourceCulture);
+    public static string Logs_ClearOld_Failed => ResourceManager.GetString("Logs_ClearOld_Failed", resourceCulture);
+    public static string Logs_Error_EmptyPath => ResourceManager.GetString("Logs_Error_EmptyPath", resourceCulture);
+    public static string Logs_Error_NotFound => ResourceManager.GetString("Logs_Error_NotFound", resourceCulture);
+    public static string Logs_Error_OpenLogFailed => ResourceManager.GetString("Logs_Error_OpenLogFailed", resourceCulture);
+    public static string Logs_Status_PathCopied => ResourceManager.GetString("Logs_Status_PathCopied", resourceCulture);
+    public static string Logs_Delete_Success => ResourceManager.GetString("Logs_Delete_Success", resourceCulture);
+    public static string Logs_Delete_Failed => ResourceManager.GetString("Logs_Delete_Failed", resourceCulture);
+    public static string Confirm_DeleteLog_Title => ResourceManager.GetString("Confirm_DeleteLog_Title", resourceCulture);
+    public static string Confirm_DeleteLog_Message => ResourceManager.GetString("Confirm_DeleteLog_Message", resourceCulture);
     public static string Confirm_ClearOldLogs_Title => ResourceManager.GetString("Confirm_ClearOldLogs_Title", resourceCulture);
     public static string Confirm_ClearOldLogs_Message => ResourceManager.GetString("Confirm_ClearOldLogs_Message", resourceCulture);
 

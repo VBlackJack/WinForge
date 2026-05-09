@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-using Win11Forge.GUI.ViewModels;
 using System.IO;
+using Win11Forge.GUI.Tests.TestInfrastructure;
+using Win11Forge.GUI.ViewModels;
+using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -35,7 +37,7 @@ public class LogsViewModelTests
 
         // Assert
         Assert.Empty(viewModel.SearchText);
-        Assert.Equal("All", viewModel.SelectedLogLevel);
+        Assert.Equal(Loc.Logs_Filter_All, viewModel.SelectedLogLevel);
         Assert.Null(viewModel.FilterDate);
         Assert.NotNull(viewModel.LogFiles);
         Assert.NotNull(viewModel.FilteredLogFiles);
@@ -51,10 +53,10 @@ public class LogsViewModelTests
         var viewModel = new LogsViewModel();
 
         // Assert
-        Assert.Contains("All", viewModel.LogLevels);
-        Assert.Contains("Text", viewModel.LogLevels);
-        Assert.Contains("JSON", viewModel.LogLevels);
-        Assert.Contains("Error", viewModel.LogLevels);
+        Assert.Contains(Loc.Logs_Filter_All, viewModel.LogLevels);
+        Assert.Contains(Loc.Logs_Filter_Text, viewModel.LogLevels);
+        Assert.Contains(Loc.Logs_Filter_Json, viewModel.LogLevels);
+        Assert.Contains(Loc.Logs_Filter_Error, viewModel.LogLevels);
         Assert.Equal(4, viewModel.LogLevels.Count);
     }
 
@@ -140,7 +142,7 @@ public class LogsViewModelTests
 
         // Assert
         Assert.Single(fileDialogService.SaveOptions);
-        Assert.Equal("ZIP Archive (*.zip)|*.zip", fileDialogService.SaveOptions[0].Filter);
+        Assert.Equal(Loc.Logs_Export_Filter, fileDialogService.SaveOptions[0].Filter);
         Assert.Equal(".zip", fileDialogService.SaveOptions[0].DefaultExtension);
         Assert.StartsWith("Win11Forge_Logs_", fileDialogService.SaveOptions[0].DefaultFileName);
     }
@@ -157,7 +159,11 @@ public class LogsViewModelTests
         await viewModel.ClearOldLogsCommand.ExecuteAsync(null);
 
         // Assert
-        Assert.Single(dialogService.ConfirmRequests);
+        var request = Assert.Single(dialogService.ConfirmRequests);
+        Assert.Equal(Loc.Confirm_ClearOldLogs_Title, request.Title);
+        Assert.Equal(Loc.Confirm_ClearOldLogs_Message, request.Message);
+        Assert.Equal(Loc.Confirm_ClearOldLogs_Btn, request.ConfirmText);
+        Assert.Equal(Loc.Common_Cancel, request.CancelText);
     }
 
     [Fact]
@@ -172,7 +178,7 @@ public class LogsViewModelTests
             FileName = "test.log",
             FullPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.log"),
             LastModified = DateTime.Now,
-            LogType = "Text"
+            LogType = Loc.Logs_Filter_Text
         };
         viewModel.LogFiles.Add(logFile);
         viewModel.FilteredLogFiles.Add(logFile);
@@ -181,8 +187,52 @@ public class LogsViewModelTests
         await viewModel.DeleteLogCommand.ExecuteAsync(logFile);
 
         // Assert
-        Assert.Single(dialogService.ConfirmRequests);
+        var request = Assert.Single(dialogService.ConfirmRequests);
+        Assert.Equal(Loc.Confirm_DeleteLog_Title, request.Title);
+        Assert.Equal(string.Format(Loc.Confirm_DeleteLog_Message, logFile.FileName), request.Message);
+        Assert.Equal(Loc.Confirm_Delete_Btn, request.ConfirmText);
+        Assert.Equal(Loc.Common_Cancel, request.CancelText);
         Assert.Contains(logFile, viewModel.LogFiles);
         Assert.Contains(logFile, viewModel.FilteredLogFiles);
+    }
+
+    [Fact]
+    public void LogsViewModel_UserFacingStatusAndDialogStrings_ShouldUseResources()
+    {
+        var sourcePath = RepositoryPathHelper.FindFile(
+            "GUI",
+            "Win11Forge.GUI",
+            "ViewModels",
+            "LogsViewModel.cs");
+        var source = File.ReadAllText(sourcePath);
+
+        Assert.DoesNotContain("StatusMessage = $\"", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("StatusMessage = \"", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("ShowConfirmAsync(\"", source, StringComparison.Ordinal);
+
+        var forbiddenUserFacingStrings = new[]
+        {
+            "Loading logs...",
+            "log files found",
+            "Error loading logs:",
+            "Error opening folder:",
+            "ZIP Archive (*.zip)|*.zip",
+            "No log files could be exported",
+            "Logs exported to",
+            "Export failed:",
+            "old log files",
+            "Error clearing logs:",
+            "Log file path is empty",
+            "Log file not found:",
+            "Error opening log:",
+            "Path copied to clipboard",
+            "Delete Log File",
+            "Error deleting log:"
+        };
+
+        foreach (var text in forbiddenUserFacingStrings)
+        {
+            Assert.DoesNotContain(text, source, StringComparison.Ordinal);
+        }
     }
 }
