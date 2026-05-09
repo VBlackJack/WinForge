@@ -17,6 +17,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Win11Forge.GUI.Tests.TestInfrastructure;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -151,75 +152,13 @@ public class LocalizationAuditTests
     /// Gets the Views directory path by walking up from the test assembly location.
     /// </summary>
     private static string GetViewsDirectory()
-    {
-        // Start from the test assembly location
-        var assemblyLocation = typeof(LocalizationAuditTests).Assembly.Location;
-        var currentDir = new DirectoryInfo(Path.GetDirectoryName(assemblyLocation)!);
-
-        // Walk up to find the GUI folder structure
-        while (currentDir != null)
-        {
-            var viewsPath = Path.Combine(currentDir.FullName, "Views");
-            if (Directory.Exists(viewsPath))
-            {
-                return viewsPath;
-            }
-
-            // Check for Win11Forge.GUI/Views pattern
-            var guiViewsPath = Path.Combine(currentDir.FullName, "Win11Forge.GUI", "Views");
-            if (Directory.Exists(guiViewsPath))
-            {
-                return guiViewsPath;
-            }
-
-            // Check in GUI folder
-            var guiFolderPath = Path.Combine(currentDir.FullName, "GUI", "Win11Forge.GUI", "Views");
-            if (Directory.Exists(guiFolderPath))
-            {
-                return guiFolderPath;
-            }
-
-            currentDir = currentDir.Parent;
-        }
-
-        throw new DirectoryNotFoundException(
-            "Could not locate Views directory. Started from: " + assemblyLocation);
-    }
+        => RepositoryPathHelper.FindDirectory("GUI", "Win11Forge.GUI", "Views");
 
     /// <summary>
     /// Gets the Resources directory path by walking up from the test assembly location.
     /// </summary>
     private static string GetResourcesDirectory()
-    {
-        var assemblyLocation = typeof(LocalizationAuditTests).Assembly.Location;
-        var currentDir = new DirectoryInfo(Path.GetDirectoryName(assemblyLocation)!);
-
-        while (currentDir != null)
-        {
-            var resourcesPath = Path.Combine(currentDir.FullName, "Resources");
-            if (Directory.Exists(resourcesPath))
-            {
-                return resourcesPath;
-            }
-
-            var guiResourcesPath = Path.Combine(currentDir.FullName, "Win11Forge.GUI", "Resources");
-            if (Directory.Exists(guiResourcesPath))
-            {
-                return guiResourcesPath;
-            }
-
-            var guiFolderPath = Path.Combine(currentDir.FullName, "GUI", "Win11Forge.GUI", "Resources");
-            if (Directory.Exists(guiFolderPath))
-            {
-                return guiFolderPath;
-            }
-
-            currentDir = currentDir.Parent;
-        }
-
-        throw new DirectoryNotFoundException(
-            "Could not locate Resources directory. Started from: " + assemblyLocation);
-    }
+        => RepositoryPathHelper.FindDirectory("GUI", "Win11Forge.GUI", "Resources");
 
     /// <summary>
     /// Scans all XAML files in the Views directory for hardcoded strings.
