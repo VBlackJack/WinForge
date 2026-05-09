@@ -304,6 +304,33 @@ public class AccessibilityHardeningTests
     }
 
     [Fact]
+    public void DeadResourceCleanup_RemovesUnusedKeys2026May()
+    {
+        var enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
+        var frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
+
+        string[] removedKeys =
+        [
+            "AppEditor_Category",
+            "Apps_SelectWithUpdates",
+            "Dashboard_Updates_Available",
+            "Deploy_InheritedFrom",
+            "Deploy_Installing",
+            "Help_Shortcut_Actions",
+            "Help_Shortcut_Navigation",
+            "Recovery_NetworkTimeout",
+            "SourceEditor_TestPlaceholder",
+            "Toast_UninstallComplete"
+        ];
+
+        foreach (var key in removedKeys)
+        {
+            Assert.DoesNotContain($"name=\"{key}\"", enResx, StringComparison.Ordinal);
+            Assert.DoesNotContain($"name=\"{key}\"", frResx, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void HighContrastTheme_ImplicitlyStylesWpfUiButton()
     {
         var xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "HighContrastTheme.xaml"));

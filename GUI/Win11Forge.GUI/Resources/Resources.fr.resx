@@ -165,9 +165,6 @@
   <data name="Deploy_RequiredApps" xml:space="preserve">
     <value>Requis :</value>
   </data>
-  <data name="Deploy_InheritedFrom" xml:space="preserve">
-    <value>Hérite de :</value>
-  </data>
   <data name="Deploy_SelectAll" xml:space="preserve">
     <value>Tout sélectionner</value>
   </data>
@@ -1074,9 +1071,6 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Toast_InstallComplete" xml:space="preserve">
     <value>Installation terminée</value>
   </data>
-  <data name="Toast_UninstallComplete" xml:space="preserve">
-    <value>Désinstallation terminée</value>
-  </data>
   <data name="Toast_ScanComplete" xml:space="preserve">
     <value>Scan terminé : {0} installés</value>
   </data>
@@ -1265,9 +1259,6 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Apps_StatusHasUpdates" xml:space="preserve">
     <value>Mises à jour</value>
   </data>
-  <data name="Apps_SelectWithUpdates" xml:space="preserve">
-    <value>Sélectionner avec mises à jour</value>
-  </data>
   <data name="Col_AvailableVersion" xml:space="preserve">
     <value>Nouvelle version</value>
   </data>
@@ -1442,9 +1433,6 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <data name="Dashboard_Updates_Title" xml:space="preserve">
     <value>Mises à jour</value>
-  </data>
-  <data name="Dashboard_Updates_Available" xml:space="preserve">
-    <value>mises à jour disponibles</value>
   </data>
   <data name="Dashboard_Scan_Button" xml:space="preserve">
     <value>Rechercher les mises à jour</value>
@@ -1951,9 +1939,6 @@ Cette action est irréversible.</value>
   <data name="AppEditor_PriorityLabel" xml:space="preserve">
     <value>Priorité : </value>
   </data>
-  <data name="AppEditor_Category" xml:space="preserve">
-    <value>Catégorie</value>
-  </data>
   <data name="AppEditor_Description" xml:space="preserve">
     <value>Description</value>
   </data>
@@ -2086,9 +2071,6 @@ Cette action est irréversible.</value>
   </data>
   <data name="SourceEditor_TestTooltip" xml:space="preserve">
     <value>Vérifier que le package existe dans le dépôt</value>
-  </data>
-  <data name="SourceEditor_TestPlaceholder" xml:space="preserve">
-    <value>La vérification des packages sera implémentée dans un sprint futur</value>
   </data>
   <data name="SourceEditor_StoreIdHint" xml:space="preserve">
     <value>Format : 12 caractères alphanumeriques (ex: 9NBLGGH4NNS1)</value>
@@ -2268,9 +2250,6 @@ Cette action est irréversible.</value>
     <value>{0} installé(s), {1} échec(s), {2} ignoré(s)</value>
   </data>
   <!-- UX Improvements - Network Error Messages -->
-  <data name="Recovery_NetworkTimeout" xml:space="preserve">
-    <value>La connexion a expiré. Essayez d'augmenter les paramètres de délai ou vérifiez votre vitesse réseau.</value>
-  </data>
   <data name="Recovery_DnsResolution" xml:space="preserve">
     <value>Impossible de résoudre l'adresse du serveur. Vérifiez vos paramètres DNS ou essayez un autre réseau.</value>
   </data>
@@ -2305,12 +2284,6 @@ Cette action est irréversible.</value>
     <value>Copie dans le presse-papiers</value>
   </data>
   <!-- UX Improvements - Keyboard Shortcuts Help -->
-  <data name="Help_Shortcut_Navigation" xml:space="preserve">
-    <value>Navigation</value>
-  </data>
-  <data name="Help_Shortcut_Actions" xml:space="preserve">
-    <value>Actions</value>
-  </data>
   <data name="Help_Shortcut_DataGrid" xml:space="preserve">
     <value>Dans les grilles, utilisez les flèches pour naviguer, Entrée pour sélectionner, et Ctrl+A pour tout sélectionner.</value>
   </data>
@@ -2532,9 +2505,6 @@ Cette action est irréversible.</value>
   </data>
   <data name="Confirm_ResetSettings_Title" xml:space="preserve">
     <value>Réinitialiser les paramètres</value>
-  </data>
-  <data name="Deploy_Installing" xml:space="preserve">
-    <value>Installation de {0}...</value>
   </data>
   <data name="Deploy_TimeElapsed" xml:space="preserve">
     <value>Temps écoulé</value>

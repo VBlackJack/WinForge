@@ -189,10 +189,6 @@
     <value>Required:</value>
     <comment>Required applications label</comment>
   </data>
-  <data name="Deploy_InheritedFrom" xml:space="preserve">
-    <value>Inherited from:</value>
-    <comment>Profile inheritance label</comment>
-  </data>
   <data name="Deploy_SelectAll" xml:space="preserve">
     <value>Select All</value>
     <comment>Select all applications button</comment>
@@ -204,10 +200,6 @@
   <data name="Deploy_Selected" xml:space="preserve">
     <value>Selected:</value>
     <comment>Selected applications count label</comment>
-  </data>
-  <data name="Deploy_Installing" xml:space="preserve">
-    <value>Installing {0}...</value>
-    <comment>Status message during application installation</comment>
   </data>
   <!-- Column Headers -->
   <data name="Col_Favorites" xml:space="preserve">
@@ -1421,10 +1413,6 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Installation complete</value>
     <comment>Installation complete toast</comment>
   </data>
-  <data name="Toast_UninstallComplete" xml:space="preserve">
-    <value>Uninstallation complete</value>
-    <comment>Uninstallation complete toast</comment>
-  </data>
   <data name="Toast_ScanComplete" xml:space="preserve">
     <value>Scan complete: {0} installed</value>
     <comment>Scan complete toast (0=count)</comment>
@@ -1675,10 +1663,6 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   <data name="Apps_StatusHasUpdates" xml:space="preserve">
     <value>Has Updates</value>
     <comment>Status filter for apps with updates</comment>
-  </data>
-  <data name="Apps_SelectWithUpdates" xml:space="preserve">
-    <value>Select with Updates</value>
-    <comment>Button to select all apps with updates</comment>
   </data>
   <data name="Col_AvailableVersion" xml:space="preserve">
     <value>New Version</value>
@@ -2255,10 +2239,6 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   <data name="Dashboard_Updates_Title" xml:space="preserve">
     <value>Updates</value>
     <comment>Updates card title</comment>
-  </data>
-  <data name="Dashboard_Updates_Available" xml:space="preserve">
-    <value>updates available</value>
-    <comment>Label under update count</comment>
   </data>
   <data name="Dashboard_Scan_Button" xml:space="preserve">
     <value>Scan for Updates</value>
@@ -2947,10 +2927,6 @@ This action cannot be undone.</value>
     <value>Priority: </value>
     <comment>Priority label shown next to slider</comment>
   </data>
-  <data name="AppEditor_Category" xml:space="preserve">
-    <value>Category</value>
-    <comment>Category field label</comment>
-  </data>
   <data name="AppEditor_Description" xml:space="preserve">
     <value>Description</value>
     <comment>Description field label</comment>
@@ -3127,10 +3103,6 @@ This action cannot be undone.</value>
   <data name="SourceEditor_TestTooltip" xml:space="preserve">
     <value>Verify that the package exists in the repository</value>
     <comment>Test package button tooltip</comment>
-  </data>
-  <data name="SourceEditor_TestPlaceholder" xml:space="preserve">
-    <value>Package verification will be implemented in a future sprint</value>
-    <comment>Placeholder message for test functionality</comment>
   </data>
   <data name="SourceEditor_StoreIdHint" xml:space="preserve">
     <value>Format: 12 alphanumeric characters (e.g., 9NBLGGH4NNS1)</value>
@@ -3368,10 +3340,6 @@ This action cannot be undone.</value>
     <comment>Deployment statistics (0=success, 1=failed, 2=skipped)</comment>
   </data>
   <!-- UX Improvements - Network Error Messages -->
-  <data name="Recovery_NetworkTimeout" xml:space="preserve">
-    <value>The connection timed out. Try increasing timeout settings or check your network speed.</value>
-    <comment>Network timeout recovery suggestion</comment>
-  </data>
   <data name="Recovery_DnsResolution" xml:space="preserve">
     <value>Could not resolve the server address. Check your DNS settings or try a different network.</value>
     <comment>DNS resolution recovery suggestion</comment>
@@ -3416,14 +3384,6 @@ This action cannot be undone.</value>
     <comment>Clipboard copy success toast</comment>
   </data>
   <!-- UX Improvements - Keyboard Shortcuts Help -->
-  <data name="Help_Shortcut_Navigation" xml:space="preserve">
-    <value>Navigation</value>
-    <comment>Navigation shortcuts category</comment>
-  </data>
-  <data name="Help_Shortcut_Actions" xml:space="preserve">
-    <value>Actions</value>
-    <comment>Action shortcuts category</comment>
-  </data>
   <data name="Help_Shortcut_DataGrid" xml:space="preserve">
     <value>In data grids, use Arrow keys to navigate, Enter to select, and Ctrl+A to select all.</value>
     <comment>DataGrid navigation hint</comment>
