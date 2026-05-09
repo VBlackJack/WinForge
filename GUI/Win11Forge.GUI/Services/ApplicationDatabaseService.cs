@@ -685,6 +685,8 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             app.DefaultRequired,
             EnvironmentRestrictions = app.EnvironmentRestrictions ?? new List<string>(),
             Tags = app.Tags ?? new List<string>(),
+            LastVerified = app.LastVerified ?? string.Empty,
+            app.Verified,
             Homepage = app.Homepage ?? string.Empty
         };
 
