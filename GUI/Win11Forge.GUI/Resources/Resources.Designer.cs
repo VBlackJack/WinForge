@@ -73,11 +73,9 @@ public class Resources
     public static string Deploy_Applications => ResourceManager.GetString("Deploy_Applications", resourceCulture);
     public static string Deploy_TotalApps => ResourceManager.GetString("Deploy_TotalApps", resourceCulture);
     public static string Deploy_RequiredApps => ResourceManager.GetString("Deploy_RequiredApps", resourceCulture);
-    public static string Deploy_InheritedFrom => ResourceManager.GetString("Deploy_InheritedFrom", resourceCulture);
     public static string Deploy_SelectAll => ResourceManager.GetString("Deploy_SelectAll", resourceCulture);
     public static string Deploy_SelectNone => ResourceManager.GetString("Deploy_SelectNone", resourceCulture);
     public static string Deploy_Selected => ResourceManager.GetString("Deploy_Selected", resourceCulture);
-    public static string Deploy_Installing => ResourceManager.GetString("Deploy_Installing", resourceCulture);
 
     // Column Headers
     public static string Col_Favorites => ResourceManager.GetString("Col_Favorites", resourceCulture);
@@ -403,7 +401,6 @@ public class Resources
 
     // Toast Notifications
     public static string Toast_InstallComplete => ResourceManager.GetString("Toast_InstallComplete", resourceCulture);
-    public static string Toast_UninstallComplete => ResourceManager.GetString("Toast_UninstallComplete", resourceCulture);
     public static string Toast_ScanComplete => ResourceManager.GetString("Toast_ScanComplete", resourceCulture);
     public static string Toast_ProfileSaved => ResourceManager.GetString("Toast_ProfileSaved", resourceCulture);
     public static string Toast_ExportComplete => ResourceManager.GetString("Toast_ExportComplete", resourceCulture);
@@ -478,7 +475,6 @@ public class Resources
     public static string Status_UpdateAvailable => ResourceManager.GetString("Status_UpdateAvailable", resourceCulture);
     public static string Status_Updating => ResourceManager.GetString("Status_Updating", resourceCulture);
     public static string Apps_StatusHasUpdates => ResourceManager.GetString("Apps_StatusHasUpdates", resourceCulture);
-    public static string Apps_SelectWithUpdates => ResourceManager.GetString("Apps_SelectWithUpdates", resourceCulture);
     public static string Col_AvailableVersion => ResourceManager.GetString("Col_AvailableVersion", resourceCulture);
     public static string Col_Version => ResourceManager.GetString("Col_Version", resourceCulture);
     public static string Toast_UpdatesFound => ResourceManager.GetString("Toast_UpdatesFound", resourceCulture);
@@ -634,10 +630,6 @@ public class Resources
     public static string Recovery_Generic_CheckLogs => ResourceManager.GetString("Recovery_Generic_CheckLogs", resourceCulture);
 
     // Accessibility
-    public static string Accessibility_Progress => ResourceManager.GetString("Accessibility_Progress", resourceCulture);
-    public static string Accessibility_ProgressWithItem => ResourceManager.GetString("Accessibility_ProgressWithItem", resourceCulture);
-    public static string Accessibility_ProgressComplete => ResourceManager.GetString("Accessibility_ProgressComplete", resourceCulture);
-    public static string Accessibility_DeploymentStarted => ResourceManager.GetString("Accessibility_DeploymentStarted", resourceCulture);
     public static string Accessibility_DeploymentComplete => ResourceManager.GetString("Accessibility_DeploymentComplete", resourceCulture);
     public static string Accessibility_InstallationStarted => ResourceManager.GetString("Accessibility_InstallationStarted", resourceCulture);
     public static string Accessibility_InstallationComplete => ResourceManager.GetString("Accessibility_InstallationComplete", resourceCulture);
@@ -754,7 +746,6 @@ public class Resources
     public static string AppEditor_Tab_Detection => ResourceManager.GetString("AppEditor_Tab_Detection", resourceCulture);
     public static string AppEditor_AppId => ResourceManager.GetString("AppEditor_AppId", resourceCulture);
     public static string AppEditor_Name => ResourceManager.GetString("AppEditor_Name", resourceCulture);
-    public static string AppEditor_Category => ResourceManager.GetString("AppEditor_Category", resourceCulture);
     public static string AppEditor_Description => ResourceManager.GetString("AppEditor_Description", resourceCulture);
     public static string AppEditor_Homepage => ResourceManager.GetString("AppEditor_Homepage", resourceCulture);
     public static string AppEditor_DefaultRequired => ResourceManager.GetString("AppEditor_DefaultRequired", resourceCulture);
@@ -793,7 +784,6 @@ public class Resources
     public static string SourceEditor_Repository => ResourceManager.GetString("SourceEditor_Repository", resourceCulture);
     public static string SourceEditor_Test => ResourceManager.GetString("SourceEditor_Test", resourceCulture);
     public static string SourceEditor_TestTooltip => ResourceManager.GetString("SourceEditor_TestTooltip", resourceCulture);
-    public static string SourceEditor_TestPlaceholder => ResourceManager.GetString("SourceEditor_TestPlaceholder", resourceCulture);
     public static string SourceEditor_StoreIdHint => ResourceManager.GetString("SourceEditor_StoreIdHint", resourceCulture);
     public static string SourceEditor_InstallerType => ResourceManager.GetString("SourceEditor_InstallerType", resourceCulture);
     public static string SourceEditor_SilentArgs => ResourceManager.GetString("SourceEditor_SilentArgs", resourceCulture);

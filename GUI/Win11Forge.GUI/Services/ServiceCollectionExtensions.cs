@@ -75,7 +75,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IToastService>(sp => sp.GetRequiredService<ToastService>());
         services.AddSingleton<IErrorHistoryService, ErrorHistoryService>();
         services.AddSingleton<INavigationService, NavigationService>();
-        services.AddSingleton<IAccessibilityService, AccessibilityService>();
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IFileDialogService, FileDialogService>();
         services.AddSingleton<IApplicationEditorDialogService, ApplicationEditorDialogService>();

@@ -20,6 +20,7 @@ using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Services;
 using Res = Win11Forge.GUI.Resources.Resources;
 
@@ -33,7 +34,6 @@ public partial class ErrorDialog : UserControl
     private string? _helpUrl;
     private string? _errorCode;
     private System.Windows.Threading.DispatcherTimer? _copyFeedbackTimer;
-    private const string GitHubIssuesUrl = "https://github.com/VBlackJack/Win11Forge/issues/new";
 
     public event EventHandler<DialogAction>? ActionSelected;
 
@@ -298,7 +298,7 @@ public partial class ErrorDialog : UserControl
                 $"- Win11Forge Version: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}\n"
             );
 
-            var url = $"{GitHubIssuesUrl}?title={issueTitle}&body={issueBody}";
+            var url = $"{ProjectLinks.NewIssue}?title={issueTitle}&body={issueBody}";
 
             using var process = Process.Start(new ProcessStartInfo
             {
@@ -314,7 +314,7 @@ public partial class ErrorDialog : UserControl
             {
                 using var fallbackProcess = Process.Start(new ProcessStartInfo
                 {
-                    FileName = "https://github.com/VBlackJack/Win11Forge/issues",
+                    FileName = ProjectLinks.Issues,
                     UseShellExecute = true
                 });
             }

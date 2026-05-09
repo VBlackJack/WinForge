@@ -52,6 +52,8 @@ public class JsonApplicationDetectionService
 
     /// <summary>
     /// Regex timeout for version extraction patterns to prevent ReDoS attacks.
+    /// Intentionally not configurable: surfacing this to user config would let an
+    /// attacker who controls the configuration disable the protection entirely.
     /// </summary>
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(500);
 

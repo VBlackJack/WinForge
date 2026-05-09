@@ -18,6 +18,7 @@
 
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Win11Forge.GUI.Configuration;
 
 namespace Win11Forge.GUI.Services;
 
@@ -440,7 +441,7 @@ public partial class PackageSearchService : IPackageSearchService
         var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
 
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeoutCts.CancelAfter(TimeSpan.FromSeconds(30));
+        timeoutCts.CancelAfter(TimeoutDefaults.PackageOperation);
 
         try
         {

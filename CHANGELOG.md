@@ -4,6 +4,24 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+### Dead code + i18n audit pass — May 2026
+
+Two-axis cleanup pass closing 18 findings from `Docs/audit/Win11Forge-DeadCode-i18n-Audit-2026-05.md` across 7 self-contained commits. No behavior change at runtime; build, 566 GUI tests, Pester suite, PSScriptAnalyzer, FR diacritics lint, and version-consistency check all green.
+
+#### Removed
+- **PowerShell manifest cleanup (DC-013)** — `Core/Core.psd1` no longer declares `Test-AdminRights` or `Get-FrameworkVersion` in `FunctionsToExport` (these functions never existed in `Core.psm1`).
+- **Resx keys cleanup (DC-002 to DC-012)** — 10 unused EN+FR resx pairs deleted: `AppEditor_Category`, `Apps_SelectWithUpdates`, `Dashboard_Updates_Available`, `Deploy_InheritedFrom`, `Deploy_Installing`, `Help_Shortcut_Actions`, `Help_Shortcut_Navigation`, `Recovery_NetworkTimeout`, `SourceEditor_TestPlaceholder`, `Toast_UninstallComplete`. Designer.cs trimmed where applicable. Guard test `DeadResourceCleanup_RemovesUnusedKeys2026May` added on `AccessibilityHardeningTests`.
+- **IAccessibilityService scaffolding (DC-001 / DC-008)** — `IAccessibilityService`, `AccessibilityService`, `AnnouncementPriority`, DI registration, `MainWindow` field/initialize call, plus correlated resx keys `Accessibility_Progress`, `Accessibility_ProgressWithItem`, `Accessibility_ProgressComplete`, `Accessibility_DeploymentStarted`. Live-region screen-reader behavior is preserved via the existing XAML automation properties on `ScreenReaderLiveRegion` (PR #61/#62 baseline) and the 5 `LiveRegionAttributesTests` guards.
+
+#### Refactored
+- **Centralized GUI timeouts (ZH-002, ZH-003, ZH-004)** — three duplicated/literal timeout values now live in `GUI/Win11Forge.GUI/Configuration/TimeoutDefaults.cs` (`HttpClient` 15 s, `PackageOperation` 30 s, `CacheWarmingShutdown` 2 s). PowerShell install timeouts continue to live in `Config/timeouts-settings.json`.
+- **Centralized GitHub project links (ZH-001)** — `GUI/Win11Forge.GUI/Configuration/ProjectLinks.cs` now provides `Repository`, `Issues`, `NewIssue`. `ErrorDialog` and `SettingsViewModel` route through this single source; the `ErrorDialog` issue-report fallback path is now consistent with the primary URL (previously dropped the `/new` suffix).
+
+#### Documented
+- **ReDoS regex timeout (ZH-005)** — `JsonApplicationDetectionService.RegexTimeout` (500 ms) is annotated as intentionally non-configurable to prevent attacker-controlled config from disabling the protection.
+
+Resx parity after this pass: 943/943.
+
 ### MVVM refactor closure
 
 The architectural refactor of the GUI ViewModels (audit findings I1, I3, I4) is complete. All four batch operation coordinators (`AppScanCoordinator`, `AppInstallationCoordinator`, `AppUpdateCoordinator`, `AppUninstallCoordinator`) are extracted under `Services/Coordinators/`, sharing the internal `AppOperationRunner` helper for parallelism, cancellation, and progress reporting. The `AppsViewModel` god class (3 002 lines, 31 RelayCommands) is now a 531-line orchestrator with twelve cluster-scoped partial classes. WPF lifetime coupling, file dialog handling, and code-behind business logic have been moved behind dedicated services (`IApplicationLifetimeService`, `IFileDialogService`, `IApplicationEditorDialogService`, `IPauseGate`).

@@ -55,7 +55,6 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     private readonly SettingsViewModel? _settingsViewModel;
     private readonly PrerequisitesViewModel? _prerequisitesViewModel;
     private readonly AppCatalogViewModel? _appCatalogViewModel;
-    private readonly IAccessibilityService? _accessibilityService;
 
     // Event handlers stored for cleanup
     private EventHandler? _undoStateChangedHandler;
@@ -167,7 +166,6 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             _toastService = App.GetService<ToastService>();
             _navigationService = App.GetService<INavigationService>();
             _undoService = App.GetService<IUndoService>();
-            _accessibilityService = App.GetService<IAccessibilityService>();
 
             RestoreWindowPlacement();
 
@@ -401,12 +399,6 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             if (dialogService is DialogService ds)
             {
                 ds.SetDialogHost(RootContentDialog);
-            }
-
-            // Initialize accessibility service with live region for screen readers
-            if (_accessibilityService is AccessibilityService accessibilityService)
-            {
-                accessibilityService.Initialize(ScreenReaderLiveRegion);
             }
 
             // Check for first run and show onboarding
