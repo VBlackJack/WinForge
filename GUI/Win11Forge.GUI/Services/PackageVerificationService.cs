@@ -19,6 +19,7 @@
 using System.Diagnostics;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using Win11Forge.GUI.Configuration;
 
 namespace Win11Forge.GUI.Services;
 
@@ -50,7 +51,7 @@ public partial class PackageVerificationService : IPackageVerificationService
 
     private static readonly HttpClient SharedHttpClient = new()
     {
-        Timeout = TimeSpan.FromSeconds(15)
+        Timeout = TimeoutDefaults.HttpClient
     };
 
     /// <summary>
@@ -420,7 +421,7 @@ public partial class PackageVerificationService : IPackageVerificationService
         var errorTask = process.StandardError.ReadToEndAsync();
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cts.CancelAfter(TimeSpan.FromSeconds(30));
+        cts.CancelAfter(TimeoutDefaults.PackageOperation);
 
         try
         {

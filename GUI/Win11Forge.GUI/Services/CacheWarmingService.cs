@@ -15,6 +15,7 @@
  */
 
 using System.Diagnostics;
+using Win11Forge.GUI.Configuration;
 
 namespace Win11Forge.GUI.Services;
 
@@ -230,8 +231,7 @@ public class CacheWarmingService : IDisposable
             _logger.LogDebug("Dispose called, waiting for warming task to complete...");
             try
             {
-                // Wait up to 2 seconds for graceful shutdown
-                if (!_warmingTask.Wait(TimeSpan.FromSeconds(2)))
+                if (!_warmingTask.Wait(TimeoutDefaults.CacheWarmingShutdown))
                 {
                     _logger.LogDebug("Warming task did not complete in time, proceeding with disposal");
                 }
