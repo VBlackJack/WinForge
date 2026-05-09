@@ -1441,6 +1441,110 @@ public class AppsViewModelTests
     }
 
     [Fact]
+    public async Task ProfileSelection_FromAppliedProfileWithoutManualChanges_AppliesSilently()
+    {
+        // Arrange
+        using var profiles = new TestProfilesDirectory(
+            ("Work", [], ["Git.Git"]),
+            ("Gaming", [], ["Google.Chrome"]));
+        var bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Work", "Gaming"];
+        var dialogService = new TestDialogService();
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+
+        viewModel.SelectedProfile = "Work";
+        await WaitForConditionAsync(() => FindApp(viewModel, "Git.Git").IsSelected);
+        dialogService.YesNoCancelRequests.Clear();
+
+        // Act
+        viewModel.SelectedProfile = "Gaming";
+        await WaitForConditionAsync(() =>
+            FindApp(viewModel, "Google.Chrome").IsSelected &&
+            !FindApp(viewModel, "Git.Git").IsSelected);
+
+        // Assert
+        Assert.Empty(dialogService.YesNoCancelRequests);
+        Assert.Equal("Gaming", viewModel.SelectedProfile);
+        Assert.Equal(1, viewModel.SelectedCount);
+    }
+
+    [Fact]
+    public async Task ProfileSelection_FromAppliedProfileWithManualChangeAndCancel_RestoresPreviousProfile()
+    {
+        // Arrange
+        using var profiles = new TestProfilesDirectory(
+            ("Work", [], ["Git.Git"]),
+            ("Gaming", [], ["Google.Chrome"]));
+        var bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Work", "Gaming"];
+        var dialogService = new TestDialogService();
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+
+        viewModel.SelectedProfile = "Work";
+        await WaitForConditionAsync(() => FindApp(viewModel, "Git.Git").IsSelected);
+        var manualApp = FindApp(viewModel, "Mozilla.Firefox");
+        manualApp.IsSelected = true;
+        viewModel.UpdateSelectedCount();
+
+        dialogService.QueueYesNoCancelResult(null);
+
+        // Act
+        viewModel.SelectedProfile = "Gaming";
+        await WaitForConditionAsync(() =>
+            dialogService.YesNoCancelRequests.Count == 1 &&
+            viewModel.SelectedProfile == "Work");
+
+        // Assert
+        var request = Assert.Single(dialogService.YesNoCancelRequests);
+        Assert.Equal(Resources.Resources.Profile_Apply_Replace, request.YesText);
+        Assert.Equal(Resources.Resources.Profile_Apply_Merge, request.NoText);
+        Assert.Equal(Resources.Resources.Common_Cancel, request.CancelText);
+        Assert.True(FindApp(viewModel, "Git.Git").IsSelected);
+        Assert.True(manualApp.IsSelected);
+        Assert.False(FindApp(viewModel, "Google.Chrome").IsSelected);
+        Assert.Equal(2, viewModel.SelectedCount);
+    }
+
+    [Fact]
+    public async Task ProfileSelection_FromAppliedProfileWithManualChangeAndReplace_ReplacesSelection()
+    {
+        // Arrange
+        using var profiles = new TestProfilesDirectory(
+            ("Work", [], ["Git.Git"]),
+            ("Gaming", [], ["Google.Chrome"]));
+        var bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Work", "Gaming"];
+        var dialogService = new TestDialogService();
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+
+        viewModel.SelectedProfile = "Work";
+        await WaitForConditionAsync(() => FindApp(viewModel, "Git.Git").IsSelected);
+        var manualApp = FindApp(viewModel, "Mozilla.Firefox");
+        manualApp.IsSelected = true;
+        viewModel.UpdateSelectedCount();
+
+        dialogService.QueueYesNoCancelResult(true);
+
+        // Act
+        viewModel.SelectedProfile = "Gaming";
+        await WaitForConditionAsync(() =>
+            FindApp(viewModel, "Google.Chrome").IsSelected &&
+            !FindApp(viewModel, "Git.Git").IsSelected &&
+            !manualApp.IsSelected);
+
+        // Assert
+        Assert.Single(dialogService.YesNoCancelRequests);
+        Assert.Equal("Gaming", viewModel.SelectedProfile);
+        Assert.Equal(1, viewModel.SelectedCount);
+    }
+
+    [Fact]
     public async Task ProfileTierMapping_UsesCustomInheritanceChain()
     {
         // Arrange
