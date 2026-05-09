@@ -39,6 +39,43 @@ public class AppSettingsServiceMigrationTests
     }
 
     [Fact]
+    public void LoadSettings_PascalCaseLegacyKey_StillMigrates()
+    {
+        VerifyLegacyMigration(legacyIsDarkTheme: true, ThemeNames.DraculaPro, "IsDarkTheme");
+    }
+
+    [Fact]
+    public void LoadSettings_AfterMigration_DoesNotReMigrate()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        File.WriteAllText(
+            settingsPath,
+            """
+            {"themeName": "Light", "isDarkTheme": true, "languageCode": "en"}
+            """);
+
+        try
+        {
+            var settings = new AppSettingsService(settingsPath).LoadSettings();
+            var reloaded = new AppSettingsService(settingsPath).LoadSettings();
+
+            Assert.Equal(ThemeNames.Light, settings.ThemeName);
+            Assert.Equal(ThemeNames.Light, reloaded.ThemeName);
+
+            using var document = JsonDocument.Parse(File.ReadAllText(settingsPath));
+            Assert.True(document.RootElement.TryGetProperty("themeName", out var themeName));
+            Assert.Equal(ThemeNames.Light, themeName.GetString());
+        }
+        finally
+        {
+            if (File.Exists(settingsPath))
+            {
+                File.Delete(settingsPath);
+            }
+        }
+    }
+
+    [Fact]
     public void SaveAndLoadSettings_WindowPlacement_RoundTrips()
     {
         var settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
@@ -84,13 +121,16 @@ public class AppSettingsServiceMigrationTests
         }
     }
 
-    private static void VerifyLegacyMigration(bool legacyIsDarkTheme, string expectedThemeName)
+    private static void VerifyLegacyMigration(
+        bool legacyIsDarkTheme,
+        string expectedThemeName,
+        string legacyPropertyName = "isDarkTheme")
     {
         var settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
         File.WriteAllText(
             settingsPath,
             $$"""
-            {"isDarkTheme": {{legacyIsDarkTheme.ToString().ToLowerInvariant()}}, "languageCode": "en"}
+            {"{{legacyPropertyName}}": {{legacyIsDarkTheme.ToString().ToLowerInvariant()}}, "languageCode": "en"}
             """);
 
         try

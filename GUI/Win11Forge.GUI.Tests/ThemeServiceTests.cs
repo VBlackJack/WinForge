@@ -267,7 +267,7 @@ public class ThemeServiceTests
         var methodEnd = source.IndexOf("private static void RemoveDraculaResourceDictionaries", methodStart, StringComparison.Ordinal);
         var draculaPredicate = source[methodStart..methodEnd];
 
-        Assert.Contains("DraculaResourceMarker", draculaPredicate, StringComparison.Ordinal);
+        Assert.Contains("ThemeNames.DraculaResourcePathPrefix", draculaPredicate, StringComparison.Ordinal);
         Assert.DoesNotContain("HighContrastResourceMarker", draculaPredicate, StringComparison.Ordinal);
     }
 

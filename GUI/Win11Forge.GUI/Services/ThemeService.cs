@@ -29,7 +29,6 @@ namespace Win11Forge.GUI.Services;
 /// </summary>
 public sealed class ThemeService : IThemeService
 {
-    private const string DraculaResourceMarker = "Themes/Dracula/";
     private const string HighContrastResourceMarker = "HighContrastTheme";
     private const string ThemeFileSuffix = "Theme.xaml";
     private const string DisplayKeyPrefix = "Settings_ThemeName_";
@@ -240,7 +239,7 @@ public sealed class ThemeService : IThemeService
         return new ThemeDescriptor(
             name,
             isDark,
-            new Uri($"{DraculaResourceMarker}{name}{ThemeFileSuffix}", UriKind.Relative),
+            new Uri($"{ThemeNames.DraculaResourcePathPrefix}{name}{ThemeFileSuffix}", UriKind.Relative),
             BuildDisplayKey(name));
     }
 
@@ -307,7 +306,7 @@ public sealed class ThemeService : IThemeService
     private static bool IsDraculaResourceDictionary(ResourceDictionary dictionary)
     {
         return dictionary.Source?.OriginalString.Contains(
-            DraculaResourceMarker,
+            ThemeNames.DraculaResourcePathPrefix,
             StringComparison.OrdinalIgnoreCase) == true;
     }
 
