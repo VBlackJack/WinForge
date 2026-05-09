@@ -78,6 +78,7 @@ public partial class AppsViewModel
     private Dictionary<string, List<string>> _profileInheritanceCache = [];
 
     private string? _lastAppliedProfile;
+    private HashSet<string>? _lastAppliedProfileSelectionSnapshot;
     private bool _isRestoringProfile;
 
     /// <summary>
@@ -275,16 +276,11 @@ public partial class AppsViewModel
     {
         var selectedProfile = SelectedProfile;
 
-        // Clear all profile tiers first
-        foreach (var app in _allApplications)
-        {
-            app.ProfileTier = string.Empty;
-        }
-        _profileAppTiers.Clear();
-
         if (string.IsNullOrEmpty(selectedProfile))
         {
             _lastAppliedProfile = null;
+            _lastAppliedProfileSelectionSnapshot = null;
+            ClearProfileTiers();
             ApplyFilter();
             return;
         }
@@ -292,7 +288,7 @@ public partial class AppsViewModel
         try
         {
             var mergeWithManualSelection = false;
-            if (ShouldPromptBeforeApplyingProfile())
+            if (ShouldPromptBeforeApplyingProfile(selectedProfile))
             {
                 var manualCount = _allApplications.Count(app => app.IsSelected);
                 var applyMessage = string.Format(
@@ -316,6 +312,8 @@ public partial class AppsViewModel
 
                 mergeWithManualSelection = applyMode == false;
             }
+
+            ClearProfileTiers();
 
             HashSet<string> profileAppIds;
 
@@ -366,6 +364,7 @@ public partial class AppsViewModel
             }
 
             _lastAppliedProfile = selectedProfile;
+            StoreLastAppliedProfileSelectionSnapshot();
             ApplyFilter();
             UpdateSelectedCount();
         }
@@ -396,10 +395,48 @@ public partial class AppsViewModel
         }
     }
 
-    private bool ShouldPromptBeforeApplyingProfile()
+    private bool ShouldPromptBeforeApplyingProfile(string selectedProfile)
     {
-        return string.IsNullOrEmpty(_lastAppliedProfile) &&
-            _allApplications.Any(app => app.IsSelected);
+        if (string.IsNullOrEmpty(_lastAppliedProfile))
+        {
+            return _allApplications.Any(app => app.IsSelected);
+        }
+
+        if (string.Equals(selectedProfile, _lastAppliedProfile, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return HasSelectionChangedSinceLastAppliedProfile();
+    }
+
+    private void ClearProfileTiers()
+    {
+        foreach (var app in _allApplications)
+        {
+            app.ProfileTier = string.Empty;
+        }
+
+        _profileAppTiers.Clear();
+    }
+
+    private void StoreLastAppliedProfileSelectionSnapshot()
+    {
+        _lastAppliedProfileSelectionSnapshot = CaptureSelectedAppIds();
+    }
+
+    private HashSet<string> CaptureSelectedAppIds()
+    {
+        return _allApplications
+            .Where(app => app.IsSelected)
+            .Select(app => app.AppId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private bool HasSelectionChangedSinceLastAppliedProfile()
+    {
+        return _lastAppliedProfileSelectionSnapshot is not null &&
+            !_lastAppliedProfileSelectionSnapshot.SetEquals(CaptureSelectedAppIds());
     }
 
     private void RestoreSelectedProfile(string? profileName)
@@ -571,6 +608,7 @@ public partial class AppsViewModel
 
             // Select the saved profile
             _lastAppliedProfile = saveResult.ProfileName;
+            StoreLastAppliedProfileSelectionSnapshot();
             SelectedProfile = saveResult.ProfileName;
 
             // Clear any error message to indicate success
