@@ -155,7 +155,9 @@ public class ApplicationDatabaseServiceTests
                     VersionKey = "Version",
                     MinVersion = "1.0"
                 },
-                DefaultPriority = 50
+                DefaultPriority = 50,
+                LastVerified = "2026-02-12",
+                Verified = true
             };
 
             // Act
@@ -169,6 +171,9 @@ public class ApplicationDatabaseServiceTests
             Assert.Contains("\"Chocolatey\":", capturedScript!);
             Assert.Contains("\"Store\":", capturedScript!);
             Assert.Contains("\"DirectUrl\":", capturedScript!);
+            Assert.Contains("\"LastVerified\":", capturedScript!);
+            Assert.Contains("\"Verified\":", capturedScript!);
+            Assert.Contains("2026-02-12", capturedScript!);
             Assert.DoesNotContain("\"winget\":", capturedScript!);
             Assert.DoesNotContain("\"chocolatey\":", capturedScript!);
             Assert.DoesNotContain("\"store\":", capturedScript!);

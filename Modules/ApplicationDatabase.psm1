@@ -817,6 +817,193 @@ function Test-DependenciesSatisfied {
 
 # === DATABASE MODIFICATION FUNCTIONS ===
 
+function Get-ObjectPropertyValue {
+    param(
+        [Parameter()]
+        [object]$InputObject,
+
+        [Parameter(Mandatory)]
+        [string]$PropertyName,
+
+        [Parameter()]
+        [object]$DefaultValue = $null
+    )
+
+    if ($null -eq $InputObject) {
+        return $DefaultValue
+    }
+
+    $property = $InputObject.PSObject.Properties[$PropertyName]
+    if ($null -eq $property) {
+        return $DefaultValue
+    }
+
+    return $property.Value
+}
+
+function Copy-JsonObject {
+    param(
+        [Parameter()]
+        [object]$InputObject
+    )
+
+    if ($null -eq $InputObject) {
+        return $null
+    }
+
+    return $InputObject | ConvertTo-Json -Depth 20 | ConvertFrom-Json
+}
+
+function Set-JsonObjectProperty {
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject]$InputObject,
+
+        [Parameter(Mandatory)]
+        [string]$PropertyName,
+
+        [Parameter()]
+        [object]$Value
+    )
+
+    if ($InputObject.PSObject.Properties[$PropertyName]) {
+        $InputObject.$PropertyName = $Value
+        return
+    }
+
+    $InputObject | Add-Member -NotePropertyName $PropertyName -NotePropertyValue $Value
+}
+
+function Remove-NullJsonProperties {
+    param(
+        [Parameter()]
+        [object]$InputObject
+    )
+
+    if ($null -eq $InputObject) {
+        return
+    }
+
+    if ($InputObject -is [System.Array]) {
+        foreach ($item in $InputObject) {
+            Remove-NullJsonProperties -InputObject $item
+        }
+        return
+    }
+
+    if ($InputObject -isnot [PSCustomObject]) {
+        return
+    }
+
+    foreach ($property in @($InputObject.PSObject.Properties)) {
+        if ($null -eq $property.Value) {
+            $InputObject.PSObject.Properties.Remove($property.Name)
+            continue
+        }
+
+        Remove-NullJsonProperties -InputObject $property.Value
+    }
+}
+
+function ConvertTo-ComparableApplicationJson {
+    param(
+        [Parameter()]
+        [object]$InputObject
+    )
+
+    $copy = Copy-JsonObject -InputObject $InputObject
+    Remove-NullJsonProperties -InputObject $copy
+    return $copy | ConvertTo-Json -Depth 20 -Compress
+}
+
+function New-ApplicationDatabaseEntry {
+    param(
+        [Parameter(Mandatory)]
+        [PSCustomObject]$Application,
+
+        [Parameter()]
+        [object]$ExistingApplication
+    )
+
+    $entry = if ($null -ne $ExistingApplication) {
+        Copy-JsonObject -InputObject $ExistingApplication
+    }
+    else {
+        [PSCustomObject]@{}
+    }
+
+    if ($entry.PSObject.Properties['AppId']) {
+        $entry.PSObject.Properties.Remove('AppId')
+    }
+
+    Set-JsonObjectProperty -InputObject $entry -PropertyName 'Name' -Value (Get-ObjectPropertyValue -InputObject $Application -PropertyName 'Name' -DefaultValue '')
+    Set-JsonObjectProperty -InputObject $entry -PropertyName 'Category' -Value (Get-ObjectPropertyValue -InputObject $Application -PropertyName 'Category' -DefaultValue '')
+    Set-JsonObjectProperty -InputObject $entry -PropertyName 'Description' -Value (Get-ObjectPropertyValue -InputObject $Application -PropertyName 'Description' -DefaultValue '')
+    Set-JsonObjectProperty -InputObject $entry -PropertyName 'Sources' -Value (Copy-JsonObject -InputObject (Get-ObjectPropertyValue -InputObject $Application -PropertyName 'Sources' -DefaultValue ([PSCustomObject]@{})))
+    Set-JsonObjectProperty -InputObject $entry -PropertyName 'Detection' -Value (Copy-JsonObject -InputObject (Get-ObjectPropertyValue -InputObject $Application -PropertyName 'Detection'))
+    Set-JsonObjectProperty -InputObject $entry -PropertyName 'DefaultPriority' -Value (Get-ObjectPropertyValue -InputObject $Application -PropertyName 'DefaultPriority' -DefaultValue 50)
+    Set-JsonObjectProperty -InputObject $entry -PropertyName 'DefaultRequired' -Value (Get-ObjectPropertyValue -InputObject $Application -PropertyName 'DefaultRequired' -DefaultValue $false)
+    Set-JsonObjectProperty -InputObject $entry -PropertyName 'EnvironmentRestrictions' -Value @(Get-ObjectPropertyValue -InputObject $Application -PropertyName 'EnvironmentRestrictions' -DefaultValue @())
+    Set-JsonObjectProperty -InputObject $entry -PropertyName 'Tags' -Value @(Get-ObjectPropertyValue -InputObject $Application -PropertyName 'Tags' -DefaultValue @())
+
+    $lastVerified = Get-ObjectPropertyValue -InputObject $Application -PropertyName 'LastVerified'
+    if ([string]::IsNullOrWhiteSpace([string]$lastVerified)) {
+        $lastVerified = Get-ObjectPropertyValue -InputObject $ExistingApplication -PropertyName 'LastVerified'
+    }
+    if ([string]::IsNullOrWhiteSpace([string]$lastVerified)) {
+        $lastVerified = (Get-Date).ToString('yyyy-MM-dd')
+    }
+    Set-JsonObjectProperty -InputObject $entry -PropertyName 'LastVerified' -Value $lastVerified
+
+    $verified = Get-ObjectPropertyValue -InputObject $Application -PropertyName 'Verified' -DefaultValue (Get-ObjectPropertyValue -InputObject $ExistingApplication -PropertyName 'Verified' -DefaultValue $false)
+    Set-JsonObjectProperty -InputObject $entry -PropertyName 'Verified' -Value ([bool]$verified)
+    Set-JsonObjectProperty -InputObject $entry -PropertyName 'Homepage' -Value (Get-ObjectPropertyValue -InputObject $Application -PropertyName 'Homepage' -DefaultValue '')
+
+    return $entry
+}
+
+function Test-Utf8Bom {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    if (-not (Test-Path $Path)) {
+        return $false
+    }
+
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+        if ($stream.Length -lt 3) {
+            return $false
+        }
+
+        $buffer = [byte[]]::new(3)
+        $read = $stream.Read($buffer, 0, 3)
+        return $read -eq 3 -and $buffer[0] -eq 0xEF -and $buffer[1] -eq 0xBB -and $buffer[2] -eq 0xBF
+    }
+    finally {
+        $stream.Dispose()
+    }
+}
+
+function Write-Utf8JsonFile {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+
+        [Parameter(Mandatory)]
+        [string]$Content,
+
+        [Parameter(Mandatory)]
+        [bool]$EmitBom
+    )
+
+    $encoding = [System.Text.UTF8Encoding]::new($EmitBom)
+    $normalizedContent = $Content -replace "`r?`n", "`r`n"
+    [System.IO.File]::WriteAllText($Path, $normalizedContent, $encoding)
+}
+
 <#
 .SYNOPSIS
     Saves the application database to disk
@@ -834,7 +1021,7 @@ function Save-ApplicationDatabase {
     [OutputType([PSCustomObject])]
     param(
         [Parameter(Mandatory)]
-        [hashtable]$Applications,
+        [System.Collections.IDictionary]$Applications,
 
         [Parameter()]
         [switch]$CreateBackup
@@ -862,7 +1049,7 @@ function Save-ApplicationDatabase {
 
         # Update applications
         $appsObject = [PSCustomObject]@{}
-        foreach ($key in $Applications.Keys | Sort-Object) {
+        foreach ($key in $Applications.Keys) {
             $appsObject | Add-Member -NotePropertyName $key -NotePropertyValue $Applications[$key]
         }
 
@@ -876,7 +1063,8 @@ function Save-ApplicationDatabase {
 
         # Write to temp file first (atomic write)
         $tempPath = "$Script:DatabasePath.tmp"
-        $jsonContent | Out-File -FilePath $tempPath -Encoding UTF8 -NoNewline
+        $emitBom = Test-Utf8Bom -Path $Script:DatabasePath
+        Write-Utf8JsonFile -Path $tempPath -Content $jsonContent -EmitBom $emitBom
 
         # Replace original file
         Move-Item -Path $tempPath -Destination $Script:DatabasePath -Force
@@ -1260,25 +1448,26 @@ function Set-Application {
         }
 
         # Convert applications to hashtable for manipulation
-        $apps = @{}
+        $apps = [ordered]@{}
         foreach ($prop in $database.Applications.PSObject.Properties) {
             $apps[$prop.Name] = $prop.Value
         }
 
-        # Prepare application object (remove AppId from properties as it's the key)
-        $appToSave = [PSCustomObject]@{
-            Name = $Application.Name
-            Category = $Application.Category
-            Description = if ($Application.Description) { $Application.Description } else { '' }
-            Sources = $Application.Sources
-            Detection = $Application.Detection
-            DefaultPriority = if ($Application.DefaultPriority) { $Application.DefaultPriority } else { 50 }
-            DefaultRequired = if ($null -ne $Application.DefaultRequired) { $Application.DefaultRequired } else { $false }
-            EnvironmentRestrictions = if ($Application.EnvironmentRestrictions) { $Application.EnvironmentRestrictions } else { @() }
-            Tags = if ($Application.Tags) { $Application.Tags } else { @() }
-            LastVerified = (Get-Date).ToString('yyyy-MM-dd')
-            Verified = $false
-            Homepage = if ($Application.Homepage) { $Application.Homepage } else { '' }
+        $appToSave = New-ApplicationDatabaseEntry -Application $Application -ExistingApplication $existing
+
+        if ($null -ne $existing) {
+            $existingToCompare = New-ApplicationDatabaseEntry -Application $existing -ExistingApplication $existing
+            $existingJson = ConvertTo-ComparableApplicationJson -InputObject $existingToCompare
+            $newJson = ConvertTo-ComparableApplicationJson -InputObject $appToSave
+
+            if ($existingJson -eq $newJson) {
+                return [PSCustomObject]@{
+                    Success = $true
+                    IsNew = $false
+                    BackupPath = $null
+                    Errors = @()
+                }
+            }
         }
 
         # Add or update
@@ -1341,7 +1530,7 @@ function Remove-Application {
         }
 
         # Convert to hashtable and remove
-        $apps = @{}
+        $apps = [ordered]@{}
         foreach ($prop in $database.Applications.PSObject.Properties) {
             if ($prop.Name -ne $AppId) {
                 $apps[$prop.Name] = $prop.Value
@@ -1412,7 +1601,7 @@ function Import-ApplicationsFromFile {
 
         # Load current database
         $database = Get-ApplicationDatabase -ForceReload
-        $apps = @{}
+        $apps = [ordered]@{}
 
         if ($Mode -ne 'ReplaceAll' -and $null -ne $database) {
             foreach ($prop in $database.Applications.PSObject.Properties) {

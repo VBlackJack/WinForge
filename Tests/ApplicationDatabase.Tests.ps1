@@ -133,11 +133,26 @@ function global:New-TestApplicationDatabaseFixture {
 function global:Write-TestApplicationDatabaseFixture {
     param(
         [Parameter(Mandatory)]
-        [string]$Path
+        [string]$Path,
+
+        [Parameter()]
+        [switch]$EmitBom
     )
 
     $fixture = New-TestApplicationDatabaseFixture
-    $fixture | ConvertTo-Json -Depth 20 | Out-File -FilePath $Path -Encoding UTF8 -Force
+    $json = $fixture | ConvertTo-Json -Depth 20
+    $encoding = [System.Text.UTF8Encoding]::new([bool]$EmitBom)
+    [System.IO.File]::WriteAllText($Path, $json, $encoding)
+}
+
+function global:Test-TestFileHasUtf8Bom {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    $bytes = [System.IO.File]::ReadAllBytes($Path)
+    return $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
 }
 
 Describe 'ApplicationDatabase Module' {
@@ -651,6 +666,54 @@ Describe 'ApplicationDatabase Extended Coverage' {
             $removeResult = Remove-Application -AppId 'NewTool'
             $removeResult.Success | Should -Be $true
             (Get-ApplicationById -AppId 'NewTool') | Should -BeNullOrEmpty
+        }
+
+        It 'Should not rewrite database when application is unchanged' {
+            Write-TestApplicationDatabaseFixture -Path $script:TempDatabasePath -EmitBom
+            InModuleScope ApplicationDatabase -Parameters @{ TempDatabasePath = $script:TempDatabasePath } {
+                $Script:DatabasePath = $TempDatabasePath
+                $Script:DatabaseCache = $null
+                $Script:DatabaseLastModified = $null
+            }
+
+            $beforeBytes = [System.IO.File]::ReadAllBytes($script:TempDatabasePath)
+            $app = Get-ApplicationById -AppId 'BaseApp'
+
+            $result = Set-Application -Application $app
+
+            $afterBytes = [System.IO.File]::ReadAllBytes($script:TempDatabasePath)
+            $result.Success | Should -Be $true
+            $result.IsNew | Should -Be $false
+            [Convert]::ToBase64String($afterBytes) | Should -Be ([Convert]::ToBase64String($beforeBytes))
+            Test-TestFileHasUtf8Bom -Path $script:TempDatabasePath | Should -Be $true
+        }
+
+        It 'Should preserve order, BOM, and metadata when updating an application' {
+            $fixture = New-TestApplicationDatabaseFixture
+            $fixture.LastUpdated = '2000-01-01'
+            $json = $fixture | ConvertTo-Json -Depth 20
+            $encoding = [System.Text.UTF8Encoding]::new($true)
+            [System.IO.File]::WriteAllText($script:TempDatabasePath, $json, $encoding)
+
+            InModuleScope ApplicationDatabase -Parameters @{ TempDatabasePath = $script:TempDatabasePath } {
+                $Script:DatabasePath = $TempDatabasePath
+                $Script:DatabaseCache = $null
+                $Script:DatabaseLastModified = $null
+            }
+
+            $app = Get-ApplicationById -AppId 'BaseApp' | ConvertTo-Json -Depth 20 | ConvertFrom-Json
+            $app.Name = 'Base App Updated'
+
+            $result = Set-Application -Application $app
+            $db = Get-ApplicationDatabase -ForceReload
+
+            $result.Success | Should -Be $true
+            Test-TestFileHasUtf8Bom -Path $script:TempDatabasePath | Should -Be $true
+            (@($db.Applications.PSObject.Properties.Name) -join ',') | Should -Be 'BaseApp,DepApp'
+            $db.LastUpdated | Should -Be (Get-Date -Format 'yyyy-MM-dd')
+            $db.Applications.BaseApp.LastVerified | Should -Be '2026-02-12'
+            $db.Applications.BaseApp.Verified | Should -Be $true
+            $db.Applications.BaseApp.Dependencies.Count | Should -Be 2
         }
 
         It 'Should return not found when removing unknown application' {
