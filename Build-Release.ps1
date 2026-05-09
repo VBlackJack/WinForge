@@ -14,7 +14,8 @@
     5. Create ZIP archive
 
 .PARAMETER Version
-    The version number for the release (default: from Config/version.json).
+    Optional forced calendar release version. Accepts YYYYMMDDxx, or Heimdall-style
+    YYYY.MMDDxx. When omitted, the next YYYYMMDDxx sequence for today is used.
 
 .PARAMETER Configuration
     Build configuration: Release or Debug (default: Release).
@@ -27,7 +28,7 @@
 
 .EXAMPLE
     .\Build-Release.ps1
-    .\Build-Release.ps1 -Version "3.1.0"
+    .\Build-Release.ps1 -Version "2026050901"
     .\Build-Release.ps1 -SkipTests
 
 .NOTES
@@ -96,15 +97,26 @@ $TestProjectPath = Join-Path $ScriptRoot "GUI\Win11Forge.GUI.Tests\Win11Forge.GU
 $PublishPath = Join-Path $ScriptRoot "GUI\Win11Forge.GUI\bin\publish"
 $DistRoot = Join-Path $ScriptRoot "Dist"
 
-# Get version from Config/version.json if not provided
-if (-not $Version) {
-    $versionFile = Join-Path $ScriptRoot "Config\version.json"
-    if (Test-Path $versionFile) {
-        $versionData = Get-Content $versionFile -Raw | ConvertFrom-Json
-        $Version = $versionData.Version
-    } else {
-        $Version = "3.0.0"
-    }
+# Resolve and persist the release version before build/publish/package steps.
+$versionScript = Join-Path $ScriptRoot "Tools\Update-CalendarVersion.ps1"
+if (-not (Test-Path $versionScript)) {
+    throw "Versioning script not found: $versionScript"
+}
+
+$versionArgs = @{
+    RootPath = $ScriptRoot
+    PassThru = $true
+}
+if ($Version) {
+    $versionArgs.Version = $Version
+}
+
+$versionInfo = & $versionScript @versionArgs
+$Version = $versionInfo.DisplayVersion
+
+$manifestScript = Join-Path $ScriptRoot "Tools\Update-ManifestVersions.ps1"
+if (Test-Path $manifestScript) {
+    & $manifestScript -RootPath $ScriptRoot
 }
 
 $ReleaseName = "Win11Forge_v$Version"
@@ -184,6 +196,10 @@ $publishArgs = @(
     "-p:IncludeNativeLibrariesForSelfExtract=true"
     "-p:DebugType=none"
     "-p:DebugSymbols=false"
+    "-p:AssemblyVersion=$($versionInfo.AssemblyVersion)"
+    "-p:FileVersion=$($versionInfo.AssemblyVersion)"
+    "-p:Version=$($versionInfo.AssemblyVersion)"
+    "-p:InformationalVersion=$($versionInfo.InformationalVersion)"
 )
 
 $result = & dotnet @publishArgs 2>&1

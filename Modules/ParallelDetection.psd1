@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ParallelDetection.psm1'
-    ModuleVersion = '3.7.2'
+    ModuleVersion = '1.0.0509.1'
     GUID = '2a081b8d-d726-4190-9ae3-b69ff83afb75'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Detection', 'Parallel', 'Performance')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.7.2'
+            ReleaseNotes = 'Win11Forge v2026050901'
         }
     }
 }

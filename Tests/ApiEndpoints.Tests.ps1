@@ -102,7 +102,7 @@ Describe 'ApiEndpoints Module' {
         It 'Should include version string' {
             $result = Get-VersionHandler -Context @{}
             $result.version | Should -BeOfType [string]
-            $result.version | Should -Match '^\d+\.\d+\.\d+$'
+            $result.version | Should -Match '^\d{10}$'
         }
 
         It 'Should include apiVersion' {

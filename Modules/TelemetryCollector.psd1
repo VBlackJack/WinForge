@@ -21,7 +21,7 @@
     RootModule = 'TelemetryCollector.psm1'
 
     # Version number of this module
-    ModuleVersion = '3.7.2'
+    ModuleVersion = '1.0.0509.1'
 
     # ID used to uniquely identify this module
     GUID = 'b6d0e3f7-9a8c-4b5d-1e2f-3a4b5c6d7e8f'

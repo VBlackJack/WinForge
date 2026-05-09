@@ -15,8 +15,8 @@
     },
     "Version": {
       "type": "string",
-      "description": "Semantic version of the framework (single source of truth)",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+      "description": "Calendar display version of the framework (YYYYMMDDxx)",
+      "pattern": "^\\d{10}$"
     },
     "ReleaseDate": {
       "type": "string",

@@ -74,7 +74,7 @@ Describe 'UpdateManager Module' {
 
         It 'Should return valid version format' {
             $version = Get-CurrentVersion
-            $version | Should -Match '^\d+\.\d+\.\d+'
+            $version | Should -Match '^\d{10}$'
         }
     }
 
@@ -283,7 +283,7 @@ Describe 'UpdateManager Integration' {
     Context 'Version File Access' {
         It 'Should read version from Config/version.json' {
             $version = Get-CurrentVersion
-            $version | Should -Match '^\d+\.\d+\.\d+'
+            $version | Should -Match '^\d{10}$'
         }
 
         It 'Should return consistent version' {

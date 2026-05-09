@@ -8,9 +8,10 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>Win11Forge.GUI</RootNamespace>
     <AssemblyName>Win11Forge.GUI</AssemblyName>
-    <AssemblyVersion>3.7.2</AssemblyVersion>
-    <FileVersion>3.7.2</FileVersion>
-    <Version>3.7.2</Version>
+    <AssemblyVersion>1.0.0509.1</AssemblyVersion>
+    <FileVersion>1.0.0509.1</FileVersion>
+    <Version>1.0.0509.1</Version>
+    <InformationalVersion>2026050901</InformationalVersion>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Win11Forge.ico</ApplicationIcon>
   </PropertyGroup>
