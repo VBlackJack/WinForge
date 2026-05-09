@@ -400,8 +400,9 @@ public class AppsViewModelTests
     public async Task ExportSelection_ShouldWriteSelectedApplicationIdsToChosenFile()
     {
         // Arrange
+        using var tempDirectory = new TestTemporaryDirectory();
         var fileDialogService = new TestFileDialogService();
-        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var filePath = tempDirectory.GetFilePath("selection.json");
         fileDialogService.QueueSaveResult(filePath);
         var viewModel = CreateViewModel(fileDialogService: fileDialogService);
         await viewModel.InitializeAsync();
@@ -409,105 +410,86 @@ public class AppsViewModelTests
         apps[0].IsSelected = true;
         apps[1].IsSelected = true;
 
-        try
-        {
-            // Act
-            await viewModel.ExportSelectionCommand.ExecuteAsync(null);
+        // Act
+        await viewModel.ExportSelectionCommand.ExecuteAsync(null);
 
-            // Assert
-            Assert.Single(fileDialogService.SaveOptions);
-            Assert.Equal("JSON files (*.json)|*.json", fileDialogService.SaveOptions[0].Filter);
-            Assert.Equal(".json", fileDialogService.SaveOptions[0].DefaultExtension);
-            Assert.Equal("win11forge-selection", fileDialogService.SaveOptions[0].DefaultFileName);
+        // Assert
+        Assert.Null(viewModel.ErrorMessage);
+        Assert.Single(fileDialogService.SaveOptions);
+        Assert.Equal("JSON files (*.json)|*.json", fileDialogService.SaveOptions[0].Filter);
+        Assert.Equal(".json", fileDialogService.SaveOptions[0].DefaultExtension);
+        Assert.Equal("win11forge-selection", fileDialogService.SaveOptions[0].DefaultFileName);
+        Assert.True(File.Exists(filePath), $"Expected selection export file at {filePath}.");
 
-            var exportedIds = JsonSerializer.Deserialize<List<string>>(await File.ReadAllTextAsync(filePath));
-            Assert.NotNull(exportedIds);
-            Assert.Contains("Microsoft.VisualStudioCode", exportedIds);
-            Assert.Contains("Microsoft.VisualStudio.2022.Community", exportedIds);
-        }
-        finally
-        {
-            if (File.Exists(filePath))
-            {
-                File.Delete(filePath);
-            }
-        }
+        var exportedIds = JsonSerializer.Deserialize<List<string>>(await File.ReadAllTextAsync(filePath));
+        Assert.NotNull(exportedIds);
+        Assert.Contains("Microsoft.VisualStudioCode", exportedIds);
+        Assert.Contains("Microsoft.VisualStudio.2022.Community", exportedIds);
     }
 
     [Fact]
     public async Task ImportSelection_ShouldApplySelectedApplicationIdsFromChosenFile()
     {
         // Arrange
+        using var tempDirectory = new TestTemporaryDirectory();
         var fileDialogService = new TestFileDialogService();
-        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var filePath = tempDirectory.GetFilePath("selection.json");
         await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "Git.Git" }));
         fileDialogService.QueueOpenResult(filePath);
         var viewModel = CreateViewModel(fileDialogService: fileDialogService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
-        try
-        {
-            // Act
-            await viewModel.ImportSelectionCommand.ExecuteAsync(null);
+        // Act
+        await viewModel.ImportSelectionCommand.ExecuteAsync(null);
 
-            // Assert
-            Assert.Single(fileDialogService.OpenOptions);
-            Assert.Equal("JSON files (*.json)|*.json", fileDialogService.OpenOptions[0].Filter);
-            Assert.Equal(".json", fileDialogService.OpenOptions[0].DefaultExtension);
+        // Assert
+        Assert.Null(viewModel.ErrorMessage);
+        Assert.Single(fileDialogService.OpenOptions);
+        Assert.Equal("JSON files (*.json)|*.json", fileDialogService.OpenOptions[0].Filter);
+        Assert.Equal(".json", fileDialogService.OpenOptions[0].DefaultExtension);
 
-            var selectedApps = GetFilteredApps(viewModel.FilteredApplications)
-                .Where(app => app.IsSelected)
-                .ToList();
-            Assert.Single(selectedApps);
-            Assert.Equal("Git.Git", selectedApps[0].AppId);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        var selectedApps = GetFilteredApps(viewModel.FilteredApplications)
+            .Where(app => app.IsSelected)
+            .ToList();
+        Assert.Single(selectedApps);
+        Assert.Equal("Git.Git", selectedApps[0].AppId);
     }
 
     [Fact]
     public async Task ExportFavorites_ShouldWriteFavoriteApplicationIdsToChosenFile()
     {
         // Arrange
+        using var tempDirectory = new TestTemporaryDirectory();
         var fileDialogService = new TestFileDialogService();
-        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var filePath = tempDirectory.GetFilePath("favorites.json");
         fileDialogService.QueueSaveResult(filePath);
         var viewModel = CreateViewModel(fileDialogService: fileDialogService);
         await viewModel.InitializeAsync();
         GetFilteredApps(viewModel.FilteredApplications)[0].IsFavorite = true;
 
-        try
-        {
-            // Act
-            await viewModel.ExportFavoritesCommand.ExecuteAsync(null);
+        // Act
+        await viewModel.ExportFavoritesCommand.ExecuteAsync(null);
 
-            // Assert
-            Assert.Single(fileDialogService.SaveOptions);
-            Assert.Equal("win11forge-favorites", fileDialogService.SaveOptions[0].DefaultFileName);
+        // Assert
+        Assert.Null(viewModel.ErrorMessage);
+        Assert.Single(fileDialogService.SaveOptions);
+        Assert.Equal("win11forge-favorites", fileDialogService.SaveOptions[0].DefaultFileName);
+        Assert.True(File.Exists(filePath), $"Expected favorites export file at {filePath}.");
 
-            var exportedIds = JsonSerializer.Deserialize<List<string>>(await File.ReadAllTextAsync(filePath));
-            Assert.NotNull(exportedIds);
-            Assert.Single(exportedIds);
-            Assert.Equal("Microsoft.VisualStudioCode", exportedIds[0]);
-        }
-        finally
-        {
-            if (File.Exists(filePath))
-            {
-                File.Delete(filePath);
-            }
-        }
+        var exportedIds = JsonSerializer.Deserialize<List<string>>(await File.ReadAllTextAsync(filePath));
+        Assert.NotNull(exportedIds);
+        Assert.Single(exportedIds);
+        Assert.Equal("Microsoft.VisualStudioCode", exportedIds[0]);
     }
 
     [Fact]
     public async Task ImportFavorites_ShouldApplyFavoriteApplicationIdsFromChosenFile()
     {
         // Arrange
+        using var tempDirectory = new TestTemporaryDirectory();
         var fileDialogService = new TestFileDialogService();
-        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var filePath = tempDirectory.GetFilePath("favorites.json");
         await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "Mozilla.Firefox" }));
         fileDialogService.QueueOpenResult(filePath);
         var viewModel = CreateViewModel(fileDialogService: fileDialogService);
@@ -518,33 +500,28 @@ public class AppsViewModelTests
         }
         viewModel.FavoritesCount = 0;
 
-        try
-        {
-            // Act
-            await viewModel.ImportFavoritesCommand.ExecuteAsync(null);
+        // Act
+        await viewModel.ImportFavoritesCommand.ExecuteAsync(null);
 
-            // Assert
-            Assert.Single(fileDialogService.OpenOptions);
-            var favoriteApps = GetFilteredApps(viewModel.FilteredApplications)
-                .Where(app => app.IsFavorite)
-                .ToList();
-            Assert.Single(favoriteApps);
-            Assert.Equal("Mozilla.Firefox", favoriteApps[0].AppId);
-            Assert.Equal(1, viewModel.FavoritesCount);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // Assert
+        Assert.Null(viewModel.ErrorMessage);
+        Assert.Single(fileDialogService.OpenOptions);
+        var favoriteApps = GetFilteredApps(viewModel.FilteredApplications)
+            .Where(app => app.IsFavorite)
+            .ToList();
+        Assert.Single(favoriteApps);
+        Assert.Equal("Mozilla.Firefox", favoriteApps[0].AppId);
+        Assert.Equal(1, viewModel.FavoritesCount);
     }
 
     [Fact]
     public async Task ImportSelection_WithExistingSelectionAndReplace_ShouldClearCurrentAndSummarizeMissing()
     {
         // Arrange
+        using var tempDirectory = new TestTemporaryDirectory();
         var fileDialogService = new TestFileDialogService();
         var dialogService = new TestDialogService();
-        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var filePath = tempDirectory.GetFilePath("selection.json");
         await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "git.git", "Missing.App", " " }));
         fileDialogService.QueueOpenResult(filePath);
         dialogService.QueueYesNoCancelResult(true);
@@ -553,34 +530,29 @@ public class AppsViewModelTests
         FindApp(viewModel, "Mozilla.Firefox").IsSelected = true;
         viewModel.UpdateSelectedCount();
 
-        try
-        {
-            // Act
-            await viewModel.ImportSelectionCommand.ExecuteAsync(null);
+        // Act
+        await viewModel.ImportSelectionCommand.ExecuteAsync(null);
 
-            // Assert
-            var request = Assert.Single(dialogService.YesNoCancelRequests);
-            Assert.Equal(Loc("Apps_Import_Replace"), request.YesText);
-            Assert.Equal(Loc("Apps_Import_Merge"), request.NoText);
-            Assert.Equal(Resources.Resources.Common_Cancel, request.CancelText);
-            Assert.True(FindApp(viewModel, "Git.Git").IsSelected);
-            Assert.False(FindApp(viewModel, "Mozilla.Firefox").IsSelected);
-            Assert.Equal(1, viewModel.SelectedCount);
-            Assert.Equal(FormatLoc("Apps_ImportSelection_Status", 1, 1, 1), viewModel.StatusMessage);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // Assert
+        Assert.Null(viewModel.ErrorMessage);
+        var request = Assert.Single(dialogService.YesNoCancelRequests);
+        Assert.Equal(Loc("Apps_Import_Replace"), request.YesText);
+        Assert.Equal(Loc("Apps_Import_Merge"), request.NoText);
+        Assert.Equal(Resources.Resources.Common_Cancel, request.CancelText);
+        Assert.True(FindApp(viewModel, "Git.Git").IsSelected);
+        Assert.False(FindApp(viewModel, "Mozilla.Firefox").IsSelected);
+        Assert.Equal(1, viewModel.SelectedCount);
+        Assert.Equal(FormatLoc("Apps_ImportSelection_Status", 1, 1, 1), viewModel.StatusMessage);
     }
 
     [Fact]
     public async Task ImportFavorites_WithExistingFavoritesAndMerge_ShouldPreserveCurrentAndAddMatches()
     {
         // Arrange
+        using var tempDirectory = new TestTemporaryDirectory();
         var fileDialogService = new TestFileDialogService();
         var dialogService = new TestDialogService();
-        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var filePath = tempDirectory.GetFilePath("favorites.json");
         await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "mozilla.firefox", "Mozilla.Firefox", "Missing.App" }));
         fileDialogService.QueueOpenResult(filePath);
         dialogService.QueueYesNoCancelResult(false);
@@ -589,31 +561,26 @@ public class AppsViewModelTests
         FindApp(viewModel, "Google.Chrome").IsFavorite = true;
         viewModel.FavoritesCount = 1;
 
-        try
-        {
-            // Act
-            await viewModel.ImportFavoritesCommand.ExecuteAsync(null);
+        // Act
+        await viewModel.ImportFavoritesCommand.ExecuteAsync(null);
 
-            // Assert
-            Assert.Single(dialogService.YesNoCancelRequests);
-            Assert.True(FindApp(viewModel, "Google.Chrome").IsFavorite);
-            Assert.True(FindApp(viewModel, "Mozilla.Firefox").IsFavorite);
-            Assert.Equal(2, viewModel.FavoritesCount);
-            Assert.Equal(FormatLoc("Apps_ImportFavorites_Status", 1, 1, 2), viewModel.StatusMessage);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // Assert
+        Assert.Null(viewModel.ErrorMessage);
+        Assert.Single(dialogService.YesNoCancelRequests);
+        Assert.True(FindApp(viewModel, "Google.Chrome").IsFavorite);
+        Assert.True(FindApp(viewModel, "Mozilla.Firefox").IsFavorite);
+        Assert.Equal(2, viewModel.FavoritesCount);
+        Assert.Equal(FormatLoc("Apps_ImportFavorites_Status", 1, 1, 2), viewModel.StatusMessage);
     }
 
     [Fact]
     public async Task ImportSelection_WhenConflictCancelled_ShouldLeaveCurrentSelectionUntouched()
     {
         // Arrange
+        using var tempDirectory = new TestTemporaryDirectory();
         var fileDialogService = new TestFileDialogService();
         var dialogService = new TestDialogService();
-        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var filePath = tempDirectory.GetFilePath("selection.json");
         await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "Mozilla.Firefox" }));
         fileDialogService.QueueOpenResult(filePath);
         dialogService.QueueYesNoCancelResult(null);
@@ -623,22 +590,16 @@ public class AppsViewModelTests
         FindApp(viewModel, "Git.Git").IsSelected = true;
         viewModel.UpdateSelectedCount();
 
-        try
-        {
-            // Act
-            await viewModel.ImportSelectionCommand.ExecuteAsync(null);
+        // Act
+        await viewModel.ImportSelectionCommand.ExecuteAsync(null);
 
-            // Assert
-            Assert.Single(dialogService.YesNoCancelRequests);
-            Assert.True(FindApp(viewModel, "Git.Git").IsSelected);
-            Assert.False(FindApp(viewModel, "Mozilla.Firefox").IsSelected);
-            Assert.Equal(1, viewModel.SelectedCount);
-            Assert.Null(viewModel.StatusMessage);
-        }
-        finally
-        {
-            File.Delete(filePath);
-        }
+        // Assert
+        Assert.Null(viewModel.ErrorMessage);
+        Assert.Single(dialogService.YesNoCancelRequests);
+        Assert.True(FindApp(viewModel, "Git.Git").IsSelected);
+        Assert.False(FindApp(viewModel, "Mozilla.Firefox").IsSelected);
+        Assert.Equal(1, viewModel.SelectedCount);
+        Assert.Null(viewModel.StatusMessage);
     }
 
     [Fact]
@@ -1587,6 +1548,57 @@ public class AppsViewModelTests
 
         // Assert
         Assert.Equal("Enterprise", FindApp(viewModel, "Git.Git").ProfileTier);
+    }
+
+    private sealed class TestTemporaryDirectory : IDisposable
+    {
+        private const int DeleteRetryCount = 5;
+        private const int DeleteRetryDelayMilliseconds = 50;
+
+        public TestTemporaryDirectory()
+        {
+            DirectoryPath = Path.Combine(
+                Path.GetTempPath(),
+                "Win11Forge.Tests",
+                Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(DirectoryPath);
+        }
+
+        public string DirectoryPath { get; }
+
+        public string GetFilePath(string fileName)
+        {
+            return Path.Combine(DirectoryPath, fileName);
+        }
+
+        public void Dispose()
+        {
+            DeleteDirectoryWithRetry(DirectoryPath);
+        }
+
+        private static void DeleteDirectoryWithRetry(string directoryPath)
+        {
+            for (var attempt = 1; attempt <= DeleteRetryCount; attempt++)
+            {
+                try
+                {
+                    if (Directory.Exists(directoryPath))
+                    {
+                        Directory.Delete(directoryPath, recursive: true);
+                    }
+
+                    return;
+                }
+                catch (IOException) when (attempt < DeleteRetryCount)
+                {
+                    System.Threading.Thread.Sleep(DeleteRetryDelayMilliseconds);
+                }
+                catch (UnauthorizedAccessException) when (attempt < DeleteRetryCount)
+                {
+                    System.Threading.Thread.Sleep(DeleteRetryDelayMilliseconds);
+                }
+            }
+        }
     }
 
     private sealed class TestProfilesDirectory : IDisposable
