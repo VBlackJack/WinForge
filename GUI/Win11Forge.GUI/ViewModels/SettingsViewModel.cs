@@ -20,6 +20,7 @@ using System.Globalization;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Win11Forge.GUI.Localization;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services;
@@ -352,11 +353,9 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         }
 
         // Initialize available languages
-        AvailableLanguages =
-        [
-            new LanguageOption("en", "English"),
-            new LanguageOption("fr", "Français")
-        ];
+        AvailableLanguages = new ObservableCollection<LanguageOption>(
+            SupportedLocales.Codes.Select(code =>
+                new LanguageOption(code, SupportedLocales.DisplayNames[code])));
 
         // Version will be loaded in InitializeAsync
         AppVersion = "...";
@@ -584,7 +583,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         settings.ThemeName = SelectedTheme?.Name ?? ThemeNames.Default;
         settings.IsHighContrastEnabled = IsHighContrastEnabled;
         settings.ReducedMotionOverride = _reducedMotionOverride;
-        settings.LanguageCode = SelectedLanguage?.Code ?? "en";
+        settings.LanguageCode = SelectedLanguage?.Code ?? SupportedLocales.Default;
         settings.MaxParallelInstalls = MaxParallelInstalls;
         settings.MaxParallelScans = MaxParallelScans;
         settings.UpdateScanTimeoutMinutes = UpdateScanTimeoutMinutes;

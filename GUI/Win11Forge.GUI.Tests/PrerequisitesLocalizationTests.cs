@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
+using System.IO;
 using Moq;
+using Win11Forge.GUI.Localization;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Services.Implementations;
 using Win11Forge.GUI.Services.PowerShell;
+using Win11Forge.GUI.Tests.TestInfrastructure;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -38,6 +41,37 @@ public class PrerequisitesLocalizationTests
         var actual = PrerequisitesServiceImpl.ResolvePowerShellLocaleCode(languageCode);
 
         Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void SupportedLocales_HaveMatchingResxFiles()
+    {
+        var resourcesDirectory = RepositoryPathHelper.FindDirectory("GUI", "Win11Forge.GUI", "Resources");
+        var expectedFiles = SupportedLocales.Codes
+            .Select(code => code == SupportedLocales.Default
+                ? "Resources.resx"
+                : $"Resources.{code}.resx")
+            .ToList();
+
+        foreach (var file in expectedFiles)
+        {
+            var path = Path.Combine(resourcesDirectory, file);
+            Assert.True(File.Exists(path), $"Missing resx for declared locale: {file}");
+        }
+
+        var localizedResxFiles = Directory.GetFiles(resourcesDirectory, "Resources.*.resx")
+            .Select(path => (
+                FileName: Path.GetFileName(path),
+                Code: Path.GetFileNameWithoutExtension(path)!
+                    .Replace("Resources.", string.Empty, StringComparison.Ordinal)))
+            .ToList();
+
+        foreach (var resxFile in localizedResxFiles)
+        {
+            Assert.True(
+                SupportedLocales.Codes.Contains(resxFile.Code, StringComparer.OrdinalIgnoreCase),
+                $"Resx file {resxFile.FileName} has no entry in SupportedLocales.Codes");
+        }
     }
 
     [Fact]

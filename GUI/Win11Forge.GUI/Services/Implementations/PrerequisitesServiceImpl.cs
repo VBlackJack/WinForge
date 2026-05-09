@@ -19,6 +19,7 @@
 using System.Security.Principal;
 using System.Text.Json;
 using Win11Forge.GUI.Helpers;
+using Win11Forge.GUI.Localization;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services.PowerShell;
 using Loc = Win11Forge.GUI.Resources.Resources;
@@ -352,19 +353,7 @@ try {{
     }
 
     internal static string ResolvePowerShellLocaleCode(string? languageCode)
-    {
-        if (string.IsNullOrWhiteSpace(languageCode))
-        {
-            return "en";
-        }
-
-        var twoLetterCode = languageCode
-            .Split('-', StringSplitOptions.RemoveEmptyEntries)[0]
-            .Trim()
-            .ToLowerInvariant();
-
-        return twoLetterCode == "fr" ? "fr" : "en";
-    }
+        => SupportedLocales.Resolve(languageCode);
 
     private string GetConfiguredLanguageCode()
     {
@@ -374,7 +363,7 @@ try {{
         }
         catch
         {
-            return "en";
+            return SupportedLocales.Default;
         }
     }
 
