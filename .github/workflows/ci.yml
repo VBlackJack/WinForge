@@ -209,6 +209,24 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - name: Guard packages.lock.json RID neutrality
+        shell: pwsh
+        run: |
+          # Lock files must stay RID-neutral so `dotnet restore --locked-mode` matches
+          # the csproj target framework set (no <RuntimeIdentifier>). A stray
+          # "<tfm>/<rid>" key (e.g. "net10.0-windows7.0/win-x64") triggers NU1004.
+          # See PR #98 (commit ea7af4f) for the prior incident.
+          $pattern = '"net\d+\.\d+-windows[^/"]*\/[^"]+"\s*:'
+          $bad = Get-ChildItem GUI -Filter packages.lock.json -Recurse |
+            Where-Object { (Get-Content $_.FullName -Raw) -match $pattern }
+          if ($bad) {
+            foreach ($file in $bad) {
+              Write-Host "::error file=$($file.FullName)::RID-specific section detected in lock file. Run 'git restore' on this file or rebuild the lock with a RID-neutral 'dotnet restore'."
+            }
+            exit 1
+          }
+          Write-Host "All packages.lock.json files are RID-neutral." -ForegroundColor Green
+
       - name: Restore dependencies
         run: dotnet restore GUI/Win11Forge.slnx --locked-mode
 
