@@ -411,6 +411,21 @@ public partial class App : Application
                 SwapIfExists(app, "SourceDirectBadgeBackgroundBrush", "HighContrastSurfaceBrush");
                 SwapIfExists(app, "SourceDirectBadgeBorderBrush", "HighContrastBorderBrush");
                 SwapIfExists(app, "SourceDirectBadgeForegroundBrush", "HighContrastTextPrimaryBrush");
+
+                // Canonical button taxonomy -> High Contrast variants.
+                // Each canonical Style is replaced with the matching HighContrast<Name>Style
+                // so explicitly-styled buttons repaint correctly when HC mode is enabled.
+                SwapIfExists(app, "HeroPrimaryButton",      "HighContrastHeroPrimaryButtonStyle");
+                SwapIfExists(app, "PrimaryButton",          "HighContrastPrimaryButtonStyle");
+                SwapIfExists(app, "SecondaryButton",        "HighContrastSecondaryButtonStyle");
+                SwapIfExists(app, "OutlinedButton",         "HighContrastOutlinedButtonStyle");
+                SwapIfExists(app, "WarningPrimaryButton",   "HighContrastWarningPrimaryButtonStyle");
+                SwapIfExists(app, "DestructiveButton",      "HighContrastOutlinedButtonStyle");
+                SwapIfExists(app, "DestructiveSolidButton", "HighContrastDestructiveSolidButtonStyle");
+                SwapIfExists(app, "IconButton",             "HighContrastIconButtonStyle");
+                SwapIfExists(app, "StatsCardButton",        "HighContrastStatsCardButtonStyle");
+                SwapIfExists(app, "QuickActionButton",      "HighContrastQuickActionButtonStyle");
+                SwapIfExists(app, "FavoriteIconButton",     "HighContrastFavoriteIconButtonStyle");
             }
             catch (Exception ex)
             {

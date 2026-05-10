@@ -11,46 +11,8 @@
              d:DataContext="{d:DesignInstance Type=viewModels:DashboardViewModel}"
              d:DesignHeight="800" d:DesignWidth="1000">
 
-    <UserControl.Resources>
-        <!-- Clickable Stats Card Style -->
-        <Style x:Key="ClickableStatsCard" TargetType="Button">
-            <Setter Property="Height" Value="Auto"/>
-            <Setter Property="Padding" Value="16"/>
-            <Setter Property="Margin" Value="0,0,12,0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="8"
-                                Padding="{TemplateBinding Padding}"
-                                BorderBrush="{DynamicResource ControlElevationBorderBrush}"
-                                BorderThickness="1">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+    <!-- Button styles resolve from App.xaml: StatsCardButton, QuickActionButton, HeroPrimaryButton, SecondaryButton, WarningPrimaryButton -->
 
-        <!-- Quick Action Button Style -->
-        <Style x:Key="QuickActionButtonStyle" TargetType="Button" BasedOn="{StaticResource ThemeAdaptiveOutlinedButton}">
-            <Setter Property="Height" Value="Auto"/>
-            <Setter Property="Padding" Value="24,16"/>
-            <Setter Property="Margin" Value="0,0,0,12"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        </Style>
-
-    </UserControl.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="32,24">
@@ -111,11 +73,7 @@
                                        Style="{StaticResource PageSubtitleTextStyle}"
                                        Margin="0,0,0,16"/>
                             <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
-                                       Appearance="Primary"
-                                       Background="{DynamicResource AccentOrangeTextBrush}"
-                                       Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
-                                       Padding="24,14"
-                                       MinHeight="48"
+                                       Appearance="Transparent"
                                        HorizontalAlignment="Left"
                                        AutomationProperties.Name="{loc:Loc A11y_Dashboard_FixPrereqs}">
                                 <StackPanel Orientation="Horizontal">
@@ -153,11 +111,7 @@
                                        Margin="0,0,0,16"/>
                             <StackPanel Orientation="Horizontal">
                                 <ui:Button Command="{Binding StartDeploymentCommand}"
-                                           Appearance="Primary"
-                                           Height="56"
-                                           FontSize="16"
-                                           FontWeight="SemiBold"
-                                           Padding="32,0"
+                                           Appearance="Transparent"
                                            ToolTip="{loc:Loc Dashboard_StartDeployment_Hint}"
                                            Margin="0,0,12,0"
                                            AutomationProperties.Name="{loc:Loc A11y_Dashboard_StartDeployment}">
@@ -170,10 +124,9 @@
                                     </StackPanel>
                                 </ui:Button>
                                 <ui:Button Command="{Binding ViewUpdatesCommand}"
-                                           Appearance="Secondary"
+                                           Appearance="Transparent"
+                                           MinHeight="{StaticResource ButtonMinHeightHero}"
                                            ToolTip="{loc:Loc Dashboard_ViewUpdates_Hint}"
-                                           Height="56"
-                                           Padding="24,0"
                                            Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
                                            AutomationProperties.Name="{loc:Loc A11y_Dashboard_ViewUpdates}">
                                     <StackPanel Orientation="Horizontal">
@@ -213,7 +166,7 @@
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,24">
                 <!-- Profiles Stat (Clickable) -->
                 <Button Command="{Binding NavigateToProfilesCommand}"
-                        Style="{StaticResource ClickableStatsCard}"
+                        Style="{StaticResource StatsCardButton}"
                         ToolTip="{loc:Loc Dashboard_Stats_ProfilesHint}"
                         MinWidth="160"
                         AutomationProperties.Name="{loc:Loc Dashboard_Stats_Profiles}"
@@ -241,7 +194,7 @@
 
                 <!-- Apps Stat (Clickable) -->
                 <Button Command="{Binding NavigateToAppsCommand}"
-                        Style="{StaticResource ClickableStatsCard}"
+                        Style="{StaticResource StatsCardButton}"
                         ToolTip="{loc:Loc Dashboard_Stats_AppsHint}"
                         MinWidth="160"
                         AutomationProperties.Name="{loc:Loc Dashboard_Stats_Apps}"
@@ -269,7 +222,7 @@
 
                 <!-- Updates Stat (Clickable) -->
                 <Button Command="{Binding ViewUpdatesCommand}"
-                        Style="{StaticResource ClickableStatsCard}"
+                        Style="{StaticResource StatsCardButton}"
                         ToolTip="{loc:Loc Dashboard_Stats_UpdatesHint}"
                         MinWidth="160"
                         Margin="0"
@@ -469,7 +422,7 @@
 
                             <!-- Scan Button -->
                             <ui:Button Command="{Binding ScanUpdatesCommand}"
-                                       Appearance="Primary"
+                                       Appearance="Transparent"
                                        ToolTip="{loc:Loc Dashboard_ScanBtn_Hint}"
                                        HorizontalAlignment="Stretch"
                                        IsEnabled="{Binding IsNotScanning}">
@@ -509,7 +462,7 @@
 
                             <!-- Prerequisites Button -->
                             <Button Command="{Binding NavigateToPrerequisitesCommand}"
-                                    Style="{StaticResource QuickActionButtonStyle}"
+                                    Style="{StaticResource QuickActionButton}"
                                     ToolTip="{loc:Loc Dashboard_Nav_PrereqsHint}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -535,7 +488,7 @@
 
                             <!-- Applications Button -->
                             <Button Command="{Binding NavigateToAppsCommand}"
-                                    Style="{StaticResource QuickActionButtonStyle}"
+                                    Style="{StaticResource QuickActionButton}"
                                     ToolTip="{loc:Loc Dashboard_Nav_AppsHint}"
                                     Margin="0">
                                 <Grid>

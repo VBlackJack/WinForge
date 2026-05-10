@@ -51,7 +51,7 @@
             <!-- Actions -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <ui:Button Command="{Binding RefreshCommand}"
-                           Appearance="Secondary"
+                           Appearance="Transparent"
                            Margin="0,0,8,0"
                            ToolTip="{loc:Loc Logs_Refresh}">
                     <StackPanel Orientation="Horizontal">
@@ -60,7 +60,7 @@
                     </StackPanel>
                 </ui:Button>
                 <ui:Button Command="{Binding OpenLogFolderCommand}"
-                           Appearance="Secondary"
+                           Appearance="Transparent"
                            Margin="0,0,8,0"
                            ToolTip="{loc:Loc Logs_OpenFolder}">
                     <StackPanel Orientation="Horizontal">
@@ -69,7 +69,7 @@
                     </StackPanel>
                 </ui:Button>
                 <ui:Button Command="{Binding ExportLogsCommand}"
-                           Appearance="Secondary"
+                           Appearance="Transparent"
                            ToolTip="{loc:Loc Logs_Export}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="ArrowExportLtr24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>

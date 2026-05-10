@@ -77,7 +77,7 @@
                                Margin="0,0,16,0"
                                Icon="{ui:SymbolIcon ArrowRedo24}"/>
 
-                    <ui:Button Appearance="Primary"
+                    <ui:Button Appearance="Transparent"
                                Command="{Binding AddCommand}"
                                ToolTip="{loc:Loc AppCatalog_AddTooltip}"
                                AutomationProperties.Name="{loc:Loc AppCatalog_Add}"
@@ -93,7 +93,7 @@
                     </ui:Button>
 
                     <!-- Import/Export -->
-                    <ui:Button Appearance="Secondary"
+                    <ui:Button Appearance="Transparent"
                                Command="{Binding ImportCommand}"
                                ToolTip="{loc:Loc AppCatalog_ImportTooltip}"
                                AutomationProperties.Name="{loc:Loc AppCatalog_Import}"
@@ -129,7 +129,7 @@
                     </ui:DropDownButton>
 
                     <!-- Verify All -->
-                    <ui:Button Appearance="Secondary"
+                    <ui:Button Appearance="Transparent"
                                Command="{Binding VerifyAllSourcesCommand}"
                                ToolTip="{loc:Loc AppCatalog_VerifySources}"
                                AutomationProperties.Name="{loc:Loc AppCatalog_VerifySources}"
@@ -144,7 +144,7 @@
                             <TextBlock Text="{loc:Loc AppCatalog_Verify}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
-                    <ui:Button Appearance="Secondary"
+                    <ui:Button Appearance="Transparent"
                                Command="{Binding CancelVerificationCommand}"
                                ToolTip="{loc:Loc Btn_Cancel}"
                                AutomationProperties.Name="{loc:Loc Btn_Cancel}"
@@ -219,7 +219,7 @@
                     <StackPanel Grid.Column="3"
                                 Orientation="Horizontal"
                                 Visibility="{Binding SelectedApplication, Converter={StaticResource NullableToVisibilityConverter}}">
-                        <ui:Button Appearance="Secondary"
+                        <ui:Button Appearance="Transparent"
                                    Command="{Binding EditCommand}"
                                    ToolTip="{loc:Loc AppCatalog_EditTooltip}"
                                    AutomationProperties.Name="{loc:Loc AppCatalog_Edit}"
@@ -233,7 +233,7 @@
                                 <TextBlock Text="{loc:Loc AppCatalog_Edit}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ui:Button>
-                        <ui:Button Appearance="Secondary"
+                        <ui:Button Appearance="Transparent"
                                    Command="{Binding DuplicateCommand}"
                                    ToolTip="{loc:Loc AppCatalog_DuplicateTooltip}"
                                    AutomationProperties.Name="{loc:Loc AppCatalog_Duplicate}"
@@ -247,7 +247,7 @@
                                 <TextBlock Text="{loc:Loc AppCatalog_Duplicate}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ui:Button>
-                        <ui:Button Appearance="Danger"
+                        <ui:Button Appearance="Transparent"
                                    Command="{Binding DeleteCommand}"
                                    ToolTip="{loc:Loc AppCatalog_DeleteTooltip}"
                                    AutomationProperties.Name="{loc:Loc AppCatalog_Delete}"
@@ -472,7 +472,7 @@
                                MaxWidth="520"/>
                     <ui:Button Content="{loc:Loc Common_TryAgain}"
                                Command="{Binding RetryLoadCommand}"
-                               Appearance="Primary"
+                               Appearance="Transparent"
                                HorizontalAlignment="Center"
                                Margin="0,16,0,0"/>
                 </StackPanel>

@@ -4,6 +4,75 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+### UI flat-text consolidation + WPF-UI 4.3 disabled-state fix — May 2026
+
+Visual unification pass and several orthogonal Apps-view defect fixes uncovered
+along the way. Full design notes in
+`Docs/architecture/UI-FLAT-CONSOLIDATION-2026-05.md`.
+
+#### Changed
+- **App-wide flat button presentation.** Every `Appearance="Primary|Secondary|`
+  `Danger"` and every `Style="{StaticResource HeroPrimaryButton|`
+  `WarningPrimaryButton|SecondaryButton|DestructiveSolidButton}"` instance is
+  now `Appearance="Transparent"`. ~60 buttons across 15 files: `Views/AppsView`,
+  `Views/AppCatalogView`, `Views/DashboardView`, `Views/PrerequisitesView`,
+  `Views/DeploymentView`, `Views/SettingsView`, `Views/LogsView`,
+  `Views/SaveProfileDialog`, `Views/ApplicationPickerDialog`,
+  `Views/Dialogs/ApplicationEditorDialog`, `Controls/ConfirmDialog`,
+  `Controls/EmptyStateControl`, `Controls/ErrorDialog`,
+  `Controls/KeyboardShortcutsPanel`, `Controls/LoadingOverlay`,
+  `Controls/OnboardingDialog`, plus four `UserControls/*SourceEditor` and
+  `UserControls/DetectionEditor`.
+- **Hover contrast WCAG AA.** `Secondary` and `Transparent`
+  `MouseOverBackground` / `PressedBackground` re-targeted from `HighlightBrush`
+  (~`#4A4E66`, ~2.25:1 vs purple text — fails AA) to `SurfaceBrush`
+  (`#1B1C25`, ~5.6:1–6:1 against the configured foregrounds — clears AA).
+
+#### Fixed
+- **Column Visibility menu silently broken (Apps view).** The `ui:Flyout` placed
+  inside `<ui:DropDownButton.Flyout>` was silently ignored at runtime
+  (`Flyout` is typed `ContextMenu`). Replacement attempt with
+  `ui:Button + ContextMenu + Click handler` failed because the menu's
+  `PlacementTarget="{Binding ElementName=...}"` evaluates inside the
+  `ContextMenu` NameScope and could not resolve. Fix: adopt the
+  `ui:DropDownButton` + flyout `ContextMenu` pattern already used in
+  `AppCatalogView`. Removed the `ColumnVisibilityButton_Click` handler and the
+  dead `_isColumnVisibilityPopupOpen` `[ObservableProperty]`.
+- **WPF-UI 4.3 disabled state painted Light Fluent on dark Dracula.** The
+  upstream `controls:Button` `ControlTemplate.Triggers` writes
+  `ContentBorder.Background = {DynamicResource ButtonBackgroundDisabled}`,
+  and that `DynamicResource` lookup does not honor any user-scope override at
+  any level we tested (`StackPanel.Resources`, `ui:Button.Resources`,
+  `UserControl.Resources`, or `Application.Current.Resources` direct entry —
+  all probed and verified inert). Fix: fork the upstream
+  `DefaultUiButtonStyle` `ControlTemplate` verbatim into our App.xaml implicit
+  `ui:Button` style. Single deviation: the `IsEnabled=False` trigger now sets
+  `ContentBorder.Opacity=0.45` instead of overriding the three brushes. The
+  fork preserves `Icon` DP support, `RecognizesAccessKey`, `PressedForeground`,
+  the `InsetBorder`, and every upstream `Appearance` trigger.
+- **`UninstallSelectedCommand` `CanExecute` not refreshed when selection
+  changes.** `_selectedCount` in `ViewModels/AppsViewModel.cs` only had
+  `[NotifyCanExecuteChangedFor(nameof(InstallSelectedCommand))]`. Added the
+  matching attribute for `UninstallSelectedCommand`. Without it, Uninstall
+  Selected stayed in the visual disabled state after the user picked an item,
+  even though `CanUninstallSelected` would have evaluated `true`.
+- **DataGrid app-name column visibly top-biased.** Outer `StackPanel`
+  `Orientation="Vertical"` of the Application Name `CellTemplate` defaulted to
+  `VerticalAlignment="Stretch"`, so the cell-level `VerticalContentAlignment=`
+  `"Center"` had no effect on the rendered text position. Set
+  `VerticalAlignment="Center"` on that panel and on the Selection
+  `CheckBox` cell template. Title + description now sit at row center within
+  ~3 px.
+
+#### ThemeService bridge
+- Extended `PaletteBrushResourceMap` with rest/hover/pressed/disabled state
+  keys for `Button*` and `CheckBox*` (~22 new mappings) so all WPF-UI control
+  states pull Dracula brushes.
+- Extended `PaletteColorResourceMap` with `PaletteRedColor` /
+  `PaletteGreenColor` / `PaletteOrangeColor` / `PaletteLightBlueColor` Color
+  overrides — preserved for forward compatibility even though no instance
+  currently uses `Appearance="Danger|Success|Caution|Info"`.
+
 ### Dead code + i18n audit pass — May 2026
 
 Two-axis cleanup pass closing 18 findings from `Docs/audit/Win11Forge-DeadCode-i18n-Audit-2026-05.md` across 7 self-contained commits. No behavior change at runtime; build, 566 GUI tests, Pester suite, PSScriptAnalyzer, FR diacritics lint, and version-consistency check all green.

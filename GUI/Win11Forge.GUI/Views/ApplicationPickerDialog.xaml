@@ -124,7 +124,7 @@
             <ui:Button Grid.Column="1"
                        Content="{loc:Loc Btn_Cancel}"
                        Command="{Binding CancelCommand}"
-                       Appearance="Secondary"
+                       Appearance="Transparent"
                        Margin="0,0,12,0"
                        AutomationProperties.Name="{loc:Loc A11y_AppPicker_Cancel}"/>
 
@@ -134,7 +134,7 @@
                        Command="{Binding ConfirmCommand}"
                        CommandParameter="{Binding SelectedApplication}"
                        IsEnabled="{Binding HasSelection}"
-                       Appearance="Primary"
+                       Appearance="Transparent"
                        AutomationProperties.Name="{loc:Loc A11y_AppPicker_Add}"/>
         </Grid>
     </Grid>

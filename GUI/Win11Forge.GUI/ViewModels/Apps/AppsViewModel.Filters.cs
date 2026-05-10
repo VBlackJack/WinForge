@@ -116,12 +116,6 @@ public partial class AppsViewModel
     #region Column Visibility
 
     /// <summary>
-    /// Whether the column visibility popup is open.
-    /// </summary>
-    [ObservableProperty]
-    private bool _isColumnVisibilityPopupOpen;
-
-    /// <summary>
     /// Whether the Favorites column is visible.
     /// </summary>
     [ObservableProperty]

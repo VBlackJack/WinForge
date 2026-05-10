@@ -72,6 +72,55 @@ public sealed class ThemeService : IThemeService
             ["AccentTextFillColorPrimaryBrush"] = "AccentBrush",
             ["AccentTextFillColorSecondaryBrush"] = "AccentHoverBrush",
             ["AccentTextFillColorTertiaryBrush"] = "AccentPressedBrush",
+            // WPF-UI 4.x Button.Appearance="Primary" reads these for Background/Hover/Pressed.
+            ["AccentFillColorDefaultBrush"] = "AccentBrush",
+            ["AccentFillColorSecondaryBrush"] = "AccentHoverBrush",
+            ["AccentFillColorTertiaryBrush"] = "AccentPressedBrush",
+            ["AccentFillColorDisabledBrush"] = "TextDisabledBrush",
+            ["AccentFillColorSelectedTextBackgroundBrush"] = "AccentBrush",
+            // WPF-UI 4.3 Button.xaml binds these directly (resolved via the AccentFillColor* chain).
+            ["AccentButtonBackground"] = "AccentBrush",
+            ["AccentButtonBackgroundPointerOver"] = "AccentHoverBrush",
+            ["AccentButtonBackgroundPressed"] = "AccentPressedBrush",
+            ["AccentButtonBackgroundDisabled"] = "TextDisabledBrush",
+            ["AccentButtonForeground"] = "BadgeTextBrush",
+            ["AccentButtonForegroundPointerOver"] = "BadgeTextBrush",
+            ["AccentButtonForegroundPressed"] = "BadgeTextBrush",
+            ["AccentButtonForegroundDisabled"] = "TextDisabledBrush",
+            ["AccentButtonBorderBrush"] = "AccentBrush",
+            ["AccentButtonBorderBrushPointerOver"] = "AccentHoverBrush",
+            ["AccentButtonBorderBrushPressed"] = "AccentPressedBrush",
+            ["AccentControlElevationBorderBrush"] = "AccentBrush",
+            // WPF-UI 4.3 default Button (non-Accent) all states — used by Appearance="Transparent",
+            // "Secondary", and any plain ui:Button. Without these, the template falls back to Fluent.
+            // The "rest" trio (Background/Foreground/BorderBrush) is critical for "Secondary"/"Default"
+            // appearances because the template binds to {DynamicResource ButtonBackground} for at-rest.
+            ["ButtonBackground"] = "SurfaceBrush",
+            ["ButtonForeground"] = "TextPrimaryBrush",
+            ["ButtonBorderBrush"] = "BorderBrush",
+            ["ButtonBackgroundPointerOver"] = "HighlightBrush",
+            ["ButtonBackgroundPressed"] = "HighlightBrush",
+            ["ButtonBackgroundDisabled"] = "SurfaceBrush",
+            ["ButtonForegroundPointerOver"] = "TextPrimaryBrush",
+            ["ButtonForegroundPressed"] = "TextPrimaryBrush",
+            ["ButtonForegroundDisabled"] = "TextDisabledBrush",
+            ["ButtonBorderBrushPressed"] = "BorderBrush",
+            ["ButtonBorderBrushDisabled"] = "BorderBrush",
+            // WPF-UI 4.3 CheckBox checked/unchecked states. Without the *Checked* mapping the tick fill
+            // defaults to Fluent system blue; the Glyph stays light and unreadable on Dracula accent.
+            ["CheckBoxBackground"] = "SurfaceBrush",
+            ["CheckBoxForeground"] = "TextPrimaryBrush",
+            ["CheckBoxBorderBrush"] = "BorderBrush",
+            ["CheckBoxCheckBorderBrush"] = "BorderBrush",
+            ["CheckBoxCheckGlyphForeground"] = "BadgeTextBrush",
+            ["CheckBoxCheckBackgroundFillChecked"] = "AccentBrush",
+            ["CheckBoxCheckBackgroundFillCheckedPointerOver"] = "AccentHoverBrush",
+            ["CheckBoxCheckBackgroundFillCheckedPressed"] = "AccentPressedBrush",
+            ["CheckBoxCheckBackgroundFillUncheckedPointerOver"] = "HighlightBrush",
+            ["CheckBoxCheckBackgroundFillUncheckedPressed"] = "HighlightBrush",
+            ["CheckBoxCheckBackgroundFillUncheckedDisabled"] = "SurfaceBrush",
+            ["CheckBoxCheckBackgroundStrokeUncheckedDisabled"] = "BorderBrush",
+            ["CheckBoxForegroundUncheckedDisabled"] = "TextDisabledBrush",
             ["ControlFillColorInputActiveBrush"] = "CardBrush",
             ["ControlFillColorTransparentBrush"] = "SurfaceBrush",
             ["ControlStrongFillColorDefaultBrush"] = "AccentBrush",
@@ -133,7 +182,18 @@ public sealed class ThemeService : IThemeService
             ["SystemAccentColor"] = "AccentColor",
             ["SystemAccentColorPrimary"] = "AccentColor",
             ["SystemAccentColorSecondary"] = "AccentHoverColor",
-            ["SystemAccentColorTertiary"] = "AccentPressedColor"
+            ["SystemAccentColorTertiary"] = "AccentPressedColor",
+            // WPF-UI 4.x AccentFillColor palette - SolidColorBrushes can be bound to these via {DynamicResource}.
+            ["AccentFillColorDefault"] = "AccentColor",
+            ["AccentFillColorSecondary"] = "AccentHoverColor",
+            ["AccentFillColorTertiary"] = "AccentPressedColor",
+            // WPF-UI 4.3 Button.xaml wraps these Color keys inside a SolidColorBrush at template eval
+            // for Appearance="Danger"/"Success"/"Caution"/"Info". Overriding the Color makes the brush
+            // pick up Dracula values at runtime.
+            ["PaletteRedColor"] = "ErrorColor",
+            ["PaletteGreenColor"] = "SuccessColor",
+            ["PaletteOrangeColor"] = "WarningColor",
+            ["PaletteLightBlueColor"] = "InfoColor"
         };
 
     private static readonly IReadOnlyList<string> PaletteBridgeResourceKeys =
@@ -376,6 +436,7 @@ public sealed class ThemeService : IThemeService
             }
         }
     }
+
 
     internal static void ClearPaletteBridgeResources(ResourceDictionary resources)
     {
