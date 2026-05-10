@@ -4,6 +4,39 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+### Button visual hierarchy restored — May 2026 follow-up
+
+After visual inspection of the `v2026051001` release built from the unified
+flat-text state, the lack of visual hierarchy on every action button proved
+unworkable in practice — hero CTAs, dialog confirm buttons, and toolbar
+actions all rendered as identical plain text labels. Reversed §2.6 of
+`Docs/architecture/UI-FLAT-CONSOLIDATION-2026-05.md`. See §7 of that ADR for
+the full rationale.
+
+#### Changed
+- **Restored 70 `Appearance` attributes** across 20 view files to their
+  pre-PR #94 values — `Primary` for constructive primary actions
+  (Confirm/Save/OK/Apply/Install/Add/Start/Restart/etc.), `Secondary` for
+  outlined actions (Cancel/Close/Browse/Test/Filter/Save Profile/etc.),
+  `Danger` for App Catalog row Delete. Hero CTAs (Start Deployment, Fix
+  Prerequisites) regain their accent fill. Inline `Background` / `Foreground`
+  / `Padding` / `Height` overrides previously stripped by PR #94 are **not**
+  restored — the implicit `ui:Button` `Style.Triggers` in App.xaml drive the
+  theme-adaptive look from `ThemeAdaptiveAccentBrush` / `BadgeTextBrush`.
+
+#### Kept (unchanged from PR #94)
+- Forked WPF-UI 4.3 `ui:Button` `ControlTemplate` with the
+  `ContentBorder.Opacity=0.45` disabled-state workaround.
+- `Secondary` and `Transparent` hover/pressed re-targeted to `SurfaceBrush`
+  for WCAG AA contrast (~5.6:1–6:1).
+- Apps view fixes (Column Visibility menu, `_selectedCount`
+  `NotifyCanExecuteChangedFor`, DataGrid cell vertical centering).
+- ThemeService `PaletteBrushResourceMap` extensions (~22 button/checkbox state
+  keys) and `Palette*Color` entries.
+- Keyed styles `HeroPrimaryButton` / `PrimaryButton` / `SecondaryButton` /
+  `DestructiveSolidButton` / etc. remain defined in App.xaml as a fallback
+  API; views still drive look through `Appearance="..."` directly.
+
 ### UI flat-text consolidation + WPF-UI 4.3 disabled-state fix — May 2026
 
 Visual unification pass and several orthogonal Apps-view defect fixes uncovered

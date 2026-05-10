@@ -1,12 +1,14 @@
 # Win11Forge — UI flat-text consolidation + WPF-UI 4.3 disabled-state fix
 
-**Status:** COMPLETE — landed on `claude/zealous-bardeen-d31c33`.
+**Status:** §2.6 (flat-text consolidation) **REVERSED** on 2026-05-10 after visual review of
+the v2026051001 release — see §7. All other sections (Apps view fixes, hover contrast,
+WPF-UI 4.3 disabled-state fork, ThemeService bridge) remain in effect.
 **Author:** Julien Bombled.
-**Date:** 2026-05-10.
-**Scope:** App-wide visual unification of `ui:Button` to `Appearance="Transparent"`,
+**Date:** 2026-05-10 (initial), 2026-05-10 (§7 follow-up).
+**Scope:** Initially app-wide visual unification of `ui:Button` to `Appearance="Transparent"`,
 fork of WPF-UI 4.3 `DefaultUiButtonStyle` template to fix disabled-state quirk,
 ThemeService bridge extension, plus orthogonal Apps-view bug fixes uncovered along
-the way.
+the way. Visual unification reversed in §7; everything else kept.
 **Type:** Feature polish + framework defect workaround. No audit finding driving this.
 
 ---
@@ -335,3 +337,118 @@ Pixel sampling on disabled action buttons returns Card-bg or near-Card values
 - `THEME-PORT.md` — palette + service ADR this work extends.
 - `Win11Forge-UX-Audit-2026-05.md` — orthogonal UX audit (none of its
   findings drove this work).
+
+---
+
+## 7. 2026-05-10 follow-up: §2.6 reversed — visual hierarchy restored
+
+**Status:** done in commit `27b898d` on branch `claude/restore-button-appearances`.
+
+### 7.1 Why the reversal
+
+§2.6 was based on a stated user preference for a single flat-text presentation
+everywhere. After §2.6 landed via PR #94 and a release `v2026051001` was built
+and visually inspected on the actual Dracula dark theme, the result did not
+match the user's actual aesthetic preference. The reported feedback after seeing
+the result in-app was simply "all buttons became ugly again" — the lack of
+hierarchy made every action toolbar look like a row of plain text labels with
+no clear primary CTA, no visual cue distinguishing constructive from destructive,
+and the hero CTAs on Dashboard and Prerequisites lost their dominance over
+surrounding navigation.
+
+The reversal restores the pre-PR #94 `Appearance` values verbatim. It does
+**not** restore the pre-PR #94 inline `Background` / `Foreground` /
+`Padding` / `Height` / `FontSize` overrides on the Dashboard hero CTAs (those
+hardcoded an orange `AccentOrangeTextBrush` over white at WCAG 1.73:1 —
+documented in the consolidated audit as a separate finding C2-bis). The Hero
+CTAs in the restored state use `Appearance="Primary"` only, picking up the
+theme accent via the App.xaml implicit `ui:Button` `Style.Triggers`.
+
+### 7.2 What was restored
+
+70 `Appearance` attributes restored across 20 files (every change reversed
+exactly as it was before PR #94):
+
+| Role | Style | Examples |
+|---|---|---|
+| Constructive primary | `Appearance="Primary"` (accent fill) | Confirm, Save, OK, Apply, Install Selected, Add (App Catalog), Start Deployment, Restart Application, Create Scheduled Deployment, Install Prerequisites, Apply Search Result |
+| Secondary outlined | `Appearance="Secondary"` (subtle bg + accent border + accent text) | Cancel, Close, Save Profile, Browse, Test (source editors), Refresh, Open Log Folder, Export Logs, Filter actions (Select All / Clear / etc.), Search (Winget/Choco/Store), Uninstall Selected, Cancel Scan, Cancel Verification |
+| Destructive | `Appearance="Danger"` (red) | Delete (App Catalog row action) |
+
+Full file list: `Controls/ConfirmDialog`, `Controls/EmptyStateControl`,
+`Controls/ErrorDialog`, `Controls/KeyboardShortcutsPanel`, `Controls/LoadingOverlay`,
+`Controls/OnboardingDialog`, `UserControls/ChocolateySourceEditor`,
+`UserControls/DetectionEditor`, `UserControls/DirectDownloadSourceEditor`,
+`UserControls/WingetSourceEditor`, `Views/AppCatalogView`,
+`Views/ApplicationPickerDialog`, `Views/AppsView`, `Views/DashboardView`,
+`Views/DeploymentView`, `Views/Dialogs/ApplicationEditorDialog`,
+`Views/LogsView`, `Views/PrerequisitesView`, `Views/SaveProfileDialog`,
+`Views/SettingsView`.
+
+### 7.3 What was kept from PR #94
+
+All architecture-side improvements remain in place — the reversal is strictly
+a view-side `Appearance` attribute restoration:
+
+- §2.1 Apps view Column Visibility menu (`ui:DropDownButton` + `ContextMenu` flyout pattern).
+- §2.2 Hover/pressed contrast fix (`Secondary` and `Transparent` `MouseOverBackground`
+  / `PressedBackground` re-targeted to `SurfaceBrush`, ~5.6:1–6:1).
+- §2.3 WPF-UI 4.3 disabled-state fork in App.xaml (`ContentBorder.Opacity=0.45`
+  instead of the upstream `ButtonBackgroundDisabled` overwrite that did not
+  honor user-scope overrides).
+- §2.4 `_selectedCount` `[NotifyCanExecuteChangedFor(nameof(UninstallSelectedCommand))]`.
+- §2.5 DataGrid app-name column vertical centering (`StackPanel VerticalAlignment="Center"`).
+- §3 ThemeService `PaletteBrushResourceMap` extensions (~22 button/checkbox state keys)
+  and `Palette*Color` entries — `Danger` / `Success` / `Caution` / `Info` triggers
+  again pick up Dracula values now that those appearances are in active use again.
+
+The keyed styles in App.xaml (`HeroPrimaryButton` / `WarningPrimaryButton` /
+`PrimaryButton` / `SecondaryButton` / `OutlinedButton` / `DestructiveButton` /
+`DestructiveSolidButton` / `IconButton` / `StatsCardButton` / `QuickActionButton` /
+`FavoriteIconButton`) remain defined but are still **not referenced** from
+instance `Style="..."` bindings — the views use `Appearance="..."` directly,
+which lets the implicit `ui:Button` `Style.Triggers` in App.xaml drive the
+theme-adaptive Background / BorderBrush / Foreground from
+`ThemeAdaptiveAccentBrush` / `BadgeTextBrush` / etc. These keyed styles are
+useful as a fallback API but are intentionally unused for now.
+
+### 7.4 Verification (replaces §5)
+
+Build: `dotnet build GUI\Win11Forge.GUI\Win11Forge.GUI.csproj -c Debug` →
+0 warnings, 0 errors.
+
+Runtime test on `v2026051002` build with the active Dracula theme:
+
+| Case | Expected | Observed |
+|---|---|---|
+| Apps view, 0 selected | Install Selected disabled (opacity 0.45), Uninstall outlined | ✓ |
+| Apps view, 1 installable selected | Install Selected accent fill, Uninstall outlined | ✓ |
+| Apps view, Save Profile | Outlined accent (border + text) — matches user reference screenshot | ✓ |
+| Apps view, hover Select All | Dark surface hover, light text readable | ✓ (kept from §2.2) |
+| Apps view, Column Visibility menu | Menu opens below button, 6 toggle items + reset | ✓ (kept from §2.1) |
+| Apps view, DataGrid row | Title + description vertically centered | ✓ (kept from §2.5) |
+| Dashboard, ready state | Start Deployment accent fill, View Updates outlined | ✓ |
+| Dashboard, prereq missing state | Fix Prerequisites accent fill | ✓ |
+| Prerequisites, all green | Install/Reinstall accent fill | ✓ |
+| App Catalog header | Add accent fill, Import/Verify/Cancel outlined | ✓ |
+| App Catalog row, app selected | Edit/Duplicate outlined, Delete red (Danger) | ✓ |
+| Settings → Appearance | Apply accent fill | ✓ |
+| Save Profile dialog | Cancel outlined, Save accent fill | ✓ |
+| Application Picker dialog | Cancel outlined, Confirm accent fill | ✓ |
+| Application Editor dialog | Cancel outlined, Save accent fill, source-search buttons outlined | ✓ |
+| Confirm dialog | Cancel outlined, Confirm accent fill | ✓ |
+| Error dialog | Help/Retry outlined, OK accent fill | ✓ |
+| Disabled state, any theme | `ContentBorder.Opacity=0.45` (no white Fluent block) | ✓ (kept from §2.3) |
+
+Pixel sampling on disabled action buttons returns the active button background
+at 0.45 opacity over the card — no `#F4F4F4` Light Fluent leakage.
+
+### 7.5 Lessons learned
+
+The original §2.6 proceeded from a stated preference without a cheap visual
+verification step. The reversal cycle ate roughly two extra sessions
+(audit-then-revert) that a 30-second runtime sanity check on a release build
+before merging PR #94 would have prevented. For future visual changes that
+touch the entire app surface, run `Build-Release.ps1` and hand-test a release
+ZIP before merging the PR — even when the code change is mechanical and the
+intent is documented in an ADR.
