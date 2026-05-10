@@ -136,7 +136,7 @@
                                                   AutomationProperties.Name="{loc:Loc A11y_Settings_Language}"/>
                                         <ui:Button Content="{loc:Loc Settings_Apply}"
                                                 Command="{Binding ApplyLanguageCommand}"
-                                                Appearance="Transparent"/>
+                                                Appearance="Primary"/>
                                     </StackPanel>
                                 </Grid>
 
@@ -156,7 +156,7 @@
                                         </StackPanel>
                                         <ui:Button Grid.Column="1"
                                                 Command="{Binding RestartApplicationCommand}"
-                                                Appearance="Transparent"
+                                                Appearance="Primary"
                                                 Margin="12,0,0,0"
                                                 AutomationProperties.Name="{loc:Loc Settings_RestartNow}">
                                             <StackPanel Orientation="Horizontal">
@@ -543,7 +543,7 @@
 
                                 <!-- Create Button -->
                                 <ui:Button Command="{Binding CreateScheduledDeploymentCommand}"
-                                        Appearance="Transparent"
+                                        Appearance="Primary"
                                         HorizontalAlignment="Right">
                                     <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="CalendarAdd24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>

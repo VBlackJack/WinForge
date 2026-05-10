@@ -84,7 +84,7 @@
                 </Grid.ColumnDefinitions>
 
                 <ui:Button Grid.Column="0"
-                        Appearance="Transparent"
+                        Appearance="Secondary"
                         Command="{Binding TestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         ToolTip="{loc:Loc SourceEditor_TestTooltip}"
                         MinWidth="120"

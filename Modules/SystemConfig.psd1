@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'SystemConfig.psm1'
-    ModuleVersion = '1.0.0509.1'
+    ModuleVersion = '1.0.0510.2'
     GUID = '92947f6b-3f59-43bc-b252-69313e504de9'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'System', 'Configuration', 'Windows11')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v2026050901'
+            ReleaseNotes = 'Win11Forge v2026051002'
         }
     }
 }

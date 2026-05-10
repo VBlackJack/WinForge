@@ -97,7 +97,7 @@
                              AutomationProperties.Name="{loc:Loc Detection_File_Path}"/>
 
                     <ui:Button Grid.Column="1"
-                            Appearance="Transparent"
+                            Appearance="Secondary"
                             Content="{loc:Loc Detection_Browse}"
                             Command="{Binding BrowseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                             Margin="8,0,0,0"
@@ -200,7 +200,7 @@
             </Grid.ColumnDefinitions>
 
             <ui:Button Grid.Column="0"
-                    Appearance="Transparent"
+                    Appearance="Secondary"
                     Command="{Binding TestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     ToolTip="{loc:Loc Detection_TestTooltip}"
                     MinWidth="140"

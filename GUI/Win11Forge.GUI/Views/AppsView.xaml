@@ -92,12 +92,12 @@
                                         HorizontalAlignment="Right"
                                         Margin="0,16,0,0">
                                 <ui:Button Content="{loc:Loc LogViewer_Copy}"
-                                           Appearance="Transparent"
+                                           Appearance="Secondary"
                                            Click="CopyLogsToClipboard_Click"
                                            AutomationProperties.Name="{loc:Loc LogViewer_Copy}"
                                            Margin="0,0,12,0"/>
                                 <ui:Button Content="{loc:Loc LogViewer_Close}"
-                                           Appearance="Transparent"
+                                           Appearance="Primary"
                                            AutomationProperties.Name="{loc:Loc LogViewer_Close}"
                                            Command="{Binding CloseLogViewerCommand}"/>
                             </StackPanel>
@@ -185,7 +185,7 @@
                             <!-- Dialog Actions -->
                             <ui:Button Grid.Row="2"
                                        Content="{loc:Loc Summary_Close}"
-                                       Appearance="Transparent"
+                                       Appearance="Primary"
                                        AutomationProperties.Name="{loc:Loc Summary_Close}"
                                        Command="{Binding CloseSummaryDialogCommand}"
                                        HorizontalAlignment="Right"/>
@@ -309,7 +309,7 @@
                 <!-- Clear Profile Button (inline with combobox) -->
                 <ui:Button Grid.Column="4"
                            Command="{Binding ClearProfileCommand}"
-                           Appearance="Transparent"
+                           Appearance="Secondary"
                            VerticalAlignment="Center"
                            ToolTip="{loc:Loc Apps_ClearProfile}"
                            Margin="8,0,0,0"
@@ -321,7 +321,7 @@
                 <!-- Save Profile Button (inline with combobox) -->
                 <ui:Button Grid.Column="5"
                            Command="{Binding ShowSaveProfileDialogCommand}"
-                           Appearance="Transparent"
+                           Appearance="Secondary"
                            VerticalAlignment="Center"
                            ToolTip="{loc:Loc Apps_SaveProfile}"
                            AutomationProperties.Name="{loc:Loc Apps_SaveProfile}"
@@ -388,7 +388,7 @@
                     <!-- Clear Filters Button -->
                     <ui:Button Grid.Column="3"
                                Command="{Binding ClearFiltersCommand}"
-                               Appearance="Transparent"
+                               Appearance="Secondary"
                                Style="{StaticResource TouchFriendlyIconButton}"
                                ToolTip="{loc:Loc Apps_ClearFilters}"
                                Margin="8,0,0,0"
@@ -399,7 +399,7 @@
                     <!-- Scan/Cancel Button (moved from row 1 to compact layout) -->
                     <ui:Button Grid.Column="4"
                                Command="{Binding ScanCommand}"
-                               Appearance="Transparent"
+                               Appearance="Primary"
                                Content="{loc:Loc Btn_Scan}"
                                ToolTip="{loc:Loc Help_Tooltip_Scan}"
                                Margin="16,0,0,0"
@@ -407,7 +407,7 @@
                                AutomationProperties.Name="{loc:Loc Btn_Scan}"/>
                     <ui:Button Grid.Column="4"
                                Command="{Binding CancelScanCommand}"
-                               Appearance="Transparent"
+                               Appearance="Secondary"
                                Content="{loc:Loc Btn_Cancel}"
                                Margin="16,0,0,0"
                                Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -417,7 +417,7 @@
                          Always visible — disabled state via Opacity trigger on ui:Button (App.xaml). -->
                     <ui:Button Grid.Column="5"
                                Command="{Binding ScanUpdatesCommand}"
-                               Appearance="Transparent"
+                               Appearance="Secondary"
                                Margin="8,0,0,0"
                                Visibility="{Binding IsScanningUpdates, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                                AutomationProperties.Name="{loc:Loc Btn_ScanUpdates}">
@@ -526,28 +526,28 @@
                 <ui:Button Grid.Column="2"
                            Content="{loc:Loc Apps_SelectAll}"
                            Command="{Binding SelectAllCommand}"
-                           Appearance="Transparent"
+                           Appearance="Secondary"
                            Padding="12,6"
                            Margin="0,0,4,0"
                            AutomationProperties.Name="{loc:Loc Apps_SelectAll}"/>
                 <ui:Button Grid.Column="3"
                            Content="{loc:Loc Apps_SelectNone}"
                            Command="{Binding SelectNoneCommand}"
-                           Appearance="Transparent"
+                           Appearance="Secondary"
                            Padding="12,6"
                            Margin="0,0,4,0"
                            AutomationProperties.Name="{loc:Loc Apps_SelectNone}"/>
                 <ui:Button Grid.Column="4"
                            Content="{loc:Loc Apps_SelectNotInstalled}"
                            Command="{Binding SelectNotInstalledCommand}"
-                           Appearance="Transparent"
+                           Appearance="Secondary"
                            Padding="12,6"
                            Margin="0,0,4,0"
                            AutomationProperties.Name="{loc:Loc Apps_SelectNotInstalled}"/>
                 <ui:Button Grid.Column="5"
                            Content="{loc:Loc Apps_SelectFavorites}"
                            Command="{Binding SelectFavoritesCommand}"
-                           Appearance="Transparent"
+                           Appearance="Secondary"
                            Padding="12,6"
                            AutomationProperties.Name="{loc:Loc Apps_SelectFavorites}">
                     <ui:Button.Style>
@@ -706,7 +706,7 @@
                         </Style>
                     </StackPanel.Style>
                     <ui:Button Command="{Binding UninstallSelectedCommand}"
-                               Appearance="Transparent"
+                               Appearance="Secondary"
                                Margin="0,0,8,0"
                                AutomationProperties.Name="{loc:Loc Apps_UninstallSelected}">
                         <StackPanel Orientation="Horizontal">
@@ -715,7 +715,7 @@
                         </StackPanel>
                     </ui:Button>
                     <ui:Button Command="{Binding InstallSelectedCommand}"
-                               Appearance="Transparent"
+                               Appearance="Primary"
                                AutomationProperties.Name="{loc:Loc Apps_InstallSelected}">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -875,7 +875,7 @@
                                Margin="0,0,0,16"/>
                     <ui:Button Content="{loc:Loc Apps_ClearFilters}"
                                Command="{Binding ClearFiltersCommand}"
-                               Appearance="Transparent"
+                               Appearance="Primary"
                                HorizontalAlignment="Center"
                                AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}"/>
                 </StackPanel>
@@ -1263,13 +1263,13 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <ui:Button Content="{loc:Loc Common_TryAgain}"
                                Command="{Binding RetryLastOperationCommand}"
-                               Appearance="Transparent"
+                               Appearance="Primary"
                                Margin="0,0,8,0"
                                MinWidth="100"
                                AutomationProperties.Name="{loc:Loc Common_TryAgain}"/>
                     <ui:Button Content="{loc:Loc Common_Dismiss}"
                                Command="{Binding DismissErrorCommand}"
-                               Appearance="Transparent"
+                               Appearance="Secondary"
                                MinWidth="100"
                                AutomationProperties.Name="{loc:Loc Common_Dismiss}"/>
                 </StackPanel>

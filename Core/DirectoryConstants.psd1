@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'DirectoryConstants.psm1'
-    ModuleVersion = '1.0.0509.1'
+    ModuleVersion = '1.0.0510.2'
     GUID = 'ee5b82ab-0a2a-479d-9216-52b82c6a2fbc'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Core', 'Constants', 'Paths')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v2026050901'
+            ReleaseNotes = 'Win11Forge v2026051002'
         }
     }
 }

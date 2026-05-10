@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ProfileManager.psm1'
-    ModuleVersion = '1.0.0509.1'
+    ModuleVersion = '1.0.0510.2'
     GUID = 'cfd8f357-383b-41d7-9aca-9770360e26b3'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Profiles', 'Inheritance')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v2026050901'
+            ReleaseNotes = 'Win11Forge v2026051002'
         }
     }
 }
