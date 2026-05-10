@@ -2968,4 +2968,25 @@ Cette action est irréversible.</value>
   <data name="Validation_SystemInfo_WingetVersion_MaxLength" xml:space="preserve">
     <value>La version Winget ne doit pas dépasser 64 caractères</value>
   </data>
+  <data name="Resume_Title" xml:space="preserve">
+    <value>Reprendre l'opération précédente ?</value>
+  </data>
+  <data name="Resume_Message_Install" xml:space="preserve">
+    <value>Une installation précédente de {0} applications a été interrompue ({1} terminées, {2} restantes). Que souhaitez-vous faire ?</value>
+  </data>
+  <data name="Resume_Message_Update" xml:space="preserve">
+    <value>Une mise à jour précédente de {0} applications a été interrompue ({1} terminées, {2} restantes). Que souhaitez-vous faire ?</value>
+  </data>
+  <data name="Resume_Message_Uninstall" xml:space="preserve">
+    <value>Une désinstallation précédente de {0} applications a été interrompue ({1} terminées, {2} restantes). Que souhaitez-vous faire ?</value>
+  </data>
+  <data name="Resume_Action_Resume" xml:space="preserve">
+    <value>Reprendre</value>
+  </data>
+  <data name="Resume_Action_Discard" xml:space="preserve">
+    <value>Ignorer</value>
+  </data>
+  <data name="Resume_Action_KeepForLater" xml:space="preserve">
+    <value>Décider plus tard</value>
+  </data>
 </root>

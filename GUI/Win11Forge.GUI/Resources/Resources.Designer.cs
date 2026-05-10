@@ -979,4 +979,13 @@ public class Resources
     public static string AppCatalog_RedoTooltipDefault => ResourceManager.GetString("AppCatalog_RedoTooltipDefault", resourceCulture);
     public static string AppCatalog_CopyIdSuffix => ResourceManager.GetString("AppCatalog_CopyIdSuffix", resourceCulture);
     public static string AppCatalog_CopyNameSuffix => ResourceManager.GetString("AppCatalog_CopyNameSuffix", resourceCulture);
+
+    // Batch Resume
+    public static string Resume_Title => ResourceManager.GetString("Resume_Title", resourceCulture);
+    public static string Resume_Message_Install => ResourceManager.GetString("Resume_Message_Install", resourceCulture);
+    public static string Resume_Message_Update => ResourceManager.GetString("Resume_Message_Update", resourceCulture);
+    public static string Resume_Message_Uninstall => ResourceManager.GetString("Resume_Message_Uninstall", resourceCulture);
+    public static string Resume_Action_Resume => ResourceManager.GetString("Resume_Action_Resume", resourceCulture);
+    public static string Resume_Action_Discard => ResourceManager.GetString("Resume_Action_Discard", resourceCulture);
+    public static string Resume_Action_KeepForLater => ResourceManager.GetString("Resume_Action_KeepForLater", resourceCulture);
 }
