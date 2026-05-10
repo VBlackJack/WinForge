@@ -1,0 +1,124 @@
+name: Catalog Freshness Check
+
+# Maintenance-only workflow: probes external sources declared in
+# Apps/Database/applications.json (winget, chocolatey, direct URLs)
+# and reports broken or suspect entries via annotations + an artifact.
+# Does NOT modify the catalogue. Auto-issue creation is deferred to v2
+# (see TODO at the bottom of this file).
+#
+# Cache strategy:
+#   The cache key embeds the ISO week, so every Monday the schedule run forces
+#   a full re-probe. Within the same week, a workflow_dispatch run reuses the
+#   cache (TTL = 168h) unless the operator ticks `bypass_cache` below. A bypass
+#   run only refreshes the local cache file for that job — the cache key already
+#   exists, so actions/cache@v4 will NOT overwrite the weekly cache. This means
+#   a mid-week manual bypass cannot corrupt the canonical weekly snapshot.
+
+on:
+  schedule:
+    # Mondays 05:00 UTC (offset from the existing CodeQL Sunday 02:00 schedule).
+    # Schedule runs always do a full-catalog probe (no inputs, defaults apply).
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+    inputs:
+      app_ids:
+        description: 'Optional comma- or space-separated list of AppIds to probe (empty = full catalog).'
+        required: false
+        default: ''
+      bypass_cache:
+        description: 'Ignore cached probe results (force re-probe). Use when investigating recent breakage.'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  # issues: write   # uncomment when v2 enables auto-issue creation
+
+concurrency:
+  group: catalog-freshness
+  cancel-in-progress: false
+
+jobs:
+  freshness:
+    name: Probe catalog sources
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compute ISO week (cache key suffix)
+        id: week
+        shell: pwsh
+        run: |
+          $week = [int](Get-Date -UFormat %V)
+          $year = (Get-Date).Year
+          "value=$year-W$('{0:00}' -f $week)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Restore freshness cache
+        uses: actions/cache@v4
+        with:
+          path: Tools/.cache/freshness-cache.json
+          key: freshness-${{ hashFiles('Apps/Database/applications.json') }}-${{ steps.week.outputs.value }}
+          restore-keys: |
+            freshness-${{ hashFiles('Apps/Database/applications.json') }}-
+            freshness-
+
+      - name: Verify package managers on runner
+        shell: pwsh
+        run: |
+          $haveWinget = [bool](Get-Command winget -ErrorAction SilentlyContinue)
+          $haveChoco  = [bool](Get-Command choco  -ErrorAction SilentlyContinue)
+          Write-Host "winget present: $haveWinget"
+          Write-Host "choco present : $haveChoco"
+          if (-not $haveWinget) {
+            Write-Host '::warning::winget CLI is not present on this runner; Winget checks will be reported as Skipped.'
+          }
+          if (-not $haveChoco) {
+            Write-Host '::warning::choco CLI is not present on this runner; Chocolatey checks will be reported as Skipped.'
+          }
+
+      - name: Run catalog freshness check
+        shell: pwsh
+        env:
+          # Inputs are empty strings on schedule events — the script falls back
+          # to its defaults (full catalog, TTL 168h) in that case.
+          APP_IDS_INPUT: ${{ github.event.inputs.app_ids }}
+          BYPASS_CACHE_INPUT: ${{ github.event.inputs.bypass_cache }}
+        run: |
+          New-Item -ItemType Directory -Path Tools/.cache -Force | Out-Null
+
+          $scriptArgs = @{
+            CachePath      = './Tools/.cache/freshness-cache.json'
+            JsonReportPath = './catalog-freshness-report.json'
+            CI             = $true
+          }
+
+          $appIdsRaw = $env:APP_IDS_INPUT
+          if (-not [string]::IsNullOrWhiteSpace($appIdsRaw)) {
+            $ids = @($appIdsRaw -split '[,\s]+' | Where-Object { $_ })
+            if ($ids.Count -gt 0) {
+              $scriptArgs.AppIdFilter = $ids
+              Write-Host "AppIdFilter from input: $($ids -join ', ')"
+            }
+          }
+
+          if ($env:BYPASS_CACHE_INPUT -eq 'true') {
+            $scriptArgs.CacheTtlHours = 0
+            Write-Host '::warning::Cache bypass enabled — every probe is re-run; weekly cache snapshot is NOT modified.'
+          }
+
+          ./Tools/Test-CatalogFreshness.ps1 @scriptArgs
+
+      - name: Upload freshness report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: catalog-freshness-report
+          path: catalog-freshness-report.json
+          retention-days: 30
+
+# TODO (v2): When summary.Broken > 0, open or update a tracking issue
+# (deduplicated by title "[Catalog Freshness] Weekly report — YYYY-MM-DD")
+# using actions/github-script. Requires permissions: issues: write above.
