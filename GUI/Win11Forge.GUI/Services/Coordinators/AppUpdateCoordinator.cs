@@ -17,6 +17,7 @@
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services.Coordinators.Internal;
+using Win11Forge.GUI.Services.Resume;
 
 namespace Win11Forge.GUI.Services.Coordinators;
 
@@ -27,13 +28,16 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
 {
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IAppSettingsService _settingsService;
+    private readonly IBatchResumeService _resumeService;
 
     public AppUpdateCoordinator(
         IPowerShellBridge powerShellBridge,
-        IAppSettingsService settingsService)
+        IAppSettingsService settingsService,
+        IBatchResumeService resumeService)
     {
         _powerShellBridge = powerShellBridge ?? throw new ArgumentNullException(nameof(powerShellBridge));
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+        _resumeService = resumeService ?? throw new ArgumentNullException(nameof(resumeService));
     }
 
     /// <inheritdoc/>
@@ -96,37 +100,91 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
         var completed = 0;
         var wasCancelled = false;
 
-        foreach (var app in apps)
+        var batchId = await _resumeService.BeginBatchAsync(
+            BatchOperationKind.Update,
+            apps.Select(app => app.AppId).ToArray(),
+            new BatchOptions(ForceUpdate: false),
+            cancellationToken).ConfigureAwait(false);
+
+        try
         {
-            if (cancellationToken.IsCancellationRequested)
+            foreach (var app in apps)
             {
-                wasCancelled = true;
-                skippedCount += apps.Count - completed;
-                break;
-            }
-
-            var itemResult = await UpdateApplicationAsync(app, cancellationToken).ConfigureAwait(false);
-            completed++;
-
-            switch (itemResult.Status)
-            {
-                case AppUpdateItemStatus.Updated:
-                    updatedCount++;
-                    break;
-                case AppUpdateItemStatus.Failed:
-                    failedCount++;
-                    break;
-                case AppUpdateItemStatus.Skipped:
-                    skippedCount++;
+                if (cancellationToken.IsCancellationRequested)
+                {
                     wasCancelled = true;
+                    skippedCount += apps.Count - completed;
                     break;
-            }
+                }
 
-            progress?.Report(new AppOperationProgress(completed, apps.Count, app));
+                var itemResult = await UpdateApplicationAsync(app, cancellationToken).ConfigureAwait(false);
+                completed++;
+
+                switch (itemResult.Status)
+                {
+                    case AppUpdateItemStatus.Updated:
+                        updatedCount++;
+                        break;
+                    case AppUpdateItemStatus.Failed:
+                        failedCount++;
+                        break;
+                    case AppUpdateItemStatus.Skipped:
+                        skippedCount++;
+                        wasCancelled = true;
+                        break;
+                }
+
+                // Checkpoint inline since UpdateAsync is sequential and does not go through
+                // AppOperationRunner. The runner-based callback path is reserved for the
+                // parallel Install / Uninstall coordinators.
+                try
+                {
+                    await _resumeService.AppendCompletedAsync(
+                        batchId,
+                        app.AppId,
+                        ToOutcome(itemResult.Status),
+                        cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        $"[AppUpdateCoordinator] Checkpoint append failed for {app.AppId}: {ex.Message}");
+                }
+
+                progress?.Report(new AppOperationProgress(completed, apps.Count, app));
+            }
         }
+        catch (OperationCanceledException)
+        {
+            // UpdateApplicationAsync absorbs OperationCanceledException by design, so
+            // this catch only fires when AppendCompletedAsync observes the same token
+            // mid-batch. Preserve the original UpdateAsync contract that does not
+            // throw on cancel; the wasCancelled signal is propagated through the
+            // returned result instead.
+            wasCancelled = true;
+            skippedCount += apps.Count - completed;
+        }
+
+        // Mark with CancellationToken.None so the Completed transition is never lost
+        // due to a late cancellation; a real crash bypasses this line entirely and
+        // leaves the file in BatchState.InProgress, which is exactly the signal we
+        // want for the next-startup resume prompt.
+        await _resumeService.MarkBatchCompletedAsync(batchId, CancellationToken.None).ConfigureAwait(false);
 
         return new AppUpdateResult(apps.Count, updatedCount, failedCount, skippedCount, wasCancelled);
     }
+
+    private static BatchItemOutcome ToOutcome(AppUpdateItemStatus status) => status switch
+    {
+        AppUpdateItemStatus.Updated => BatchItemOutcome.Updated,
+        AppUpdateItemStatus.Failed => BatchItemOutcome.Failed,
+        AppUpdateItemStatus.Skipped => BatchItemOutcome.Skipped,
+        _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
+    };
 
     private async Task<AppUpdateScanItemResult> CheckApplicationUpdateAsync(
         ApplicationModel app,

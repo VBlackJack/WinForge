@@ -18,6 +18,7 @@ using Moq;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Services.Coordinators;
+using Win11Forge.GUI.Services.Resume;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -175,7 +176,8 @@ public class AppUninstallCoordinatorTests
     private static AppUninstallCoordinator CreateCoordinator(
         IPowerShellBridge? bridge = null,
         IAppSettingsService? settingsService = null,
-        IPauseGate? pauseGate = null)
+        IPauseGate? pauseGate = null,
+        IBatchResumeService? resumeService = null)
     {
         var settings = new MockAppSettingsService
         {
@@ -189,7 +191,80 @@ public class AppUninstallCoordinatorTests
         return new AppUninstallCoordinator(
             bridge ?? CreateBridge().Object,
             settingsService ?? settings,
-            pauseGate ?? pauseGateMock.Object);
+            pauseGate ?? pauseGateMock.Object,
+            resumeService ?? CreateResumeServiceMock().Object);
+    }
+
+    private static Mock<IBatchResumeService> CreateResumeServiceMock()
+    {
+        var mock = new Mock<IBatchResumeService>();
+        mock.Setup(x => x.BeginBatchAsync(
+                It.IsAny<BatchOperationKind>(),
+                It.IsAny<IReadOnlyList<string>>(),
+                It.IsAny<BatchOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Guid.NewGuid());
+        mock.Setup(x => x.AppendCompletedAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<string>(),
+                It.IsAny<BatchItemOutcome>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.MarkBatchCompletedAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        return mock;
+    }
+
+    [Fact]
+    public async Task UninstallAsync_ShouldBeginBatchWithUninstallKindAndAppIds()
+    {
+        var apps = CreateApps("Foo", "Bar");
+        var resume = CreateResumeServiceMock();
+        var coordinator = CreateCoordinator(resumeService: resume.Object);
+
+        await coordinator.UninstallAsync(apps);
+
+        resume.Verify(
+            x => x.BeginBatchAsync(
+                BatchOperationKind.Uninstall,
+                It.Is<IReadOnlyList<string>>(plan => plan.SequenceEqual(new[] { "Foo", "Bar" })),
+                It.IsAny<BatchOptions>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task UninstallAsync_ShouldAppendUninstalledOutcomeForSuccess()
+    {
+        var apps = CreateApps("App1");
+        var resume = CreateResumeServiceMock();
+        var coordinator = CreateCoordinator(resumeService: resume.Object);
+
+        await coordinator.UninstallAsync(apps);
+
+        resume.Verify(
+            x => x.AppendCompletedAsync(
+                It.IsAny<Guid>(),
+                "App1",
+                BatchItemOutcome.Uninstalled,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task UninstallAsync_OnSuccess_ShouldMarkBatchCompleted()
+    {
+        var apps = CreateApps("App1");
+        var resume = CreateResumeServiceMock();
+        var coordinator = CreateCoordinator(resumeService: resume.Object);
+
+        await coordinator.UninstallAsync(apps);
+
+        resume.Verify(
+            x => x.MarkBatchCompletedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     private sealed class TestProgress<T> : IProgress<T>
