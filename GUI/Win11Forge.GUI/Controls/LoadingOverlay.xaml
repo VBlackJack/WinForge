@@ -65,7 +65,7 @@
                 <!-- Cancel Button (optional) -->
                 <ui:Button x:Name="CancelButton"
                         Content="{loc:Loc Dialog_Cancel}"
-                        Appearance="Transparent"
+                        Appearance="Secondary"
                         Margin="0,16,0,0"
                         Visibility="Collapsed"
                         Click="CancelButton_Click"

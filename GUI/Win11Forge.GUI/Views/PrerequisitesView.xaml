@@ -95,7 +95,7 @@
                     </StackPanel>
 
                     <ui:Button Grid.Column="1"
-                               Appearance="Transparent"
+                               Appearance="Primary"
                                Command="{Binding InstallPrerequisitesCommand}"
                                IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}"
                                ToolTip="{loc:Loc Prerequisites_ReinstallTooltip}">

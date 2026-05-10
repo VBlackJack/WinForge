@@ -73,7 +73,7 @@
                                        Style="{StaticResource PageSubtitleTextStyle}"
                                        Margin="0,0,0,16"/>
                             <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
-                                       Appearance="Transparent"
+                                       Appearance="Primary"
                                        HorizontalAlignment="Left"
                                        AutomationProperties.Name="{loc:Loc A11y_Dashboard_FixPrereqs}">
                                 <StackPanel Orientation="Horizontal">
@@ -111,7 +111,7 @@
                                        Margin="0,0,0,16"/>
                             <StackPanel Orientation="Horizontal">
                                 <ui:Button Command="{Binding StartDeploymentCommand}"
-                                           Appearance="Transparent"
+                                           Appearance="Primary"
                                            ToolTip="{loc:Loc Dashboard_StartDeployment_Hint}"
                                            Margin="0,0,12,0"
                                            AutomationProperties.Name="{loc:Loc A11y_Dashboard_StartDeployment}">
@@ -124,7 +124,7 @@
                                     </StackPanel>
                                 </ui:Button>
                                 <ui:Button Command="{Binding ViewUpdatesCommand}"
-                                           Appearance="Transparent"
+                                           Appearance="Secondary"
                                            MinHeight="{StaticResource ButtonMinHeightHero}"
                                            ToolTip="{loc:Loc Dashboard_ViewUpdates_Hint}"
                                            Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -422,7 +422,7 @@
 
                             <!-- Scan Button -->
                             <ui:Button Command="{Binding ScanUpdatesCommand}"
-                                       Appearance="Transparent"
+                                       Appearance="Primary"
                                        ToolTip="{loc:Loc Dashboard_ScanBtn_Hint}"
                                        HorizontalAlignment="Stretch"
                                        IsEnabled="{Binding IsNotScanning}">
