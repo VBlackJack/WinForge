@@ -25,6 +25,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Guard packages.lock.json RID neutrality
+        shell: pwsh
+        run: .\Tools\Test-PackagesLockRidNeutrality.ps1 -Path GUI
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
@@ -208,6 +212,10 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+
+      - name: Guard packages.lock.json RID neutrality
+        shell: pwsh
+        run: .\Tools\Test-PackagesLockRidNeutrality.ps1 -Path GUI
 
       - name: Restore dependencies
         run: dotnet restore GUI/Win11Forge.slnx --locked-mode

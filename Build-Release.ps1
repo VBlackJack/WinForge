@@ -183,6 +183,13 @@ if (Test-Path $ZipPath) {
 $currentStep++
 Write-Host "[$currentStep/$stepCount] $(Get-Text -Key 'build.step_publishing' -Default 'Publishing Win11Forge.GUI (self-contained, single-file)...')" -ForegroundColor Yellow
 
+# NuGetLockFilePath redirects the publish-time restore to a transient lock file in
+# the project's obj/ folder (gitignored). NuGet still performs RID-aware resolution
+# for the self-contained bundle, but does NOT touch the committed RID-neutral
+# packages.lock.json — which would otherwise gain a "net10.0-windows7.0/win-x64"
+# section incompatible with `dotnet restore --locked-mode` in CI (see PR #98).
+# Setting RestorePackagesWithLockFile=false instead would error with NU1005 because
+# a lock file is present at the default path.
 $publishArgs = @(
     "publish"
     $GuiProjectPath
@@ -190,6 +197,7 @@ $publishArgs = @(
     "--runtime", "win-x64"
     "--output", $PublishPath
     "--self-contained", "true"
+    "-p:NuGetLockFilePath=obj/publish.packages.lock.json"
     "-p:PublishSingleFile=false"
     "-p:PublishTrimmed=false"
     "-p:PublishReadyToRun=true"
