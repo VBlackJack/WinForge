@@ -625,7 +625,8 @@ function Get-CoverageGap {
     .SYNOPSIS
         Identifies probes silently disabled by missing CLIs on the runner.
         Returns a list of { Source, SkippedCount, Reason } entries — empty if no gap.
-        Always emitted via -NoEnumerate so callers receive a real array (StrictMode-safe).
+        The leading-comma idiom on return prevents PowerShell from unwrapping
+        an empty/single-element array to $null, so callers can rely on .Count.
     #>
     param([Parameter(Mandatory)] [AllowEmptyCollection()] [object[]] $Results)
 
@@ -649,7 +650,7 @@ function Get-CoverageGap {
         })
     }
 
-    Write-Output -NoEnumerate $gaps.ToArray()
+    return ,$gaps.ToArray()
 }
 
 function New-FreshnessReport {
