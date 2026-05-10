@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
@@ -12,6 +13,13 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewModels:AppsViewModel}"
              d:DesignHeight="700" d:DesignWidth="1000">
+
+    <UserControl.Resources>
+        <!-- Typographic separator used between counter blocks in the Apps header.
+             Centralised so the visual is not hardcoded inline as a Run.Text literal,
+             which would trip LocalizationAuditTests.AllXamlFiles_ShouldNotContainHardcodedStrings. -->
+        <sys:String x:Key="AppsCounterSeparator" xml:space="preserve">  ·  </sys:String>
+    </UserControl.Resources>
 
     <!-- Dialog overlay -->
     <Grid>
@@ -640,13 +648,13 @@
                         <Run Text="{Binding FilteredCount, Mode=OneWay}"/>
                         <Run Text="/"/>
                         <Run Text="{Binding TotalApplicationsCount, Mode=OneWay}"/>
-                        <Run Text="  ·  "/>
+                        <Run Text="{StaticResource AppsCounterSeparator}"/>
                         <Run Text="{Binding InstalledCount, Mode=OneWay}" Foreground="{DynamicResource AccentGreenTextBrush}"/>
                         <Run Text=" "/><Run Text="{loc:Loc Apps_Installed}"/>
-                        <Run Text="  ·  "/>
+                        <Run Text="{StaticResource AppsCounterSeparator}"/>
                         <Run Text="{Binding SelectedCount, Mode=OneWay}" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
                         <Run Text=" "/><Run Text="{loc:Loc Apps_Selected}"/>
-                        <Run Text="  ·  "/>
+                        <Run Text="{StaticResource AppsCounterSeparator}"/>
                         <Run Text="{Binding FavoritesCount, Mode=OneWay}" Foreground="{DynamicResource FavoriteTextBrush}"/>
                         <Run Text=" "/><Run Text="{loc:Loc Apps_Favorites}"/>
                     </TextBlock>
@@ -688,6 +696,7 @@
                     </Border.Style>
                 </Border>
 
+                <!-- Selection Action Bar -->
                 <!-- Batch actions group (Uninstall + Install).
                      Always visible — buttons go to disabled visual via ui:Button IsEnabled=False
                      Opacity trigger (App.xaml). User explicitly preferred greyed-out vs hidden. -->
