@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Win11Forge.GUI.Services.Coordinators;
 using Win11Forge.GUI.Services.Implementations;
 using Win11Forge.GUI.Services.PowerShell;
+using Win11Forge.GUI.Services.Resume;
 using Win11Forge.GUI.ViewModels;
 
 namespace Win11Forge.GUI.Services;
@@ -81,6 +82,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IApplicationLifetimeService, ApplicationLifetimeService>();
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
         services.AddSingleton<IPauseGate, PauseGate>();
+        services.AddSingleton<IBatchResumeService, BatchResumeService>();
         services.AddSingleton<IAppScanCoordinator, AppScanCoordinator>();
         services.AddSingleton<IAppInstallationCoordinator, AppInstallationCoordinator>();
         services.AddSingleton<IAppUpdateCoordinator, AppUpdateCoordinator>();

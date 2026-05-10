@@ -3929,4 +3929,33 @@ This action cannot be undone.</value>
     <value>Content is being loaded, please wait</value>
     <comment>Accessibility help text for loading placeholders</comment>
   </data>
+  <!-- Batch Resume -->
+  <data name="Resume_Title" xml:space="preserve">
+    <value>Resume previous batch?</value>
+    <comment>Title of the resume prompt shown at startup when an interrupted batch is detected.</comment>
+  </data>
+  <data name="Resume_Message_Install" xml:space="preserve">
+    <value>A previous installation of {0} apps was interrupted ({1} completed, {2} remaining). What would you like to do?</value>
+    <comment>Resume prompt body for an interrupted Install batch. {0}=plan size, {1}=completed count, {2}=remaining count.</comment>
+  </data>
+  <data name="Resume_Message_Update" xml:space="preserve">
+    <value>A previous update of {0} apps was interrupted ({1} completed, {2} remaining). What would you like to do?</value>
+    <comment>Resume prompt body for an interrupted Update batch. {0}=plan size, {1}=completed count, {2}=remaining count.</comment>
+  </data>
+  <data name="Resume_Message_Uninstall" xml:space="preserve">
+    <value>A previous uninstall of {0} apps was interrupted ({1} completed, {2} remaining). What would you like to do?</value>
+    <comment>Resume prompt body for an interrupted Uninstall batch. {0}=plan size, {1}=completed count, {2}=remaining count.</comment>
+  </data>
+  <data name="Resume_Action_Resume" xml:space="preserve">
+    <value>Resume</value>
+    <comment>Primary button on the resume prompt; continues the interrupted batch with the remaining apps.</comment>
+  </data>
+  <data name="Resume_Action_Discard" xml:space="preserve">
+    <value>Discard</value>
+    <comment>Secondary button on the resume prompt; deletes the interrupted batch state without resuming.</comment>
+  </data>
+  <data name="Resume_Action_KeepForLater" xml:space="preserve">
+    <value>Decide later</value>
+    <comment>Close button on the resume prompt; leaves the state file untouched so it is re-offered on the next startup until the TTL expires.</comment>
+  </data>
 </root>

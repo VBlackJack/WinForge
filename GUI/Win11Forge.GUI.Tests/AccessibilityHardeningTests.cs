@@ -335,6 +335,30 @@ public class AccessibilityHardeningTests
     }
 
     [Fact]
+    public void Resume_LocalizationKeys_ArePresentInEnAndFrResx()
+    {
+        var enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
+        var frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
+
+        string[] requiredKeys =
+        [
+            "Resume_Title",
+            "Resume_Message_Install",
+            "Resume_Message_Update",
+            "Resume_Message_Uninstall",
+            "Resume_Action_Resume",
+            "Resume_Action_Discard",
+            "Resume_Action_KeepForLater"
+        ];
+
+        foreach (var key in requiredKeys)
+        {
+            Assert.Contains($"name=\"{key}\"", enResx, StringComparison.Ordinal);
+            Assert.Contains($"name=\"{key}\"", frResx, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void HighContrastTheme_ImplicitlyStylesWpfUiButton()
     {
         var xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "HighContrastTheme.xaml"));

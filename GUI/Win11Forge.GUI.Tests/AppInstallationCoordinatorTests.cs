@@ -18,6 +18,7 @@ using Moq;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Services.Coordinators;
+using Win11Forge.GUI.Services.Resume;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -198,7 +199,8 @@ public class AppInstallationCoordinatorTests
     private static AppInstallationCoordinator CreateCoordinator(
         IPowerShellBridge? bridge = null,
         IAppSettingsService? settingsService = null,
-        IPauseGate? pauseGate = null)
+        IPauseGate? pauseGate = null,
+        IBatchResumeService? resumeService = null)
     {
         var settings = new MockAppSettingsService
         {
@@ -212,6 +214,119 @@ public class AppInstallationCoordinatorTests
         return new AppInstallationCoordinator(
             bridge ?? CreateBridge().Object,
             settingsService ?? settings,
-            pauseGate ?? pauseGateMock.Object);
+            pauseGate ?? pauseGateMock.Object,
+            resumeService ?? CreateResumeServiceMock().Object);
+    }
+
+    private static Mock<IBatchResumeService> CreateResumeServiceMock()
+    {
+        var mock = new Mock<IBatchResumeService>();
+        mock.Setup(x => x.BeginBatchAsync(
+                It.IsAny<BatchOperationKind>(),
+                It.IsAny<IReadOnlyList<string>>(),
+                It.IsAny<BatchOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Guid.NewGuid());
+        mock.Setup(x => x.AppendCompletedAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<string>(),
+                It.IsAny<BatchItemOutcome>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.MarkBatchCompletedAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        return mock;
+    }
+
+    [Fact]
+    public async Task InstallAsync_ShouldBeginBatchWithInstallKindAndAppIds()
+    {
+        var apps = CreateApps("App1", "App2");
+        var resume = CreateResumeServiceMock();
+        var coordinator = CreateCoordinator(resumeService: resume.Object);
+
+        await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: true));
+
+        resume.Verify(
+            x => x.BeginBatchAsync(
+                BatchOperationKind.Install,
+                It.Is<IReadOnlyList<string>>(plan => plan.SequenceEqual(new[] { "App1", "App2" })),
+                It.Is<BatchOptions>(opt => opt.ForceUpdate == true),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task InstallAsync_ShouldAppendCompletedPerAppWithMappedOutcome()
+    {
+        var apps = CreateApps("Installed", "Already", "Failed");
+        var bridge = CreateBridge();
+        bridge
+            .Setup(x => x.InstallApplicationAsync(
+                It.IsAny<ApplicationModel>(),
+                It.IsAny<bool>(),
+                It.IsAny<bool>(),
+                It.IsAny<Action<string>?>()))
+            .ReturnsAsync((ApplicationModel app, bool _, bool _, Action<string>? _) =>
+                app.AppId switch
+                {
+                    "Already" => InstallResult.Successful("ok", "log", alreadyInstalled: true),
+                    "Failed" => InstallResult.Failed("nope", "log"),
+                    _ => InstallResult.Successful("ok", "log")
+                });
+        var resume = CreateResumeServiceMock();
+        var coordinator = CreateCoordinator(bridge.Object, resumeService: resume.Object);
+
+        await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: false));
+
+        resume.Verify(
+            x => x.AppendCompletedAsync(It.IsAny<Guid>(), "Installed", BatchItemOutcome.Installed, It.IsAny<CancellationToken>()),
+            Times.Once);
+        resume.Verify(
+            x => x.AppendCompletedAsync(It.IsAny<Guid>(), "Already", BatchItemOutcome.AlreadyInstalled, It.IsAny<CancellationToken>()),
+            Times.Once);
+        resume.Verify(
+            x => x.AppendCompletedAsync(It.IsAny<Guid>(), "Failed", BatchItemOutcome.Failed, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task InstallAsync_OnSuccess_ShouldMarkBatchCompleted()
+    {
+        var apps = CreateApps("App1");
+        var resume = CreateResumeServiceMock();
+        var coordinator = CreateCoordinator(resumeService: resume.Object);
+
+        await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: false));
+
+        resume.Verify(
+            x => x.MarkBatchCompletedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task InstallAsync_OnCancellation_ShouldStillMarkBatchCompleted()
+    {
+        var apps = CreateApps("App1");
+        var bridge = CreateBridge();
+        using var pauseGate = new PauseGate();
+        pauseGate.Pause();
+        var resume = CreateResumeServiceMock();
+        var coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate, resumeService: resume.Object);
+        using var cts = new CancellationTokenSource();
+
+        var installTask = coordinator.InstallAsync(
+            apps,
+            new AppInstallationOptions(ForceUpdate: false),
+            cancellationToken: cts.Token);
+        await Task.Delay(50);
+        cts.Cancel();
+        await installTask;
+
+        resume.Verify(
+            x => x.MarkBatchCompletedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce);
     }
 }

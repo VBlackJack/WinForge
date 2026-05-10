@@ -1550,6 +1550,179 @@ public class AppsViewModelTests
         Assert.Equal("Enterprise", FindApp(viewModel, "Git.Git").ProfileTier);
     }
 
+    /// <summary>
+    /// Verifies that resuming an interrupted Install batch only re-runs the
+    /// applications that were not yet recorded as completed in the checkpoint.
+    /// This is the core safety contract of the resume feature.
+    /// </summary>
+    [Fact]
+    public async Task ResumeBatchAsync_OnInstallKind_ShouldOnlyRunCoordinatorOnRemainingApps()
+    {
+        var bridge = CreateMockBridge();
+        var installCoordinator = new TestAppInstallationCoordinator();
+        var viewModel = CreateViewModel(bridge, installationCoordinator: installCoordinator);
+        await viewModel.InitializeAsync();
+
+        var checkpoint = new BatchCheckpoint(
+            SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
+            BatchId: Guid.NewGuid(),
+            OperationKind: BatchOperationKind.Install,
+            State: BatchState.InProgress,
+            StartedAt: DateTimeOffset.UtcNow,
+            LastCheckpointAt: DateTimeOffset.UtcNow,
+            Plan: ["Microsoft.VisualStudioCode", "Git.Git", "Mozilla.Firefox"],
+            Completed: [new BatchCompletedItem("Microsoft.VisualStudioCode", BatchItemOutcome.Installed, DateTimeOffset.UtcNow)],
+            Options: new BatchOptions(ForceUpdate: false));
+
+        await viewModel.ResumeBatchAsync(checkpoint);
+
+        Assert.Single(installCoordinator.Calls);
+        var resumed = installCoordinator.Calls[0].Select(a => a.AppId).ToArray();
+        Assert.Equal(new[] { "Git.Git", "Mozilla.Firefox" }, resumed);
+        Assert.DoesNotContain("Microsoft.VisualStudioCode", resumed);
+    }
+
+    /// <summary>
+    /// Mirror of the Install filtering test for the Update path: also ensures
+    /// already-completed AppIds are not re-run on resume. Guards against a
+    /// future refactor that would diverge the Update branch from the shared
+    /// Plan \ Completed filter.
+    /// </summary>
+    [Fact]
+    public async Task ResumeBatchAsync_OnUpdateKind_ShouldOnlyRunCoordinatorOnRemainingApps()
+    {
+        var bridge = CreateMockBridge();
+        var updateCoordinator = new TestAppUpdateCoordinator();
+        var viewModel = CreateViewModel(bridge, updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+
+        var checkpoint = new BatchCheckpoint(
+            SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
+            BatchId: Guid.NewGuid(),
+            OperationKind: BatchOperationKind.Update,
+            State: BatchState.InProgress,
+            StartedAt: DateTimeOffset.UtcNow,
+            LastCheckpointAt: DateTimeOffset.UtcNow,
+            Plan: ["Microsoft.VisualStudioCode", "Git.Git", "Mozilla.Firefox"],
+            Completed: [new BatchCompletedItem("Microsoft.VisualStudioCode", BatchItemOutcome.Updated, DateTimeOffset.UtcNow)],
+            Options: new BatchOptions(ForceUpdate: false));
+
+        await viewModel.ResumeBatchAsync(checkpoint);
+
+        Assert.Single(updateCoordinator.UpdateCalls);
+        var resumed = updateCoordinator.UpdateCalls[0].Select(a => a.AppId).ToArray();
+        Assert.Equal(new[] { "Git.Git", "Mozilla.Firefox" }, resumed);
+        Assert.DoesNotContain("Microsoft.VisualStudioCode", resumed);
+    }
+
+    [Fact]
+    public async Task ResumeBatchAsync_OnUninstallKind_ShouldRouteToUninstallCoordinator()
+    {
+        var bridge = CreateMockBridge();
+        var installCoordinator = new TestAppInstallationCoordinator();
+        var uninstallCoordinator = new TestAppUninstallCoordinator();
+        var viewModel = CreateViewModel(
+            bridge,
+            installationCoordinator: installCoordinator,
+            uninstallCoordinator: uninstallCoordinator);
+        await viewModel.InitializeAsync();
+
+        var checkpoint = new BatchCheckpoint(
+            SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
+            BatchId: Guid.NewGuid(),
+            OperationKind: BatchOperationKind.Uninstall,
+            State: BatchState.InProgress,
+            StartedAt: DateTimeOffset.UtcNow,
+            LastCheckpointAt: DateTimeOffset.UtcNow,
+            Plan: ["Git.Git"],
+            Completed: [],
+            Options: new BatchOptions(ForceUpdate: false));
+
+        await viewModel.ResumeBatchAsync(checkpoint);
+
+        Assert.Empty(installCoordinator.Calls);
+        Assert.Single(uninstallCoordinator.Calls);
+        Assert.Equal("Git.Git", uninstallCoordinator.Calls[0].Single().AppId);
+    }
+
+    [Fact]
+    public async Task ResumeBatchAsync_WithAllItemsCompleted_ShouldNotInvokeAnyCoordinator()
+    {
+        var bridge = CreateMockBridge();
+        var installCoordinator = new TestAppInstallationCoordinator();
+        var viewModel = CreateViewModel(bridge, installationCoordinator: installCoordinator);
+        await viewModel.InitializeAsync();
+
+        var planIds = new[] { "Git.Git", "Mozilla.Firefox" };
+        var checkpoint = new BatchCheckpoint(
+            SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
+            BatchId: Guid.NewGuid(),
+            OperationKind: BatchOperationKind.Install,
+            State: BatchState.InProgress,
+            StartedAt: DateTimeOffset.UtcNow,
+            LastCheckpointAt: DateTimeOffset.UtcNow,
+            Plan: planIds,
+            Completed: planIds
+                .Select(id => new BatchCompletedItem(id, BatchItemOutcome.Installed, DateTimeOffset.UtcNow))
+                .ToArray(),
+            Options: new BatchOptions(ForceUpdate: false));
+
+        await viewModel.ResumeBatchAsync(checkpoint);
+
+        Assert.Empty(installCoordinator.Calls);
+    }
+
+    [Fact]
+    public async Task ResumeBatchAsync_WithUnknownAppIdsInCatalog_ShouldSkipMissingAndProceed()
+    {
+        var bridge = CreateMockBridge();
+        var installCoordinator = new TestAppInstallationCoordinator();
+        var viewModel = CreateViewModel(bridge, installationCoordinator: installCoordinator);
+        await viewModel.InitializeAsync();
+
+        var checkpoint = new BatchCheckpoint(
+            SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
+            BatchId: Guid.NewGuid(),
+            OperationKind: BatchOperationKind.Install,
+            State: BatchState.InProgress,
+            StartedAt: DateTimeOffset.UtcNow,
+            LastCheckpointAt: DateTimeOffset.UtcNow,
+            Plan: ["Git.Git", "Some.AppRemovedFromCatalog", "Mozilla.Firefox"],
+            Completed: [],
+            Options: new BatchOptions(ForceUpdate: false));
+
+        await viewModel.ResumeBatchAsync(checkpoint);
+
+        Assert.Single(installCoordinator.Calls);
+        var resumed = installCoordinator.Calls[0].Select(a => a.AppId).ToArray();
+        Assert.Equal(new[] { "Git.Git", "Mozilla.Firefox" }, resumed);
+    }
+
+    [Fact]
+    public async Task ResumeBatchAsync_ShouldPropagateForceUpdateFromCheckpoint()
+    {
+        var bridge = CreateMockBridge();
+        var installCoordinator = new TestAppInstallationCoordinator();
+        var viewModel = CreateViewModel(bridge, installationCoordinator: installCoordinator);
+        await viewModel.InitializeAsync();
+
+        var checkpoint = new BatchCheckpoint(
+            SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
+            BatchId: Guid.NewGuid(),
+            OperationKind: BatchOperationKind.Install,
+            State: BatchState.InProgress,
+            StartedAt: DateTimeOffset.UtcNow,
+            LastCheckpointAt: DateTimeOffset.UtcNow,
+            Plan: ["Git.Git"],
+            Completed: [],
+            Options: new BatchOptions(ForceUpdate: true));
+
+        await viewModel.ResumeBatchAsync(checkpoint);
+
+        Assert.Single(installCoordinator.Options);
+        Assert.True(installCoordinator.Options[0].ForceUpdate);
+    }
+
     private sealed class TestTemporaryDirectory : IDisposable
     {
         private const int DeleteRetryCount = 5;

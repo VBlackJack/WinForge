@@ -97,6 +97,60 @@ public class AppOperationRunnerTests
                 _ => null));
     }
 
+    [Fact]
+    public async Task RunAsync_ShouldInvokeOnItemCompletedCallbackPerItem()
+    {
+        var runner = new AppOperationRunner(maxParallelism: 4);
+        var observed = new System.Collections.Concurrent.ConcurrentBag<(int item, int result)>();
+
+        await runner.RunAsync(
+            Enumerable.Range(1, 6).ToList(),
+            (item, _) => Task.FromResult(item * 10),
+            _ => null,
+            progress: null,
+            cancellationToken: default,
+            onItemCompleted: (item, result, _) =>
+            {
+                observed.Add((item, result));
+                return Task.CompletedTask;
+            });
+
+        Assert.Equal(6, observed.Count);
+        Assert.Equal(
+            Enumerable.Range(1, 6).Select(i => (i, i * 10)).OrderBy(x => x.i),
+            observed.OrderBy(x => x.item));
+    }
+
+    [Fact]
+    public async Task RunAsync_WhenOnItemCompletedThrows_ShouldNotAbortBatch()
+    {
+        var runner = new AppOperationRunner(maxParallelism: 2);
+        var processed = 0;
+
+        var results = await runner.RunAsync(
+            Enumerable.Range(1, 5).ToList(),
+            (item, _) =>
+            {
+                Interlocked.Increment(ref processed);
+                return Task.FromResult(item);
+            },
+            _ => null,
+            progress: null,
+            cancellationToken: default,
+            onItemCompleted: (item, _, _) =>
+            {
+                if (item == 3)
+                {
+                    throw new InvalidOperationException("simulated checkpoint write failure");
+                }
+                return Task.CompletedTask;
+            });
+
+        Assert.Equal(5, processed);
+        Assert.Equal(5, results.Count);
+        Assert.Equal(Enumerable.Range(1, 5), results);
+    }
+
     private sealed class RecordingProgress<T> : IProgress<T>
     {
         public List<T> Reports { get; } = [];

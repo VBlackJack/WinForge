@@ -17,6 +17,7 @@
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services.Coordinators.Internal;
+using Win11Forge.GUI.Services.Resume;
 
 namespace Win11Forge.GUI.Services.Coordinators;
 
@@ -28,15 +29,18 @@ public sealed class AppUninstallCoordinator : IAppUninstallCoordinator
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IAppSettingsService _settingsService;
     private readonly IPauseGate _pauseGate;
+    private readonly IBatchResumeService _resumeService;
 
     public AppUninstallCoordinator(
         IPowerShellBridge powerShellBridge,
         IAppSettingsService settingsService,
-        IPauseGate pauseGate)
+        IPauseGate pauseGate,
+        IBatchResumeService resumeService)
     {
         _powerShellBridge = powerShellBridge ?? throw new ArgumentNullException(nameof(powerShellBridge));
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         _pauseGate = pauseGate ?? throw new ArgumentNullException(nameof(pauseGate));
+        _resumeService = resumeService ?? throw new ArgumentNullException(nameof(resumeService));
     }
 
     /// <inheritdoc/>
@@ -55,6 +59,12 @@ public sealed class AppUninstallCoordinator : IAppUninstallCoordinator
         var apps = applications.ToList();
         var runner = CreateRunner();
 
+        var batchId = await _resumeService.BeginBatchAsync(
+            BatchOperationKind.Uninstall,
+            apps.Select(app => app.AppId).ToArray(),
+            new BatchOptions(ForceUpdate: false),
+            cancellationToken).ConfigureAwait(false);
+
         try
         {
             var itemResults = await runner.RunAsync(
@@ -62,15 +72,32 @@ public sealed class AppUninstallCoordinator : IAppUninstallCoordinator
                 UninstallApplicationAsync,
                 app => app,
                 progress,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken,
+                onItemCompleted: (app, result, token) =>
+                    _resumeService.AppendCompletedAsync(batchId, app.AppId, ToOutcome(result.Status), token))
+                .ConfigureAwait(false);
 
+            // Mark with CancellationToken.None: once we reach this point the batch is
+            // logically finished, the transition to Completed should not be cancellable.
+            await _resumeService.MarkBatchCompletedAsync(batchId, CancellationToken.None).ConfigureAwait(false);
             return BuildResult(apps.Count, itemResults, cancellationToken.IsCancellationRequested);
         }
         catch (OperationCanceledException)
         {
+            // Graceful user cancellation; mark complete so the user is not re-prompted.
+            // A real crash would bypass this catch and leave InProgress in the file.
+            await _resumeService.MarkBatchCompletedAsync(batchId, CancellationToken.None).ConfigureAwait(false);
             return BuildResultFromCurrentState(apps, WasCancelled: true);
         }
     }
+
+    private static BatchItemOutcome ToOutcome(AppUninstallItemStatus status) => status switch
+    {
+        AppUninstallItemStatus.Uninstalled => BatchItemOutcome.Uninstalled,
+        AppUninstallItemStatus.Failed => BatchItemOutcome.Failed,
+        AppUninstallItemStatus.Skipped => BatchItemOutcome.Skipped,
+        _ => throw new ArgumentOutOfRangeException(nameof(status), status, null)
+    };
 
     private async Task<AppUninstallItemResult> UninstallApplicationAsync(
         ApplicationModel app,

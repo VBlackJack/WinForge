@@ -23,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services;
+using Win11Forge.GUI.Services.Resume;
 using Win11Forge.GUI.Views;
 
 namespace Win11Forge.GUI;
@@ -232,6 +233,30 @@ public partial class App : Application
 
             // Close splash AFTER main window is visible
             splash.CloseWithAnimation();
+
+            // Fire-and-forget: remove stale batch resume checkpoints (older than the
+            // configured TTL or with an unknown schema version). Failures are logged
+            // by the service via Debug.WriteLine and never thrown, so this is safe to
+            // run unawaited from the startup path.
+            try
+            {
+                var resumeService = Services.GetRequiredService<IBatchResumeService>();
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await resumeService.PruneStaleAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[App] PruneStaleAsync failed: {ex.Message}");
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Log($"Resume service prune scheduling failed: {ex.Message}");
+            }
 
             Log("Startup complete.");
         }

@@ -18,6 +18,7 @@ using Moq;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Services.Coordinators;
+using Win11Forge.GUI.Services.Resume;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -196,14 +197,90 @@ public class AppUpdateCoordinatorTests
 
     private static AppUpdateCoordinator CreateCoordinator(
         IPowerShellBridge? bridge = null,
-        int maxParallelScans = 2)
+        int maxParallelScans = 2,
+        IBatchResumeService? resumeService = null)
     {
         var settings = new MockAppSettingsService
         {
             SettingsToReturn = new AppSettings { MaxParallelScans = maxParallelScans }
         };
 
-        return new AppUpdateCoordinator(bridge ?? CreateBridge().Object, settings);
+        return new AppUpdateCoordinator(
+            bridge ?? CreateBridge().Object,
+            settings,
+            resumeService ?? CreateResumeServiceMock().Object);
+    }
+
+    private static Mock<IBatchResumeService> CreateResumeServiceMock()
+    {
+        var mock = new Mock<IBatchResumeService>();
+        mock.Setup(x => x.BeginBatchAsync(
+                It.IsAny<BatchOperationKind>(),
+                It.IsAny<IReadOnlyList<string>>(),
+                It.IsAny<BatchOptions>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Guid.NewGuid());
+        mock.Setup(x => x.AppendCompletedAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<string>(),
+                It.IsAny<BatchItemOutcome>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        mock.Setup(x => x.MarkBatchCompletedAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        return mock;
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldBeginBatchWithUpdateKindAndAppIds()
+    {
+        var apps = CreateApps("Foo", "Bar");
+        var resume = CreateResumeServiceMock();
+        var coordinator = CreateCoordinator(resumeService: resume.Object);
+
+        await coordinator.UpdateAsync(apps);
+
+        resume.Verify(
+            x => x.BeginBatchAsync(
+                BatchOperationKind.Update,
+                It.Is<IReadOnlyList<string>>(plan => plan.SequenceEqual(new[] { "Foo", "Bar" })),
+                It.IsAny<BatchOptions>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldAppendUpdatedOutcomeForSuccess()
+    {
+        var apps = CreateApps("App1");
+        var resume = CreateResumeServiceMock();
+        var coordinator = CreateCoordinator(resumeService: resume.Object);
+
+        await coordinator.UpdateAsync(apps);
+
+        resume.Verify(
+            x => x.AppendCompletedAsync(
+                It.IsAny<Guid>(),
+                "App1",
+                BatchItemOutcome.Updated,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_OnSuccess_ShouldMarkBatchCompleted()
+    {
+        var apps = CreateApps("App1");
+        var resume = CreateResumeServiceMock();
+        var coordinator = CreateCoordinator(resumeService: resume.Object);
+
+        await coordinator.UpdateAsync(apps);
+
+        resume.Verify(
+            x => x.MarkBatchCompletedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     private static void UpdateMax(ref int target, int candidate)

@@ -40,7 +40,8 @@ internal sealed class AppOperationRunner
         Func<TItem, CancellationToken, Task<TResult>> operation,
         Func<TItem, ApplicationModel?> currentSelector,
         IProgress<AppOperationProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        Func<TItem, TResult, CancellationToken, Task>? onItemCompleted = null)
     {
         ArgumentNullException.ThrowIfNull(items);
         ArgumentNullException.ThrowIfNull(operation);
@@ -59,14 +60,40 @@ internal sealed class AppOperationRunner
         {
             await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
+            TResult? result = default;
+            var operationCompleted = false;
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                results[index] = await operation(item, cancellationToken).ConfigureAwait(false);
+                result = await operation(item, cancellationToken).ConfigureAwait(false);
+                results[index] = result;
+                operationCompleted = true;
             }
             finally
             {
                 var currentCompleted = Interlocked.Increment(ref completed);
+
+                // Per-item completion hook. Kept generic: the runner has no resume-specific
+                // logic beyond invoking the callback and isolating its failures so that a
+                // checkpoint write error does not abort the rest of the batch.
+                if (operationCompleted && onItemCompleted != null && result is not null)
+                {
+                    try
+                    {
+                        await onItemCompleted(item, result, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Cancellation propagates through the outer awaits; the callback
+                        // simply observed the same token.
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine(
+                            $"[AppOperationRunner] onItemCompleted callback failed: {ex.Message}");
+                    }
+                }
+
                 progress?.Report(new AppOperationProgress(
                     currentCompleted,
                     items.Count,
