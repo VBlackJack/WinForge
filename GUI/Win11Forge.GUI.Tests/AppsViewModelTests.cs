@@ -1582,6 +1582,39 @@ public class AppsViewModelTests
         Assert.DoesNotContain("Microsoft.VisualStudioCode", resumed);
     }
 
+    /// <summary>
+    /// Mirror of the Install filtering test for the Update path: also ensures
+    /// already-completed AppIds are not re-run on resume. Guards against a
+    /// future refactor that would diverge the Update branch from the shared
+    /// Plan \ Completed filter.
+    /// </summary>
+    [Fact]
+    public async Task ResumeBatchAsync_OnUpdateKind_ShouldOnlyRunCoordinatorOnRemainingApps()
+    {
+        var bridge = CreateMockBridge();
+        var updateCoordinator = new TestAppUpdateCoordinator();
+        var viewModel = CreateViewModel(bridge, updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+
+        var checkpoint = new BatchCheckpoint(
+            SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
+            BatchId: Guid.NewGuid(),
+            OperationKind: BatchOperationKind.Update,
+            State: BatchState.InProgress,
+            StartedAt: DateTimeOffset.UtcNow,
+            LastCheckpointAt: DateTimeOffset.UtcNow,
+            Plan: ["Microsoft.VisualStudioCode", "Git.Git", "Mozilla.Firefox"],
+            Completed: [new BatchCompletedItem("Microsoft.VisualStudioCode", BatchItemOutcome.Updated, DateTimeOffset.UtcNow)],
+            Options: new BatchOptions(ForceUpdate: false));
+
+        await viewModel.ResumeBatchAsync(checkpoint);
+
+        Assert.Single(updateCoordinator.UpdateCalls);
+        var resumed = updateCoordinator.UpdateCalls[0].Select(a => a.AppId).ToArray();
+        Assert.Equal(new[] { "Git.Git", "Mozilla.Firefox" }, resumed);
+        Assert.DoesNotContain("Microsoft.VisualStudioCode", resumed);
+    }
+
     [Fact]
     public async Task ResumeBatchAsync_OnUninstallKind_ShouldRouteToUninstallCoordinator()
     {

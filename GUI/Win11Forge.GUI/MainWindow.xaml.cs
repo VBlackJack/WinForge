@@ -72,6 +72,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     private bool _settingsInitialized;
     private bool _prerequisitesInitialized;
     private bool _appCatalogInitialized;
+    private bool _batchResumePromptHandled;
     private bool _isNavigatingFromService;
     private bool _isNavigating;
     private int _currentViewIndex = -1;
@@ -774,6 +775,17 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         {
             return;
         }
+
+        // Re-entrance guard. Top-level Window.Loaded normally fires once per
+        // instance, but defensively skip subsequent invocations so a Visibility
+        // cycle or visual-tree re-attach cannot re-prompt the user — particularly
+        // dangerous after a Resume click, where the new in-flight batch could be
+        // surfaced as a fresh InProgress checkpoint.
+        if (_batchResumePromptHandled)
+        {
+            return;
+        }
+        _batchResumePromptHandled = true;
 
         IBatchResumeService resumeService;
         try
