@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "DatabaseVersion": "0.0.1",
+  "LastUpdated": "2026-05-10",
+  "TotalApplications": 7,
+  "Categories": {
+    "Browser": { "DisplayName": "Browser", "Count": 1 },
+    "Tools":   { "DisplayName": "Tools",   "Count": 6 }
+  },
+  "Tags": {
+    "essential": "Essential apps"
+  },
+  "Applications": {
+    "WingetOnly": {
+      "Name": "Winget Only",
+      "Category": "Tools",
+      "Sources": {
+        "Winget": "Contoso.WingetOnly",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": { "Method": "Registry", "Path": "HKLM:\\Software\\WingetOnly" },
+      "DefaultPriority": 50,
+      "DefaultRequired": false,
+      "Tags": [],
+      "LastVerified": "2026-05-01",
+      "Verified": true
+    },
+    "ChocoOnly": {
+      "Name": "Choco Only",
+      "Category": "Tools",
+      "Sources": {
+        "Winget": null,
+        "Chocolatey": "contoso-choco-only",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": { "Method": "File", "Path": "C:\\Program Files\\ChocoOnly\\app.exe" },
+      "DefaultPriority": 50,
+      "DefaultRequired": false,
+      "Tags": [],
+      "LastVerified": "2026-05-01",
+      "Verified": true
+    },
+    "StoreOnly": {
+      "Name": "Store Only",
+      "Category": "Tools",
+      "Sources": {
+        "Winget": null,
+        "Chocolatey": null,
+        "Store": "9NBLGGH00000",
+        "DirectUrl": null
+      },
+      "Detection": { "Method": "StoreApp", "PackageName": "StoreOnly" },
+      "DefaultPriority": 50,
+      "DefaultRequired": false,
+      "Tags": [],
+      "LastVerified": "2026-05-01",
+      "Verified": true
+    },
+    "DirectUrlOnly": {
+      "Name": "DirectUrl Only",
+      "Category": "Tools",
+      "Sources": {
+        "Winget": null,
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": "https://example.invalid/installer.exe"
+      },
+      "Detection": { "Method": "File", "Path": "C:\\Program Files\\DirectUrlOnly\\app.exe" },
+      "DefaultPriority": 50,
+      "DefaultRequired": false,
+      "Tags": [],
+      "LastVerified": "2026-05-01",
+      "Verified": true
+    },
+    "WindowsFeatureOnly": {
+      "Name": "Windows Feature Only",
+      "Category": "Tools",
+      "Sources": {
+        "Winget": null,
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": { "Method": "WindowsFeature", "Feature": "Contoso-Feature" },
+      "InstallMethod": "WindowsFeature",
+      "Feature": "Contoso-Feature",
+      "DefaultPriority": 50,
+      "DefaultRequired": false,
+      "Tags": [],
+      "LastVerified": "2026-05-01",
+      "Verified": true
+    },
+    "StoreAppMissingStoreId": {
+      "Name": "StoreApp Detection Without Store Source",
+      "Category": "Tools",
+      "Sources": {
+        "Winget": "Contoso.SomeApp",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": { "Method": "StoreApp", "PackageName": "SomeApp" },
+      "DefaultPriority": 50,
+      "DefaultRequired": false,
+      "Tags": [],
+      "LastVerified": "2026-05-01",
+      "Verified": true
+    },
+    "StaleVerification": {
+      "Name": "Stale Verification",
+      "Category": "Tools",
+      "Sources": {
+        "Winget": "Contoso.Stale",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": { "Method": "Registry", "Path": "HKLM:\\Software\\Stale" },
+      "DefaultPriority": 50,
+      "DefaultRequired": false,
+      "Tags": [],
+      "LastVerified": "2024-01-01",
+      "Verified": true
+    }
+  }
+}
