@@ -61,9 +61,291 @@
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
             </Style>
 
-            <!-- WPF-UI buttons use a separate target type and do not pick up WPF Button implicit styles. -->
+            <!-- Forked WPF-UI 4.3 DefaultUiButtonStyle template, verbatim except for the
+                 IsEnabled=False trigger. Upstream forces ContentBorder.Background to
+                 ButtonBackgroundDisabled via DynamicResource that doesn't honor any user-scope
+                 override (App.Resources direct, UserControl/Button/StackPanel.Resources — all
+                 tested fail to propagate). Our IsEnabled=False trigger only lowers
+                 ContentBorder.Opacity, so the theme-aware Background TemplateBinding stays
+                 visible (Transparent for Transparent appearance, accent for Primary, etc.) and
+                 the button greys out cleanly without white Fluent blocks.
+                 The full template preserves Icon DP support (ControlIcon ContentPresenter),
+                 RecognizesAccessKey, PressedForeground, the inset border for fidelity, and all
+                 upstream Appearance triggers (Info / Success / Caution / Dark / Light) for
+                 forward compatibility — our Dracula Style.Triggers below override Primary /
+                 Secondary / Danger / Transparent, which are the appearances actually used in
+                 this app.
+                 Source: https://github.com/lepoco/wpfui/blob/4.3.0/src/Wpf.Ui/Controls/Button/Button.xaml -->
             <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ui:Button">
+                            <Border
+                                x:Name="ContentBorder"
+                                Width="{TemplateBinding Width}"
+                                Height="{TemplateBinding Height}"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="0"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                                <Border
+                                    x:Name="InsetBorder"
+                                    Padding="{TemplateBinding Padding}"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    BorderBrush="{Binding ElementName=ContentBorder, Path=BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{TemplateBinding CornerRadius}">
+                                    <Grid HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ContentPresenter
+                                            x:Name="ControlIcon"
+                                            Grid.Column="0"
+                                            Margin="{StaticResource ButtonIconMargin}"
+                                            VerticalAlignment="Center"
+                                            Content="{TemplateBinding Icon}"
+                                            Focusable="False"
+                                            TextElement.FontSize="{TemplateBinding FontSize}"
+                                            TextElement.Foreground="{TemplateBinding Foreground}"/>
+                                        <ContentPresenter
+                                            x:Name="ContentPresenter"
+                                            Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Content="{TemplateBinding Content}"
+                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                            RecognizesAccessKey="True"
+                                            TextElement.Foreground="{TemplateBinding Foreground}"/>
+                                    </Grid>
+                                </Border>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="Appearance" Value="Transparent">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                </Trigger>
+                                <Trigger Property="Appearance" Value="Primary">
+                                    <Setter Property="Background" Value="{DynamicResource AccentButtonBackground}"/>
+                                    <Setter Property="MouseOverBackground" Value="{DynamicResource AccentButtonBackgroundPointerOver}"/>
+                                    <Setter Property="PressedBackground" Value="{DynamicResource AccentButtonBackgroundPressed}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource AccentButtonForeground}"/>
+                                    <Setter Property="PressedForeground" Value="{DynamicResource AccentButtonForegroundPointerOver}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}"/>
+                                    <Setter Property="MouseOverBorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}"/>
+                                    <Setter Property="PressedBorderBrush" Value="{DynamicResource ControlFillColorTransparentBrush}"/>
+                                </Trigger>
+                                <Trigger Property="Appearance" Value="Secondary">
+                                    <Setter TargetName="InsetBorder" Property="BorderThickness" Value="0"/>
+                                    <Setter TargetName="ContentBorder" Property="BorderThickness" Value="{Binding BorderThickness, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                </Trigger>
+                                <Trigger Property="Appearance" Value="Dark">
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{DynamicResource ControlStrongFillColorDark}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="MouseOverBackground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="#62000000"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="PressedBackground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="#52000000"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="PressedBorderBrush" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorLightPrimaryBrush}"/>
+                                    <Setter Property="PressedForeground" Value="{DynamicResource TextFillColorLightSecondaryBrush}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}"/>
+                                    <Setter Property="MouseOverBorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}"/>
+                                </Trigger>
+                                <Trigger Property="Appearance" Value="Light">
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{DynamicResource ControlStrongFillColorLight}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="MouseOverBackground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="#D3FFFFFF"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="PressedBackground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="#F3FFFFFF"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorDarkPrimaryBrush}"/>
+                                    <Setter Property="PressedForeground" Value="{DynamicResource TextFillColorDarkSecondaryBrush}"/>
+                                </Trigger>
+                                <Trigger Property="Appearance" Value="Info">
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{DynamicResource PaletteLightBlueColor}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="MouseOverBackground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Opacity="0.9" Color="{DynamicResource PaletteLightBlueColor}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="PressedBackground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Opacity="0.7" Color="{DynamicResource PaletteLightBlueColor}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorLightPrimaryBrush}"/>
+                                    <Setter Property="PressedBorderBrush" Value="Transparent"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}"/>
+                                    <Setter Property="MouseOverBorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}"/>
+                                </Trigger>
+                                <Trigger Property="Appearance" Value="Danger">
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{DynamicResource PaletteRedColor}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="MouseOverBackground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Opacity="0.9" Color="{DynamicResource PaletteRedColor}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="PressedBackground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Opacity="0.7" Color="{DynamicResource PaletteRedColor}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="PressedBorderBrush" Value="Transparent"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}"/>
+                                    <Setter Property="MouseOverBorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}"/>
+                                </Trigger>
+                                <Trigger Property="Appearance" Value="Success">
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{DynamicResource PaletteGreenColor}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="MouseOverBackground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Opacity="0.9" Color="{DynamicResource PaletteGreenColor}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="PressedBackground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Opacity="0.7" Color="{DynamicResource PaletteGreenColor}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="PressedBorderBrush" Value="Transparent"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}"/>
+                                    <Setter Property="MouseOverBorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}"/>
+                                </Trigger>
+                                <Trigger Property="Appearance" Value="Caution">
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{DynamicResource PaletteOrangeColor}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="MouseOverBackground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Opacity="0.9" Color="{DynamicResource PaletteOrangeColor}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="PressedBackground">
+                                        <Setter.Value>
+                                            <SolidColorBrush Opacity="0.7" Color="{DynamicResource PaletteOrangeColor}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="PressedBorderBrush" Value="Transparent"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}"/>
+                                    <Setter Property="MouseOverBorderBrush" Value="{DynamicResource AccentControlElevationBorderBrush}"/>
+                                </Trigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                        <Condition Property="IsPressed" Value="False"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="ContentBorder" Property="Background" Value="{Binding MouseOverBackground, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                    <Setter TargetName="ContentBorder" Property="BorderBrush" Value="{Binding MouseOverBorderBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                </MultiTrigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                        <Condition Property="IsPressed" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="ContentBorder" Property="Background" Value="{Binding PressedBackground, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                    <Setter TargetName="ContentBorder" Property="BorderBrush" Value="{Binding PressedBorderBrush, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                    <Setter Property="Foreground" Value="{Binding PressedForeground, RelativeSource={RelativeSource TemplatedParent}}"/>
+                                </MultiTrigger>
+                                <Trigger Property="Content" Value="{x:Null}">
+                                    <Setter TargetName="ControlIcon" Property="Margin" Value="0"/>
+                                </Trigger>
+                                <Trigger Property="Content" Value="">
+                                    <Setter TargetName="ControlIcon" Property="Margin" Value="0"/>
+                                </Trigger>
+                                <Trigger Property="Icon" Value="{x:Null}">
+                                    <Setter TargetName="ControlIcon" Property="Margin" Value="0"/>
+                                    <Setter TargetName="ControlIcon" Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                                <!-- ONLY DEVIATION FROM UPSTREAM: target ContentBorder.Opacity per Codex review,
+                                     don't repaint ContentBorder.Background to a brush that fails our user-scope override. -->
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="ContentBorder" Property="Opacity" Value="0.45"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="Appearance" Value="Primary">
+                        <Setter Property="Background" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource BadgeTextBrush}"/>
+                        <Setter Property="MouseOverBackground" Value="{DynamicResource AccentHoverBrush}"/>
+                        <Setter Property="MouseOverBorderBrush" Value="{DynamicResource AccentHoverBrush}"/>
+                        <Setter Property="PressedBackground" Value="{DynamicResource AccentPressedBrush}"/>
+                        <Setter Property="PressedBorderBrush" Value="{DynamicResource AccentPressedBrush}"/>
+                    </Trigger>
+                    <Trigger Property="Appearance" Value="Secondary">
+                        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                        <!-- Hover bg uses SurfaceBrush (very dark) to maintain WCAG AA contrast (~5.6:1)
+                             with ThemeAdaptiveAccentBrush foreground. HighlightBrush (#4A4E66) is too
+                             close to the purple text in luminance and fails contrast (~2.25:1). -->
+                        <Setter Property="MouseOverBackground" Value="{DynamicResource SurfaceBrush}"/>
+                        <Setter Property="MouseOverBorderBrush" Value="{DynamicResource AccentHoverBrush}"/>
+                        <Setter Property="PressedBackground" Value="{DynamicResource SurfaceBrush}"/>
+                        <Setter Property="PressedBorderBrush" Value="{DynamicResource AccentPressedBrush}"/>
+                    </Trigger>
+                    <Trigger Property="Appearance" Value="Danger">
+                        <Setter Property="Background" Value="{DynamicResource ErrorBrush}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
+                        <Setter Property="Foreground" Value="{DynamicResource BadgeTextBrush}"/>
+                        <Setter Property="MouseOverBackground" Value="{DynamicResource ErrorBrush}"/>
+                        <Setter Property="MouseOverBorderBrush" Value="{DynamicResource ErrorBrush}"/>
+                        <Setter Property="PressedBackground" Value="{DynamicResource ErrorBrush}"/>
+                        <Setter Property="PressedBorderBrush" Value="{DynamicResource ErrorBrush}"/>
+                    </Trigger>
+                    <Trigger Property="Appearance" Value="Transparent">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderBrush" Value="Transparent"/>
+                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <!-- Hover bg uses SurfaceBrush (very dark) for ~6:1 contrast with light text,
+                             clears the WCAG AA threshold. HighlightBrush was too close to text luminance. -->
+                        <Setter Property="MouseOverBackground" Value="{DynamicResource SurfaceBrush}"/>
+                        <Setter Property="MouseOverBorderBrush" Value="Transparent"/>
+                        <Setter Property="PressedBackground" Value="{DynamicResource SurfaceBrush}"/>
+                        <Setter Property="PressedBorderBrush" Value="Transparent"/>
+                    </Trigger>
+                </Style.Triggers>
             </Style>
 
             <!-- Keyboard-focused Button Style with enhanced visibility -->
@@ -122,6 +404,25 @@
             <Thickness x:Key="MarginNormalBottom">0,0,0,16</Thickness>
             <Thickness x:Key="MarginLargeBottom">0,0,0,24</Thickness>
             <Thickness x:Key="ContentPadding">24</Thickness>
+
+            <!-- Button design tokens (single source of truth for button metrics) -->
+            <CornerRadius x:Key="ButtonCornerRadius">4</CornerRadius>
+            <CornerRadius x:Key="ButtonCornerRadiusLarge">8</CornerRadius>
+
+            <sys:Double x:Key="ButtonMinHeightCompact">32</sys:Double>
+            <sys:Double x:Key="ButtonMinHeightStandard">40</sys:Double>
+            <sys:Double x:Key="ButtonMinHeightTouch">44</sys:Double>
+            <sys:Double x:Key="ButtonMinHeightHero">56</sys:Double>
+
+            <Thickness x:Key="ButtonPaddingCompact">12,6</Thickness>
+            <Thickness x:Key="ButtonPaddingStandard">16,10</Thickness>
+            <Thickness x:Key="ButtonPaddingLarge">24,14</Thickness>
+            <Thickness x:Key="ButtonPaddingHero">32,0</Thickness>
+            <Thickness x:Key="ButtonPaddingIcon">10</Thickness>
+
+            <sys:Double x:Key="ButtonFontSizeStandard">14</sys:Double>
+            <sys:Double x:Key="ButtonFontSizeHero">16</sys:Double>
+            <FontWeight x:Key="ButtonFontWeightStandard">SemiBold</FontWeight>
 
             <!-- Page header typography tokens -->
             <Style x:Key="PageTitleTextStyle" TargetType="TextBlock">
@@ -207,27 +508,21 @@
             <!-- Static Card Style (no animation, for reduced motion) -->
             <Style x:Key="StaticCardStyle" TargetType="Border"/>
 
-            <!-- Theme-Adaptive Outlined Button Style -->
-            <Style x:Key="ThemeAdaptiveOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
-                <Setter Property="Foreground" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
-                <Setter Property="Background" Value="Transparent"/>
-            </Style>
+            <!--
+                ThemeAdaptiveOutlinedButton / DestructiveOutlinedButton / HoverFadeOutlinedButton
+                have been relocated below the canonical taxonomy (BasedOn requires lexical order).
+            -->
 
-            <!-- Destructive Action Button Style -->
-            <Style x:Key="DestructiveOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource ValidationErrorBorderBrush}"/>
-                <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBorderBrush}"/>
-                <Setter Property="Background" Value="Transparent"/>
-            </Style>
-
-            <!-- Hover Transition Styles -->
-
-            <!-- Icon Button with Hover Scale Effect -->
+            <!--
+                HoverScaleIconButton targets vanilla Button (legacy); IconButton targets ui:Button (canonical).
+                Kept as a separate style with the original metrics so it doesn't break vanilla-Button usages.
+                DEPRECATED: prefer IconButton (ui:Button) for new code.
+            -->
             <Style x:Key="HoverScaleIconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="MinWidth" Value="{StaticResource ButtonMinHeightTouch}"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightTouch}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingIcon}"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
@@ -236,12 +531,6 @@
                         <ScaleTransform ScaleX="1" ScaleY="1"/>
                     </Setter.Value>
                 </Setter>
-            </Style>
-
-            <!-- Outlined Button with Hover Background Fade -->
-            <Style x:Key="HoverFadeOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
-                <Setter Property="Background" Value="Transparent"/>
             </Style>
 
             <!-- Interactive Badge/Chip with Hover Effect -->
@@ -295,35 +584,37 @@
 
             <!-- Touch-Optimized Styles (WCAG 2.5.5 - minimum 44x44px touch targets) -->
 
-            <!-- Touch-friendly Icon Button (min 44x44 hit area) -->
+            <!--
+                Touch-friendly button variants (DEPRECATED).
+                Tokenized to share metrics with the canonical taxonomy below.
+                For new code use IconButton / PrimaryButton / OutlinedButton directly.
+            -->
             <Style x:Key="TouchFriendlyIconButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
-                <Setter Property="MinWidth" Value="44"/>
-                <Setter Property="MinHeight" Value="44"/>
-                <Setter Property="Padding" Value="10"/>
+                <Setter Property="MinWidth" Value="{StaticResource ButtonMinHeightTouch}"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightTouch}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingIcon}"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="BorderThickness" Value="0"/>
             </Style>
 
-            <!-- Touch-friendly Button with larger hit area -->
             <Style x:Key="TouchFriendlyButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
-                <Setter Property="MinHeight" Value="44"/>
-                <Setter Property="Padding" Value="16,10"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightTouch}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingStandard}"/>
             </Style>
 
-            <!-- Touch-friendly Outlined Button -->
             <Style x:Key="TouchFriendlyOutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
-                <Setter Property="MinHeight" Value="44"/>
-                <Setter Property="Padding" Value="16,10"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightTouch}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingStandard}"/>
                 <Setter Property="Background" Value="Transparent"/>
             </Style>
 
             <!-- Touch-friendly Checkbox with larger hit area -->
             <Style x:Key="TouchFriendlyCheckBox" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
-                <Setter Property="MinHeight" Value="44"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightTouch}"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                 <Setter Property="Padding" Value="8,10"/>
             </Style>
@@ -334,6 +625,166 @@
                 <Setter Property="Padding" Value="16,12"/>
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
             </Style>
+
+            <!-- ====================================================== -->
+            <!-- Canonical Button Taxonomy                              -->
+            <!-- All button visual metrics resolve through these styles -->
+            <!-- and the ButtonXxx tokens above. No view should set     -->
+            <!-- Background, Padding, Height, FontSize, FontWeight      -->
+            <!-- inline on a button.                                    -->
+            <!-- ====================================================== -->
+
+            <!-- Hero Primary Button: single page-level CTA (e.g. Start Deployment) -->
+            <Style x:Key="HeroPrimaryButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="Appearance" Value="Primary"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightHero}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingHero}"/>
+                <Setter Property="FontSize" Value="{StaticResource ButtonFontSizeHero}"/>
+                <Setter Property="FontWeight" Value="{StaticResource ButtonFontWeightStandard}"/>
+                <Setter Property="CornerRadius" Value="{StaticResource ButtonCornerRadiusLarge}"/>
+            </Style>
+
+            <!-- Primary Button: standard primary action (inherits WPF-UI default MinHeight ~32px) -->
+            <Style x:Key="PrimaryButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="Appearance" Value="Primary"/>
+                <Setter Property="Background" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource BadgeTextBrush}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingStandard}"/>
+                <Setter Property="FontSize" Value="{StaticResource ButtonFontSizeStandard}"/>
+                <Setter Property="CornerRadius" Value="{StaticResource ButtonCornerRadius}"/>
+            </Style>
+
+            <!-- Secondary Button: standard secondary action -->
+            <Style x:Key="SecondaryButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="Appearance" Value="Secondary"/>
+                <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingStandard}"/>
+                <Setter Property="FontSize" Value="{StaticResource ButtonFontSizeStandard}"/>
+                <Setter Property="CornerRadius" Value="{StaticResource ButtonCornerRadius}"/>
+            </Style>
+
+            <!-- Outlined Button: theme-tinted outlined action -->
+            <Style x:Key="OutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingStandard}"/>
+                <Setter Property="FontSize" Value="{StaticResource ButtonFontSizeStandard}"/>
+            </Style>
+
+            <!-- Warning Primary Button: orange/amber CTA (e.g. Fix Prerequisites callout) -->
+            <Style x:Key="WarningPrimaryButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="Appearance" Value="Primary"/>
+                <Setter Property="Background" Value="{DynamicResource AccentOrangeTextBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource BadgePrimaryForegroundBrush}"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightTouch}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingLarge}"/>
+                <Setter Property="FontSize" Value="{StaticResource ButtonFontSizeStandard}"/>
+                <Setter Property="FontWeight" Value="{StaticResource ButtonFontWeightStandard}"/>
+                <Setter Property="CornerRadius" Value="{StaticResource ButtonCornerRadius}"/>
+            </Style>
+
+            <!-- Destructive Button: outlined red, for delete-with-confirmation -->
+            <Style x:Key="DestructiveButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ValidationErrorBorderBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBorderBrush}"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingStandard}"/>
+                <Setter Property="FontSize" Value="{StaticResource ButtonFontSizeStandard}"/>
+            </Style>
+
+            <!-- Destructive Solid Button: solid red, for immediate destructive actions -->
+            <Style x:Key="DestructiveSolidButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="Appearance" Value="Danger"/>
+                <Setter Property="Background" Value="{DynamicResource ErrorBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource BadgeTextBrush}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingStandard}"/>
+                <Setter Property="FontSize" Value="{StaticResource ButtonFontSizeStandard}"/>
+                <Setter Property="FontWeight" Value="{StaticResource ButtonFontWeightStandard}"/>
+                <Setter Property="CornerRadius" Value="{StaticResource ButtonCornerRadius}"/>
+            </Style>
+
+            <!-- Icon Button: toolbar icon, transparent, 44x44 touch target -->
+            <Style x:Key="IconButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="Appearance" Value="Transparent"/>
+                <Setter Property="MinWidth" Value="{StaticResource ButtonMinHeightTouch}"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightTouch}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingIcon}"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="CornerRadius" Value="{StaticResource ButtonCornerRadius}"/>
+                <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                <Setter Property="RenderTransform">
+                    <Setter.Value>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Stats Card Button: clickable card surface (Dashboard stats tiles) -->
+            <Style x:Key="StatsCardButton" TargetType="Button">
+                <Setter Property="Padding" Value="{StaticResource CardPadding}"/>
+                <Setter Property="Margin" Value="{StaticResource MarginNormalRight}"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    CornerRadius="{StaticResource ButtonCornerRadiusLarge}"
+                                    Padding="{TemplateBinding Padding}"
+                                    BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                                    BorderThickness="1">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Quick Action Button: tile launcher (Dashboard quick actions) -->
+            <Style x:Key="QuickActionButton" TargetType="Button" BasedOn="{StaticResource OutlinedButton}">
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingLarge}"/>
+                <Setter Property="Margin" Value="{StaticResource MarginNormalBottom}"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            </Style>
+
+            <!-- Favorite Icon Button: animated favorite toggle (variant of IconButton) -->
+            <Style x:Key="FavoriteIconButton" TargetType="ui:Button" BasedOn="{StaticResource IconButton}">
+                <Setter Property="Width" Value="{StaticResource ButtonMinHeightTouch}"/>
+                <Setter Property="Height" Value="{StaticResource ButtonMinHeightTouch}"/>
+            </Style>
+
+            <!-- ====================================================== -->
+            <!-- Legacy button style aliases (DEPRECATED)               -->
+            <!-- Kept for one release so existing view references keep  -->
+            <!-- working while migrating to the canonical names above.  -->
+            <!-- All inherit canonical tokens through BasedOn.          -->
+            <!-- ====================================================== -->
+            <Style x:Key="ThemeAdaptiveOutlinedButton" TargetType="Button" BasedOn="{StaticResource OutlinedButton}"/>
+            <Style x:Key="DestructiveOutlinedButton"   TargetType="Button" BasedOn="{StaticResource DestructiveButton}"/>
+            <Style x:Key="HoverFadeOutlinedButton"     TargetType="Button" BasedOn="{StaticResource OutlinedButton}"/>
 
             <Style x:Key="ThemeAwareComboBoxToggleButton" TargetType="ToggleButton">
                 <Setter Property="Focusable" Value="False"/>
@@ -495,6 +946,8 @@
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
                 <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Padding" Value="8,4"/>
                 <Style.Triggers>
                     <Trigger Property="IsSelected" Value="True">
                         <Setter Property="Background" Value="Transparent"/>
@@ -526,15 +979,19 @@
                 <Setter Property="BorderBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
                 <Setter Property="BorderThickness" Value="0,0,0,1"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="MinHeight" Value="40"/>
+                <Setter Property="Padding" Value="12,8"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
             </Style>
 
             <!-- Micro-animation Styles for Enhanced UX Feedback -->
 
-            <!-- Favorite Button Style with bounce animation -->
+            <!-- Favorite Button Style with bounce animation (vanilla Button variant) -->
             <Style x:Key="AnimatedFavoriteButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
-                <Setter Property="Width" Value="44"/>
-                <Setter Property="Height" Value="44"/>
+                <Setter Property="Width" Value="{StaticResource ButtonMinHeightTouch}"/>
+                <Setter Property="Height" Value="{StaticResource ButtonMinHeightTouch}"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
@@ -605,6 +1062,19 @@
                                         <ColumnDefinition Width="30"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
+                                    <!-- Checkmark glyph for IsCheckable items (visible only when IsChecked) -->
+                                    <Path x:Name="CheckGlyph"
+                                          Grid.Column="0"
+                                          Width="14" Height="14"
+                                          Stretch="Uniform"
+                                          Data="M0,4 L4,8 L11,1"
+                                          Stroke="{DynamicResource ThemeAdaptiveAccentBrush}"
+                                          StrokeThickness="2"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Visibility="Collapsed"/>
                                     <ContentPresenter x:Name="IconPresenter"
                                                       Grid.Column="0"
                                                       ContentSource="Icon"
@@ -625,6 +1095,17 @@
                                 <Trigger Property="Icon" Value="{x:Null}">
                                     <Setter TargetName="IconPresenter" Property="Visibility" Value="Hidden"/>
                                 </Trigger>
+                                <!-- IsCheckable items: hide icon column, show CheckGlyph when checked -->
+                                <Trigger Property="IsCheckable" Value="True">
+                                    <Setter TargetName="IconPresenter" Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsCheckable" Value="True"/>
+                                        <Condition Property="IsChecked" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="CheckGlyph" Property="Visibility" Value="Visible"/>
+                                </MultiTrigger>
                                 <Trigger Property="IsHighlighted" Value="True">
                                     <Setter TargetName="MenuItemRoot" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                                 </Trigger>

@@ -55,7 +55,7 @@
         <ui:Button x:Name="ActionButton"
                 Content="{Binding ActionText, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 Command="{Binding ActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                Appearance="Secondary"
+                Appearance="Transparent"
                 HorizontalAlignment="Center"
                 Margin="0,16,0,0"
                 Visibility="{Binding ActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullableToVisibilityConverter}}"/>

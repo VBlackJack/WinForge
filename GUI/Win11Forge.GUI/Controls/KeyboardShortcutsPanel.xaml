@@ -181,7 +181,7 @@
             <!-- Close Button -->
             <ui:Button Grid.Row="2"
                        Content="{loc:Loc Dialog_Close}"
-                       Appearance="Primary"
+                       Appearance="Transparent"
                        HorizontalAlignment="Right"
                        Margin="0,20,0,0"
                        Click="CloseButton_Click"

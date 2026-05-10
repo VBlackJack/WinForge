@@ -130,6 +130,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// </summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(InstallSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(UninstallSelectedCommand))]
     private int _selectedCount;
 
     /// <summary>
