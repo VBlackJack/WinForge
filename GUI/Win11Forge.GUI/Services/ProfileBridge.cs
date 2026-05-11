@@ -18,7 +18,9 @@
 
 using System.IO;
 using System.Text.Json;
+using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Services.PowerShell;
 
 namespace Win11Forge.GUI.Services;
 
@@ -30,7 +32,7 @@ public class ProfileBridge : IProfileBridge
 {
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IProfileValidationService _validationService;
-    private readonly string _profilesDirectory;
+    private readonly IRepositoryPathService _pathService;
 
     /// <summary>
     /// Initializes a new instance of ProfileBridge.
@@ -39,15 +41,16 @@ public class ProfileBridge : IProfileBridge
     /// <param name="validationService">Profile validation service</param>
     public ProfileBridge(
         IPowerShellBridge powerShellBridge,
-        IProfileValidationService validationService)
+        IProfileValidationService validationService,
+        IRepositoryPathService? pathService = null)
     {
         _powerShellBridge = powerShellBridge ?? throw new ArgumentNullException(nameof(powerShellBridge));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
-        _profilesDirectory = Path.Combine(powerShellBridge.RepositoryRoot, "Profiles");
+        _pathService = pathService ?? new RepositoryPathService();
     }
 
     /// <inheritdoc/>
-    public string ProfilesDirectory => _profilesDirectory;
+    public string ProfilesDirectory => _pathService.UserProfilesDirectory;
 
     /// <inheritdoc/>
     public async Task<List<string>> GetAvailableProfilesAsync()
@@ -91,7 +94,7 @@ public class ProfileBridge : IProfileBridge
     {
         ValidateProfileName(profileName);
 
-        var profilePath = GetProfilePath(profileName);
+        var profilePath = GetWritableProfilePath(profileName);
         if (!File.Exists(profilePath))
         {
             return false;
@@ -115,8 +118,7 @@ public class ProfileBridge : IProfileBridge
     public Task<bool> ProfileExistsAsync(string profileName)
     {
         ValidateProfileName(profileName);
-        var profilePath = GetProfilePath(profileName);
-        return Task.FromResult(File.Exists(profilePath));
+        return Task.FromResult(TryGetExistingProfilePath(profileName) != null);
     }
 
     /// <inheritdoc/>
@@ -140,12 +142,12 @@ public class ProfileBridge : IProfileBridge
     {
         ValidateProfileName(profileName);
 
-        var profilePath = GetProfilePath(profileName);
-        if (!File.Exists(profilePath))
+        var profilePath = TryGetExistingProfilePath(profileName);
+        if (profilePath == null)
         {
             throw new FileNotFoundException(
                 Win11Forge.GUI.Resources.Resources.Error_ProfileNotFound,
-                profilePath);
+                profileName);
         }
 
         var rawProfile = await GetRawProfileAsync(profileName);
@@ -177,12 +179,45 @@ public class ProfileBridge : IProfileBridge
     /// Gets the full path for a profile JSON file.
     /// Validates the path stays within the profiles directory.
     /// </summary>
-    private string GetProfilePath(string profileName)
+    private string GetWritableProfilePath(string profileName)
     {
-        var profilePath = Path.Combine(_profilesDirectory, $"{profileName}.json");
+        var profilesDirectory = _pathService.UserProfilesDirectory;
+        var profilePath = Path.Combine(
+            profilesDirectory,
+            $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
 
         // Defense-in-depth: verify the resolved path stays within profiles directory
-        return ValidatePathWithinDirectory(profilePath, _profilesDirectory);
+        return ValidatePathWithinDirectory(profilePath, profilesDirectory);
+    }
+
+    private string? TryGetExistingProfilePath(string profileName)
+    {
+        foreach (var profilesDirectory in GetProfileReadDirectories())
+        {
+            var profilePath = Path.Combine(
+                profilesDirectory,
+                $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
+            profilePath = ValidatePathWithinDirectory(profilePath, profilesDirectory);
+
+            if (File.Exists(profilePath))
+            {
+                return profilePath;
+            }
+        }
+
+        return null;
+    }
+
+    private IReadOnlyList<string> GetProfileReadDirectories()
+    {
+        return new[]
+            {
+                _pathService.UserProfilesDirectory,
+                _pathService.DefaultProfilesDirectory
+            }
+            .Where(Directory.Exists)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     /// <summary>

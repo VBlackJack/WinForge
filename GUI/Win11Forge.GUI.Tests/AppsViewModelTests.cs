@@ -20,9 +20,11 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.Messaging;
+using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Services.Coordinators;
+using Win11Forge.GUI.Services.PowerShell;
 using Win11Forge.GUI.ViewModels;
 
 namespace Win11Forge.GUI.Tests;
@@ -122,7 +124,8 @@ public class AppsViewModelTests
         IPauseGate? pauseGate = null,
         IDialogService? dialogService = null,
         IFileDialogService? fileDialogService = null,
-        IToastService? toastService = null)
+        IToastService? toastService = null,
+        IRepositoryPathService? pathService = null)
     {
         var viewModel = new AppsViewModel(
             bridge ?? CreateMockBridge(),
@@ -135,7 +138,8 @@ public class AppsViewModelTests
             pauseGate ?? new TestPauseGate(),
             dialogService ?? new TestDialogService(),
             fileDialogService,
-            toastService);
+            toastService,
+            pathService);
 
         WeakReferenceMessenger.Default.UnregisterAll(viewModel);
         return viewModel;
@@ -1300,7 +1304,7 @@ public class AppsViewModelTests
         bridge.AvailableProfiles = ["Work"];
         var dialogService = new TestDialogService();
         dialogService.QueueYesNoCancelResult(null);
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
         var manualApp = FindApp(viewModel, "Mozilla.Firefox");
@@ -1327,7 +1331,7 @@ public class AppsViewModelTests
         bridge.AvailableProfiles = ["Work"];
         var dialogService = new TestDialogService();
         dialogService.QueueYesNoCancelResult(true);
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
         var manualApp = FindApp(viewModel, "Mozilla.Firefox");
@@ -1363,7 +1367,7 @@ public class AppsViewModelTests
         bridge.AvailableProfiles = ["Work"];
         var dialogService = new TestDialogService();
         dialogService.QueueYesNoCancelResult(false);
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
         var manualApp = FindApp(viewModel, "Mozilla.Firefox");
@@ -1388,7 +1392,7 @@ public class AppsViewModelTests
         var bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work"];
         var dialogService = new TestDialogService();
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
@@ -1411,7 +1415,7 @@ public class AppsViewModelTests
         var bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work", "Gaming"];
         var dialogService = new TestDialogService();
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
@@ -1441,7 +1445,7 @@ public class AppsViewModelTests
         var bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work", "Gaming"];
         var dialogService = new TestDialogService();
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
@@ -1480,7 +1484,7 @@ public class AppsViewModelTests
         var bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work", "Gaming"];
         var dialogService = new TestDialogService();
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService);
+        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
@@ -1515,7 +1519,7 @@ public class AppsViewModelTests
             ("Developer", ["Enterprise"], ["Mozilla.Firefox"]));
         var bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Base", "Enterprise", "Developer"];
-        var viewModel = CreateViewModel(bridge);
+        var viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
@@ -1538,7 +1542,7 @@ public class AppsViewModelTests
             ("Enterprise", ["Base"], ["Git.Git"]));
         var bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Base", "Enterprise"];
-        var viewModel = CreateViewModel(bridge);
+        var viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
@@ -1777,18 +1781,18 @@ public class AppsViewModelTests
     private sealed class TestProfilesDirectory : IDisposable
     {
         private readonly string _profilesPath;
-        private readonly string? _backupPath;
+        private readonly string _rootPath;
 
         public TestProfilesDirectory(params (string Name, string[] Inherits, string[] Applications)[] profiles)
         {
-            _profilesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Profiles");
-            if (Directory.Exists(_profilesPath))
-            {
-                _backupPath = Path.Combine(
-                    Path.GetTempPath(),
-                    $"Win11ForgeProfilesBackup-{Guid.NewGuid():N}");
-                Directory.Move(_profilesPath, _backupPath);
-            }
+            _rootPath = Path.Combine(
+                Path.GetTempPath(),
+                "Win11Forge.Tests",
+                Guid.NewGuid().ToString("N"));
+            PathService = new RepositoryPathService(
+                _rootPath,
+                [Path.Combine(_rootPath, "UserData")]);
+            _profilesPath = PathService.LegacyInstallProfilesDirectory;
 
             Directory.CreateDirectory(_profilesPath);
             foreach (var profile in profiles)
@@ -1802,20 +1806,19 @@ public class AppsViewModelTests
                     Applications = profile.Applications
                 };
                 var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(Path.Combine(_profilesPath, $"{profile.Name}.json"), json);
+                File.WriteAllText(
+                    Path.Combine(_profilesPath, $"{profile.Name}{Win11ForgePathNames.JsonFileExtension}"),
+                    json);
             }
         }
 
+        public IRepositoryPathService PathService { get; }
+
         public void Dispose()
         {
-            if (Directory.Exists(_profilesPath))
+            if (Directory.Exists(_rootPath))
             {
-                Directory.Delete(_profilesPath, recursive: true);
-            }
-
-            if (!string.IsNullOrEmpty(_backupPath) && Directory.Exists(_backupPath))
-            {
-                Directory.Move(_backupPath, _profilesPath);
+                Directory.Delete(_rootPath, recursive: true);
             }
         }
     }

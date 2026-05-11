@@ -20,6 +20,7 @@ using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Exceptions;
 using Win11Forge.GUI.Models;
 
@@ -104,9 +105,8 @@ public partial class AppsViewModel
         _rawProfileAppIdsCache.Clear();
         _profileInheritanceCache.Clear();
 
-        // Get profiles directory path
-        var profilesDir = GetProfilesDirectory();
-        if (string.IsNullOrEmpty(profilesDir) || !Directory.Exists(profilesDir))
+        var profileDirectories = GetProfileReadDirectories();
+        if (profileDirectories.Count == 0)
         {
             return;
         }
@@ -116,11 +116,11 @@ public partial class AppsViewModel
         {
             try
             {
-                var rawAppIds = await ReadProfileAppIdsFromJsonAsync(profilesDir, profileName);
+                var rawAppIds = await ReadProfileAppIdsFromJsonAsync(profileDirectories, profileName);
                 _rawProfileAppIdsCache[profileName] = rawAppIds;
 
                 // Resolve inheritance to get all app IDs
-                var resolvedAppIds = await ResolveProfileInheritanceAsync(profilesDir, profileName);
+                var resolvedAppIds = await ResolveProfileInheritanceAsync(profileDirectories, profileName);
                 _resolvedProfileAppIdsCache[profileName] = resolvedAppIds;
             }
             catch
@@ -132,36 +132,39 @@ public partial class AppsViewModel
     }
 
     /// <summary>
-    /// Gets the Profiles directory path.
+    /// Gets the readable profile directory paths, with user profiles taking precedence.
     /// </summary>
-    private static string? GetProfilesDirectory()
+    private IReadOnlyList<string> GetProfileReadDirectories()
     {
-        // Try multiple locations relative to executable
-        var exePath = AppDomain.CurrentDomain.BaseDirectory;
-
-        // GUI\bin\Release\net8.0-windows → go up to repo root
-        var current = new DirectoryInfo(exePath);
-
-        for (int i = 0; i < 6 && current != null; i++)
-        {
-            var profilesPath = Path.Combine(current.FullName, "Profiles");
-            if (Directory.Exists(profilesPath))
+        return new[]
             {
-                return profilesPath;
+                _pathService.UserProfilesDirectory,
+                _pathService.DefaultProfilesDirectory
             }
-            current = current.Parent;
-        }
+            .Where(Directory.Exists)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
 
-        return null;
+    /// <summary>
+    /// Gets the writable user profiles directory path.
+    /// </summary>
+    private string GetProfilesWriteDirectory()
+    {
+        var profilesDir = _pathService.UserProfilesDirectory;
+        Directory.CreateDirectory(profilesDir);
+        return profilesDir;
     }
 
     /// <summary>
     /// Reads app IDs directly from a profile JSON file (no inheritance).
     /// </summary>
-    private static async Task<List<string>> ReadProfileAppIdsFromJsonAsync(string profilesDir, string profileName)
+    private static async Task<List<string>> ReadProfileAppIdsFromJsonAsync(
+        IReadOnlyList<string> profileDirectories,
+        string profileName)
     {
-        var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
-        if (!File.Exists(profilePath))
+        var profilePath = TryGetProfilePath(profileDirectories, profileName);
+        if (profilePath == null)
         {
             return [];
         }
@@ -194,13 +197,15 @@ public partial class AppsViewModel
     /// <summary>
     /// Resolves profile inheritance and returns all app IDs.
     /// </summary>
-    private async Task<HashSet<string>> ResolveProfileInheritanceAsync(string profilesDir, string profileName)
+    private async Task<HashSet<string>> ResolveProfileInheritanceAsync(
+        IReadOnlyList<string> profileDirectories,
+        string profileName)
     {
         var allAppIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var profileChain = new List<string>();
 
-        await ResolveProfileRecursiveAsync(profilesDir, profileName, allAppIds, visited, profileChain);
+        await ResolveProfileRecursiveAsync(profileDirectories, profileName, allAppIds, visited, profileChain);
         _profileInheritanceCache[profileName] = profileChain;
 
         return allAppIds;
@@ -210,7 +215,7 @@ public partial class AppsViewModel
     /// Recursively resolves profile inheritance.
     /// </summary>
     private async Task ResolveProfileRecursiveAsync(
-        string profilesDir,
+        IReadOnlyList<string> profileDirectories,
         string profileName,
         HashSet<string> allAppIds,
         HashSet<string> visited,
@@ -222,8 +227,8 @@ public partial class AppsViewModel
         }
         visited.Add(profileName);
 
-        var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
-        if (!File.Exists(profilePath))
+        var profilePath = TryGetProfilePath(profileDirectories, profileName);
+        if (profilePath == null)
         {
             return;
         }
@@ -241,7 +246,7 @@ public partial class AppsViewModel
                 var parentName = parentElement.GetString();
                 if (!string.IsNullOrEmpty(parentName))
                 {
-                    await ResolveProfileRecursiveAsync(profilesDir, parentName, allAppIds, visited, profileChain);
+                    await ResolveProfileRecursiveAsync(profileDirectories, parentName, allAppIds, visited, profileChain);
                 }
             }
         }
@@ -325,8 +330,8 @@ public partial class AppsViewModel
             else
             {
                 // Load on-demand from JSON
-                var profilesDir = GetProfilesDirectory();
-                if (string.IsNullOrEmpty(profilesDir))
+                var profileDirectories = GetProfileReadDirectories();
+                if (profileDirectories.Count == 0)
                 {
                     ErrorMessage = GetLocalizedString(
                         "Apps_Error_ProfilesDirectoryNotFound",
@@ -334,10 +339,10 @@ public partial class AppsViewModel
                     return;
                 }
 
-                profileAppIds = await ResolveProfileInheritanceAsync(profilesDir, selectedProfile);
+                profileAppIds = await ResolveProfileInheritanceAsync(profileDirectories, selectedProfile);
                 _resolvedProfileAppIdsCache[selectedProfile] = profileAppIds;
 
-                var rawAppIds = await ReadProfileAppIdsFromJsonAsync(profilesDir, selectedProfile);
+                var rawAppIds = await ReadProfileAppIdsFromJsonAsync(profileDirectories, selectedProfile);
                 _rawProfileAppIdsCache[selectedProfile] = rawAppIds;
             }
 
@@ -534,16 +539,11 @@ public partial class AppsViewModel
     {
         try
         {
-            var profilesDir = GetProfilesDirectory();
-            if (string.IsNullOrEmpty(profilesDir))
-            {
-                ErrorMessage = GetLocalizedString(
-                    "Apps_Error_ProfilesDirectoryNotFound",
-                    "Could not find Profiles directory");
-                return;
-            }
+            var profilesDir = GetProfilesWriteDirectory();
 
-            var profilePath = Path.Combine(profilesDir, $"{saveResult.ProfileName}.json");
+            var profilePath = Path.Combine(
+                profilesDir,
+                $"{saveResult.ProfileName}{Win11ForgePathNames.JsonFileExtension}");
 
             // Build profile JSON
             var profile = new Dictionary<string, object>
@@ -628,5 +628,31 @@ public partial class AppsViewModel
         _resolvedProfileAppIdsCache.Clear();
         _rawProfileAppIdsCache.Clear();
         _profileInheritanceCache.Clear();
+    }
+
+    private static string? TryGetProfilePath(IReadOnlyList<string> profileDirectories, string profileName)
+    {
+        foreach (var profilesDir in profileDirectories)
+        {
+            var profilePath = Path.Combine(profilesDir, $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
+            var fullPath = Path.GetFullPath(profilePath);
+            var fullProfilesDir = Path.GetFullPath(profilesDir);
+            if (!fullProfilesDir.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            {
+                fullProfilesDir += Path.DirectorySeparatorChar;
+            }
+
+            if (!fullPath.StartsWith(fullProfilesDir, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (File.Exists(fullPath))
+            {
+                return fullPath;
+            }
+        }
+
+        return null;
     }
 }

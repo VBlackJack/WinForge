@@ -17,6 +17,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
+using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services.PowerShell;
@@ -52,17 +53,12 @@ public class ProfileManagementServiceImpl : IProfileManagementService
     /// <inheritdoc/>
     public async Task<List<string>> GetAvailableProfilesAsync()
     {
-        var profilesDir = _pathService.GetPath("Profiles");
-
-        if (!Directory.Exists(profilesDir))
-        {
-            return [];
-        }
-
         return await Task.Run(() =>
         {
-            var profiles = Directory.GetFiles(profilesDir, "*.json")
+            var profiles = GetProfileReadDirectories()
+                .SelectMany(directory => Directory.GetFiles(directory, $"*{Win11ForgePathNames.JsonFileExtension}"))
                 .Select(f => Path.GetFileNameWithoutExtension(f))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(name => name)
                 .ToList();
 
@@ -79,10 +75,8 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         // Ensure applications database is loaded
         await _cacheService.EnsureApplicationsCacheAsync();
 
-        var profilesDir = _pathService.GetPath("Profiles");
-
         // Load profile directly from JSON (no PowerShell needed)
-        return await LoadProfileFromJsonAsync(profileName, profilesDir, new List<string>());
+        return await LoadProfileFromJsonAsync(profileName, new List<string>());
     }
 
     /// <inheritdoc/>
@@ -93,14 +87,10 @@ public class ProfileManagementServiceImpl : IProfileManagementService
 
         await _cacheService.EnsureApplicationsCacheAsync();
 
-        var profilesDir = _pathService.GetPath("Profiles");
-        var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
-
-        // Defense-in-depth: verify the resolved path stays within profiles directory
-        profilePath = PowerShellValidation.ValidatePathWithinDirectory(profilePath, profilesDir);
+        var profilePath = ResolveProfilePath(profileName);
 
         // Load raw profile directly from JSON (no inheritance resolution)
-        if (!File.Exists(profilePath))
+        if (string.IsNullOrEmpty(profilePath))
         {
             throw new FileNotFoundException($"Profile not found: {profileName}");
         }
@@ -180,8 +170,10 @@ public class ProfileManagementServiceImpl : IProfileManagementService
             parentProfile = PowerShellValidation.ValidateProfileName(parentProfile);
         }
 
-        var profilesDir = _pathService.GetPath("Profiles");
-        var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
+        var profilesDir = _pathService.UserProfilesDirectory;
+        var profilePath = Path.Combine(
+            profilesDir,
+            $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
 
         // Defense-in-depth: verify the resolved path stays within profiles directory
         profilePath = PowerShellValidation.ValidatePathWithinDirectory(profilePath, profilesDir);
@@ -245,15 +237,10 @@ public class ProfileManagementServiceImpl : IProfileManagementService
     /// </summary>
     private async Task<DeploymentProfileModel> LoadProfileFromJsonAsync(
         string profileName,
-        string profilesDir,
         List<string> inheritanceChain)
     {
-        var profilePath = Path.Combine(profilesDir, $"{profileName}.json");
-
-        // Defense-in-depth: verify the resolved path stays within profiles directory
-        profilePath = PowerShellValidation.ValidatePathWithinDirectory(profilePath, profilesDir);
-
-        if (!File.Exists(profilePath))
+        var profilePath = ResolveProfilePath(profileName);
+        if (string.IsNullOrEmpty(profilePath))
         {
             throw new FileNotFoundException($"Profile not found: {profileName}");
         }
@@ -286,7 +273,7 @@ public class ProfileManagementServiceImpl : IProfileManagementService
                     profile.InheritedFrom.Add(parentNameStr);
 
                     // Load parent profile and merge apps
-                    var parentProfile = await LoadProfileFromJsonAsync(parentNameStr, profilesDir, inheritanceChain);
+                    var parentProfile = await LoadProfileFromJsonAsync(parentNameStr, inheritanceChain);
                     foreach (var app in parentProfile.Applications)
                     {
                         if (!allAppIds.Contains(app.AppId))
@@ -368,5 +355,35 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         }
 
         return app;
+    }
+
+    private IReadOnlyList<string> GetProfileReadDirectories()
+    {
+        return new[]
+            {
+                _pathService.UserProfilesDirectory,
+                _pathService.DefaultProfilesDirectory
+            }
+            .Where(Directory.Exists)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private string? ResolveProfilePath(string profileName)
+    {
+        foreach (var profilesDir in GetProfileReadDirectories())
+        {
+            var profilePath = Path.Combine(
+                profilesDir,
+                $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
+
+            profilePath = PowerShellValidation.ValidatePathWithinDirectory(profilePath, profilesDir);
+            if (File.Exists(profilePath))
+            {
+                return profilePath;
+            }
+        }
+
+        return null;
     }
 }

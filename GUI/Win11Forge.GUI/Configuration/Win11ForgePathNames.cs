@@ -31,6 +31,7 @@ internal static class Win11ForgePathNames
     public const string InstallationEngineModuleFileName = "InstallationEngine.psm1";
     public const string LogsDirectoryName = "Logs";
     public const string JsonLogsDirectoryName = "json";
+    public const string JsonFileExtension = ".json";
     public const string SettingsFileName = "settings.json";
     public const string DeploymentHistoryFileName = "history.json";
     public const string ProfilesDirectoryName = "Profiles";

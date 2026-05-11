@@ -25,6 +25,7 @@ using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Services.Coordinators;
+using Win11Forge.GUI.Services.PowerShell;
 
 namespace Win11Forge.GUI.ViewModels;
 
@@ -57,6 +58,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private readonly IAppUninstallCoordinator _uninstallCoordinator;
     private readonly IPauseGate _pauseGate;
     private readonly IDialogService _dialogService;
+    private readonly IRepositoryPathService _pathService;
     private readonly IToastService? _toastService;
     private readonly ProgressEstimator _progressEstimator = new();
     private List<ApplicationModel> _allApplications = [];
@@ -324,7 +326,8 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         IPauseGate pauseGate,
         IDialogService? dialogService = null,
         IFileDialogService? fileDialogService = null,
-        IToastService? toastService = null)
+        IToastService? toastService = null,
+        IRepositoryPathService? pathService = null)
     {
         _powerShellBridge = powerShellBridge;
         _settingsService = settingsService;
@@ -337,6 +340,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         _dialogService = dialogService ?? new DialogService();
         _fileDialogService = fileDialogService ?? new FileDialogService();
         _toastService = toastService;
+        _pathService = pathService ?? new RepositoryPathService();
 
         // Subscribe to pause/resume/cancel requests from the monitoring view
         _deploymentStateService.PauseRequested += OnPauseRequested;
