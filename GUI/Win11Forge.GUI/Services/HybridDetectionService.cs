@@ -17,6 +17,7 @@
 using System.Diagnostics;
 using System.Management.Automation;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Services.PowerShell;
 using PS = System.Management.Automation.PowerShell;
 
 namespace Win11Forge.GUI.Services;
@@ -72,10 +73,10 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     /// </summary>
     public event EventHandler<CacheInvalidatedEventArgs>? CacheInvalidated;
 
-    public HybridDetectionService(ILoggerFactory loggerFactory)
+    public HybridDetectionService(ILoggerFactory loggerFactory, IRepositoryPathService pathService)
     {
         _registryService = new RegistryDetectionService();
-        _jsonDetectionService = new JsonApplicationDetectionService();
+        _jsonDetectionService = new JsonApplicationDetectionService(pathService ?? throw new ArgumentNullException(nameof(pathService)));
         _logger = loggerFactory?.CreateLogger<HybridDetectionService>() ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 

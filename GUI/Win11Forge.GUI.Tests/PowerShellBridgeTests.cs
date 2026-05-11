@@ -213,7 +213,7 @@ public class ApplicationManagementServiceIntegrationTests
         var pathService = new RepositoryPathService();
         var executionService = new PowerShellExecutionService(pathService);
         var cacheService = new ApplicationCacheService(pathService);
-        var detectionService = new HybridDetectionService(loggerFactory);
+        var detectionService = new HybridDetectionService(loggerFactory, pathService);
         _appService = new ApplicationManagementServiceImpl(pathService, executionService, cacheService, detectionService);
     }
 

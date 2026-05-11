@@ -21,7 +21,9 @@ using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
+using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Services.PowerShell;
 using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Services;
@@ -57,28 +59,15 @@ public class JsonApplicationDetectionService
     /// </summary>
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(500);
 
-    public JsonApplicationDetectionService()
+    public JsonApplicationDetectionService(IRepositoryPathService pathService)
     {
-        // Find applications.json relative to the executable or repo root
-        var basePath = AppDomain.CurrentDomain.BaseDirectory;
+        ArgumentNullException.ThrowIfNull(pathService);
 
-        // Try multiple possible locations
-        // Structure: Win11Forge\GUI\ (exe here) and Win11Forge\Apps\Database\ (json here)
-        var possiblePaths = new[]
-        {
-            // Published/installed: GUI\..\Apps\Database\
-            Path.Combine(basePath, "..", "Apps", "Database", "applications.json"),
-            // Development: GUI\bin\Debug\net8.0-windows\..\..\..\..\..\..\Apps\Database\
-            Path.Combine(basePath, "..", "..", "..", "..", "..", "..", "Apps", "Database", "applications.json"),
-            // Alternative development path
-            Path.Combine(basePath, "..", "..", "..", "..", "Apps", "Database", "applications.json"),
-            // Installed in Program Files
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Win11Forge", "Apps", "Database", "applications.json"),
-            // Same folder as exe (fallback)
-            Path.Combine(basePath, "Apps", "Database", "applications.json")
-        };
+        _databasePath = pathService.GetPath(
+            Win11ForgePathNames.AppsDirectoryName,
+            Win11ForgePathNames.DatabaseDirectoryName,
+            Win11ForgePathNames.ApplicationsDatabaseFileName);
 
-        _databasePath = possiblePaths.FirstOrDefault(File.Exists) ?? possiblePaths[0];
         Debug.WriteLine($"JsonApplicationDetectionService: Using database path: {_databasePath}");
     }
 
