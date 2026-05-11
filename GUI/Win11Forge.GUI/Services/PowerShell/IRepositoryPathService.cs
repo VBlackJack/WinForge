@@ -27,6 +27,46 @@ public interface IRepositoryPathService
     string RepositoryRoot { get; }
 
     /// <summary>
+    /// Gets the writable user data root path.
+    /// </summary>
+    string UserDataRoot { get; }
+
+    /// <summary>
+    /// Gets the directory where text and JSON logs are stored.
+    /// </summary>
+    string LogsDirectory { get; }
+
+    /// <summary>
+    /// Gets the full path to the application settings file.
+    /// </summary>
+    string SettingsFilePath { get; }
+
+    /// <summary>
+    /// Gets the full path to the deployment history file.
+    /// </summary>
+    string DeploymentHistoryFilePath { get; }
+
+    /// <summary>
+    /// Gets the writable user profiles directory.
+    /// </summary>
+    string UserProfilesDirectory { get; }
+
+    /// <summary>
+    /// Gets the packaged default profiles directory.
+    /// </summary>
+    string DefaultProfilesDirectory { get; }
+
+    /// <summary>
+    /// Gets the legacy install profiles directory.
+    /// </summary>
+    string LegacyInstallProfilesDirectory { get; }
+
+    /// <summary>
+    /// Gets whether user data resolution fell back from LocalAppData.
+    /// </summary>
+    bool IsUserDataFallbackActive { get; }
+
+    /// <summary>
     /// Gets the repository root, throwing if not properly initialized.
     /// </summary>
     /// <returns>The validated repository root path.</returns>
@@ -47,4 +87,11 @@ public interface IRepositoryPathService
     /// <param name="relativePath">The relative path from the repository root.</param>
     /// <returns>The full path with forward slashes.</returns>
     string GetPathForPowerShell(params string[] relativePath);
+
+    /// <summary>
+    /// Gets the path to a file or directory relative to the writable user data root.
+    /// </summary>
+    /// <param name="relativePath">The relative path from the writable user data root.</param>
+    /// <returns>The full path.</returns>
+    string GetUserDataPath(params string[] relativePath);
 }
