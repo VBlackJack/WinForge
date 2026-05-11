@@ -45,6 +45,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IRepositoryPathService, RepositoryPathService>();
         services.AddSingleton<IPowerShellExecutionService, PowerShellExecutionService>();
         services.AddSingleton<IApplicationCacheService, ApplicationCacheService>();
+        services.AddSingleton<IProfileMigrationService, ProfileMigrationService>();
 
         // Register focused service implementations (ISP compliant)
         services.AddSingleton<IVersionService, VersionServiceImpl>();

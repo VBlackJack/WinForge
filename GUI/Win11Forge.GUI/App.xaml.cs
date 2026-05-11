@@ -133,6 +133,7 @@ public partial class App : Application
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_ConfiguringServices);
             Services = ConfigureServices();
             LogUserDataFallbackIfActive();
+            RunProfileMigration();
 
             // Step 2: Load settings FIRST (before any UI)
             Log("Loading settings...");
@@ -367,6 +368,23 @@ public partial class App : Application
         }
 
         LogWarning($"User data fallback active. Using '{pathService.UserDataRoot}'.");
+    }
+
+    private static void RunProfileMigration()
+    {
+        try
+        {
+            var migrationService = Services.GetRequiredService<IProfileMigrationService>();
+            var result = migrationService.EnsureProfilesMigrated();
+            if (result.MigrationPerformed)
+            {
+                Log($"Profile migration completed. sourceDefaults={result.SourceDefaults}, sourceLegacy={result.SourceLegacy}");
+            }
+        }
+        catch (Exception ex)
+        {
+            LogWarning($"Profile migration failed: {ex.Message}");
+        }
     }
 
     /// <summary>

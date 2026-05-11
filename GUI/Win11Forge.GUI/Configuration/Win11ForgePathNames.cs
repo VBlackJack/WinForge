@@ -37,6 +37,8 @@ internal static class Win11ForgePathNames
     public const string ProfilesDirectoryName = "Profiles";
     public const string DefaultProfilesDirectoryName = "Defaults";
     public const string ProfileMigrationSentinelFileName = ".migrated";
+    public const string LegacyProfileConflictSuffix = ".legacy";
     public const string StartupLogFileName = "Win11Forge_startup.log";
     public const string WriteProbeFilePrefix = ".write-test-";
+    public const int ProfileMigrationVersion = 1;
 }
