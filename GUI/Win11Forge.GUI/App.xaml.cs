@@ -20,9 +20,11 @@ using System.Windows;
 using System.Windows.Media;
 using Wpf.Ui.Appearance;
 using Microsoft.Extensions.DependencyInjection;
+using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services;
+using Win11Forge.GUI.Services.PowerShell;
 using Win11Forge.GUI.Services.Resume;
 using Win11Forge.GUI.Views;
 
@@ -38,11 +40,7 @@ public partial class App : Application
     private const int AnimationSlowMs = 500;
     private const int AnimationMicroMs = 50;
 
-    private static readonly string LogDirectory = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Win11Forge",
-        "Logs");
-    private static readonly string LogPath = Path.Combine(LogDirectory, "Win11Forge_startup.log");
+    private static IRepositoryPathService? _bootstrapPathService;
     private static bool? _reducedMotionOverride;
 
     /// <summary>
@@ -134,6 +132,7 @@ public partial class App : Application
             Log("Configuring services...");
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_ConfiguringServices);
             Services = ConfigureServices();
+            LogUserDataFallbackIfActive();
 
             // Step 2: Load settings FIRST (before any UI)
             Log("Loading settings...");
@@ -144,10 +143,12 @@ public partial class App : Application
             // Get version for splash screen
             try
             {
-                var powerShellBridge = Services.GetService<IPowerShellBridge>();
-                if (powerShellBridge != null)
+                var pathService = Services.GetService<IRepositoryPathService>();
+                if (pathService != null)
                 {
-                    var versionPath = Path.Combine(powerShellBridge.RepositoryRoot, "Config", "version.json");
+                    var versionPath = pathService.GetPath(
+                        Win11ForgePathNames.ConfigDirectoryName,
+                        Win11ForgePathNames.VersionFileName);
                     if (File.Exists(versionPath))
                     {
                         var versionJson = System.Text.Json.JsonDocument.Parse(File.ReadAllText(versionPath));
@@ -292,10 +293,26 @@ public partial class App : Application
 
     private static void Log(string message)
     {
+        LogToStartupFile(message);
+    }
+
+    private static void LogWarning(string message)
+    {
+        LogToStartupFile($"WARNING: {message}");
+    }
+
+    private static void LogToStartupFile(string message)
+    {
         try
         {
-            Directory.CreateDirectory(LogDirectory);
-            File.AppendAllText(LogPath, $"[{DateTime.Now:HH:mm:ss}] {message}\n");
+            var logPath = GetStartupLogPath();
+            var logDirectory = Path.GetDirectoryName(logPath);
+            if (!string.IsNullOrEmpty(logDirectory))
+            {
+                Directory.CreateDirectory(logDirectory);
+            }
+
+            File.AppendAllText(logPath, $"[{DateTime.Now:HH:mm:ss}] {message}\n");
         }
         catch (Exception ex)
         {
@@ -308,8 +325,14 @@ public partial class App : Application
     {
         try
         {
-            Directory.CreateDirectory(LogDirectory);
-            File.AppendAllText(LogPath,
+            var logPath = GetStartupLogPath();
+            var logDirectory = Path.GetDirectoryName(logPath);
+            if (!string.IsNullOrEmpty(logDirectory))
+            {
+                Directory.CreateDirectory(logDirectory);
+            }
+
+            File.AppendAllText(logPath,
                 $"[{DateTime.Now:HH:mm:ss}] ERROR in {context}:\n{ex}\n\n");
         }
         catch (Exception logEx)
@@ -317,6 +340,33 @@ public partial class App : Application
             // File logging failed - use debug output as fallback
             System.Diagnostics.Debug.WriteLine($"[Win11Forge ERROR] {context}: {ex?.Message} (file log failed: {logEx.Message})");
         }
+    }
+
+    private static string GetStartupLogPath()
+    {
+        var pathService = GetLoggingPathService();
+        return Path.Combine(pathService.LogsDirectory, Win11ForgePathNames.StartupLogFileName);
+    }
+
+    private static IRepositoryPathService GetLoggingPathService()
+    {
+        if (_services?.GetService<IRepositoryPathService>() is { } servicePath)
+        {
+            return servicePath;
+        }
+
+        return _bootstrapPathService ??= new RepositoryPathService();
+    }
+
+    private static void LogUserDataFallbackIfActive()
+    {
+        var pathService = Services.GetRequiredService<IRepositoryPathService>();
+        if (!pathService.IsUserDataFallbackActive)
+        {
+            return;
+        }
+
+        LogWarning($"User data fallback active. Using '{pathService.UserDataRoot}'.");
     }
 
     /// <summary>

@@ -25,6 +25,7 @@ using Win11Forge.GUI.Localization;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services;
+using Win11Forge.GUI.Services.PowerShell;
 
 namespace Win11Forge.GUI.ViewModels;
 
@@ -45,6 +46,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private readonly IProcessLauncher _processLauncher;
     private readonly IFileDialogService _fileDialogService;
     private readonly IDialogService _dialogService;
+    private readonly IRepositoryPathService _pathService;
     private string _initialLanguageCode = string.Empty;
     private bool _isLoadingSettings;
     private bool _settingsLoaded;
@@ -329,7 +331,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         IApplicationLifetimeService? applicationLifetimeService = null,
         IProcessLauncher? processLauncher = null,
         IFileDialogService? fileDialogService = null,
-        IDialogService? dialogService = null)
+        IDialogService? dialogService = null,
+        IRepositoryPathService? pathService = null)
     {
         _settingsService = settingsService;
         _themeService = themeService ?? new ThemeService(settingsService);
@@ -342,6 +345,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         _processLauncher = processLauncher ?? new ProcessLauncher();
         _fileDialogService = fileDialogService ?? new FileDialogService();
         _dialogService = dialogService ?? new DialogService();
+        _pathService = pathService ?? new RepositoryPathService();
 
         // Subscribe to error history changes
         if (_errorHistoryService != null)
@@ -627,9 +631,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            // Get the Win11Forge Logs folder path (LocalAppData)
-            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var logFolderPath = Path.Combine(localAppData, "Win11Forge", "Logs");
+            var logFolderPath = _pathService.LogsDirectory;
 
             // Create the directory if it doesn't exist
             if (!Directory.Exists(logFolderPath))

@@ -18,17 +18,17 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using Win11Forge.GUI.Resources;
+using Win11Forge.GUI.Services.PowerShell;
 
 namespace Win11Forge.GUI.Services;
 
 /// <summary>
 /// Service for persisting application settings (theme, language) to JSON.
-/// Settings are stored in %LOCALAPPDATA%\Win11Forge\settings.json.
+/// Settings are stored via the centralized repository path service.
 /// Thread-safe implementation using lock for concurrent access.
 /// </summary>
 public class AppSettingsService : IAppSettingsService
 {
-    private static readonly string DefaultSettingsFilePath;
     private static readonly JsonSerializerOptions JsonOptions;
     private readonly string _settingsFilePath;
     private readonly object _cacheLock = new();
@@ -36,43 +36,6 @@ public class AppSettingsService : IAppSettingsService
 
     static AppSettingsService()
     {
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        if (string.IsNullOrEmpty(localAppData))
-        {
-            localAppData = Path.GetTempPath();
-        }
-
-        var win11ForgePath = Path.Combine(localAppData, "Win11Forge");
-
-        try
-        {
-            if (!Directory.Exists(win11ForgePath))
-            {
-                Directory.CreateDirectory(win11ForgePath);
-            }
-        }
-        catch (Exception ex)
-        {
-            // Fallback to temp if creation fails
-            System.Diagnostics.Debug.WriteLine($"Failed to create settings directory in AppData: {ex.Message}");
-            win11ForgePath = Path.Combine(Path.GetTempPath(), "Win11Forge");
-            try
-            {
-                if (!Directory.Exists(win11ForgePath))
-                {
-                    Directory.CreateDirectory(win11ForgePath);
-                }
-            }
-            catch (Exception innerEx)
-            {
-                // Use temp directly
-                System.Diagnostics.Debug.WriteLine($"Failed to create fallback settings directory: {innerEx.Message}");
-                win11ForgePath = Path.GetTempPath();
-            }
-        }
-
-        DefaultSettingsFilePath = Path.Combine(win11ForgePath, "settings.json");
-
         JsonOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
@@ -84,7 +47,16 @@ public class AppSettingsService : IAppSettingsService
     /// Initializes a new instance of the <see cref="AppSettingsService"/> class.
     /// </summary>
     public AppSettingsService()
-        : this(DefaultSettingsFilePath)
+        : this(new RepositoryPathService())
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AppSettingsService"/> class.
+    /// </summary>
+    /// <param name="pathService">Centralized path service.</param>
+    public AppSettingsService(IRepositoryPathService pathService)
+        : this((pathService ?? throw new ArgumentNullException(nameof(pathService))).SettingsFilePath)
     {
     }
 
@@ -95,7 +67,7 @@ public class AppSettingsService : IAppSettingsService
     public AppSettingsService(string settingsFilePath)
     {
         _settingsFilePath = string.IsNullOrWhiteSpace(settingsFilePath)
-            ? DefaultSettingsFilePath
+            ? new RepositoryPathService().SettingsFilePath
             : settingsFilePath;
     }
 

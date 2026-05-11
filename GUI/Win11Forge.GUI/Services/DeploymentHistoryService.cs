@@ -17,12 +17,13 @@
 using System.IO;
 using System.Text.Json;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Services.PowerShell;
 
 namespace Win11Forge.GUI.Services;
 
 /// <summary>
 /// Service for managing deployment history.
-/// Stores history in a JSON file with 100% crash-proof path resolution.
+/// Stores history in a JSON file resolved by the centralized path service.
 /// </summary>
 public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
 {
@@ -32,234 +33,39 @@ public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
     private bool _disposed;
 
     /// <summary>
-    /// Initializes the history service with crash-proof path resolution.
-    /// This constructor is guaranteed to never throw - it will always find a valid path.
+    /// Initializes the history service with centralized path resolution.
     /// </summary>
     public DeploymentHistoryService()
+        : this(new RepositoryPathService())
     {
-        // Get a guaranteed valid storage path (never returns null)
-        var basePath = GetValidStoragePath();
-        var win11ForgePath = SafePathCombine(basePath, "Win11Forge");
+    }
 
-        // Try to create directory with multiple fallbacks
-        win11ForgePath = EnsureDirectoryExists(win11ForgePath);
+    /// <summary>
+    /// Initializes the history service with centralized path resolution.
+    /// </summary>
+    /// <param name="pathService">Centralized path service.</param>
+    public DeploymentHistoryService(IRepositoryPathService pathService)
+        : this((pathService ?? throw new ArgumentNullException(nameof(pathService))).DeploymentHistoryFilePath)
+    {
+    }
 
-        _historyFilePath = SafePathCombine(win11ForgePath, "history.json");
+    internal DeploymentHistoryService(string historyFilePath)
+    {
+        _historyFilePath = string.IsNullOrWhiteSpace(historyFilePath)
+            ? throw new ArgumentException("History file path cannot be empty.", nameof(historyFilePath))
+            : historyFilePath;
+
+        var directory = Path.GetDirectoryName(_historyFilePath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
 
         _jsonOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
-    }
-
-    /// <summary>
-    /// Gets a valid storage path using multiple fallback strategies.
-    /// NEVER returns null or empty - always returns a valid, non-null path.
-    /// </summary>
-    private static string GetValidStoragePath()
-    {
-        // Strategy 1: LocalApplicationData (preferred - typically C:\Users\X\AppData\Local)
-        try
-        {
-            var path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            if (!string.IsNullOrEmpty(path) && Directory.Exists(Path.GetPathRoot(path)))
-            {
-                return path;
-            }
-        }
-        catch
-        {
-            // Swallow and try next strategy
-        }
-
-        // Strategy 2: UserProfile + AppData/Local
-        try
-        {
-            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            if (!string.IsNullOrEmpty(userProfile))
-            {
-                var combinedPath = SafePathCombine(userProfile, "AppData", "Local");
-                if (!string.IsNullOrEmpty(combinedPath))
-                {
-                    return combinedPath;
-                }
-            }
-        }
-        catch
-        {
-            // Swallow and try next strategy
-        }
-
-        // Strategy 3: CommonApplicationData (ProgramData - typically C:\ProgramData)
-        try
-        {
-            var commonData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-            if (!string.IsNullOrEmpty(commonData))
-            {
-                var combinedPath = SafePathCombine(commonData, "Win11Forge", "User");
-                if (!string.IsNullOrEmpty(combinedPath))
-                {
-                    return combinedPath;
-                }
-            }
-        }
-        catch
-        {
-            // Swallow and try next strategy
-        }
-
-        // Strategy 4: Environment variable TEMP
-        try
-        {
-            var tempEnv = Environment.GetEnvironmentVariable("TEMP");
-            if (!string.IsNullOrEmpty(tempEnv))
-            {
-                return tempEnv;
-            }
-        }
-        catch
-        {
-            // Swallow and try next strategy
-        }
-
-        // Strategy 5: Path.GetTempPath() (ultimate fallback - should always work)
-        try
-        {
-            var tempPath = Path.GetTempPath();
-            if (!string.IsNullOrEmpty(tempPath))
-            {
-                return tempPath;
-            }
-        }
-        catch
-        {
-            // Swallow and try absolute fallback
-        }
-
-        // Strategy 6: Absolute hardcoded fallback (should never reach here)
-        return @"C:\Windows\Temp";
-    }
-
-    /// <summary>
-    /// Safely combines path segments, never passing null to Path.Combine.
-    /// Returns empty string if any segment is null.
-    /// </summary>
-    private static string SafePathCombine(params string?[] segments)
-    {
-        // Filter out null or empty segments
-        var validSegments = segments
-            .Where(s => !string.IsNullOrEmpty(s))
-            .Select(s => s!)
-            .ToArray();
-
-        if (validSegments.Length == 0)
-        {
-            return string.Empty;
-        }
-
-        try
-        {
-            return Path.Combine(validSegments);
-        }
-        catch
-        {
-            // If Path.Combine fails for any reason, return first valid segment
-            return validSegments[0];
-        }
-    }
-
-    /// <summary>
-    /// Ensures the directory exists, with multiple fallback locations if creation fails.
-    /// Always returns a valid directory path that exists.
-    /// </summary>
-    private static string EnsureDirectoryExists(string preferredPath)
-    {
-        // Attempt 1: Create at preferred location
-        try
-        {
-            if (!string.IsNullOrEmpty(preferredPath))
-            {
-                if (!Directory.Exists(preferredPath))
-                {
-                    Directory.CreateDirectory(preferredPath);
-                }
-                return preferredPath;
-            }
-        }
-        catch
-        {
-            // Permission denied or invalid path - try fallback
-        }
-
-        // Attempt 2: Create in temp folder
-        try
-        {
-            var tempPath = Path.GetTempPath();
-            if (!string.IsNullOrEmpty(tempPath))
-            {
-                var tempWin11Forge = SafePathCombine(tempPath, "Win11Forge");
-                if (!string.IsNullOrEmpty(tempWin11Forge))
-                {
-                    if (!Directory.Exists(tempWin11Forge))
-                    {
-                        Directory.CreateDirectory(tempWin11Forge);
-                    }
-                    return tempWin11Forge;
-                }
-            }
-        }
-        catch
-        {
-            // Try next fallback
-        }
-
-        // Attempt 3: Use TEMP env var directly
-        try
-        {
-            var tempEnv = Environment.GetEnvironmentVariable("TEMP");
-            if (!string.IsNullOrEmpty(tempEnv))
-            {
-                var tempWin11Forge = SafePathCombine(tempEnv, "Win11Forge");
-                if (!string.IsNullOrEmpty(tempWin11Forge))
-                {
-                    if (!Directory.Exists(tempWin11Forge))
-                    {
-                        Directory.CreateDirectory(tempWin11Forge);
-                    }
-                    return tempWin11Forge;
-                }
-            }
-        }
-        catch
-        {
-            // Try next fallback
-        }
-
-        // Attempt 4: Use Windows Temp directly (absolute fallback)
-        try
-        {
-            const string windowsTemp = @"C:\Windows\Temp\Win11Forge";
-            if (!Directory.Exists(windowsTemp))
-            {
-                Directory.CreateDirectory(windowsTemp);
-            }
-            return windowsTemp;
-        }
-        catch
-        {
-            // If even this fails, just return temp path without creating
-        }
-
-        // Ultimate fallback: return temp path and hope for the best
-        try
-        {
-            return Path.GetTempPath();
-        }
-        catch
-        {
-            return @"C:\Windows\Temp";
-        }
     }
 
     /// <inheritdoc/>

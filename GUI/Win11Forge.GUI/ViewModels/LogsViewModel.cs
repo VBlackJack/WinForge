@@ -24,7 +24,9 @@ using System.Windows;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Services;
+using Win11Forge.GUI.Services.PowerShell;
 using Wpf.Ui.Controls;
 
 namespace Win11Forge.GUI.ViewModels;
@@ -76,13 +78,16 @@ public partial class LogsViewModel : ObservableObject
         Resources.Resources.Logs_Filter_Error
     ];
 
-    public LogsViewModel(IFileDialogService? fileDialogService = null, IDialogService? dialogService = null)
+    public LogsViewModel(
+        IFileDialogService? fileDialogService = null,
+        IDialogService? dialogService = null,
+        IRepositoryPathService? pathService = null)
     {
         _fileDialogService = fileDialogService ?? new FileDialogService();
         _dialogService = dialogService ?? new DialogService();
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        _logsPath = Path.Combine(localAppData, "Win11Forge", "Logs");
-        _jsonLogsPath = Path.Combine(_logsPath, "json");
+        var resolvedPathService = pathService ?? new RepositoryPathService();
+        _logsPath = resolvedPathService.LogsDirectory;
+        _jsonLogsPath = Path.Combine(_logsPath, Win11ForgePathNames.JsonLogsDirectoryName);
 
         _ = RefreshAsync();
     }
