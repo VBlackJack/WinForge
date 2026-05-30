@@ -392,6 +392,7 @@
             <Thickness x:Key="CardPadding">16</Thickness>
             <Thickness x:Key="SectionMargin">0,0,0,24</Thickness>
             <Thickness x:Key="PagePadding">32,24</Thickness>
+            <CornerRadius x:Key="CardCornerRadius">8</CornerRadius>
 
             <!-- Standard Margin/Padding Thickness Resources -->
             <Thickness x:Key="MarginSmall">8</Thickness>
@@ -423,6 +424,27 @@
             <sys:Double x:Key="ButtonFontSizeStandard">14</sys:Double>
             <sys:Double x:Key="ButtonFontSizeHero">16</sys:Double>
             <FontWeight x:Key="ButtonFontWeightStandard">SemiBold</FontWeight>
+            <sys:Double x:Key="ButtonIconSizeStandard">18</sys:Double>
+            <sys:Double x:Key="ButtonIconSizeLarge">20</sys:Double>
+            <Thickness x:Key="ButtonIconMarginStandard">0,0,8,0</Thickness>
+            <Thickness x:Key="ButtonIconMarginCompact">0,0,6,0</Thickness>
+
+            <!-- Shared page and card surfaces -->
+            <Style x:Key="PageRootGridStyle" TargetType="Grid">
+                <Setter Property="Margin" Value="{StaticResource PagePadding}"/>
+            </Style>
+
+            <Style x:Key="CardBorderStyle" TargetType="Border">
+                <Setter Property="Padding" Value="{StaticResource CardPadding}"/>
+                <Setter Property="CornerRadius" Value="{StaticResource CardCornerRadius}"/>
+                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+            </Style>
+
+            <Style x:Key="SectionCardStyle" TargetType="Border" BasedOn="{StaticResource CardBorderStyle}">
+                <Setter Property="Margin" Value="{StaticResource MarginNormalBottom}"/>
+            </Style>
 
             <!-- Page header typography tokens -->
             <Style x:Key="PageTitleTextStyle" TargetType="TextBlock">
@@ -649,6 +671,7 @@
             <Style x:Key="PrimaryButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Appearance" Value="Primary"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightStandard}"/>
                 <Setter Property="Background" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource BadgeTextBrush}"/>
@@ -661,6 +684,7 @@
             <Style x:Key="SecondaryButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Appearance" Value="Secondary"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightStandard}"/>
                 <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
@@ -669,9 +693,38 @@
                 <Setter Property="CornerRadius" Value="{StaticResource ButtonCornerRadius}"/>
             </Style>
 
+            <!-- Compact action buttons for dense toolbars and selection helpers. -->
+            <Style x:Key="CompactPrimaryButton" TargetType="ui:Button" BasedOn="{StaticResource PrimaryButton}">
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightCompact}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingCompact}"/>
+            </Style>
+
+            <Style x:Key="CompactSecondaryButton" TargetType="ui:Button" BasedOn="{StaticResource SecondaryButton}">
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightCompact}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingCompact}"/>
+            </Style>
+
+            <Style x:Key="CompactTransparentButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="Appearance" Value="Transparent"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightCompact}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingCompact}"/>
+                <Setter Property="FontSize" Value="{StaticResource ButtonFontSizeStandard}"/>
+                <Setter Property="CornerRadius" Value="{StaticResource ButtonCornerRadius}"/>
+            </Style>
+
+            <Style x:Key="CompactSecondaryDropDownButton" TargetType="ui:DropDownButton" BasedOn="{StaticResource {x:Type ui:DropDownButton}}">
+                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="Appearance" Value="Secondary"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightCompact}"/>
+                <Setter Property="Padding" Value="{StaticResource ButtonPaddingCompact}"/>
+                <Setter Property="FontSize" Value="{StaticResource ButtonFontSizeStandard}"/>
+            </Style>
+
             <!-- Outlined Button: theme-tinted outlined action -->
             <Style x:Key="OutlinedButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightStandard}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
                 <Setter Property="Background" Value="Transparent"/>
@@ -695,6 +748,7 @@
             <!-- Destructive Button: outlined red, for delete-with-confirmation -->
             <Style x:Key="DestructiveButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightStandard}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ValidationErrorBorderBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBorderBrush}"/>
                 <Setter Property="Background" Value="Transparent"/>
@@ -706,6 +760,7 @@
             <Style x:Key="DestructiveSolidButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Appearance" Value="Danger"/>
+                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightStandard}"/>
                 <Setter Property="Background" Value="{DynamicResource ErrorBrush}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
                 <Setter Property="Foreground" Value="{DynamicResource BadgeTextBrush}"/>
@@ -764,10 +819,12 @@
             </Style>
 
             <!-- Quick Action Button: tile launcher (Dashboard quick actions) -->
-            <Style x:Key="QuickActionButton" TargetType="Button" BasedOn="{StaticResource OutlinedButton}">
+            <Style x:Key="QuickActionButton" TargetType="ui:Button" BasedOn="{StaticResource SecondaryButton}">
                 <Setter Property="Padding" Value="{StaticResource ButtonPaddingLarge}"/>
                 <Setter Property="Margin" Value="{StaticResource MarginNormalBottom}"/>
                 <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
             </Style>
 
             <!-- Favorite Icon Button: animated favorite toggle (variant of IconButton) -->

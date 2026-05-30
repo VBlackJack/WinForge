@@ -230,36 +230,7 @@ try {{
             foreach (var app in apps)
             {
                 var appId = app.AppId;
-
-                InstalledPackageInfo? packageInfo = null;
-
-                // Try AppId first
-                if (!string.IsNullOrEmpty(appId))
-                {
-                    packageInfo = detectionResult.GetPackage(appId);
-                }
-
-                // Try app name (fuzzy match)
-                if (packageInfo == null && !string.IsNullOrEmpty(app.Name))
-                {
-                    var normalizedName = app.Name.ToLowerInvariant().Replace(" ", "").Replace("-", "");
-                    packageInfo = detectionResult.GetPackage(normalizedName);
-                }
-
-                // Try partial match on app name
-                if (packageInfo == null && !string.IsNullOrEmpty(app.Name))
-                {
-                    var appNameLower = app.Name.ToLowerInvariant();
-                    foreach (var pkg in detectionResult.Packages.Values)
-                    {
-                        if (pkg.Name.ToLowerInvariant().Contains(appNameLower) ||
-                            appNameLower.Contains(pkg.Name.ToLowerInvariant()))
-                        {
-                            packageInfo = pkg;
-                            break;
-                        }
-                    }
-                }
+                var packageInfo = FindDetectedPackage(app, detectionResult);
 
                 if (packageInfo != null)
                 {
@@ -281,6 +252,151 @@ try {{
             return null;
         }
     }
+
+    private static InstalledPackageInfo? FindDetectedPackage(
+        ApplicationModel app,
+        BatchDetectionResult detectionResult)
+    {
+        if (!string.IsNullOrEmpty(app.AppId))
+        {
+            var packageInfo = detectionResult.GetPackage(app.AppId);
+            if (packageInfo != null)
+            {
+                return packageInfo;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(app.Name))
+        {
+            var normalizedName = NormalizePackageLookupKey(app.Name);
+            var packageInfo = detectionResult.GetPackage(normalizedName);
+            if (packageInfo != null)
+            {
+                return packageInfo;
+            }
+        }
+
+        foreach (var packageInfo in detectionResult.Packages.Values.DistinctBy(p => $"{p.Id}|{p.Name}"))
+        {
+            if (IsPackageMatch(app, packageInfo))
+            {
+                return packageInfo;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsPackageMatch(ApplicationModel app, InstalledPackageInfo packageInfo)
+    {
+        if (string.IsNullOrWhiteSpace(app.Name))
+        {
+            return false;
+        }
+
+        foreach (var candidate in new[] { packageInfo.Name, packageInfo.Id }.Where(static c => !string.IsNullOrWhiteSpace(c)))
+        {
+            var normalizedAppName = NormalizePackageLookupKey(app.Name);
+            var normalizedCandidate = NormalizePackageLookupKey(candidate);
+
+            if (normalizedAppName.Length >= 4 &&
+                normalizedCandidate.Length >= 4 &&
+                (normalizedCandidate.Contains(normalizedAppName, StringComparison.OrdinalIgnoreCase) ||
+                 normalizedAppName.Contains(normalizedCandidate, StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
+            if (HasMeaningfulTokenOverlap(app.Name, candidate))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static string NormalizePackageLookupKey(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        var builder = new StringBuilder(value.Length);
+        foreach (var ch in value)
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                builder.Append(char.ToLowerInvariant(ch));
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    private static bool HasMeaningfulTokenOverlap(string appName, string packageName)
+    {
+        var appTokens = GetMeaningfulTokens(appName);
+        if (appTokens.Count == 0)
+        {
+            return false;
+        }
+
+        var packageTokens = GetMeaningfulTokens(packageName);
+        return packageTokens.Any(appTokens.Contains);
+    }
+
+    private static HashSet<string> GetMeaningfulTokens(string value)
+    {
+        var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var builder = new StringBuilder();
+
+        foreach (var ch in value)
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                builder.Append(char.ToLowerInvariant(ch));
+            }
+            else
+            {
+                AddToken(builder, tokens);
+            }
+        }
+
+        AddToken(builder, tokens);
+        return tokens;
+    }
+
+    private static void AddToken(StringBuilder builder, HashSet<string> tokens)
+    {
+        if (builder.Length == 0)
+        {
+            return;
+        }
+
+        var token = builder.ToString();
+        builder.Clear();
+
+        if (token.Length < 4 || CommonPackageMatchTokens.Contains(token))
+        {
+            return;
+        }
+
+        tokens.Add(token);
+    }
+
+    private static readonly HashSet<string> CommonPackageMatchTokens = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "app",
+        "apps",
+        "client",
+        "desktop",
+        "shell",
+        "studio",
+        "tool",
+        "tools"
+    };
 
     /// <summary>
     /// Gets batch application status using PowerShell detection.

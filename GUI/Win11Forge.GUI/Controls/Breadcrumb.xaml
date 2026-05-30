@@ -18,7 +18,7 @@
                                      VerticalAlignment="Center"
                                      Visibility="{Binding IsFirst, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                     <!-- Breadcrumb item -->
-                    <ui:Button Appearance="Transparent"
+                    <ui:Button Style="{DynamicResource CompactTransparentButton}"
                             Content="{Binding Label}"
                             Command="{Binding NavigateCommand}"
                             IsEnabled="{Binding IsClickable}"

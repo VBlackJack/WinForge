@@ -193,6 +193,7 @@ public partial class App : Application
             {
                 var themeService = Services.GetRequiredService<IThemeService>();
                 themeService.ApplyTheme(settings.ThemeName);
+                themeService.ApplyAccentTint(settings.AccentTintName);
             }
             catch (Exception ex)
             {
@@ -214,6 +215,7 @@ public partial class App : Application
             {
                 var themeService = Services.GetRequiredService<IThemeService>();
                 themeService.ApplyTheme(settings.ThemeName);
+                themeService.ApplyAccentTint(settings.AccentTintName);
                 ApplyHighContrastMode(settings.IsHighContrastEnabled);
             }
             catch (Exception ex)
@@ -536,15 +538,8 @@ public partial class App : Application
                     if (IsServicesInitialized)
                     {
                         var themeService = GetService<IThemeService>();
-                        if (themeService.CurrentTheme is ThemeNames.Light)
-                        {
-                            ApplyThemeResources(false);
-                        }
-                        else
-                        {
-                            RemoveDraculaThemeDictionaries(app);
-                            themeService.ApplyTheme(themeService.CurrentTheme);
-                        }
+                        themeService.ApplyTheme(themeService.CurrentTheme);
+                        themeService.ApplyAccentTint(themeService.CurrentAccentTint);
                     }
                     else
                     {
@@ -557,20 +552,6 @@ public partial class App : Application
                     Log($"Failed to restore standard resources after high contrast: {ex.Message}");
                 }
             }
-        }
-    }
-
-    private static void RemoveDraculaThemeDictionaries(Application app)
-    {
-        var dictionaries = app.Resources.MergedDictionaries
-            .Where(dictionary => dictionary.Source?.OriginalString.Contains(
-                ThemeNames.DraculaResourcePathPrefix,
-                StringComparison.OrdinalIgnoreCase) == true)
-            .ToList();
-
-        foreach (var dictionary in dictionaries)
-        {
-            app.Resources.MergedDictionaries.Remove(dictionary);
         }
     }
 

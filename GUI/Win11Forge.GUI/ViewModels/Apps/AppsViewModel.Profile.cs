@@ -31,11 +31,17 @@ public partial class AppsViewModel
     [ObservableProperty]
     private ObservableCollection<string> _availableProfiles = [];
 
+    [ObservableProperty]
+    private ObservableCollection<ProfileSelectorItem> _profileSelectorItems = [CreateCustomProfileSelectorItem()];
+
     /// <summary>
     /// Currently selected profile (null = no profile, manual selection).
     /// </summary>
     [ObservableProperty]
     private string? _selectedProfile;
+
+    [ObservableProperty]
+    private ProfileSelectorItem? _selectedProfileSelectorItem = CreateCustomProfileSelectorItem();
 
     /// <summary>
     /// Indicates whether a profile is currently applied.
@@ -53,6 +59,7 @@ public partial class AppsViewModel
     partial void OnAvailableProfilesChanged(ObservableCollection<string> value)
     {
         OnPropertyChanged(nameof(HasProfiles));
+        RebuildProfileSelectorItems();
     }
 
     /// <summary>
@@ -88,12 +95,79 @@ public partial class AppsViewModel
     partial void OnSelectedProfileChanged(string? value)
     {
         OnPropertyChanged(nameof(HasProfileApplied));
+        SyncSelectedProfileSelectorItem(value);
+
         if (_isRestoringProfile)
         {
             return;
         }
 
         _ = ApplyProfileSelectionAsync();
+    }
+
+    partial void OnSelectedProfileSelectorItemChanged(ProfileSelectorItem? value)
+    {
+        if (_isSyncingProfileSelector)
+        {
+            return;
+        }
+
+        SelectedProfile = value?.ProfileName;
+    }
+
+    private bool _isSyncingProfileSelector;
+
+    private static ProfileSelectorItem CreateCustomProfileSelectorItem()
+    {
+        return new ProfileSelectorItem(Resources.Resources.Apps_CustomProfile, null);
+    }
+
+    private static ProfileSelectorItem CreateProfileSelectorItem(string profileName)
+    {
+        return new ProfileSelectorItem(profileName, profileName);
+    }
+
+    private void RebuildProfileSelectorItems()
+    {
+        ProfileSelectorItems = new ObservableCollection<ProfileSelectorItem>(
+            new[] { CreateCustomProfileSelectorItem() }
+                .Concat(AvailableProfiles.Select(CreateProfileSelectorItem)));
+        SyncSelectedProfileSelectorItem(SelectedProfile);
+    }
+
+    private void AddProfileSelectorItem(string profileName)
+    {
+        if (ProfileSelectorItems.Any(
+            item => string.Equals(item.ProfileName, profileName, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        ProfileSelectorItems.Add(CreateProfileSelectorItem(profileName));
+    }
+
+    private void SyncSelectedProfileSelectorItem(string? profileName)
+    {
+        var selectedItem = string.IsNullOrEmpty(profileName)
+            ? ProfileSelectorItems.FirstOrDefault(item => item.IsCustom)
+            : ProfileSelectorItems.FirstOrDefault(
+                item => string.Equals(item.ProfileName, profileName, StringComparison.OrdinalIgnoreCase));
+
+        selectedItem ??= ProfileSelectorItems.FirstOrDefault(item => item.IsCustom);
+        if (ReferenceEquals(SelectedProfileSelectorItem, selectedItem))
+        {
+            return;
+        }
+
+        _isSyncingProfileSelector = true;
+        try
+        {
+            SelectedProfileSelectorItem = selectedItem;
+        }
+        finally
+        {
+            _isSyncingProfileSelector = false;
+        }
     }
 
     /// <summary>
@@ -604,6 +678,8 @@ public partial class AppsViewModel
             if (!AvailableProfiles.Contains(saveResult.ProfileName))
             {
                 AvailableProfiles.Add(saveResult.ProfileName);
+                AddProfileSelectorItem(saveResult.ProfileName);
+                OnPropertyChanged(nameof(HasProfiles));
             }
 
             // Select the saved profile

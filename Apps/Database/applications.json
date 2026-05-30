@@ -1,8 +1,8 @@
 ﻿{
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "DatabaseVersion": "3.7.2",
-  "LastUpdated": "2026-02-12",
-  "TotalApplications": 175,
+  "DatabaseVersion": "3.7.3",
+  "LastUpdated": "2026-05-29",
+  "TotalApplications": 189,
   "PriorityRanges": {
     "Description": "Priority ranges for application installation order",
     "Ranges": {
@@ -2846,6 +2846,411 @@
       "Verified": true,
       "Homepage": "https://cursor.sh/"
     },
+    "OpenAICodex": {
+      "Name": "Codex CLI",
+      "Category": "AI",
+      "Description": "OpenAI local coding agent for the terminal",
+      "Sources": {
+        "Winget": "OpenAI.Codex",
+        "Chocolatey": null,
+        "Store": "9PLM9XGG6VKS",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Command",
+        "Command": "codex --version",
+        "VersionRegex": "(\\d+\\.\\d+\\.\\d+)"
+      },
+      "DefaultPriority": 95,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "agent",
+        "coding",
+        "cli",
+        "development",
+        "llm",
+        "openai"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://developers.openai.com/codex/cli"
+    },
+    "ClaudeDesktop": {
+      "Name": "Claude Desktop",
+      "Category": "AI",
+      "Description": "Anthropic Claude desktop app",
+      "Sources": {
+        "Winget": "Anthropic.Claude",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%LOCALAPPDATA%\\AnthropicClaude\\claude.exe"
+      },
+      "DefaultPriority": 96,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "anthropic",
+        "chatbot",
+        "claude",
+        "llm",
+        "productivity"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://claude.ai/download"
+    },
+    "ClaudeCode": {
+      "Name": "Claude Code",
+      "Category": "AI",
+      "Description": "Anthropic agentic coding tool for the terminal",
+      "Sources": {
+        "Winget": "Anthropic.ClaudeCode",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Command",
+        "Command": "claude --version",
+        "VersionRegex": "(\\d+\\.\\d+\\.\\d+)"
+      },
+      "DefaultPriority": 97,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "agent",
+        "anthropic",
+        "claude",
+        "cli",
+        "coding",
+        "development",
+        "llm"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://docs.anthropic.com/claude-code"
+    },
+    "GoogleAntigravity": {
+      "Name": "Google Antigravity",
+      "Category": "AI",
+      "Description": "Google AI agent command center for knowledge work and software tasks",
+      "Sources": {
+        "Winget": "Google.Antigravity",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%LOCALAPPDATA%\\Programs\\antigravity\\Antigravity.exe"
+      },
+      "DefaultPriority": 98,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "agent",
+        "gemini",
+        "google",
+        "llm",
+        "productivity"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://antigravity.google/"
+    },
+    "GoogleAntigravityIDE": {
+      "Name": "Google Antigravity IDE",
+      "Category": "AI",
+      "Description": "Agentic AI development environment by Google",
+      "Sources": {
+        "Winget": "Google.AntigravityIDE",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%LOCALAPPDATA%\\Programs\\Antigravity IDE\\Antigravity IDE.exe"
+      },
+      "DefaultPriority": 99,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "agent",
+        "development",
+        "editor",
+        "gemini",
+        "google",
+        "ide"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://antigravity.google/"
+    },
+    "GoogleAntigravityCLI": {
+      "Name": "Google Antigravity CLI",
+      "Category": "AI",
+      "Description": "Terminal user interface for Google Antigravity agents",
+      "Sources": {
+        "Winget": "Google.AntigravityCLI",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Command",
+        "Command": "agy --version",
+        "VersionRegex": "(\\d+\\.\\d+\\.\\d+)"
+      },
+      "DefaultPriority": 100,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "agent",
+        "cli",
+        "development",
+        "gemini",
+        "google",
+        "llm"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://antigravity.google/docs"
+    },
+    "Windsurf": {
+      "Name": "Windsurf",
+      "Category": "AI",
+      "Description": "Agentic AI code editor by Codeium",
+      "Sources": {
+        "Winget": "Codeium.Windsurf",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%LOCALAPPDATA%\\Programs\\Windsurf\\Windsurf.exe"
+      },
+      "DefaultPriority": 101,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "agent",
+        "codeium",
+        "development",
+        "editor",
+        "ide"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://codeium.com/windsurf"
+    },
+    "Ollama": {
+      "Name": "Ollama",
+      "Category": "AI",
+      "Description": "Run large language models locally",
+      "Sources": {
+        "Winget": "Ollama.Ollama",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Command",
+        "Command": "ollama --version",
+        "VersionRegex": "(\\d+\\.\\d+\\.\\d+)"
+      },
+      "DefaultPriority": 102,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "llm",
+        "local-ai",
+        "open-source"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://ollama.com/"
+    },
+    "LMStudio": {
+      "Name": "LM Studio",
+      "Category": "AI",
+      "Description": "Desktop app for discovering, running, and chatting with local LLMs",
+      "Sources": {
+        "Winget": "ElementLabs.LMStudio",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%LOCALAPPDATA%\\Programs\\LM Studio\\LM Studio.exe"
+      },
+      "DefaultPriority": 103,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "chatbot",
+        "llm",
+        "local-ai"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://lmstudio.ai/"
+    },
+    "MicrosoftAIShell": {
+      "Name": "AI Shell",
+      "Category": "AI",
+      "Description": "Microsoft command-line AI assistant shell",
+      "Sources": {
+        "Winget": "Microsoft.AIShell",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "Command",
+        "Command": "aish --version",
+        "VersionRegex": "(\\d+\\.\\d+\\.\\d+)"
+      },
+      "DefaultPriority": 104,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "cli",
+        "llm",
+        "microsoft",
+        "openai",
+        "shell"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://github.com/PowerShell/AIShell"
+    },
+    "Msty": {
+      "Name": "Msty",
+      "Category": "AI",
+      "Description": "Desktop AI chat client for local and cloud models",
+      "Sources": {
+        "Winget": "CloudStack.Msty",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%LOCALAPPDATA%\\Programs\\Msty\\Msty.exe"
+      },
+      "DefaultPriority": 105,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "chatbot",
+        "llm",
+        "local-ai"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://msty.app/"
+    },
+    "CherryStudio": {
+      "Name": "Cherry Studio",
+      "Category": "AI",
+      "Description": "Desktop AI assistant client for multiple model providers",
+      "Sources": {
+        "Winget": "kangfenmao.CherryStudio",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%LOCALAPPDATA%\\Programs\\Cherry Studio\\Cherry Studio.exe"
+      },
+      "DefaultPriority": 106,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "chatbot",
+        "llm",
+        "productivity"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://cherry-ai.com/"
+    },
+    "Poe": {
+      "Name": "Poe",
+      "Category": "AI",
+      "Description": "Quora AI chat app for multiple assistants",
+      "Sources": {
+        "Winget": "Quora.Poe",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%LOCALAPPDATA%\\Programs\\Poe\\Poe.exe"
+      },
+      "DefaultPriority": 107,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "chatbot",
+        "llm",
+        "productivity"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://poe.com/"
+    },
+    "Perplexity": {
+      "Name": "Perplexity",
+      "Category": "AI",
+      "Description": "AI answer engine desktop app",
+      "Sources": {
+        "Winget": "Perplexity.Perplexity",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%LOCALAPPDATA%\\Programs\\Perplexity\\Perplexity.exe"
+      },
+      "DefaultPriority": 108,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "ai",
+        "chatbot",
+        "llm",
+        "productivity",
+        "search"
+      ],
+      "LastVerified": "2026-05-29",
+      "Verified": true,
+      "Homepage": "https://www.perplexity.ai/"
+    },
     "VCRedist": {
       "Name": "Visual C++ Redistributable 2015-2022",
       "Category": "System",
@@ -4917,6 +5322,11 @@
       "DisplayName": "ðŸ’» DÃ©veloppement",
       "Count": 19
     },
+    "AI": {
+      "Description": "AI assistants, agents, and local model tools",
+      "DisplayName": "AI",
+      "Count": 14
+    },
     "Virtualization": {
       "Description": "Virtualization and sandboxing tools",
       "DisplayName": "ðŸ“¦ Virtualisation",
@@ -4941,13 +5351,20 @@
   "Tags": {
     "2fa": "Two-factor authentication support",
     "android": "Android platform or emulation",
+    "agent": "Agentic AI tools and assistants",
     "antivirus": "Antivirus and malware protection",
+    "anthropic": "Anthropic applications and services",
     "archiver": "File compression and archiving",
     "audio": "Audio playback and editing",
     "blizzard": "Blizzard Entertainment platform",
     "browser": "Web browsing applications",
     "bsod": "Blue Screen of Death analysis",
     "cloud": "Cloud storage and synchronization",
+    "chatbot": "Conversational AI applications",
+    "claude": "Claude and Claude-compatible tools",
+    "cli": "Command-line interface tools",
+    "coding": "AI-assisted coding tools",
+    "codeium": "Codeium and Windsurf applications",
     "communication": "Communication and collaboration tools",
     "compression": "File compression utilities",
     "configuration": "System configuration tools",
@@ -4970,6 +5387,7 @@
     "ftp": "FTP client functionality",
     "gaming": "Gaming platforms and launchers",
     "google": "Google services and applications",
+    "gemini": "Gemini-powered applications",
     "hardware": "Hardware monitoring and management",
     "image": "Image viewing and editing",
     "javascript": "JavaScript runtime environment",
@@ -4987,6 +5405,7 @@
     "office": "Office productivity suite",
     "open-source": "Free and open source software",
     "organizer": "File and media organization",
+    "openai": "OpenAI applications and tools",
     "packet-analysis": "Network packet analysis",
     "password": "Password management",
     "pdf": "PDF viewing and editing",
@@ -5086,6 +5505,8 @@
     "knowledge-base": "Knowledge base and wiki tools",
     "launcher": "Application launchers",
     "library": "Library management",
+    "llm": "Large language model applications",
+    "local-ai": "Local AI model runtimes and clients",
     "markdown": "Markdown editing support",
     "mixer": "Audio mixer applications",
     "modern": "Modern UI applications",

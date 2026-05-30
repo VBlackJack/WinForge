@@ -22,6 +22,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Win11Forge.GUI\Win11Forge.GUI.csproj" />
+    <ProjectReference Include="..\..\..\ThemeForge\src\ThemeForge.Theme\ThemeForge.Theme.csproj"
+                      SetConfiguration="Configuration=$(Configuration)" />
   </ItemGroup>
 
 </Project>

@@ -7,7 +7,7 @@
     xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
     xmlns:controls="clr-namespace:Win11Forge.GUI.Controls"
     mc:Ignorable="d"
-    Title="{loc:Loc App_Title}"
+    Title="{loc:Loc App_Name}"
     Height="960" Width="1680"
     MinHeight="640" MinWidth="900"
     WindowStartupLocation="CenterScreen"
@@ -58,15 +58,13 @@
                         <StackPanel Grid.Column="1"
                                     Orientation="Horizontal"
                                     Visibility="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <ui:Button Appearance="Transparent"
-                                       Style="{StaticResource TouchFriendlyIconButton}"
+                            <ui:Button Style="{StaticResource IconButton}"
                                        Icon="{ui:SymbolIcon ArrowUndo24}"
                                        Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"
                                        ToolTip="{loc:Loc Undo_Title}"
                                        AutomationProperties.Name="{loc:Loc A11y_Main_Undo}"
                                        IsEnabled="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
-                            <ui:Button Appearance="Transparent"
-                                       Style="{StaticResource TouchFriendlyIconButton}"
+                            <ui:Button Style="{StaticResource IconButton}"
                                        Icon="{ui:SymbolIcon ArrowRedo24}"
                                        Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"
                                        ToolTip="{loc:Loc Undo_Redo}"
@@ -147,7 +145,7 @@
 
         <!-- Title Bar for window dragging (required with ExtendsContentIntoTitleBar) -->
         <ui:TitleBar x:Name="TitleBar"
-                     Title="{loc:Loc App_Title}"
+                     Title="{loc:Loc App_Name}"
                      Icon="Win11Forge.ico"
                      Background="{DynamicResource ApplicationBackgroundBrush}"
                      Foreground="{DynamicResource TextFillColorPrimaryBrush}"

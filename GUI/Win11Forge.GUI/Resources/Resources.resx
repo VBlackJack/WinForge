@@ -589,6 +589,114 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Choose the application theme</value>
     <comment>Theme setting description</comment>
   </data>
+  <data name="Settings_AccentTint" xml:space="preserve">
+    <value>Accent</value>
+    <comment>Accent tint setting label</comment>
+  </data>
+  <data name="Settings_AccentTint_Desc" xml:space="preserve">
+    <value>Choose the accent color used by themed controls</value>
+    <comment>Accent tint setting description</comment>
+  </data>
+  <data name="Settings_ThemeName_Dracula" xml:space="preserve">
+    <value>Dracula</value>
+    <comment>Theme display name for ThemeForge Dracula</comment>
+  </data>
+  <data name="Settings_ThemeName_Drakul" xml:space="preserve">
+    <value>Drakul</value>
+    <comment>Theme display name for ThemeForge Drakul</comment>
+  </data>
+  <data name="Settings_ThemeName_Striga" xml:space="preserve">
+    <value>Striga</value>
+    <comment>Theme display name for ThemeForge Striga</comment>
+  </data>
+  <data name="Settings_ThemeName_Cinder" xml:space="preserve">
+    <value>Cinder</value>
+    <comment>Theme display name for ThemeForge Cinder</comment>
+  </data>
+  <data name="Settings_ThemeName_Bracken" xml:space="preserve">
+    <value>Bracken</value>
+    <comment>Theme display name for ThemeForge Bracken</comment>
+  </data>
+  <data name="Settings_ThemeName_Tarn" xml:space="preserve">
+    <value>Tarn</value>
+    <comment>Theme display name for ThemeForge Tarn</comment>
+  </data>
+  <data name="Settings_ThemeName_Mortis" xml:space="preserve">
+    <value>Mortis</value>
+    <comment>Theme display name for ThemeForge Mortis</comment>
+  </data>
+  <data name="Settings_ThemeName_Slate" xml:space="preserve">
+    <value>Slate</value>
+    <comment>Theme display name for ThemeForge Slate</comment>
+  </data>
+  <data name="Settings_ThemeName_Voivode" xml:space="preserve">
+    <value>Voivode</value>
+    <comment>Theme display name for ThemeForge Voivode</comment>
+  </data>
+  <data name="Settings_ThemeName_Carmilla" xml:space="preserve">
+    <value>Carmilla</value>
+    <comment>Theme display name for ThemeForge Carmilla</comment>
+  </data>
+  <data name="Settings_ThemeName_Whitby" xml:space="preserve">
+    <value>Whitby</value>
+    <comment>Theme display name for ThemeForge Whitby</comment>
+  </data>
+  <data name="Settings_ThemeName_Vesper" xml:space="preserve">
+    <value>Vesper</value>
+    <comment>Theme display name for ThemeForge Vesper</comment>
+  </data>
+  <data name="Settings_ThemeName_Parchment" xml:space="preserve">
+    <value>Parchment</value>
+    <comment>Theme display name for ThemeForge Parchment</comment>
+  </data>
+  <data name="Settings_ThemeName_Folio" xml:space="preserve">
+    <value>Folio</value>
+    <comment>Theme display name for ThemeForge Folio</comment>
+  </data>
+  <data name="Settings_ThemeName_Wormwood" xml:space="preserve">
+    <value>Wormwood</value>
+    <comment>Theme display name for ThemeForge Wormwood</comment>
+  </data>
+  <data name="Settings_ThemeName_Sconce" xml:space="preserve">
+    <value>Sconce</value>
+    <comment>Theme display name for ThemeForge Sconce</comment>
+  </data>
+  <data name="Settings_AccentTintName_Default" xml:space="preserve">
+    <value>Default</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Blue" xml:space="preserve">
+    <value>Blue</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Cyan" xml:space="preserve">
+    <value>Cyan</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Green" xml:space="preserve">
+    <value>Green</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Orange" xml:space="preserve">
+    <value>Orange</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Pink" xml:space="preserve">
+    <value>Pink</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Purple" xml:space="preserve">
+    <value>Purple</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Red" xml:space="preserve">
+    <value>Red</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Yellow" xml:space="preserve">
+    <value>Yellow</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
   <data name="Settings_ThemeName_Light" xml:space="preserve">
     <value>Light</value>
     <comment>Theme display name for WPF-UI Light</comment>
@@ -2050,6 +2158,10 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   <data name="Apps_SelectProfile" xml:space="preserve">
     <value>Select a profile...</value>
     <comment>Profile selector placeholder</comment>
+  </data>
+  <data name="Apps_CustomProfile" xml:space="preserve">
+    <value>Custom</value>
+    <comment>Profile selector entry for manual selection with no applied profile</comment>
   </data>
   <data name="Apps_ClearProfile" xml:space="preserve">
     <value>Clear profile</value>
@@ -3759,6 +3871,10 @@ This action cannot be undone.</value>
   <data name="A11y_Settings_ThemePicker" xml:space="preserve">
     <value>Theme picker</value>
     <comment>Accessibility name for theme picker</comment>
+  </data>
+  <data name="A11y_Settings_AccentTintPicker" xml:space="preserve">
+    <value>Accent picker</value>
+    <comment>Accessibility name for accent tint picker</comment>
   </data>
   <data name="A11y_Settings_ReducedMotion" xml:space="preserve">
     <value>Toggle reduced motion</value>

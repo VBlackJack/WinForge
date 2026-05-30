@@ -100,12 +100,12 @@
                                         HorizontalAlignment="Right"
                                         Margin="0,16,0,0">
                                 <ui:Button Content="{loc:Loc LogViewer_Copy}"
-                                           Appearance="Secondary"
+                                           Style="{StaticResource SecondaryButton}"
                                            Click="CopyLogsToClipboard_Click"
                                            AutomationProperties.Name="{loc:Loc LogViewer_Copy}"
                                            Margin="0,0,12,0"/>
                                 <ui:Button Content="{loc:Loc LogViewer_Close}"
-                                           Appearance="Primary"
+                                           Style="{StaticResource PrimaryButton}"
                                            AutomationProperties.Name="{loc:Loc LogViewer_Close}"
                                            Command="{Binding CloseLogViewerCommand}"/>
                             </StackPanel>
@@ -193,7 +193,7 @@
                             <!-- Dialog Actions -->
                             <ui:Button Grid.Row="2"
                                        Content="{loc:Loc Summary_Close}"
-                                       Appearance="Primary"
+                                       Style="{StaticResource PrimaryButton}"
                                        AutomationProperties.Name="{loc:Loc Summary_Close}"
                                        Command="{Binding CloseSummaryDialogCommand}"
                                        HorizontalAlignment="Right"/>
@@ -203,7 +203,7 @@
             </Border>
         </Grid>
 
-    <Grid Margin="24">
+    <Grid Style="{StaticResource PageRootGridStyle}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -264,8 +264,9 @@
 
                 <!-- Profile ComboBox (visible when profiles exist) -->
                 <ComboBox Grid.Column="1"
-                          ItemsSource="{Binding AvailableProfiles}"
-                          SelectedItem="{Binding SelectedProfile}"
+                          ItemsSource="{Binding ProfileSelectorItems}"
+                          DisplayMemberPath="DisplayName"
+                          SelectedItem="{Binding SelectedProfileSelectorItem}"
                           MinWidth="180"
                           MaxWidth="360"
                           Margin="16,0,0,0"
@@ -317,7 +318,7 @@
                 <!-- Clear Profile Button (inline with combobox) -->
                 <ui:Button Grid.Column="4"
                            Command="{Binding ClearProfileCommand}"
-                           Appearance="Secondary"
+                           Style="{StaticResource IconButton}"
                            VerticalAlignment="Center"
                            ToolTip="{loc:Loc Apps_ClearProfile}"
                            Margin="8,0,0,0"
@@ -329,7 +330,7 @@
                 <!-- Save Profile Button (inline with combobox) -->
                 <ui:Button Grid.Column="5"
                            Command="{Binding ShowSaveProfileDialogCommand}"
-                           Appearance="Secondary"
+                           Style="{StaticResource SecondaryButton}"
                            VerticalAlignment="Center"
                            ToolTip="{loc:Loc Apps_SaveProfile}"
                            AutomationProperties.Name="{loc:Loc Apps_SaveProfile}"
@@ -396,8 +397,7 @@
                     <!-- Clear Filters Button -->
                     <ui:Button Grid.Column="3"
                                Command="{Binding ClearFiltersCommand}"
-                               Appearance="Secondary"
-                               Style="{StaticResource TouchFriendlyIconButton}"
+                               Style="{StaticResource IconButton}"
                                ToolTip="{loc:Loc Apps_ClearFilters}"
                                Margin="8,0,0,0"
                                AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}">
@@ -407,7 +407,7 @@
                     <!-- Scan/Cancel Button (moved from row 1 to compact layout) -->
                     <ui:Button Grid.Column="4"
                                Command="{Binding ScanCommand}"
-                               Appearance="Primary"
+                               Style="{StaticResource PrimaryButton}"
                                Content="{loc:Loc Btn_Scan}"
                                ToolTip="{loc:Loc Help_Tooltip_Scan}"
                                Margin="16,0,0,0"
@@ -415,7 +415,7 @@
                                AutomationProperties.Name="{loc:Loc Btn_Scan}"/>
                     <ui:Button Grid.Column="4"
                                Command="{Binding CancelScanCommand}"
-                               Appearance="Secondary"
+                               Style="{StaticResource SecondaryButton}"
                                Content="{loc:Loc Btn_Cancel}"
                                Margin="16,0,0,0"
                                Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -425,7 +425,7 @@
                          Always visible — disabled state via Opacity trigger on ui:Button (App.xaml). -->
                     <ui:Button Grid.Column="5"
                                Command="{Binding ScanUpdatesCommand}"
-                               Appearance="Secondary"
+                               Style="{StaticResource SecondaryButton}"
                                Margin="8,0,0,0"
                                Visibility="{Binding IsScanningUpdates, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                                AutomationProperties.Name="{loc:Loc Btn_ScanUpdates}">
@@ -534,32 +534,27 @@
                 <ui:Button Grid.Column="2"
                            Content="{loc:Loc Apps_SelectAll}"
                            Command="{Binding SelectAllCommand}"
-                           Appearance="Secondary"
-                           Padding="12,6"
+                           Style="{StaticResource CompactSecondaryButton}"
                            Margin="0,0,4,0"
                            AutomationProperties.Name="{loc:Loc Apps_SelectAll}"/>
                 <ui:Button Grid.Column="3"
                            Content="{loc:Loc Apps_SelectNone}"
                            Command="{Binding SelectNoneCommand}"
-                           Appearance="Secondary"
-                           Padding="12,6"
+                           Style="{StaticResource CompactSecondaryButton}"
                            Margin="0,0,4,0"
                            AutomationProperties.Name="{loc:Loc Apps_SelectNone}"/>
                 <ui:Button Grid.Column="4"
                            Content="{loc:Loc Apps_SelectNotInstalled}"
                            Command="{Binding SelectNotInstalledCommand}"
-                           Appearance="Secondary"
-                           Padding="12,6"
+                           Style="{StaticResource CompactSecondaryButton}"
                            Margin="0,0,4,0"
                            AutomationProperties.Name="{loc:Loc Apps_SelectNotInstalled}"/>
                 <ui:Button Grid.Column="5"
                            Content="{loc:Loc Apps_SelectFavorites}"
                            Command="{Binding SelectFavoritesCommand}"
-                           Appearance="Secondary"
-                           Padding="12,6"
                            AutomationProperties.Name="{loc:Loc Apps_SelectFavorites}">
                     <ui:Button.Style>
-                        <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                        <Style TargetType="ui:Button" BasedOn="{StaticResource CompactSecondaryButton}">
                             <Setter Property="Visibility" Value="Visible"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsInstalling}" Value="True">
@@ -715,7 +710,7 @@
                         </Style>
                     </StackPanel.Style>
                     <ui:Button Command="{Binding UninstallSelectedCommand}"
-                               Appearance="Secondary"
+                               Style="{StaticResource SecondaryButton}"
                                Margin="0,0,8,0"
                                AutomationProperties.Name="{loc:Loc Apps_UninstallSelected}">
                         <StackPanel Orientation="Horizontal">
@@ -724,7 +719,7 @@
                         </StackPanel>
                     </ui:Button>
                     <ui:Button Command="{Binding InstallSelectedCommand}"
-                               Appearance="Primary"
+                               Style="{StaticResource PrimaryButton}"
                                AutomationProperties.Name="{loc:Loc Apps_InstallSelected}">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -813,8 +808,7 @@
                                Visibility="{Binding EstimatedTimeRemaining, Converter={StaticResource NullableToVisibilityConverter}}"/>
                     <!-- Pause Button -->
                     <ui:Button Command="{Binding PauseCommand}"
-                               Appearance="Transparent"
-                               Style="{StaticResource TouchFriendlyIconButton}"
+                               Style="{StaticResource IconButton}"
                                ToolTip="{loc:Loc Btn_Pause}"
                                Visibility="{Binding ShowPauseButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                                AutomationProperties.Name="{loc:Loc A11y_Deployment_Pause}">
@@ -822,8 +816,7 @@
                     </ui:Button>
                     <!-- Resume Button -->
                     <ui:Button Command="{Binding ResumeCommand}"
-                               Appearance="Transparent"
-                               Style="{StaticResource TouchFriendlyIconButton}"
+                               Style="{StaticResource IconButton}"
                                ToolTip="{loc:Loc Btn_Resume}"
                                Visibility="{Binding ShowResumeButton, Converter={StaticResource BooleanToVisibilityConverter}}"
                                AutomationProperties.Name="{loc:Loc A11y_Deployment_Resume}">
@@ -831,8 +824,7 @@
                     </ui:Button>
                     <!-- Cancel Button -->
                     <ui:Button Command="{Binding CancelBatchCommand}"
-                               Appearance="Transparent"
-                               Style="{StaticResource TouchFriendlyIconButton}"
+                               Style="{StaticResource IconButton}"
                                ToolTip="{loc:Loc Btn_Cancel}"
                                Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                AutomationProperties.Name="{loc:Loc A11y_Deployment_Cancel}">
@@ -884,7 +876,7 @@
                                Margin="0,0,0,16"/>
                     <ui:Button Content="{loc:Loc Apps_ClearFilters}"
                                Command="{Binding ClearFiltersCommand}"
-                               Appearance="Primary"
+                               Style="{StaticResource PrimaryButton}"
                                HorizontalAlignment="Center"
                                AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}"/>
                 </StackPanel>
@@ -1272,13 +1264,13 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <ui:Button Content="{loc:Loc Common_TryAgain}"
                                Command="{Binding RetryLastOperationCommand}"
-                               Appearance="Primary"
+                               Style="{StaticResource PrimaryButton}"
                                Margin="0,0,8,0"
                                MinWidth="100"
                                AutomationProperties.Name="{loc:Loc Common_TryAgain}"/>
                     <ui:Button Content="{loc:Loc Common_Dismiss}"
                                Command="{Binding DismissErrorCommand}"
-                               Appearance="Secondary"
+                               Style="{StaticResource SecondaryButton}"
                                MinWidth="100"
                                AutomationProperties.Name="{loc:Loc Common_Dismiss}"/>
                 </StackPanel>

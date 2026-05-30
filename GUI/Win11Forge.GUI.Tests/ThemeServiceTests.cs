@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using Win11Forge.GUI.Resources;
@@ -24,48 +23,80 @@ using Win11Forge.GUI.Tests.TestInfrastructure;
 namespace Win11Forge.GUI.Tests;
 
 /// <summary>
-/// Tests for the theme service catalogue and revision contract.
+/// Tests for the ThemeForge-backed theme service catalogue and revision contract.
 /// </summary>
 [Collection("WpfApplication")]
 public class ThemeServiceTests
 {
     [Fact]
-    public void ApplyTheme_KnownTheme_SetsCurrentTheme()
+    public void AvailableThemes_UsesThemeForgeCatalogue()
     {
         var service = CreateService();
 
-        service.ApplyTheme(ThemeNames.DraculaPro);
+        Assert.Equal(ThemeForge.Theme.ThemeNames.All.Count, service.AvailableThemes.Count);
+        Assert.Equal(ThemeNames.Drakul, service.AvailableThemes[1].Name);
+        Assert.DoesNotContain(service.AvailableThemes, theme => theme.Name == ThemeNames.Light);
+    }
 
-        Assert.Equal(ThemeNames.DraculaPro, service.CurrentTheme);
+    [Fact]
+    public void AvailableAccentTints_UsesThemeForgeCatalogue()
+    {
+        var service = CreateService();
+
+        Assert.Equal(ThemeForge.Theme.AccentTints.All.Count, service.AvailableAccentTints.Count);
+        Assert.Contains(service.AvailableAccentTints, tint => tint.Name == "Default");
+        Assert.Contains(service.AvailableAccentTints, tint => tint.Name == "Purple");
+    }
+
+    [Fact]
+    public void ApplyTheme_KnownTheme_SetsCurrentTheme()
+    {
+        WpfApplicationScope.RunOnStaThread(() =>
+        {
+            using var scope = WpfApplicationScope.Create();
+            var service = CreateService();
+
+            service.ApplyTheme(ThemeNames.Drakul);
+
+            Assert.Equal(ThemeNames.Drakul, service.CurrentTheme);
+        });
     }
 
     [Fact]
     public void ApplyTheme_SameThemeTwice_RevisionIncrementsOnceOnly()
     {
-        var service = CreateService();
+        WpfApplicationScope.RunOnStaThread(() =>
+        {
+            using var scope = WpfApplicationScope.Create();
+            var service = CreateService();
 
-        service.ApplyTheme(ThemeNames.DraculaPro);
-        var revisionAfterFirstApply = service.ThemeRevision;
-        service.ApplyTheme(ThemeNames.DraculaPro);
+            service.ApplyTheme(ThemeNames.Drakul);
+            var revisionAfterFirstApply = service.ThemeRevision;
+            service.ApplyTheme(ThemeNames.Drakul);
 
-        Assert.Equal(1, revisionAfterFirstApply);
-        Assert.Equal(revisionAfterFirstApply, service.ThemeRevision);
+            Assert.Equal(1, revisionAfterFirstApply);
+            Assert.Equal(revisionAfterFirstApply, service.ThemeRevision);
+        });
     }
 
     [Fact]
     public void ApplyTheme_DifferentThemes_RevisionMonotonicallyIncreases()
     {
-        var service = CreateService();
+        WpfApplicationScope.RunOnStaThread(() =>
+        {
+            using var scope = WpfApplicationScope.Create();
+            var service = CreateService();
 
-        service.ApplyTheme(ThemeNames.Light);
-        var lightRevision = service.ThemeRevision;
-        service.ApplyTheme(ThemeNames.DraculaPro);
-        var draculaRevision = service.ThemeRevision;
-        service.ApplyTheme(ThemeNames.Blade);
-        var bladeRevision = service.ThemeRevision;
+            service.ApplyTheme(ThemeNames.Drakul);
+            var drakulRevision = service.ThemeRevision;
+            service.ApplyTheme(ThemeNames.Folio);
+            var folioRevision = service.ThemeRevision;
+            service.ApplyTheme(ThemeNames.Sconce);
+            var sconceRevision = service.ThemeRevision;
 
-        Assert.True(lightRevision < draculaRevision);
-        Assert.True(draculaRevision < bladeRevision);
+            Assert.True(drakulRevision < folioRevision);
+            Assert.True(folioRevision < sconceRevision);
+        });
     }
 
     [Fact]
@@ -79,66 +110,86 @@ public class ThemeServiceTests
     }
 
     [Fact]
-    public void ApplyTheme_AnyTheme_RaisesThemeChangedExactlyOnce()
+    public void ApplyTheme_LegacyTheme_NormalizesToThemeForgeTheme()
     {
         var service = CreateService();
-        var eventCount = 0;
-        string? lastTheme = null;
-        service.ThemeChanged += themeName =>
-        {
-            eventCount++;
-            lastTheme = themeName;
-        };
 
         service.ApplyTheme(ThemeNames.DraculaPro);
 
-        Assert.Equal(1, eventCount);
-        Assert.Equal(ThemeNames.DraculaPro, lastTheme);
+        Assert.Equal(ThemeNames.Drakul, service.CurrentTheme);
     }
 
     [Fact]
-    public void ApplyPaletteBridgeResources_DraculaPalette_MapsToFluentResourceKeys()
+    public void ApplyTheme_AnyTheme_RaisesThemeChangedExactlyOnce()
+    {
+        WpfApplicationScope.RunOnStaThread(() =>
+        {
+            using var scope = WpfApplicationScope.Create();
+            var service = CreateService();
+            var eventCount = 0;
+            string? lastTheme = null;
+            service.ThemeChanged += themeName =>
+            {
+                eventCount++;
+                lastTheme = themeName;
+            };
+
+            service.ApplyTheme(ThemeNames.Drakul);
+
+            Assert.Equal(1, eventCount);
+            Assert.Equal(ThemeNames.Drakul, lastTheme);
+        });
+    }
+
+    [Fact]
+    public void ApplyAccentTint_AfterTheme_UpdatesCurrentTintAndBridgeAccent()
+    {
+        WpfApplicationScope.RunOnStaThread(() =>
+        {
+            using var scope = WpfApplicationScope.Create();
+            var service = CreateService();
+
+            service.ApplyTheme(ThemeNames.Drakul);
+            service.ApplyAccentTint("Green");
+
+            Assert.Equal("Green", service.CurrentAccentTint);
+            Assert.Equal(2, service.ThemeRevision);
+            AssertBrush("#50FA7B", scope.Application.Resources["ThemeAdaptiveAccentBrush"]);
+            Assert.Equal(Color("#50FA7B"), scope.Application.Resources["SystemAccentColor"]);
+        });
+    }
+
+    [Fact]
+    public void ApplyPaletteBridgeResources_ThemeForgePalette_MapsToFluentResourceKeys()
     {
         var resources = new ResourceDictionary
         {
-            ["BackgroundBrush"] = Brush("#22232E"),
-            ["SurfaceBrush"] = Brush("#1B1C25"),
-            ["CardBrush"] = Brush("#3B3D51"),
-            ["AccentBrush"] = Brush("#C4A5FF"),
-            ["AccentHoverBrush"] = Brush("#D8BFFF"),
-            ["AccentPressedBrush"] = Brush("#A88BE0"),
-            ["TextPrimaryBrush"] = Brush("#F7F7F3"),
-            ["TextSecondaryBrush"] = Brush("#9AA5C8"),
-            ["TextTertiaryBrush"] = Brush("#8890B0"),
-            ["TextDisabledBrush"] = Brush("#7E88B6"),
-            ["BorderBrush"] = Brush("#7E88B6"),
-            ["HighlightBrush"] = Brush("#4A4E66"),
-            ["SuccessBrush"] = Brush("#6CF7A1"),
-            ["WarningBrush"] = Brush("#FFBE75"),
-            ["ErrorBrush"] = Brush("#FF6C7A"),
-            ["InfoBrush"] = Brush("#8DEBFF"),
-            ["ErrorTextBrush"] = Brush("#FF6C7A"),
-            ["WarningTextBrush"] = Brush("#FFBE75"),
-            ["SuccessTextBrush"] = Brush("#6CF7A1"),
-            ["BadgeTextBrush"] = Brush("#14151C"),
-            ["TextOnAccentBrush"] = Brush("#FFFFFF"),
-            ["OverlayBackground"] = Brush("#B3000000"),
-            ["AccentColor"] = Color("#C4A5FF"),
-            ["AccentHoverColor"] = Color("#D8BFFF"),
-            ["AccentPressedColor"] = Color("#A88BE0")
+            ["BackgroundBrush"] = Brush("#282A36"),
+            ["SurfaceBrush"] = Brush("#282A36"),
+            ["SurfaceAltBrush"] = Brush("#44475A"),
+            ["AccentBrush"] = Brush("#BD93F9"),
+            ["AccentHoverBrush"] = Brush("#D5BEFC"),
+            ["AccentPressedBrush"] = Brush("#A170E6"),
+            ["TextPrimaryBrush"] = Brush("#F8F8F2"),
+            ["TextSecondaryBrush"] = Brush("#6272A4"),
+            ["BorderBrush"] = Brush("#44475A"),
+            ["SuccessBrush"] = Brush("#50FA7B"),
+            ["WarningBrush"] = Brush("#FFB86C"),
+            ["ErrorBrush"] = Brush("#FF5555"),
+            ["InfoBrush"] = Brush("#8BE9FD")
         };
 
         ThemeService.ApplyPaletteBridgeResources(resources);
 
-        AssertBrush("#22232E", resources["ApplicationBackgroundBrush"]);
-        AssertBrush("#3B3D51", resources["CardBackgroundFillColorDefaultBrush"]);
-        AssertBrush("#F7F7F3", resources["TextFillColorPrimaryBrush"]);
-        AssertBrush("#9AA5C8", resources["TextFillColorSecondaryBrush"]);
-        AssertBrush("#C4A5FF", resources["SystemAccentColorPrimaryBrush"]);
-        AssertBrush("#14151C", resources["TextOnAccentFillColorPrimaryBrush"]);
-        AssertBrush("#C4A5FF", resources["PrimaryHueLightBrush"]);
-        AssertBrush("#14151C", resources["BadgePrimaryForegroundBrush"]);
-        Assert.Equal(Color("#C4A5FF"), resources["SystemAccentColor"]);
+        AssertBrush("#282A36", resources["ApplicationBackgroundBrush"]);
+        AssertBrush("#44475A", resources["CardBackgroundFillColorDefaultBrush"]);
+        AssertBrush("#F8F8F2", resources["TextFillColorPrimaryBrush"]);
+        AssertBrush("#B3BBD6", resources["TextFillColorSecondaryBrush"]);
+        AssertBrush("#BD93F9", resources["SystemAccentColorPrimaryBrush"]);
+        AssertBrush("#282A36", resources["TextOnAccentFillColorPrimaryBrush"]);
+        AssertBrush("#BD93F9", resources["PrimaryHueLightBrush"]);
+        AssertBrush("#282A36", resources["BadgePrimaryForegroundBrush"]);
+        Assert.Equal(Color("#BD93F9"), resources["SystemAccentColor"]);
     }
 
     [Fact]
@@ -146,10 +197,10 @@ public class ThemeServiceTests
     {
         var resources = new ResourceDictionary
         {
-            ["BackgroundBrush"] = Brush("#22232E"),
-            ["ApplicationBackgroundBrush"] = Brush("#22232E"),
-            ["TextFillColorPrimaryBrush"] = Brush("#F7F7F3"),
-            ["SystemAccentColor"] = Color("#C4A5FF")
+            ["BackgroundBrush"] = Brush("#282A36"),
+            ["ApplicationBackgroundBrush"] = Brush("#282A36"),
+            ["TextFillColorPrimaryBrush"] = Brush("#F8F8F2"),
+            ["SystemAccentColor"] = Color("#BD93F9")
         };
 
         ThemeService.ClearPaletteBridgeResources(resources);
@@ -192,9 +243,9 @@ public class ThemeServiceTests
             var applyCount = 0;
             var service = CreateService(() => applyCount++);
 
-            service.ApplyTheme(ThemeNames.Light);
+            service.ApplyTheme(ThemeNames.Drakul);
 
-            Assert.Equal(ThemeNames.Light, service.CurrentTheme);
+            Assert.Equal(ThemeNames.Drakul, service.CurrentTheme);
             Assert.Equal(1, service.ThemeRevision);
             Assert.Equal(1, applyCount);
         });
@@ -203,72 +254,21 @@ public class ThemeServiceTests
     [Fact]
     public void ApplyTheme_SameThemeWithHighContrastDictionary_ReappliesHighContrastOnEarlyReturn()
     {
-        var applyCount = 0;
-        var service = CreateService(() => applyCount++);
-        service.ApplyTheme(ThemeNames.Light);
-        var revisionAfterInitialApply = service.ThemeRevision;
-
         WpfApplicationScope.RunOnStaThread(() =>
         {
             using var scope = WpfApplicationScope.Create();
+            var applyCount = 0;
+            var service = CreateService(() => applyCount++);
+
+            service.ApplyTheme(ThemeNames.Drakul);
+            var revisionAfterInitialApply = service.ThemeRevision;
             scope.AddHighContrastDictionaryMarker();
+            service.ApplyTheme(ThemeNames.Drakul);
 
-            service.ApplyTheme(ThemeNames.Light);
+            Assert.Equal(ThemeNames.Drakul, service.CurrentTheme);
+            Assert.Equal(revisionAfterInitialApply, service.ThemeRevision);
+            Assert.Equal(1, applyCount);
         });
-
-        Assert.Equal(ThemeNames.Light, service.CurrentTheme);
-        Assert.Equal(revisionAfterInitialApply, service.ThemeRevision);
-        Assert.Equal(1, applyCount);
-    }
-
-    [Fact]
-    public void ApplyTheme_SourceReappliesHighContrastOnSameThemeEarlyReturn()
-    {
-        var source = ReadThemeServiceSource();
-        var expectedDictionaryCheck = source.IndexOf("&& HasExpectedResourceDictionary(app, descriptor)", StringComparison.Ordinal);
-        var branchStart = source.LastIndexOf("if (_hasAppliedTheme", expectedDictionaryCheck, StringComparison.Ordinal);
-        var branchEnd = source.IndexOf("try", expectedDictionaryCheck, StringComparison.Ordinal);
-        var branch = source[branchStart..branchEnd];
-
-        Assert.Contains("ReapplyHighContrastIfEnabled(app);", branch, StringComparison.Ordinal);
-        Assert.True(
-            branch.IndexOf("ReapplyHighContrastIfEnabled(app);", StringComparison.Ordinal)
-            < branch.IndexOf("return;", StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void ApplyTheme_SourceReappliesHighContrastAfterPaletteResourcesBeforeCommit()
-    {
-        var source = ReadThemeServiceSource();
-        var paletteIndex = source.IndexOf("ApplyPaletteResources(app, descriptor);", StringComparison.Ordinal);
-        var reapplyIndex = source.IndexOf("ReapplyHighContrastIfEnabled(app);", paletteIndex, StringComparison.Ordinal);
-        var commitIndex = source.IndexOf("CommitTheme(descriptor.Name);", paletteIndex, StringComparison.Ordinal);
-
-        Assert.True(paletteIndex >= 0);
-        Assert.True(reapplyIndex > paletteIndex);
-        Assert.True(commitIndex > reapplyIndex);
-    }
-
-    [Fact]
-    public void ReapplyHighContrastIfEnabled_SourceUsesHighContrastDictionaryMarker()
-    {
-        var source = ReadThemeServiceSource();
-
-        Assert.Contains("private const string HighContrastResourceMarker = \"HighContrastTheme\";", source, StringComparison.Ordinal);
-        Assert.Contains("ReapplyHighContrastIfEnabled(HasHighContrastResourceDictionary(app));", source, StringComparison.Ordinal);
-        Assert.Contains("HighContrastResourceMarker", source, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void RemoveDraculaResourceDictionaries_SourceDoesNotRemoveHighContrastDictionary()
-    {
-        var source = ReadThemeServiceSource();
-        var methodStart = source.IndexOf("private static bool IsDraculaResourceDictionary", StringComparison.Ordinal);
-        var methodEnd = source.IndexOf("private static void RemoveDraculaResourceDictionaries", methodStart, StringComparison.Ordinal);
-        var draculaPredicate = source[methodStart..methodEnd];
-
-        Assert.Contains("ThemeNames.DraculaResourcePathPrefix", draculaPredicate, StringComparison.Ordinal);
-        Assert.DoesNotContain("HighContrastResourceMarker", draculaPredicate, StringComparison.Ordinal);
     }
 
     private static ThemeService CreateService()
@@ -279,30 +279,6 @@ public class ThemeServiceTests
     private static ThemeService CreateService(Action applyHighContrastMode)
     {
         return new ThemeService(new MockAppSettingsService(), applyHighContrastMode);
-    }
-
-    private static string ReadThemeServiceSource()
-    {
-        return File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Services", "ThemeService.cs"));
-    }
-
-    private static string FindRepoFile(params string[] relativeParts)
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (directory is not null)
-        {
-            var candidate = Path.Combine([directory.FullName, .. relativeParts]);
-            if (File.Exists(candidate))
-            {
-                return candidate;
-            }
-
-            directory = directory.Parent;
-        }
-
-        throw new FileNotFoundException(
-            $"Could not locate {Path.Combine(relativeParts)} from {AppContext.BaseDirectory}.");
     }
 
     private static SolidColorBrush Brush(string color)
@@ -320,5 +296,4 @@ public class ThemeServiceTests
         var brush = Assert.IsType<SolidColorBrush>(actual);
         Assert.Equal(Color(expectedColor), brush.Color);
     }
-
 }

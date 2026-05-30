@@ -65,6 +65,18 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private ThemeDescriptor? _selectedTheme;
 
     /// <summary>
+    /// Available application accent tints.
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<AccentTintDescriptor> _availableAccentTints = [];
+
+    /// <summary>
+    /// Selected application accent tint.
+    /// </summary>
+    [ObservableProperty]
+    private AccentTintDescriptor? _selectedAccentTint;
+
+    /// <summary>
     /// Available languages.
     /// </summary>
     [ObservableProperty]
@@ -402,9 +414,14 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
             AvailableThemes = new ObservableCollection<ThemeDescriptor>(_themeService.AvailableThemes);
             _themeService.ApplyTheme(settings.ThemeName);
+            AvailableAccentTints = new ObservableCollection<AccentTintDescriptor>(_themeService.AvailableAccentTints);
+            _themeService.ApplyAccentTint(settings.AccentTintName);
             SelectedTheme = AvailableThemes.FirstOrDefault(theme =>
                     string.Equals(theme.Name, _themeService.CurrentTheme, StringComparison.Ordinal))
                 ?? AvailableThemes.First(theme => theme.Name == ThemeNames.Default);
+            SelectedAccentTint = AvailableAccentTints.FirstOrDefault(tint =>
+                    string.Equals(tint.Name, _themeService.CurrentAccentTint, StringComparison.Ordinal))
+                ?? AvailableAccentTints.First(tint => tint.Name == ThemeNames.DefaultAccentTint);
 
             // Get language from settings
             _initialLanguageCode = settings.LanguageCode;
@@ -474,6 +491,20 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         if (_isLoadingSettings || value is null) return;
 
         _themeService.ApplyTheme(value.Name);
+        if (TrySaveSettings())
+        {
+            StatusMessage = Resources.Resources.Settings_ThemeApplied;
+        }
+    }
+
+    /// <summary>
+    /// Called when the selected application accent tint changes.
+    /// </summary>
+    partial void OnSelectedAccentTintChanged(AccentTintDescriptor? value)
+    {
+        if (_isLoadingSettings || value is null) return;
+
+        _themeService.ApplyAccentTint(value.Name);
         if (TrySaveSettings())
         {
             StatusMessage = Resources.Resources.Settings_ThemeApplied;
@@ -584,6 +615,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         // Load existing settings to preserve fields not managed by this view
         var settings = _settingsService.LoadSettings();
         settings.ThemeName = SelectedTheme?.Name ?? ThemeNames.Default;
+        settings.AccentTintName = SelectedAccentTint?.Name ?? ThemeNames.DefaultAccentTint;
         settings.IsHighContrastEnabled = IsHighContrastEnabled;
         settings.ReducedMotionOverride = _reducedMotionOverride;
         settings.LanguageCode = SelectedLanguage?.Code ?? SupportedLocales.Default;
@@ -723,6 +755,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
                 if (importedSettings != null)
                 {
+                    importedSettings.ThemeName = ThemeService.NormalizeThemeName(importedSettings.ThemeName);
+                    importedSettings.AccentTintName = ThemeService.NormalizeAccentTintName(importedSettings.AccentTintName);
                     if (!_settingsService.SaveSettings(importedSettings))
                     {
                         StatusMessage = Resources.Resources.Settings_SaveFailed;

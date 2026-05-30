@@ -21,6 +21,26 @@ namespace Win11Forge.GUI.Resources;
 /// </summary>
 public static class ThemeNames
 {
+    public const string Dracula = ThemeForge.Theme.ThemeNames.Dracula;
+    public const string Drakul = ThemeForge.Theme.ThemeNames.Drakul;
+    public const string Striga = ThemeForge.Theme.ThemeNames.Striga;
+    public const string Cinder = ThemeForge.Theme.ThemeNames.Cinder;
+    public const string Bracken = ThemeForge.Theme.ThemeNames.Bracken;
+    public const string Tarn = ThemeForge.Theme.ThemeNames.Tarn;
+    public const string Mortis = ThemeForge.Theme.ThemeNames.Mortis;
+    public const string Slate = ThemeForge.Theme.ThemeNames.Slate;
+    public const string Voivode = ThemeForge.Theme.ThemeNames.Voivode;
+    public const string Carmilla = ThemeForge.Theme.ThemeNames.Carmilla;
+    public const string Whitby = ThemeForge.Theme.ThemeNames.Whitby;
+    public const string Vesper = ThemeForge.Theme.ThemeNames.Vesper;
+    public const string Parchment = ThemeForge.Theme.ThemeNames.Parchment;
+    public const string Folio = ThemeForge.Theme.ThemeNames.Folio;
+    public const string Wormwood = ThemeForge.Theme.ThemeNames.Wormwood;
+    public const string Sconce = ThemeForge.Theme.ThemeNames.Sconce;
+
+    /// <summary>
+    /// Legacy Win11Forge theme names kept only for settings migration.
+    /// </summary>
     public const string Light = "Light";
     public const string DraculaPro = "DraculaPro";
     public const string Alucard = "Alucard";
@@ -33,10 +53,37 @@ public static class ThemeNames
     /// <summary>
     /// Fallback theme for fresh installs and unknown values.
     /// </summary>
-    public const string Default = Light;
+    public const string Default = Drakul;
 
     /// <summary>
-    /// Relative resource path prefix for Dracula theme dictionaries.
+    /// Fallback accent tint for fresh installs and unknown values.
+    /// </summary>
+    public const string DefaultAccentTint = nameof(ThemeForge.Theme.AccentTint.Default);
+
+    /// <summary>
+    /// Relative resource path prefix for legacy Dracula theme dictionaries.
     /// </summary>
     public const string DraculaResourcePathPrefix = "Themes/Dracula/";
+
+    /// <summary>
+    /// Returns whether a canonical or legacy theme should use WPF light chrome.
+    /// </summary>
+    public static bool IsLightTheme(string? themeName)
+    {
+        if (string.IsNullOrWhiteSpace(themeName))
+        {
+            return false;
+        }
+
+        if (string.Equals(themeName, Light, StringComparison.Ordinal)
+            || string.Equals(themeName, Alucard, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        return string.Equals(
+            ThemeForge.Theme.ThemeNames.GetFamily(themeName),
+            "Light",
+            StringComparison.Ordinal);
+    }
 }

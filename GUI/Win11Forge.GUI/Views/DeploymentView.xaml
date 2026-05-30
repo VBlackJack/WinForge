@@ -14,7 +14,7 @@
 
     <Grid>
     <!-- Main Content -->
-    <Grid Margin="24">
+    <Grid Style="{StaticResource PageRootGridStyle}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -129,7 +129,7 @@
                             Orientation="Horizontal"
                             HorizontalAlignment="Center">
                     <!-- Pause Button -->
-                    <ui:Button Appearance="Transparent"
+                    <ui:Button Style="{StaticResource SecondaryButton}"
                                Command="{Binding PauseDeploymentCommand}"
                                Visibility="{Binding CanPauseDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
                                Margin="0,0,12,0"
@@ -141,7 +141,7 @@
                     </ui:Button>
 
                     <!-- Resume Button -->
-                    <ui:Button Appearance="Primary"
+                    <ui:Button Style="{StaticResource PrimaryButton}"
                                Command="{Binding ResumeDeploymentCommand}"
                                Visibility="{Binding CanResumeDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
                                Margin="0,0,12,0"
@@ -153,7 +153,7 @@
                     </ui:Button>
 
                     <!-- Cancel Button -->
-                    <ui:Button Appearance="Secondary"
+                    <ui:Button Style="{StaticResource SecondaryButton}"
                                Command="{Binding CancelDeploymentCommand}"
                                AutomationProperties.Name="{loc:Loc A11y_Deployment_Cancel}">
                         <StackPanel Orientation="Horizontal">
@@ -375,7 +375,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                 <!-- WCAG 2.5.5: 44x44px minimum touch target -->
-                                <ui:Button Appearance="Transparent"
+                                <ui:Button Style="{StaticResource IconButton}"
                                            Width="44" Height="44"
                                            ToolTip="{loc:Loc Btn_ViewLogs}"
                                            AutomationProperties.Name="{loc:Loc Btn_ViewLogs}"
@@ -491,12 +491,12 @@
                             HorizontalAlignment="Right"
                             Margin="0,16,0,0">
                     <ui:Button Content="{loc:Loc LogViewer_Copy}"
-                               Appearance="Secondary"
+                               Style="{StaticResource SecondaryButton}"
                                Click="CopyLogsToClipboard_Click"
                                Margin="0,0,12,0"
                                AutomationProperties.Name="{loc:Loc A11y_Deployment_CopyLogs}"/>
                     <ui:Button Content="{loc:Loc LogViewer_Close}"
-                               Appearance="Primary"
+                               Style="{StaticResource PrimaryButton}"
                                Command="{Binding CloseLogViewerCommand}"
                                AutomationProperties.Name="{loc:Loc A11y_Deployment_CloseLogs}"/>
                 </StackPanel>

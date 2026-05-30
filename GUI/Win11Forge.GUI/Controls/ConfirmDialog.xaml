@@ -47,7 +47,7 @@
                <!-- Cancel Button -->
                <ui:Button x:Name="CancelButton"
                        Content="{loc:Loc Dialog_Cancel}"
-                       Appearance="Secondary"
+                        Style="{DynamicResource SecondaryButton}"
                        Click="CancelButton_Click"
                        Margin="0,0,12,0"
                        AutomationProperties.Name="{loc:Loc Dialog_Cancel}"
@@ -56,7 +56,7 @@
                <!-- Confirm Button -->
                <ui:Button x:Name="ConfirmButton"
                        Content="{loc:Loc Dialog_Confirm}"
-                       Appearance="Primary"
+                        Style="{DynamicResource PrimaryButton}"
                        Click="ConfirmButton_Click"
                        AutomationProperties.Name="{loc:Loc Dialog_Confirm}"
                        IsDefault="True"/>

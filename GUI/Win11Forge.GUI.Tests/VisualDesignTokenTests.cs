@@ -158,7 +158,102 @@ public class VisualDesignTokenTests
             .ToList();
 
         Assert.Empty(literalCardPaddings);
-        Assert.Contains("Padding=\"{StaticResource CardPadding}\"", viewXaml, StringComparison.Ordinal);
+        Assert.True(
+            viewXaml.Contains("Padding=\"{StaticResource CardPadding}\"", StringComparison.Ordinal)
+            || viewXaml.Contains("Style=\"{StaticResource CardBorderStyle}\"", StringComparison.Ordinal)
+            || viewXaml.Contains("Style=\"{StaticResource SectionCardStyle}\"", StringComparison.Ordinal),
+            $"{relativePath} should use shared card padding or a shared card style.");
+    }
+
+    [Fact]
+    public void ButtonTaxonomy_DefinesStandardAndCompactVariants()
+    {
+        var appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        var styles = appXaml.Descendants()
+            .Where(element => element.Name.LocalName == "Style")
+            .ToList();
+
+        AssertNamedStyleSetter(styles, "PrimaryButton", "MinHeight", "{StaticResource ButtonMinHeightStandard}");
+        AssertNamedStyleSetter(styles, "SecondaryButton", "MinHeight", "{StaticResource ButtonMinHeightStandard}");
+        AssertNamedStyleSetter(styles, "DestructiveSolidButton", "MinHeight", "{StaticResource ButtonMinHeightStandard}");
+        AssertNamedStyleSetter(styles, "CompactSecondaryButton", "Padding", "{StaticResource ButtonPaddingCompact}");
+        AssertNamedStyleSetter(styles, "CompactTransparentButton", "Appearance", "Transparent");
+        AssertNamedStyleSetter(styles, "CompactSecondaryDropDownButton", "Appearance", "Secondary");
+        AssertNamedStyleSetter(styles, "QuickActionButton", "HorizontalContentAlignment", "Left");
+        AssertNamedStyleSetter(styles, "IconButton", "MinWidth", "{StaticResource ButtonMinHeightTouch}");
+    }
+
+    [Fact]
+    public void DashboardQuickNavigation_UsesWpfUiButtonsToAvoidNativeHoverChrome()
+    {
+        var dashboardPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "DashboardView.xaml");
+        var dashboardDoc = XDocument.Load(dashboardPath);
+
+        var quickActionButtons = dashboardDoc.Descendants()
+            .Where(element =>
+                element.Name.LocalName == "Button"
+                && string.Equals(element.Attribute("Style")?.Value, "{StaticResource QuickActionButton}", StringComparison.Ordinal))
+            .ToList();
+
+        Assert.Equal(2, quickActionButtons.Count);
+        Assert.All(
+            quickActionButtons,
+            button => Assert.Equal("http://schemas.lepo.co/wpfui/2022/xaml", button.Name.NamespaceName));
+    }
+
+    [Fact]
+    public void AppCatalogToolbar_UsesCompactActionStyles()
+    {
+        var catalogXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml"));
+
+        Assert.Contains("Style=\"{StaticResource CompactPrimaryButton}\"", catalogXaml, StringComparison.Ordinal);
+        Assert.Contains("Style=\"{StaticResource CompactSecondaryButton}\"", catalogXaml, StringComparison.Ordinal);
+        Assert.Contains("Style=\"{StaticResource CompactSecondaryDropDownButton}\"", catalogXaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("<ui:DropDownButton ToolTip=\"{loc:Loc AppCatalog_ExportTooltip}\"", catalogXaml, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WpfUiButtons_UseNamedStylesInsteadOfInlineAppearance()
+    {
+        var xamlFiles = Directory.EnumerateFiles(
+            Path.GetDirectoryName(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"))!,
+            "*.xaml",
+            SearchOption.AllDirectories)
+            .Where(path => !path.EndsWith("App.xaml", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        var offenders = new List<string>();
+        foreach (var path in xamlFiles)
+        {
+            var doc = XDocument.Load(path);
+            var wpfUiButtonsWithInlineAppearance = doc.Descendants()
+                .Where(element =>
+                    element.Name.LocalName == "Button"
+                    && string.Equals(
+                        element.Name.NamespaceName,
+                        "http://schemas.lepo.co/wpfui/2022/xaml",
+                        StringComparison.Ordinal)
+                    && element.Attribute("Appearance") is not null)
+                .Select(element => Path.GetRelativePath(Path.GetDirectoryName(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"))!, path))
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+
+            offenders.AddRange(wpfUiButtonsWithInlineAppearance);
+        }
+
+        Assert.Empty(offenders);
+    }
+
+    [Fact]
+    public void MainWindow_TitleBarUsesAppNameAndRuntimeTitleUpdate()
+    {
+        var mainWindowPath = FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml");
+        var mainWindowXaml = File.ReadAllText(mainWindowPath);
+        var mainWindowCode = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml.cs"));
+
+        Assert.Contains("Title=\"{loc:Loc App_Name}\"", mainWindowXaml, StringComparison.Ordinal);
+        Assert.DoesNotContain("Title=\"{loc:Loc App_Title}\"", mainWindowXaml, StringComparison.Ordinal);
+        Assert.Contains("TitleBar.Title = title;", mainWindowCode, StringComparison.Ordinal);
     }
 
     [Fact]

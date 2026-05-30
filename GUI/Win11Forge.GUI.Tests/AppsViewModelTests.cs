@@ -1295,6 +1295,56 @@ public class AppsViewModelTests
     }
 
     [Fact]
+    public async Task ProfileSelector_WhenNoProfileSelected_ShowsCustomEntry()
+    {
+        // Arrange
+        using var profiles = new TestProfilesDirectory(
+            ("Work", [], ["Git.Git"]));
+        var bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Work"];
+        var viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
+
+        // Act
+        await viewModel.InitializeAsync();
+
+        // Assert
+        Assert.Null(viewModel.SelectedProfile);
+        Assert.NotNull(viewModel.SelectedProfileSelectorItem);
+        Assert.Same(viewModel.ProfileSelectorItems[0], viewModel.SelectedProfileSelectorItem);
+        Assert.True(viewModel.SelectedProfileSelectorItem.IsCustom);
+        Assert.Equal(Resources.Resources.Apps_CustomProfile, viewModel.SelectedProfileSelectorItem.DisplayName);
+        Assert.Equal(
+            [Resources.Resources.Apps_CustomProfile, "Work"],
+            viewModel.ProfileSelectorItems.Select(item => item.DisplayName).ToArray());
+    }
+
+    [Fact]
+    public async Task ProfileSelector_SelectingCustomEntry_ClearsSelectedProfile()
+    {
+        // Arrange
+        using var profiles = new TestProfilesDirectory(
+            ("Work", [], ["Git.Git"]));
+        var bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Work"];
+        var viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+
+        // Act
+        viewModel.SelectedProfileSelectorItem = viewModel.ProfileSelectorItems.Single(item => item.ProfileName == "Work");
+        await WaitForConditionAsync(() => viewModel.SelectedProfile == "Work");
+
+        viewModel.SelectedProfileSelectorItem = viewModel.ProfileSelectorItems.Single(item => item.IsCustom);
+        await WaitForConditionAsync(() => viewModel.SelectedProfile is null);
+
+        // Assert
+        Assert.Null(viewModel.SelectedProfile);
+        Assert.NotNull(viewModel.SelectedProfileSelectorItem);
+        Assert.True(viewModel.SelectedProfileSelectorItem.IsCustom);
+        Assert.False(viewModel.HasProfileApplied);
+    }
+
+    [Fact]
     public async Task ProfileSelection_WithManualSelectionAndCancel_RestoresManualSelection()
     {
         // Arrange

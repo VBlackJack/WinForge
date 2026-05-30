@@ -225,7 +225,7 @@ public class JsonApplicationDetectionService
                 // Use WinGet ID as the key for results (matches ApplicationModel.AppId)
                 var primaryId = kvp.Value.GetPrimaryId(kvp.Key);
                 var result = await DetectAsync(primaryId, kvp.Value.Name, kvp.Value.Detection!);
-                return (primaryId, result);
+                return (JsonKey: kvp.Key, PrimaryId: primaryId, Result: result);
             }
             finally
             {
@@ -235,12 +235,17 @@ public class JsonApplicationDetectionService
 
         var detectionResults = await Task.WhenAll(tasks);
 
-        foreach (var (appId, info) in detectionResults)
+        foreach (var (jsonKey, primaryId, info) in detectionResults)
         {
             if (info != null)
             {
-                results[appId] = info;
-                Debug.WriteLine($"JSON detection: {appId} = INSTALLED (v{info.InstalledVersion}, source: {info.Source})");
+                results[jsonKey] = info;
+                if (!string.Equals(jsonKey, primaryId, StringComparison.OrdinalIgnoreCase))
+                {
+                    results[primaryId] = info;
+                }
+
+                Debug.WriteLine($"JSON detection: {jsonKey}/{primaryId} = INSTALLED (v{info.InstalledVersion}, source: {info.Source})");
             }
         }
 
@@ -729,6 +734,11 @@ public class JsonApplicationDetectionService
             return executable;
 
         var executableLower = executable.ToLowerInvariant();
+        var pathResolvedExecutable = ResolveExecutableFromPath(executable);
+        if (!string.IsNullOrEmpty(pathResolvedExecutable))
+        {
+            return pathResolvedExecutable;
+        }
 
         // Common executable paths
         var knownPaths = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
@@ -762,6 +772,34 @@ public class JsonApplicationDetectionService
             ["git"] = new[]
             {
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Git", "bin", "git.exe")
+            },
+            ["codex"] = new[]
+            {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "npm", "codex.cmd"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "npm", "codex.ps1"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WindowsApps", "codex.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "bin", "codex.exe")
+            },
+            ["claude"] = new[]
+            {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "bin", "claude.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "npm", "claude.cmd"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "npm", "claude.ps1")
+            },
+            ["agy"] = new[]
+            {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WindowsApps", "agy.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "bin", "agy.exe")
+            },
+            ["ollama"] = new[]
+            {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Ollama", "ollama.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Ollama", "ollama.exe")
+            },
+            ["aish"] = new[]
+            {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WindowsApps", "aish.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "bin", "aish.exe")
             }
         };
 
@@ -780,5 +818,49 @@ public class JsonApplicationDetectionService
 
         // Return original - will rely on PATH
         return executable;
+    }
+
+    private static string? ResolveExecutableFromPath(string executable)
+    {
+        var path = Environment.GetEnvironmentVariable("PATH");
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        var extensions = GetExecutableExtensions(executable);
+        foreach (var directory in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+        {
+            foreach (var extension in extensions)
+            {
+                var candidate = Path.Combine(directory.Trim(), executable + extension);
+                if (File.Exists(candidate))
+                {
+                    Debug.WriteLine($"Resolved '{executable}' to '{candidate}' from PATH");
+                    return candidate;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static IReadOnlyList<string> GetExecutableExtensions(string executable)
+    {
+        if (!string.IsNullOrEmpty(Path.GetExtension(executable)))
+        {
+            return [string.Empty];
+        }
+
+        var pathext = Environment.GetEnvironmentVariable("PATHEXT");
+        if (string.IsNullOrWhiteSpace(pathext))
+        {
+            return [".exe", ".cmd", ".bat", ".ps1", string.Empty];
+        }
+
+        return pathext.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Append(string.Empty)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 }

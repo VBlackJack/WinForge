@@ -126,12 +126,12 @@
                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
                         <ui:Button x:Name="CopyDetailsButton"
                                 Content="{loc:Loc Dialog_CopyDetails}"
-                                Appearance="Secondary"
+                                Style="{DynamicResource SecondaryButton}"
                                 Click="CopyDetailsButton_Click"
                                 Margin="0,0,8,0"
                                 AutomationProperties.Name="{loc:Loc Dialog_CopyDetails}"/>
                         <ui:Button x:Name="ReportIssueButton"
-                                Appearance="Secondary"
+                                Style="{DynamicResource SecondaryButton}"
                                 Click="ReportIssueButton_Click"
                                 Visibility="Collapsed"
                                 AutomationProperties.Name="{loc:Loc Dialog_ReportIssue}">
@@ -168,7 +168,7 @@
                <!-- Help Button -->
                <ui:Button x:Name="HelpButton"
                        Content="{loc:Loc Dialog_Help}"
-                       Appearance="Secondary"
+                       Style="{DynamicResource SecondaryButton}"
                        Click="HelpButton_Click"
                        Margin="0,0,8,0"
                        AutomationProperties.Name="{loc:Loc Dialog_Help}"
@@ -177,7 +177,7 @@
                <!-- Retry Button -->
                <ui:Button x:Name="RetryButton"
                        Content="{loc:Loc Dialog_Retry}"
-                       Appearance="Secondary"
+                       Style="{DynamicResource SecondaryButton}"
                        Click="RetryButton_Click"
                        Margin="0,0,8,0"
                        AutomationProperties.Name="{loc:Loc Dialog_Retry}"
@@ -186,7 +186,7 @@
                <!-- OK Button -->
                <ui:Button x:Name="OkButton"
                        Content="{loc:Loc Dialog_OK}"
-                       Appearance="Primary"
+                       Style="{DynamicResource PrimaryButton}"
                        Click="OkButton_Click"
                        AutomationProperties.Name="{loc:Loc Dialog_OK}"
                        IsDefault="True"/>

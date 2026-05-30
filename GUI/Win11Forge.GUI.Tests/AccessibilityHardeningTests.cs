@@ -44,7 +44,7 @@ public class AccessibilityHardeningTests
             }
         ],
         ["Views/PrerequisitesView.xaml", new[] { "Prerequisites_Check" }],
-        ["Views/SettingsView.xaml", new[] { "Settings_ReducedMotion_Desc", "Settings_HighContrast_Desc" }],
+        ["Views/SettingsView.xaml", new[] { "Settings_AccentTint_Desc", "Settings_ReducedMotion_Desc", "Settings_HighContrast_Desc" }],
         ["Controls/ConfirmDialog.xaml", new[] { "Dialog_Cancel", "Dialog_Confirm" }],
         ["Controls/ErrorDialog.xaml", new[] { "Dialog_Help", "Dialog_Retry", "Dialog_OK" }]
     ];
@@ -57,7 +57,7 @@ public class AccessibilityHardeningTests
         {
             SettingsToReturn = new AppSettings
             {
-                ThemeName = ThemeNames.DraculaPro,
+                ThemeName = ThemeNames.Drakul,
                 IsHighContrastEnabled = true
             }
         };

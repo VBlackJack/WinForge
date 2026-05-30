@@ -60,24 +60,24 @@
                               CanContentScroll="False">
                 <StackPanel Orientation="Horizontal" Margin="16,0,0,0">
                     <!-- Undo/Redo buttons -->
-                    <ui:Button Appearance="Transparent"
+                    <ui:Button
                                Command="{Binding UndoCommand}"
                                ToolTip="{Binding UndoButtonTooltip}"
                                AutomationProperties.Name="{loc:Loc A11y_Main_Undo}"
-                               Style="{StaticResource TouchFriendlyIconButton}"
+                               Style="{StaticResource IconButton}"
                                Visibility="{Binding CanUndo, Converter={StaticResource BooleanToVisibilityConverter}}"
                                Margin="0,0,4,0"
                                Icon="{ui:SymbolIcon ArrowUndo24}"/>
-                    <ui:Button Appearance="Transparent"
+                    <ui:Button
                                Command="{Binding RedoCommand}"
                                ToolTip="{Binding RedoButtonTooltip}"
                                AutomationProperties.Name="{loc:Loc A11y_Main_Redo}"
-                               Style="{StaticResource TouchFriendlyIconButton}"
+                               Style="{StaticResource IconButton}"
                                Visibility="{Binding CanRedo, Converter={StaticResource BooleanToVisibilityConverter}}"
                                Margin="0,0,16,0"
                                Icon="{ui:SymbolIcon ArrowRedo24}"/>
 
-                    <ui:Button Appearance="Primary"
+                    <ui:Button Style="{StaticResource CompactPrimaryButton}"
                                Command="{Binding AddCommand}"
                                ToolTip="{loc:Loc AppCatalog_AddTooltip}"
                                AutomationProperties.Name="{loc:Loc AppCatalog_Add}"
@@ -93,7 +93,7 @@
                     </ui:Button>
 
                     <!-- Import/Export -->
-                    <ui:Button Appearance="Secondary"
+                    <ui:Button Style="{StaticResource CompactSecondaryButton}"
                                Command="{Binding ImportCommand}"
                                ToolTip="{loc:Loc AppCatalog_ImportTooltip}"
                                AutomationProperties.Name="{loc:Loc AppCatalog_Import}"
@@ -107,7 +107,8 @@
                             <TextBlock Text="{loc:Loc AppCatalog_Import}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
-                    <ui:DropDownButton ToolTip="{loc:Loc AppCatalog_ExportTooltip}"
+                    <ui:DropDownButton Style="{StaticResource CompactSecondaryDropDownButton}"
+                                       ToolTip="{loc:Loc AppCatalog_ExportTooltip}"
                                        Margin="0,0,8,0">
                         <ui:DropDownButton.Content>
                             <StackPanel Orientation="Horizontal">
@@ -129,7 +130,7 @@
                     </ui:DropDownButton>
 
                     <!-- Verify All -->
-                    <ui:Button Appearance="Secondary"
+                    <ui:Button Style="{StaticResource CompactSecondaryButton}"
                                Command="{Binding VerifyAllSourcesCommand}"
                                ToolTip="{loc:Loc AppCatalog_VerifySources}"
                                AutomationProperties.Name="{loc:Loc AppCatalog_VerifySources}"
@@ -144,7 +145,7 @@
                             <TextBlock Text="{loc:Loc AppCatalog_Verify}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
-                    <ui:Button Appearance="Secondary"
+                    <ui:Button Style="{StaticResource CompactSecondaryButton}"
                                Command="{Binding CancelVerificationCommand}"
                                ToolTip="{loc:Loc Btn_Cancel}"
                                AutomationProperties.Name="{loc:Loc Btn_Cancel}"
@@ -159,7 +160,7 @@
                         </StackPanel>
                     </ui:Button>
 
-                    <ui:Button Appearance="Transparent"
+                    <ui:Button Style="{StaticResource IconButton}"
                                Command="{Binding RefreshCommand}"
                                ToolTip="{loc:Loc AppCatalog_Refresh}"
                                AutomationProperties.Name="{loc:Loc AppCatalog_Refresh}"
@@ -219,7 +220,7 @@
                     <StackPanel Grid.Column="3"
                                 Orientation="Horizontal"
                                 Visibility="{Binding SelectedApplication, Converter={StaticResource NullableToVisibilityConverter}}">
-                        <ui:Button Appearance="Secondary"
+                        <ui:Button Style="{StaticResource SecondaryButton}"
                                    Command="{Binding EditCommand}"
                                    ToolTip="{loc:Loc AppCatalog_EditTooltip}"
                                    AutomationProperties.Name="{loc:Loc AppCatalog_Edit}"
@@ -233,7 +234,7 @@
                                 <TextBlock Text="{loc:Loc AppCatalog_Edit}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ui:Button>
-                        <ui:Button Appearance="Secondary"
+                        <ui:Button Style="{StaticResource SecondaryButton}"
                                    Command="{Binding DuplicateCommand}"
                                    ToolTip="{loc:Loc AppCatalog_DuplicateTooltip}"
                                    AutomationProperties.Name="{loc:Loc AppCatalog_Duplicate}"
@@ -247,7 +248,7 @@
                                 <TextBlock Text="{loc:Loc AppCatalog_Duplicate}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ui:Button>
-                        <ui:Button Appearance="Danger"
+                        <ui:Button Style="{StaticResource DestructiveSolidButton}"
                                    Command="{Binding DeleteCommand}"
                                    ToolTip="{loc:Loc AppCatalog_DeleteTooltip}"
                                    AutomationProperties.Name="{loc:Loc AppCatalog_Delete}"
@@ -472,7 +473,7 @@
                                MaxWidth="520"/>
                     <ui:Button Content="{loc:Loc Common_TryAgain}"
                                Command="{Binding RetryLoadCommand}"
-                               Appearance="Primary"
+                               Style="{StaticResource PrimaryButton}"
                                HorizontalAlignment="Center"
                                Margin="0,16,0,0"/>
                 </StackPanel>

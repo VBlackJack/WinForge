@@ -17,6 +17,11 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media;
+using ThemeForgeAccentTint = ThemeForge.Theme.AccentTint;
+using ThemeForgeAccentTints = ThemeForge.Theme.AccentTints;
+using ThemeForgeIThemeService = ThemeForge.Theme.IThemeService;
+using ThemeForgeNames = ThemeForge.Theme.ThemeNames;
+using ThemeForgeThemeService = ThemeForge.Theme.ThemeService;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
 using Wpf.Ui.Appearance;
@@ -25,205 +30,200 @@ using Wpf.Ui.Controls;
 namespace Win11Forge.GUI.Services;
 
 /// <summary>
-/// Centralized UI-thread theme service for WPF-UI Light and Dracula ResourceDictionary themes.
+/// Win11Forge compatibility wrapper around the ThemeForge theme engine.
 /// </summary>
 public sealed class ThemeService : IThemeService
 {
     private const string HighContrastResourceMarker = "HighContrastTheme";
-    private const string ThemeFileSuffix = "Theme.xaml";
     private const string DisplayKeyPrefix = "Settings_ThemeName_";
-    private const string AccentBrushKey = "AccentBrush";
-    private const string AccentColorKey = "AccentColor";
-    private const string ThemeAdaptiveAccentBrushKey = "ThemeAdaptiveAccentBrush";
-    private const byte FallbackAccentRed = 96;
-    private const byte FallbackAccentGreen = 205;
-    private const byte FallbackAccentBlue = 255;
+    private const string AccentDisplayKeyPrefix = "Settings_AccentTintName_";
+    private const byte FallbackAccentRed = 189;
+    private const byte FallbackAccentGreen = 147;
+    private const byte FallbackAccentBlue = 249;
 
-    private static readonly IReadOnlyDictionary<string, string> PaletteBrushResourceMap =
-        new Dictionary<string, string>(StringComparer.Ordinal)
+    private static readonly IReadOnlyDictionary<string, string> LegacyThemeMap =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["ApplicationBackgroundBrush"] = "BackgroundBrush",
-            ["SolidBackgroundFillColorBaseBrush"] = "BackgroundBrush",
-            ["SolidBackgroundFillColorSecondaryBrush"] = "SurfaceBrush",
-            ["LayerFillColorDefaultBrush"] = "SurfaceBrush",
-            ["LayerFillColorAltBrush"] = "BackgroundBrush",
-            ["CardBackgroundFillColorDefaultBrush"] = "CardBrush",
-            ["CardBackgroundFillColorSecondaryBrush"] = "SurfaceBrush",
-            ["ControlFillColorDefaultBrush"] = "SurfaceBrush",
-            ["ControlFillColorSecondaryBrush"] = "HighlightBrush",
-            ["ControlFillColorTertiaryBrush"] = "CardBrush",
-            ["ControlFillColorDisabledBrush"] = "SurfaceBrush",
-            ["SubtleFillColorSecondaryBrush"] = "HighlightBrush",
-            ["SubtleFillColorTertiaryBrush"] = "HighlightBrush",
-            ["ControlStrokeColorDefaultBrush"] = "BorderBrush",
-            ["ControlStrokeColorSecondaryBrush"] = "HighlightBrush",
-            ["ControlElevationBorderBrush"] = "BorderBrush",
-            ["DividerStrokeColorDefaultBrush"] = "BorderBrush",
-            ["TextFillColorPrimaryBrush"] = "TextPrimaryBrush",
-            ["TextFillColorSecondaryBrush"] = "TextSecondaryBrush",
-            ["TextFillColorTertiaryBrush"] = "TextTertiaryBrush",
-            ["TextFillColorDisabledBrush"] = "TextDisabledBrush",
-            ["TextOnAccentFillColorPrimaryBrush"] = "BadgeTextBrush",
-            ["TextOnAccentFillColorSecondaryBrush"] = "BadgeTextBrush",
-            ["TextOnAccentFillColorDisabledBrush"] = "TextDisabledBrush",
-            ["SystemAccentColorPrimaryBrush"] = "AccentBrush",
-            ["SystemAccentColorSecondaryBrush"] = "AccentHoverBrush",
-            ["SystemAccentColorTertiaryBrush"] = "AccentPressedBrush",
-            ["AccentTextFillColorPrimaryBrush"] = "AccentBrush",
-            ["AccentTextFillColorSecondaryBrush"] = "AccentHoverBrush",
-            ["AccentTextFillColorTertiaryBrush"] = "AccentPressedBrush",
-            // WPF-UI 4.x Button.Appearance="Primary" reads these for Background/Hover/Pressed.
-            ["AccentFillColorDefaultBrush"] = "AccentBrush",
-            ["AccentFillColorSecondaryBrush"] = "AccentHoverBrush",
-            ["AccentFillColorTertiaryBrush"] = "AccentPressedBrush",
-            ["AccentFillColorDisabledBrush"] = "TextDisabledBrush",
-            ["AccentFillColorSelectedTextBackgroundBrush"] = "AccentBrush",
-            // WPF-UI 4.3 Button.xaml binds these directly (resolved via the AccentFillColor* chain).
-            ["AccentButtonBackground"] = "AccentBrush",
-            ["AccentButtonBackgroundPointerOver"] = "AccentHoverBrush",
-            ["AccentButtonBackgroundPressed"] = "AccentPressedBrush",
-            ["AccentButtonBackgroundDisabled"] = "TextDisabledBrush",
-            ["AccentButtonForeground"] = "BadgeTextBrush",
-            ["AccentButtonForegroundPointerOver"] = "BadgeTextBrush",
-            ["AccentButtonForegroundPressed"] = "BadgeTextBrush",
-            ["AccentButtonForegroundDisabled"] = "TextDisabledBrush",
-            ["AccentButtonBorderBrush"] = "AccentBrush",
-            ["AccentButtonBorderBrushPointerOver"] = "AccentHoverBrush",
-            ["AccentButtonBorderBrushPressed"] = "AccentPressedBrush",
-            ["AccentControlElevationBorderBrush"] = "AccentBrush",
-            // WPF-UI 4.3 default Button (non-Accent) all states — used by Appearance="Transparent",
-            // "Secondary", and any plain ui:Button. Without these, the template falls back to Fluent.
-            // The "rest" trio (Background/Foreground/BorderBrush) is critical for "Secondary"/"Default"
-            // appearances because the template binds to {DynamicResource ButtonBackground} for at-rest.
-            ["ButtonBackground"] = "SurfaceBrush",
-            ["ButtonForeground"] = "TextPrimaryBrush",
-            ["ButtonBorderBrush"] = "BorderBrush",
-            ["ButtonBackgroundPointerOver"] = "HighlightBrush",
-            ["ButtonBackgroundPressed"] = "HighlightBrush",
-            ["ButtonBackgroundDisabled"] = "SurfaceBrush",
-            ["ButtonForegroundPointerOver"] = "TextPrimaryBrush",
-            ["ButtonForegroundPressed"] = "TextPrimaryBrush",
-            ["ButtonForegroundDisabled"] = "TextDisabledBrush",
-            ["ButtonBorderBrushPressed"] = "BorderBrush",
-            ["ButtonBorderBrushDisabled"] = "BorderBrush",
-            // WPF-UI 4.3 CheckBox checked/unchecked states. Without the *Checked* mapping the tick fill
-            // defaults to Fluent system blue; the Glyph stays light and unreadable on Dracula accent.
-            ["CheckBoxBackground"] = "SurfaceBrush",
-            ["CheckBoxForeground"] = "TextPrimaryBrush",
-            ["CheckBoxBorderBrush"] = "BorderBrush",
-            ["CheckBoxCheckBorderBrush"] = "BorderBrush",
-            ["CheckBoxCheckGlyphForeground"] = "BadgeTextBrush",
-            ["CheckBoxCheckBackgroundFillChecked"] = "AccentBrush",
-            ["CheckBoxCheckBackgroundFillCheckedPointerOver"] = "AccentHoverBrush",
-            ["CheckBoxCheckBackgroundFillCheckedPressed"] = "AccentPressedBrush",
-            ["CheckBoxCheckBackgroundFillUncheckedPointerOver"] = "HighlightBrush",
-            ["CheckBoxCheckBackgroundFillUncheckedPressed"] = "HighlightBrush",
-            ["CheckBoxCheckBackgroundFillUncheckedDisabled"] = "SurfaceBrush",
-            ["CheckBoxCheckBackgroundStrokeUncheckedDisabled"] = "BorderBrush",
-            ["CheckBoxForegroundUncheckedDisabled"] = "TextDisabledBrush",
-            ["ControlFillColorInputActiveBrush"] = "CardBrush",
-            ["ControlFillColorTransparentBrush"] = "SurfaceBrush",
-            ["ControlStrongFillColorDefaultBrush"] = "AccentBrush",
-            ["ControlStrongFillColorDisabledBrush"] = "TextDisabledBrush",
-            ["ControlAltFillColorTransparentBrush"] = "BackgroundBrush",
-            ["ControlAltFillColorSecondaryBrush"] = "SurfaceBrush",
-            ["ControlAltFillColorTertiaryBrush"] = "CardBrush",
-            ["ControlAltFillColorQuarternaryBrush"] = "HighlightBrush",
-            ["ControlAltFillColorDisabledBrush"] = "SurfaceBrush",
-            ["ControlStrokeColorOnAccentDefaultBrush"] = "BadgeTextBrush",
-            ["ControlStrokeColorOnAccentSecondaryBrush"] = "BadgeTextBrush",
-            ["ControlStrokeColorOnAccentTertiaryBrush"] = "BadgeTextBrush",
-            ["ControlStrokeColorOnAccentDisabledBrush"] = "TextDisabledBrush",
-            ["CardStrokeColorDefaultBrush"] = "BorderBrush",
-            ["CardStrokeColorDefaultSolidBrush"] = "BorderBrush",
-            ["SystemFillColorSuccessBrush"] = "SuccessBrush",
-            ["SystemFillColorCautionBrush"] = "WarningBrush",
-            ["SystemFillColorCriticalBrush"] = "ErrorBrush",
-            ["SystemFillColorNeutralBrush"] = "TextDisabledBrush",
-            ["SystemFillColorSolidNeutralBrush"] = "SurfaceBrush",
-            ["ThemeAdaptiveAccentBrush"] = "AccentBrush",
-            ["PrimaryHueMidBrush"] = "AccentBrush",
-            ["SecondaryHueMidBrush"] = "InfoBrush",
-            ["StatusPendingBrush"] = "TextDisabledBrush",
-            ["StatusInstallingBrush"] = "InfoBrush",
-            ["StatusInstalledBrush"] = "SuccessBrush",
-            ["StatusFailedBrush"] = "ErrorBrush",
-            ["StatusSkippedBrush"] = "WarningBrush",
-            ["StatusSuccessBrush"] = "SuccessBrush",
-            ["ErrorBackgroundBrush"] = "ErrorBrush",
-            ["ErrorBorderBrush"] = "ErrorBrush",
-            ["ErrorTextBrush"] = "ErrorTextBrush",
-            ["ErrorIconBrush"] = "ErrorTextBrush",
-            ["ValidationErrorBorderBrush"] = "ErrorBrush",
-            ["WarningBackgroundBrush"] = "WarningBrush",
-            ["WarningBorderBrush"] = "WarningBrush",
-            ["WarningTextBrush"] = "WarningTextBrush",
-            ["WarningIconBrush"] = "WarningTextBrush",
-            ["SuccessBackgroundBrush"] = "SuccessBrush",
-            ["SuccessBorderBrush"] = "SuccessBrush",
-            ["SuccessTextBrush"] = "SuccessTextBrush",
-            ["SuccessIconBrush"] = "SuccessTextBrush",
-            ["ManualInstallBadgeBrush"] = "WarningBrush",
-            ["RequiredBrush"] = "WarningBrush",
-            ["PrimaryHueLightBrush"] = "AccentBrush",
-            ["SecondaryHueLightBrush"] = "InfoBrush",
-            ["BadgePrimaryForegroundBrush"] = "BadgeTextBrush",
-            ["BadgeSecondaryForegroundBrush"] = "BadgeTextBrush",
-            ["PrimaryHueLightForegroundBrush"] = "BadgeTextBrush",
-            ["SecondaryHueLightForegroundBrush"] = "BadgeTextBrush",
-            ["DialogOverlayBackgroundBrush"] = "OverlayBackground",
-            ["SkeletonBaseBrush"] = "SurfaceBrush",
-            ["SkeletonHighlightBrush"] = "HighlightBrush"
+            [ThemeNames.Light] = ThemeNames.Folio,
+            [ThemeNames.Alucard] = ThemeNames.Parchment,
+            [ThemeNames.DraculaPro] = ThemeNames.Drakul,
+            [ThemeNames.Blade] = ThemeNames.Drakul,
+            [ThemeNames.Buffy] = ThemeNames.Drakul,
+            [ThemeNames.Lincoln] = ThemeNames.Drakul,
+            [ThemeNames.Morbius] = ThemeNames.Drakul,
+            [ThemeNames.VanHelsing] = ThemeNames.Drakul,
+            ["Dark"] = ThemeNames.Drakul
         };
-
-    private static readonly IReadOnlyDictionary<string, string> PaletteColorResourceMap =
-        new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            ["SystemAccentColor"] = "AccentColor",
-            ["SystemAccentColorPrimary"] = "AccentColor",
-            ["SystemAccentColorSecondary"] = "AccentHoverColor",
-            ["SystemAccentColorTertiary"] = "AccentPressedColor",
-            // WPF-UI 4.x AccentFillColor palette - SolidColorBrushes can be bound to these via {DynamicResource}.
-            ["AccentFillColorDefault"] = "AccentColor",
-            ["AccentFillColorSecondary"] = "AccentHoverColor",
-            ["AccentFillColorTertiary"] = "AccentPressedColor",
-            // WPF-UI 4.3 Button.xaml wraps these Color keys inside a SolidColorBrush at template eval
-            // for Appearance="Danger"/"Success"/"Caution"/"Info". Overriding the Color makes the brush
-            // pick up Dracula values at runtime.
-            ["PaletteRedColor"] = "ErrorColor",
-            ["PaletteGreenColor"] = "SuccessColor",
-            ["PaletteOrangeColor"] = "WarningColor",
-            ["PaletteLightBlueColor"] = "InfoColor"
-        };
-
-    private static readonly IReadOnlyList<string> PaletteBridgeResourceKeys =
-        PaletteBrushResourceMap.Keys
-            .Concat(PaletteColorResourceMap.Keys)
-            .ToArray();
 
     private static readonly IReadOnlyList<ThemeDescriptor> ThemeCatalogue =
-    [
-        new ThemeDescriptor(
-            ThemeNames.Light,
-            false,
-            null,
-            BuildDisplayKey(ThemeNames.Light)),
-        CreateDraculaDescriptor(ThemeNames.DraculaPro, true),
-        CreateDraculaDescriptor(ThemeNames.Alucard, false),
-        CreateDraculaDescriptor(ThemeNames.Blade, true),
-        CreateDraculaDescriptor(ThemeNames.Buffy, true),
-        CreateDraculaDescriptor(ThemeNames.Lincoln, true),
-        CreateDraculaDescriptor(ThemeNames.Morbius, true),
-        CreateDraculaDescriptor(ThemeNames.VanHelsing, true)
-    ];
+        ThemeForgeNames.All
+            .Select(name => new ThemeDescriptor(
+                name,
+                !ThemeNames.IsLightTheme(name),
+                null,
+                BuildDisplayKey(name)))
+            .ToArray();
 
     private static readonly IReadOnlyDictionary<string, ThemeDescriptor> ThemeLookup =
         ThemeCatalogue.ToDictionary(theme => theme.Name, StringComparer.OrdinalIgnoreCase);
 
+    private static readonly IReadOnlyList<AccentTintDescriptor> AccentTintCatalogue =
+        ThemeForgeAccentTints.All
+            .Select(tint =>
+            {
+                var name = tint.ToString();
+                return new AccentTintDescriptor(name, BuildAccentDisplayKey(name));
+            })
+            .ToArray();
+
+    private static readonly IReadOnlyDictionary<string, string> AccentTintLookup =
+        AccentTintCatalogue.ToDictionary(tint => tint.Name, tint => tint.Name, StringComparer.OrdinalIgnoreCase);
+
+    private static readonly IReadOnlyList<string> PaletteBridgeResourceKeys =
+    [
+        "ApplicationBackgroundBrush",
+        "SolidBackgroundFillColorBaseBrush",
+        "SolidBackgroundFillColorSecondaryBrush",
+        "LayerFillColorDefaultBrush",
+        "LayerFillColorAltBrush",
+        "CardBackgroundFillColorDefaultBrush",
+        "CardBackgroundFillColorSecondaryBrush",
+        "ControlFillColorDefaultBrush",
+        "ControlFillColorSecondaryBrush",
+        "ControlFillColorTertiaryBrush",
+        "ControlFillColorDisabledBrush",
+        "SubtleFillColorSecondaryBrush",
+        "SubtleFillColorTertiaryBrush",
+        "ControlStrokeColorDefaultBrush",
+        "ControlStrokeColorSecondaryBrush",
+        "ControlElevationBorderBrush",
+        "DividerStrokeColorDefaultBrush",
+        "TextFillColorPrimaryBrush",
+        "TextFillColorSecondaryBrush",
+        "TextFillColorTertiaryBrush",
+        "TextFillColorDisabledBrush",
+        "TextOnAccentFillColorPrimaryBrush",
+        "TextOnAccentFillColorSecondaryBrush",
+        "TextOnAccentFillColorDisabledBrush",
+        "SystemAccentColorPrimaryBrush",
+        "SystemAccentColorSecondaryBrush",
+        "SystemAccentColorTertiaryBrush",
+        "AccentTextFillColorPrimaryBrush",
+        "AccentTextFillColorSecondaryBrush",
+        "AccentTextFillColorTertiaryBrush",
+        "AccentFillColorDefaultBrush",
+        "AccentFillColorSecondaryBrush",
+        "AccentFillColorTertiaryBrush",
+        "AccentFillColorDisabledBrush",
+        "AccentFillColorSelectedTextBackgroundBrush",
+        "AccentButtonBackground",
+        "AccentButtonBackgroundPointerOver",
+        "AccentButtonBackgroundPressed",
+        "AccentButtonBackgroundDisabled",
+        "AccentButtonForeground",
+        "AccentButtonForegroundPointerOver",
+        "AccentButtonForegroundPressed",
+        "AccentButtonForegroundDisabled",
+        "AccentButtonBorderBrush",
+        "AccentButtonBorderBrushPointerOver",
+        "AccentButtonBorderBrushPressed",
+        "AccentControlElevationBorderBrush",
+        "ButtonBackground",
+        "ButtonForeground",
+        "ButtonBorderBrush",
+        "ButtonBackgroundPointerOver",
+        "ButtonBackgroundPressed",
+        "ButtonBackgroundDisabled",
+        "ButtonForegroundPointerOver",
+        "ButtonForegroundPressed",
+        "ButtonForegroundDisabled",
+        "ButtonBorderBrushPressed",
+        "ButtonBorderBrushDisabled",
+        "CheckBoxBackground",
+        "CheckBoxForeground",
+        "CheckBoxBorderBrush",
+        "CheckBoxCheckBorderBrush",
+        "CheckBoxCheckGlyphForeground",
+        "CheckBoxCheckBackgroundFillChecked",
+        "CheckBoxCheckBackgroundFillCheckedPointerOver",
+        "CheckBoxCheckBackgroundFillCheckedPressed",
+        "CheckBoxCheckBackgroundFillUncheckedPointerOver",
+        "CheckBoxCheckBackgroundFillUncheckedPressed",
+        "CheckBoxCheckBackgroundFillUncheckedDisabled",
+        "CheckBoxCheckBackgroundStrokeUncheckedDisabled",
+        "CheckBoxForegroundUncheckedDisabled",
+        "ControlFillColorInputActiveBrush",
+        "ControlFillColorTransparentBrush",
+        "ControlStrongFillColorDefaultBrush",
+        "ControlStrongFillColorDisabledBrush",
+        "ControlAltFillColorTransparentBrush",
+        "ControlAltFillColorSecondaryBrush",
+        "ControlAltFillColorTertiaryBrush",
+        "ControlAltFillColorQuarternaryBrush",
+        "ControlAltFillColorDisabledBrush",
+        "ControlStrokeColorOnAccentDefaultBrush",
+        "ControlStrokeColorOnAccentSecondaryBrush",
+        "ControlStrokeColorOnAccentTertiaryBrush",
+        "ControlStrokeColorOnAccentDisabledBrush",
+        "CardStrokeColorDefaultBrush",
+        "CardStrokeColorDefaultSolidBrush",
+        "SystemFillColorSuccessBrush",
+        "SystemFillColorCautionBrush",
+        "SystemFillColorCriticalBrush",
+        "SystemFillColorNeutralBrush",
+        "SystemFillColorSolidNeutralBrush",
+        "ThemeAdaptiveAccentBrush",
+        "PrimaryHueMidBrush",
+        "SecondaryHueMidBrush",
+        "PrimaryHueLightBrush",
+        "SecondaryHueLightBrush",
+        "StatusPendingBrush",
+        "StatusInstallingBrush",
+        "StatusInstalledBrush",
+        "StatusFailedBrush",
+        "StatusSkippedBrush",
+        "StatusSuccessBrush",
+        "ErrorBackgroundBrush",
+        "ErrorBorderBrush",
+        "ErrorTextBrush",
+        "ErrorIconBrush",
+        "ValidationErrorBorderBrush",
+        "WarningBackgroundBrush",
+        "WarningBorderBrush",
+        "WarningTextBrush",
+        "WarningIconBrush",
+        "SuccessBackgroundBrush",
+        "SuccessBorderBrush",
+        "SuccessTextBrush",
+        "SuccessIconBrush",
+        "ManualInstallBadgeBrush",
+        "RequiredBrush",
+        "BadgePrimaryForegroundBrush",
+        "BadgeSecondaryForegroundBrush",
+        "PrimaryHueLightForegroundBrush",
+        "SecondaryHueLightForegroundBrush",
+        "DialogOverlayBackgroundBrush",
+        "SkeletonBaseBrush",
+        "SkeletonHighlightBrush",
+        "SystemAccentColor",
+        "SystemAccentColorPrimary",
+        "SystemAccentColorSecondary",
+        "SystemAccentColorTertiary",
+        "AccentFillColorDefault",
+        "AccentFillColorSecondary",
+        "AccentFillColorTertiary",
+        "PaletteRedColor",
+        "PaletteGreenColor",
+        "PaletteOrangeColor",
+        "PaletteLightBlueColor"
+    ];
+
     private readonly IAppSettingsService _settingsService;
     private readonly Action _applyHighContrastMode;
+    private ThemeForgeIThemeService? _themeEngine;
+    private string _currentTheme = ThemeNames.Default;
+    private string _currentAccentTint = ThemeNames.DefaultAccentTint;
     private int _themeRevision;
-    private bool _hasAppliedTheme;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ThemeService"/> class.
@@ -241,7 +241,7 @@ public sealed class ThemeService : IThemeService
     }
 
     /// <inheritdoc/>
-    public string CurrentTheme { get; private set; } = ThemeNames.Default;
+    public string CurrentTheme => _currentTheme;
 
     /// <inheritdoc/>
     public int ThemeRevision => _themeRevision;
@@ -250,193 +250,281 @@ public sealed class ThemeService : IThemeService
     public IReadOnlyList<ThemeDescriptor> AvailableThemes => ThemeCatalogue;
 
     /// <inheritdoc/>
+    public string CurrentAccentTint => _currentAccentTint;
+
+    /// <inheritdoc/>
+    public IReadOnlyList<AccentTintDescriptor> AvailableAccentTints => AccentTintCatalogue;
+
+    /// <inheritdoc/>
     public event Action<string>? ThemeChanged;
 
     /// <inheritdoc/>
     public void ApplyTheme(string? themeName)
     {
-        var descriptor = ResolveTheme(themeName);
-        PersistCanonicalThemeIfNeeded(themeName, descriptor.Name);
+        var canonicalTheme = NormalizeThemeName(themeName);
+        PersistCanonicalThemeIfNeeded(themeName, canonicalTheme);
 
         var app = Application.Current;
         if (app is null)
         {
-            if (_hasAppliedTheme && string.Equals(CurrentTheme, descriptor.Name, StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            CommitTheme(descriptor.Name);
-            return;
-        }
-
-        if (_hasAppliedTheme
-            && string.Equals(CurrentTheme, descriptor.Name, StringComparison.Ordinal)
-            && HasExpectedResourceDictionary(app, descriptor))
-        {
-            ReapplyHighContrastIfEnabled(app);
+            CommitWithoutApplication(canonicalTheme, _currentAccentTint);
             return;
         }
 
         try
         {
-            ClearPaletteBridgeResources(app.Resources);
-            RemoveDraculaResourceDictionaries(app);
-            MergeResourceDictionary(app, descriptor);
-            ApplyWpfUiTheme(descriptor);
-            ApplyPaletteResources(app, descriptor);
+            var engine = GetThemeEngine(app);
+            var revisionBefore = engine.ThemeRevision;
+            var changed = !string.Equals(engine.CurrentTheme, canonicalTheme, StringComparison.Ordinal);
+
+            if (changed)
+            {
+                ClearPaletteBridgeResources(app.Resources);
+                engine.ApplyTheme(canonicalTheme);
+            }
+
+            ApplyWpfUiTheme(canonicalTheme);
+            ApplyPaletteBridgeResources(app.Resources);
             ReapplyHighContrastIfEnabled(app);
-            CommitTheme(descriptor.Name);
+            CommitFromEngine(engine, revisionBefore);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Failed to apply theme '{descriptor.Name}': {ex.Message}");
+            Debug.WriteLine($"Failed to apply theme '{canonicalTheme}': {ex.Message}");
         }
     }
 
-    private static ThemeDescriptor CreateDraculaDescriptor(string name, bool isDark)
+    /// <inheritdoc/>
+    public void ApplyAccentTint(string? accentTintName)
     {
-        return new ThemeDescriptor(
-            name,
-            isDark,
-            new Uri($"{ThemeNames.DraculaResourcePathPrefix}{name}{ThemeFileSuffix}", UriKind.Relative),
-            BuildDisplayKey(name));
+        var canonicalTint = NormalizeAccentTintName(accentTintName);
+        PersistCanonicalAccentTintIfNeeded(accentTintName, canonicalTint);
+
+        var app = Application.Current;
+        if (app is null)
+        {
+            CommitWithoutApplication(_currentTheme, canonicalTint);
+            return;
+        }
+
+        try
+        {
+            var engine = GetThemeEngine(app);
+            if (string.IsNullOrWhiteSpace(engine.CurrentTheme))
+            {
+                engine.ApplyTheme(_currentTheme);
+            }
+
+            var revisionBefore = engine.ThemeRevision;
+            var tint = Enum.Parse<ThemeForgeAccentTint>(canonicalTint, ignoreCase: false);
+            if (engine.CurrentAccentTint != tint)
+            {
+                ClearPaletteBridgeResources(app.Resources);
+                engine.ApplyAccentTint(tint);
+            }
+
+            ApplyPaletteBridgeResources(app.Resources);
+            ReapplyHighContrastIfEnabled(app);
+            CommitFromEngine(engine, revisionBefore);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to apply accent tint '{canonicalTint}': {ex.Message}");
+        }
     }
 
-    private static string BuildDisplayKey(string name)
-    {
-        return $"{DisplayKeyPrefix}{name}";
-    }
-
-    private static ThemeDescriptor ResolveTheme(string? themeName)
+    internal static string NormalizeThemeName(string? themeName)
     {
         if (string.IsNullOrWhiteSpace(themeName))
         {
-            return ThemeLookup[ThemeNames.Default];
+            return ThemeNames.Default;
         }
 
-        return ThemeLookup.TryGetValue(themeName, out var descriptor)
-            ? descriptor
-            : ThemeLookup[ThemeNames.Default];
-    }
-
-    private void PersistCanonicalThemeIfNeeded(string? requestedThemeName, string canonicalThemeName)
-    {
-        if (string.Equals(requestedThemeName, canonicalThemeName, StringComparison.Ordinal))
+        var trimmed = themeName.Trim();
+        if (ThemeLookup.TryGetValue(trimmed, out var descriptor))
         {
-            return;
+            return descriptor.Name;
         }
 
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                var settings = _settingsService.LoadSettings();
-                if (!string.Equals(settings.ThemeName, canonicalThemeName, StringComparison.Ordinal))
-                {
-                    settings.ThemeName = canonicalThemeName;
-                    await _settingsService.SaveSettingsAsync(settings, default);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Failed to persist canonical theme '{canonicalThemeName}': {ex.Message}");
-            }
-        });
+        return LegacyThemeMap.TryGetValue(trimmed, out var mappedTheme)
+            ? mappedTheme
+            : ThemeNames.Default;
     }
 
-    private static bool HasExpectedResourceDictionary(Application app, ThemeDescriptor descriptor)
+    internal static string NormalizeAccentTintName(string? accentTintName)
     {
-        if (descriptor.ResourceUri is null)
+        if (string.IsNullOrWhiteSpace(accentTintName))
         {
-            return !HasDraculaResourceDictionary(app);
+            return ThemeNames.DefaultAccentTint;
         }
 
-        return app.Resources.MergedDictionaries.Any(dictionary =>
-            dictionary.Source?.OriginalString.Equals(
-                descriptor.ResourceUri.OriginalString,
-                StringComparison.OrdinalIgnoreCase) == true);
-    }
-
-    private static bool HasDraculaResourceDictionary(Application app)
-    {
-        return app.Resources.MergedDictionaries.Any(IsDraculaResourceDictionary);
-    }
-
-    private static bool IsDraculaResourceDictionary(ResourceDictionary dictionary)
-    {
-        return dictionary.Source?.OriginalString.Contains(
-            ThemeNames.DraculaResourcePathPrefix,
-            StringComparison.OrdinalIgnoreCase) == true;
-    }
-
-    private static void RemoveDraculaResourceDictionaries(Application app)
-    {
-        var dictionaries = app.Resources.MergedDictionaries
-            .Where(IsDraculaResourceDictionary)
-            .ToList();
-
-        foreach (var dictionary in dictionaries)
-        {
-            app.Resources.MergedDictionaries.Remove(dictionary);
-        }
-    }
-
-    private static void MergeResourceDictionary(Application app, ThemeDescriptor descriptor)
-    {
-        if (descriptor.ResourceUri is null)
-        {
-            return;
-        }
-
-        app.Resources.MergedDictionaries.Add(new ResourceDictionary
-        {
-            Source = descriptor.ResourceUri
-        });
-    }
-
-    private static void ApplyWpfUiTheme(ThemeDescriptor descriptor)
-    {
-        var appTheme = descriptor.IsDark ? ApplicationTheme.Dark : ApplicationTheme.Light;
-        var backdrop = descriptor.ResourceUri is null
-            ? WindowBackdropType.Mica
-            : WindowBackdropType.None;
-        ApplicationThemeManager.Apply(appTheme, backdrop);
-    }
-
-    private static void ApplyPaletteResources(Application app, ThemeDescriptor descriptor)
-    {
-        if (descriptor.ResourceUri is null)
-        {
-            App.ApplyThemeResources(false);
-            return;
-        }
-
-        var accentColor = ResolveAccentColor(app);
-        ApplicationAccentColorManager.Apply(accentColor);
-        ApplyPaletteBridgeResources(app.Resources);
-        app.Resources[ThemeAdaptiveAccentBrushKey] = new SolidColorBrush(accentColor);
+        var trimmed = accentTintName.Trim();
+        return AccentTintLookup.TryGetValue(trimmed, out var canonical)
+            ? canonical
+            : ThemeNames.DefaultAccentTint;
     }
 
     internal static void ApplyPaletteBridgeResources(ResourceDictionary resources)
     {
-        foreach (var (targetKey, sourceKey) in PaletteBrushResourceMap)
-        {
-            if (TryFindResource(resources, sourceKey) is SolidColorBrush brush)
-            {
-                resources[targetKey] = new SolidColorBrush(brush.Color);
-            }
-        }
+        var background = ResolveBrush(resources, "#282A36", "BackgroundBrush");
+        var surface = ResolveBrush(resources, "#282A36", "SurfaceBrush", "BackgroundBrush");
+        var card = ResolveBrush(resources, "#44475A", "SurfaceAltBrush", "CurrentLineBrush", "SurfaceBrush");
+        var highlight = ResolveBrush(resources, "#44475A", "SurfaceAltBrush", "SelectionBrush", "CurrentLineBrush");
+        var border = ResolveBrush(resources, "#44475A", "BorderBrush", "SurfaceAltBrush");
+        var textPrimary = ResolveBrush(resources, "#F8F8F2", "TextPrimaryBrush", "ForegroundBrush");
+        var textSecondary = ResolveReadableTextBrush(
+            resources,
+            ResolveBrush(resources, "#B3BBD6", "TextSecondaryBrush", "CommentBrush"),
+            card,
+            textPrimary);
+        var textDisabled = CloneBrush(textSecondary, 0.65);
+        var accent = ResolveBrush(resources, "#BD93F9", "AccentBrush", "PurpleBrush");
+        var accentHover = ResolveBrush(resources, "#D5BEFC", "AccentHoverBrush", "AccentBrush", "PurpleBrush");
+        var accentPressed = ResolveBrush(resources, "#A170E6", "AccentPressedBrush", "AccentBrush", "PurpleBrush");
+        var badgeText = ResolveReadableTextBrush(resources, background, accent, textPrimary);
+        var success = ResolveBrush(resources, "#50FA7B", "SuccessBrush", "GreenBrush");
+        var warning = ResolveBrush(resources, "#FFB86C", "WarningBrush", "OrangeBrush");
+        var error = ResolveBrush(resources, "#FF5555", "ErrorBrush", "RedBrush");
+        var info = ResolveBrush(resources, "#8BE9FD", "InfoBrush", "CyanBrush");
+        var overlay = CreateBrush("#B3000000");
 
-        foreach (var (targetKey, sourceKey) in PaletteColorResourceMap)
-        {
-            if (TryFindResource(resources, sourceKey) is Color color)
-            {
-                resources[targetKey] = color;
-            }
-        }
+        SetBrush(resources, "ApplicationBackgroundBrush", background);
+        SetBrush(resources, "SolidBackgroundFillColorBaseBrush", background);
+        SetBrush(resources, "SolidBackgroundFillColorSecondaryBrush", surface);
+        SetBrush(resources, "LayerFillColorDefaultBrush", surface);
+        SetBrush(resources, "LayerFillColorAltBrush", background);
+        SetBrush(resources, "CardBackgroundFillColorDefaultBrush", card);
+        SetBrush(resources, "CardBackgroundFillColorSecondaryBrush", surface);
+        SetBrush(resources, "ControlFillColorDefaultBrush", surface);
+        SetBrush(resources, "ControlFillColorSecondaryBrush", highlight);
+        SetBrush(resources, "ControlFillColorTertiaryBrush", card);
+        SetBrush(resources, "ControlFillColorDisabledBrush", surface);
+        SetBrush(resources, "SubtleFillColorSecondaryBrush", highlight);
+        SetBrush(resources, "SubtleFillColorTertiaryBrush", highlight);
+        SetBrush(resources, "ControlStrokeColorDefaultBrush", border);
+        SetBrush(resources, "ControlStrokeColorSecondaryBrush", highlight);
+        SetBrush(resources, "ControlElevationBorderBrush", border);
+        SetBrush(resources, "DividerStrokeColorDefaultBrush", border);
+        SetBrush(resources, "TextFillColorPrimaryBrush", textPrimary);
+        SetBrush(resources, "TextFillColorSecondaryBrush", textSecondary);
+        SetBrush(resources, "TextFillColorTertiaryBrush", textSecondary);
+        SetBrush(resources, "TextFillColorDisabledBrush", textDisabled);
+        SetBrush(resources, "TextOnAccentFillColorPrimaryBrush", badgeText);
+        SetBrush(resources, "TextOnAccentFillColorSecondaryBrush", badgeText);
+        SetBrush(resources, "TextOnAccentFillColorDisabledBrush", textDisabled);
+        SetBrush(resources, "SystemAccentColorPrimaryBrush", accent);
+        SetBrush(resources, "SystemAccentColorSecondaryBrush", accentHover);
+        SetBrush(resources, "SystemAccentColorTertiaryBrush", accentPressed);
+        SetBrush(resources, "AccentTextFillColorPrimaryBrush", accent);
+        SetBrush(resources, "AccentTextFillColorSecondaryBrush", accentHover);
+        SetBrush(resources, "AccentTextFillColorTertiaryBrush", accentPressed);
+        SetBrush(resources, "AccentFillColorDefaultBrush", accent);
+        SetBrush(resources, "AccentFillColorSecondaryBrush", accentHover);
+        SetBrush(resources, "AccentFillColorTertiaryBrush", accentPressed);
+        SetBrush(resources, "AccentFillColorDisabledBrush", textDisabled);
+        SetBrush(resources, "AccentFillColorSelectedTextBackgroundBrush", accent);
+        SetBrush(resources, "AccentButtonBackground", accent);
+        SetBrush(resources, "AccentButtonBackgroundPointerOver", accentHover);
+        SetBrush(resources, "AccentButtonBackgroundPressed", accentPressed);
+        SetBrush(resources, "AccentButtonBackgroundDisabled", textDisabled);
+        SetBrush(resources, "AccentButtonForeground", badgeText);
+        SetBrush(resources, "AccentButtonForegroundPointerOver", badgeText);
+        SetBrush(resources, "AccentButtonForegroundPressed", badgeText);
+        SetBrush(resources, "AccentButtonForegroundDisabled", textDisabled);
+        SetBrush(resources, "AccentButtonBorderBrush", accent);
+        SetBrush(resources, "AccentButtonBorderBrushPointerOver", accentHover);
+        SetBrush(resources, "AccentButtonBorderBrushPressed", accentPressed);
+        SetBrush(resources, "AccentControlElevationBorderBrush", accent);
+        SetBrush(resources, "ButtonBackground", surface);
+        SetBrush(resources, "ButtonForeground", textPrimary);
+        SetBrush(resources, "ButtonBorderBrush", border);
+        SetBrush(resources, "ButtonBackgroundPointerOver", highlight);
+        SetBrush(resources, "ButtonBackgroundPressed", highlight);
+        SetBrush(resources, "ButtonBackgroundDisabled", surface);
+        SetBrush(resources, "ButtonForegroundPointerOver", textPrimary);
+        SetBrush(resources, "ButtonForegroundPressed", textPrimary);
+        SetBrush(resources, "ButtonForegroundDisabled", textDisabled);
+        SetBrush(resources, "ButtonBorderBrushPressed", border);
+        SetBrush(resources, "ButtonBorderBrushDisabled", border);
+        SetBrush(resources, "CheckBoxBackground", surface);
+        SetBrush(resources, "CheckBoxForeground", textPrimary);
+        SetBrush(resources, "CheckBoxBorderBrush", border);
+        SetBrush(resources, "CheckBoxCheckBorderBrush", border);
+        SetBrush(resources, "CheckBoxCheckGlyphForeground", badgeText);
+        SetBrush(resources, "CheckBoxCheckBackgroundFillChecked", accent);
+        SetBrush(resources, "CheckBoxCheckBackgroundFillCheckedPointerOver", accentHover);
+        SetBrush(resources, "CheckBoxCheckBackgroundFillCheckedPressed", accentPressed);
+        SetBrush(resources, "CheckBoxCheckBackgroundFillUncheckedPointerOver", highlight);
+        SetBrush(resources, "CheckBoxCheckBackgroundFillUncheckedPressed", highlight);
+        SetBrush(resources, "CheckBoxCheckBackgroundFillUncheckedDisabled", surface);
+        SetBrush(resources, "CheckBoxCheckBackgroundStrokeUncheckedDisabled", border);
+        SetBrush(resources, "CheckBoxForegroundUncheckedDisabled", textDisabled);
+        SetBrush(resources, "ControlFillColorInputActiveBrush", card);
+        SetBrush(resources, "ControlFillColorTransparentBrush", surface);
+        SetBrush(resources, "ControlStrongFillColorDefaultBrush", accent);
+        SetBrush(resources, "ControlStrongFillColorDisabledBrush", textDisabled);
+        SetBrush(resources, "ControlAltFillColorTransparentBrush", background);
+        SetBrush(resources, "ControlAltFillColorSecondaryBrush", surface);
+        SetBrush(resources, "ControlAltFillColorTertiaryBrush", card);
+        SetBrush(resources, "ControlAltFillColorQuarternaryBrush", highlight);
+        SetBrush(resources, "ControlAltFillColorDisabledBrush", surface);
+        SetBrush(resources, "ControlStrokeColorOnAccentDefaultBrush", badgeText);
+        SetBrush(resources, "ControlStrokeColorOnAccentSecondaryBrush", badgeText);
+        SetBrush(resources, "ControlStrokeColorOnAccentTertiaryBrush", badgeText);
+        SetBrush(resources, "ControlStrokeColorOnAccentDisabledBrush", textDisabled);
+        SetBrush(resources, "CardStrokeColorDefaultBrush", border);
+        SetBrush(resources, "CardStrokeColorDefaultSolidBrush", border);
+        SetBrush(resources, "SystemFillColorSuccessBrush", success);
+        SetBrush(resources, "SystemFillColorCautionBrush", warning);
+        SetBrush(resources, "SystemFillColorCriticalBrush", error);
+        SetBrush(resources, "SystemFillColorNeutralBrush", textDisabled);
+        SetBrush(resources, "SystemFillColorSolidNeutralBrush", surface);
+        SetBrush(resources, "ThemeAdaptiveAccentBrush", accent);
+        SetBrush(resources, "PrimaryHueMidBrush", accent);
+        SetBrush(resources, "SecondaryHueMidBrush", info);
+        SetBrush(resources, "PrimaryHueLightBrush", accent);
+        SetBrush(resources, "SecondaryHueLightBrush", info);
+        SetBrush(resources, "StatusPendingBrush", textDisabled);
+        SetBrush(resources, "StatusInstallingBrush", info);
+        SetBrush(resources, "StatusInstalledBrush", success);
+        SetBrush(resources, "StatusFailedBrush", error);
+        SetBrush(resources, "StatusSkippedBrush", warning);
+        SetBrush(resources, "StatusSuccessBrush", success);
+        SetBrush(resources, "ErrorBackgroundBrush", error);
+        SetBrush(resources, "ErrorBorderBrush", error);
+        SetBrush(resources, "ErrorTextBrush", error);
+        SetBrush(resources, "ErrorIconBrush", error);
+        SetBrush(resources, "ValidationErrorBorderBrush", error);
+        SetBrush(resources, "WarningBackgroundBrush", warning);
+        SetBrush(resources, "WarningBorderBrush", warning);
+        SetBrush(resources, "WarningTextBrush", warning);
+        SetBrush(resources, "WarningIconBrush", warning);
+        SetBrush(resources, "SuccessBackgroundBrush", success);
+        SetBrush(resources, "SuccessBorderBrush", success);
+        SetBrush(resources, "SuccessTextBrush", success);
+        SetBrush(resources, "SuccessIconBrush", success);
+        SetBrush(resources, "ManualInstallBadgeBrush", warning);
+        SetBrush(resources, "RequiredBrush", warning);
+        SetBrush(resources, "BadgePrimaryForegroundBrush", badgeText);
+        SetBrush(resources, "BadgeSecondaryForegroundBrush", badgeText);
+        SetBrush(resources, "PrimaryHueLightForegroundBrush", badgeText);
+        SetBrush(resources, "SecondaryHueLightForegroundBrush", badgeText);
+        SetBrush(resources, "DialogOverlayBackgroundBrush", overlay);
+        SetBrush(resources, "SkeletonBaseBrush", surface);
+        SetBrush(resources, "SkeletonHighlightBrush", highlight);
+
+        SetColor(resources, "SystemAccentColor", accent.Color);
+        SetColor(resources, "SystemAccentColorPrimary", accent.Color);
+        SetColor(resources, "SystemAccentColorSecondary", accentHover.Color);
+        SetColor(resources, "SystemAccentColorTertiary", accentPressed.Color);
+        SetColor(resources, "AccentFillColorDefault", accent.Color);
+        SetColor(resources, "AccentFillColorSecondary", accentHover.Color);
+        SetColor(resources, "AccentFillColorTertiary", accentPressed.Color);
+        SetColor(resources, "PaletteRedColor", error.Color);
+        SetColor(resources, "PaletteGreenColor", success.Color);
+        SetColor(resources, "PaletteOrangeColor", warning.Color);
+        SetColor(resources, "PaletteLightBlueColor", info.Color);
     }
-
 
     internal static void ClearPaletteBridgeResources(ResourceDictionary resources)
     {
@@ -444,6 +532,80 @@ public sealed class ThemeService : IThemeService
         {
             resources.Remove(key);
         }
+    }
+
+    internal void ReapplyHighContrastIfEnabled(bool isHighContrastEnabled)
+    {
+        if (isHighContrastEnabled)
+        {
+            _applyHighContrastMode();
+        }
+    }
+
+    private static string BuildDisplayKey(string name)
+    {
+        return $"{DisplayKeyPrefix}{name}";
+    }
+
+    private static string BuildAccentDisplayKey(string name)
+    {
+        return $"{AccentDisplayKeyPrefix}{name}";
+    }
+
+    private ThemeForgeIThemeService GetThemeEngine(Application app)
+    {
+        return _themeEngine ??= new ThemeForgeThemeService(app, ThemeForgeNames.All);
+    }
+
+    private static void ApplyWpfUiTheme(string canonicalTheme)
+    {
+        var appTheme = ThemeNames.IsLightTheme(canonicalTheme)
+            ? ApplicationTheme.Light
+            : ApplicationTheme.Dark;
+
+        ApplicationThemeManager.Apply(appTheme, WindowBackdropType.None);
+    }
+
+    private static SolidColorBrush ResolveBrush(ResourceDictionary resources, string fallbackColor, params string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            if (TryFindResource(resources, key) is SolidColorBrush brush)
+            {
+                return CloneBrush(brush);
+            }
+        }
+
+        return CreateBrush(fallbackColor);
+    }
+
+    private static SolidColorBrush ResolveReadableTextBrush(
+        ResourceDictionary resources,
+        SolidColorBrush preferred,
+        SolidColorBrush background,
+        SolidColorBrush fallback)
+    {
+        if (ContrastRatio(preferred.Color, background.Color) >= 4.5)
+        {
+            return CloneBrush(preferred);
+        }
+
+        var liftedDraculaComment = CreateBrush("#B3BBD6");
+        if (ContrastRatio(liftedDraculaComment.Color, background.Color) >= 4.5)
+        {
+            return liftedDraculaComment;
+        }
+
+        if (ContrastRatio(fallback.Color, background.Color) >= 4.5)
+        {
+            return CloneBrush(fallback);
+        }
+
+        var black = CreateBrush("#000000");
+        var white = CreateBrush("#FFFFFF");
+        return ContrastRatio(black.Color, background.Color) >= ContrastRatio(white.Color, background.Color)
+            ? black
+            : white;
     }
 
     private static object? TryFindResource(ResourceDictionary resources, string key)
@@ -465,27 +627,61 @@ public sealed class ThemeService : IThemeService
         return null;
     }
 
-    private static Color ResolveAccentColor(Application app)
+    private static void SetBrush(ResourceDictionary resources, string key, SolidColorBrush brush)
     {
-        if (app.TryFindResource(AccentColorKey) is Color accentColor)
+        resources[key] = CloneBrush(brush);
+    }
+
+    private static void SetColor(ResourceDictionary resources, string key, Color color)
+    {
+        resources[key] = color;
+    }
+
+    private static SolidColorBrush CloneBrush(SolidColorBrush brush, double opacity = 1.0)
+    {
+        return new SolidColorBrush(brush.Color)
         {
-            return accentColor;
+            Opacity = opacity
+        };
+    }
+
+    private static SolidColorBrush CreateBrush(string color)
+    {
+        return new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
+    }
+
+    private static double ContrastRatio(Color foreground, Color background)
+    {
+        var foregroundLuminance = RelativeLuminance(foreground);
+        var backgroundLuminance = RelativeLuminance(background);
+        var lighter = Math.Max(foregroundLuminance, backgroundLuminance);
+        var darker = Math.Min(foregroundLuminance, backgroundLuminance);
+        return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    private static double RelativeLuminance(Color color)
+    {
+        static double Channel(byte channel)
+        {
+            var normalized = channel / 255.0;
+            return normalized <= 0.03928
+                ? normalized / 12.92
+                : Math.Pow((normalized + 0.055) / 1.055, 2.4);
         }
 
-        if (app.TryFindResource(AccentBrushKey) is SolidColorBrush accentBrush)
+        return 0.2126 * Channel(color.R)
+            + 0.7152 * Channel(color.G)
+            + 0.0722 * Channel(color.B);
+    }
+
+    private static Color ResolveAccentColor(Application app)
+    {
+        if (app.TryFindResource("AccentBrush") is SolidColorBrush accentBrush)
         {
             return accentBrush.Color;
         }
 
         return Color.FromRgb(FallbackAccentRed, FallbackAccentGreen, FallbackAccentBlue);
-    }
-
-    internal void ReapplyHighContrastIfEnabled(bool isHighContrastEnabled)
-    {
-        if (isHighContrastEnabled)
-        {
-            _applyHighContrastMode();
-        }
     }
 
     private void ReapplyHighContrastIfEnabled(Application app)
@@ -508,11 +704,87 @@ public sealed class ThemeService : IThemeService
                 StringComparison.OrdinalIgnoreCase) == true);
     }
 
-    private void CommitTheme(string canonicalThemeName)
+    private void CommitFromEngine(ThemeForgeIThemeService engine, int revisionBefore)
     {
-        CurrentTheme = canonicalThemeName;
-        _hasAppliedTheme = true;
+        _currentTheme = string.IsNullOrWhiteSpace(engine.CurrentTheme)
+            ? _currentTheme
+            : engine.CurrentTheme;
+        _currentAccentTint = engine.CurrentAccentTint.ToString();
+        _themeRevision = engine.ThemeRevision;
+
+        if (engine.ThemeRevision != revisionBefore)
+        {
+            var app = Application.Current;
+            if (app is not null)
+            {
+                ApplicationAccentColorManager.Apply(ResolveAccentColor(app));
+            }
+
+            ThemeChanged?.Invoke(_currentTheme);
+        }
+    }
+
+    private void CommitWithoutApplication(string canonicalTheme, string canonicalTint)
+    {
+        if (string.Equals(_currentTheme, canonicalTheme, StringComparison.Ordinal)
+            && string.Equals(_currentAccentTint, canonicalTint, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _currentTheme = canonicalTheme;
+        _currentAccentTint = canonicalTint;
         _themeRevision++;
-        ThemeChanged?.Invoke(canonicalThemeName);
+        ThemeChanged?.Invoke(_currentTheme);
+    }
+
+    private void PersistCanonicalThemeIfNeeded(string? requestedThemeName, string canonicalThemeName)
+    {
+        if (string.Equals(requestedThemeName?.Trim(), canonicalThemeName, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var settings = _settingsService.LoadSettings();
+                if (!string.Equals(settings.ThemeName, canonicalThemeName, StringComparison.Ordinal))
+                {
+                    settings.ThemeName = canonicalThemeName;
+                    await _settingsService.SaveSettingsAsync(settings, default);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to persist canonical theme '{canonicalThemeName}': {ex.Message}");
+            }
+        });
+    }
+
+    private void PersistCanonicalAccentTintIfNeeded(string? requestedAccentTintName, string canonicalAccentTintName)
+    {
+        if (string.Equals(requestedAccentTintName?.Trim(), canonicalAccentTintName, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var settings = _settingsService.LoadSettings();
+                if (!string.Equals(settings.AccentTintName, canonicalAccentTintName, StringComparison.Ordinal))
+                {
+                    settings.AccentTintName = canonicalAccentTintName;
+                    await _settingsService.SaveSettingsAsync(settings, default);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to persist canonical accent tint '{canonicalAccentTintName}': {ex.Message}");
+            }
+        });
     }
 }

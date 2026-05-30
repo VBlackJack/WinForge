@@ -41,15 +41,15 @@ public class SettingsViewModelTests
         var powerShellBridge = new MockPowerShellBridge();
         var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge, themeService);
 
-        var targetTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.DraculaPro);
+        var targetTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Folio);
 
         // Act
         viewModel.SelectedTheme = targetTheme;
 
         // Assert - Settings should be saved
         Assert.NotNull(settingsService.LastSavedSettings);
-        Assert.Equal(ThemeNames.DraculaPro, settingsService.LastSavedSettings.ThemeName);
-        Assert.Equal(ThemeNames.DraculaPro, themeService.CurrentTheme);
+        Assert.Equal(ThemeNames.Folio, settingsService.LastSavedSettings.ThemeName);
+        Assert.Equal(ThemeNames.Folio, themeService.CurrentTheme);
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class SettingsViewModelTests
     {
         // Arrange
         var settingsService = new MockAppSettingsService();
-        settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", ThemeName = ThemeNames.DraculaPro };
+        settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", ThemeName = ThemeNames.Drakul };
         var historyService = new MockDeploymentHistoryService();
         var powerShellBridge = new MockPowerShellBridge();
         var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
@@ -82,7 +82,7 @@ public class SettingsViewModelTests
     {
         // Arrange
         var settingsService = new MockAppSettingsService();
-        settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", ThemeName = ThemeNames.DraculaPro };
+        settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", ThemeName = ThemeNames.Drakul };
         var historyService = new MockDeploymentHistoryService();
         var powerShellBridge = new MockPowerShellBridge();
         var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
@@ -162,7 +162,7 @@ public class SettingsViewModelTests
         var settingsService = new MockAppSettingsService();
         settingsService.SettingsToReturn = new AppSettings
         {
-            ThemeName = ThemeNames.Light,
+            ThemeName = ThemeNames.Folio,
             LanguageCode = "fr"
         };
         var historyService = new MockDeploymentHistoryService();
@@ -172,7 +172,7 @@ public class SettingsViewModelTests
         var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Assert
-        Assert.Equal(ThemeNames.Light, viewModel.SelectedTheme?.Name);
+        Assert.Equal(ThemeNames.Folio, viewModel.SelectedTheme?.Name);
         Assert.Equal("fr", viewModel.SelectedLanguage?.Code);
     }
 
@@ -189,12 +189,28 @@ public class SettingsViewModelTests
         var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Act - Change theme multiple times
-        viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.DraculaPro);
+        viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Folio);
         Assert.NotNull(settingsService.LastSavedSettings);
-        Assert.Equal(ThemeNames.DraculaPro, settingsService.LastSavedSettings.ThemeName);
+        Assert.Equal(ThemeNames.Folio, settingsService.LastSavedSettings.ThemeName);
 
-        viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Light);
-        Assert.Equal(ThemeNames.Light, settingsService.LastSavedSettings.ThemeName);
+        viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Sconce);
+        Assert.Equal(ThemeNames.Sconce, settingsService.LastSavedSettings.ThemeName);
+    }
+
+    [Fact]
+    public void AccentTintChange_ShouldPersistImmediately()
+    {
+        var settingsService = new MockAppSettingsService();
+        var historyService = new MockDeploymentHistoryService();
+        var powerShellBridge = new MockPowerShellBridge();
+        var themeService = new MockThemeService();
+        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge, themeService);
+
+        viewModel.SelectedAccentTint = viewModel.AvailableAccentTints.First(tint => tint.Name == "Green");
+
+        Assert.NotNull(settingsService.LastSavedSettings);
+        Assert.Equal("Green", settingsService.LastSavedSettings.AccentTintName);
+        Assert.Equal("Green", themeService.CurrentAccentTint);
     }
 
     [Fact]
@@ -212,7 +228,7 @@ public class SettingsViewModelTests
             toastService: toastService);
 
         // Act
-        viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Light);
+        viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Folio);
         viewModel.ReducedMotion = !viewModel.ReducedMotion;
         viewModel.IsHighContrastEnabled = !viewModel.IsHighContrastEnabled;
         viewModel.MaxParallelInstalls = 3;
@@ -244,7 +260,7 @@ public class SettingsViewModelTests
             Win11Forge.GUI.Resources.Resources.Culture) ?? "Failed to save settings";
 
         // Act
-        viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.DraculaPro);
+        viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Folio);
 
         // Assert
         Assert.Equal(expected, viewModel.StatusMessage);
@@ -283,7 +299,7 @@ public class SettingsViewModelTests
         {
             SettingsToReturn = new AppSettings
             {
-                ThemeName = ThemeNames.Light,
+                ThemeName = ThemeNames.Folio,
                 IsHighContrastEnabled = true,
                 ReducedMotionOverride = true,
                 LanguageCode = "fr"
@@ -297,7 +313,7 @@ public class SettingsViewModelTests
 
         // Assert
         Assert.Null(settingsService.LastSavedSettings);
-        Assert.Equal(ThemeNames.Light, viewModel.SelectedTheme?.Name);
+        Assert.Equal(ThemeNames.Folio, viewModel.SelectedTheme?.Name);
         Assert.True(viewModel.IsHighContrastEnabled);
         Assert.True(viewModel.ReducedMotion);
     }
@@ -351,7 +367,7 @@ public class SettingsViewModelTests
     {
         // Arrange
         var settingsService = new MockAppSettingsService();
-        settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", ThemeName = ThemeNames.DraculaPro };
+        settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", ThemeName = ThemeNames.Drakul };
         var historyService = new MockDeploymentHistoryService();
         var powerShellBridge = new MockPowerShellBridge();
         var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
@@ -421,7 +437,7 @@ public class SettingsViewModelTests
         // Arrange
         var settingsService = new MockAppSettingsService
         {
-            SettingsToReturn = new AppSettings { ThemeName = ThemeNames.Light, LanguageCode = "fr" }
+            SettingsToReturn = new AppSettings { ThemeName = ThemeNames.Folio, LanguageCode = "fr" }
         };
         var fileDialogService = new TestFileDialogService();
         var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
@@ -462,7 +478,7 @@ public class SettingsViewModelTests
         var settingsService = new MockAppSettingsService();
         var fileDialogService = new TestFileDialogService();
         var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
-        var importedSettings = new AppSettings { ThemeName = ThemeNames.Light, LanguageCode = "fr" };
+        var importedSettings = new AppSettings { ThemeName = ThemeNames.Folio, AccentTintName = "Purple", LanguageCode = "fr" };
         await File.WriteAllTextAsync(filePath, System.Text.Json.JsonSerializer.Serialize(importedSettings));
         fileDialogService.QueueOpenResult(filePath);
         var viewModel = new SettingsViewModel(
@@ -481,7 +497,8 @@ public class SettingsViewModelTests
             Assert.Equal("JSON files (*.json)|*.json|All files (*.*)|*.*", fileDialogService.OpenOptions[0].Filter);
             Assert.Equal(".json", fileDialogService.OpenOptions[0].DefaultExtension);
             Assert.NotNull(settingsService.LastSavedSettings);
-            Assert.Equal(ThemeNames.Light, settingsService.LastSavedSettings.ThemeName);
+            Assert.Equal(ThemeNames.Folio, settingsService.LastSavedSettings.ThemeName);
+            Assert.Equal("Purple", settingsService.LastSavedSettings.AccentTintName);
             Assert.Equal("fr", settingsService.LastSavedSettings.LanguageCode);
             Assert.True(viewModel.RestartRequired);
             Assert.Equal(Resources.Resources.Settings_ImportSuccess, viewModel.StatusMessage);
@@ -536,22 +553,24 @@ internal class MockAppSettingsService : IAppSettingsService
 internal sealed class MockThemeService : IThemeService
 {
     private static readonly IReadOnlyList<ThemeDescriptor> ThemeCatalogue =
-    [
-        CreateTheme(ThemeNames.Light),
-        CreateTheme(ThemeNames.DraculaPro),
-        CreateTheme(ThemeNames.Alucard),
-        CreateTheme(ThemeNames.Blade),
-        CreateTheme(ThemeNames.Buffy),
-        CreateTheme(ThemeNames.Lincoln),
-        CreateTheme(ThemeNames.Morbius),
-        CreateTheme(ThemeNames.VanHelsing)
-    ];
+        ThemeForge.Theme.ThemeNames.All
+            .Select(CreateTheme)
+            .ToArray();
+
+    private static readonly IReadOnlyList<AccentTintDescriptor> AccentTintCatalogue =
+        ThemeForge.Theme.AccentTints.All
+            .Select(tint => new AccentTintDescriptor(tint.ToString(), $"Settings_AccentTintName_{tint}"))
+            .ToArray();
 
     public string CurrentTheme { get; private set; } = ThemeNames.Default;
 
     public int ThemeRevision { get; private set; }
 
     public IReadOnlyList<ThemeDescriptor> AvailableThemes => ThemeCatalogue;
+
+    public string CurrentAccentTint { get; private set; } = ThemeNames.DefaultAccentTint;
+
+    public IReadOnlyList<AccentTintDescriptor> AvailableAccentTints => AccentTintCatalogue;
 
     public event Action<string>? ThemeChanged;
 
@@ -564,9 +583,18 @@ internal sealed class MockThemeService : IThemeService
         ThemeChanged?.Invoke(CurrentTheme);
     }
 
+    public void ApplyAccentTint(string? accentTintName)
+    {
+        CurrentAccentTint = AvailableAccentTints.FirstOrDefault(tint =>
+                string.Equals(tint.Name, accentTintName, StringComparison.OrdinalIgnoreCase))
+            ?.Name ?? ThemeNames.DefaultAccentTint;
+        ThemeRevision++;
+        ThemeChanged?.Invoke(CurrentTheme);
+    }
+
     private static ThemeDescriptor CreateTheme(string name)
     {
-        return new ThemeDescriptor(name, name is not ThemeNames.Light and not ThemeNames.Alucard, null, $"Settings_ThemeName_{name}");
+        return new ThemeDescriptor(name, !ThemeNames.IsLightTheme(name), null, $"Settings_ThemeName_{name}");
     }
 }
 

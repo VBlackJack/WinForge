@@ -11,7 +11,7 @@
              d:DesignHeight="800" d:DesignWidth="1000">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Margin="24">
+        <Grid Style="{StaticResource PageRootGridStyle}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -37,8 +37,8 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Command="{Binding CheckPrerequisitesCommand}"
-                            Style="{StaticResource ThemeAdaptiveOutlinedButton}"
+                    <ui:Button Command="{Binding CheckPrerequisitesCommand}"
+                            Style="{StaticResource SecondaryButton}"
                             Margin="0,0,8,0"
                             AutomationProperties.Name="{loc:Loc Prerequisites_Check}"
                             IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}">
@@ -51,18 +51,13 @@
                                            Visibility="{Binding IsChecking, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                             <TextBlock Text="{loc:Loc Prerequisites_Check}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Button>
+                    </ui:Button>
                 </StackPanel>
             </Grid>
 
             <!-- Status Summary Card -->
             <Border Grid.Row="1"
-                    CornerRadius="8"
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    Padding="{StaticResource CardPadding}"
-                    Margin="0,0,0,16"
+                    Style="{StaticResource SectionCardStyle}"
                     Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -95,7 +90,7 @@
                     </StackPanel>
 
                     <ui:Button Grid.Column="1"
-                               Appearance="Primary"
+                               Style="{StaticResource PrimaryButton}"
                                Command="{Binding InstallPrerequisitesCommand}"
                                IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}"
                                ToolTip="{loc:Loc Prerequisites_ReinstallTooltip}">
@@ -114,12 +109,7 @@
 
             <!-- Package Managers Section -->
             <Border Grid.Row="2"
-                    CornerRadius="8"
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    Padding="{StaticResource CardPadding}"
-                    Margin="0,0,0,16"
+                    Style="{StaticResource SectionCardStyle}"
                     Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -227,12 +217,7 @@
 
             <!-- Runtime Environments Section -->
             <Border Grid.Row="3"
-                    CornerRadius="8"
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    Padding="{StaticResource CardPadding}"
-                    Margin="0,0,0,16"
+                    Style="{StaticResource SectionCardStyle}"
                     Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -367,11 +352,7 @@
 
             <!-- Installation Log Panel -->
             <Border Grid.Row="4"
-                    CornerRadius="8"
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    Padding="{StaticResource CardPadding}"
+                    Style="{StaticResource SectionCardStyle}"
                     Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -400,15 +381,15 @@
                                              Visibility="{Binding IsInstalling, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         </StackPanel>
 
-                        <Button Grid.Column="1"
+                        <ui:Button Grid.Column="1"
                                 Command="{Binding ClearLogCommand}"
-                                Style="{StaticResource ThemeAdaptiveOutlinedButton}"
+                                Style="{StaticResource SecondaryButton}"
                                 Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="Delete24" FontSize="18" VerticalAlignment="Center" Margin="0,0,4,0"/>
                                 <TextBlock Text="{loc:Loc Prerequisites_ClearLog}" VerticalAlignment="Center"/>
                             </StackPanel>
-                        </Button>
+                        </ui:Button>
                     </Grid>
 
                     <!-- Log Content -->

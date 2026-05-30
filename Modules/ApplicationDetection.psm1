@@ -92,6 +92,11 @@ $script:AllowedDetectionExecutables = @(
     'node', 'node.exe',           # Node.js detection (node --version)
     'npm', 'npm.cmd',             # npm detection
     'git', 'git.exe',             # Git detection (git --version)
+    'codex', 'codex.exe', 'codex.cmd', 'codex.ps1',     # OpenAI Codex CLI detection
+    'claude', 'claude.exe', 'claude.cmd', 'claude.ps1',  # Claude Code detection
+    'agy', 'agy.exe', 'agy.cmd', 'agy.ps1',              # Google Antigravity CLI detection
+    'ollama', 'ollama.exe',       # Ollama detection
+    'aish', 'aish.exe',           # Microsoft AI Shell detection
     'docker', 'docker.exe',       # Docker detection
     'rustc', 'rustc.exe',         # Rust detection
     'cargo', 'cargo.exe',

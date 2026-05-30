@@ -91,7 +91,7 @@ public class AppSettingsService : IAppSettingsService
                         var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
                         if (settings != null)
                         {
-                            if (TryMigrateLegacyThemeName(settings, json))
+                            if (TryMigrateThemeSettings(settings, json))
                             {
                                 PersistMigratedSettings(settings);
                             }
@@ -163,7 +163,7 @@ public class AppSettingsService : IAppSettingsService
                     var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
                     if (settings != null)
                     {
-                        var migrated = TryMigrateLegacyThemeName(settings, json);
+                        var migrated = TryMigrateThemeSettings(settings, json);
                         lock (_cacheLock)
                         {
                             _cachedSettings = settings;
@@ -289,17 +289,49 @@ public class AppSettingsService : IAppSettingsService
         service.ApplySettings(settings);
     }
 
-    private static bool TryMigrateLegacyThemeName(AppSettings settings, string json)
+    private static bool TryMigrateThemeSettings(AppSettings settings, string json)
     {
-        if (HasThemeNameProperty(json) && !string.IsNullOrWhiteSpace(settings.ThemeName))
+        var migrated = TryMigrateThemeName(settings, json);
+        migrated |= TryMigrateAccentTintName(settings, json);
+        return migrated;
+    }
+
+    private static bool TryMigrateThemeName(AppSettings settings, string json)
+    {
+        if (!HasThemeNameProperty(json) || string.IsNullOrWhiteSpace(settings.ThemeName))
+        {
+            var legacyIsDark = TryReadLegacyIsDarkTheme(json);
+            settings.ThemeName = legacyIsDark
+                ? ThemeNames.Default
+                : ThemeNames.Folio;
+            return true;
+        }
+
+        var canonicalTheme = ThemeService.NormalizeThemeName(settings.ThemeName);
+        if (string.Equals(settings.ThemeName, canonicalTheme, StringComparison.Ordinal))
         {
             return false;
         }
 
-        var legacyIsDark = TryReadLegacyIsDarkTheme(json);
-        settings.ThemeName = legacyIsDark
-            ? ThemeNames.DraculaPro
-            : ThemeNames.Light;
+        settings.ThemeName = canonicalTheme;
+        return true;
+    }
+
+    private static bool TryMigrateAccentTintName(AppSettings settings, string json)
+    {
+        if (!HasAccentTintNameProperty(json) || string.IsNullOrWhiteSpace(settings.AccentTintName))
+        {
+            settings.AccentTintName = ThemeNames.DefaultAccentTint;
+            return true;
+        }
+
+        var canonicalAccentTint = ThemeService.NormalizeAccentTintName(settings.AccentTintName);
+        if (string.Equals(settings.AccentTintName, canonicalAccentTint, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        settings.AccentTintName = canonicalAccentTint;
         return true;
     }
 
@@ -310,6 +342,20 @@ public class AppSettingsService : IAppSettingsService
             using var document = JsonDocument.Parse(json);
             return document.RootElement.TryGetProperty("themeName", out _)
                 || document.RootElement.TryGetProperty("ThemeName", out _);
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static bool HasAccentTintNameProperty(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            return document.RootElement.TryGetProperty("accentTintName", out _)
+                || document.RootElement.TryGetProperty("AccentTintName", out _);
         }
         catch (JsonException)
         {
@@ -413,6 +459,11 @@ public class AppSettings : System.ComponentModel.DataAnnotations.IValidatableObj
     public string ThemeName { get; set; } = ThemeNames.Default;
 
     /// <summary>
+    /// Canonical ThemeForge accent tint name.
+    /// </summary>
+    public string AccentTintName { get; set; } = ThemeNames.DefaultAccentTint;
+
+    /// <summary>
     /// Whether the selected theme is dark. Kept for backward compatibility.
     /// </summary>
     [Obsolete("Use ThemeName. Property remains for backward compatibility during migration.", error: false)]
@@ -420,7 +471,7 @@ public class AppSettings : System.ComponentModel.DataAnnotations.IValidatableObj
     {
         get
         {
-            return !(ThemeName is ThemeNames.Light or ThemeNames.Alucard);
+            return !ThemeNames.IsLightTheme(ThemeName);
         }
     }
 

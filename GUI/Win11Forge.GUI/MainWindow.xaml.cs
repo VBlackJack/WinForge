@@ -449,18 +449,24 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         {
             if (_powerShellBridge == null)
             {
-                Title = string.Format(Loc.App_Title, "?");
+                SetWindowTitle(string.Format(Loc.App_Title, "?"));
                 return;
             }
             var version = await _powerShellBridge.GetWin11ForgeVersionAsync();
-            Title = string.Format(Loc.App_Title, version);
+            SetWindowTitle(string.Format(Loc.App_Title, version));
         }
         catch (Exception ex)
         {
             // Fallback to static title if version retrieval fails
             System.Diagnostics.Debug.WriteLine($"Failed to retrieve version for title: {ex.Message}");
-            Title = string.Format(Loc.App_Title, "?");
+            SetWindowTitle(string.Format(Loc.App_Title, "?"));
         }
+    }
+
+    private void SetWindowTitle(string title)
+    {
+        Title = title;
+        TitleBar.Title = title;
     }
 
     /// <summary>

@@ -10,7 +10,7 @@
              d:DataContext="{d:DesignInstance Type=viewModels:SettingsViewModel}"
              d:DesignHeight="600" d:DesignWidth="800">
 
-    <Grid Margin="24">
+    <Grid Style="{StaticResource PageRootGridStyle}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -38,7 +38,7 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
                         <!-- Theme Section -->
-                        <Border Padding="{StaticResource CardPadding}" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                        <Border Style="{StaticResource SectionCardStyle}">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                                     <TextBlock Text="{loc:Loc Settings_Section_Appearance}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -62,6 +62,33 @@
                                                   MinWidth="180"
                                                   AutomationProperties.AutomationId="ThemePicker"
                                                   AutomationProperties.Name="{loc:Loc A11y_Settings_ThemePicker}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding DisplayKey, Converter={StaticResource ResxKeyConverter}}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Accent Tint Selector -->
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{loc:Loc Settings_AccentTint}" FontSize="14" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_AccentTint_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <ComboBox ItemsSource="{Binding AvailableAccentTints}"
+                                                  SelectedItem="{Binding SelectedAccentTint, Mode=TwoWay}"
+                                                  MinWidth="180"
+                                                  AutomationProperties.AutomationId="AccentTintPicker"
+                                                  AutomationProperties.Name="{loc:Loc A11y_Settings_AccentTintPicker}">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding DisplayKey, Converter={StaticResource ResxKeyConverter}}"/>
@@ -110,7 +137,7 @@
                         </Border>
 
                         <!-- Language Section -->
-                        <Border Padding="{StaticResource CardPadding}" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                        <Border Style="{StaticResource SectionCardStyle}">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                                     <TextBlock Text="{loc:Loc Settings_Section_Language}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -136,7 +163,7 @@
                                                   AutomationProperties.Name="{loc:Loc A11y_Settings_Language}"/>
                                         <ui:Button Content="{loc:Loc Settings_Apply}"
                                                 Command="{Binding ApplyLanguageCommand}"
-                                                Appearance="Primary"/>
+                                                Style="{StaticResource PrimaryButton}"/>
                                     </StackPanel>
                                 </Grid>
 
@@ -156,7 +183,7 @@
                                         </StackPanel>
                                         <ui:Button Grid.Column="1"
                                                 Command="{Binding RestartApplicationCommand}"
-                                                Appearance="Primary"
+                                                Style="{StaticResource PrimaryButton}"
                                                 Margin="12,0,0,0"
                                                 AutomationProperties.Name="{loc:Loc Settings_RestartNow}">
                                             <StackPanel Orientation="Horizontal">
@@ -181,7 +208,7 @@
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
-                    <Border Padding="{StaticResource CardPadding}" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                    <Border Style="{StaticResource CardBorderStyle}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                                 <TextBlock Text="{loc:Loc Settings_Section_Performance}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -241,7 +268,7 @@
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
-                    <Border Padding="{StaticResource CardPadding}" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                    <Border Style="{StaticResource CardBorderStyle}">
                     <StackPanel>
                         <!-- Section Header -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
@@ -267,21 +294,21 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <Button Command="{Binding ExportSettingsCommand}"
-                                        Style="{StaticResource ThemeAdaptiveOutlinedButton}"
+                                <ui:Button Command="{Binding ExportSettingsCommand}"
+                                        Style="{StaticResource SecondaryButton}"
                                         Margin="0,0,8,0">
                                     <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="ArrowExportUp24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                         <TextBlock Text="{loc:Loc Settings_Export}" VerticalAlignment="Center"/>
                                     </StackPanel>
-                                </Button>
-                                <Button Command="{Binding ImportSettingsCommand}"
-                                        Style="{StaticResource ThemeAdaptiveOutlinedButton}">
+                                </ui:Button>
+                                <ui:Button Command="{Binding ImportSettingsCommand}"
+                                        Style="{StaticResource SecondaryButton}">
                                     <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="ArrowImport24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                         <TextBlock Text="{loc:Loc Settings_Import}" VerticalAlignment="Center"/>
                                     </StackPanel>
-                                </Button>
+                                </ui:Button>
                             </StackPanel>
                         </Grid>
 
@@ -301,14 +328,14 @@
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
-                            <Button Grid.Column="1"
+                            <ui:Button Grid.Column="1"
                                     Command="{Binding ResetToDefaultsCommand}"
-                                    Style="{StaticResource ThemeAdaptiveOutlinedButton}">
+                                    Style="{StaticResource SecondaryButton}">
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="ArrowReset24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                     <TextBlock Text="{loc:Loc Settings_ResetBtn}" VerticalAlignment="Center"/>
                                 </StackPanel>
-                            </Button>
+                            </ui:Button>
                         </Grid>
 
                         <!-- Clear History -->
@@ -327,10 +354,10 @@
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
-                            <Button Grid.Column="1"
+                            <ui:Button Grid.Column="1"
                                     Content="{loc:Loc Settings_ClearBtn}"
                                     Command="{Binding ClearHistoryCommand}"
-                                    Style="{StaticResource DestructiveOutlinedButton}"/>
+                                    Style="{StaticResource DestructiveSolidButton}"/>
                         </Grid>
 
                         <!-- Open Log Folder -->
@@ -349,20 +376,20 @@
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
-                            <Button Grid.Column="1"
+                            <ui:Button Grid.Column="1"
                                     Command="{Binding OpenLogFolderCommand}"
-                                    Style="{StaticResource ThemeAdaptiveOutlinedButton}">
+                                    Style="{StaticResource SecondaryButton}">
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="FolderOpen24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <TextBlock Text="{loc:Loc Settings_Btn_OpenLogs}" VerticalAlignment="Center"/>
                                 </StackPanel>
-                            </Button>
+                            </ui:Button>
                         </Grid>
                     </StackPanel>
                     </Border>
 
                     <!-- Error History Section -->
-                    <Border Padding="{StaticResource CardPadding}" Margin="0,16,0,0" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                    <Border Style="{StaticResource SectionCardStyle}" Margin="0,16,0,0">
                         <Expander IsExpanded="{Binding HasErrors}">
                             <Expander.Header>
                                 <StackPanel Orientation="Horizontal">
@@ -387,9 +414,9 @@
                             </Expander.Header>
                             <StackPanel Margin="0,12,0,0">
                                 <!-- Clear Errors Button -->
-                                <Button Content="{loc:Loc Settings_ClearErrors}"
+                                <ui:Button Content="{loc:Loc Settings_ClearErrors}"
                                         Command="{Binding ClearErrorHistoryCommand}"
-                                        Style="{StaticResource DestructiveOutlinedButton}"
+                                        Style="{StaticResource DestructiveSolidButton}"
                                         HorizontalAlignment="Right"
                                         Margin="0,0,0,12"
                                         Visibility="{Binding HasErrors, Converter={StaticResource BooleanToVisibilityConverter}}"/>
@@ -464,7 +491,7 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
                         <!-- Admin Required Warning -->
-                        <Border Padding="{StaticResource CardPadding}" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        <Border Style="{StaticResource SectionCardStyle}"
                                               Visibility="{Binding IsScheduledDeploymentsAvailable, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="ErrorCircle24" Width="24" Height="24"
@@ -478,7 +505,7 @@
                         </Border>
 
                         <!-- Create New Scheduled Deployment -->
-                        <Border Padding="{StaticResource CardPadding}" Margin="0,0,0,16" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        <Border Style="{StaticResource SectionCardStyle}"
                                               IsEnabled="{Binding IsScheduledDeploymentsAvailable}">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
@@ -543,7 +570,7 @@
 
                                 <!-- Create Button -->
                                 <ui:Button Command="{Binding CreateScheduledDeploymentCommand}"
-                                        Appearance="Primary"
+                                        Style="{StaticResource PrimaryButton}"
                                         HorizontalAlignment="Right">
                                     <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="CalendarAdd24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -554,7 +581,7 @@
                         </Border>
 
                         <!-- Scheduled Deployments List -->
-                        <Border Padding="{StaticResource CardPadding}" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        <Border Style="{StaticResource CardBorderStyle}"
                                               IsEnabled="{Binding IsScheduledDeploymentsAvailable}">
                             <StackPanel>
                                 <Grid Margin="0,0,0,16">
@@ -571,8 +598,7 @@
 
                                     <ui:Button Grid.Column="1"
                                             Command="{Binding LoadScheduledDeploymentsCommand}"
-                                            Appearance="Transparent"
-                                            Style="{StaticResource TouchFriendlyIconButton}"
+                                            Style="{StaticResource IconButton}"
                                             ToolTip="{loc:Loc ScheduledDeployment_Refresh}"
                                             AutomationProperties.Name="{loc:Loc ScheduledDeployment_Refresh}">
                                         <ui:SymbolIcon Symbol="ArrowSync24" Width="20" Height="20"/>
@@ -623,23 +649,23 @@
                                             HorizontalAlignment="Right"
                                             Margin="0,16,0,0"
                                             Visibility="{Binding ScheduledDeployments.Count, Converter={StaticResource NonZeroToVisibilityConverter}}">
-                                    <Button Command="{Binding RunScheduledDeploymentNowCommand}"
-                                            Style="{StaticResource ThemeAdaptiveOutlinedButton}"
+                                    <ui:Button Command="{Binding RunScheduledDeploymentNowCommand}"
+                                            Style="{StaticResource SecondaryButton}"
                                             Margin="0,0,8,0"
                                             IsEnabled="{Binding SelectedScheduledDeployment, Converter={StaticResource NullableToBooleanConverter}}">
                                         <StackPanel Orientation="Horizontal">
                                             <ui:SymbolIcon Symbol="Play24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                             <TextBlock Text="{loc:Loc ScheduledDeployment_RunNow}" VerticalAlignment="Center"/>
                                         </StackPanel>
-                                    </Button>
-                                    <Button Command="{Binding RemoveScheduledDeploymentCommand}"
-                                            Style="{StaticResource DestructiveOutlinedButton}"
+                                    </ui:Button>
+                                    <ui:Button Command="{Binding RemoveScheduledDeploymentCommand}"
+                                            Style="{StaticResource DestructiveSolidButton}"
                                             IsEnabled="{Binding SelectedScheduledDeployment, Converter={StaticResource NullableToBooleanConverter}}">
                                         <StackPanel Orientation="Horizontal">
                                             <ui:SymbolIcon Symbol="Delete24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                             <TextBlock Text="{loc:Loc ScheduledDeployment_Remove}" VerticalAlignment="Center"/>
                                         </StackPanel>
-                                    </Button>
+                                    </ui:Button>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -657,7 +683,7 @@
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <StackPanel>
-                        <Border Padding="{StaticResource CardPadding}" CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                        <Border Style="{StaticResource CardBorderStyle}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -721,10 +747,10 @@
                                                    FontSize="14"
                                                    FontWeight="Medium"
                                                    Margin="0,0,24,0"/>
-                                        <Button Grid.Row="3" Grid.Column="1"
+                                        <ui:Button Grid.Row="3" Grid.Column="1"
                                                 Content="{loc:Loc About_RepoUrl}"
                                                 Command="{Binding OpenGitHubCommand}"
-                                                Style="{StaticResource ThemeAdaptiveOutlinedButton}"
+                                                Style="{StaticResource SecondaryButton}"
                                                 HorizontalAlignment="Left"
                                                 Padding="0"
                                                 Margin="0"/>

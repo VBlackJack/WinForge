@@ -547,6 +547,7 @@ public class Resources
     // Profile Selection
     public static string Apps_ProfileLabel => ResourceManager.GetString("Apps_ProfileLabel", resourceCulture);
     public static string Apps_SelectProfile => ResourceManager.GetString("Apps_SelectProfile", resourceCulture);
+    public static string Apps_CustomProfile => ResourceManager.GetString("Apps_CustomProfile", resourceCulture);
     public static string Apps_ClearProfile => ResourceManager.GetString("Apps_ClearProfile", resourceCulture);
     public static string Apps_AppsSelected => ResourceManager.GetString("Apps_AppsSelected", resourceCulture);
     public static string Apps_ProfileHelpTooltip => ResourceManager.GetString("Apps_ProfileHelpTooltip", resourceCulture);

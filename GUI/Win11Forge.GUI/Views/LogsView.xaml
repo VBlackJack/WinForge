@@ -25,7 +25,7 @@
              d:DataContext="{d:DesignInstance Type=viewModels:LogsViewModel}"
              d:DesignHeight="600" d:DesignWidth="900">
 
-    <Grid Margin="24">
+    <Grid Style="{StaticResource PageRootGridStyle}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -50,8 +50,8 @@
 
             <!-- Actions -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <ui:Button Command="{Binding RefreshCommand}"
-                           Appearance="Secondary"
+            <ui:Button Command="{Binding RefreshCommand}"
+                           Style="{StaticResource SecondaryButton}"
                            Margin="0,0,8,0"
                            ToolTip="{loc:Loc Logs_Refresh}">
                     <StackPanel Orientation="Horizontal">
@@ -60,7 +60,7 @@
                     </StackPanel>
                 </ui:Button>
                 <ui:Button Command="{Binding OpenLogFolderCommand}"
-                           Appearance="Secondary"
+                           Style="{StaticResource SecondaryButton}"
                            Margin="0,0,8,0"
                            ToolTip="{loc:Loc Logs_OpenFolder}">
                     <StackPanel Orientation="Horizontal">
@@ -69,7 +69,7 @@
                     </StackPanel>
                 </ui:Button>
                 <ui:Button Command="{Binding ExportLogsCommand}"
-                           Appearance="Secondary"
+                           Style="{StaticResource SecondaryButton}"
                            ToolTip="{loc:Loc Logs_Export}">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="ArrowExportLtr24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -80,9 +80,7 @@
         </Grid>
 
         <!-- Filters -->
-        <Border Grid.Row="1" Padding="{StaticResource CardPadding}" Margin="0,0,0,16"
-                CornerRadius="8"
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+        <Border Grid.Row="1" Style="{StaticResource SectionCardStyle}">
             <ScrollViewer HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Disabled"
                           CanContentScroll="False">
@@ -124,8 +122,7 @@
                 <!-- Clear Filters -->
                 <ui:Button Grid.Column="3"
                            Command="{Binding ClearFiltersCommand}"
-                           Appearance="Transparent"
-                           Style="{StaticResource TouchFriendlyIconButton}"
+                           Style="{StaticResource IconButton}"
                            ToolTip="{loc:Loc Logs_ClearFilters}"
                            AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}">
                     <ui:SymbolIcon Symbol="FilterDismiss24" Width="20" Height="20"/>
@@ -134,8 +131,7 @@
                 <!-- Clear Old Logs -->
                 <ui:Button Grid.Column="4"
                            Command="{Binding ClearOldLogsCommand}"
-                           Appearance="Transparent"
-                           Style="{StaticResource TouchFriendlyIconButton}"
+                           Style="{StaticResource IconButton}"
                            ToolTip="{loc:Loc Logs_ClearOld}"
                            AutomationProperties.Name="{loc:Loc A11y_Logs_ClearOld}"
                            Foreground="{DynamicResource SystemFillColorCriticalBrush}"
@@ -216,27 +212,24 @@
                                     <StackPanel Orientation="Horizontal">
                                         <ui:Button Command="{Binding DataContext.ViewLogCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                    CommandParameter="{Binding}"
-                                                   Appearance="Transparent"
+                                                   Style="{StaticResource IconButton}"
                                                    Width="44" Height="44"
-                                                   Padding="8"
                                                    ToolTip="{loc:Loc Logs_View}"
                                                    AutomationProperties.Name="{loc:Loc A11y_Logs_ViewLog}">
                                             <ui:SymbolIcon Symbol="Eye24" Width="18" Height="18"/>
                                         </ui:Button>
                                         <ui:Button Command="{Binding DataContext.CopyLogPathCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                    CommandParameter="{Binding}"
-                                                   Appearance="Transparent"
+                                                   Style="{StaticResource IconButton}"
                                                    Width="44" Height="44"
-                                                   Padding="8"
                                                    ToolTip="{loc:Loc Logs_CopyPath}"
                                                    AutomationProperties.Name="{loc:Loc A11y_Logs_CopyPath}">
                                             <ui:SymbolIcon Symbol="Copy24" Width="18" Height="18"/>
                                         </ui:Button>
                                         <ui:Button Command="{Binding DataContext.DeleteLogCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                    CommandParameter="{Binding}"
-                                                   Appearance="Transparent"
+                                                   Style="{StaticResource IconButton}"
                                                    Width="44" Height="44"
-                                                   Padding="8"
                                                    Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                                    ToolTip="{loc:Loc Logs_Delete}"
                                                    AutomationProperties.Name="{loc:Loc A11y_Logs_DeleteLog}">

@@ -150,7 +150,7 @@
                           VerticalAlignment="Center"
                           AutomationProperties.Name="{loc:Loc A11y_Onboarding_DontShow}"/>
                 <ui:Button Content="{loc:Loc Onboarding_GetStarted}"
-                           Appearance="Primary"
+                           Style="{DynamicResource PrimaryButton}"
                            Click="GetStartedButton_Click"
                            Padding="24,8"
                            AutomationProperties.Name="{loc:Loc A11y_Onboarding_GetStarted}"/>

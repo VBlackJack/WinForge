@@ -15,7 +15,7 @@
 
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Margin="32,24">
+        <Grid Style="{StaticResource PageRootGridStyle}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>   <!-- Hero Section -->
                 <RowDefinition Height="Auto"/>   <!-- Stats Row -->
@@ -26,12 +26,9 @@
 
             <!-- HERO SECTION -->
             <Border Grid.Row="0"
+                    Style="{StaticResource CardBorderStyle}"
                     Margin="0,0,0,24"
-                    Padding="32"
-                    CornerRadius="8"
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource ControlElevationBorderBrush}"
-                    BorderThickness="1">
+                    Padding="32">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -72,10 +69,10 @@
                             <TextBlock Text="{Binding HeroSubtitle}"
                                        Style="{StaticResource PageSubtitleTextStyle}"
                                        Margin="0,0,0,16"/>
-                            <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
-                                       Appearance="Primary"
-                                       HorizontalAlignment="Left"
-                                       AutomationProperties.Name="{loc:Loc A11y_Dashboard_FixPrereqs}">
+                                 <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
+                                        Style="{StaticResource PrimaryButton}"
+                                        HorizontalAlignment="Left"
+                                        AutomationProperties.Name="{loc:Loc A11y_Dashboard_FixPrereqs}">
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="Wrench24"
                                                    Width="20" Height="20"
@@ -110,21 +107,21 @@
                                        Style="{StaticResource PageSubtitleTextStyle}"
                                        Margin="0,0,0,16"/>
                             <StackPanel Orientation="Horizontal">
-                                <ui:Button Command="{Binding StartDeploymentCommand}"
-                                           Appearance="Primary"
+                                 <ui:Button Command="{Binding StartDeploymentCommand}"
+                                           Style="{StaticResource HeroPrimaryButton}"
                                            ToolTip="{loc:Loc Dashboard_StartDeployment_Hint}"
                                            Margin="0,0,12,0"
                                            AutomationProperties.Name="{loc:Loc A11y_Dashboard_StartDeployment}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ui:SymbolIcon Symbol="Rocket24"
-                                                       Width="24" Height="24"
+                                     <StackPanel Orientation="Horizontal">
+                                         <ui:SymbolIcon Symbol="Rocket24"
+                                                       Width="{StaticResource ButtonIconSizeLarge}" Height="{StaticResource ButtonIconSizeLarge}"
                                                        VerticalAlignment="Center"
-                                                       Margin="0,0,12,0"/>
-                                        <TextBlock Text="{loc:Loc Dashboard_Btn_StartDeployment}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </ui:Button>
-                                <ui:Button Command="{Binding ViewUpdatesCommand}"
-                                           Appearance="Secondary"
+                                                       Margin="{StaticResource ButtonIconMarginStandard}"/>
+                                         <TextBlock Text="{loc:Loc Dashboard_Btn_StartDeployment}" VerticalAlignment="Center"/>
+                                     </StackPanel>
+                                 </ui:Button>
+                                 <ui:Button Command="{Binding ViewUpdatesCommand}"
+                                           Style="{StaticResource SecondaryButton}"
                                            MinHeight="{StaticResource ButtonMinHeightHero}"
                                            ToolTip="{loc:Loc Dashboard_ViewUpdates_Hint}"
                                            Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -270,12 +267,8 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- LEFT: System Info -->
-                <Border Grid.Column="0"
-                        Padding="24"
-                        CornerRadius="8"
-                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{DynamicResource ControlElevationBorderBrush}"
-                        BorderThickness="1">
+                     <Border Grid.Column="0"
+                        Style="{StaticResource CardBorderStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -403,12 +396,10 @@
                 <!-- RIGHT: Quick Actions -->
                 <StackPanel Grid.Column="2">
                     <!-- Updates Status Card -->
-                    <Border Padding="{StaticResource CardPadding}"
-                            Margin="0,0,0,16"
-                            CornerRadius="8"
-                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{DynamicResource ControlElevationBorderBrush}"
-                            BorderThickness="1">
+                     <Border Padding="{StaticResource CardPadding}"
+                            Style="{StaticResource CardBorderStyle}"
+                             Margin="0,0,0,16"
+                            >
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                                 <ui:SymbolIcon Symbol="ArrowSync24"
@@ -421,8 +412,8 @@
                             </StackPanel>
 
                             <!-- Scan Button -->
-                            <ui:Button Command="{Binding ScanUpdatesCommand}"
-                                       Appearance="Primary"
+                             <ui:Button Command="{Binding ScanUpdatesCommand}"
+                                       Style="{StaticResource PrimaryButton}"
                                        ToolTip="{loc:Loc Dashboard_ScanBtn_Hint}"
                                        HorizontalAlignment="Stretch"
                                        IsEnabled="{Binding IsNotScanning}">
@@ -450,20 +441,17 @@
                     </Border>
 
                     <!-- Quick Navigation -->
-                    <Border Padding="{StaticResource CardPadding}"
-                            CornerRadius="8"
-                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{DynamicResource ControlElevationBorderBrush}"
-                            BorderThickness="1">
+                     <Border Padding="{StaticResource CardPadding}"
+                            Style="{StaticResource CardBorderStyle}">
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Dashboard_QuickNav_Title}"
                                        FontSize="16" FontWeight="Medium"
                                        Margin="0,0,0,16"/>
 
                             <!-- Prerequisites Button -->
-                            <Button Command="{Binding NavigateToPrerequisitesCommand}"
-                                    Style="{StaticResource QuickActionButton}"
-                                    ToolTip="{loc:Loc Dashboard_Nav_PrereqsHint}">
+                            <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
+                                       Style="{StaticResource QuickActionButton}"
+                                       ToolTip="{loc:Loc Dashboard_Nav_PrereqsHint}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -484,13 +472,13 @@
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                    VerticalAlignment="Center"/>
                                 </Grid>
-                            </Button>
+                            </ui:Button>
 
                             <!-- Applications Button -->
-                            <Button Command="{Binding NavigateToAppsCommand}"
-                                    Style="{StaticResource QuickActionButton}"
-                                    ToolTip="{loc:Loc Dashboard_Nav_AppsHint}"
-                                    Margin="0">
+                            <ui:Button Command="{Binding NavigateToAppsCommand}"
+                                       Style="{StaticResource QuickActionButton}"
+                                       ToolTip="{loc:Loc Dashboard_Nav_AppsHint}"
+                                       Margin="0">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -511,20 +499,17 @@
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                    VerticalAlignment="Center"/>
                                 </Grid>
-                            </Button>
+                            </ui:Button>
                         </StackPanel>
                     </Border>
                 </StackPanel>
             </Grid>
 
             <!-- HISTORY SECTION -->
-            <Border Grid.Row="3"
-                    Padding="24"
+             <Border Grid.Row="3"
+                    Style="{StaticResource CardBorderStyle}"
                     Margin="0,0,0,24"
-                    CornerRadius="8"
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource ControlElevationBorderBrush}"
-                    BorderThickness="1">
+                    >
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

@@ -594,6 +594,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
                     var packageFullName = result.Properties["PackageFullName"]?.Value?.ToString();
                     var version = result.Properties["Version"]?.Value?.ToString();
                     var publisher = result.Properties["Publisher"]?.Value?.ToString();
+                    var installLocation = result.Properties["InstallLocation"]?.Value?.ToString();
 
                     if (string.IsNullOrEmpty(name)) continue;
 
@@ -611,9 +612,10 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
                     packages.Add(new InstalledPackageInfo
                     {
                         Id = name,
-                        Name = packageFullName ?? name,
+                        Name = name,
                         InstalledVersion = version ?? "",
                         Publisher = publisher,
+                        InstallLocation = installLocation,
                         Source = DetectionSource.AppX
                     });
                 }

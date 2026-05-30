@@ -39,6 +39,16 @@ public interface IThemeService
     IReadOnlyList<ThemeDescriptor> AvailableThemes { get; }
 
     /// <summary>
+    /// Gets the canonical name of the currently applied accent tint.
+    /// </summary>
+    string CurrentAccentTint { get; }
+
+    /// <summary>
+    /// Gets the available accent tint catalogue.
+    /// </summary>
+    IReadOnlyList<AccentTintDescriptor> AvailableAccentTints { get; }
+
+    /// <summary>
     /// Raised on the UI thread after a successful theme swap.
     /// </summary>
     event Action<string>? ThemeChanged;
@@ -47,4 +57,9 @@ public interface IThemeService
     /// Applies a theme by canonical name. Unknown values fall back to the default theme.
     /// </summary>
     void ApplyTheme(string? themeName);
+
+    /// <summary>
+    /// Applies an accent tint by canonical name. Unknown values fall back to the default tint.
+    /// </summary>
+    void ApplyAccentTint(string? accentTintName);
 }

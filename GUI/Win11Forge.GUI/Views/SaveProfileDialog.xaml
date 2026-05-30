@@ -125,7 +125,7 @@
             <!-- Cancel Button -->
             <ui:Button Grid.Column="1"
                        Content="{loc:Loc Btn_Cancel}"
-                       Appearance="Secondary"
+                       Style="{StaticResource SecondaryButton}"
                        Click="CancelButton_Click"
                        Margin="0,0,12,0"
                        AutomationProperties.Name="{loc:Loc A11y_Profile_Cancel}"/>
@@ -133,7 +133,7 @@
             <!-- Save Button -->
             <ui:Button Grid.Column="2"
                        Content="{loc:Loc Btn_Save}"
-                       Appearance="Primary"
+                       Style="{StaticResource PrimaryButton}"
                        Click="SaveButton_Click"
                        IsEnabled="{Binding CanSave}"
                        AutomationProperties.Name="{loc:Loc A11y_Profile_Save}"/>

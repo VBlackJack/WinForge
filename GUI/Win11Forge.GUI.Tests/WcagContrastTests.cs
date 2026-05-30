@@ -15,73 +15,65 @@
  */
 
 using System.IO;
+using System.Windows.Media;
 using System.Xml.Linq;
+using Win11Forge.GUI.Resources;
+using Win11Forge.GUI.Services;
+using Win11Forge.GUI.Tests.TestInfrastructure;
 
 namespace Win11Forge.GUI.Tests;
 
 /// <summary>
 /// Guards WCAG AA contrast for theme tokens that back body-sized UI text.
 /// </summary>
+[Collection("WpfApplication")]
 public class WcagContrastTests
 {
     private const double AaBodyText = 4.5;
 
-    private static readonly string[] DraculaThemes =
-    [
-        "AlucardTheme.xaml",
-        "BladeTheme.xaml",
-        "BuffyTheme.xaml",
-        "DraculaProTheme.xaml",
-        "LincolnTheme.xaml",
-        "MorbiusTheme.xaml",
-        "VanHelsingTheme.xaml"
-    ];
-
-    [Theory]
-    [MemberData(nameof(DraculaThemeNames))]
-    public void DraculaTheme_TextPrimaryOnCard_MeetsAA(string themeFile)
+    [Fact]
+    public void ThemeForgeBridge_TextOnCard_MeetsAAForEveryTheme()
     {
-        var colors = ParseThemeColors(themeFile);
+        WpfApplicationScope.RunOnStaThread(() =>
+        {
+            using var scope = WpfApplicationScope.Create();
+            var service = new ThemeService(new MockAppSettingsService());
 
-        AssertContrastMeetsAA(
-            colors["TextPrimaryColor"],
-            colors["SurfaceColor"],
-            $"{themeFile}: TextPrimaryColor on Card");
+            foreach (var themeName in ThemeForge.Theme.ThemeNames.All)
+            {
+                service.ApplyTheme(themeName);
+
+                var card = ReadBrushColor("CardBackgroundFillColorDefaultBrush");
+                AssertContrastMeetsAA(ReadBrushColor("TextFillColorPrimaryBrush"), card, $"{themeName}: primary text on card");
+                AssertContrastMeetsAA(ReadBrushColor("TextFillColorSecondaryBrush"), card, $"{themeName}: secondary text on card");
+                AssertContrastMeetsAA(ReadBrushColor("TextFillColorTertiaryBrush"), card, $"{themeName}: tertiary text on card");
+            }
+        });
     }
 
-    [Theory]
-    [MemberData(nameof(DraculaThemeNames))]
-    public void DraculaTheme_TextSecondaryOnCard_MeetsAA(string themeFile)
+    [Fact]
+    public void ThemeForgeBridge_TextOnAccent_MeetsAAForEveryThemeAndAccentTint()
     {
-        var colors = ParseThemeColors(themeFile);
+        WpfApplicationScope.RunOnStaThread(() =>
+        {
+            using var scope = WpfApplicationScope.Create();
+            var service = new ThemeService(new MockAppSettingsService());
 
-        AssertContrastMeetsAA(
-            colors["TextSecondaryColor"],
-            colors["SurfaceColor"],
-            $"{themeFile}: TextSecondaryColor on Card");
-    }
+            foreach (var themeName in ThemeForge.Theme.ThemeNames.All)
+            {
+                service.ApplyTheme(themeName);
 
-    [Theory]
-    [MemberData(nameof(DraculaThemeNames))]
-    public void DraculaTheme_TextTertiaryOnCard_MeetsAA(string themeFile)
-    {
-        var colors = ParseThemeColors(themeFile);
+                foreach (var accentTint in ThemeForge.Theme.AccentTints.All)
+                {
+                    service.ApplyAccentTint(accentTint.ToString());
 
-        AssertContrastMeetsAA(
-            colors["TextTertiaryBrush"],
-            colors["SurfaceColor"],
-            $"{themeFile}: TextTertiaryBrush on Card");
-    }
-
-    [Theory]
-    [InlineData("WarningTextLightBrush")]
-    [InlineData("AccentOrangeTextLightBrush")]
-    [InlineData("StatusSkippedLightBrush")]
-    public void LightTheme_OrangeBrushesMeetAAWithWhiteForeground(string brushKey)
-    {
-        var colors = ParseFluentThemeBridgeBrushColors();
-
-        AssertContrastMeetsAA("#FFFFFF", colors[brushKey], $"{brushKey} with white foreground");
+                    AssertContrastMeetsAA(
+                        ReadBrushColor("TextOnAccentFillColorPrimaryBrush"),
+                        ReadBrushColor("AccentButtonBackground"),
+                        $"{themeName}/{accentTint}: text on accent");
+                }
+            }
+        });
     }
 
     [Fact]
@@ -104,57 +96,10 @@ public class WcagContrastTests
             "High contrast AppCatalog header secondary text");
     }
 
-    public static IEnumerable<object[]> DraculaThemeNames =>
-        DraculaThemes.Select(theme => new object[] { theme });
-
-    private static Dictionary<string, string> ParseThemeColors(string themeFile)
+    private static Color ReadBrushColor(string key)
     {
-        var doc = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Themes", "Dracula", themeFile));
-        XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
-        var colors = new Dictionary<string, string>(StringComparer.Ordinal);
-
-        foreach (var element in doc.Descendants())
-        {
-            if (element.Name.LocalName == "Color")
-            {
-                var key = element.Attribute(x + "Key")?.Value;
-                if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(element.Value))
-                {
-                    colors[key] = NormalizeHexColor(element.Value);
-                }
-            }
-            else if (element.Name.LocalName == "SolidColorBrush"
-                     && string.Equals(element.Attribute(x + "Key")?.Value, "TextTertiaryBrush", StringComparison.Ordinal))
-            {
-                var color = element.Attribute("Color")?.Value;
-                if (!string.IsNullOrWhiteSpace(color))
-                {
-                    colors["TextTertiaryBrush"] = NormalizeHexColor(color);
-                }
-            }
-        }
-
-        return colors;
-    }
-
-    private static Dictionary<string, string> ParseFluentThemeBridgeBrushColors()
-    {
-        var doc = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "FluentThemeBridge.xaml"));
-        XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
-        var colors = new Dictionary<string, string>(StringComparer.Ordinal);
-
-        foreach (var element in doc.Descendants().Where(element => element.Name.LocalName == "SolidColorBrush"))
-        {
-            var key = element.Attribute(x + "Key")?.Value;
-            var color = element.Attribute("Color")?.Value;
-
-            if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(color) && color.StartsWith("#", StringComparison.Ordinal))
-            {
-                colors[key] = NormalizeHexColor(color);
-            }
-        }
-
-        return colors;
+        var brush = Assert.IsType<SolidColorBrush>(System.Windows.Application.Current.Resources[key]);
+        return brush.Color;
     }
 
     private static Dictionary<string, string> ParseHighContrastBrushColors()
@@ -177,7 +122,7 @@ public class WcagContrastTests
         return colors;
     }
 
-    private static void AssertContrastMeetsAA(string foreground, string background, string context)
+    private static void AssertContrastMeetsAA(Color foreground, Color background, string context)
     {
         var ratio = ContrastRatio(foreground, background);
 
@@ -186,41 +131,39 @@ public class WcagContrastTests
             $"{context}: {foreground} on {background} = {ratio:F2}:1, needs >= {AaBodyText}:1");
     }
 
-    private static double ContrastRatio(string foreground, string background)
+    private static void AssertContrastMeetsAA(string foreground, string background, string context)
     {
-        var foregroundLuminance = RelativeLuminance(HexToRgb(foreground));
-        var backgroundLuminance = RelativeLuminance(HexToRgb(background));
+        AssertContrastMeetsAA(HexToColor(foreground), HexToColor(background), context);
+    }
+
+    private static double ContrastRatio(Color foreground, Color background)
+    {
+        var foregroundLuminance = RelativeLuminance(foreground);
+        var backgroundLuminance = RelativeLuminance(background);
         var lighter = Math.Max(foregroundLuminance, backgroundLuminance);
         var darker = Math.Min(foregroundLuminance, backgroundLuminance);
 
         return (lighter + 0.05) / (darker + 0.05);
     }
 
-    private static (double R, double G, double B) HexToRgb(string hex)
+    private static Color HexToColor(string hex)
     {
-        hex = NormalizeHexColor(hex).TrimStart('#');
-        if (hex.Length != 6)
-        {
-            throw new ArgumentException($"Expected 6-digit RGB hex color, got {hex}.");
-        }
-
-        return (
-            Convert.ToInt32(hex[..2], 16),
-            Convert.ToInt32(hex[2..4], 16),
-            Convert.ToInt32(hex[4..6], 16));
+        return (Color)ColorConverter.ConvertFromString(NormalizeHexColor(hex));
     }
 
-    private static double RelativeLuminance((double R, double G, double B) rgb)
+    private static double RelativeLuminance(Color color)
     {
-        static double Channel(double channel)
+        static double Channel(byte channel)
         {
-            channel /= 255.0;
-            return channel <= 0.03928
-                ? channel / 12.92
-                : Math.Pow((channel + 0.055) / 1.055, 2.4);
+            var normalized = channel / 255.0;
+            return normalized <= 0.03928
+                ? normalized / 12.92
+                : Math.Pow((normalized + 0.055) / 1.055, 2.4);
         }
 
-        return 0.2126 * Channel(rgb.R) + 0.7152 * Channel(rgb.G) + 0.0722 * Channel(rgb.B);
+        return 0.2126 * Channel(color.R)
+            + 0.7152 * Channel(color.G)
+            + 0.0722 * Channel(color.B);
     }
 
     private static string NormalizeHexColor(string color) => color.Trim().ToUpperInvariant();

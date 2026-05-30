@@ -102,7 +102,7 @@
                 </Grid.ColumnDefinitions>
 
                 <ui:Button Grid.Column="0"
-                        Appearance="Secondary"
+                        Style="{StaticResource SecondaryButton}"
                         Command="{Binding TestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         ToolTip="{loc:Loc SourceEditor_TestUrlTooltip}"
                         MinWidth="120"

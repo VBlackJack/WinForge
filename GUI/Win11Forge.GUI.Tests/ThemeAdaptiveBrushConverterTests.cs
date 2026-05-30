@@ -40,7 +40,7 @@ public class ThemeAdaptiveBrushConverterTests
             app.Resources["AccentBrush"] = expectedBrush;
 
             var themeService = new MockThemeService();
-            themeService.ApplyTheme(ThemeNames.DraculaPro);
+            themeService.ApplyTheme(ThemeNames.Drakul);
             var converter = new ThemeAdaptiveBrushConverter();
 
             var result = converter.Convert(
@@ -54,7 +54,7 @@ public class ThemeAdaptiveBrushConverterTests
     }
 
     [Fact]
-    public void Convert_LightThemeActive_ReturnsFluentFallback()
+    public void Convert_ThemeForgeActiveAndAccentBrushMissing_ReturnsFluentFallback()
     {
         RunOnStaThread(() =>
         {
@@ -62,13 +62,11 @@ public class ThemeAdaptiveBrushConverterTests
             ApplicationThemeManager.Apply(ApplicationTheme.Light);
 
             var app = scope.Application;
-            var accentBrush = new SolidColorBrush(Colors.MediumPurple);
             var expectedBrush = new SolidColorBrush(Colors.MediumSeaGreen);
-            app.Resources["AccentBrush"] = accentBrush;
             app.Resources["PrimaryHueMidBrush"] = expectedBrush;
 
             var themeService = new MockThemeService();
-            themeService.ApplyTheme(ThemeNames.Light);
+            themeService.ApplyTheme(ThemeNames.Folio);
             var converter = new ThemeAdaptiveBrushConverter();
 
             var result = converter.Convert(

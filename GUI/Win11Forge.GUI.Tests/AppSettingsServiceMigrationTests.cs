@@ -27,21 +27,21 @@ namespace Win11Forge.GUI.Tests;
 public class AppSettingsServiceMigrationTests
 {
     [Fact]
-    public void LoadSettings_LegacyDarkThemeTrue_MigratesToDraculaPro()
+    public void LoadSettings_LegacyDarkThemeTrue_MigratesToDrakul()
     {
-        VerifyLegacyMigration(legacyIsDarkTheme: true, ThemeNames.DraculaPro);
+        VerifyLegacyMigration(legacyIsDarkTheme: true, ThemeNames.Drakul);
     }
 
     [Fact]
-    public void LoadSettings_LegacyDarkThemeFalse_MigratesToLight()
+    public void LoadSettings_LegacyDarkThemeFalse_MigratesToFolio()
     {
-        VerifyLegacyMigration(legacyIsDarkTheme: false, ThemeNames.Light);
+        VerifyLegacyMigration(legacyIsDarkTheme: false, ThemeNames.Folio);
     }
 
     [Fact]
     public void LoadSettings_PascalCaseLegacyKey_StillMigrates()
     {
-        VerifyLegacyMigration(legacyIsDarkTheme: true, ThemeNames.DraculaPro, "IsDarkTheme");
+        VerifyLegacyMigration(legacyIsDarkTheme: true, ThemeNames.Drakul, "IsDarkTheme");
     }
 
     [Fact]
@@ -59,12 +59,12 @@ public class AppSettingsServiceMigrationTests
             var settings = new AppSettingsService(settingsPath).LoadSettings();
             var reloaded = new AppSettingsService(settingsPath).LoadSettings();
 
-            Assert.Equal(ThemeNames.Light, settings.ThemeName);
-            Assert.Equal(ThemeNames.Light, reloaded.ThemeName);
+            Assert.Equal(ThemeNames.Folio, settings.ThemeName);
+            Assert.Equal(ThemeNames.Folio, reloaded.ThemeName);
 
             using var document = JsonDocument.Parse(File.ReadAllText(settingsPath));
             Assert.True(document.RootElement.TryGetProperty("themeName", out var themeName));
-            Assert.Equal(ThemeNames.Light, themeName.GetString());
+            Assert.Equal(ThemeNames.Folio, themeName.GetString());
         }
         finally
         {
@@ -85,7 +85,7 @@ public class AppSettingsServiceMigrationTests
             var service = new AppSettingsService(settingsPath);
             var settings = new AppSettings
             {
-                ThemeName = ThemeNames.Light,
+                ThemeName = ThemeNames.Folio,
                 MainWindowPlacement = new WindowPlacementSettings
                 {
                     Left = -1200,
@@ -111,6 +111,65 @@ public class AppSettingsServiceMigrationTests
             Assert.True(document.RootElement.TryGetProperty("mainWindowPlacement", out var placement));
             Assert.True(placement.TryGetProperty("windowState", out var windowState));
             Assert.Equal("Maximized", windowState.GetString());
+        }
+        finally
+        {
+            if (File.Exists(settingsPath))
+            {
+                File.Delete(settingsPath);
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(ThemeNames.Light, ThemeNames.Folio)]
+    [InlineData(ThemeNames.Alucard, ThemeNames.Parchment)]
+    [InlineData(ThemeNames.DraculaPro, ThemeNames.Drakul)]
+    [InlineData(ThemeNames.Blade, ThemeNames.Drakul)]
+    [InlineData("UnknownTheme", ThemeNames.Drakul)]
+    public void LoadSettings_LegacyThemeName_MigratesToThemeForgeTheme(string legacyTheme, string expectedTheme)
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        File.WriteAllText(
+            settingsPath,
+            $$"""
+            {"themeName": "{{legacyTheme}}", "languageCode": "en"}
+            """);
+
+        try
+        {
+            var settings = new AppSettingsService(settingsPath).LoadSettings();
+
+            Assert.Equal(expectedTheme, settings.ThemeName);
+            using var document = JsonDocument.Parse(File.ReadAllText(settingsPath));
+            Assert.Equal(expectedTheme, document.RootElement.GetProperty("themeName").GetString());
+            Assert.Equal(ThemeNames.DefaultAccentTint, document.RootElement.GetProperty("accentTintName").GetString());
+        }
+        finally
+        {
+            if (File.Exists(settingsPath))
+            {
+                File.Delete(settingsPath);
+            }
+        }
+    }
+
+    [Fact]
+    public void LoadSettings_InvalidAccentTint_MigratesToDefaultAccentTint()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        File.WriteAllText(
+            settingsPath,
+            """
+            {"themeName": "Drakul", "accentTintName": "Infrared", "languageCode": "en"}
+            """);
+
+        try
+        {
+            var settings = new AppSettingsService(settingsPath).LoadSettings();
+
+            Assert.Equal(ThemeNames.Drakul, settings.ThemeName);
+            Assert.Equal(ThemeNames.DefaultAccentTint, settings.AccentTintName);
         }
         finally
         {

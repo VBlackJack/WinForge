@@ -27,6 +27,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ThemeForge\src\ThemeForge.Theme\ThemeForge.Theme.csproj"
+                      SetConfiguration="Configuration=$(Configuration)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Win11Forge.ico" />
     <Resource Include="icon_cropped.png" />
   </ItemGroup>

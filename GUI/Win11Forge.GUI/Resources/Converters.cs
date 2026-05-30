@@ -615,7 +615,7 @@ public class ResxKeyConverter : IValueConverter
 
 /// <summary>
 /// Returns the appropriate accent brush based on current theme.
-/// Dracula themes use the active palette accent; Light falls back to the legacy fluent brushes.
+/// ThemeForge themes use the active palette accent; early startup falls back to legacy fluent brushes.
 /// Used for theme-adaptive button styling.
 /// </summary>
 public class ThemeAdaptiveBrushConverter : IValueConverter
@@ -631,8 +631,7 @@ public class ThemeAdaptiveBrushConverter : IValueConverter
         try
         {
             var themeService = ResolveThemeService(value);
-            if (themeService?.CurrentTheme is not null
-                && themeService.CurrentTheme is not ThemeNames.Light)
+            if (!string.IsNullOrWhiteSpace(themeService?.CurrentTheme))
             {
                 var accent = app.TryFindResource("AccentBrush") as Brush;
                 if (accent is not null)
