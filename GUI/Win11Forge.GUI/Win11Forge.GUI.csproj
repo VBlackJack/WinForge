@@ -14,6 +14,7 @@
     <InformationalVersion>2026051002</InformationalVersion>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Win11Forge.ico</ApplicationIcon>
+    <RequiresThemeForgeProject>true</RequiresThemeForgeProject>
   </PropertyGroup>
 
   <!-- Self-contained deployment is configured via Build-Release.ps1 command line,
@@ -27,7 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ThemeForge\src\ThemeForge.Theme\ThemeForge.Theme.csproj"
+    <ProjectReference Include="$(ThemeForgeProjectPath)"
+                      Condition="'$(ThemeForgeProjectPath)' != ''"
                       SetConfiguration="Configuration=$(Configuration)" />
   </ItemGroup>
 

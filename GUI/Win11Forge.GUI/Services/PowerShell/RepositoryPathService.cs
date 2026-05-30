@@ -50,7 +50,7 @@ public class RepositoryPathService : IRepositoryPathService
 
         if (_isUserDataFallbackActive)
         {
-            Debug.WriteLine(
+            Trace.WriteLine(
                 $"Win11Forge user data fallback active. Using '{_userDataRoot}'. Reason: {userDataResolution.Reason}");
         }
     }

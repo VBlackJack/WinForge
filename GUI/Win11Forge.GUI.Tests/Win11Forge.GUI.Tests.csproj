@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <UseWPF>true</UseWPF>
+    <RequiresThemeForgeProject>true</RequiresThemeForgeProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +23,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Win11Forge.GUI\Win11Forge.GUI.csproj" />
-    <ProjectReference Include="..\..\..\ThemeForge\src\ThemeForge.Theme\ThemeForge.Theme.csproj"
+    <ProjectReference Include="$(ThemeForgeProjectPath)"
+                      Condition="'$(ThemeForgeProjectPath)' != ''"
                       SetConfiguration="Configuration=$(Configuration)" />
   </ItemGroup>
 

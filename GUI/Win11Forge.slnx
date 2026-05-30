@@ -1,5 +1,4 @@
 <Solution>
-  <Project Path="../../ThemeForge/src/ThemeForge.Theme/ThemeForge.Theme.csproj" />
   <Project Path="Win11Forge.GUI.Tests/Win11Forge.GUI.Tests.csproj" />
   <Project Path="Win11Forge.GUI.UITests/Win11Forge.GUI.UITests.csproj" />
   <Project Path="Win11Forge.GUI/Win11Forge.GUI.csproj" />

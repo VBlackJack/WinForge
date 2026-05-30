@@ -1,5 +1,15 @@
 <Project>
   <PropertyGroup>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <ThemeForgeSearchRoot Condition="'$(ThemeForgeRoot)' == '' and '$(ThemeForgeProjectPath)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildThisFileDirectory)', 'ThemeForge\src\ThemeForge.Theme\ThemeForge.Theme.csproj'))</ThemeForgeSearchRoot>
+    <ThemeForgeRoot Condition="'$(ThemeForgeRoot)' == '' and '$(ThemeForgeSearchRoot)' != ''">$([System.IO.Path]::GetFullPath('$(ThemeForgeSearchRoot)\ThemeForge'))</ThemeForgeRoot>
+    <ThemeForgeProjectPath Condition="'$(ThemeForgeProjectPath)' == '' and '$(ThemeForgeRoot)' != ''">$([System.IO.Path]::GetFullPath('$(ThemeForgeRoot)\src\ThemeForge.Theme\ThemeForge.Theme.csproj'))</ThemeForgeProjectPath>
   </PropertyGroup>
+
+  <Target Name="ValidateThemeForgeProjectReference"
+          BeforeTargets="ResolveProjectReferences"
+          Condition="'$(RequiresThemeForgeProject)' == 'true'">
+    <Error Condition="'$(ThemeForgeProjectPath)' == '' or !Exists('$(ThemeForgeProjectPath)')"
+           Text="ThemeForge project not found. Set ThemeForgeRoot to the ThemeForge repository root or ThemeForgeProjectPath to ThemeForge.Theme.csproj." />
+  </Target>
 </Project>
