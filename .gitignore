@@ -16,6 +16,10 @@ Logs/
 
 # .NET SDK home (NuGet, temp packages)
 .dotnet-home-audit/
+.dotnet-cli/
+
+# Local throwaway launch helper
+launch-win11forge.ps1
 
 # Windows shortcuts
 *.lnk
