@@ -86,8 +86,7 @@ function Get-DownloadSources {
         Loads download sources configuration from JSON file.
     .DESCRIPTION
         Reads and caches the download-sources.json configuration file, which contains URLs and
-        version information for prerequisite installers. Falls back to built-in default values
-        if the configuration file is missing or unreadable.
+        version information for prerequisite installers.
     .OUTPUTS
         Hashtable containing download URLs and configuration
     #>
@@ -103,35 +102,11 @@ function Get-DownloadSources {
                 $script:DownloadSources = $content | ConvertFrom-Json -ErrorAction Stop
             }
             catch {
-                Write-Warning (Get-LocalizedString -Key 'prerequisites.config.load_failed' -Parameters @{ Error = $_.Exception.Message })
-                # Fallback to default values - UPDATE THESE VERSIONS PERIODICALLY
-                $script:DownloadSources = @{
-                    prerequisites = @{
-                        chocolatey = @{
-                            downloadUrl = 'https://community.chocolatey.org/api/v2/package/chocolatey'
-                        }
-                        powershell7 = @{
-                            version = '7.5.0'
-                            downloadUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/PowerShell-7.5.0-win-x64.msi'
-                        }
-                    }
-                }
+                throw (Get-LocalizedString -Key 'prerequisites.config.load_failed' -Parameters @{ Error = $_.Exception.Message })
             }
         }
         else {
-            Write-Warning (Get-LocalizedString -Key 'prerequisites.config.not_found' -Parameters @{ Path = $script:DownloadSourcesPath })
-            # Fallback to default values - UPDATE THESE VERSIONS PERIODICALLY
-            $script:DownloadSources = @{
-                prerequisites = @{
-                    chocolatey = @{
-                        downloadUrl = 'https://community.chocolatey.org/api/v2/package/chocolatey'
-                    }
-                    powershell7 = @{
-                        version = '7.5.0'
-                        downloadUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.5.0/PowerShell-7.5.0-win-x64.msi'
-                    }
-                }
-            }
+            throw (Get-LocalizedString -Key 'prerequisites.config.not_found' -Parameters @{ Path = $script:DownloadSourcesPath })
         }
     }
 

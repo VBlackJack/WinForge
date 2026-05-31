@@ -96,6 +96,15 @@ if (-not (Get-Command -Name Get-CachedWingetList -ErrorAction SilentlyContinue))
 # Import TimeoutSettings and StateManager modules for centralized configuration
 $script:TimeoutSettingsPath = Join-Path $script:RepositoryRoot 'Core\TimeoutSettings.psm1'
 $script:StateManagerPath = Join-Path $script:ModuleRoot 'StateManager.psm1'
+$script:DefaultMaxParallelJobs = 5
+$script:DefaultParallelTimeoutMs = 600000
+$script:DefaultJobCheckIntervalSeconds = 2
+$script:WingetNoApplicableUpdateExitCode = -1978335189
+$script:WingetAlreadyInstalledExitCode = -1978334974
+$script:WingetHashMismatchExitCode = -1978335215
+$script:WingetNetworkErrorExitCodes = @(-1978335212)
+$script:ChocolateyRebootExitCodes = @(1641, 3010)
+$script:DirectDownloadTimeoutSeconds = 600
 
 if (Test-Path -Path $script:TimeoutSettingsPath) {
     Import-Module -Name $script:TimeoutSettingsPath -Force -ErrorAction SilentlyContinue
@@ -110,14 +119,14 @@ function script:Get-ConfiguredMaxParallelJobs {
     if (Get-Command -Name Get-MaxParallelJobs -ErrorAction SilentlyContinue) {
         return Get-MaxParallelJobs
     }
-    return 5  # Fallback default
+    return $script:DefaultMaxParallelJobs
 }
 
 function script:Get-ConfiguredParallelTimeout {
     if (Get-Command -Name Get-ParallelTimeout -ErrorAction SilentlyContinue) {
         return Get-ParallelTimeout
     }
-    return 600000  # 10 minutes fallback
+    return $script:DefaultParallelTimeoutMs
 }
 
 function script:Get-ConfiguredJobCheckInterval {
@@ -128,7 +137,7 @@ function script:Get-ConfiguredJobCheckInterval {
     if ($config -and $config.Parallel.JobCheckIntervalSeconds) {
         return $config.Parallel.JobCheckIntervalSeconds
     }
-    return 2  # Fallback default
+    return $script:DefaultJobCheckIntervalSeconds
 }
 
 # === STATE MANAGEMENT ===
@@ -390,117 +399,136 @@ function Invoke-InstallationMethodSequence {
         return $Output[-1] -eq $true
     }
 
-    # 1. Try Winget
-    if ($sources.Winget) {
-        $result.AttemptedMethods += 'Winget'
-        & $writeLog (Get-LocalizedString -Key 'install.orchestrator.attempting_winget' -Parameters @{ PackageId = $sources.Winget }) 'Verbose'
+    $completeSuccessfulInstall = {
+        param(
+            [string]$MethodName,
+            [string]$MessageKey
+        )
 
-        $wingetOutput = @(Install-ViaWinget -PackageId $sources.Winget)
-        if (& $getInstallResult $wingetOutput) {
-            if ($isOfficeApp) {
-                & $writeLog (Get-LocalizedString -Key 'install.orchestrator.office_c2r_waiting') 'Info'
-                $officeTimeout = Get-InstallationTimeout -AppName 'Office'
-                $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $officeTimeout
-                if (-not $officeInstalled) {
-                    $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.office_c2r_timeout')
+        $result.Success = $true
+        $result.Method = $MethodName
+        $result.Message = (Get-LocalizedString -Key $MessageKey)
+        return $result
+    }
+
+    $waitForOfficeIfNeeded = {
+        param([bool]$OfficeAware)
+
+        if (-not $OfficeAware -or -not $isOfficeApp) {
+            return
+        }
+
+        & $writeLog (Get-LocalizedString -Key 'install.orchestrator.office_c2r_waiting') 'Info'
+        $officeTimeout = Get-InstallationTimeout -AppName 'Office'
+        $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $officeTimeout
+        if (-not $officeInstalled) {
+            $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.office_c2r_timeout')
+        }
+    }
+
+    $installMethods = @(
+        @{
+            Name = 'Winget'
+            Source = $sources.Winget
+            AttemptKey = 'install.orchestrator.attempting_winget'
+            AttemptParameters = { param($source) @{ PackageId = $source } }
+            Invoke = { param($source) @(Install-ViaWinget -PackageId $source) }
+            ResultKey = 'orchestrator.result.winget'
+            VerifiedResultKey = 'orchestrator.result.winget_verified'
+            FailureKey = 'orchestrator.failure.winget'
+            FailureParameters = { param($source) @{ PackageId = $source } }
+            OfficeAware = $true
+        },
+        @{
+            Name = 'Chocolatey'
+            Source = $sources.Chocolatey
+            AttemptKey = 'install.orchestrator.attempting_choco'
+            AttemptParameters = { param($source) @{ PackageId = $source } }
+            Invoke = { param($source) @(Install-ViaChocolatey -PackageName $source) }
+            ResultKey = 'orchestrator.result.chocolatey'
+            VerifiedResultKey = 'orchestrator.result.chocolatey_verified'
+            FailureKey = 'orchestrator.failure.chocolatey'
+            FailureParameters = { param($source) @{ PackageId = $source } }
+            OfficeAware = $true
+        },
+        @{
+            Name = 'Store'
+            Source = $sources.Store
+            AttemptKey = 'install.orchestrator.attempting_store'
+            AttemptParameters = { param($source) @{ ProductId = $source } }
+            Invoke = { param($source) @(Install-ViaStore -ProductId $source) }
+            ResultKey = 'orchestrator.result.store'
+            VerifiedResultKey = $null
+            FailureKey = 'orchestrator.failure.store'
+            FailureParameters = { param($source) @{ ProductId = $source } }
+            OfficeAware = $false
+        },
+        @{
+            Name = 'DirectDownload'
+            Source = $sources.DirectUrl
+            AttemptKey = 'install.orchestrator.attempting_direct'
+            AttemptParameters = { param($source) @{ Url = $source } }
+            Invoke = {
+                param($source)
+
+                $installParams = @{ Url = $source }
+
+                $installArgs = if ($Application.PSObject.Properties['InstallArguments']) { $Application.InstallArguments } else { $null }
+                if ($installArgs) {
+                    $installParams['CustomArguments'] = $installArgs
+                    & $writeLog (Get-LocalizedString -Key 'install.orchestrator.custom_args_detected' -Parameters @{ Arguments = $installArgs }) 'Verbose'
                 }
-            }
-            $result.Success = $true
-            $result.Method = 'Winget'
-            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.winget')
-            return $result
-        } else {
-            if (& $testIgnoreExitCode) {
-                & $writeLog (Get-LocalizedString -Key 'install.orchestrator.success_despite_exit_code') 'Success'
-                $result.Success = $true
-                $result.Method = 'Winget'
-                $result.Message = (Get-LocalizedString -Key 'orchestrator.result.winget_verified')
-                return $result
-            }
-            $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.winget' -Parameters @{ PackageId = $sources.Winget })
-        }
-    }
 
-    # 2. Try Chocolatey
-    if ($sources.Chocolatey) {
-        $result.AttemptedMethods += 'Chocolatey'
-        & $writeLog (Get-LocalizedString -Key 'install.orchestrator.attempting_choco' -Parameters @{ PackageId = $sources.Chocolatey }) 'Verbose'
-
-        $chocoOutput = @(Install-ViaChocolatey -PackageName $sources.Chocolatey)
-        if (& $getInstallResult $chocoOutput) {
-            if ($isOfficeApp) {
-                & $writeLog (Get-LocalizedString -Key 'install.orchestrator.office_c2r_waiting') 'Info'
-                $officeTimeout = Get-InstallationTimeout -AppName 'Office'
-                $officeInstalled = Wait-ForOfficeInstallation -TimeoutSeconds $officeTimeout
-                if (-not $officeInstalled) {
-                    $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.office_c2r_timeout')
+                if ($Application.Detection -and $Application.Detection.Path) {
+                    $installParams['DetectionPath'] = $Application.Detection.Path
                 }
+
+                if ($sources.PSObject.Properties['SHA256'] -and $sources.SHA256) {
+                    $installParams['ExpectedSHA256'] = $sources.SHA256
+                }
+
+                Write-Verbose "Calling Install-ViaDirectDownload"
+                Write-Verbose "installParams: $($installParams | ConvertTo-Json -Compress)"
+                $downloadOutput = @(Install-ViaDirectDownload @installParams)
+                Write-Verbose "Install-ViaDirectDownload returned"
+                Write-Verbose "downloadOutput count: $($downloadOutput.Count)"
+                return $downloadOutput
             }
-            $result.Success = $true
-            $result.Method = 'Chocolatey'
-            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.chocolatey')
-            return $result
+            ResultKey = 'orchestrator.result.direct_download'
+            VerifiedResultKey = $null
+            FailureKey = 'orchestrator.failure.direct_download'
+            FailureParameters = { @{} }
+            OfficeAware = $false
+        }
+    )
+
+    foreach ($method in $installMethods) {
+        if (-not $method.Source) {
+            continue
+        }
+
+        $result.AttemptedMethods += $method.Name
+        $attemptParameterFactory = $method.AttemptParameters
+        & $writeLog (Get-LocalizedString -Key $method.AttemptKey -Parameters (& $attemptParameterFactory $method.Source)) 'Verbose'
+
+        $installer = $method.Invoke
+        $installOutput = & $installer $method.Source
+        if (& $getInstallResult $installOutput) {
+            & $waitForOfficeIfNeeded ([bool]$method.OfficeAware)
+            return (& $completeSuccessfulInstall $method.Name $method.ResultKey)
+        }
+
+        if ($method.VerifiedResultKey -and (& $testIgnoreExitCode)) {
+            & $writeLog (Get-LocalizedString -Key 'install.orchestrator.success_despite_exit_code') 'Success'
+            return (& $completeSuccessfulInstall $method.Name $method.VerifiedResultKey)
+        }
+
+        $failureParameterFactory = $method.FailureParameters
+        $failureParameters = & $failureParameterFactory $method.Source
+        if ($failureParameters.Count -gt 0) {
+            $result.FailureReasons += (Get-LocalizedString -Key $method.FailureKey -Parameters $failureParameters)
         } else {
-            if (& $testIgnoreExitCode) {
-                & $writeLog (Get-LocalizedString -Key 'install.orchestrator.success_despite_exit_code') 'Success'
-                $result.Success = $true
-                $result.Method = 'Chocolatey'
-                $result.Message = (Get-LocalizedString -Key 'orchestrator.result.chocolatey_verified')
-                return $result
-            }
-            $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.chocolatey' -Parameters @{ PackageId = $sources.Chocolatey })
-        }
-    }
-
-    # 3. Try Microsoft Store
-    if ($sources.Store) {
-        $result.AttemptedMethods += 'Store'
-        & $writeLog (Get-LocalizedString -Key 'install.orchestrator.attempting_store' -Parameters @{ ProductId = $sources.Store }) 'Verbose'
-
-        $storeOutput = @(Install-ViaStore -ProductId $sources.Store)
-        if (& $getInstallResult $storeOutput) {
-            $result.Success = $true
-            $result.Method = 'Store'
-            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.store')
-            return $result
-        } else {
-            $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.store' -Parameters @{ ProductId = $sources.Store })
-        }
-    }
-
-    # 4. Try Direct Download
-    if ($sources.DirectUrl) {
-        $result.AttemptedMethods += 'DirectDownload'
-        & $writeLog (Get-LocalizedString -Key 'install.orchestrator.attempting_direct' -Parameters @{ Url = $sources.DirectUrl }) 'Verbose'
-
-        $installParams = @{ Url = $sources.DirectUrl }
-
-        $installArgs = if ($Application.PSObject.Properties['InstallArguments']) { $Application.InstallArguments } else { $null }
-        if ($installArgs) {
-            $installParams['CustomArguments'] = $installArgs
-            & $writeLog (Get-LocalizedString -Key 'install.orchestrator.custom_args_detected' -Parameters @{ Arguments = $installArgs }) 'Verbose'
-        }
-
-        if ($Application.Detection -and $Application.Detection.Path) {
-            $installParams['DetectionPath'] = $Application.Detection.Path
-        }
-
-        if ($sources.PSObject.Properties['SHA256'] -and $sources.SHA256) {
-            $installParams['ExpectedSHA256'] = $sources.SHA256
-        }
-
-        Write-Verbose "Calling Install-ViaDirectDownload"
-        Write-Verbose "installParams: $($installParams | ConvertTo-Json -Compress)"
-        $downloadOutput = @(Install-ViaDirectDownload @installParams)
-        Write-Verbose "Install-ViaDirectDownload returned"
-        Write-Verbose "downloadOutput count: $($downloadOutput.Count)"
-        if (& $getInstallResult $downloadOutput) {
-            $result.Success = $true
-            $result.Method = 'DirectDownload'
-            $result.Message = (Get-LocalizedString -Key 'orchestrator.result.direct_download')
-            return $result
-        } else {
-            $result.FailureReasons += (Get-LocalizedString -Key 'orchestrator.failure.direct_download')
+            $result.FailureReasons += (Get-LocalizedString -Key $method.FailureKey)
         }
     }
 
@@ -594,7 +622,7 @@ function Invoke-ApplicationUpgrade {
                 $result.Method = 'Winget'
                 $result.Message = (Get-LocalizedString -Key 'orchestrator.result.upgraded')
                 return $result
-            } elseif ($process.ExitCode -eq -1978335189) {
+            } elseif ($process.ExitCode -eq $script:WingetNoApplicableUpdateExitCode) {
                 Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.no_update_winget' -Parameters @{ AppName = $Application.Name }) -Level 'Verbose'
             } else {
                 Write-Status -Message (Get-LocalizedString -Key 'orchestrator.upgrade.exit_code_winget' -Parameters @{ ExitCode = $process.ExitCode }) -Level 'Verbose'
@@ -778,11 +806,11 @@ function Install-ApplicationsParallel {
         Write-Host (Get-LocalizedString -Key 'parallel.current_version' -Parameters @{ Version = $PSVersionTable.PSVersion }) -ForegroundColor Yellow
         Write-Host (Get-LocalizedString -Key 'parallel.fallback_sequential') -ForegroundColor Yellow
 
-        $results = @()
+        $results = New-Object 'System.Collections.Generic.List[object]'
         foreach ($app in $Applications) {
-            $results += Install-Application -Application $app -Force:$Force
+            $results.Add((Install-Application -Application $app -Force:$Force)) | Out-Null
         }
-        return $results
+        return $results.ToArray()
     }
 
     Write-Host ""
@@ -996,8 +1024,13 @@ function Test-AppInstalledParallel {
 
     $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
     $parallelTimeoutMs = $script:ParallelInstallTimeoutMs
-    $frameworkVersion = (Get-Content (Join-Path $script:RepositoryRoot 'Config\version.json') -Raw | ConvertFrom-Json).Version
+    $frameworkVersion = (Get-Content -Path (Join-Path $script:RepositoryRoot 'Config\version.json') -Raw -Encoding UTF8 | ConvertFrom-Json).Version
     $wingetForceOnHashMismatch = Test-FeatureEnabled -FeatureName 'wingetForceOnHashMismatch'
+    $wingetAlreadyInstalledExitCode = $script:WingetAlreadyInstalledExitCode
+    $wingetHashMismatchExitCode = $script:WingetHashMismatchExitCode
+    $wingetNetworkErrorExitCodes = $script:WingetNetworkErrorExitCodes
+    $chocolateyRebootExitCodes = $script:ChocolateyRebootExitCodes
+    $directDownloadTimeoutSeconds = $script:DirectDownloadTimeoutSeconds
 
     $installResults = $appsToInstall | ForEach-Object -ThrottleLimit $MaxParallel -Parallel {
         $app = $_
@@ -1128,7 +1161,7 @@ function Test-AppInstalledParallel {
 
                 $maxRetries = 3
                 $retryDelaySeconds = 2
-                $transientErrors = @(-1978335212)
+                $transientErrors = $using:wingetNetworkErrorExitCodes
 
                 for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
                     if ($attempt -gt 1) {
@@ -1150,7 +1183,7 @@ function Test-AppInstalledParallel {
                         $result.Method = 'Winget'
                         $result.Message = if ($attempt -gt 1) { Get-LocalizedString -Key 'orchestrator.result.winget_retry' -Parameters @{ Attempt = $attempt } } else { Get-LocalizedString -Key 'orchestrator.result.winget' }
                         return $result
-                    } elseif ($process.ExitCode -eq -1978334974) {
+                    } elseif ($process.ExitCode -eq $using:wingetAlreadyInstalledExitCode) {
                         $retryMsg = if ($attempt -gt 1) { " (attempt $attempt)" } else { "" }
                         Write-ParallelLog "Already installed (Winget)$retryMsg" 'Success'
                         $result.Success = $true
@@ -1158,7 +1191,7 @@ function Test-AppInstalledParallel {
                         $result.AlreadyInstalled = $true
                         $result.Message = if ($attempt -gt 1) { Get-LocalizedString -Key 'orchestrator.result.already_installed_winget_retry' -Parameters @{ Attempt = $attempt } } else { Get-LocalizedString -Key 'orchestrator.result.already_installed_winget' }
                         return $result
-                    } elseif ($process.ExitCode -eq -1978335215) {
+                    } elseif ($process.ExitCode -eq $using:wingetHashMismatchExitCode) {
                         if ($forceOnHashMismatch) {
                             Write-ParallelLog (Get-LocalizedString -Key 'install.orchestrator.parallel.winget_hash_mismatch_retrying_force' -Parameters @{ PackageId = $sources.Winget }) 'Warning'
                             $forceArguments = $arguments + @('--force')
@@ -1166,7 +1199,7 @@ function Test-AppInstalledParallel {
                             if (-not $forceProcess.WaitForExit($installTimeoutMs)) {
                                 Write-ParallelLog "Force install timed out - terminating" 'Warning'
                                 $forceProcess.Kill()
-                            } elseif ($forceProcess.ExitCode -eq 0 -or $forceProcess.ExitCode -eq -1978334974) {
+                            } elseif ($forceProcess.ExitCode -eq 0 -or $forceProcess.ExitCode -eq $using:wingetAlreadyInstalledExitCode) {
                                 $retryMsg = if ($attempt -gt 1) { " (attempt $attempt)" } else { "" }
                                 Write-ParallelLog "Installed successfully via Winget with --force$retryMsg" 'Success'
                                 $result.Success = $true
@@ -1204,7 +1237,7 @@ function Test-AppInstalledParallel {
 
                 $maxRetries = 3
                 $retryDelaySeconds = 2
-                $transientErrors = @(1641, 3010)
+                $transientErrors = $using:chocolateyRebootExitCodes
 
                 for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
                     if ($attempt -gt 1) {
@@ -1344,7 +1377,7 @@ function Test-AppInstalledParallel {
                         $headers = @{
                             'User-Agent' = "Win11Forge/$fwVersion (Windows NT; PowerShell)"
                         }
-                        Invoke-WebRequest -Uri $sources.DirectUrl -OutFile $tempFile -Headers $headers -UseBasicParsing -TimeoutSec 600 -ErrorAction Stop
+                        Invoke-WebRequest -Uri $sources.DirectUrl -OutFile $tempFile -Headers $headers -UseBasicParsing -TimeoutSec $using:directDownloadTimeoutSeconds -ErrorAction Stop
                         if ((Test-Path -Path $tempFile) -and (Get-Item -Path $tempFile).Length -gt 0) { $downloadSuccess = $true }
                     } catch {
                         Write-ParallelLog "Invoke-WebRequest failed: $($_.Exception.Message)" 'Verbose'

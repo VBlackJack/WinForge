@@ -9,7 +9,7 @@
 .NOTES
     Author: Julien Bombled
     v3.7.2
-    Requires: PowerShell 5.1+, Win11Forge v3.0.0+
+    Requires: PowerShell 5.1+, Win11Forge framework
 #>
 
 #
@@ -38,15 +38,20 @@ $script:ModuleRoot = $PSScriptRoot
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:DatabaseLoaded = $false
 $script:AppDatabase = $null
+$script:DatabaseTagsCache = $null
 
 # Load framework version dynamically
-$script:FrameworkVersion = try {
-    $versionPath = Join-Path $script:RepositoryRoot 'Config\version.json'
-    if (Test-Path $versionPath) {
-        $versionData = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
-        $versionData.Version
-    } else { '3.6.8' }
-} catch { '3.6.8' }
+$versionPath = Join-Path $script:RepositoryRoot 'Config\version.json'
+if (-not (Test-Path -Path $versionPath)) {
+    throw "Version file not found: $versionPath"
+}
+
+$versionData = Get-Content -Path $versionPath -Raw -Encoding UTF8 | ConvertFrom-Json
+if ([string]::IsNullOrWhiteSpace([string]$versionData.Version)) {
+    throw "Version property missing in $versionPath"
+}
+
+$script:FrameworkVersion = [string]$versionData.Version
 
 # ============================================================================
 # INITIALIZATION
@@ -64,40 +69,29 @@ function Initialize-GUIModules {
     param()
 
     try {
-        # Load Core module
-        $coreModule = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
-        if (Test-Path $coreModule) {
-            Import-Module $coreModule -Force -Global
-        }
+        $requiredModules = @(
+            'Core\Core.psm1',
+            'Core\Localization.psm1',
+            'Modules\EnvironmentDetection.psm1',
+            'Modules\Prerequisites.psm1',
+            'Modules\ApplicationDatabase.psm1',
+            'Modules\ProfileManager.psm1',
+            'Modules\InstallationEngine.psm1',
+            'Modules\SystemConfig.psm1',
+            'Modules\UpdateManager.psm1'
+        )
 
-        # Load Localization module for i18n support
-        $locModule = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
-        if (Test-Path $locModule) {
-            Import-Module $locModule -Force -Global
-        }
-
-        # Load EnvironmentDetection module
-        $envModule = Join-Path $script:RepositoryRoot 'Modules\EnvironmentDetection.psm1'
-        if (Test-Path $envModule) {
-            Import-Module $envModule -Force -Global
-        }
-
-        # Load Prerequisites module
-        $prereqModule = Join-Path $script:RepositoryRoot 'Modules\Prerequisites.psm1'
-        if (Test-Path $prereqModule) {
-            Import-Module $prereqModule -Force -Global
-        }
-
-        # Load ApplicationDatabase module
-        $dbModule = Join-Path $script:RepositoryRoot 'Modules\ApplicationDatabase.psm1'
-        if (Test-Path $dbModule) {
-            Import-Module $dbModule -Force -Global
+        foreach ($modulePath in $requiredModules) {
+            $resolvedPath = Join-Path $script:RepositoryRoot $modulePath
+            if (Test-Path $resolvedPath) {
+                Import-Module $resolvedPath -Force -Global
+            }
         }
 
         # Load database directly from JSON file
         $dbPath = Join-Path $script:RepositoryRoot 'Apps\Database\applications.json'
         if (Test-Path $dbPath) {
-            $dbContent = Get-Content $dbPath -Raw | ConvertFrom-Json
+            $dbContent = Get-Content $dbPath -Raw -Encoding UTF8 | ConvertFrom-Json
             $script:AppDatabase = @{}
 
             # Get the Applications node from the JSON structure
@@ -109,34 +103,11 @@ function Initialize-GUIModules {
             }
 
             $script:DatabaseLoaded = $true
+            $script:DatabaseTagsCache = $null
             Write-Verbose "Database loaded: $($script:AppDatabase.Keys.Count) applications" -Verbose
         }
         else {
             Write-Host (Get-LocalizedString -Key 'gui.errors.db_file_not_found' -Parameters @{ Path = $dbPath }) -ForegroundColor Yellow
-        }
-
-        # Load ProfileManager module
-        $profileModule = Join-Path $script:RepositoryRoot 'Modules\ProfileManager.psm1'
-        if (Test-Path $profileModule) {
-            Import-Module $profileModule -Force -Global
-        }
-
-        # Load InstallationEngine module
-        $installModule = Join-Path $script:RepositoryRoot 'Modules\InstallationEngine.psm1'
-        if (Test-Path $installModule) {
-            Import-Module $installModule -Force -Global
-        }
-
-        # Load SystemConfig module
-        $sysconfigModule = Join-Path $script:RepositoryRoot 'Modules\SystemConfig.psm1'
-        if (Test-Path $sysconfigModule) {
-            Import-Module $sysconfigModule -Force -Global
-        }
-
-        # Load UpdateManager module
-        $updateModule = Join-Path $script:RepositoryRoot 'Modules\UpdateManager.psm1'
-        if (Test-Path $updateModule) {
-            Import-Module $updateModule -Force -Global
         }
 
         return $true
@@ -150,6 +121,40 @@ function Initialize-GUIModules {
 # ============================================================================
 # DATABASE HELPER FUNCTIONS
 # ============================================================================
+
+function ConvertTo-NormalizedApp {
+    param(
+        [Parameter(Mandatory)]
+        [string]$AppId,
+
+        [Parameter(Mandatory)]
+        [object]$Application
+    )
+
+    return [PSCustomObject]@{
+        AppId = $AppId
+        Name = if ($Application.PSObject.Properties['Name']) { $Application.Name } else { $AppId }
+        Category = if ($Application.PSObject.Properties['Category']) { $Application.Category } else { 'Unknown' }
+        Sources = if ($Application.PSObject.Properties['Sources']) { $Application.Sources } else { @{} }
+        Tags = if ($Application.PSObject.Properties['Tags']) { $Application.Tags } else { @() }
+        Description = if ($Application.PSObject.Properties['Description']) { $Application.Description } else { '' }
+        Homepage = if ($Application.PSObject.Properties['Homepage']) { $Application.Homepage } else { '' }
+        Verified = if ($Application.PSObject.Properties['Verified']) { $Application.Verified } else { $false }
+        LastVerified = if ($Application.PSObject.Properties['LastVerified']) { $Application.LastVerified } else { '' }
+    }
+}
+
+function Get-DatabaseTagNames {
+    if ($null -eq $script:DatabaseTagsCache) {
+        $script:DatabaseTagsCache = @(Get-DatabaseApps |
+            Where-Object { $_.Tags } |
+            ForEach-Object { $_.Tags } |
+            Select-Object -Unique |
+            Sort-Object)
+    }
+
+    return $script:DatabaseTagsCache
+}
 
 function Get-DatabaseApps {
     <#
@@ -170,22 +175,10 @@ function Get-DatabaseApps {
         return @()
     }
 
-    $apps = @()
+    $apps = New-Object 'System.Collections.Generic.List[object]'
     foreach ($key in $script:AppDatabase.Keys) {
         $app = $script:AppDatabase[$key]
-
-        # Create a new object with AppId added
-        $appObj = [PSCustomObject]@{
-            AppId = $key
-            Name = if ($app.PSObject.Properties['Name']) { $app.Name } else { $key }
-            Category = if ($app.PSObject.Properties['Category']) { $app.Category } else { 'Unknown' }
-            Sources = if ($app.PSObject.Properties['Sources']) { $app.Sources } else { @{} }
-            Tags = if ($app.PSObject.Properties['Tags']) { $app.Tags } else { @() }
-            Description = if ($app.PSObject.Properties['Description']) { $app.Description } else { '' }
-            Homepage = if ($app.PSObject.Properties['Homepage']) { $app.Homepage } else { '' }
-            Verified = if ($app.PSObject.Properties['Verified']) { $app.Verified } else { $false }
-            LastVerified = if ($app.PSObject.Properties['LastVerified']) { $app.LastVerified } else { '' }
-        }
+        $appObj = ConvertTo-NormalizedApp -AppId $key -Application $app
 
         # Filter by category if specified
         if ($Category -and $appObj.Category -ne $Category) {
@@ -197,10 +190,10 @@ function Get-DatabaseApps {
             continue
         }
 
-        $apps += $appObj
+        $apps.Add($appObj) | Out-Null
     }
 
-    return $apps
+    return $apps.ToArray()
 }
 
 function Get-DatabaseCategories {
@@ -237,18 +230,7 @@ function Get-DatabaseAppById {
     param([string]$AppId)
 
     if ($script:AppDatabase.ContainsKey($AppId)) {
-        $app = $script:AppDatabase[$AppId]
-        return [PSCustomObject]@{
-            AppId = $AppId
-            Name = if ($app.PSObject.Properties['Name']) { $app.Name } else { $AppId }
-            Category = if ($app.PSObject.Properties['Category']) { $app.Category } else { 'Unknown' }
-            Sources = if ($app.PSObject.Properties['Sources']) { $app.Sources } else { @{} }
-            Tags = if ($app.PSObject.Properties['Tags']) { $app.Tags } else { @() }
-            Description = if ($app.PSObject.Properties['Description']) { $app.Description } else { '' }
-            Homepage = if ($app.PSObject.Properties['Homepage']) { $app.Homepage } else { '' }
-            Verified = if ($app.PSObject.Properties['Verified']) { $app.Verified } else { $false }
-            LastVerified = if ($app.PSObject.Properties['LastVerified']) { $app.LastVerified } else { '' }
-        }
+        return ConvertTo-NormalizedApp -AppId $AppId -Application $script:AppDatabase[$AppId]
     }
     return $null
 }
@@ -264,26 +246,16 @@ function Search-DatabaseApps {
     [CmdletBinding()]
     param([string]$SearchTerm)
 
-    $results = @()
+    $results = New-Object 'System.Collections.Generic.List[object]'
     foreach ($key in $script:AppDatabase.Keys) {
         $app = $script:AppDatabase[$key]
         $name = if ($app.PSObject.Properties['Name']) { $app.Name } else { $key }
 
         if ($name -like "*$SearchTerm*" -or $key -like "*$SearchTerm*") {
-            $results += [PSCustomObject]@{
-                AppId = $key
-                Name = $name
-                Category = if ($app.PSObject.Properties['Category']) { $app.Category } else { 'Unknown' }
-                Sources = if ($app.PSObject.Properties['Sources']) { $app.Sources } else { @{} }
-                Tags = if ($app.PSObject.Properties['Tags']) { $app.Tags } else { @() }
-                Description = if ($app.PSObject.Properties['Description']) { $app.Description } else { '' }
-                Homepage = if ($app.PSObject.Properties['Homepage']) { $app.Homepage } else { '' }
-                Verified = if ($app.PSObject.Properties['Verified']) { $app.Verified } else { $false }
-                LastVerified = if ($app.PSObject.Properties['LastVerified']) { $app.LastVerified } else { '' }
-            }
+            $results.Add((ConvertTo-NormalizedApp -AppId $key -Application $app)) | Out-Null
         }
     }
-    return $results
+    return $results.ToArray()
 }
 
 function Get-DatabaseStats {
@@ -523,7 +495,7 @@ function Show-DeployProfileMenu {
 
     for ($i = 0; $i -lt $profiles.Count; $i++) {
         $profile = $profiles[$i]
-        $profileData = Get-Content $profile.FullName | ConvertFrom-Json
+        $profileData = Get-Content -Path $profile.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
 
         $name = $profileData.Name
         $version = $profileData.Version
@@ -768,8 +740,7 @@ function Show-ApplicationsByTag {
     Show-Header -Title (Get-LocalizedString -Key 'gui.apps.tag_title')
 
     # Get all unique tags
-    $allApps = Get-DatabaseApps
-    $tags = $allApps | Where-Object { $_.Tags } | ForEach-Object { $_.Tags } | Select-Object -Unique | Sort-Object
+    $tags = Get-DatabaseTagNames
 
     Write-Host (Get-LocalizedString -Key 'gui.apps.available_tags') -ForegroundColor Yellow
     Write-Host ""
@@ -966,7 +937,7 @@ function Show-ProfileBrowser {
 
     for ($i = 0; $i -lt $profiles.Count; $i++) {
         $profile = $profiles[$i]
-        $profileData = Get-Content $profile.FullName | ConvertFrom-Json
+        $profileData = Get-Content -Path $profile.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
 
         Write-Host "  $($i + 1). $(Get-LocalizedString -Key 'gui.profiles.profile_info' -Parameters @{ Name = $profileData.Name; Version = $profileData.Version })" -ForegroundColor White
         Write-Host "      $(Get-LocalizedString -Key 'gui.profiles.apps_count' -Parameters @{ Count = $profileData.Applications.Count })" -ForegroundColor Gray
@@ -1000,7 +971,7 @@ function Show-ProfileDetails {
         [string]$ProfilePath
     )
 
-    $profileData = Get-Content $ProfilePath | ConvertFrom-Json
+    $profileData = Get-Content -Path $ProfilePath -Raw -Encoding UTF8 | ConvertFrom-Json
 
     Show-Header -Title (Get-LocalizedString -Key 'gui.profiles.details_title' -Parameters @{ Name = $profileData.Name })
 
@@ -1199,8 +1170,7 @@ function Select-ApplicationsFromDatabase {
                 }
             }
             '2' {
-                $allApps = Get-DatabaseApps
-                $tags = $allApps | Where-Object { $_.Tags } | ForEach-Object { $_.Tags } | Select-Object -Unique | Sort-Object
+                $tags = Get-DatabaseTagNames
                 Write-Host "`n$(Get-LocalizedString -Key 'gui.creator.tags_label')" -ForegroundColor Yellow
                 Write-Host "  0. $(Get-LocalizedString -Key 'gui.creator.cancel')" -ForegroundColor Gray
                 for ($i = 0; $i -lt $tags.Count; $i++) {
@@ -1775,7 +1745,7 @@ function Show-AddApplicationMenu {
         }
 
         # Load current database
-        $db = Get-Content $dbPath -Raw | ConvertFrom-Json
+        $db = Get-Content -Path $dbPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
         # Add new application
         $db.Applications | Add-Member -MemberType NoteProperty -Name $appId -Value $newApp -Force
@@ -1789,6 +1759,7 @@ function Show-AddApplicationMenu {
 
         # Reload database in GUI
         $script:AppDatabase[$appId] = $newApp
+        $script:DatabaseTagsCache = $null
 
         # Update applications-data.js for ProfileCreator.html
         $jsPath = Join-Path $script:RepositoryRoot 'Tools\applications-data.js'

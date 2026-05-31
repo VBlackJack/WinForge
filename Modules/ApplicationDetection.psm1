@@ -172,7 +172,7 @@ function Get-RegistryInstalledApp {
                         }
                     }
                 } catch {
-                    Write-Verbose "Registry scan error for $path on $($key.Name): $($_.Exception.Message)"
+                    Write-Verbose "Registry scan error for $path`: $($_.Exception.Message)"
                 }
                 $results
             }
@@ -880,49 +880,37 @@ function Get-InstalledApplicationsCache {
     # 4. Pre-cache common command outputs (for Command detection method)
     $commandOutputs = @{}
 
-    # Cache dotnet runtimes (used by .NET Runtime detections)
-    if (Get-Command -Name 'dotnet' -ErrorAction SilentlyContinue) {
-        try {
-            $commandOutputs['dotnet --list-runtimes'] = & dotnet --list-runtimes 2>&1 | Out-String
-            $commandOutputs['dotnet --version'] = & dotnet --version 2>&1 | Out-String
-        } catch {
-            Write-Verbose "Failed to cache dotnet info: $($_.Exception.Message)"
-        }
-    }
+    $commandCacheDefinitions = @(
+        @{ Name = 'dotnet'; Commands = @(
+            @{ Key = 'dotnet --list-runtimes'; Args = @('--list-runtimes') },
+            @{ Key = 'dotnet --version'; Args = @('--version') }
+        ) },
+        @{ Name = 'java'; Commands = @(
+            @{ Key = 'java -version'; Args = @('-version') }
+        ) },
+        @{ Name = 'python'; Commands = @(
+            @{ Key = 'python --version'; Args = @('--version') }
+        ) },
+        @{ Name = 'node'; Commands = @(
+            @{ Key = 'node --version'; Args = @('--version') }
+        ) },
+        @{ Name = 'git'; Commands = @(
+            @{ Key = 'git --version'; Args = @('--version') }
+        ) }
+    )
 
-    # Cache java version (used by Java/JRE/JDK detections)
-    if (Get-Command -Name 'java' -ErrorAction SilentlyContinue) {
-        try {
-            $commandOutputs['java -version'] = & java -version 2>&1 | Out-String
-        } catch {
-            Write-Verbose "Failed to cache java info: $($_.Exception.Message)"
+    foreach ($definition in $commandCacheDefinitions) {
+        $executable = [string]$definition.Name
+        if (-not (Get-Command -Name $executable -ErrorAction SilentlyContinue)) {
+            continue
         }
-    }
 
-    # Cache python version
-    if (Get-Command -Name 'python' -ErrorAction SilentlyContinue) {
-        try {
-            $commandOutputs['python --version'] = & python --version 2>&1 | Out-String
-        } catch {
-            Write-Verbose "Failed to cache python info: $($_.Exception.Message)"
-        }
-    }
-
-    # Cache node version
-    if (Get-Command -Name 'node' -ErrorAction SilentlyContinue) {
-        try {
-            $commandOutputs['node --version'] = & node --version 2>&1 | Out-String
-        } catch {
-            Write-Verbose "Failed to cache node info: $($_.Exception.Message)"
-        }
-    }
-
-    # Cache git version
-    if (Get-Command -Name 'git' -ErrorAction SilentlyContinue) {
-        try {
-            $commandOutputs['git --version'] = & git --version 2>&1 | Out-String
-        } catch {
-            Write-Verbose "Failed to cache git info: $($_.Exception.Message)"
+        foreach ($command in $definition.Commands) {
+            try {
+                $commandOutputs[$command.Key] = & $executable @($command.Args) 2>&1 | Out-String
+            } catch {
+                Write-Verbose "Failed to cache $executable info: $($_.Exception.Message)"
+            }
         }
     }
 

@@ -84,6 +84,10 @@ if (-not (Get-Command -Name Get-InstalledAppVersion -ErrorAction SilentlyContinu
 # === TIMEOUT CONFIGURATION ===
 # Default timeout for installation processes (30 minutes)
 $script:DefaultInstallTimeoutSeconds = 1800
+$script:DefaultOfficeInstallTimeoutSeconds = 2700
+$script:CurlConnectTimeoutSeconds = 30
+$script:WingetNetworkErrorExitCodes = @(-1978335212)
+$script:ChocolateyRebootExitCodes = @(1641, 3010)
 
 # Import TimeoutSettings module for centralized timeout configuration
 $script:TimeoutSettingsPath = Join-Path $script:RepositoryRoot 'Core\TimeoutSettings.psm1'
@@ -101,9 +105,9 @@ function script:Get-ConfiguredInstallTimeout {
 
     # Fallback defaults if TimeoutSettings module not available
     if ($AppName -match 'Office|Microsoft 365|Word|Excel|PowerPoint|Outlook') {
-        return 2700  # 45 minutes for Office
+        return $script:DefaultOfficeInstallTimeoutSeconds
     }
-    return 1800  # 30 minutes default
+    return $script:DefaultInstallTimeoutSeconds
 }
 
 # === PERFORMANCE OPTIMIZATION: CACHED CONFIGURATION ===
@@ -737,15 +741,25 @@ function Invoke-FileDownloadWithProgress {
             'Accept-Language' = 'en-US,en;q=0.5'
         }
 
-        Invoke-WebRequest -Uri $Url -OutFile $OutputPath -Headers $headers -UseBasicParsing -ErrorAction Stop
+        $response = Invoke-WebRequest -Uri $Url -OutFile $OutputPath -Headers $headers -UseBasicParsing -TimeoutSec $TimeoutSeconds -ErrorAction Stop -PassThru
 
-        if ((Test-Path -Path $OutputPath) -and (Get-Item -Path $OutputPath).Length -gt 0) {
+        if ($response.StatusCode -ge 400) {
+            Write-Output "[WARNING] $(Get-LocalizedString -Key 'download.method.http_error' -Parameters @{ StatusCode = $response.StatusCode })"
+            Write-Status -Message (Get-LocalizedString -Key 'download.method.http_error' -Parameters @{ StatusCode = $response.StatusCode }) -Level 'Warning'
+            if (Test-Path -Path $OutputPath) {
+                Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
+            }
+        }
+        elseif ((Test-Path -Path $OutputPath) -and (Get-Item -Path $OutputPath).Length -gt 0) {
             $downloadSuccess = $true
             Write-Output "[SUCCESS] $(Get-LocalizedString -Key 'download.method.completed')"
             Write-Status -Message (Get-LocalizedString -Key 'download.method.completed') -Level 'Verbose'
         }
+        else {
+            Write-Output "[WARNING] $(Get-LocalizedString -Key 'download.method.empty_or_missing')"
+        }
     } catch {
-        Write-Output "[WARNING] $(Get-LocalizedString -Key 'download.method.webrequest_failed_fallback')"
+        Write-Output "[WARNING] $(Get-LocalizedString -Key 'download.method.webrequest_failed_curl')"
         Write-Status -Message (Get-LocalizedString -Key 'download.method.webrequest_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
         # Clean up any partial file
         if (Test-Path -Path $OutputPath) {
@@ -753,44 +767,7 @@ function Invoke-FileDownloadWithProgress {
         }
     }
 
-    # Method 2: Fallback to Invoke-WebRequest (better redirect handling)
-    if (-not $downloadSuccess) {
-        # Clean up any partial file from previous attempt
-        if (Test-Path -Path $OutputPath) {
-            Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
-        }
-        try {
-            Write-Output "[INFO] $(Get-LocalizedString -Key 'download.method.invoke_webrequest')"
-            Write-Status -Message (Get-LocalizedString -Key 'download.method.invoke_webrequest_redirects') -Level 'Verbose'
-            $ProgressPreference = 'SilentlyContinue'  # Disable progress bar for speed
-            $headers = @{
-                "User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                "Accept" = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
-            }
-            $response = Invoke-WebRequest -Uri $Url -OutFile $OutputPath -UseBasicParsing -TimeoutSec $TimeoutSeconds -Headers $headers -ErrorAction Stop -PassThru
-
-            # Security: Explicitly validate HTTP status code (defensive check)
-            if ($response.StatusCode -ge 400) {
-                Write-Output "[WARNING] $(Get-LocalizedString -Key 'download.method.http_error' -Parameters @{ StatusCode = $response.StatusCode })"
-                Write-Status -Message (Get-LocalizedString -Key 'download.method.http_error' -Parameters @{ StatusCode = $response.StatusCode }) -Level 'Warning'
-                if (Test-Path -Path $OutputPath) {
-                    Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
-                }
-            }
-            elseif ((Test-Path -Path $OutputPath) -and (Get-Item -Path $OutputPath).Length -gt 0) {
-                $downloadSuccess = $true
-                Write-Output "[SUCCESS] $(Get-LocalizedString -Key 'download.method.completed')"
-            }
-            else {
-                Write-Output "[WARNING] $(Get-LocalizedString -Key 'download.method.empty_or_missing')"
-            }
-        } catch {
-            Write-Output "[WARNING] $(Get-LocalizedString -Key 'download.method.webrequest_failed_curl')"
-            Write-Status -Message (Get-LocalizedString -Key 'download.method.webrequest_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Verbose'
-        }
-    }
-
-    # Method 3: Try curl.exe (built into Windows 10/11, handles redirects well)
+    # Method 2: Try curl.exe (built into Windows 10/11, handles redirects well)
     if (-not $downloadSuccess) {
         if (Test-Path -Path $OutputPath) {
             Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
@@ -808,7 +785,7 @@ function Invoke-FileDownloadWithProgress {
                     '-L'                          # Follow redirects
                     '-o', "`"$OutputPath`""       # Output file (quoted for paths with spaces)
                     '-A', $userAgent              # User agent (pre-quoted)
-                    '--connect-timeout', '30'     # Connection timeout
+                    '--connect-timeout', $script:CurlConnectTimeoutSeconds.ToString()     # Connection timeout
                     '--max-time', $TimeoutSeconds.ToString()  # Max total time
                     '--fail'                      # Fail on HTTP errors
                     '--silent'                    # Silent mode
@@ -1020,7 +997,7 @@ function Install-ViaWinget {
             }
 
             # Check for transient network errors (exit codes that might benefit from retry)
-            $transientErrors = @(-1978335212)  # Winget network errors
+            $transientErrors = $script:WingetNetworkErrorExitCodes
             if ($transientErrors -contains $exitCode) {
                 if ($attempt -lt $MaxRetries) {
                     $delay = $RetryDelaySeconds * [Math]::Pow(2, $attempt - 1)  # Exponential backoff
@@ -1138,7 +1115,7 @@ function Install-ViaChocolatey {
             }
 
             # Check for transient network errors (but NOT if already installed)
-            $transientErrors = @(1641, 3010)  # Chocolatey reboot-pending codes
+            $transientErrors = $script:ChocolateyRebootExitCodes
             if ($transientErrors -contains $exitCode -and $attempt -lt $MaxRetries) {
                 # Before retrying, check if package is already installed
                 Write-Output "[INFO] $(Get-LocalizedString -Key 'install.method.verifying')"

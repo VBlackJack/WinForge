@@ -296,7 +296,7 @@ function Get-AllApplications {
         return @()
     }
 
-    $apps = @()
+    $apps = New-Object 'System.Collections.Generic.List[object]'
 
     foreach ($prop in $database.Applications.PSObject.Properties) {
         $app = $prop.Value
@@ -318,11 +318,11 @@ function Get-AllApplications {
         }
 
         if ($include) {
-            $apps += $app
+            $apps.Add($app) | Out-Null
         }
     }
 
-    return $apps
+    return $apps.ToArray()
 }
 
 <#
@@ -347,18 +347,18 @@ function Search-Applications {
         return @()
     }
 
-    $results = @()
+    $results = New-Object 'System.Collections.Generic.List[object]'
 
     foreach ($prop in $database.Applications.PSObject.Properties) {
         $app = $prop.Value
 
         if ($app.Name -like "*$SearchTerm*") {
             $app | Add-Member -NotePropertyName "AppId" -NotePropertyValue $prop.Name -Force
-            $results += $app
+            $results.Add($app) | Out-Null
         }
     }
 
-    return $results
+    return $results.ToArray()
 }
 
 <#
@@ -635,17 +635,19 @@ function Get-DatabaseStatistics {
         return $null
     }
 
+    $allApplications = @(Get-AllApplications)
+
     $stats = [PSCustomObject]@{
         DatabaseVersion    = $database.DatabaseVersion
         LastUpdated        = $database.LastUpdated
         TotalApplications  = $database.TotalApplications
         TotalCategories    = ($database.Categories.PSObject.Properties | Measure-Object).Count
         TotalTags          = ($database.Tags.PSObject.Properties | Measure-Object).Count
-        VerifiedApps       = (Get-AllApplications -Verified | Measure-Object).Count
-        AppsWithWinget     = (Get-AllApplications | Where-Object { $_.Sources.Winget } | Measure-Object).Count
-        AppsWithChocolatey = (Get-AllApplications | Where-Object { $_.Sources.Chocolatey } | Measure-Object).Count
-        AppsWithStore      = (Get-AllApplications | Where-Object { $_.Sources.Store } | Measure-Object).Count
-        AppsWithDirectUrl  = (Get-AllApplications | Where-Object { $_.Sources.DirectUrl } | Measure-Object).Count
+        VerifiedApps       = ($allApplications | Where-Object { $_.Verified } | Measure-Object).Count
+        AppsWithWinget     = ($allApplications | Where-Object { $_.Sources.Winget } | Measure-Object).Count
+        AppsWithChocolatey = ($allApplications | Where-Object { $_.Sources.Chocolatey } | Measure-Object).Count
+        AppsWithStore      = ($allApplications | Where-Object { $_.Sources.Store } | Measure-Object).Count
+        AppsWithDirectUrl  = ($allApplications | Where-Object { $_.Sources.DirectUrl } | Measure-Object).Count
     }
 
     return $stats

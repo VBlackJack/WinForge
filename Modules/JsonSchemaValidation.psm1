@@ -259,15 +259,27 @@ function Test-ObjectAgainstSchema {
         [string]$Path
     )
 
-    $errors = @()
+    $errors = New-Object 'System.Collections.Generic.List[object]'
+
+    function Add-ValidationError {
+        param([object]$ErrorItem)
+        $errors.Add($ErrorItem) | Out-Null
+    }
+
+    function Add-ValidationErrors {
+        param([object[]]$ErrorItems)
+        foreach ($errorItem in $ErrorItems) {
+            $errors.Add($errorItem) | Out-Null
+        }
+    }
 
     # Handle null object
     if ($null -eq $Object) {
         $schemaType = Get-SchemaProperty -Schema $Schema -PropertyName 'type'
         if ($schemaType -and $schemaType -ne 'null') {
-            $errors += (t 'validation.schema.type_mismatch' @{ Expected = $schemaType; Actual = 'null'; Path = $Path })
+            Add-ValidationError (t 'validation.schema.type_mismatch' @{ Expected = $schemaType; Actual = 'null'; Path = $Path })
         }
-        return $errors
+        return $errors.ToArray()
     }
 
     # Type validation
@@ -277,8 +289,8 @@ function Test-ObjectAgainstSchema {
         $expectedTypes = if ($schemaType -is [array]) { $schemaType } else { @($schemaType) }
 
         if ($actualType -notin $expectedTypes) {
-            $errors += (t 'validation.schema.type_mismatch' @{ Expected = ($expectedTypes -join ' or '); Actual = $actualType; Path = $Path })
-            return $errors
+            Add-ValidationError (t 'validation.schema.type_mismatch' @{ Expected = ($expectedTypes -join ' or '); Actual = $actualType; Path = $Path })
+            return $errors.ToArray()
         }
     }
 
@@ -289,7 +301,7 @@ function Test-ObjectAgainstSchema {
         if ($requiredProps) {
             foreach ($requiredProp in $requiredProps) {
                 if (-not ($Object.PSObject.Properties.Name -contains $requiredProp)) {
-                    $errors += (t 'validation.schema.required_missing' @{ Property = $requiredProp; Path = $Path })
+                    Add-ValidationError (t 'validation.schema.required_missing' @{ Property = $requiredProp; Path = $Path })
                 }
             }
         }
@@ -302,10 +314,10 @@ function Test-ObjectAgainstSchema {
 
                 if ($schemaProps.PSObject.Properties.Name -contains $prop.Name) {
                     $propSchema = $schemaProps.($prop.Name)
-                    $errors += Test-ObjectAgainstSchema -Object $prop.Value -Schema $propSchema -Path $propPath
+                    Add-ValidationErrors (Test-ObjectAgainstSchema -Object $prop.Value -Schema $propSchema -Path $propPath)
                 }
                 elseif ((Get-SchemaProperty -Schema $Schema -PropertyName 'additionalProperties') -eq $false) {
-                    $errors += "[$propPath] Additional property not allowed"
+                    Add-ValidationError "[$propPath] Additional property not allowed"
                 }
             }
         }
@@ -331,28 +343,28 @@ function Test-ObjectAgainstSchema {
                         }
                     }
                     if (-not $validForAny) {
-                        $errors += "[$itemPath] Value does not match any of the allowed schemas"
+                        Add-ValidationError "[$itemPath] Value does not match any of the allowed schemas"
                     }
                 }
                 else {
-                    $errors += Test-ObjectAgainstSchema -Object $arrayObj[$i] -Schema $schemaItems -Path $itemPath
+                    Add-ValidationErrors (Test-ObjectAgainstSchema -Object $arrayObj[$i] -Schema $schemaItems -Path $itemPath)
                 }
             }
         }
 
         $uniqueItems = Get-SchemaProperty -Schema $Schema -PropertyName 'uniqueItems'
         if ($uniqueItems -and $arrayObj.Count -ne @($arrayObj | Select-Object -Unique).Count) {
-            $errors += "[$Path] Array items must be unique"
+            Add-ValidationError "[$Path] Array items must be unique"
         }
 
         $minItems = Get-SchemaProperty -Schema $Schema -PropertyName 'minItems'
         if ($minItems -and $arrayObj.Count -lt $minItems) {
-            $errors += "[$Path] Array must have at least $minItems items, has $($arrayObj.Count)"
+            Add-ValidationError "[$Path] Array must have at least $minItems items, has $($arrayObj.Count)"
         }
 
         $maxItems = Get-SchemaProperty -Schema $Schema -PropertyName 'maxItems'
         if ($maxItems -and $arrayObj.Count -gt $maxItems) {
-            $errors += "[$Path] Array must have at most $maxItems items, has $($arrayObj.Count)"
+            Add-ValidationError "[$Path] Array must have at most $maxItems items, has $($arrayObj.Count)"
         }
     }
 
@@ -360,25 +372,25 @@ function Test-ObjectAgainstSchema {
     if ($schemaType -eq 'string' -and $Object -is [string]) {
         $minLength = Get-SchemaProperty -Schema $Schema -PropertyName 'minLength'
         if ($minLength -and $Object.Length -lt $minLength) {
-            $errors += "[$Path] String length $($Object.Length) is less than minimum $minLength"
+            Add-ValidationError "[$Path] String length $($Object.Length) is less than minimum $minLength"
         }
 
         $maxLength = Get-SchemaProperty -Schema $Schema -PropertyName 'maxLength'
         if ($maxLength -and $Object.Length -gt $maxLength) {
-            $errors += "[$Path] String length $($Object.Length) exceeds maximum $maxLength"
+            Add-ValidationError "[$Path] String length $($Object.Length) exceeds maximum $maxLength"
         }
 
         $pattern = Get-SchemaProperty -Schema $Schema -PropertyName 'pattern'
         if ($pattern) {
             if ($Object -notmatch $pattern) {
-                $errors += "[$Path] String '$Object' does not match pattern '$pattern'"
+                Add-ValidationError "[$Path] String '$Object' does not match pattern '$pattern'"
             }
         }
 
         $enum = Get-SchemaProperty -Schema $Schema -PropertyName 'enum'
         if ($enum) {
             if ($Object -notin $enum) {
-                $errors += "[$Path] Value '$Object' is not one of allowed values: $($enum -join ', ')"
+                Add-ValidationError "[$Path] Value '$Object' is not one of allowed values: $($enum -join ', ')"
             }
         }
     }
@@ -387,16 +399,16 @@ function Test-ObjectAgainstSchema {
     if (($schemaType -eq 'integer' -or $schemaType -eq 'number') -and $Object -is [ValueType]) {
         $minimum = Get-SchemaProperty -Schema $Schema -PropertyName 'minimum'
         if ($null -ne $minimum -and $Object -lt $minimum) {
-            $errors += "[$Path] Value $Object is less than minimum $minimum"
+            Add-ValidationError "[$Path] Value $Object is less than minimum $minimum"
         }
 
         $maximum = Get-SchemaProperty -Schema $Schema -PropertyName 'maximum'
         if ($null -ne $maximum -and $Object -gt $maximum) {
-            $errors += "[$Path] Value $Object exceeds maximum $maximum"
+            Add-ValidationError "[$Path] Value $Object exceeds maximum $maximum"
         }
     }
 
-    return $errors
+    return $errors.ToArray()
 }
 
 function Get-JsonType {
