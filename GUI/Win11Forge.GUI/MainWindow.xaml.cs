@@ -45,22 +45,15 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 {
     private bool _disposed;
     private bool _initializationFailed;
+    private MainWindowViewModel? _viewModel;
     private readonly IPowerShellBridge? _powerShellBridge;
     private readonly IDeploymentHistoryService? _historyService;
     private readonly IAppSettingsService? _settingsService;
     private readonly IProfileExportService? _profileExportService;
     private readonly ToastService? _toastService;
     private readonly INavigationService? _navigationService;
-    private readonly IUndoService? _undoService;
-    private readonly DashboardViewModel? _dashboardViewModel;
-    private readonly DeploymentViewModel? _deploymentViewModel;
-    private readonly AppsViewModel? _appsViewModel;
-    private readonly SettingsViewModel? _settingsViewModel;
-    private readonly PrerequisitesViewModel? _prerequisitesViewModel;
-    private readonly AppCatalogViewModel? _appCatalogViewModel;
 
     // Event handlers stored for cleanup
-    private EventHandler? _undoStateChangedHandler;
     private EventHandler? _navigationChangedHandler;
 
     // View cache for lazy creation
@@ -86,7 +79,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     /// <summary>
     /// Command to show keyboard shortcuts dialog.
     /// </summary>
-    public IAsyncRelayCommand ShowKeyboardShortcutsCommand { get; }
+    public IAsyncRelayCommand? ShowKeyboardShortcutsCommand => _viewModel?.ShowKeyboardShortcutsCommand;
 
     /// <summary>
     /// Command to navigate to a specific view by index.
@@ -101,12 +94,12 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     /// <summary>
     /// Command to undo the last action.
     /// </summary>
-    public ICommand UndoCommand { get; }
+    public ICommand? UndoCommand => _viewModel?.UndoCommand;
 
     /// <summary>
     /// Command to redo the last undone action.
     /// </summary>
-    public ICommand RedoCommand { get; }
+    public ICommand? RedoCommand => _viewModel?.RedoCommand;
 
     /// <summary>
     /// Whether back navigation is available.
@@ -116,12 +109,12 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     /// <summary>
     /// Whether undo is available.
     /// </summary>
-    public bool CanUndo => _undoService?.CanUndo ?? false;
+    public bool CanUndo => _viewModel?.CanUndo ?? false;
 
     /// <summary>
     /// Whether redo is available.
     /// </summary>
-    public bool CanRedo => _undoService?.CanRedo ?? false;
+    public bool CanRedo => _viewModel?.CanRedo ?? false;
 
     /// <summary>
     /// Whether to show the breadcrumb navigation bar.
@@ -144,8 +137,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         InitializeComponent();
         LocalizationService.ApplyFlowDirection(this);
 
-        // Initialize commands
-        ShowKeyboardShortcutsCommand = new AsyncRelayCommand(ShowKeyboardShortcutsAsync);
+        // Initialize view-owned commands
         NavigateToCommand = new RelayCommand<string>(index =>
         {
             if (int.TryParse(index, out var viewIndex))
@@ -154,35 +146,24 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             }
         });
         GoBackCommand = new RelayCommand(GoBack, () => CanGoBack);
-        UndoCommand = new AsyncRelayCommand(UndoAsync, () => CanUndo);
-        RedoCommand = new AsyncRelayCommand(RedoAsync, () => CanRedo);
-
-        // Set DataContext for XAML bindings
-        DataContext = this;
 
         try
         {
             // Get services from DI container
+            _viewModel = App.GetService<MainWindowViewModel>();
             _powerShellBridge = App.GetService<IPowerShellBridge>();
             _historyService = App.GetService<IDeploymentHistoryService>();
             _settingsService = App.GetService<IAppSettingsService>();
             _profileExportService = App.GetService<IProfileExportService>();
             _toastService = App.GetService<ToastService>();
             _navigationService = App.GetService<INavigationService>();
-            _undoService = App.GetService<IUndoService>();
+
+            SubscribeToViewModel();
+
+            // Set DataContext for XAML bindings
+            DataContext = this;
 
             RestoreWindowPlacement();
-
-            // Subscribe to undo service state changes (store handler for cleanup)
-            _undoStateChangedHandler = (s, e) =>
-            {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    OnPropertyChanged(nameof(CanUndo));
-                    OnPropertyChanged(nameof(CanRedo));
-                });
-            };
-            _undoService.StateChanged += _undoStateChangedHandler;
 
             // Subscribe to navigation service changes (store handler for cleanup)
             _navigationChangedHandler = (s, e) =>
@@ -199,14 +180,6 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
                 });
             };
             _navigationService.NavigationChanged += _navigationChangedHandler;
-
-            // Create ViewModels using DI
-            _dashboardViewModel = App.GetService<DashboardViewModel>();
-            _deploymentViewModel = App.GetService<DeploymentViewModel>();
-            _appsViewModel = App.GetService<AppsViewModel>();
-            _settingsViewModel = App.GetService<SettingsViewModel>();
-            _prerequisitesViewModel = App.GetService<PrerequisitesViewModel>();
-            _appCatalogViewModel = App.GetService<AppCatalogViewModel>();
 
             // Initialize on window load
             Loaded += MainWindow_Loaded;
@@ -247,12 +220,12 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
         FrameworkElement view = index switch
         {
-            ViewIndex.Dashboard => new DashboardView { DataContext = _dashboardViewModel },
-            ViewIndex.Prerequisites => new PrerequisitesView { DataContext = _prerequisitesViewModel },
-            ViewIndex.Apps => new AppsView { DataContext = _appsViewModel },
-            ViewIndex.Deployment => new DeploymentView { DataContext = _deploymentViewModel },
-            ViewIndex.Settings => new SettingsView { DataContext = _settingsViewModel },
-            ViewIndex.AppCatalog => new AppCatalogView { DataContext = _appCatalogViewModel },
+            ViewIndex.Dashboard => new DashboardView { DataContext = _viewModel?.DashboardViewModel },
+            ViewIndex.Prerequisites => new PrerequisitesView { DataContext = _viewModel?.PrerequisitesViewModel },
+            ViewIndex.Apps => new AppsView { DataContext = _viewModel?.AppsViewModel },
+            ViewIndex.Deployment => new DeploymentView { DataContext = _viewModel?.DeploymentViewModel },
+            ViewIndex.Settings => new SettingsView { DataContext = _viewModel?.SettingsViewModel },
+            ViewIndex.AppCatalog => new AppCatalogView { DataContext = _viewModel?.AppCatalogViewModel },
             _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
 
@@ -269,6 +242,38 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    private void SubscribeToViewModel()
+    {
+        if (_viewModel == null)
+        {
+            return;
+        }
+
+        _viewModel.PropertyChanged += MainWindowViewModel_PropertyChanged;
+        SetWindowTitle(_viewModel.WindowTitle);
+    }
+
+    private void MainWindowViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(MainWindowViewModel.CanUndo):
+                OnPropertyChanged(nameof(CanUndo));
+                break;
+
+            case nameof(MainWindowViewModel.CanRedo):
+                OnPropertyChanged(nameof(CanRedo));
+                break;
+
+            case nameof(MainWindowViewModel.WindowTitle):
+                if (_viewModel != null)
+                {
+                    SetWindowTitle(_viewModel.WindowTitle);
+                }
+                break;
+        }
     }
 
     /// <summary>
@@ -330,40 +335,6 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     }
 
     /// <summary>
-    /// Undoes the last action.
-    /// </summary>
-    private async Task UndoAsync()
-    {
-        if (_undoService == null) return;
-
-        var description = _undoService.NextUndoDescription;
-        var success = await _undoService.UndoAsync();
-
-        if (success && _toastService != null)
-        {
-            var message = string.Format(Loc.Undo_ActionUndone, description ?? "");
-            _toastService.ShowInfo(message);
-        }
-    }
-
-    /// <summary>
-    /// Redoes the last undone action.
-    /// </summary>
-    private async Task RedoAsync()
-    {
-        if (_undoService == null) return;
-
-        var description = _undoService.NextRedoDescription;
-        var success = await _undoService.RedoAsync();
-
-        if (success && _toastService != null)
-        {
-            var message = string.Format(Loc.Undo_ActionRedone, description ?? "");
-            _toastService.ShowInfo(message);
-        }
-    }
-
-    /// <summary>
     /// Updates the breadcrumb navigation based on current view.
     /// </summary>
     private void UpdateBreadcrumb(int viewIndex)
@@ -392,7 +363,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         try
         {
             // Skip if initialization failed
-            if (_initializationFailed || _dashboardViewModel == null) return;
+            if (_initializationFailed || _viewModel == null) return;
 
             // Initialize toast service with WPF UI snackbar (created programmatically)
             var snackbar = new Snackbar(RootSnackbarPresenter) { Timeout = TimeSpan.FromSeconds(3) };
@@ -429,7 +400,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             }
 
             // Set window title with dynamic version
-            await UpdateWindowTitleAsync();
+            await _viewModel.UpdateWindowTitleAsync();
 
             // Start cache pre-warming AFTER the initial view has loaded
             // to avoid resource contention with the first view's initialization
@@ -440,26 +411,6 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         {
             System.Diagnostics.Debug.WriteLine($"MainWindow_Loaded failed: {ex}");
             _toastService?.ShowError(string.Format(Loc.Init_ErrorMessage, ex.Message));
-        }
-    }
-
-    private async Task UpdateWindowTitleAsync()
-    {
-        try
-        {
-            if (_powerShellBridge == null)
-            {
-                SetWindowTitle(string.Format(Loc.App_Title, "?"));
-                return;
-            }
-            var version = await _powerShellBridge.GetWin11ForgeVersionAsync();
-            SetWindowTitle(string.Format(Loc.App_Title, version));
-        }
-        catch (Exception ex)
-        {
-            // Fallback to static title if version retrieval fails
-            System.Diagnostics.Debug.WriteLine($"Failed to retrieve version for title: {ex.Message}");
-            SetWindowTitle(string.Format(Loc.App_Title, "?"));
         }
     }
 
@@ -659,49 +610,55 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
     private async Task InitializeDashboardAsync()
     {
-        if (_dashboardInitialized || _dashboardViewModel == null) return;
+        var dashboardViewModel = _viewModel?.DashboardViewModel;
+        if (_dashboardInitialized || dashboardViewModel == null) return;
 
-        await _dashboardViewModel.InitializeAsync();
+        await dashboardViewModel.InitializeAsync();
         _dashboardInitialized = true;
     }
 
     private async Task InitializeDeploymentAsync()
     {
-        if (_deploymentInitialized || _deploymentViewModel == null) return;
+        var deploymentViewModel = _viewModel?.DeploymentViewModel;
+        if (_deploymentInitialized || deploymentViewModel == null) return;
 
-        await _deploymentViewModel.InitializeAsync();
+        await deploymentViewModel.InitializeAsync();
         _deploymentInitialized = true;
     }
 
     private async Task InitializeAppsAsync()
     {
-        if (_appsInitialized || _appsViewModel == null) return;
+        var appsViewModel = _viewModel?.AppsViewModel;
+        if (_appsInitialized || appsViewModel == null) return;
 
-        await _appsViewModel.InitializeAsync();
+        await appsViewModel.InitializeAsync();
         _appsInitialized = true;
     }
 
     private async Task InitializeSettingsAsync()
     {
-        if (_settingsInitialized || _settingsViewModel == null) return;
+        var settingsViewModel = _viewModel?.SettingsViewModel;
+        if (_settingsInitialized || settingsViewModel == null) return;
 
-        await _settingsViewModel.InitializeAsync();
+        await settingsViewModel.InitializeAsync();
         _settingsInitialized = true;
     }
 
     private async Task InitializePrerequisitesAsync()
     {
-        if (_prerequisitesInitialized || _prerequisitesViewModel == null) return;
+        var prerequisitesViewModel = _viewModel?.PrerequisitesViewModel;
+        if (_prerequisitesInitialized || prerequisitesViewModel == null) return;
 
-        await _prerequisitesViewModel.InitializeAsync();
+        await prerequisitesViewModel.InitializeAsync();
         _prerequisitesInitialized = true;
     }
 
     private async Task InitializeAppCatalogAsync()
     {
-        if (_appCatalogInitialized || _appCatalogViewModel == null) return;
+        var appCatalogViewModel = _viewModel?.AppCatalogViewModel;
+        if (_appCatalogInitialized || appCatalogViewModel == null) return;
 
-        await _appCatalogViewModel.LoadApplicationsCommand.ExecuteAsync(null);
+        await appCatalogViewModel.LoadApplicationsCommand.ExecuteAsync(null);
         _appCatalogInitialized = true;
     }
 
@@ -741,31 +698,6 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     }
 
     /// <summary>
-    /// Shows the keyboard shortcuts help dialog.
-    /// </summary>
-    private async Task ShowKeyboardShortcutsAsync()
-    {
-        try
-        {
-            var shortcutsPanel = new KeyboardShortcutsPanel();
-            var dialog = new Wpf.Ui.Controls.ContentDialog(RootContentDialog)
-            {
-                Title = Loc.Help_KeyboardShortcuts ?? "Keyboard Shortcuts",
-                Content = shortcutsPanel,
-                CloseButtonText = Loc.Common_OK ?? "OK"
-            };
-
-            shortcutsPanel.RequestClose = () => dialog.Hide(ContentDialogResult.None);
-            await dialog.ShowAsync();
-        }
-        catch (Exception ex)
-        {
-            // Dialog display is non-critical, but log for diagnostics
-            System.Diagnostics.Debug.WriteLine($"Failed to show keyboard shortcuts dialog: {ex.Message}");
-        }
-    }
-
-    /// <summary>
     /// If a checkpoint from a previously interrupted batch is found, prompts the user
     /// to resume, discard, or postpone the decision. The resumed batch (if any) runs
     /// in the background so MainWindow_Loaded is not blocked while the apps install.
@@ -777,7 +709,8 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     /// </remarks>
     private async Task PromptBatchResumeIfPendingAsync(IDialogService? dialogService)
     {
-        if (dialogService == null || _appsViewModel == null)
+        var appsViewModel = _viewModel?.AppsViewModel;
+        if (dialogService == null || appsViewModel == null)
         {
             return;
         }
@@ -881,7 +814,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
                 {
                     try
                     {
-                        await _appsViewModel.ResumeBatchAsync(latest);
+                        await appsViewModel.ResumeBatchAsync(latest);
                     }
                     catch (Exception ex)
                     {
@@ -976,13 +909,13 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
         if (disposing)
         {
-            // Unsubscribe from service events
-            if (_undoService != null && _undoStateChangedHandler != null)
+            if (_viewModel != null)
             {
-                _undoService.StateChanged -= _undoStateChangedHandler;
-                _undoStateChangedHandler = null;
+                _viewModel.PropertyChanged -= MainWindowViewModel_PropertyChanged;
+                _viewModel.Dispose();
             }
 
+            // Unsubscribe from service events
             if (_navigationService != null && _navigationChangedHandler != null)
             {
                 _navigationService.NavigationChanged -= _navigationChangedHandler;
@@ -993,12 +926,12 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             WeakReferenceMessenger.Default.Unregister<NavigateMessage>(this);
 
             // Dispose ViewModels that implement IDisposable
-            (_deploymentViewModel as IDisposable)?.Dispose();
-            (_appsViewModel as IDisposable)?.Dispose();
-            (_dashboardViewModel as IDisposable)?.Dispose();
-            (_settingsViewModel as IDisposable)?.Dispose();
-            (_prerequisitesViewModel as IDisposable)?.Dispose();
-            (_appCatalogViewModel as IDisposable)?.Dispose();
+            (_viewModel?.DeploymentViewModel as IDisposable)?.Dispose();
+            (_viewModel?.AppsViewModel as IDisposable)?.Dispose();
+            (_viewModel?.DashboardViewModel as IDisposable)?.Dispose();
+            (_viewModel?.SettingsViewModel as IDisposable)?.Dispose();
+            (_viewModel?.PrerequisitesViewModel as IDisposable)?.Dispose();
+            (_viewModel?.AppCatalogViewModel as IDisposable)?.Dispose();
         }
 
         _disposed = true;

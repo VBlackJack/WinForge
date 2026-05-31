@@ -259,6 +259,53 @@ public class DialogService : IDialogService
         }
     }
 
+    /// <inheritdoc/>
+    public async Task ShowContentAsync(string title, object content, string? closeButtonText = null)
+    {
+        if (_dialogHost == null)
+        {
+            System.Windows.MessageBox.Show(
+                title,
+                title,
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
+            return;
+        }
+
+        IDialogCloseRequester? closeRequester = content as IDialogCloseRequester;
+        try
+        {
+            var dialog = new ContentDialog(_dialogHost)
+            {
+                Title = title,
+                Content = content,
+                CloseButtonText = closeButtonText ?? Loc.Common_OK ?? "OK"
+            };
+
+            if (closeRequester != null)
+            {
+                closeRequester.RequestClose = () => dialog.Hide(ContentDialogResult.None);
+            }
+
+            await dialog.ShowAsync();
+        }
+        catch
+        {
+            System.Windows.MessageBox.Show(
+                title,
+                title,
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
+        }
+        finally
+        {
+            if (closeRequester != null)
+            {
+                closeRequester.RequestClose = null;
+            }
+        }
+    }
+
     private static bool? ShowYesNoCancelMessageBox(string title, string message)
     {
         var result = System.Windows.MessageBox.Show(
@@ -274,6 +321,17 @@ public class DialogService : IDialogService
             _ => null
         };
     }
+}
+
+/// <summary>
+/// Allows dialog content to request closing the host dialog.
+/// </summary>
+public interface IDialogCloseRequester
+{
+    /// <summary>
+    /// Gets or sets the close callback assigned by the dialog service.
+    /// </summary>
+    Action? RequestClose { get; set; }
 }
 
 /// <summary>
@@ -315,4 +373,9 @@ public interface IDialogService
         string? yesText = null,
         string? noText = null,
         string? cancelText = null);
+
+    /// <summary>
+    /// Shows custom content in the themed application dialog host.
+    /// </summary>
+    Task ShowContentAsync(string title, object content, string? closeButtonText = null);
 }

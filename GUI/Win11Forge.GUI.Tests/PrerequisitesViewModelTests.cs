@@ -222,4 +222,9 @@ internal class MockDialogServiceForPrerequisites : IDialogService
     {
         return Task.FromResult<bool?>(NextConfirmResult);
     }
+
+    public Task ShowContentAsync(string title, object content, string? closeButtonText = null)
+    {
+        return Task.CompletedTask;
+    }
 }

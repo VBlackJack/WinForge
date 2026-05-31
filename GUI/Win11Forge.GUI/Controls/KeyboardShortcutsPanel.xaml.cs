@@ -17,6 +17,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Wpf.Ui.Controls;
+using Win11Forge.GUI.Services;
 using Res = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Controls;
@@ -33,7 +34,7 @@ public class KeyboardShortcut
 /// <summary>
 /// Panel displaying available keyboard shortcuts.
 /// </summary>
-public partial class KeyboardShortcutsPanel : UserControl
+public partial class KeyboardShortcutsPanel : UserControl, IDialogCloseRequester
 {
     public Action? RequestClose { get; set; }
 

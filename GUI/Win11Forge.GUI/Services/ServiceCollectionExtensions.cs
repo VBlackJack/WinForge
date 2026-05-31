@@ -90,6 +90,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAppUpdateCoordinator, AppUpdateCoordinator>();
         services.AddSingleton<IAppUninstallCoordinator, AppUninstallCoordinator>();
 
+        // Register shell ViewModel as singleton (owns MainWindow shell state)
+        services.AddSingleton<MainWindowViewModel>();
+
         // Register ViewModels as transient (new instance per request)
         services.AddTransient<DashboardViewModel>();
         services.AddTransient<DeploymentViewModel>();

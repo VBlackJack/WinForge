@@ -903,6 +903,11 @@ internal sealed class TestDialogService : IDialogService
         YesNoCancelRequests.Add((title, message, yesText, noText, cancelText));
         return Task.FromResult(_yesNoCancelResults.Count > 0 ? _yesNoCancelResults.Dequeue() : null);
     }
+
+    public Task ShowContentAsync(string title, object content, string? closeButtonText = null)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>
