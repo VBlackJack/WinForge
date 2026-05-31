@@ -15,7 +15,6 @@
  */
 
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -27,9 +26,7 @@ using Wpf.Ui.Controls;
 using Win11Forge.GUI.Controls;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Messages;
-using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.Resume;
 using Win11Forge.GUI.ViewModels;
 using Win11Forge.GUI.Views;
 using Loc = Win11Forge.GUI.Resources.Resources;
@@ -65,7 +62,6 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     private bool _settingsInitialized;
     private bool _prerequisitesInitialized;
     private bool _appCatalogInitialized;
-    private bool _batchResumePromptHandled;
     private bool _isNavigatingFromService;
     private bool _isNavigating;
     private int _currentViewIndex = -1;
@@ -379,7 +375,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             // If a previous batch (Install / Update / Uninstall) was interrupted by a
             // crash, BSOD, or forced reboot, offer the user to resume / discard /
             // postpone the decision before any other UI flow takes over.
-            await PromptBatchResumeIfPendingAsync(dialogService);
+            await _viewModel.PromptBatchResumeIfPendingAsync(dialogService);
 
             // Check for first run and show onboarding
             var settings = _settingsService?.LoadSettings();
@@ -694,152 +690,6 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
                 // State saving is non-critical, but log for diagnostics
                 System.Diagnostics.Debug.WriteLine($"Failed to save navigation state: {ex.Message}");
             }
-        }
-    }
-
-    /// <summary>
-    /// If a checkpoint from a previously interrupted batch is found, prompts the user
-    /// to resume, discard, or postpone the decision. The resumed batch (if any) runs
-    /// in the background so MainWindow_Loaded is not blocked while the apps install.
-    /// </summary>
-    /// <remarks>
-    /// Only the most recent non-stale pending checkpoint is offered; older pending
-    /// checkpoints are logged as ignored and will be cleaned by PruneStaleAsync at a
-    /// future startup once they exceed the TTL.
-    /// </remarks>
-    private async Task PromptBatchResumeIfPendingAsync(IDialogService? dialogService)
-    {
-        var appsViewModel = _viewModel?.AppsViewModel;
-        if (dialogService == null || appsViewModel == null)
-        {
-            return;
-        }
-
-        // Re-entrance guard. Top-level Window.Loaded normally fires once per
-        // instance, but defensively skip subsequent invocations so a Visibility
-        // cycle or visual-tree re-attach cannot re-prompt the user — particularly
-        // dangerous after a Resume click, where the new in-flight batch could be
-        // surfaced as a fresh InProgress checkpoint.
-        if (_batchResumePromptHandled)
-        {
-            return;
-        }
-        _batchResumePromptHandled = true;
-
-        IBatchResumeService resumeService;
-        try
-        {
-            resumeService = App.GetService<IBatchResumeService>();
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Resume service unavailable: {ex.Message}");
-            return;
-        }
-
-        IReadOnlyList<BatchCheckpoint> pending;
-        try
-        {
-            pending = await resumeService.ListPendingAsync();
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] ListPendingAsync failed: {ex.Message}");
-            return;
-        }
-
-        if (pending.Count == 0)
-        {
-            return;
-        }
-
-        var ordered = pending.OrderByDescending(c => c.LastCheckpointAt).ToArray();
-        var latest = ordered[0];
-        for (var i = 1; i < ordered.Length; i++)
-        {
-            System.Diagnostics.Debug.WriteLine(
-                $"[MainWindow] Ignoring older pending checkpoint {ordered[i].BatchId} " +
-                $"(LastCheckpointAt={ordered[i].LastCheckpointAt:o}); will be re-offered or pruned later.");
-        }
-
-        var remaining = latest.Plan.Count - latest.Completed.Count;
-        var messageTemplate = latest.OperationKind switch
-        {
-            BatchOperationKind.Install => Loc.Resume_Message_Install,
-            BatchOperationKind.Update => Loc.Resume_Message_Update,
-            BatchOperationKind.Uninstall => Loc.Resume_Message_Uninstall,
-            _ => Loc.Resume_Message_Install
-        };
-        var message = string.Format(
-            CultureInfo.CurrentCulture,
-            messageTemplate,
-            latest.Plan.Count,
-            latest.Completed.Count,
-            remaining);
-
-        bool? choice;
-        try
-        {
-            choice = await dialogService.ShowYesNoCancelAsync(
-                title: Loc.Resume_Title,
-                message: message,
-                yesText: Loc.Resume_Action_Resume,
-                noText: Loc.Resume_Action_Discard,
-                cancelText: Loc.Resume_Action_KeepForLater);
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Resume dialog failed: {ex.Message}");
-            return;
-        }
-
-        switch (choice)
-        {
-            case true:
-                // Resume: navigate to the Apps view and kick off the batch in the
-                // background. Delete the old checkpoint immediately so the new batch
-                // owns its own state file; if the new batch crashes too, only the new
-                // checkpoint will be detected at the next startup.
-                NavigateTo((int)ViewIndex.Apps);
-                try
-                {
-                    await resumeService.DeleteCheckpointAsync(latest.BatchId);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to delete old checkpoint: {ex.Message}");
-                }
-
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await appsViewModel.ResumeBatchAsync(latest);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[MainWindow] ResumeBatchAsync failed: {ex.Message}");
-                    }
-                });
-                break;
-
-            case false:
-                // Discard: explicit user choice, remove the checkpoint.
-                try
-                {
-                    await resumeService.DeleteCheckpointAsync(latest.BatchId);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[MainWindow] Discard failed: {ex.Message}");
-                }
-                break;
-
-            default:
-                // Keep for later (Cancel / Esc): leave the file in place so it is
-                // re-offered at the next launch, until the TTL expires and the file
-                // is pruned automatically.
-                break;
         }
     }
 
