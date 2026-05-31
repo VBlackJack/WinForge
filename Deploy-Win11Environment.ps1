@@ -48,7 +48,6 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.6.8
     Fixed: Auto-restart in PowerShell 7 after prerequisites installation
     Fixed: PowerShell 5.1 StrictMode compatibility
     Requires: Administrator privileges, PowerShell 5.1+
@@ -113,6 +112,7 @@ $script:LocalizationModulePath = Join-Path $script:ScriptRoot 'Core\Localization
 if (Test-Path -Path $script:LocalizationModulePath) {
     Import-Module -Name $script:LocalizationModulePath -Force -ErrorAction SilentlyContinue
 }
+$script:InvokedViaCallOperator = $MyInvocation.InvocationName -ne $MyInvocation.MyCommand.Path
 $script:StartTime = Get-Date
 $script:DeploymentStats = @{
     TotalApplications = 0
@@ -135,7 +135,7 @@ $LogFile = Join-Path -Path $LogDirectory -ChildPath "deployment_$LogTimestamp.lo
 function Write-Log {
     param(
         [string]$Message,
-        [ValidateSet('Info', 'Success', 'Warning', 'Error')]
+        [ValidateSet('Info', 'Success', 'Warning', 'Error', 'Verbose')]
         [string]$Level = 'Info'
     )
 
@@ -149,7 +149,87 @@ function Write-Log {
         'Success' { Write-Host $Message -ForegroundColor Green }
         'Warning' { Write-Host $Message -ForegroundColor Yellow }
         'Error'   { Write-Host $Message -ForegroundColor Red }
+        'Verbose' { Write-Verbose $Message }
     }
+}
+
+function Stop-Deployment {
+    param(
+        [Parameter(Mandatory)]
+        [int]$ExitCode
+    )
+
+    $global:LASTEXITCODE = $ExitCode
+    if ($script:InvokedViaCallOperator) {
+        return $ExitCode
+    }
+
+    exit $ExitCode
+}
+
+function Import-DeploymentModule {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Name,
+
+        [Parameter(Mandatory)]
+        [string]$RelativePath,
+
+        [Parameter()]
+        [switch]$Required
+    )
+
+    $modulePath = Join-Path -Path $script:ScriptRoot -ChildPath $RelativePath
+    if (Test-Path -Path $modulePath) {
+        Import-Module -Name $modulePath -Force -Global -WarningAction SilentlyContinue
+        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = $Name }) -Level 'Success'
+        return $true
+    }
+
+    if ($Required) {
+        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $modulePath })
+    }
+
+    return $false
+}
+
+function Invoke-OptionalModuleStep {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Title,
+
+        [Parameter(Mandatory)]
+        [string]$ModuleName,
+
+        [Parameter(Mandatory)]
+        [string]$RelativePath,
+
+        [Parameter(Mandatory)]
+        [string]$MissingMessage,
+
+        [Parameter(Mandatory)]
+        [string]$ErrorMessage,
+
+        [Parameter(Mandatory)]
+        [scriptblock]$Action
+    )
+
+    Write-Log -Message $Title -Level 'Info'
+
+    try {
+        if (Import-DeploymentModule -Name $ModuleName -RelativePath $RelativePath) {
+            & $Action
+        } else {
+            Write-Log -Message $MissingMessage -Level 'Warning'
+        }
+    }
+    catch {
+        Write-Log -Message "$ErrorMessage`: $($_.Exception.Message)" -Level 'Warning'
+    }
+
+    Write-Host ""
 }
 
 # === ADMINISTRATOR CHECK ===
@@ -163,25 +243,29 @@ function Test-IsAdministrator {
 if (-not (Test-IsAdministrator)) {
     Write-Log -Message (Get-LocalizedString -Key 'core.admin_required') -Level 'Error'
     Write-Log -Message (Get-LocalizedString -Key 'core.admin_run_as') -Level 'Error'
-    return 1
+    return (Stop-Deployment -ExitCode 1)
 }
 
 # === MODULE LOADING ===
 
 # Load framework version dynamically
-$frameworkVersion = try {
-    $versionPath = Join-Path $PSScriptRoot 'Config\version.json'
-    if (Test-Path $versionPath) {
-        $versionData = Get-Content -Path $versionPath -Raw | ConvertFrom-Json
-        $versionData.Version
-    } else { '3.6.8' }
-} catch { '3.6.8' }
+$versionPath = Join-Path $PSScriptRoot 'Config\version.json'
+if (-not (Test-Path $versionPath)) {
+    throw "Version file not found: $versionPath"
+}
+
+$versionData = Get-Content -Path $versionPath -Raw -Encoding UTF8 | ConvertFrom-Json
+if ([string]::IsNullOrWhiteSpace([string]$versionData.Version)) {
+    throw "Version property missing in $versionPath"
+}
+
+$frameworkVersion = [string]$versionData.Version
 
 Write-Log -Message "=== $(Get-LocalizedString -Key 'setup.banner_title' -Params @{ Version = $frameworkVersion }) ===" -Level 'Info'
 Write-Log -Message (Get-LocalizedString -Key 'setup.ps_version' -Params @{ Version = $PSVersionTable.PSVersion }) -Level 'Info'
 Write-Log -Message (Get-LocalizedString -Key 'gui.deploy.starting') -Level 'Info'
 
-# Vérification de la version pour mode parallèle
+# Validate the PowerShell version required by parallel mode
 if ($Parallel -and $PSVersionTable.PSVersion.Major -lt 7) {
     Write-Log -Message (Get-LocalizedString -Key 'parallel.requires_ps7') -Level 'Warning'
     Write-Log -Message (Get-LocalizedString -Key 'parallel.current_version' -Params @{ Version = $PSVersionTable.PSVersion }) -Level 'Warning'
@@ -199,63 +283,22 @@ Write-Log -Message (Get-LocalizedString -Key 'launcher.log_file_path' -Params @{
 Write-Host ""
 
 try {
-    # Load Core module
-    $coreModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Core\Core.psm1'
-    if (Test-Path -Path $coreModule) {
-        Import-Module -Name $coreModule -Force -Global
-        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = 'Core' }) -Level 'Success'
-    } else {
-        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $coreModule })
-    }
+    $requiredModules = @(
+        @{ Name = 'Core'; Path = 'Core\Core.psm1' },
+        @{ Name = 'EnvironmentDetection'; Path = 'Modules\EnvironmentDetection.psm1' },
+        @{ Name = 'Prerequisites'; Path = 'Modules\Prerequisites.psm1' },
+        @{ Name = 'ProfileManager'; Path = 'Modules\ProfileManager.psm1' },
+        @{ Name = 'InstallationEngine'; Path = 'Modules\InstallationEngine.psm1' },
+        @{ Name = 'SystemConfig'; Path = 'Modules\SystemConfig.psm1' }
+    )
 
-    # Load Environment Detection module
-    $envModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Modules\EnvironmentDetection.psm1'
-    if (Test-Path -Path $envModule) {
-        Import-Module -Name $envModule -Force -Global
-        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = 'EnvironmentDetection' }) -Level 'Success'
-    } else {
-        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $envModule })
-    }
-
-    # Load Prerequisites module
-    $prereqModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Modules\Prerequisites.psm1'
-    if (Test-Path -Path $prereqModule) {
-        Import-Module -Name $prereqModule -Force -Global
-        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = 'Prerequisites' }) -Level 'Success'
-    } else {
-        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $prereqModule })
-    }
-
-    # Load Profile Manager module
-    $profileModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Modules\ProfileManager.psm1'
-    if (Test-Path -Path $profileModule) {
-        Import-Module -Name $profileModule -Force -Global
-        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = 'ProfileManager' }) -Level 'Success'
-    } else {
-        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $profileModule })
-    }
-
-    # Load Installation Engine module
-    $installModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Modules\InstallationEngine.psm1'
-    if (Test-Path -Path $installModule) {
-        Import-Module -Name $installModule -Force -Global
-        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = 'InstallationEngine' }) -Level 'Success'
-    } else {
-        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $installModule })
-    }
-
-    # Load System Configuration module
-    $sysconfigModule = Join-Path -Path $script:ScriptRoot -ChildPath 'Modules\SystemConfig.psm1'
-    if (Test-Path -Path $sysconfigModule) {
-        Import-Module -Name $sysconfigModule -Force -Global
-        Write-Log -Message (Get-LocalizedString -Key 'launcher.module_loaded_specific' -Params @{ Name = 'SystemConfig' }) -Level 'Success'
-    } else {
-        throw (Get-LocalizedString -Key 'launcher.module_missing' -Params @{ Path = $sysconfigModule })
+    foreach ($module in $requiredModules) {
+        Import-DeploymentModule -Name $module.Name -RelativePath $module.Path -Required | Out-Null
     }
 
 } catch {
     Write-Log -Message (Get-LocalizedString -Key 'launcher.load_failed' -Params @{ Error = $_.Exception.Message }) -Level 'Error'
-    return 1
+    return (Stop-Deployment -ExitCode 1)
 }
 
 # FIXED: Use Write-Host for empty lines
@@ -354,7 +397,7 @@ if (-not $SkipPrerequisites) {
                 Start-Process -FilePath $pwshPath -ArgumentList $restartArgs -NoNewWindow -Wait
 
                 Write-Log -Message "PowerShell 7 deployment completed" -Level 'Success'
-                return 0
+                return (Stop-Deployment -ExitCode 0)
             }
 
         } catch {
@@ -418,7 +461,7 @@ try {
 
 } catch {
     Write-Log -Message (Get-LocalizedString -Key 'profile.not_found' -Params @{ Name = $ProfileName }) -Level 'Error'
-    return 1
+    return (Stop-Deployment -ExitCode 1)
 }
 
 Write-Host ""
@@ -462,7 +505,7 @@ if ($TestMode) {
 Write-Host ""
 
 if (-not $TestMode) {
-    # Mode parallèle ou séquentiel
+    # Parallel or sequential mode
     if ($Parallel) {
         Write-Log -Message (Get-LocalizedString -Key 'parallel.title') -Level 'Info'
         Write-Log -Message (Get-LocalizedString -Key 'parallel.max_threads' -Params @{ Count = $MaxParallelJobs }) -Level 'Success'
@@ -471,7 +514,7 @@ if (-not $TestMode) {
         # Installation parallèle
         $installResults = Install-ApplicationsParallel -Applications $applications -Force:$Force -MaxParallel $MaxParallelJobs
 
-        # Traiter les résultats
+        # Process installation results
         foreach ($result in $installResults) {
             # Check if Skipped property exists and is true
             if ($result.PSObject.Properties['Skipped'] -and $result.Skipped) {
@@ -491,7 +534,7 @@ if (-not $TestMode) {
         Write-Log -Message (Get-LocalizedString -Key 'gui.deploy.mode_parallel') -Level 'Warning'
         Write-Host ""
 
-        # Installation séquentielle (mode original)
+        # Sequential installation
         $sortedApplications = $applications | Sort-Object -Property Priority
 
         foreach ($app in $sortedApplications) {
@@ -536,7 +579,7 @@ if (-not $TestMode) {
         }
     }
 } else {
-    # Test mode - juste afficher ce qui serait installé
+    # Test mode - show the applications that would be installed
     $sortedApplications = $applications | Sort-Object -Property Priority
     foreach ($app in $sortedApplications) {
         $sources = @()
@@ -582,45 +625,31 @@ if (-not $SkipSystemConfig -and -not $TestMode) {
 # === START MENU ORGANIZATION ===
 
 if (-not $TestMode) {
-    Write-Log -Message "=== Start Menu Organization ===" -Level 'Info'
-
-    try {
-        # Import StartMenuLayout module (organizes shortcuts by category)
-        $startMenuModule = Join-Path $script:ScriptRoot 'Modules\StartMenuLayout.psm1'
-        if (Test-Path $startMenuModule) {
-            Import-Module $startMenuModule -Force -WarningAction SilentlyContinue
-
+    Invoke-OptionalModuleStep `
+        -Title "=== Start Menu Organization ===" `
+        -ModuleName 'StartMenuLayout' `
+        -RelativePath 'Modules\StartMenuLayout.psm1' `
+        -MissingMessage 'StartMenuLayout module not found, skipping organization' `
+        -ErrorMessage 'Error during Start Menu organization' `
+        -Action {
             Write-Log -Message "Organizing desktop shortcuts in Start Menu by category..." -Level 'Info'
-            # Creates category folders in Start Menu Programs
             Invoke-StartMenuOrganization
 
             Write-Log -Message "Start Menu organization completed" -Level 'Success'
-        } else {
-            Write-Log -Message "StartMenuLayout module not found, skipping organization" -Level 'Warning'
         }
-    }
-    catch {
-        Write-Log -Message "Error during Start Menu organization: $($_.Exception.Message)" -Level 'Warning'
-    }
-
-    Write-Host ""
 }
 
 # === START MENU PINNING ===
 
 if (-not $TestMode) {
-    Write-Log -Message "=== Start Menu Pinning (start2.bin method) ===" -Level 'Info'
-
-    try {
-        # Import StartMenuPinning module (uses start2.bin - reliable Windows 11 method)
-        $pinningModule = Join-Path $script:ScriptRoot 'Modules\StartMenuPinning.psm1'
-        if (Test-Path $pinningModule) {
-            Import-Module $pinningModule -Force -WarningAction SilentlyContinue
-
+    Invoke-OptionalModuleStep `
+        -Title "=== Start Menu Pinning (start2.bin method) ===" `
+        -ModuleName 'StartMenuPinning' `
+        -RelativePath 'Modules\StartMenuPinning.psm1' `
+        -MissingMessage 'StartMenuPinning module not found, skipping pinning' `
+        -ErrorMessage 'Error during Start Menu pinning' `
+        -Action {
             Write-Log -Message "Capturing current Start Menu pinned items..." -Level 'Info'
-            # Uses start2.bin/start.bin binary file method (works on Windows 11 22H2+)
-            # This is the most reliable method as LayoutModification.json is deprecated
-            # ApplyToCurrentUser: Also applies the layout to the deployment user account
             $pinningResult = Invoke-StartMenuPinning -BackupName "Deployment_$(Get-Date -Format 'yyyyMMdd_HHmmss')" -ApplyToCurrentUser
 
             if ($pinningResult) {
@@ -630,42 +659,24 @@ if (-not $TestMode) {
             } else {
                 Write-Log -Message "Start Menu pinning deployment failed or was skipped" -Level 'Warning'
             }
-        } else {
-            Write-Log -Message "StartMenuPinning module not found, skipping pinning" -Level 'Warning'
         }
-    }
-    catch {
-        Write-Log -Message "Error during Start Menu pinning: $($_.Exception.Message)" -Level 'Warning'
-    }
-
-    Write-Host ""
 }
 
 # === STARTUP APPLICATIONS MANAGEMENT ===
 
 if (-not $TestMode) {
-    Write-Log -Message "=== Startup Applications Management ===" -Level 'Info'
-
-    try {
-        # Import StartupManager module
-        $startupModule = Join-Path $script:ScriptRoot 'Modules\StartupManager.psm1'
-        if (Test-Path $startupModule) {
-            Import-Module $startupModule -Force -WarningAction SilentlyContinue
-
+    Invoke-OptionalModuleStep `
+        -Title "=== Startup Applications Management ===" `
+        -ModuleName 'StartupManager' `
+        -RelativePath 'Modules\StartupManager.psm1' `
+        -MissingMessage 'StartupManager module not found, skipping startup management' `
+        -ErrorMessage 'Error during startup management' `
+        -Action {
             Write-Log -Message "Applying startup blacklist configuration..." -Level 'Info'
-            # Reads Config\startup-blacklist.json and disables configured applications
             Invoke-StartupBlacklist
 
             Write-Log -Message "Startup management completed" -Level 'Success'
-        } else {
-            Write-Log -Message "StartupManager module not found, skipping startup management" -Level 'Warning'
         }
-    }
-    catch {
-        Write-Log -Message "Error during startup management: $($_.Exception.Message)" -Level 'Warning'
-    }
-
-    Write-Host ""
 }
 
 # === DEPLOYMENT SUMMARY ===
@@ -703,18 +714,4 @@ if ($script:DeploymentStats.Failed -gt 0) {
     $exitCode = 0
 }
 
-# Set exit code for callers
-$global:LASTEXITCODE = $exitCode
-
-# Detect if script was invoked with & operator (GUI/scripted call) or direct execution
-# When called via &, we should return to allow caller to continue
-# When called directly (powershell -File), we should exit to set process exit code
-$invokedViaCallOperator = $MyInvocation.InvocationName -ne $MyInvocation.MyCommand.Path
-
-if ($invokedViaCallOperator) {
-    # Called via & operator from GUI or another script - return to caller
-    return $exitCode
-} else {
-    # Direct execution (batch file, command line) - exit to set process exit code
-    exit $exitCode
-}
+return (Stop-Deployment -ExitCode $exitCode)

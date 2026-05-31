@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge GUI Launcher v3.0.0
+    Win11Forge GUI Launcher
 
 .DESCRIPTION
     Launches the Win11Forge graphical user interface.
@@ -23,7 +23,6 @@
 
 .NOTES
     Author: Julien Bombled
-    Version: 3.0.0
     Requires: Administrator privileges, PowerShell 5.1+
 #>
 
@@ -80,6 +79,20 @@ function Get-Text {
     return $Default
 }
 
+function Get-FrameworkVersion {
+    $versionFile = Join-Path $script:ScriptRoot 'Config\version.json'
+    if (-not (Test-Path -Path $versionFile)) {
+        throw "Version file not found: $versionFile"
+    }
+
+    $versionData = Get-Content -Path $versionFile -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ([string]::IsNullOrWhiteSpace([string]$versionData.Version)) {
+        throw "Version property missing in $versionFile"
+    }
+
+    return [string]$versionData.Version
+}
+
 # Check for WPF GUI executable in various locations
 $wpfGuiPaths = @(
     (Join-Path $script:ScriptRoot 'Win11Forge.GUI.exe'),
@@ -105,14 +118,10 @@ $script:GUIModule = Join-Path $script:ScriptRoot 'Modules\Win11ForgeGUI.psm1'
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Cyan
 try {
-    $versionFile = Join-Path $script:ScriptRoot 'Config\version.json'
-    if (Test-Path $versionFile) {
-        $FrameworkVersion = (Get-Content -Path $versionFile -Raw -Encoding UTF8 | ConvertFrom-Json).Version
-    } else {
-        $FrameworkVersion = '3.0.0'
-    }
+    $FrameworkVersion = Get-FrameworkVersion
 } catch {
-    $FrameworkVersion = '3.0.0'
+    Write-Host "$(Get-Text -Key 'launcher.error.version_not_found' -Default 'ERROR: Unable to load Win11Forge version'): $($_.Exception.Message)" -ForegroundColor Red
+    exit 1
 }
 Write-Host "  Win11Forge v$FrameworkVersion" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan

@@ -10,7 +10,7 @@
     - Runs initial tests
 
 .PARAMETER InstallPath
-    Installation path (default: C:\Win11Forge)
+    Installation path. Defaults to the script directory when omitted.
 
 .PARAMETER SourcePath
     Source path containing framework files
@@ -52,13 +52,16 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    [string]$InstallPath = 'C:\Win11Forge',
+    [string]$InstallPath,
 
     [Parameter()]
     [string]$SourcePath,
 
     [Parameter()]
-    [switch]$SkipValidation
+    [switch]$SkipValidation,
+
+    [Parameter()]
+    [switch]$Unattended
 )
 
 #Requires -RunAsAdministrator
@@ -68,6 +71,9 @@ $ErrorActionPreference = 'Stop'
 # === LOCALIZATION ===
 
 $script:ScriptRoot = $PSScriptRoot
+if ([string]::IsNullOrWhiteSpace($InstallPath)) {
+    $InstallPath = $script:ScriptRoot
+}
 
 # Import Localization module
 $localizationModule = Join-Path $script:ScriptRoot 'Core\Localization.psm1'
@@ -311,7 +317,11 @@ try {
 # === CREATE DESKTOP SHORTCUT ===
 
 Write-Host ""
-$createShortcut = Read-Host (Get-Text -Key 'setup.create_shortcut_prompt' -Default 'Create desktop shortcut? (Y/N)')
+$createShortcut = if ($Unattended) {
+    'N'
+} else {
+    Read-Host (Get-Text -Key 'setup.create_shortcut_prompt' -Default 'Create desktop shortcut? (Y/N)')
+}
 
 if ($createShortcut -match '^[Yy]') {
     try {
@@ -371,7 +381,11 @@ Write-Host "  $(Get-Text -Key 'setup.doc_changelog' -Default 'CHANGELOG.md      
 Write-Host ""
 
 # Open documentation
-$openDocs = Read-Host (Get-Text -Key 'setup.open_readme_prompt' -Default 'Open README.md now? (Y/N)')
+$openDocs = if ($Unattended) {
+    'N'
+} else {
+    Read-Host (Get-Text -Key 'setup.open_readme_prompt' -Default 'Open README.md now? (Y/N)')
+}
 
 if ($openDocs -match '^[Yy]') {
     $readmePath = Join-Path $InstallPath 'README.md'

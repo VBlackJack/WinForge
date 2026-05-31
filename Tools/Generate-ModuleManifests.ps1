@@ -21,6 +21,53 @@ param(
     [string]$RootPath = (Split-Path $PSScriptRoot -Parent)
 )
 
+function ConvertTo-ManifestVersion {
+    param([Parameter(Mandatory)][string]$DisplayVersion)
+
+    $trimmed = $DisplayVersion.Trim()
+    if ($trimmed -match '^(?<year>\d{4})(?<mmdd>\d{4})(?<sequence>\d{2})$') {
+        $sequence = [int]$Matches.sequence
+        if ($sequence -lt 1 -or $sequence -gt 99) {
+            throw "Calendar version sequence must be between 01 and 99: $DisplayVersion"
+        }
+
+        return '1.0.{0}.{1}' -f $Matches.mmdd, $sequence
+    }
+
+    if ($trimmed -match '^\d+\.\d+\.\d+(?:\.\d+)?$') {
+        return $trimmed
+    }
+
+    throw "Unsupported framework version format in Config/version.json: $DisplayVersion"
+}
+
+function Get-ManifestVersionInfo {
+    param([Parameter(Mandatory)][string]$RepositoryRoot)
+
+    $versionPath = Join-Path $RepositoryRoot 'Config\version.json'
+    if (-not (Test-Path -Path $versionPath)) {
+        throw "Version file not found: $versionPath"
+    }
+
+    try {
+        $versionJson = Get-Content -Path $versionPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $versionProperty = $versionJson.PSObject.Properties['Version']
+        if (-not $versionProperty -or [string]::IsNullOrWhiteSpace([string]$versionProperty.Value)) {
+            throw "Version property missing in $versionPath"
+        }
+
+        $displayVersion = [string]$versionProperty.Value
+        return [PSCustomObject]@{
+            DisplayVersion = $displayVersion
+            ManifestVersion = ConvertTo-ManifestVersion -DisplayVersion $displayVersion
+        }
+    } catch {
+        throw "Failed to resolve manifest version from $versionPath`: $($_.Exception.Message)"
+    }
+}
+
+$versionInfo = Get-ManifestVersionInfo -RepositoryRoot $RootPath
+
 $modules = @{
     # Core modules
     'Core\ApiEndpoints' = @{
@@ -142,7 +189,9 @@ function New-ModuleManifestContent {
     param(
         [string]$ModuleName,
         [string]$Description,
-        [string[]]$Tags
+        [string[]]$Tags,
+        [string]$ManifestVersion,
+        [string]$DisplayVersion
     )
 
     $guid = [guid]::NewGuid().ToString()
@@ -169,7 +218,7 @@ function New-ModuleManifestContent {
 
 @{
     RootModule = '$ModuleName.psm1'
-    ModuleVersion = '3.5.2'
+    ModuleVersion = '$ManifestVersion'
     GUID = '$guid'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -186,7 +235,7 @@ function New-ModuleManifestContent {
             Tags = @($tagsStr)
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v3.5.2'
+            ReleaseNotes = 'Win11Forge v$DisplayVersion'
         }
     }
 }
@@ -202,7 +251,7 @@ foreach ($module in $modules.GetEnumerator()) {
     $psd1Path = "$fullPath.psd1"
 
     if (-not (Test-Path $psd1Path)) {
-        $content = New-ModuleManifestContent -ModuleName $moduleName -Description $info.Description -Tags $info.Tags
+        $content = New-ModuleManifestContent -ModuleName $moduleName -Description $info.Description -Tags $info.Tags -ManifestVersion $versionInfo.ManifestVersion -DisplayVersion $versionInfo.DisplayVersion
         $content | Out-File -FilePath $psd1Path -Encoding UTF8 -NoNewline
         $created++
         Write-Host "[CREATED] $psd1Path" -ForegroundColor Green

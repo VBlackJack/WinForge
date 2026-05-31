@@ -301,7 +301,7 @@
                     <p>
                         <strong>1.</strong> Cochez les applications que vous voulez <strong>désactiver</strong> du démarrage<br>
                         <strong>2.</strong> Cliquez sur "Enregistrer la configuration" pour télécharger le fichier JSON<br>
-                        <strong>3.</strong> Copiez le fichier dans <code>C:\sys\Win11Forge\Config\startup-blacklist.json</code><br>
+                        <strong>3.</strong> Copiez le fichier dans <code>Config\startup-blacklist.json</code><br>
                         <strong>4.</strong> Les modifications seront appliquées lors du prochain déploiement ou en exécutant <code>Test-StartupBlacklist.ps1</code>
                     </p>
                 </div>
@@ -488,7 +488,7 @@
             a.click();
             URL.revokeObjectURL(url);
 
-            showMessage('✅ Configuration téléchargée! Copiez le fichier dans C:\\sys\\Win11Forge\\Config\\startup-blacklist.json', 'success');
+            showMessage('Configuration téléchargée. Copiez le fichier dans Config\\startup-blacklist.json', 'success');
         }
 
         // Reset selection

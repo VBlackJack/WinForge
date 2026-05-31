@@ -153,8 +153,6 @@ if (-not $SkipTests) {
         exit 1
     }
 
-    # Extract test count from output
-    $testSummary = $testResult | Select-String -Pattern "Total tests:|Passed:" | Select-Object -Last 1
     Write-Host "  $(Get-Text -Key 'build.tests_passed' -Default 'Tests passed!')" -ForegroundColor Green
 }
 
@@ -175,6 +173,21 @@ if (Test-Path $ReleasePath) {
 if (Test-Path $ZipPath) {
     Remove-Item $ZipPath -Force
     Write-Host "  $(Get-Text -Key 'build.removed_path' -Parameters @{ Path = $ZipPath } -Default "Removed: $ZipPath")" -ForegroundColor Gray
+}
+
+$cleanArgs = @(
+    "clean"
+    $GuiProjectPath
+    "--configuration", $Configuration
+    "--verbosity", "minimal"
+)
+
+$cleanResult = & dotnet @cleanArgs 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host ""
+    Write-Host (Get-Text -Key 'build.clean_failed' -Default 'ERROR: Clean failed!') -ForegroundColor Red
+    Write-Host $cleanResult -ForegroundColor Red
+    exit 1
 }
 
 # ============================================
@@ -391,5 +404,5 @@ Get-ChildItem $ReleasePath -Directory | ForEach-Object {
 Write-Host ""
 Write-Host (Get-Text -Key 'build.test_hint' -Default 'To test the release:') -ForegroundColor Yellow
 Write-Host "  cd `"$ReleasePath`"" -ForegroundColor Cyan
-Write-Host "  .\Start-Win11Forge.ps1" -ForegroundColor Cyan
+Write-Host "  .\Win11Forge.cmd" -ForegroundColor Cyan
 Write-Host ""

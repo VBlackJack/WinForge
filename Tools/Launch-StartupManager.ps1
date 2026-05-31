@@ -40,4 +40,6 @@ Write-Host ""
 Write-Host "Startup Manager is now open in your browser." -ForegroundColor Green
 Write-Host "Use the interface to select applications to disable from startup." -ForegroundColor Yellow
 Write-Host "When done, download the config and copy to:" -ForegroundColor Yellow
-Write-Host "  C:\sys\Win11Forge\Config\startup-blacklist.json" -ForegroundColor White
+$repositoryRoot = Split-Path -Path $PSScriptRoot -Parent
+$startupBlacklistPath = Join-Path $repositoryRoot 'Config\startup-blacklist.json'
+Write-Host "  $startupBlacklistPath" -ForegroundColor White
