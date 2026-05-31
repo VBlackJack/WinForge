@@ -25,6 +25,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Checkout ThemeForge (sibling dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: VBlackJack/ThemeForge
+          path: ThemeForge
+
       - name: Guard packages.lock.json RID neutrality
         shell: pwsh
         run: .\Tools\Test-PackagesLockRidNeutrality.ps1 -Path GUI
@@ -207,6 +213,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Checkout ThemeForge (sibling dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: VBlackJack/ThemeForge
+          path: ThemeForge
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
@@ -414,6 +426,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Checkout ThemeForge (sibling dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: VBlackJack/ThemeForge
+          path: ThemeForge
 
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
