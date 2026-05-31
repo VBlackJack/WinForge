@@ -51,6 +51,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IVersionService, VersionServiceImpl>();
         services.AddSingleton<ISystemInfoService, SystemInfoServiceImpl>();
         services.AddSingleton<IProfileManagementService, ProfileManagementServiceImpl>();
+        services.AddSingleton<IApplicationLauncher, ApplicationLauncher>();
         services.AddSingleton<IApplicationManagementService, ApplicationManagementServiceImpl>();
         services.AddSingleton<IPrerequisitesService, PrerequisitesServiceImpl>();
 
