@@ -55,17 +55,17 @@ foreach ($profile in $profiles) {
         $results += $result
 
         if ($hasErrors) {
-            Write-Host "  ❌ ERRORS DETECTED:" -ForegroundColor Red
+            Write-Host "  [FAIL] ERRORS DETECTED:" -ForegroundColor Red
             $output -split "`n" | Where-Object { $_ -match '(Error|Exception|FAILED)' } | Select-Object -First 5 | ForEach-Object {
                 Write-Host "    $_" -ForegroundColor Red
             }
         } else {
-            Write-Host "  ✅ PASSED - No errors detected" -ForegroundColor Green
+            Write-Host "  [OK] PASSED - No errors detected" -ForegroundColor Green
             Write-Host "  Total Apps: $totalApps" -ForegroundColor Green
         }
 
     } catch {
-        Write-Host "  ❌ EXCEPTION: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "  [FAIL] EXCEPTION: $($_.Exception.Message)" -ForegroundColor Red
         $results += [PSCustomObject]@{
             Profile = $profile
             TotalApps = 'N/A'

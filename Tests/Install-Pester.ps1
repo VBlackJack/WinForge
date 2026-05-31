@@ -44,7 +44,7 @@ if ($currentPester) {
     Write-Host "Current Pester version: v$($currentPester.Version)" -ForegroundColor Yellow
 
     if ($currentPester.Version.Major -ge 5) {
-        Write-Host "✅ Pester v5+ already installed!" -ForegroundColor Green
+        Write-Host "[OK] Pester v5+ already installed!" -ForegroundColor Green
         Write-Host ""
         Write-Host "Ready to run tests with:" -ForegroundColor White
         Write-Host "  .\Invoke-Tests.ps1" -ForegroundColor Cyan
@@ -63,7 +63,7 @@ try {
     Install-Module -Name Pester -MinimumVersion 5.0.0 -Force -SkipPublisherCheck -Scope CurrentUser
 
     Write-Host ""
-    Write-Host "✅ Pester v5+ installed successfully!" -ForegroundColor Green
+    Write-Host "[OK] Pester v5+ installed successfully!" -ForegroundColor Green
 
     # Verify installation
     $newPester = Get-Module -Name Pester -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1
@@ -75,7 +75,7 @@ try {
     Write-Host ""
 
 } catch {
-    Write-Host "❌ Failed to install Pester" -ForegroundColor Red
+    Write-Host "[FAIL] Failed to install Pester" -ForegroundColor Red
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host ""
     Write-Host "Try manual installation:" -ForegroundColor Yellow
