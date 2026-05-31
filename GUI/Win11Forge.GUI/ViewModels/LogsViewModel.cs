@@ -25,6 +25,7 @@ using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Configuration;
+using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Services.PowerShell;
 using Wpf.Ui.Controls;
@@ -89,7 +90,7 @@ public partial class LogsViewModel : ObservableObject
         _logsPath = resolvedPathService.LogsDirectory;
         _jsonLogsPath = Path.Combine(_logsPath, Win11ForgePathNames.JsonLogsDirectoryName);
 
-        _ = RefreshAsync();
+        RefreshAsync().SafeFireAndForget();
     }
 
     partial void OnSearchTextChanged(string value)
@@ -119,57 +120,43 @@ public partial class LogsViewModel : ObservableObject
             {
                 var files = new List<LogFileEntry>();
                 long totalSize = 0;
+                var logsRoot = Path.GetFullPath(_logsPath);
+                var jsonRoot = Path.GetFullPath(_jsonLogsPath);
 
-                // Get text logs
                 if (Directory.Exists(_logsPath))
                 {
-                    var textLogs = Directory.GetFiles(_logsPath, "*.log", SearchOption.TopDirectoryOnly);
-                    foreach (var file in textLogs)
+                    foreach (var file in Directory.EnumerateFiles(_logsPath, "*.*", SearchOption.AllDirectories))
                     {
                         var info = new FileInfo(file);
-                        totalSize += info.Length;
-                        files.Add(new LogFileEntry
-                        {
-                            FullPath = file,
-                            FileName = info.Name,
-                            Size = info.Length,
-                            LastModified = info.LastWriteTime,
-                            LogType = Resources.Resources.Logs_Filter_Text,
-                            Icon = SymbolRegular.Document24,
-                            IconColor = Brushes.Gray
-                        });
-                    }
-                }
+                        var fileDirectory = Path.GetFullPath(info.DirectoryName ?? string.Empty);
+                        var isTopLevelTextLog = string.Equals(fileDirectory, logsRoot, StringComparison.OrdinalIgnoreCase)
+                            && string.Equals(info.Extension, ".log", StringComparison.OrdinalIgnoreCase);
+                        var isJsonLog = fileDirectory.StartsWith(jsonRoot, StringComparison.OrdinalIgnoreCase)
+                            && string.Equals(info.Extension, ".json", StringComparison.OrdinalIgnoreCase);
+                        var isErrorLog = info.Name.Contains("error", StringComparison.OrdinalIgnoreCase)
+                            && string.Equals(info.Extension, ".log", StringComparison.OrdinalIgnoreCase);
 
-                // Get JSON logs
-                if (Directory.Exists(_jsonLogsPath))
-                {
-                    var jsonLogs = Directory.GetFiles(_jsonLogsPath, "*.json", SearchOption.TopDirectoryOnly);
-                    foreach (var file in jsonLogs)
-                    {
-                        var info = new FileInfo(file);
-                        totalSize += info.Length;
-                        files.Add(new LogFileEntry
+                        if (!isTopLevelTextLog && !isJsonLog && !isErrorLog)
                         {
-                            FullPath = file,
-                            FileName = info.Name,
-                            Size = info.Length,
-                            LastModified = info.LastWriteTime,
-                            LogType = Resources.Resources.Logs_Filter_Json,
-                            Icon = SymbolRegular.BracesVariable24,
-                            IconColor = Brushes.DodgerBlue
-                        });
-                    }
-                }
+                            continue;
+                        }
 
-                // Get error logs (any file containing "error" in name)
-                if (Directory.Exists(_logsPath))
-                {
-                    var errorLogs = Directory.GetFiles(_logsPath, "*error*.log", SearchOption.AllDirectories)
-                        .Where(f => !files.Any(existing => existing.FullPath == f));
-                    foreach (var file in errorLogs)
-                    {
-                        var info = new FileInfo(file);
+                        var logType = isTopLevelTextLog
+                            ? Resources.Resources.Logs_Filter_Text
+                            : isJsonLog
+                                ? Resources.Resources.Logs_Filter_Json
+                                : Resources.Resources.Logs_Filter_Error;
+                        var icon = isJsonLog
+                            ? SymbolRegular.BracesVariable24
+                            : isErrorLog && !isTopLevelTextLog
+                                ? SymbolRegular.ErrorCircle24
+                                : SymbolRegular.Document24;
+                        var iconColor = isJsonLog
+                            ? Brushes.DodgerBlue
+                            : isErrorLog && !isTopLevelTextLog
+                                ? Brushes.Red
+                                : Brushes.Gray;
+
                         totalSize += info.Length;
                         files.Add(new LogFileEntry
                         {
@@ -177,9 +164,9 @@ public partial class LogsViewModel : ObservableObject
                             FileName = info.Name,
                             Size = info.Length,
                             LastModified = info.LastWriteTime,
-                            LogType = Resources.Resources.Logs_Filter_Error,
-                            Icon = SymbolRegular.ErrorCircle24,
-                            IconColor = Brushes.Red
+                            LogType = logType,
+                            Icon = icon,
+                            IconColor = iconColor
                         });
                     }
                 }
@@ -406,7 +393,7 @@ public partial class LogsViewModel : ObservableObject
                 }
             }
 
-            _ = RefreshAsync();
+            RefreshAsync().SafeFireAndForget();
             StatusMessage = string.Format(Resources.Resources.Logs_ClearOld_Success, deletedCount);
         }
         catch (Exception ex)
@@ -431,7 +418,7 @@ public partial class LogsViewModel : ObservableObject
             if (!File.Exists(logFile.FullPath))
             {
                 StatusMessage = string.Format(Resources.Resources.Logs_Error_NotFound, logFile.FileName);
-                _ = RefreshAsync();
+                RefreshAsync().SafeFireAndForget();
                 return;
             }
 

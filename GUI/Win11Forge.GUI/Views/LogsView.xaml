@@ -20,6 +20,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             xmlns:controls="clr-namespace:Win11Forge.GUI.Controls"
              xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewModels:LogsViewModel}"
@@ -185,6 +186,11 @@
                           GridLinesVisibility="Horizontal"
                           HeadersVisibility="Column"
                           VerticalScrollBarVisibility="Auto"
+                          EnableRowVirtualization="True"
+                          EnableColumnVirtualization="True"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling"
+                          ScrollViewer.CanContentScroll="True"
                           MouseDoubleClick="DataGrid_MouseDoubleClick">
                     <DataGrid.Columns>
                         <DataGridTemplateColumn Header="" Width="Auto">
@@ -264,11 +270,9 @@
                                Margin="0,8,0,0"/>
                 </StackPanel>
 
-                <!-- Loading -->
-                <ProgressBar Grid.Row="1"
-                             IsIndeterminate="True"
-                             VerticalAlignment="Top"
-                             Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                <controls:LoadingOverlay Grid.Row="1"
+                                         Message="{loc:Loc Logs_Loading}"
+                                         Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             </Grid>
         </Border>
 

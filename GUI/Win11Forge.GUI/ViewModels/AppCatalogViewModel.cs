@@ -515,8 +515,8 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         {
             var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
                 Loc.AppCatalog_Import,
-                "JSON files (*.json)|*.json|All files (*.*)|*.*",
-                DefaultExtension: ".json"));
+                FileDialogFilters.Json,
+                DefaultExtension: FileDialogFilters.JsonDefaultExtension));
 
             if (filePath == null)
             {
@@ -559,9 +559,9 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         {
             var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
                 Loc.AppCatalog_Export,
-                "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                FileDialogFilters.Json,
                 DefaultFileName: $"applications-export-{DateTime.Now:yyyyMMdd}",
-                DefaultExtension: ".json"));
+                DefaultExtension: FileDialogFilters.JsonDefaultExtension));
 
             if (filePath != null)
             {

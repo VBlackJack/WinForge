@@ -22,6 +22,7 @@ using ThemeForgeAccentTints = ThemeForge.Theme.AccentTints;
 using ThemeForgeIThemeService = ThemeForge.Theme.IThemeService;
 using ThemeForgeNames = ThemeForge.Theme.ThemeNames;
 using ThemeForgeThemeService = ThemeForge.Theme.ThemeService;
+using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
 using Wpf.Ui.Appearance;
@@ -740,51 +741,51 @@ public sealed class ThemeService : IThemeService
 
     private void PersistCanonicalThemeIfNeeded(string? requestedThemeName, string canonicalThemeName)
     {
-        if (string.Equals(requestedThemeName?.Trim(), canonicalThemeName, StringComparison.Ordinal))
-        {
-            return;
-        }
-
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                var settings = _settingsService.LoadSettings();
-                if (!string.Equals(settings.ThemeName, canonicalThemeName, StringComparison.Ordinal))
-                {
-                    settings.ThemeName = canonicalThemeName;
-                    await _settingsService.SaveSettingsAsync(settings, default);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Failed to persist canonical theme '{canonicalThemeName}': {ex.Message}");
-            }
-        });
+        PersistCanonicalSettingIfNeeded(
+            requestedThemeName,
+            canonicalThemeName,
+            settings => settings.ThemeName,
+            (settings, value) => settings.ThemeName = value,
+            "theme");
     }
 
     private void PersistCanonicalAccentTintIfNeeded(string? requestedAccentTintName, string canonicalAccentTintName)
     {
-        if (string.Equals(requestedAccentTintName?.Trim(), canonicalAccentTintName, StringComparison.Ordinal))
+        PersistCanonicalSettingIfNeeded(
+            requestedAccentTintName,
+            canonicalAccentTintName,
+            settings => settings.AccentTintName,
+            (settings, value) => settings.AccentTintName = value,
+            "accent tint");
+    }
+
+    private void PersistCanonicalSettingIfNeeded(
+        string? requestedValue,
+        string canonicalValue,
+        Func<AppSettings, string> getCurrentValue,
+        Action<AppSettings, string> setCurrentValue,
+        string settingName)
+    {
+        if (string.Equals(requestedValue?.Trim(), canonicalValue, StringComparison.Ordinal))
         {
             return;
         }
 
-        _ = Task.Run(async () =>
+        Task.Run(async () =>
         {
             try
             {
-                var settings = _settingsService.LoadSettings();
-                if (!string.Equals(settings.AccentTintName, canonicalAccentTintName, StringComparison.Ordinal))
+                var settings = await _settingsService.LoadSettingsAsync();
+                if (!string.Equals(getCurrentValue(settings), canonicalValue, StringComparison.Ordinal))
                 {
-                    settings.AccentTintName = canonicalAccentTintName;
+                    setCurrentValue(settings, canonicalValue);
                     await _settingsService.SaveSettingsAsync(settings, default);
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to persist canonical accent tint '{canonicalAccentTintName}': {ex.Message}");
+                Debug.WriteLine($"Failed to persist canonical {settingName} '{canonicalValue}': {ex.Message}");
             }
-        });
+        }).SafeFireAndForget();
     }
 }

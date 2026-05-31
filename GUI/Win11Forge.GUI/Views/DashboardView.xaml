@@ -530,7 +530,14 @@
                     <!-- History List -->
                     <ItemsControl Grid.Row="1"
                                    ItemsSource="{Binding RecentDeployments}"
+                                   VirtualizingPanel.IsVirtualizing="True"
+                                   VirtualizingPanel.VirtualizationMode="Recycling"
                                    Visibility="{Binding HasRecentDeployments, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:DeploymentHistoryEntry}">
                                 <Border BorderBrush="{DynamicResource ControlElevationBorderBrush}"

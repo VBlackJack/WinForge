@@ -65,6 +65,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IProfileExportService, ProfileExportService>();
         services.AddSingleton<IDeploymentStateService, DeploymentStateService>();
+        services.AddSingleton<IScheduledDeploymentService, ScheduledDeploymentService>();
         services.AddSingleton<IUndoService, UndoService>();
         services.AddSingleton<IValidationService, ValidationService>();
         services.AddSingleton<IProfileValidationService, ProfileValidationService>();

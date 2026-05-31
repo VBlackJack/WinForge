@@ -47,9 +47,9 @@ public partial class AppsViewModel
 
         var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
             string.Empty,
-            "JSON files (*.json)|*.json",
+            FileDialogFilters.JsonOnly,
             DefaultFileName: "win11forge-selection",
-            DefaultExtension: ".json"));
+            DefaultExtension: FileDialogFilters.JsonDefaultExtension));
 
         if (filePath != null)
         {
@@ -80,8 +80,8 @@ public partial class AppsViewModel
     {
         var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
             string.Empty,
-            "JSON files (*.json)|*.json",
-            DefaultExtension: ".json"));
+            FileDialogFilters.JsonOnly,
+            DefaultExtension: FileDialogFilters.JsonDefaultExtension));
 
         if (filePath != null)
         {
@@ -117,9 +117,9 @@ public partial class AppsViewModel
 
         var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
             string.Empty,
-            "JSON files (*.json)|*.json",
+            FileDialogFilters.JsonOnly,
             DefaultFileName: "win11forge-favorites",
-            DefaultExtension: ".json"));
+            DefaultExtension: FileDialogFilters.JsonDefaultExtension));
 
         if (filePath != null)
         {
@@ -150,8 +150,8 @@ public partial class AppsViewModel
     {
         var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
             string.Empty,
-            "JSON files (*.json)|*.json",
-            DefaultExtension: ".json"));
+            FileDialogFilters.JsonOnly,
+            DefaultExtension: FileDialogFilters.JsonDefaultExtension));
 
         if (filePath != null)
         {

@@ -133,32 +133,20 @@ public partial class App : Application
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_ConfiguringServices);
             Services = ConfigureServices();
             LogUserDataFallbackIfActive();
-            RunProfileMigration();
+            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingSettings);
+            Task.Run(RunProfileMigration).GetAwaiter().GetResult();
 
             // Step 2: Load settings FIRST (before any UI)
             Log("Loading settings...");
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingSettings);
             var settingsService = Services.GetRequiredService<IAppSettingsService>();
-            var settings = settingsService.LoadSettings();
+            var settings = Task.Run(() => settingsService.LoadSettingsAsync()).GetAwaiter().GetResult();
 
             // Get version for splash screen
             try
             {
-                var pathService = Services.GetService<IRepositoryPathService>();
-                if (pathService != null)
-                {
-                    var versionPath = pathService.GetPath(
-                        Win11ForgePathNames.ConfigDirectoryName,
-                        Win11ForgePathNames.VersionFileName);
-                    if (File.Exists(versionPath))
-                    {
-                        var versionJson = System.Text.Json.JsonDocument.Parse(File.ReadAllText(versionPath));
-                        if (versionJson.RootElement.TryGetProperty("Version", out var versionElement))
-                        {
-                            splash.SetVersion(versionElement.GetString() ?? "3.0.0");
-                        }
-                    }
-                }
+                var version = Task.Run(ReadVersionForSplash).GetAwaiter().GetResult();
+                splash.SetVersion(version);
             }
             catch (Exception ex)
             {
@@ -209,18 +197,14 @@ public partial class App : Application
             // Step 6: Call base AFTER settings are applied
             base.OnStartup(e);
 
-            // Step 6b: Re-apply visual settings once the WPF startup pipeline is initialized.
-            // This prevents occasional theme mismatches on some VM/remote sessions.
+            // Step 6b: Apply visual settings that depend on the initialized WPF pipeline.
             try
             {
-                var themeService = Services.GetRequiredService<IThemeService>();
-                themeService.ApplyTheme(settings.ThemeName);
-                themeService.ApplyAccentTint(settings.AccentTintName);
                 ApplyHighContrastMode(settings.IsHighContrastEnabled);
             }
             catch (Exception ex)
             {
-                Log($"Post-startup visual settings re-apply failed: {ex.Message}");
+                Log($"Post-startup visual settings failed: {ex.Message}");
             }
 
             // Step 7: NOW create and show MainWindow (after culture is set)
@@ -297,6 +281,29 @@ public partial class App : Application
     private static void Log(string message)
     {
         LogToStartupFile(message);
+    }
+
+    private static string ReadVersionForSplash()
+    {
+        var pathService = Services.GetService<IRepositoryPathService>();
+        if (pathService == null)
+        {
+            return string.Empty;
+        }
+
+        var versionPath = pathService.GetPath(
+            Win11ForgePathNames.ConfigDirectoryName,
+            Win11ForgePathNames.VersionFileName);
+        if (!File.Exists(versionPath))
+        {
+            return string.Empty;
+        }
+
+        using var stream = File.OpenRead(versionPath);
+        using var versionJson = System.Text.Json.JsonDocument.Parse(stream);
+        return versionJson.RootElement.TryGetProperty("Version", out var versionElement)
+            ? versionElement.GetString() ?? string.Empty
+            : string.Empty;
     }
 
     private static void LogWarning(string message)

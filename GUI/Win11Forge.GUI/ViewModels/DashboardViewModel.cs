@@ -15,11 +15,14 @@
  */
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using Win11Forge.GUI.Exceptions;
+using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Messages;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
@@ -309,8 +312,21 @@ public partial class DashboardViewModel : ViewModelBase
     /// Initializes a new instance with just the PowerShell bridge.
     /// </summary>
     public DashboardViewModel(IPowerShellBridge powerShellBridge)
-        : this(powerShellBridge, new DeploymentHistoryService(), new AppSettingsService())
+        : this(
+            powerShellBridge,
+            CreateDesignTimeService<IDeploymentHistoryService>(() => new DeploymentHistoryService()),
+            CreateDesignTimeService<IAppSettingsService>(() => new AppSettingsService()))
     {
+    }
+
+    private static T CreateDesignTimeService<T>(Func<T> factory)
+    {
+        if (!DesignerProperties.GetIsInDesignMode(new DependencyObject()))
+        {
+            throw new InvalidOperationException("This DashboardViewModel constructor is design-time only.");
+        }
+
+        return factory();
     }
 
     /// <inheritdoc/>
@@ -364,7 +380,7 @@ public partial class DashboardViewModel : ViewModelBase
                 CurrentState = DashboardState.Ready;
 
                 // Phase 3: Scan for updates in background (non-blocking)
-                _ = ScanForUpdatesInBackgroundAsync();
+                ScanForUpdatesInBackgroundAsync().SafeFireAndForget();
             }
         }
         catch (PowerShellBridgeException ex)

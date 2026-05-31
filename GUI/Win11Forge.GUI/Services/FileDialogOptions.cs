@@ -25,3 +25,13 @@ public sealed record FileDialogOptions(
     string? DefaultFileName = null,
     string? InitialDirectory = null,
     string? DefaultExtension = null);
+
+/// <summary>
+/// Shared native file dialog filters.
+/// </summary>
+public static class FileDialogFilters
+{
+    public const string Json = "JSON files (*.json)|*.json|All files (*.*)|*.*";
+    public const string JsonOnly = "JSON files (*.json)|*.json";
+    public const string JsonDefaultExtension = ".json";
+}

@@ -22,6 +22,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Exceptions;
+using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Models;
 
 namespace Win11Forge.GUI.ViewModels;
@@ -102,7 +103,7 @@ public partial class AppsViewModel
             return;
         }
 
-        _ = ApplyProfileSelectionAsync();
+        ApplyProfileSelectionAsync().SafeFireAndForget();
     }
 
     partial void OnSelectedProfileSelectorItemChanged(ProfileSelectorItem? value)

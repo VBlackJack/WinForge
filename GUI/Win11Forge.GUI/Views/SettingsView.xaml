@@ -423,7 +423,14 @@
 
                                 <!-- Error List -->
                                 <ItemsControl ItemsSource="{Binding RecentErrors}"
+                                              VirtualizingPanel.IsVirtualizing="True"
+                                              VirtualizingPanel.VirtualizationMode="Recycling"
                                               MaxHeight="300">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <VirtualizingStackPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Border BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"

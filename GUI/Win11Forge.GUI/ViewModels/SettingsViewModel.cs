@@ -15,9 +15,11 @@
  */
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Configuration;
@@ -47,6 +49,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private readonly IFileDialogService _fileDialogService;
     private readonly IDialogService _dialogService;
     private readonly IRepositoryPathService _pathService;
+    private readonly IScheduledDeploymentService _scheduledDeploymentService;
     private string _initialLanguageCode = string.Empty;
     private bool _isLoadingSettings;
     private bool _settingsLoaded;
@@ -325,8 +328,27 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     /// Used for XAML design-time support only.
     /// </summary>
     public SettingsViewModel()
-        : this(new AppSettingsService(), new DeploymentHistoryService(), new DesignTimePowerShellBridge(), null, null, null, null, null, null)
+        : this(
+            CreateDesignTimeService<IAppSettingsService>(() => new AppSettingsService()),
+            CreateDesignTimeService<IDeploymentHistoryService>(() => new DeploymentHistoryService()),
+            CreateDesignTimeService<IPowerShellBridge>(() => new DesignTimePowerShellBridge()),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null)
     {
+    }
+
+    private static T CreateDesignTimeService<T>(Func<T> factory)
+    {
+        if (!DesignerProperties.GetIsInDesignMode(new DependencyObject()))
+        {
+            throw new InvalidOperationException("The parameterless SettingsViewModel constructor is design-time only.");
+        }
+
+        return factory();
     }
 
     /// <summary>
@@ -344,7 +366,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         IProcessLauncher? processLauncher = null,
         IFileDialogService? fileDialogService = null,
         IDialogService? dialogService = null,
-        IRepositoryPathService? pathService = null)
+        IRepositoryPathService? pathService = null,
+        IScheduledDeploymentService? scheduledDeploymentService = null)
     {
         _settingsService = settingsService;
         _themeService = themeService ?? new ThemeService(settingsService);
@@ -358,6 +381,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         _fileDialogService = fileDialogService ?? new FileDialogService();
         _dialogService = dialogService ?? new DialogService();
         _pathService = pathService ?? new RepositoryPathService();
+        _scheduledDeploymentService = scheduledDeploymentService ?? new ScheduledDeploymentService(powerShellBridge);
 
         // Subscribe to error history changes
         if (_errorHistoryService != null)
@@ -714,9 +738,9 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         {
             var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
                 string.Empty,
-                "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                FileDialogFilters.Json,
                 DefaultFileName: $"Win11Forge_Settings_{DateTime.Now:yyyyMMdd}",
-                DefaultExtension: ".json"));
+                DefaultExtension: FileDialogFilters.JsonDefaultExtension));
 
             if (filePath != null)
             {
@@ -745,8 +769,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         {
             var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
                 string.Empty,
-                "JSON files (*.json)|*.json|All files (*.*)|*.*",
-                DefaultExtension: ".json"));
+                FileDialogFilters.Json,
+                DefaultExtension: FileDialogFilters.JsonDefaultExtension));
 
             if (filePath != null)
             {
@@ -821,26 +845,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         {
             IsLoadingScheduledDeployments = true;
 
-            // Check if admin and Task Scheduler available
-            var repoRoot = _powerShellBridge.RepositoryRoot.Replace("'", "''");
-            var checkScript = $@"
-                Import-Module (Join-Path '{repoRoot}' 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
-                @{{
-                    TaskSchedulerAvailable = Test-ScheduledTasksAvailable
-                    IsAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-                }} | ConvertTo-Json
-            ";
-
-            var checkResult = await _powerShellBridge.ExecuteCommandAsync(checkScript);
-
-            if (!string.IsNullOrEmpty(checkResult))
-            {
-                var checkJson = System.Text.Json.JsonDocument.Parse(checkResult);
-                var taskSchedulerAvailable = checkJson.RootElement.GetProperty("TaskSchedulerAvailable").GetBoolean();
-                var isAdmin = checkJson.RootElement.GetProperty("IsAdmin").GetBoolean();
-
-                IsScheduledDeploymentsAvailable = taskSchedulerAvailable && isAdmin;
-            }
+            var availability = await _scheduledDeploymentService.GetAvailabilityAsync();
+            IsScheduledDeploymentsAvailable = availability.IsAvailable;
 
             if (!IsScheduledDeploymentsAvailable)
             {
@@ -860,57 +866,11 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
                 NewScheduledProfile = AvailableProfiles[0];
             }
 
-            // Load scheduled deployments
-            var script = $@"
-                Import-Module (Join-Path '{repoRoot}' 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
-                Get-ScheduledDeployment | ForEach-Object {{
-                    @{{
-                        Id = $_.Id
-                        ProfileName = $_.ProfileName
-                        ScheduledTime = $_.ScheduledTime.ToString('o')
-                        TriggerType = $_.TriggerType
-                        Status = $_.Status
-                        CreatedBy = $_.CreatedBy
-                        CreatedAt = $_.CreatedAt.ToString('o')
-                        LastRunTime = if ($_.LastRunTime -and $_.LastRunTime -ne [datetime]::MinValue) {{ $_.LastRunTime.ToString('o') }} else {{ $null }}
-                        LastRunResult = $_.LastRunResult
-                    }}
-                }} | ConvertTo-Json -Compress
-            ";
-
-            var result = await _powerShellBridge.ExecuteCommandAsync(script);
-
             ScheduledDeployments.Clear();
-
-            if (string.IsNullOrWhiteSpace(result) || result == "null")
+            var deployments = await _scheduledDeploymentService.GetScheduledDeploymentsAsync();
+            foreach (var deployment in deployments)
             {
-                return;
-            }
-
-            var jsonOptions = new System.Text.Json.JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-
-            // Handle both single object and array
-            if (result.TrimStart().StartsWith('['))
-            {
-                var deployments = System.Text.Json.JsonSerializer.Deserialize<List<ScheduledDeploymentJson>>(result, jsonOptions);
-                if (deployments != null)
-                {
-                    foreach (var d in deployments)
-                    {
-                        ScheduledDeployments.Add(MapToModel(d));
-                    }
-                }
-            }
-            else
-            {
-                var deployment = System.Text.Json.JsonSerializer.Deserialize<ScheduledDeploymentJson>(result, jsonOptions);
-                if (deployment != null)
-                {
-                    ScheduledDeployments.Add(MapToModel(deployment));
-                }
+                ScheduledDeployments.Add(deployment);
             }
         }
         catch (Exception ex)
@@ -937,29 +897,15 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
         try
         {
-            var triggerTypeStr = NewScheduledTriggerType.ToString();
-            var timeStr = NewScheduledTime.ToString("o");
-            var repoRoot = _powerShellBridge.RepositoryRoot.Replace("'", "''");
+            var deploymentId = await _scheduledDeploymentService.CreateScheduledDeploymentAsync(
+                NewScheduledProfile,
+                NewScheduledTime,
+                NewScheduledTriggerType);
 
-            var script = $@"
-                Import-Module (Join-Path '{repoRoot}' 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
-                $deployment = New-ScheduledDeployment -ProfileName '{NewScheduledProfile}' -ScheduledTime ([datetime]'{timeStr}') -TriggerType '{triggerTypeStr}'
-                @{{
-                    Success = $true
-                    Id = $deployment.Id
-                }} | ConvertTo-Json
-            ";
-
-            var result = await _powerShellBridge.ExecuteCommandAsync(script);
-
-            if (!string.IsNullOrEmpty(result))
+            if (!string.IsNullOrEmpty(deploymentId))
             {
-                var json = System.Text.Json.JsonDocument.Parse(result);
-                if (json.RootElement.TryGetProperty("Success", out var successProp) && successProp.GetBoolean())
-                {
-                    StatusMessage = Resources.Resources.ScheduledDeployment_Created;
-                    await LoadScheduledDeploymentsAsync();
-                }
+                StatusMessage = Resources.Resources.ScheduledDeployment_Created;
+                await LoadScheduledDeploymentsAsync();
             }
         }
         catch (Exception ex)
@@ -992,13 +938,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
         try
         {
-            var repoRoot = _powerShellBridge.RepositoryRoot.Replace("'", "''");
-            var script = $@"
-                Import-Module (Join-Path '{repoRoot}' 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
-                Remove-ScheduledDeployment -Id '{SelectedScheduledDeployment.Id}' -Force
-            ";
-
-            await _powerShellBridge.ExecuteCommandAsync(script);
+            await _scheduledDeploymentService.RemoveScheduledDeploymentAsync(SelectedScheduledDeployment.Id);
             StatusMessage = Resources.Resources.ScheduledDeployment_Removed;
             await LoadScheduledDeploymentsAsync();
         }
@@ -1021,13 +961,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
         try
         {
-            var repoRoot = _powerShellBridge.RepositoryRoot.Replace("'", "''");
-            var script = $@"
-                Import-Module (Join-Path '{repoRoot}' 'Modules\ScheduledDeployment.psm1') -Force -ErrorAction Stop
-                Start-ScheduledDeployment -Id '{SelectedScheduledDeployment.Id}'
-            ";
-
-            await _powerShellBridge.ExecuteCommandAsync(script);
+            await _scheduledDeploymentService.StartScheduledDeploymentAsync(SelectedScheduledDeployment.Id);
             StatusMessage = Resources.Resources.ScheduledDeployment_Started;
             await LoadScheduledDeploymentsAsync();
         }
@@ -1035,61 +969,6 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         {
             StatusMessage = $"{Resources.Resources.ScheduledDeployment_StartError}: {ex.Message}";
         }
-    }
-
-    /// <summary>
-    /// Maps JSON data to a ScheduledDeploymentModel.
-    /// </summary>
-    private static ScheduledDeploymentModel MapToModel(ScheduledDeploymentJson json)
-    {
-        var status = json.Status?.ToLowerInvariant() switch
-        {
-            "pending" => ScheduledDeploymentStatus.Pending,
-            "running" => ScheduledDeploymentStatus.Running,
-            "completed" => ScheduledDeploymentStatus.Completed,
-            "failed" => ScheduledDeploymentStatus.Failed,
-            "cancelled" => ScheduledDeploymentStatus.Cancelled,
-            _ => ScheduledDeploymentStatus.Unknown
-        };
-
-        var triggerType = json.TriggerType?.ToLowerInvariant() switch
-        {
-            "onetime" => ScheduledTriggerType.OneTime,
-            "daily" => ScheduledTriggerType.Daily,
-            "weekly" => ScheduledTriggerType.Weekly,
-            "atstartup" => ScheduledTriggerType.AtStartup,
-            "atlogon" => ScheduledTriggerType.AtLogon,
-            _ => ScheduledTriggerType.OneTime
-        };
-
-        return new ScheduledDeploymentModel
-        {
-            Id = json.Id ?? string.Empty,
-            ProfileName = json.ProfileName ?? string.Empty,
-            ScheduledTime = DateTime.TryParse(json.ScheduledTime, out var st) ? st : DateTime.Now,
-            TriggerType = triggerType,
-            Status = status,
-            CreatedBy = json.CreatedBy ?? Environment.UserName,
-            CreatedAt = DateTime.TryParse(json.CreatedAt, out var ca) ? ca : DateTime.Now,
-            LastRunTime = DateTime.TryParse(json.LastRunTime, out var lrt) ? lrt : null,
-            LastRunResult = json.LastRunResult
-        };
-    }
-
-    /// <summary>
-    /// JSON DTO for scheduled deployment data.
-    /// </summary>
-    private class ScheduledDeploymentJson
-    {
-        public string? Id { get; set; }
-        public string? ProfileName { get; set; }
-        public string? ScheduledTime { get; set; }
-        public string? TriggerType { get; set; }
-        public string? Status { get; set; }
-        public string? CreatedBy { get; set; }
-        public string? CreatedAt { get; set; }
-        public string? LastRunTime { get; set; }
-        public string? LastRunResult { get; set; }
     }
 
     #region IDisposable
