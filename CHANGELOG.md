@@ -27,6 +27,11 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
   installers, and `Tools\Set-DirectDownloadExpectedPublishers.ps1` applies the
   approved publisher mappings with a BOM-safe dry-run-first workflow.
 
+#### Fixed
+- **Refreshed the stale Signal Desktop direct-download URL.** Updated the
+  fallback from `7.0.0` to `x64-8.12.0`, restoring the broken direct-download
+  fallback while keeping the existing Authenticode publisher gate enforced.
+
 ### Button visual hierarchy restored — May 2026 follow-up
 
 After visual inspection of the `v2026051001` release built from the unified
