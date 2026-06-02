@@ -6,13 +6,22 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ### Direct-download publisher gate activation — June 2026
 
+#### Security
+- **Authenticode publisher gate now enforced for the AIMP direct-download.**
+  `Sources.ExpectedPublisher = "IP Izmaylov Artem Andreevich"` is now populated
+  for AIMP, bringing verified coverage to 18/20 signed direct-downloads.
+  `ABDownloadManager` is unsigned and `FileZilla` remains CDN-protected, so both
+  remain intentionally dormant.
+
 #### Changed
-- **Enabled Authenticode publisher enforcement for 17 direct-download apps.**
+- **Enabled Authenticode publisher enforcement for 18 direct-download apps.**
   Added empirically verified `Sources.ExpectedPublisher` values for signed
   direct-download installers so the existing installer signature gate now
-  fails closed on publisher mismatch for those apps. `ABDownloadManager`,
-  `AIMP`, and `FileZilla` remain dormant pending signing or download-source
-  verification.
+  fails closed on publisher mismatch for those apps. `ABDownloadManager` and
+  `FileZilla` remain dormant pending signing or download-source verification.
+- **AIMP direct-download URL switched to the version-stable official endpoint.**
+  The direct URL now uses `https://aimp.ru/?do=download.file&id=3` to avoid
+  per-release URL drift.
 - **Added maintainer publisher probes.** `Tools\Get-DirectDownloadPublishers.ps1`
   reports `{ AppId, Url, Status, Bytes, SignerSubject }` from downloaded
   installers, and `Tools\Set-DirectDownloadExpectedPublishers.ps1` applies the

@@ -2089,7 +2089,8 @@
         "Winget": "AIMP.AIMP",
         "Chocolatey": "aimp",
         "Store": null,
-        "DirectUrl": "https://www.aimp.ru/files/windows/builds/aimp_5.40.2703_w64.exe"
+        "DirectUrl": "https://aimp.ru/?do=download.file&id=3",
+        "ExpectedPublisher": "IP Izmaylov Artem Andreevich"
       },
       "Detection": {
         "Method": "File",

@@ -72,11 +72,11 @@ $Script:PublisherMappings = [ordered]@{
     Tabby               = 'Eugen Pankov Softwareentwicklung'
     FreeDownloadManager = 'Softdeluxe LLC'
     Parsec              = 'Unity Technologies SF'
+    AIMP                = 'IP Izmaylov Artem Andreevich'
 }
 
 $Script:DormantAppIds = @(
     'ABDownloadManager',
-    'AIMP',
     'FileZilla'
 )
 
