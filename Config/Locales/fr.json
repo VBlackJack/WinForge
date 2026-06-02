@@ -993,6 +993,12 @@
     "removing_corrupted": "Suppression du fichier potentiellement corrompu...",
     "checksum_passed": "Validation du checksum réussie (SHA256 : {Hash})",
     "download_failed": "Échec du téléchargement : {Error}",
+    "signature": {
+      "valid": "Signature vérifiée - éditeur : {Publisher}",
+      "invalid": "Signature invalide (statut : {Status})",
+      "publisher_mismatch": "Éditeur inattendu - attendu « {Expected} », obtenu « {Got} »",
+      "error": "Erreur de vérification de signature : {Error}"
+    },
     "method": {
       "invoke_webrequest": "Tentative de téléchargement via Invoke-WebRequest...",
       "invoke_webrequest_redirects": "Tentative de téléchargement via Invoke-WebRequest (gestion des redirections)...",

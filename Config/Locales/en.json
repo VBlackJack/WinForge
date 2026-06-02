@@ -993,6 +993,12 @@
     "removing_corrupted": "Removing potentially corrupted file...",
     "checksum_passed": "Checksum validation passed (SHA256: {Hash})",
     "download_failed": "Download failed: {Error}",
+    "signature": {
+      "valid": "Signature verified - publisher: {Publisher}",
+      "invalid": "Signature invalid (status: {Status})",
+      "publisher_mismatch": "Publisher mismatch - expected '{Expected}', got '{Got}'",
+      "error": "Signature check error: {Error}"
+    },
     "method": {
       "invoke_webrequest": "Attempting download via Invoke-WebRequest...",
       "invoke_webrequest_redirects": "Attempting download via Invoke-WebRequest (handles redirects)...",

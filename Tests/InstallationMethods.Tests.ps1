@@ -293,6 +293,58 @@ Describe 'InstallationMethods Module' {
         }
     }
 
+    Context 'Test-InstallerSignature' {
+        BeforeEach {
+            Mock Get-LocalizedString { return $Key } -ModuleName InstallationMethods
+            Mock Write-Status { } -ModuleName InstallationMethods
+        }
+
+        It 'Should return true when signature is valid and publisher matches' {
+            Mock Get-AuthenticodeSignature {
+                [pscustomobject]@{
+                    Status            = 'Valid'
+                    SignerCertificate = [pscustomobject]@{
+                        Subject = 'CN=Mozilla Corporation, O=Mozilla Corporation, C=US'
+                    }
+                }
+            } -ModuleName InstallationMethods
+
+            Test-InstallerSignature -FilePath 'x' -ExpectedPublisher 'Mozilla Corporation' | Should -BeTrue
+        }
+
+        It 'Should return false when signature status is not valid' {
+            Mock Get-AuthenticodeSignature {
+                [pscustomobject]@{
+                    Status            = 'HashMismatch'
+                    SignerCertificate = [pscustomobject]@{
+                        Subject = 'CN=Mozilla Corporation, O=Mozilla Corporation, C=US'
+                    }
+                }
+            } -ModuleName InstallationMethods
+
+            Test-InstallerSignature -FilePath 'x' -ExpectedPublisher 'Mozilla Corporation' | Should -BeFalse
+        }
+
+        It 'Should return false when publisher does not match' {
+            Mock Get-AuthenticodeSignature {
+                [pscustomobject]@{
+                    Status            = 'Valid'
+                    SignerCertificate = [pscustomobject]@{
+                        Subject = 'CN=Evil Corp'
+                    }
+                }
+            } -ModuleName InstallationMethods
+
+            Test-InstallerSignature -FilePath 'x' -ExpectedPublisher 'Mozilla Corporation' | Should -BeFalse
+        }
+
+        It 'Should return false when signature lookup throws' {
+            Mock Get-AuthenticodeSignature { throw 'boom' } -ModuleName InstallationMethods
+
+            Test-InstallerSignature -FilePath 'x' -ExpectedPublisher 'Mozilla Corporation' | Should -BeFalse
+        }
+    }
+
     Context 'Start-ProcessWithTimeout' {
         It 'Should require FilePath parameter' {
             { Start-ProcessWithTimeout -FilePath $null } | Should -Throw

@@ -669,6 +669,45 @@ function Start-ProcessWithTimeout {
     }
 }
 
+function Test-InstallerSignature {
+    <#
+    .SYNOPSIS
+        Validates an installer Authenticode signature against an expected publisher.
+    .DESCRIPTION
+        Fails closed for missing, invalid, mismatched, or unreadable signatures.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$FilePath,
+
+        [Parameter(Mandatory)]
+        [string]$ExpectedPublisher
+    )
+
+    try {
+        $signature = Get-AuthenticodeSignature -FilePath $FilePath
+    } catch {
+        Write-Status -Message (Get-LocalizedString -Key 'download.signature.error' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
+        return $false
+    }
+
+    if ($signature.Status -ne 'Valid') {
+        Write-Status -Message (Get-LocalizedString -Key 'download.signature.invalid' -Parameters @{ Status = $signature.Status }) -Level 'Error'
+        return $false
+    }
+
+    $subject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { $null }
+    if ($subject -and $subject.ToLowerInvariant().Contains($ExpectedPublisher.ToLowerInvariant())) {
+        Write-Status -Message (Get-LocalizedString -Key 'download.signature.valid' -Parameters @{ Publisher = $ExpectedPublisher }) -Level 'Success'
+        return $true
+    }
+
+    Write-Status -Message (Get-LocalizedString -Key 'download.signature.publisher_mismatch' -Parameters @{ Expected = $ExpectedPublisher; Got = $subject }) -Level 'Error'
+    return $false
+}
+
 function Invoke-FileDownloadWithProgress {
     <#
     .SYNOPSIS
@@ -1431,7 +1470,10 @@ function Install-ViaDirectDownload {
         [string]$DetectionPath = $null,
 
         [Parameter()]
-        [string]$ExpectedSHA256 = $null  # Optional SHA256 checksum
+        [string]$ExpectedSHA256 = $null,  # Optional SHA256 checksum
+
+        [Parameter()]
+        [string]$ExpectedPublisher = $null
     )
 
     Write-Verbose (t 'install.method.debug.attempting_direct' -Parameters @{ Url = $Url })
@@ -1523,6 +1565,13 @@ function Install-ViaDirectDownload {
         $fileSize = Format-FileSize -Bytes (Get-Item $installerPath).Length
         Write-Verbose (t 'install.method.debug.direct_downloaded_verbose' -Parameters @{ Size = $fileSize })
         Write-Status -Message (t 'install.method.direct_downloaded' -Parameters @{ Size = $fileSize }) -Level 'Info'
+
+        if ($ExpectedPublisher) {
+            if (-not (Test-InstallerSignature -FilePath $installerPath -ExpectedPublisher $ExpectedPublisher)) {
+                Remove-Item -Path $installerPath -Force -ErrorAction SilentlyContinue
+                return $false
+            }
+        }
 
         if ($InstallerType -eq 'auto') {
             $InstallerType = switch -Regex ($filename) {
@@ -1715,6 +1764,7 @@ Export-ModuleMember -Function @(
     # Helper functions
     'Test-ValidDownloadUrl',
     'Start-ProcessWithTimeout',
+    'Test-InstallerSignature',
     'Invoke-FileDownloadWithProgress',
     'Format-FileSize',
     # Package manager methods

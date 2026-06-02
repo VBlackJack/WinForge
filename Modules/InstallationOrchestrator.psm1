@@ -487,6 +487,10 @@ function Invoke-InstallationMethodSequence {
                     $installParams['ExpectedSHA256'] = $sources.SHA256
                 }
 
+                if ($sources.PSObject.Properties['ExpectedPublisher'] -and $sources.ExpectedPublisher) {
+                    $installParams['ExpectedPublisher'] = $sources.ExpectedPublisher
+                }
+
                 Write-Verbose "Calling Install-ViaDirectDownload"
                 Write-Verbose "installParams: $($installParams | ConvertTo-Json -Compress)"
                 $downloadOutput = @(Install-ViaDirectDownload @installParams)
@@ -828,6 +832,7 @@ function Install-ApplicationsParallel {
 
     # Export helper functions for parallel scope
     $validateUrlFunction = ${function:Test-ValidDownloadUrl}.ToString()
+    $validateSignatureFunction = ${function:Test-InstallerSignature}.ToString()
 
     # Self-contained detection function for parallel scope
     $detectAppFunction = @'
@@ -1039,12 +1044,14 @@ function Test-AppInstalledParallel {
         $parallelLogDir = $using:parallelLogsDir
         $ts = $using:timestamp
         $validateUrl = $using:validateUrlFunction
+        $validateSignature = $using:validateSignatureFunction
         $detectAppFunc = $using:detectAppFunction
         $installTimeoutMs = $using:parallelTimeoutMs
         $fwVersion = $using:frameworkVersion
         $forceOnHashMismatch = $using:wingetForceOnHashMismatch
 
         ${function:Test-ValidDownloadUrl} = [ScriptBlock]::Create($validateUrl)
+        ${function:Test-InstallerSignature} = [ScriptBlock]::Create($validateSignature)
         . ([ScriptBlock]::Create($detectAppFunc))
 
         $appLogFile = Join-Path $parallelLogDir "parallel_${ts}_$($app.Name -replace '[^\w\-]', '_').log"
@@ -1413,6 +1420,15 @@ function Test-AppInstalledParallel {
                         Write-ParallelLog "Checksum validation passed" 'Success'
                     }
 
+                    if ($sources.PSObject.Properties['ExpectedPublisher'] -and $sources.ExpectedPublisher) {
+                        if (-not (Test-InstallerSignature -FilePath $tempFile -ExpectedPublisher $sources.ExpectedPublisher)) {
+                            Write-ParallelLog "Signature validation failed for $($sources.DirectUrl)" 'Error'
+                            Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+                            $result.Message = (Get-LocalizedString -Key 'download.signature.publisher_mismatch' -Parameters @{ Expected = $sources.ExpectedPublisher; Got = 'signature validation failed' })
+                            return $result
+                        }
+                    }
+
                     $installerType = switch -Regex ($filename) {
                         '\.msi$' { 'msi' }
                         '\.zip$' { 'zip' }
@@ -1609,4 +1625,3 @@ Export-ModuleMember -Function @(
     'Install-Application',
     'Install-ApplicationsParallel'
 )
-

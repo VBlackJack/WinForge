@@ -48,6 +48,7 @@
     FunctionsToExport = @(
         'Test-ValidDownloadUrl',
         'Start-ProcessWithTimeout',
+        'Test-InstallerSignature',
         'Invoke-FileDownloadWithProgress',
         'Format-FileSize',
         'Install-ViaWinget',
