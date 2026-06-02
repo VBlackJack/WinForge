@@ -1,6 +1,6 @@
 # Win11Forge Documentation
 
-Current framework display version: `2026050901`.
+Current framework display version: `2026051002`.
 
 ## Active Documents
 
