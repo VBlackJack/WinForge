@@ -16,7 +16,6 @@
 
 #nullable enable
 
-using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using Win11Forge.GUI.Models;
@@ -60,14 +59,15 @@ public sealed class BatchResumeService : IBatchResumeService
     private readonly string _stateDirectory;
     private readonly TimeSpan _staleAfter;
     private readonly Func<DateTimeOffset> _now;
+    private readonly ILoggingService _logger;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
     /// <summary>
     /// Production constructor used by DI. Resolves <c>%LocalAppData%\Win11Forge\state</c>
     /// with the same fallback chain as <see cref="AppSettingsService"/>.
     /// </summary>
-    public BatchResumeService()
-        : this(ResolveDefaultStateDirectory(), DefaultStaleAfter, () => DateTimeOffset.UtcNow)
+    public BatchResumeService(ILoggerFactory? loggerFactory = null)
+        : this(ResolveDefaultStateDirectory(loggerFactory), DefaultStaleAfter, () => DateTimeOffset.UtcNow, loggerFactory)
     {
     }
 
@@ -75,11 +75,16 @@ public sealed class BatchResumeService : IBatchResumeService
     /// Test-friendly constructor accepting an arbitrary root directory, custom TTL,
     /// and a clock that can be advanced for stale-detection tests.
     /// </summary>
-    public BatchResumeService(string stateDirectory, TimeSpan staleAfter, Func<DateTimeOffset> now)
+    public BatchResumeService(
+        string stateDirectory,
+        TimeSpan staleAfter,
+        Func<DateTimeOffset> now,
+        ILoggerFactory? loggerFactory = null)
     {
         _stateDirectory = stateDirectory ?? throw new ArgumentNullException(nameof(stateDirectory));
         _staleAfter = staleAfter;
         _now = now ?? throw new ArgumentNullException(nameof(now));
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<BatchResumeService>();
 
         EnsureStateDirectoryExists();
     }
@@ -126,7 +131,7 @@ public sealed class BatchResumeService : IBatchResumeService
             var existing = await ReadCheckpointAsync(batchId, cancellationToken).ConfigureAwait(false);
             if (existing == null)
             {
-                Debug.WriteLine($"[BatchResumeService] Cannot append to missing checkpoint {batchId}.");
+                _logger.LogWarning($"[BatchResumeService] Cannot append to missing checkpoint {batchId}.");
                 return;
             }
 
@@ -155,7 +160,7 @@ public sealed class BatchResumeService : IBatchResumeService
             var existing = await ReadCheckpointAsync(batchId, cancellationToken).ConfigureAwait(false);
             if (existing == null)
             {
-                Debug.WriteLine($"[BatchResumeService] Cannot mark missing checkpoint {batchId} completed.");
+                _logger.LogWarning($"[BatchResumeService] Cannot mark missing checkpoint {batchId} completed.");
                 return;
             }
 
@@ -226,7 +231,7 @@ public sealed class BatchResumeService : IBatchResumeService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[BatchResumeService] Failed to delete checkpoint {batchId}: {ex.Message}");
+            _logger.LogWarning($"[BatchResumeService] Failed to delete checkpoint {batchId}: {ex.Message}");
         }
         return Task.CompletedTask;
     }
@@ -256,7 +261,7 @@ public sealed class BatchResumeService : IBatchResumeService
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[BatchResumeService] Failed to prune {path}: {ex.Message}");
+                _logger.LogWarning($"[BatchResumeService] Failed to prune {path}: {ex.Message}");
             }
         }
     }
@@ -288,7 +293,7 @@ public sealed class BatchResumeService : IBatchResumeService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[BatchResumeService] Failed to write checkpoint {checkpoint.BatchId}: {ex.Message}");
+            _logger.LogWarning($"[BatchResumeService] Failed to write checkpoint {checkpoint.BatchId}: {ex.Message}");
             try
             {
                 if (File.Exists(tempPath))
@@ -309,7 +314,7 @@ public sealed class BatchResumeService : IBatchResumeService
         return await ReadCheckpointFromPathAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task<BatchCheckpoint?> ReadCheckpointFromPathAsync(string path, CancellationToken cancellationToken)
+    private async Task<BatchCheckpoint?> ReadCheckpointFromPathAsync(string path, CancellationToken cancellationToken)
     {
         if (!File.Exists(path))
         {
@@ -326,7 +331,7 @@ public sealed class BatchResumeService : IBatchResumeService
             }
             if (checkpoint.SchemaVersion != BatchCheckpoint.CurrentSchemaVersion)
             {
-                Debug.WriteLine(
+                _logger.LogWarning(
                     $"[BatchResumeService] Skipping checkpoint with schema {checkpoint.SchemaVersion} " +
                     $"(expected {BatchCheckpoint.CurrentSchemaVersion}): {path}");
                 return null;
@@ -335,12 +340,12 @@ public sealed class BatchResumeService : IBatchResumeService
         }
         catch (JsonException ex)
         {
-            Debug.WriteLine($"[BatchResumeService] Corrupted checkpoint at {path}: {ex.Message}");
+            _logger.LogWarning($"[BatchResumeService] Corrupted checkpoint at {path}: {ex.Message}");
             return null;
         }
         catch (IOException ex)
         {
-            Debug.WriteLine($"[BatchResumeService] IO error reading {path}: {ex.Message}");
+            _logger.LogWarning($"[BatchResumeService] IO error reading {path}: {ex.Message}");
             return null;
         }
     }
@@ -361,12 +366,13 @@ public sealed class BatchResumeService : IBatchResumeService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[BatchResumeService] Failed to create state directory '{_stateDirectory}': {ex.Message}");
+            _logger.LogWarning($"[BatchResumeService] Failed to create state directory '{_stateDirectory}': {ex.Message}");
         }
     }
 
-    private static string ResolveDefaultStateDirectory()
+    private static string ResolveDefaultStateDirectory(ILoggerFactory? loggerFactory = null)
     {
+        ILoggingService logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<BatchResumeService>();
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         if (string.IsNullOrEmpty(localAppData))
         {
@@ -383,7 +389,7 @@ public sealed class BatchResumeService : IBatchResumeService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[BatchResumeService] Failed to create Win11Forge dir in AppData: {ex.Message}");
+            logger.LogWarning($"[BatchResumeService] Failed to create Win11Forge dir in AppData: {ex.Message}");
             win11ForgePath = Path.Combine(Path.GetTempPath(), "Win11Forge");
             try
             {
@@ -394,7 +400,7 @@ public sealed class BatchResumeService : IBatchResumeService
             }
             catch (Exception innerEx)
             {
-                Debug.WriteLine($"[BatchResumeService] Failed to create fallback Win11Forge dir: {innerEx.Message}");
+                logger.LogWarning($"[BatchResumeService] Failed to create fallback Win11Forge dir: {innerEx.Message}");
                 win11ForgePath = Path.GetTempPath();
             }
         }

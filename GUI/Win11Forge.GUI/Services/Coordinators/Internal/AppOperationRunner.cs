@@ -15,6 +15,7 @@
  */
 
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI.Services.Coordinators.Internal;
 
@@ -24,8 +25,9 @@ namespace Win11Forge.GUI.Services.Coordinators.Internal;
 internal sealed class AppOperationRunner
 {
     private readonly int _maxParallelism;
+    private readonly ILoggingService _logger;
 
-    public AppOperationRunner(int maxParallelism)
+    public AppOperationRunner(int maxParallelism, ILoggerFactory? loggerFactory = null)
     {
         if (maxParallelism < 1)
         {
@@ -33,6 +35,7 @@ internal sealed class AppOperationRunner
         }
 
         _maxParallelism = maxParallelism;
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<AppOperationRunner>();
     }
 
     public async Task<IReadOnlyList<TResult>> RunAsync<TItem, TResult>(
@@ -89,8 +92,7 @@ internal sealed class AppOperationRunner
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine(
-                            $"[AppOperationRunner] onItemCompleted callback failed: {ex.Message}");
+                        _logger.LogWarning($"[AppOperationRunner] onItemCompleted callback failed: {ex.Message}");
                     }
                 }
 

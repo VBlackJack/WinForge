@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI.Services.PowerShell;
 
@@ -27,6 +28,7 @@ namespace Win11Forge.GUI.Services.PowerShell;
 public class PowerShellExecutionService : IPowerShellExecutionService
 {
     private readonly IRepositoryPathService _pathService;
+    private readonly ILoggingService _logger;
     private static string? _powerShellPath;
 
     /// <summary>
@@ -44,9 +46,10 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     /// Initializes a new instance of the PowerShellExecutionService.
     /// </summary>
     /// <param name="pathService">The repository path service.</param>
-    public PowerShellExecutionService(IRepositoryPathService pathService)
+    public PowerShellExecutionService(IRepositoryPathService pathService, ILoggerFactory? loggerFactory = null)
     {
         _pathService = pathService ?? throw new ArgumentNullException(nameof(pathService));
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<PowerShellExecutionService>();
     }
 
     /// <inheritdoc/>
@@ -85,7 +88,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
                 catch (Exception ex)
                 {
                     // Directory enumeration failed, try direct path
-                    System.Diagnostics.Debug.WriteLine($"[PowerShellExecutionService] Directory enumeration failed: {ex.Message}");
+                    _logger.LogWarning($"[PowerShellExecutionService] Directory enumeration failed: {ex.Message}");
                 }
 
                 // Direct path fallback
@@ -122,7 +125,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
         catch (Exception ex)
         {
             // PATH search failed
-            System.Diagnostics.Debug.WriteLine($"[PowerShellExecutionService] PATH search failed: {ex.Message}");
+            _logger.LogWarning($"[PowerShellExecutionService] PATH search failed: {ex.Message}");
         }
 
         // Try Windows PowerShell as last resort
@@ -147,19 +150,19 @@ public class PowerShellExecutionService : IPowerShellExecutionService
                 if (!string.IsNullOrEmpty(foundPath))
                 {
                     _powerShellPath = foundPath;
-                    System.Diagnostics.Debug.WriteLine($"[PowerShellExecutionService] Using fallback PowerShell: {_powerShellPath}");
+                    _logger.LogWarning($"[PowerShellExecutionService] Using fallback PowerShell: {_powerShellPath}");
                     return _powerShellPath;
                 }
             }
             catch (Exception ex)
             {
                 // Continue to next candidate
-                System.Diagnostics.Debug.WriteLine($"[PowerShellExecutionService] Candidate {candidate} failed: {ex.Message}");
+                _logger.LogWarning($"[PowerShellExecutionService] Candidate {candidate} failed: {ex.Message}");
             }
         }
 
         // Last resort - may fail at runtime if not in PATH
-        System.Diagnostics.Debug.WriteLine("[PowerShellExecutionService] WARNING: No PowerShell installation found. Using 'pwsh' and hoping it's in PATH.");
+        _logger.LogWarning("[PowerShellExecutionService] WARNING: No PowerShell installation found. Using 'pwsh' and hoping it's in PATH.");
         _powerShellPath = "pwsh";
         return _powerShellPath;
     }
@@ -167,7 +170,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     /// <summary>
     /// Searches for an executable in the PATH environment variable.
     /// </summary>
-    private static string? FindExecutableInPath(string executableName)
+    private string? FindExecutableInPath(string executableName)
     {
         var pathEnv = Environment.GetEnvironmentVariable("PATH");
         if (string.IsNullOrEmpty(pathEnv)) return null;
@@ -186,7 +189,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             catch (Exception ex)
             {
                 // Invalid path, skip - this is expected for some PATH entries
-                System.Diagnostics.Debug.WriteLine($"[PowerShellExecutionService] Invalid PATH entry skipped: {ex.Message}");
+                _logger.LogDebug($"[PowerShellExecutionService] Invalid PATH entry skipped: {ex.Message}");
             }
         }
         return null;
@@ -244,7 +247,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             }
             catch (OperationCanceledException)
             {
-                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
+                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { _logger.LogWarning($"Process kill failed (best effort): {ex.Message}"); }
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -275,7 +278,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Process cleanup failed: {ex.Message}");
+                _logger.LogWarning($"Process cleanup failed: {ex.Message}");
             }
             process.Dispose();
         }
@@ -403,7 +406,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             }
             catch (OperationCanceledException)
             {
-                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
+                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { _logger.LogWarning($"Process kill failed (best effort): {ex.Message}"); }
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -444,7 +447,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Process cleanup failed: {ex.Message}");
+                _logger.LogWarning($"Process cleanup failed: {ex.Message}");
             }
             process.Dispose();
         }

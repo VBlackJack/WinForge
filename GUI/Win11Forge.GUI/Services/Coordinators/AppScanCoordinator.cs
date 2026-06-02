@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Diagnostics;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services.Coordinators.Internal;
@@ -29,15 +28,20 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IApplicationDetectionService _detectionService;
     private readonly IAppSettingsService _settingsService;
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILoggingService _logger;
 
     public AppScanCoordinator(
         IPowerShellBridge powerShellBridge,
         IApplicationDetectionService detectionService,
-        IAppSettingsService settingsService)
+        IAppSettingsService settingsService,
+        ILoggerFactory? loggerFactory = null)
     {
         _powerShellBridge = powerShellBridge ?? throw new ArgumentNullException(nameof(powerShellBridge));
         _detectionService = detectionService ?? throw new ArgumentNullException(nameof(detectionService));
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+        _loggerFactory = loggerFactory ?? new LoggerFactory();
+        _logger = _loggerFactory.CreateLogger<AppScanCoordinator>();
     }
 
     /// <inheritdoc/>
@@ -60,7 +64,7 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
             var batchResults = await _powerShellBridge.GetBatchApplicationStatusAsync(apps).ConfigureAwait(false);
             if (batchResults != null)
             {
-                Debug.WriteLine($"Batch detection succeeded: {batchResults.Count} apps checked");
+                _logger.LogInfo($"Batch detection succeeded: {batchResults.Count} apps checked");
                 return await ScanWithBatchResultsAsync(
                     apps,
                     batchResults,
@@ -144,13 +148,13 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
             if (batchUpdates.Count > 0)
             {
                 var matchedUpdates = ApplyBatchUpdates(installedApps, batchUpdates, cancellationToken);
-                Debug.WriteLine($"Batch update check: {batchUpdates.Count} updates found, {matchedUpdates} matched");
+                _logger.LogInfo($"Batch update check: {batchUpdates.Count} updates found, {matchedUpdates} matched");
                 return matchedUpdates;
             }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            Debug.WriteLine($"Batch update detection failed, falling back to individual checks: {ex.Message}");
+            _logger.LogWarning($"Batch update detection failed, falling back to individual checks: {ex.Message}");
         }
 
         var appsNeedingIndividualCheck = installedApps
@@ -285,7 +289,7 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
     private AppOperationRunner CreateRunner()
     {
         var maxParallelScans = Math.Clamp(_settingsService.LoadSettings().MaxParallelScans, 1, 20);
-        return new AppOperationRunner(maxParallelScans);
+        return new AppOperationRunner(maxParallelScans, _loggerFactory);
     }
 
     private static AppScanResult BuildResult(

@@ -27,6 +27,7 @@ namespace Win11Forge.GUI.Services;
 /// </summary>
 public partial class PackageSearchService : IPackageSearchService
 {
+    private readonly ILoggingService _logger;
     private readonly Lazy<bool> _wingetAvailable;
     private readonly Lazy<bool> _chocoAvailable;
 
@@ -42,8 +43,9 @@ public partial class PackageSearchService : IPackageSearchService
     /// <summary>
     /// Initializes a new instance of PackageSearchService.
     /// </summary>
-    public PackageSearchService()
+    public PackageSearchService(ILoggerFactory? loggerFactory = null)
     {
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<PackageSearchService>();
         _wingetAvailable = new Lazy<bool>(CheckWingetAvailable);
         _chocoAvailable = new Lazy<bool>(CheckChocoAvailable);
     }
@@ -413,7 +415,7 @@ public partial class PackageSearchService : IPackageSearchService
         return (process.ExitCode, output, errorOutput);
     }
 
-    private static async Task<(int ExitCode, string Output, string ErrorOutput)> RunProcessAsync(
+    private async Task<(int ExitCode, string Output, string ErrorOutput)> RunProcessAsync(
         string fileName,
         IEnumerable<string> arguments,
         CancellationToken cancellationToken)
@@ -461,7 +463,7 @@ public partial class PackageSearchService : IPackageSearchService
         return (process.ExitCode, await outputTask, await errorTask);
     }
 
-    private static void TryKillProcess(Process process)
+    private void TryKillProcess(Process process)
     {
         try
         {
@@ -472,7 +474,7 @@ public partial class PackageSearchService : IPackageSearchService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Failed to kill process {process.StartInfo.FileName}: {ex.Message}");
+            _logger.LogWarning($"Failed to kill process {process.StartInfo.FileName}: {ex.Message}");
         }
     }
 }

@@ -44,6 +44,8 @@ internal static partial class PackageIdValidator
 /// </summary>
 public partial class PackageVerificationService : IPackageVerificationService
 {
+    private readonly ILoggingService _logger;
+
     private static readonly string AppVersion =
         typeof(PackageVerificationService).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
 
@@ -73,8 +75,9 @@ public partial class PackageVerificationService : IPackageVerificationService
     /// <summary>
     /// Initializes a new instance of PackageVerificationService.
     /// </summary>
-    public PackageVerificationService()
+    public PackageVerificationService(ILoggerFactory? loggerFactory = null)
     {
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<PackageVerificationService>();
         _wingetAvailable = new Lazy<bool>(CheckWingetAvailable);
         _chocoAvailable = new Lazy<bool>(CheckChocoAvailable);
     }
@@ -98,6 +101,7 @@ public partial class PackageVerificationService : IPackageVerificationService
         // Validate package ID to prevent command injection
         if (!PackageIdValidator.IsValidPackageId(packageId))
         {
+            _logger.LogWarning("Rejected invalid Winget package id (failed safe-charset validation)");
             return PackageVerificationResult.Error(packageId, PackageSource.Winget, "Invalid package ID format");
         }
 
@@ -128,7 +132,7 @@ public partial class PackageVerificationService : IPackageVerificationService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Winget verification failed for {packageId}: {ex.Message}");
+            _logger.LogError("Winget verification failed.", ex);
             return PackageVerificationResult.Error(packageId, PackageSource.Winget, ex.Message);
         }
     }
@@ -146,6 +150,7 @@ public partial class PackageVerificationService : IPackageVerificationService
         // Validate package name to prevent command injection
         if (!PackageIdValidator.IsValidPackageId(packageName))
         {
+            _logger.LogWarning("Rejected invalid Chocolatey package id (failed safe-charset validation)");
             return PackageVerificationResult.Error(packageName, PackageSource.Chocolatey, "Invalid package name format");
         }
 
@@ -184,7 +189,7 @@ public partial class PackageVerificationService : IPackageVerificationService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Chocolatey verification failed for {packageName}: {ex.Message}");
+            _logger.LogError("Chocolatey verification failed.", ex);
             return PackageVerificationResult.Error(packageName, PackageSource.Chocolatey, ex.Message);
         }
     }
@@ -233,12 +238,12 @@ public partial class PackageVerificationService : IPackageVerificationService
         }
         catch (HttpRequestException ex)
         {
-            Debug.WriteLine($"Store verification HTTP error for {storeId}: {ex.Message}");
+            _logger.LogError("Store verification HTTP error.", ex);
             return PackageVerificationResult.Error(storeId, PackageSource.Store, ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Store verification failed for {storeId}: {ex.Message}");
+            _logger.LogError("Store verification failed.", ex);
             return PackageVerificationResult.Error(storeId, PackageSource.Store, ex.Message);
         }
     }
@@ -299,12 +304,12 @@ public partial class PackageVerificationService : IPackageVerificationService
         }
         catch (HttpRequestException ex)
         {
-            Debug.WriteLine($"Direct URL verification HTTP error for {url}: {ex.Message}");
+            _logger.LogError($"Direct URL verification HTTP error: {ex.GetType().Name}");
             return PackageVerificationResult.Error(url, PackageSource.DirectUrl, ex.Message);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Direct URL verification failed for {url}: {ex.Message}");
+            _logger.LogError($"Direct URL verification failed: {ex.GetType().Name}");
             return PackageVerificationResult.Error(url, PackageSource.DirectUrl, ex.Message);
         }
     }
@@ -396,7 +401,7 @@ public partial class PackageVerificationService : IPackageVerificationService
         return (process.ExitCode, output);
     }
 
-    private static async Task<(int ExitCode, string Output)> RunProcessAsync(
+    private async Task<(int ExitCode, string Output)> RunProcessAsync(
         string fileName,
         string arguments,
         CancellationToken cancellationToken)
@@ -436,7 +441,7 @@ public partial class PackageVerificationService : IPackageVerificationService
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to kill process {fileName}: {ex.Message}");
+                _logger.LogWarning($"Failed to kill process {fileName}: {ex.Message}");
             }
             throw;
         }

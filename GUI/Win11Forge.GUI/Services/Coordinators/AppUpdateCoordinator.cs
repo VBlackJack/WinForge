@@ -29,15 +29,20 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IAppSettingsService _settingsService;
     private readonly IBatchResumeService _resumeService;
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILoggingService _logger;
 
     public AppUpdateCoordinator(
         IPowerShellBridge powerShellBridge,
         IAppSettingsService settingsService,
-        IBatchResumeService resumeService)
+        IBatchResumeService resumeService,
+        ILoggerFactory? loggerFactory = null)
     {
         _powerShellBridge = powerShellBridge ?? throw new ArgumentNullException(nameof(powerShellBridge));
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         _resumeService = resumeService ?? throw new ArgumentNullException(nameof(resumeService));
+        _loggerFactory = loggerFactory ?? new LoggerFactory();
+        _logger = _loggerFactory.CreateLogger<AppUpdateCoordinator>();
     }
 
     /// <inheritdoc/>
@@ -55,7 +60,7 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
 
         var apps = installedApps.ToList();
         var maxParallelScans = Math.Clamp(_settingsService.LoadSettings().MaxParallelScans, 1, 20);
-        var runner = new AppOperationRunner(maxParallelScans);
+        AppOperationRunner runner = new AppOperationRunner(maxParallelScans, _loggerFactory);
 
         try
         {
@@ -151,8 +156,7 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[AppUpdateCoordinator] Checkpoint append failed for {app.AppId}: {ex.Message}");
+                    _logger.LogWarning($"[AppUpdateCoordinator] Checkpoint append failed for {app.AppId}: {ex.Message}");
                 }
 
                 progress?.Report(new AppOperationProgress(completed, apps.Count, app));

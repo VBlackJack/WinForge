@@ -34,6 +34,7 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
     private readonly IApplicationCacheService _cacheService;
     private readonly IApplicationDetectionService _detectionService;
     private readonly IApplicationLauncher _launcher;
+    private readonly ILoggingService _logger;
 
     /// <summary>
     /// Initializes a new instance of the ApplicationManagementServiceImpl.
@@ -43,13 +44,15 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
         IPowerShellExecutionService executionService,
         IApplicationCacheService cacheService,
         IApplicationDetectionService detectionService,
-        IApplicationLauncher launcher)
+        IApplicationLauncher launcher,
+        ILoggerFactory? loggerFactory = null)
     {
         _pathService = pathService ?? throw new ArgumentNullException(nameof(pathService));
         _executionService = executionService ?? throw new ArgumentNullException(nameof(executionService));
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         _detectionService = detectionService ?? throw new ArgumentNullException(nameof(detectionService));
         _launcher = launcher ?? throw new ArgumentNullException(nameof(launcher));
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<ApplicationManagementServiceImpl>();
     }
 
     /// <inheritdoc/>
@@ -251,7 +254,7 @@ try {{
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Fast batch detection failed: {ex.Message}");
+            _logger.LogWarning($"Fast batch detection failed: {ex.Message}");
             return null;
         }
     }
@@ -633,7 +636,7 @@ try {{
                 }
                 catch (OperationCanceledException) when (installTimeoutCts.IsCancellationRequested)
                 {
-                    try { process.Kill(entireProcessTree: true); } catch (Exception ex) { Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
+                    try { process.Kill(entireProcessTree: true); } catch (Exception ex) { _logger.LogWarning($"Process kill failed (best effort): {ex.Message}"); }
                     throw new TimeoutException($"Installation of {app.Name} timed out after {_executionService.InstallationTimeoutMs / 60000} minutes");
                 }
 
