@@ -1790,6 +1790,14 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Échec de la mise à jour de « {0} » : {1}</value>
     <comment>{0} = nom de l'application, {1} = message d'exception. Bannière d'erreur Apps WF-002 single-op.</comment>
   </data>
+  <data name="AppManagement_InvalidPackageId" xml:space="preserve">
+    <value>Source de gestionnaire de paquets rejetée car son identifiant contient des caractères non sûrs.</value>
+    <comment>Message d'échec de gestion d'application pour un identifiant de paquet Winget/Chocolatey non sûr.</comment>
+  </data>
+  <data name="AppManagement_CannotDetermineVersion" xml:space="preserve">
+    <value>Impossible de déterminer la version de l'application.</value>
+    <comment>Message d'échec du contrôle de mise à jour lorsque la recherche de version est non sûre ou indisponible.</comment>
+  </data>
   <data name="Apps_Toast_OpenWebsiteFailed" xml:space="preserve">
     <value>Impossible d'ouvrir le site web de « {0} » : {1}</value>
     <comment>{0} = nom de l'application, {1} = message d'exception. Avertissement toast AppActions WF-002.</comment>

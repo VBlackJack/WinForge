@@ -2709,6 +2709,14 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Update of "{0}" failed: {1}</value>
     <comment>{0} = application name, {1} = exception message. WF-002 single-op error banner.</comment>
   </data>
+  <data name="AppManagement_InvalidPackageId" xml:space="preserve">
+    <value>Package manager source rejected because its package id contains unsafe characters.</value>
+    <comment>Application management failure message for an unsafe Winget/Chocolatey package id.</comment>
+  </data>
+  <data name="AppManagement_CannotDetermineVersion" xml:space="preserve">
+    <value>Cannot determine application version.</value>
+    <comment>Application update-check failure message when version lookup is unsafe or unavailable.</comment>
+  </data>
   <data name="Apps_Toast_OpenWebsiteFailed" xml:space="preserve">
     <value>Could not open website for "{0}": {1}</value>
     <comment>{0} = application name, {1} = exception message. WF-002 AppActions toast warning.</comment>

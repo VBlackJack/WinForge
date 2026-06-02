@@ -737,6 +737,19 @@ try {{
                     }
                 }
 
+                bool rejectedInvalidPackageId = false;
+                if (RejectInvalidPackageId(wingetId, "Winget", logBuilder))
+                {
+                    wingetId = null;
+                    rejectedInvalidPackageId = true;
+                }
+
+                if (RejectInvalidPackageId(chocoPackage, "Chocolatey", logBuilder))
+                {
+                    chocoPackage = null;
+                    rejectedInvalidPackageId = true;
+                }
+
                 // Try Winget first
                 if (!string.IsNullOrEmpty(wingetId))
                 {
@@ -787,8 +800,10 @@ try {{
                     logBuilder.AppendLine($"Chocolatey uninstallation failed (exit code: {chocoResult.ExitCode})");
                 }
 
-                var errorMsg = string.IsNullOrEmpty(wingetId) && string.IsNullOrEmpty(chocoPackage)
-                    ? "No uninstall sources available for this application"
+                string errorMsg = string.IsNullOrEmpty(wingetId) && string.IsNullOrEmpty(chocoPackage)
+                    ? (rejectedInvalidPackageId
+                        ? Resources.Resources.AppManagement_InvalidPackageId
+                        : "No uninstall sources available for this application")
                     : "All uninstallation methods failed";
 
                 progressCallback?.Invoke($"Failed: {app.Name}");
@@ -836,8 +851,13 @@ try {{
                     return UpdateCheckResult.UpToDate();
                 }
 
-                var installedVersion = await GetInstalledVersionAsync(wingetId);
-                var availableVersion = await GetRepositoryVersionAsync(wingetId);
+                if (!PackageIdValidator.IsValidPackageId(wingetId))
+                {
+                    return UpdateCheckResult.Failed(Resources.Resources.AppManagement_CannotDetermineVersion);
+                }
+
+                string installedVersion = await GetInstalledVersionAsync(wingetId);
+                string availableVersion = await GetRepositoryVersionAsync(wingetId);
 
                 if (string.IsNullOrEmpty(installedVersion))
                 {
@@ -849,7 +869,7 @@ try {{
                     return UpdateCheckResult.UpToDate(installedVersion);
                 }
 
-                var comparison = VersionServiceImpl.CompareVersions(installedVersion, availableVersion);
+                int comparison = VersionServiceImpl.CompareVersions(installedVersion, availableVersion);
 
                 if (comparison < 0)
                 {
@@ -891,6 +911,19 @@ try {{
                         wingetId = JsonHelper.GetJsonString(sources, "Winget");
                         chocoPackage = JsonHelper.GetJsonString(sources, "Chocolatey");
                     }
+                }
+
+                bool rejectedInvalidPackageId = false;
+                if (RejectInvalidPackageId(wingetId, "Winget", logBuilder))
+                {
+                    wingetId = null;
+                    rejectedInvalidPackageId = true;
+                }
+
+                if (RejectInvalidPackageId(chocoPackage, "Chocolatey", logBuilder))
+                {
+                    chocoPackage = null;
+                    rejectedInvalidPackageId = true;
                 }
 
                 // Try Winget first
@@ -952,8 +985,10 @@ try {{
                     logBuilder.AppendLine($"Chocolatey update failed (exit code: {chocoResult.ExitCode})");
                 }
 
-                var errorMsg = string.IsNullOrEmpty(wingetId) && string.IsNullOrEmpty(chocoPackage)
-                    ? "No update sources available for this application"
+                string errorMsg = string.IsNullOrEmpty(wingetId) && string.IsNullOrEmpty(chocoPackage)
+                    ? (rejectedInvalidPackageId
+                        ? Resources.Resources.AppManagement_InvalidPackageId
+                        : "No update sources available for this application")
                     : "All update methods failed";
 
                 progressCallback?.Invoke($"Failed: {app.Name}");
@@ -972,6 +1007,22 @@ try {{
 
     /// <inheritdoc/>
     public Task<bool> LaunchApplicationAsync(ApplicationModel app) => _launcher.LaunchApplicationAsync(app);
+
+    private static bool RejectInvalidPackageId(string? packageId, string sourceName, StringBuilder logBuilder)
+    {
+        if (string.IsNullOrEmpty(packageId))
+        {
+            return false;
+        }
+
+        if (PackageIdValidator.IsValidPackageId(packageId))
+        {
+            return false;
+        }
+
+        logBuilder.AppendLine($"Rejected invalid {sourceName} package id (failed safe-charset validation)");
+        return true;
+    }
 
     /// <summary>
     /// Gets the installed version of a package using winget list.
