@@ -792,6 +792,7 @@ public class Resources
     public static string SourceEditor_SilentArgs => ResourceManager.GetString("SourceEditor_SilentArgs", resourceCulture);
     public static string SourceEditor_Checksum => ResourceManager.GetString("SourceEditor_Checksum", resourceCulture);
     public static string SourceEditor_ChecksumHint => ResourceManager.GetString("SourceEditor_ChecksumHint", resourceCulture);
+    public static string SourceEditor_ExpectedPublisher => ResourceManager.GetString("SourceEditor_ExpectedPublisher", resourceCulture);
     public static string SourceEditor_TestUrl => ResourceManager.GetString("SourceEditor_TestUrl", resourceCulture);
     public static string SourceEditor_TestUrlTooltip => ResourceManager.GetString("SourceEditor_TestUrlTooltip", resourceCulture);
     public static string SourceEditor_UrlTestSuccess => ResourceManager.GetString("SourceEditor_UrlTestSuccess", resourceCulture);

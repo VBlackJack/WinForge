@@ -174,6 +174,10 @@ public partial class ApplicationSourcesModel : ObservableValidator
     [ValidUrl(ErrorMessageResourceName = nameof(Resources.Resources.Validation_Sources_DirectUrl_InvalidUrl), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string? _directUrl;
 
+    /// <summary>Expected Authenticode publisher subject for direct downloads.</summary>
+    [ObservableProperty]
+    private string? _expectedPublisher;
+
     /// <summary>Extended Winget configuration.</summary>
     [ObservableProperty]
     private WingetSourceConfig? _wingetConfig;
@@ -221,6 +225,7 @@ public partial class ApplicationSourcesModel : ObservableValidator
             Chocolatey = this.Chocolatey,
             Store = this.Store,
             DirectUrl = this.DirectUrl,
+            ExpectedPublisher = this.ExpectedPublisher,
             WingetConfig = this.WingetConfig?.Clone(),
             ChocolateyConfig = this.ChocolateyConfig?.Clone(),
             DirectDownloadConfig = this.DirectDownloadConfig?.Clone()

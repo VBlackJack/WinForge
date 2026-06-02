@@ -6,11 +6,12 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
              mc:Ignorable="d"
-             d:DesignHeight="280" d:DesignWidth="500">
+             d:DesignHeight="330" d:DesignWidth="500">
 
     <Border CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" Padding="16">
         <Grid>
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -94,8 +95,16 @@
                        IsEnabled="{Binding IsChecked, ElementName=EnableToggle}"
                        Margin="0,0,0,12"/>
 
+            <!-- Expected Publisher -->
+            <ui:TextBox Grid.Row="5"
+                     Text="{Binding ExpectedPublisher, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                     PlaceholderText="{loc:Loc SourceEditor_ExpectedPublisher}"
+                     IsEnabled="{Binding IsChecked, ElementName=EnableToggle}"
+                     Margin="0,0,0,12"
+                     AutomationProperties.Name="{loc:Loc SourceEditor_ExpectedPublisher}"/>
+
             <!-- Test URL Button and Status -->
-            <Grid Grid.Row="5" IsEnabled="{Binding IsChecked, ElementName=EnableToggle}">
+            <Grid Grid.Row="6" IsEnabled="{Binding IsChecked, ElementName=EnableToggle}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>

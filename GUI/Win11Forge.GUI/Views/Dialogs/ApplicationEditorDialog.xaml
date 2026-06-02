@@ -395,6 +395,7 @@
                                                         InstallerType="{Binding Application.Sources.DirectDownloadConfig.InstallerType, Mode=TwoWay}"
                                                         SilentArgs="{Binding Application.Sources.DirectDownloadConfig.SilentArgs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                         Checksum="{Binding Application.Sources.DirectDownloadConfig.Checksum, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                        ExpectedPublisher="{Binding Application.Sources.ExpectedPublisher, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                         IsSourceEnabled="{Binding DirectDownloadEnabled, Mode=TwoWay}"/>
                     </StackPanel>
                 </ScrollViewer>

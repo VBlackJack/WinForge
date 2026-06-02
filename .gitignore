@@ -71,6 +71,12 @@ $RECYCLE.BIN/
 *.exe
 *.msi
 
+# Direct-download publisher probe artifacts
+/_probe/
+/direct-download-publishers.csv
+/direct-download-publishers.json
+/direct-download-publishers.table.txt
+
 # Credentials (if any)
 *.credentials
 *.secrets

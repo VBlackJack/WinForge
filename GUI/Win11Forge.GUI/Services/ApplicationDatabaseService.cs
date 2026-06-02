@@ -618,7 +618,8 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             Winget = GetStringProperty(element, "Winget"),
             Chocolatey = GetStringProperty(element, "Chocolatey"),
             Store = GetStringProperty(element, "Store"),
-            DirectUrl = GetStringProperty(element, "DirectUrl")
+            DirectUrl = GetStringProperty(element, "DirectUrl"),
+            ExpectedPublisher = GetStringProperty(element, "ExpectedPublisher")
         };
 
         // Parse extended configs
@@ -701,6 +702,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
                 app.Sources.Chocolatey,
                 app.Sources.Store,
                 app.Sources.DirectUrl,
+                ExpectedPublisher = NormalizeOptionalString(app.Sources.ExpectedPublisher),
                 SHA256 = canonicalSha256,
                 WingetConfig = app.Sources.WingetConfig != null ? new
                 {
@@ -738,6 +740,11 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         };
 
         return JsonSerializer.Serialize(obj, JsonOptions);
+    }
+
+    private static string? NormalizeOptionalString(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
     private static string GetCanonicalInstallArguments(EditableApplicationModel app)

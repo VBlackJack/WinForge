@@ -3228,6 +3228,10 @@ This action cannot be undone.</value>
     <value>Format: 'sha256:' followed by 64 hexadecimal characters</value>
     <comment>Checksum format hint</comment>
   </data>
+  <data name="SourceEditor_ExpectedPublisher" xml:space="preserve">
+    <value>Expected publisher (optional)</value>
+    <comment>Expected Authenticode publisher subject field hint</comment>
+  </data>
   <data name="SourceEditor_TestUrl" xml:space="preserve">
     <value>Test URL</value>
     <comment>Test URL button text</comment>

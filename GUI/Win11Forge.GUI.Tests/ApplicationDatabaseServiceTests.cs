@@ -54,6 +54,7 @@ public class ApplicationDatabaseServiceTests
                     "chocolatey": "googlechrome",
                     "store": "9NBLGGH4NNS1",
                     "directUrl": "https://example.com/installer.exe",
+                    "expectedPublisher": "Google LLC",
                     "wingetConfig": {
                       "version": "1.2.3",
                       "source": "winget",
@@ -85,6 +86,7 @@ public class ApplicationDatabaseServiceTests
             Assert.Equal("googlechrome", app.Sources.Chocolatey);
             Assert.Equal("9NBLGGH4NNS1", app.Sources.Store);
             Assert.Equal("https://example.com/installer.exe", app.Sources.DirectUrl);
+            Assert.Equal("Google LLC", app.Sources.ExpectedPublisher);
             Assert.NotNull(app.Sources.WingetConfig);
             Assert.Equal("1.2.3", app.Sources.WingetConfig!.Version);
             Assert.Equal("winget", app.Sources.WingetConfig.Source);
@@ -136,6 +138,7 @@ public class ApplicationDatabaseServiceTests
                     Chocolatey = "googlechrome",
                     Store = "9NBLGGH4NNS1",
                     DirectUrl = "https://example.com/installer.exe",
+                    ExpectedPublisher = "Google LLC",
                     WingetConfig = new WingetSourceConfig
                     {
                         Version = "1.2.3",
@@ -178,6 +181,7 @@ public class ApplicationDatabaseServiceTests
             Assert.Contains("\"Chocolatey\":", capturedScript!);
             Assert.Contains("\"Store\":", capturedScript!);
             Assert.Contains("\"DirectUrl\":", capturedScript!);
+            Assert.Contains("\"ExpectedPublisher\":", capturedScript!);
             Assert.Contains("\"LastVerified\":", capturedScript!);
             Assert.Contains("\"Verified\":", capturedScript!);
             Assert.Contains("2026-02-12", capturedScript!);
@@ -290,6 +294,7 @@ public class ApplicationDatabaseServiceTests
             Assert.NotNull(app.Sources.DirectDownloadConfig);
             Assert.Equal("sha256:" + LowerSha256, app.Sources.DirectDownloadConfig!.Checksum);
             Assert.Equal("/quiet", app.Sources.DirectDownloadConfig.SilentArgs);
+            Assert.Null(app.Sources.ExpectedPublisher);
         }
         finally
         {
@@ -351,6 +356,73 @@ public class ApplicationDatabaseServiceTests
             List<EditableApplicationModel> applications = (await service.LoadApplicationsAsync()).ToList();
             EditableApplicationModel reloaded = Assert.Single(applications);
             Assert.Equal("/verysilent", reloaded.InstallArguments);
+        }
+        finally
+        {
+            TryDeleteDirectory(repoRoot);
+        }
+    }
+
+    [Fact]
+    public async Task Save_AppWithExpectedPublisher_NotDropped()
+    {
+        // Arrange
+        string repoRoot = CreateTempRepository();
+        try
+        {
+            WriteDatabase(repoRoot, """
+            {
+              "DatabaseVersion": "test",
+              "Applications": {}
+            }
+            """);
+
+            string? capturedScript = null;
+            Mock<IPowerShellBridge> bridge = CreateBridge(repoRoot);
+            bridge
+                .Setup(x => x.ExecuteCommandAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Callback<string, CancellationToken>((script, _) => capturedScript = script)
+                .ReturnsAsync("""{"Success":true}""");
+
+            ApplicationDatabaseService service = new ApplicationDatabaseService(bridge.Object);
+            EditableApplicationModel app = new EditableApplicationModel
+            {
+                AppId = "SignedDirectApp",
+                Name = "Signed Direct App",
+                Category = "Utility",
+                Sources = new ApplicationSourcesModel
+                {
+                    DirectUrl = "https://example.com/installer.exe",
+                    ExpectedPublisher = "Example Software LLC"
+                }
+            };
+
+            // Act
+            ApplicationSaveResult result = await service.SaveApplicationAsync(app, isNew: true);
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.False(string.IsNullOrWhiteSpace(capturedScript));
+
+            string appJson = ExtractEmbeddedApplicationJson(capturedScript!);
+            using (JsonDocument document = JsonDocument.Parse(appJson))
+            {
+                JsonElement sources = document.RootElement.GetProperty("Sources");
+                Assert.Equal("Example Software LLC", sources.GetProperty("ExpectedPublisher").GetString());
+            }
+
+            WriteDatabase(repoRoot, $$"""
+            {
+              "DatabaseVersion": "test",
+              "Applications": {
+                "SignedDirectApp": {{appJson}}
+              }
+            }
+            """);
+
+            List<EditableApplicationModel> applications = (await service.LoadApplicationsAsync()).ToList();
+            EditableApplicationModel reloaded = Assert.Single(applications);
+            Assert.Equal("Example Software LLC", reloaded.Sources.ExpectedPublisher);
         }
         finally
         {

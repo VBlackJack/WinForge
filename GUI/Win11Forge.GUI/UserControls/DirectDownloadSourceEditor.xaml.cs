@@ -135,6 +135,25 @@ public partial class DirectDownloadSourceEditor : UserControl
     }
 
     /// <summary>
+    /// Identifies the ExpectedPublisher dependency property.
+    /// </summary>
+    public static readonly DependencyProperty ExpectedPublisherProperty =
+        DependencyProperty.Register(
+            nameof(ExpectedPublisher),
+            typeof(string),
+            typeof(DirectDownloadSourceEditor),
+            new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+    /// <summary>
+    /// Gets or sets the expected Authenticode publisher subject.
+    /// </summary>
+    public string ExpectedPublisher
+    {
+        get => (string)GetValue(ExpectedPublisherProperty);
+        set => SetValue(ExpectedPublisherProperty, value);
+    }
+
+    /// <summary>
     /// Identifies the IsTesting dependency property.
     /// </summary>
     public static readonly DependencyProperty IsTestingProperty =

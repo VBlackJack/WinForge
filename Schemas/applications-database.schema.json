@@ -183,6 +183,17 @@
             { "type": "null" }
           ],
           "description": "Direct download URL"
+        },
+        "ExpectedPublisher": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            { "type": "null" }
+          ],
+          "description": "Expected Authenticode certificate subject substring for direct-download installers"
         }
       }
     },

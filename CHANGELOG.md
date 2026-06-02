@@ -4,6 +4,20 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+### Direct-download publisher gate activation — June 2026
+
+#### Changed
+- **Enabled Authenticode publisher enforcement for 17 direct-download apps.**
+  Added empirically verified `Sources.ExpectedPublisher` values for signed
+  direct-download installers so the existing installer signature gate now
+  fails closed on publisher mismatch for those apps. `ABDownloadManager`,
+  `AIMP`, and `FileZilla` remain dormant pending signing or download-source
+  verification.
+- **Added maintainer publisher probes.** `Tools\Get-DirectDownloadPublishers.ps1`
+  reports `{ AppId, Url, Status, Bytes, SignerSubject }` from downloaded
+  installers, and `Tools\Set-DirectDownloadExpectedPublishers.ps1` applies the
+  approved publisher mappings with a BOM-safe dry-run-first workflow.
+
 ### Button visual hierarchy restored — May 2026 follow-up
 
 After visual inspection of the `v2026051001` release built from the unified

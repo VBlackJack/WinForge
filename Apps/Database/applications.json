@@ -42,7 +42,8 @@
         "Winget": "Google.Chrome",
         "Chocolatey": "googlechrome",
         "Store": null,
-        "DirectUrl": "https://dl.google.com/chrome/install/GoogleChromeStandaloneEnterprise64.msi"
+        "DirectUrl": "https://dl.google.com/chrome/install/GoogleChromeStandaloneEnterprise64.msi",
+        "ExpectedPublisher": "Google LLC"
       },
       "Detection": {
         "Method": "Registry",
@@ -532,7 +533,8 @@
         "Winget": "REALiX.HWiNFO",
         "Chocolatey": "hwinfo",
         "Store": null,
-        "DirectUrl": "https://sourceforge.net/projects/hwinfo/files/Windows_Installer/hwi64_834.exe/download"
+        "DirectUrl": "https://sourceforge.net/projects/hwinfo/files/Windows_Installer/hwi64_834.exe/download",
+        "ExpectedPublisher": "REALiX, s.r.o."
       },
       "Detection": {
         "Method": "File",
@@ -919,7 +921,8 @@
         "Winget": "OpenWhisperSystems.Signal",
         "Chocolatey": "signal",
         "Store": null,
-        "DirectUrl": "https://updates.signal.org/desktop/signal-desktop-win-7.0.0.exe"
+        "DirectUrl": "https://updates.signal.org/desktop/signal-desktop-win-7.0.0.exe",
+        "ExpectedPublisher": "Signal Messenger, LLC"
       },
       "Detection": {
         "Method": "Registry",
@@ -1000,7 +1003,8 @@
         "Winget": "Valve.Steam",
         "Chocolatey": "steam",
         "Store": null,
-        "DirectUrl": "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe"
+        "DirectUrl": "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
+        "ExpectedPublisher": "Valve Corp."
       },
       "Detection": {
         "Method": "Registry",
@@ -1027,7 +1031,8 @@
         "Winget": "Discord.Discord",
         "Chocolatey": "discord",
         "Store": null,
-        "DirectUrl": "https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64"
+        "DirectUrl": "https://discord.com/api/downloads/distributions/app/installers/latest?channel=stable&platform=win&arch=x64",
+        "ExpectedPublisher": "Discord Inc."
       },
       "Detection": {
         "Method": "File",
@@ -1054,7 +1059,8 @@
         "Winget": "EpicGames.EpicGamesLauncher",
         "Chocolatey": "epicgameslauncher",
         "Store": null,
-        "DirectUrl": "https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi"
+        "DirectUrl": "https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi",
+        "ExpectedPublisher": "Epic Games Inc."
       },
       "Detection": {
         "Method": "File",
@@ -1079,7 +1085,8 @@
         "Winget": null,
         "Chocolatey": null,
         "Store": null,
-        "DirectUrl": "https://downloader.battle.net/download/getInstaller?os=win&installer=Battle.net-Setup.exe"
+        "DirectUrl": "https://downloader.battle.net/download/getInstaller?os=win&installer=Battle.net-Setup.exe",
+        "ExpectedPublisher": "Blizzard Entertainment, Inc."
       },
       "Detection": {
         "Method": "File",
@@ -1169,7 +1176,8 @@
         "Winget": "Git.Git",
         "Chocolatey": "git",
         "Store": null,
-        "DirectUrl": "https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe"
+        "DirectUrl": "https://github.com/git-for-windows/git/releases/download/v2.43.0.windows.1/Git-2.43.0-64-bit.exe",
+        "ExpectedPublisher": "Johannes Schindelin"
       },
       "Detection": {
         "Method": "Command",
@@ -1360,7 +1368,8 @@
         "Winget": "Microsoft.DotNet.SDK.9",
         "Chocolatey": "dotnet-sdk",
         "Store": null,
-        "DirectUrl": "https://aka.ms/dotnet/9.0/dotnet-sdk-win-x64.exe"
+        "DirectUrl": "https://aka.ms/dotnet/9.0/dotnet-sdk-win-x64.exe",
+        "ExpectedPublisher": "Microsoft Corporation"
       },
       "Detection": {
         "Method": "Command",
@@ -1682,7 +1691,8 @@
         "Winget": "SiberSystems.RoboForm",
         "Chocolatey": "roboform",
         "Store": null,
-        "DirectUrl": "https://www.roboform.com/dist/RoboForm-Setup.exe"
+        "DirectUrl": "https://www.roboform.com/dist/RoboForm-Setup.exe",
+        "ExpectedPublisher": "Siber Systems"
       },
       "Detection": {
         "Method": "File",
@@ -1863,7 +1873,8 @@
         "Winget": "Ultimaker.Cura",
         "Chocolatey": "cura-new",
         "Store": null,
-        "DirectUrl": "https://github.com/Ultimaker/Cura/releases/download/5.11.0/UltiMaker-Cura-5.11.0-win64-X64.exe"
+        "DirectUrl": "https://github.com/Ultimaker/Cura/releases/download/5.11.0/UltiMaker-Cura-5.11.0-win64-X64.exe",
+        "ExpectedPublisher": "Ultimaker B.V."
       },
       "Detection": {
         "Method": "File",
@@ -3288,7 +3299,8 @@
         "Winget": "Microsoft.DirectX",
         "Chocolatey": "directx",
         "Store": null,
-        "DirectUrl": "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe"
+        "DirectUrl": "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe",
+        "ExpectedPublisher": "Microsoft Corporation"
       },
       "Detection": {
         "Method": "Registry",
@@ -3752,7 +3764,8 @@
         "Winget": "Insomnia.Insomnia",
         "Chocolatey": "insomnia-rest-api-client",
         "Store": null,
-        "DirectUrl": "https://github.com/Kong/insomnia/releases/download/core@12.3.0/Insomnia.Core-12.3.0.exe"
+        "DirectUrl": "https://github.com/Kong/insomnia/releases/download/core@12.3.0/Insomnia.Core-12.3.0.exe",
+        "ExpectedPublisher": "Kong Inc."
       },
       "Detection": {
         "Method": "File",
@@ -3838,7 +3851,8 @@
         "Winget": "Balena.Etcher",
         "Chocolatey": "etcher",
         "Store": null,
-        "DirectUrl": "https://github.com/balena-io/etcher/releases/download/v2.1.4/balenaEtcher-2.1.4.Setup.exe"
+        "DirectUrl": "https://github.com/balena-io/etcher/releases/download/v2.1.4/balenaEtcher-2.1.4.Setup.exe",
+        "ExpectedPublisher": "Balena Ltd"
       },
       "Detection": {
         "Method": "File",
@@ -4118,7 +4132,8 @@
         "Winget": "SoftDeluxe.FreeDownloadManager",
         "Chocolatey": "freedownloadmanager",
         "Store": null,
-        "DirectUrl": "https://dn3.freedownloadmanager.org/6/latest/fdm_x64_setup.exe"
+        "DirectUrl": "https://dn3.freedownloadmanager.org/6/latest/fdm_x64_setup.exe",
+        "ExpectedPublisher": "Softdeluxe LLC"
       },
       "Detection": {
         "Method": "File",
@@ -4470,7 +4485,8 @@
         "Winget": "Parsec.Parsec",
         "Chocolatey": "parsec",
         "Store": null,
-        "DirectUrl": "https://builds.parsec.app/package/parsec-windows.exe"
+        "DirectUrl": "https://builds.parsec.app/package/parsec-windows.exe",
+        "ExpectedPublisher": "Unity Technologies SF"
       },
       "Detection": {
         "Method": "File",
@@ -4525,7 +4541,8 @@
         "Winget": "Eugeny.Tabby",
         "Chocolatey": "tabby",
         "Store": null,
-        "DirectUrl": "https://github.com/Eugeny/tabby/releases/download/v1.0.230/tabby-1.0.230-setup-x64.exe"
+        "DirectUrl": "https://github.com/Eugeny/tabby/releases/download/v1.0.230/tabby-1.0.230-setup-x64.exe",
+        "ExpectedPublisher": "Eugen Pankov Softwareentwicklung"
       },
       "Detection": {
         "Method": "File",

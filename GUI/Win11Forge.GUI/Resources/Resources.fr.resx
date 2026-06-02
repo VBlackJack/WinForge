@@ -2167,6 +2167,9 @@ Cette action est irréversible.</value>
   <data name="SourceEditor_ChecksumHint" xml:space="preserve">
     <value>Format : 'sha256:' suivi de 64 caractères hexadécimaux</value>
   </data>
+  <data name="SourceEditor_ExpectedPublisher" xml:space="preserve">
+    <value>Éditeur attendu (optionnel)</value>
+  </data>
   <data name="SourceEditor_TestUrl" xml:space="preserve">
     <value>Tester l'URL</value>
   </data>
