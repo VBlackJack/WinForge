@@ -19,6 +19,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
   direct-download installers so the existing installer signature gate now
   fails closed on publisher mismatch for those apps. `ABDownloadManager` and
   `FileZilla` remain dormant pending signing or download-source verification.
+- **Removed broken sponsored2 direct-download fallback for FileZilla.** CDN hotlink-protected 403 wrapper bundles offers; FileZilla now installs via Chocolatey only.
 - **AIMP direct-download URL switched to the version-stable official endpoint.**
   The direct URL now uses `https://aimp.ru/?do=download.file&id=3` to avoid
   per-release URL drift.

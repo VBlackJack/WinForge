@@ -2786,7 +2786,7 @@
         "Winget": null,
         "Chocolatey": "filezilla",
         "Store": null,
-        "DirectUrl": "https://download.filezilla-project.org/client/FileZilla_3.69.5_win64_sponsored2-setup.exe"
+        "DirectUrl": null
       },
       "Detection": {
         "Method": "File",
@@ -2801,7 +2801,7 @@
         "sftp",
         "open-source"
       ],
-      "LastVerified": "2026-01-15",
+      "LastVerified": "2026-06-02",
       "Verified": true,
       "Homepage": "https://filezilla-project.org/"
     },
