@@ -473,6 +473,29 @@ Describe 'ApplicationDatabase Data Integrity' {
     }
 }
 
+Describe 'ApplicationDatabase Authenticode Gate Invariants' {
+    BeforeAll {
+        $jsonContent = Get-Content -LiteralPath $script:DatabasePath -Raw -Encoding UTF8
+        $script:ApplicationDatabaseJson = $jsonContent | ConvertFrom-Json
+    }
+
+    It 'Apps with ExpectedPublisher should declare DirectUrl' {
+        $script:ApplicationDatabaseJson.Applications.PSObject.Properties | ForEach-Object {
+            $appId = $_.Name
+            $app = $_.Value
+            $sources = $app.Sources
+            $expectedPublisherProperty = $sources.PSObject.Properties['ExpectedPublisher']
+
+            if ($expectedPublisherProperty -and $expectedPublisherProperty.Value) {
+                $directUrlProperty = $sources.PSObject.Properties['DirectUrl']
+                $directUrl = if ($directUrlProperty) { $directUrlProperty.Value } else { $null }
+
+                $directUrl | Should -Not -BeNullOrEmpty -Because "AppId '$appId' has Sources.ExpectedPublisher, so Sources.DirectUrl is required for Authenticode verification to run"
+            }
+        }
+    }
+}
+
 Describe 'ApplicationDatabase Performance' {
     Context 'Caching Performance' {
         It 'Should load database within reasonable time' {
