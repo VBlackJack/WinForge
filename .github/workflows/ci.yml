@@ -118,6 +118,10 @@ jobs:
         run: |
           .\Tools\lint-fr-diacritics.ps1 -Path 'GUI\Win11Forge.GUI\Resources\Resources.fr.resx'
 
+      - name: Assert explicit types (no var)
+        shell: pwsh
+        run: .\Tools\Assert-ExplicitTypes.ps1 -Path 'GUI'
+
   # ===========================================
   # PowerShell Pester Tests with Code Coverage
   # ===========================================
