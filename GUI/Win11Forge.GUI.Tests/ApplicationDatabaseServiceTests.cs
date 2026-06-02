@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-using System.Text;
 using System.IO;
+using System.Text;
+using System.Text.Json;
 using Moq;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
+using DataValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
+using DataValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
+using DataValidator = System.ComponentModel.DataAnnotations.Validator;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -27,6 +31,9 @@ namespace Win11Forge.GUI.Tests;
 /// </summary>
 public class ApplicationDatabaseServiceTests
 {
+    private const string LowerSha256 = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    private const string UpperSha256 = "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF";
+
     [Fact]
     public async Task LoadApplicationsAsync_ShouldParseCamelCaseSourceProperties()
     {
@@ -144,7 +151,7 @@ public class ApplicationDatabaseServiceTests
                     {
                         InstallerType = "exe",
                         SilentArgs = "/S",
-                        Checksum = "sha256:abcdef",
+                        Checksum = "sha256:" + LowerSha256,
                         FileName = "installer.exe"
                     }
                 },
@@ -185,6 +192,227 @@ public class ApplicationDatabaseServiceTests
         }
     }
 
+    [Fact]
+    public async Task Save_DirectDownloadApp_EmitsCanonicalSha256AndInstallArguments()
+    {
+        // Arrange
+        string repoRoot = CreateTempRepository();
+        try
+        {
+            WriteDatabase(repoRoot, """
+            {
+              "DatabaseVersion": "test",
+              "Applications": {}
+            }
+            """);
+
+            string? capturedScript = null;
+            Mock<IPowerShellBridge> bridge = CreateBridge(repoRoot);
+            bridge
+                .Setup(x => x.ExecuteCommandAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Callback<string, CancellationToken>((script, _) => capturedScript = script)
+                .ReturnsAsync("""{"Success":true}""");
+
+            ApplicationDatabaseService service = new ApplicationDatabaseService(bridge.Object);
+            EditableApplicationModel app = new EditableApplicationModel
+            {
+                AppId = "DirectApp",
+                Name = "Direct App",
+                Category = "Utility",
+                Sources = new ApplicationSourcesModel
+                {
+                    DirectUrl = "https://example.com/installer.exe",
+                    DirectDownloadConfig = new DirectDownloadSourceConfig
+                    {
+                        InstallerType = "exe",
+                        SilentArgs = "/S",
+                        Checksum = "sha256:" + LowerSha256,
+                        FileName = "installer.exe"
+                    }
+                }
+            };
+
+            // Act
+            ApplicationSaveResult result = await service.SaveApplicationAsync(app, isNew: true);
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.False(string.IsNullOrWhiteSpace(capturedScript));
+
+            string appJson = ExtractEmbeddedApplicationJson(capturedScript!);
+            using JsonDocument document = JsonDocument.Parse(appJson);
+            JsonElement root = document.RootElement;
+            JsonElement sources = root.GetProperty("Sources");
+
+            Assert.Equal("/S", root.GetProperty("InstallArguments").GetString());
+            Assert.Equal(UpperSha256, sources.GetProperty("SHA256").GetString());
+        }
+        finally
+        {
+            TryDeleteDirectory(repoRoot);
+        }
+    }
+
+    [Fact]
+    public async Task Load_CanonicalDirectDownload_HydratesEditorFields()
+    {
+        // Arrange
+        string repoRoot = CreateTempRepository();
+        try
+        {
+            WriteDatabase(repoRoot, $$"""
+            {
+              "DatabaseVersion": "test",
+              "Applications": {
+                "CanonicalDirect": {
+                  "Name": "Canonical Direct",
+                  "Category": "Utility",
+                  "InstallArguments": "/quiet",
+                  "Sources": {
+                    "DirectUrl": "https://example.com/installer.exe",
+                    "SHA256": "{{UpperSha256}}"
+                  },
+                  "DefaultPriority": 50
+                }
+              }
+            }
+            """);
+
+            Mock<IPowerShellBridge> bridge = CreateBridge(repoRoot);
+            ApplicationDatabaseService service = new ApplicationDatabaseService(bridge.Object);
+
+            // Act
+            List<EditableApplicationModel> applications = (await service.LoadApplicationsAsync()).ToList();
+
+            // Assert
+            EditableApplicationModel app = Assert.Single(applications);
+            Assert.Equal("/quiet", app.InstallArguments);
+            Assert.NotNull(app.Sources.DirectDownloadConfig);
+            Assert.Equal("sha256:" + LowerSha256, app.Sources.DirectDownloadConfig!.Checksum);
+            Assert.Equal("/quiet", app.Sources.DirectDownloadConfig.SilentArgs);
+        }
+        finally
+        {
+            TryDeleteDirectory(repoRoot);
+        }
+    }
+
+    [Fact]
+    public async Task Save_AppWithTopLevelInstallArguments_NotDropped()
+    {
+        // Arrange
+        string repoRoot = CreateTempRepository();
+        try
+        {
+            WriteDatabase(repoRoot, """
+            {
+              "DatabaseVersion": "test",
+              "Applications": {}
+            }
+            """);
+
+            string? capturedScript = null;
+            Mock<IPowerShellBridge> bridge = CreateBridge(repoRoot);
+            bridge
+                .Setup(x => x.ExecuteCommandAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Callback<string, CancellationToken>((script, _) => capturedScript = script)
+                .ReturnsAsync("""{"Success":true}""");
+
+            ApplicationDatabaseService service = new ApplicationDatabaseService(bridge.Object);
+            EditableApplicationModel app = new EditableApplicationModel
+            {
+                AppId = "WingetOnly",
+                Name = "Winget Only",
+                Category = "Utility",
+                InstallArguments = "/verysilent",
+                Sources = new ApplicationSourcesModel
+                {
+                    Winget = "Example.Package"
+                }
+            };
+
+            // Act
+            ApplicationSaveResult result = await service.SaveApplicationAsync(app, isNew: true);
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.False(string.IsNullOrWhiteSpace(capturedScript));
+
+            string appJson = ExtractEmbeddedApplicationJson(capturedScript!);
+            WriteDatabase(repoRoot, $$"""
+            {
+              "DatabaseVersion": "test",
+              "Applications": {
+                "WingetOnly": {{appJson}}
+              }
+            }
+            """);
+
+            List<EditableApplicationModel> applications = (await service.LoadApplicationsAsync()).ToList();
+            EditableApplicationModel reloaded = Assert.Single(applications);
+            Assert.Equal("/verysilent", reloaded.InstallArguments);
+        }
+        finally
+        {
+            TryDeleteDirectory(repoRoot);
+        }
+    }
+
+    [Fact]
+    public async Task Validation_RejectsNonSha256Checksum()
+    {
+        DirectDownloadSourceConfig sha1Config = new DirectDownloadSourceConfig
+        {
+            Checksum = "sha1:abc"
+        };
+        DirectDownloadSourceConfig md5Config = new DirectDownloadSourceConfig
+        {
+            Checksum = "md5:abc"
+        };
+        DirectDownloadSourceConfig sha256Config = new DirectDownloadSourceConfig
+        {
+            Checksum = "sha256:" + LowerSha256
+        };
+
+        Assert.False(IsDirectDownloadConfigValid(sha1Config));
+        Assert.False(IsDirectDownloadConfigValid(md5Config));
+        Assert.True(IsDirectDownloadConfigValid(sha256Config));
+
+        string repoRoot = CreateTempRepository();
+        try
+        {
+            WriteDatabase(repoRoot, """
+            {
+              "DatabaseVersion": "test",
+              "Applications": {}
+            }
+            """);
+
+            Mock<IPowerShellBridge> bridge = CreateBridge(repoRoot);
+            ApplicationDatabaseService service = new ApplicationDatabaseService(bridge.Object);
+            EditableApplicationModel app = new EditableApplicationModel
+            {
+                AppId = "BadChecksum",
+                Name = "Bad Checksum",
+                Category = "Utility",
+                Sources = new ApplicationSourcesModel
+                {
+                    DirectUrl = "https://example.com/installer.exe",
+                    DirectDownloadConfig = sha1Config
+                }
+            };
+
+            ApplicationValidationResult validation = await service.ValidateApplicationAsync(app, isNew: true);
+
+            Assert.False(validation.IsValid);
+            Assert.Contains(validation.Errors, error => error.Field.Contains("Checksum", StringComparison.Ordinal));
+        }
+        finally
+        {
+            TryDeleteDirectory(repoRoot);
+        }
+    }
+
     private static Mock<IPowerShellBridge> CreateBridge(string repositoryRoot)
     {
         var bridge = new Mock<IPowerShellBridge>(MockBehavior.Strict);
@@ -211,6 +439,31 @@ public class ApplicationDatabaseServiceTests
     {
         var path = Path.Combine(repoRoot, "Apps", "Database", "applications.json");
         File.WriteAllText(path, json, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+    }
+
+    private static string ExtractEmbeddedApplicationJson(string script)
+    {
+        const string StartMarker = "$appData = @'";
+        const string EndMarker = "\n'@ | ConvertFrom-Json";
+
+        int startMarkerIndex = script.IndexOf(StartMarker, StringComparison.Ordinal);
+        Assert.True(startMarkerIndex >= 0, "PowerShell script should include the appData here-string.");
+
+        int jsonStart = script.IndexOf('\n', startMarkerIndex);
+        Assert.True(jsonStart >= 0, "PowerShell script should put JSON on the line after the here-string marker.");
+        jsonStart++;
+
+        int jsonEnd = script.IndexOf(EndMarker, jsonStart, StringComparison.Ordinal);
+        Assert.True(jsonEnd > jsonStart, "PowerShell script should close the appData here-string after JSON.");
+
+        return script.Substring(jsonStart, jsonEnd - jsonStart).Trim();
+    }
+
+    private static bool IsDirectDownloadConfigValid(DirectDownloadSourceConfig config)
+    {
+        DataValidationContext context = new DataValidationContext(config);
+        List<DataValidationResult> results = new List<DataValidationResult>();
+        return DataValidator.TryValidateObject(config, context, results, validateAllProperties: true);
     }
 
     private static void TryDeleteDirectory(string path)

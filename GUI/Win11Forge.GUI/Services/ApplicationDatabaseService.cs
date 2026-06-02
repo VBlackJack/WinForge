@@ -45,6 +45,9 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     /// </summary>
     private const long MaxDatabaseFileSizeBytes = 10 * 1024 * 1024;
 
+    private const string Sha256ChecksumPrefix = "sha256:";
+    private const int Sha256HexLength = 64;
+
     /// <summary>
     /// JSON document options with security limits to prevent DoS attacks.
     /// </summary>
@@ -323,6 +326,14 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             errors.Add(new ApplicationValidationError(nameof(application.Sources), Loc.Validation_AtLeastOneSource));
         }
 
+        if (application.Sources?.DirectDownloadConfig != null)
+        {
+            AddNestedValidationErrors(
+                application.Sources.DirectDownloadConfig,
+                $"{nameof(application.Sources)}.{nameof(application.Sources.DirectDownloadConfig)}",
+                errors);
+        }
+
         // Check ID uniqueness for new applications
         if (isNew && !string.IsNullOrWhiteSpace(application.AppId))
         {
@@ -337,6 +348,25 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         return errors.Count == 0
             ? ApplicationValidationResult.Valid()
             : ApplicationValidationResult.Invalid(errors);
+    }
+
+    private static void AddNestedValidationErrors(
+        object instance,
+        string fieldPrefix,
+        ICollection<ApplicationValidationError> errors)
+    {
+        DataValidationContext validationContext = new DataValidationContext(instance);
+        List<DataValidationResult> validationResults = new List<DataValidationResult>();
+        DataValidator.TryValidateObject(instance, validationContext, validationResults, validateAllProperties: true);
+
+        foreach (DataValidationResult validationResult in validationResults)
+        {
+            string memberName = validationResult.MemberNames.FirstOrDefault() ?? string.Empty;
+            string fieldName = string.IsNullOrWhiteSpace(memberName)
+                ? fieldPrefix
+                : $"{fieldPrefix}.{memberName}";
+            errors.Add(new ApplicationValidationError(fieldName, validationResult.ErrorMessage ?? "Validation failed"));
+        }
     }
 
     /// <inheritdoc/>
@@ -529,12 +559,13 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             return null;
         }
 
-        var app = new EditableApplicationModel
+        EditableApplicationModel app = new EditableApplicationModel
         {
             AppId = GetStringProperty(element, "AppId") ?? string.Empty,
             Name = GetStringProperty(element, "Name") ?? string.Empty,
             Category = GetStringProperty(element, "Category") ?? string.Empty,
             Description = GetStringProperty(element, "Description") ?? string.Empty,
+            InstallArguments = GetStringProperty(element, "InstallArguments") ?? string.Empty,
             DefaultPriority = GetIntProperty(element, "DefaultPriority", 50),
             DefaultRequired = GetBoolProperty(element, "DefaultRequired"),
             LastVerified = GetStringProperty(element, "LastVerified") ?? string.Empty,
@@ -545,7 +576,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         // Parse Sources
         if (TryGetPropertyCaseInsensitive(element, "Sources", out var sourcesElement) && sourcesElement.ValueKind == JsonValueKind.Object)
         {
-            app.Sources = ParseSourcesFromJson(sourcesElement);
+            app.Sources = ParseSourcesFromJson(sourcesElement, app.InstallArguments);
         }
 
         // Parse Detection
@@ -580,9 +611,9 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     /// <summary>
     /// Parses ApplicationSourcesModel from JSON.
     /// </summary>
-    private static ApplicationSourcesModel ParseSourcesFromJson(JsonElement element)
+    private static ApplicationSourcesModel ParseSourcesFromJson(JsonElement element, string installArguments)
     {
-        var sources = new ApplicationSourcesModel
+        ApplicationSourcesModel sources = new ApplicationSourcesModel
         {
             Winget = GetStringProperty(element, "Winget"),
             Chocolatey = GetStringProperty(element, "Chocolatey"),
@@ -621,6 +652,17 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             };
         }
 
+        if (!string.IsNullOrWhiteSpace(sources.DirectUrl) && sources.DirectDownloadConfig == null)
+        {
+            sources.DirectDownloadConfig = new DirectDownloadSourceConfig
+            {
+                InstallerType = "exe",
+                SilentArgs = installArguments,
+                Checksum = FormatEditorChecksum(GetStringProperty(element, "SHA256")),
+                FileName = string.Empty
+            };
+        }
+
         return sources;
     }
 
@@ -643,18 +685,23 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     /// </summary>
     private static string ConvertToJsonObject(EditableApplicationModel app)
     {
-        var obj = new
+        string canonicalInstallArguments = GetCanonicalInstallArguments(app);
+        string? canonicalSha256 = ExtractSha256Hex(app.Sources.DirectDownloadConfig?.Checksum);
+
+        object obj = new
         {
             app.AppId,
             app.Name,
             app.Category,
             Description = app.Description ?? string.Empty,
+            InstallArguments = canonicalInstallArguments,
             Sources = new
             {
                 app.Sources.Winget,
                 app.Sources.Chocolatey,
                 app.Sources.Store,
                 app.Sources.DirectUrl,
+                SHA256 = canonicalSha256,
                 WingetConfig = app.Sources.WingetConfig != null ? new
                 {
                     app.Sources.WingetConfig.Version,
@@ -691,6 +738,65 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         };
 
         return JsonSerializer.Serialize(obj, JsonOptions);
+    }
+
+    private static string GetCanonicalInstallArguments(EditableApplicationModel app)
+    {
+        string? directDownloadArgs = app.Sources.DirectDownloadConfig?.SilentArgs;
+        if (!string.IsNullOrWhiteSpace(directDownloadArgs))
+        {
+            return directDownloadArgs;
+        }
+
+        return app.InstallArguments ?? string.Empty;
+    }
+
+    private static string? ExtractSha256Hex(string? checksum)
+    {
+        if (string.IsNullOrWhiteSpace(checksum))
+        {
+            return null;
+        }
+
+        string trimmedChecksum = checksum.Trim();
+        if (!trimmedChecksum.StartsWith(Sha256ChecksumPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        string hex = trimmedChecksum[Sha256ChecksumPrefix.Length..];
+        return IsSha256Hex(hex) ? hex.ToUpperInvariant() : null;
+    }
+
+    private static string FormatEditorChecksum(string? bareSha256)
+    {
+        if (string.IsNullOrWhiteSpace(bareSha256))
+        {
+            return string.Empty;
+        }
+
+        string trimmedSha256 = bareSha256.Trim();
+        return IsSha256Hex(trimmedSha256)
+            ? $"{Sha256ChecksumPrefix}{trimmedSha256.ToLowerInvariant()}"
+            : string.Empty;
+    }
+
+    private static bool IsSha256Hex(string value)
+    {
+        if (value.Length != Sha256HexLength)
+        {
+            return false;
+        }
+
+        foreach (char character in value)
+        {
+            if (!Uri.IsHexDigit(character))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /// <summary>

@@ -63,6 +63,10 @@ public partial class EditableApplicationModel : ObservableValidator, IValidatabl
     [ObservableProperty]
     private ApplicationSourcesModel _sources = new();
 
+    /// <summary>Canonical silent-install arguments consumed by the PowerShell installer (all methods).</summary>
+    [ObservableProperty]
+    private string _installArguments = string.Empty;
+
     /// <summary>Detection configuration for checking if app is installed.</summary>
     [ObservableProperty]
     private ApplicationDetectionModel? _detection;
@@ -123,6 +127,7 @@ public partial class EditableApplicationModel : ObservableValidator, IValidatabl
             Category = this.Category,
             Description = this.Description,
             Sources = this.Sources.Clone(),
+            InstallArguments = this.InstallArguments,
             Detection = this.Detection?.Clone(),
             DefaultPriority = this.DefaultPriority,
             DefaultRequired = this.DefaultRequired,
@@ -296,7 +301,7 @@ public partial class DirectDownloadSourceConfig : ObservableValidator
 
     /// <summary>Expected file checksum (format: "sha256:hash").</summary>
     [ObservableProperty]
-    [RegularExpression(@"^(sha256|sha1|md5):[a-fA-F0-9]+$",
+    [RegularExpression(@"^sha256:[a-fA-F0-9]{64}$",
         ErrorMessageResourceName = nameof(Resources.Resources.Validation_DirectDownload_Checksum_Pattern), ErrorMessageResourceType = typeof(Resources.Resources))]
     private string _checksum = string.Empty;
 

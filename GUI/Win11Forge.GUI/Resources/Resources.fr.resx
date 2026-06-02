@@ -2157,7 +2157,7 @@ Cette action est irréversible.</value>
     <value>Somme de controle (optionnel)</value>
   </data>
   <data name="SourceEditor_ChecksumHint" xml:space="preserve">
-    <value>Format : algorithme:hash (ex: sha256:abc123...)</value>
+    <value>Format : 'sha256:' suivi de 64 caractères hexadécimaux</value>
   </data>
   <data name="SourceEditor_TestUrl" xml:space="preserve">
     <value>Tester l'URL</value>
@@ -2846,7 +2846,7 @@ Cette action est irréversible.</value>
     <value>Winget</value>
   </data>
   <data name="Validation_DirectDownload_Checksum_Pattern" xml:space="preserve">
-    <value>Le format du checksum doit être &apos;algorithme:hash&apos; (ex. sha256:abc123...)</value>
+    <value>Le format du checksum doit être &apos;sha256:&apos; suivi de 64 caractères hexadécimaux</value>
   </data>
   <data name="Validation_DirectDownload_InstallerType_Required" xml:space="preserve">
     <value>Le type d'installateur est requis pour le téléchargement direct</value>

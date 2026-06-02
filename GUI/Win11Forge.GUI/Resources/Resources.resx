@@ -3217,7 +3217,7 @@ This action cannot be undone.</value>
     <comment>Checksum field hint</comment>
   </data>
   <data name="SourceEditor_ChecksumHint" xml:space="preserve">
-    <value>Format: algorithm:hash (e.g., sha256:abc123...)</value>
+    <value>Format: 'sha256:' followed by 64 hexadecimal characters</value>
     <comment>Checksum format hint</comment>
   </data>
   <data name="SourceEditor_TestUrl" xml:space="preserve">
@@ -3618,7 +3618,7 @@ This action cannot be undone.</value>
     <comment>DirectDownloadSourceConfig InstallerType required validation</comment>
   </data>
   <data name="Validation_DirectDownload_Checksum_Pattern" xml:space="preserve">
-    <value>Checksum format must be 'algorithm:hash' (e.g., sha256:abc123...)</value>
+    <value>Checksum format must be 'sha256:' followed by 64 hexadecimal characters</value>
     <comment>DirectDownloadSourceConfig Checksum pattern validation</comment>
   </data>
   <!-- SystemInfoModel Validation -->
