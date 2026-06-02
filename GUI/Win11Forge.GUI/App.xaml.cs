@@ -106,7 +106,7 @@ public partial class App : Application
     /// </summary>
     protected override void OnStartup(StartupEventArgs e)
     {
-        // Global exception handlers
+        // Global exception handlers (registered synchronously, active ASAP).
         AppDomain.CurrentDomain.UnhandledException += (s, args) =>
             LogError("UnhandledException", args.ExceptionObject as Exception);
         DispatcherUnhandledException += (s, args) =>
@@ -117,6 +117,15 @@ public partial class App : Application
         TaskScheduler.UnobservedTaskException += (s, args) =>
             LogError("UnobservedTaskException", args.Exception);
 
+        // Run startup asynchronously without blocking the UI thread. The splash
+        // window is shown before the first await and MainWindow is reassigned
+        // before the splash closes, matching OnMainWindowClose shutdown mode.
+        InitializeStartupAsync(e).SafeFireAndForget(
+            ex => LogError("InitializeStartupAsync", ex));
+    }
+
+    private async Task InitializeStartupAsync(StartupEventArgs e)
+    {
         Views.SplashScreen? splash = null;
 
         try
@@ -135,18 +144,18 @@ public partial class App : Application
             Services = ConfigureServices();
             LogUserDataFallbackIfActive();
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingSettings);
-            Task.Run(RunProfileMigration).GetAwaiter().GetResult();
+            await Task.Run(RunProfileMigration);
 
             // Step 2: Load settings FIRST (before any UI)
             Log("Loading settings...");
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingSettings);
             IAppSettingsService settingsService = Services.GetRequiredService<IAppSettingsService>();
-            AppSettings settings = Task.Run(() => settingsService.LoadSettingsAsync()).GetAwaiter().GetResult();
+            AppSettings settings = await settingsService.LoadSettingsAsync();
 
             // Get version for splash screen
             try
             {
-                string version = Task.Run(ReadVersionForSplash).GetAwaiter().GetResult();
+                string version = await Task.Run(ReadVersionForSplash);
                 splash.SetVersion(version);
             }
             catch (Exception ex)
