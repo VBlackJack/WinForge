@@ -66,16 +66,24 @@ public interface ILoggingService
 /// </summary>
 public class LoggingService : ILoggingService
 {
+    private readonly IFileLogWriter? _fileWriter;
     private readonly string _categoryName;
     private static readonly object _lock = new();
 
     /// <summary>
     /// Initializes a new instance of LoggingService.
     /// </summary>
+    /// <param name="fileWriter">Optional persistent file writer for log entries.</param>
     /// <param name="categoryName">Optional category name for log entries.</param>
-    public LoggingService(string? categoryName = null)
+    public LoggingService(IFileLogWriter? fileWriter = null, string? categoryName = null)
     {
+        _fileWriter = fileWriter;
         _categoryName = categoryName ?? "Win11Forge";
+    }
+
+    public LoggingService(string categoryName)
+        : this(null, categoryName)
+    {
     }
 
     /// <inheritdoc/>
@@ -105,18 +113,18 @@ public class LoggingService : ILoggingService
     /// <inheritdoc/>
     public void Log(LogLevel level, string message, Exception? exception = null, [CallerMemberName] string? caller = null)
     {
-        var timestamp = DateTime.Now.ToString("HH:mm:ss.fff");
-        var levelStr = level switch
+        string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        string levelStr = level switch
         {
-            LogLevel.Debug => "DBG",
-            LogLevel.Info => "INF",
-            LogLevel.Warning => "WRN",
-            LogLevel.Error => "ERR",
-            _ => "???"
+            LogLevel.Debug => "DEBUG",
+            LogLevel.Info => "INFO",
+            LogLevel.Warning => "WARNING",
+            LogLevel.Error => "ERROR",
+            _ => "UNKNOWN"
         };
 
-        var callerInfo = string.IsNullOrEmpty(caller) ? "" : $"[{caller}] ";
-        var logMessage = $"[{timestamp}] [{levelStr}] [{_categoryName}] {callerInfo}{message}";
+        string callerInfo = string.IsNullOrEmpty(caller) ? string.Empty : $"[{caller}] ";
+        string logMessage = $"[{timestamp}] [{levelStr}] [{_categoryName}] {callerInfo}{message}";
 
         if (exception != null)
         {
@@ -130,6 +138,15 @@ public class LoggingService : ILoggingService
         lock (_lock)
         {
             Debug.WriteLine(logMessage);
+        }
+
+        try
+        {
+            _fileWriter?.Write(logMessage);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[LoggingService] {ex.Message}");
         }
     }
 }
@@ -155,15 +172,22 @@ public interface ILoggerFactory
 /// </summary>
 public class LoggerFactory : ILoggerFactory
 {
+    private readonly IFileLogWriter? _fileWriter;
+
+    public LoggerFactory(IFileLogWriter? fileWriter = null)
+    {
+        _fileWriter = fileWriter;
+    }
+
     /// <inheritdoc/>
     public ILoggingService CreateLogger(string categoryName)
     {
-        return new LoggingService(categoryName);
+        return new LoggingService(_fileWriter, categoryName);
     }
 
     /// <inheritdoc/>
     public ILoggingService CreateLogger<T>()
     {
-        return new LoggingService(typeof(T).Name);
+        return new LoggingService(_fileWriter, typeof(T).Name);
     }
 }

@@ -33,16 +33,21 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddWin11ForgeServices(this IServiceCollection services)
     {
+        // Register PowerShell support services (ISP compliant, specialized services)
+        services.AddSingleton<IRepositoryPathService, RepositoryPathService>();
+
         // Register logging service
-        services.AddSingleton<ILoggerFactory, LoggerFactory>();
-        services.AddSingleton<ILoggingService, LoggingService>();
+        services.AddSingleton<IFileLogWriter>((IServiceProvider serviceProvider) => new FileLogWriter(
+            serviceProvider.GetRequiredService<IRepositoryPathService>().LogsDirectory));
+        services.AddSingleton<ILoggerFactory>((IServiceProvider serviceProvider) => new LoggerFactory(
+            serviceProvider.GetRequiredService<IFileLogWriter>()));
+        services.AddSingleton<ILoggingService>((IServiceProvider serviceProvider) => new LoggingService(
+            serviceProvider.GetRequiredService<IFileLogWriter>()));
 
         // Register detection service (used by application management)
         services.AddSingleton<IApplicationDetectionService, HybridDetectionService>();
         services.AddSingleton<CacheWarmingService>();
 
-        // Register PowerShell support services (ISP compliant, specialized services)
-        services.AddSingleton<IRepositoryPathService, RepositoryPathService>();
         services.AddSingleton<IPowerShellExecutionService, PowerShellExecutionService>();
         services.AddSingleton<IApplicationCacheService, ApplicationCacheService>();
         services.AddSingleton<IProfileMigrationService, ProfileMigrationService>();
