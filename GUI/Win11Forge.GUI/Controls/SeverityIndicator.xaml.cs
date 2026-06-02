@@ -106,8 +106,8 @@ public partial class SeverityIndicator : UserControl
 
     private void UpdateSeverityAppearance()
     {
-        var app = Application.Current;
-        var (icon, background, border, foreground) = Severity switch
+        Application app = Application.Current;
+        (SymbolRegular icon, Brush? background, Brush? border, Brush? foreground) = Severity switch
         {
             SeverityLevel.Success => (
                 SymbolRegular.CheckmarkCircle24,

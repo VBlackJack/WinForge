@@ -84,7 +84,7 @@ public partial class ErrorDialog : UserControl
         // Show recovery suggestions if provided
         if (recoverySuggestions != null)
         {
-            var suggestions = recoverySuggestions.ToList();
+            List<string> suggestions = recoverySuggestions.ToList();
             if (suggestions.Count > 0)
             {
                 RecoverySuggestionsPanel.Visibility = Visibility.Visible;
@@ -94,7 +94,7 @@ public partial class ErrorDialog : UserControl
         else
         {
             // Auto-generate recovery suggestions based on error type
-            var autoSuggestions = GenerateRecoverySuggestions(title, message, details);
+            List<string> autoSuggestions = GenerateRecoverySuggestions(title, message, details);
             if (autoSuggestions.Count > 0)
             {
                 RecoverySuggestionsPanel.Visibility = Visibility.Visible;
@@ -132,9 +132,9 @@ public partial class ErrorDialog : UserControl
     /// </summary>
     private List<string> GenerateRecoverySuggestions(string title, string message, string? details)
     {
-        var suggestions = new List<string>();
-        var lowerMessage = (message + " " + (details ?? "")).ToLowerInvariant();
-        var lowerTitle = title.ToLowerInvariant();
+        List<string> suggestions = new List<string>();
+        string lowerMessage = (message + " " + (details ?? "")).ToLowerInvariant();
+        string lowerTitle = title.ToLowerInvariant();
 
         // Network-related errors
         if (lowerMessage.Contains("network") || lowerMessage.Contains("internet") ||
@@ -209,7 +209,7 @@ public partial class ErrorDialog : UserControl
         {
             try
             {
-                using var process = Process.Start(new ProcessStartInfo
+                using Process? process = Process.Start(new ProcessStartInfo
                 {
                     FileName = _helpUrl,
                     UseShellExecute = true
@@ -233,7 +233,7 @@ public partial class ErrorDialog : UserControl
         if (string.IsNullOrWhiteSpace(url))
             return false;
 
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
             return false;
 
         return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps;
@@ -243,7 +243,7 @@ public partial class ErrorDialog : UserControl
     {
         try
         {
-            var details = $"{TitleText.Text}\n\n{MessageText.Text}";
+            string details = $"{TitleText.Text}\n\n{MessageText.Text}";
             if (!string.IsNullOrEmpty(_errorCode))
             {
                 details += $"\n\nError Code: {_errorCode}";
@@ -285,8 +285,8 @@ public partial class ErrorDialog : UserControl
         try
         {
             // Build issue body with error details
-            var issueTitle = WebUtility.UrlEncode($"Error: {TitleText.Text}");
-            var issueBody = WebUtility.UrlEncode(
+            string issueTitle = WebUtility.UrlEncode($"Error: {TitleText.Text}");
+            string issueBody = WebUtility.UrlEncode(
                 $"## Error Details\n\n" +
                 $"**Title:** {TitleText.Text}\n" +
                 $"**Message:** {MessageText.Text}\n" +
@@ -298,9 +298,9 @@ public partial class ErrorDialog : UserControl
                 $"- Win11Forge Version: {System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}\n"
             );
 
-            var url = $"{ProjectLinks.NewIssue}?title={issueTitle}&body={issueBody}";
+            string url = $"{ProjectLinks.NewIssue}?title={issueTitle}&body={issueBody}";
 
-            using var process = Process.Start(new ProcessStartInfo
+            using Process? process = Process.Start(new ProcessStartInfo
             {
                 FileName = url,
                 UseShellExecute = true
@@ -312,7 +312,7 @@ public partial class ErrorDialog : UserControl
             // Fallback to just opening issues page
             try
             {
-                using var fallbackProcess = Process.Start(new ProcessStartInfo
+                using Process? fallbackProcess = Process.Start(new ProcessStartInfo
                 {
                     FileName = ProjectLinks.Issues,
                     UseShellExecute = true

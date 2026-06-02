@@ -57,16 +57,16 @@ public sealed class BatchResumeServiceTests : IDisposable
     [Fact]
     public async Task BeginBatchAsync_ShouldCreateFileWithCurrentSchemaAndInProgressState()
     {
-        var service = CreateService();
-        var batchId = await service.BeginBatchAsync(
+        BatchResumeService service = CreateService();
+        Guid batchId = await service.BeginBatchAsync(
             BatchOperationKind.Install,
             Plan("App.A", "App.B"),
             new BatchOptions(ForceUpdate: false));
 
-        var file = Path.Combine(_tempDir, $"batch-{batchId:D}.json");
+        string file = Path.Combine(_tempDir, $"batch-{batchId:D}.json");
         Assert.True(File.Exists(file));
 
-        var loaded = await service.LoadCheckpointAsync(batchId);
+        BatchCheckpoint? loaded = await service.LoadCheckpointAsync(batchId);
         Assert.NotNull(loaded);
         Assert.Equal(BatchCheckpoint.CurrentSchemaVersion, loaded!.SchemaVersion);
         Assert.Equal(BatchOperationKind.Install, loaded.OperationKind);
@@ -79,14 +79,14 @@ public sealed class BatchResumeServiceTests : IDisposable
     [Fact]
     public async Task RoundTrip_PreservesPlanAndOptions()
     {
-        var service = CreateService();
-        var planIds = Plan("Foo.Bar", "Baz.Qux", "Acme.Widget");
-        var batchId = await service.BeginBatchAsync(
+        BatchResumeService service = CreateService();
+        IReadOnlyList<string> planIds = Plan("Foo.Bar", "Baz.Qux", "Acme.Widget");
+        Guid batchId = await service.BeginBatchAsync(
             BatchOperationKind.Update,
             planIds,
             new BatchOptions(ForceUpdate: true));
 
-        var loaded = await service.LoadCheckpointAsync(batchId);
+        BatchCheckpoint? loaded = await service.LoadCheckpointAsync(batchId);
         Assert.NotNull(loaded);
         Assert.Equal(planIds, loaded!.Plan);
         Assert.Equal(BatchOperationKind.Update, loaded.OperationKind);
@@ -96,17 +96,17 @@ public sealed class BatchResumeServiceTests : IDisposable
     [Fact]
     public async Task AppendCompletedAsync_ShouldAppendItemAndAdvanceTimestamp()
     {
-        var service = CreateService();
-        var batchId = await service.BeginBatchAsync(
+        BatchResumeService service = CreateService();
+        Guid batchId = await service.BeginBatchAsync(
             BatchOperationKind.Install,
             Plan("App.A", "App.B"),
             new BatchOptions(ForceUpdate: false));
 
-        var initialTimestamp = (await service.LoadCheckpointAsync(batchId))!.LastCheckpointAt;
+        DateTimeOffset initialTimestamp = (await service.LoadCheckpointAsync(batchId))!.LastCheckpointAt;
         _now = _now.AddSeconds(5);
         await service.AppendCompletedAsync(batchId, "App.A", BatchItemOutcome.Installed);
 
-        var updated = await service.LoadCheckpointAsync(batchId);
+        BatchCheckpoint? updated = await service.LoadCheckpointAsync(batchId);
         Assert.NotNull(updated);
         Assert.Single(updated!.Completed);
         Assert.Equal("App.A", updated.Completed[0].AppId);
@@ -117,9 +117,9 @@ public sealed class BatchResumeServiceTests : IDisposable
     [Fact]
     public async Task AppendCompletedAsync_ShouldBeThreadSafeUnderConcurrency()
     {
-        var service = CreateService();
-        var planIds = Enumerable.Range(0, 50).Select(i => $"App.{i:D2}").ToArray();
-        var batchId = await service.BeginBatchAsync(
+        BatchResumeService service = CreateService();
+        string[] planIds = Enumerable.Range(0, 50).Select(i => $"App.{i:D2}").ToArray();
+        Guid batchId = await service.BeginBatchAsync(
             BatchOperationKind.Install,
             planIds,
             new BatchOptions(ForceUpdate: false));
@@ -128,7 +128,7 @@ public sealed class BatchResumeServiceTests : IDisposable
             planIds,
             async (id, ct) => await service.AppendCompletedAsync(batchId, id, BatchItemOutcome.Installed, ct));
 
-        var loaded = await service.LoadCheckpointAsync(batchId);
+        BatchCheckpoint? loaded = await service.LoadCheckpointAsync(batchId);
         Assert.NotNull(loaded);
         Assert.Equal(planIds.Length, loaded!.Completed.Count);
         Assert.Equal(planIds.OrderBy(x => x), loaded.Completed.Select(c => c.AppId).OrderBy(x => x));
@@ -137,15 +137,15 @@ public sealed class BatchResumeServiceTests : IDisposable
     [Fact]
     public async Task MarkBatchCompletedAsync_ShouldTransitionToCompleted()
     {
-        var service = CreateService();
-        var batchId = await service.BeginBatchAsync(
+        BatchResumeService service = CreateService();
+        Guid batchId = await service.BeginBatchAsync(
             BatchOperationKind.Uninstall,
             Plan("App.A"),
             new BatchOptions(ForceUpdate: false));
 
         await service.MarkBatchCompletedAsync(batchId);
 
-        var loaded = await service.LoadCheckpointAsync(batchId);
+        BatchCheckpoint? loaded = await service.LoadCheckpointAsync(batchId);
         Assert.NotNull(loaded);
         Assert.Equal(BatchState.Completed, loaded!.State);
     }
@@ -153,12 +153,12 @@ public sealed class BatchResumeServiceTests : IDisposable
     [Fact]
     public async Task ListPendingAsync_ShouldReturnOnlyInProgress()
     {
-        var service = CreateService();
-        var pending = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Pending.App"), new BatchOptions(false));
-        var completed = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Done.App"), new BatchOptions(false));
+        BatchResumeService service = CreateService();
+        Guid pending = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Pending.App"), new BatchOptions(false));
+        Guid completed = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Done.App"), new BatchOptions(false));
         await service.MarkBatchCompletedAsync(completed);
 
-        var list = await service.ListPendingAsync();
+        IReadOnlyList<BatchCheckpoint> list = await service.ListPendingAsync();
         Assert.Single(list);
         Assert.Equal(pending, list[0].BatchId);
     }
@@ -166,15 +166,15 @@ public sealed class BatchResumeServiceTests : IDisposable
     [Fact]
     public async Task ListPendingAsync_ShouldHideStaleCheckpoints()
     {
-        var service = CreateService(staleAfter: TimeSpan.FromDays(7));
-        var fresh = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Fresh.App"), new BatchOptions(false));
+        BatchResumeService service = CreateService(staleAfter: TimeSpan.FromDays(7));
+        Guid fresh = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Fresh.App"), new BatchOptions(false));
 
         // Make the next batch's LastCheckpointAt look ancient.
         _now = _now.AddDays(-30);
-        var stale = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Stale.App"), new BatchOptions(false));
+        Guid stale = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Stale.App"), new BatchOptions(false));
         _now = _now.AddDays(30);
 
-        var list = await service.ListPendingAsync();
+        IReadOnlyList<BatchCheckpoint> list = await service.ListPendingAsync();
         Assert.Single(list);
         Assert.Equal(fresh, list[0].BatchId);
         Assert.NotEqual(stale, list[0].BatchId);
@@ -183,44 +183,44 @@ public sealed class BatchResumeServiceTests : IDisposable
     [Fact]
     public async Task ListPendingAsync_ShouldSkipSchemaMismatchedFiles()
     {
-        var service = CreateService();
-        var batchId = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("App.A"), new BatchOptions(false));
+        BatchResumeService service = CreateService();
+        Guid batchId = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("App.A"), new BatchOptions(false));
 
         // Corrupt the schema version in the persisted file.
-        var path = Path.Combine(_tempDir, $"batch-{batchId:D}.json");
-        var json = await File.ReadAllTextAsync(path);
-        var bumped = json.Replace("\"schemaVersion\": 1", "\"schemaVersion\": 999");
+        string path = Path.Combine(_tempDir, $"batch-{batchId:D}.json");
+        string json = await File.ReadAllTextAsync(path);
+        string bumped = json.Replace("\"schemaVersion\": 1", "\"schemaVersion\": 999");
         await File.WriteAllTextAsync(path, bumped);
 
-        var list = await service.ListPendingAsync();
+        IReadOnlyList<BatchCheckpoint> list = await service.ListPendingAsync();
         Assert.Empty(list);
     }
 
     [Fact]
     public async Task LoadCheckpointAsync_ShouldReturnNullOnCorruptJson()
     {
-        var service = CreateService();
-        var batchId = Guid.NewGuid();
-        var path = Path.Combine(_tempDir, $"batch-{batchId:D}.json");
+        BatchResumeService service = CreateService();
+        Guid batchId = Guid.NewGuid();
+        string path = Path.Combine(_tempDir, $"batch-{batchId:D}.json");
         await File.WriteAllTextAsync(path, "{ this is not valid json");
 
-        var loaded = await service.LoadCheckpointAsync(batchId);
+        BatchCheckpoint? loaded = await service.LoadCheckpointAsync(batchId);
         Assert.Null(loaded);
     }
 
     [Fact]
     public async Task LoadCheckpointAsync_ShouldReturnNullWhenMissing()
     {
-        var service = CreateService();
-        var loaded = await service.LoadCheckpointAsync(Guid.NewGuid());
+        BatchResumeService service = CreateService();
+        BatchCheckpoint? loaded = await service.LoadCheckpointAsync(Guid.NewGuid());
         Assert.Null(loaded);
     }
 
     [Fact]
     public async Task DeleteCheckpointAsync_ShouldRemoveFile()
     {
-        var service = CreateService();
-        var batchId = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("App.A"), new BatchOptions(false));
+        BatchResumeService service = CreateService();
+        Guid batchId = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("App.A"), new BatchOptions(false));
         Assert.NotNull(await service.LoadCheckpointAsync(batchId));
 
         await service.DeleteCheckpointAsync(batchId);
@@ -230,19 +230,19 @@ public sealed class BatchResumeServiceTests : IDisposable
     [Fact]
     public async Task DeleteCheckpointAsync_ShouldNotThrowWhenFileMissing()
     {
-        var service = CreateService();
+        BatchResumeService service = CreateService();
         await service.DeleteCheckpointAsync(Guid.NewGuid());
     }
 
     [Fact]
     public async Task PruneStaleAsync_ShouldRemoveOldCheckpoints()
     {
-        var service = CreateService(staleAfter: TimeSpan.FromDays(7));
+        BatchResumeService service = CreateService(staleAfter: TimeSpan.FromDays(7));
 
         _now = _now.AddDays(-30);
-        var stale = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Old.App"), new BatchOptions(false));
+        Guid stale = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Old.App"), new BatchOptions(false));
         _now = _now.AddDays(30);
-        var fresh = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Fresh.App"), new BatchOptions(false));
+        Guid fresh = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("Fresh.App"), new BatchOptions(false));
 
         await service.PruneStaleAsync();
 
@@ -253,9 +253,9 @@ public sealed class BatchResumeServiceTests : IDisposable
     [Fact]
     public async Task PruneStaleAsync_ShouldRemoveCorruptedFiles()
     {
-        var service = CreateService();
-        var corruptId = Guid.NewGuid();
-        var path = Path.Combine(_tempDir, $"batch-{corruptId:D}.json");
+        BatchResumeService service = CreateService();
+        Guid corruptId = Guid.NewGuid();
+        string path = Path.Combine(_tempDir, $"batch-{corruptId:D}.json");
         await File.WriteAllTextAsync(path, "{ broken");
 
         await service.PruneStaleAsync();
@@ -266,23 +266,23 @@ public sealed class BatchResumeServiceTests : IDisposable
     [Fact]
     public async Task PruneStaleAsync_OnEmptyDirectory_DoesNotThrow()
     {
-        var service = CreateService();
+        BatchResumeService service = CreateService();
         await service.PruneStaleAsync();
     }
 
     [Fact]
     public async Task BatchCheckpoint_GetRemainingAppIds_ShouldExcludeCompleted()
     {
-        var service = CreateService();
-        var planIds = Plan("App.A", "App.B", "App.C");
-        var batchId = await service.BeginBatchAsync(BatchOperationKind.Install, planIds, new BatchOptions(false));
+        BatchResumeService service = CreateService();
+        IReadOnlyList<string> planIds = Plan("App.A", "App.B", "App.C");
+        Guid batchId = await service.BeginBatchAsync(BatchOperationKind.Install, planIds, new BatchOptions(false));
 
         await service.AppendCompletedAsync(batchId, "App.A", BatchItemOutcome.Installed);
         await service.AppendCompletedAsync(batchId, "App.C", BatchItemOutcome.Failed);
 
-        var loaded = await service.LoadCheckpointAsync(batchId);
+        BatchCheckpoint? loaded = await service.LoadCheckpointAsync(batchId);
         Assert.NotNull(loaded);
-        var remaining = loaded!.GetRemainingAppIds();
+        IReadOnlyList<string> remaining = loaded!.GetRemainingAppIds();
         Assert.Single(remaining);
         Assert.Equal("App.B", remaining[0]);
     }
@@ -290,11 +290,11 @@ public sealed class BatchResumeServiceTests : IDisposable
     [Fact]
     public async Task SerializedFile_UsesCurrentSchemaConstant()
     {
-        var service = CreateService();
-        var batchId = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("App.A"), new BatchOptions(false));
+        BatchResumeService service = CreateService();
+        Guid batchId = await service.BeginBatchAsync(BatchOperationKind.Install, Plan("App.A"), new BatchOptions(false));
 
-        var json = await File.ReadAllTextAsync(Path.Combine(_tempDir, $"batch-{batchId:D}.json"));
-        using var doc = JsonDocument.Parse(json);
+        string json = await File.ReadAllTextAsync(Path.Combine(_tempDir, $"batch-{batchId:D}.json"));
+        using JsonDocument doc = JsonDocument.Parse(json);
         Assert.Equal(BatchCheckpoint.CurrentSchemaVersion, doc.RootElement.GetProperty("schemaVersion").GetInt32());
     }
 }

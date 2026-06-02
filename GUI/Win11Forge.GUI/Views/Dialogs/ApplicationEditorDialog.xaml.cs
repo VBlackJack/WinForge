@@ -17,6 +17,7 @@
 #nullable enable
 
 using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.ViewModels;
@@ -78,7 +79,7 @@ public partial class ApplicationEditorDialog : Window
     /// </summary>
     private void OnConfirmDiscardRequested(object? sender, ConfirmDiscardEventArgs e)
     {
-        var result = MessageBox.Show(
+        MessageBoxResult result = MessageBox.Show(
             this,
             Loc.AppEditor_DiscardChanges,
             Loc.AppEditor_DiscardTitle,
@@ -93,7 +94,7 @@ public partial class ApplicationEditorDialog : Window
     /// </summary>
     private void OnNewCategoryRequested(object? sender, NewCategoryEventArgs e)
     {
-        var dialog = new InputDialog(
+        InputDialog dialog = new InputDialog(
             Loc.AppEditor_NewCategoryTitle,
             Loc.AppEditor_NewCategoryPrompt,
             string.Empty)
@@ -133,8 +134,8 @@ public partial class ApplicationEditorDialog : Window
     /// <returns>The new application if saved, null if cancelled.</returns>
     public static async Task<EditableApplicationModel?> ShowAddDialogAsync(Window owner, EditableApplicationModel? initialApplication = null)
     {
-        var dialog = new ApplicationEditorDialog { Owner = owner };
-        var newApp = initialApplication?.Clone() ?? new EditableApplicationModel
+        ApplicationEditorDialog dialog = new ApplicationEditorDialog { Owner = owner };
+        EditableApplicationModel newApp = initialApplication?.Clone() ?? new EditableApplicationModel
         {
             DefaultPriority = 50,
             Sources = new ApplicationSourcesModel(),
@@ -156,8 +157,8 @@ public partial class ApplicationEditorDialog : Window
     /// <returns>The edited application if saved, null if cancelled.</returns>
     public static async Task<EditableApplicationModel?> ShowEditDialogAsync(Window owner, EditableApplicationModel application)
     {
-        var dialog = new ApplicationEditorDialog { Owner = owner };
-        var clone = application.Clone();
+        ApplicationEditorDialog dialog = new ApplicationEditorDialog { Owner = owner };
+        EditableApplicationModel clone = application.Clone();
 
         // Ensure Detection is not null
         clone.Detection ??= new ApplicationDetectionModel();
@@ -193,7 +194,7 @@ public class InputDialog : Window
         ResizeMode = ResizeMode.NoResize;
         Background = System.Windows.SystemColors.ControlBrush;
 
-        var grid = new System.Windows.Controls.Grid
+        Grid grid = new System.Windows.Controls.Grid
         {
             Margin = new Thickness(16)
         };
@@ -202,7 +203,7 @@ public class InputDialog : Window
         grid.RowDefinitions.Add(new System.Windows.Controls.RowDefinition { Height = new System.Windows.GridLength(1, System.Windows.GridUnitType.Star) });
         grid.RowDefinitions.Add(new System.Windows.Controls.RowDefinition { Height = System.Windows.GridLength.Auto });
 
-        var label = new System.Windows.Controls.TextBlock
+        TextBlock label = new System.Windows.Controls.TextBlock
         {
             Text = prompt,
             Margin = new Thickness(0, 0, 0, 8)
@@ -218,14 +219,14 @@ public class InputDialog : Window
         System.Windows.Controls.Grid.SetRow(_textBox, 1);
         grid.Children.Add(_textBox);
 
-        var buttonPanel = new System.Windows.Controls.StackPanel
+        StackPanel buttonPanel = new System.Windows.Controls.StackPanel
         {
             Orientation = System.Windows.Controls.Orientation.Horizontal,
             HorizontalAlignment = HorizontalAlignment.Right
         };
         System.Windows.Controls.Grid.SetRow(buttonPanel, 3);
 
-        var cancelButton = new System.Windows.Controls.Button
+        Button cancelButton = new System.Windows.Controls.Button
         {
             Content = Loc.AppEditor_Cancel,
             Width = 80,
@@ -235,7 +236,7 @@ public class InputDialog : Window
         cancelButton.Click += (s, e) => { DialogResult = false; Close(); };
         buttonPanel.Children.Add(cancelButton);
 
-        var okButton = new System.Windows.Controls.Button
+        Button okButton = new System.Windows.Controls.Button
         {
             Content = Loc.Common_OK,
             Width = 80,

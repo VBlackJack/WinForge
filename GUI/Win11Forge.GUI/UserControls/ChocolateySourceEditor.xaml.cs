@@ -20,9 +20,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Wpf.Ui.Controls;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Services;
+using Wpf.Ui.Controls;
 using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.UserControls;
@@ -236,7 +236,7 @@ public partial class ChocolateySourceEditor : UserControl
     /// </summary>
     private async Task ExecuteDefaultTestAsync()
     {
-        var packageName = PackageName?.Trim();
+        string? packageName = PackageName?.Trim();
         if (string.IsNullOrWhiteSpace(packageName))
         {
             TestSuccess = null;
@@ -250,7 +250,7 @@ public partial class ChocolateySourceEditor : UserControl
 
         try
         {
-            var verificationService = ResolveVerificationService();
+            IPackageVerificationService verificationService = ResolveVerificationService();
 
             if (!verificationService.IsChocolateyAvailable)
             {
@@ -259,7 +259,7 @@ public partial class ChocolateySourceEditor : UserControl
                 return;
             }
 
-            var result = await verificationService.VerifyChocolateyPackageAsync(packageName);
+            PackageVerificationResult result = await verificationService.VerifyChocolateyPackageAsync(packageName);
 
             if (!result.IsSuccess)
             {
@@ -270,7 +270,7 @@ public partial class ChocolateySourceEditor : UserControl
 
             if (result.Exists)
             {
-                var packageDisplay = string.IsNullOrWhiteSpace(result.Version)
+                string packageDisplay = string.IsNullOrWhiteSpace(result.Version)
                     ? result.PackageId
                     : $"{result.PackageId} ({result.Version})";
 

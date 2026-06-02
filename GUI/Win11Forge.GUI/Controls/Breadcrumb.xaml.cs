@@ -70,11 +70,11 @@ public partial class Breadcrumb : UserControl
     /// </summary>
     public void SetItems(string[] labels, int currentIndex, Action<int>? navigateAction = null)
     {
-        var items = new ObservableCollection<BreadcrumbItem>();
+        ObservableCollection<BreadcrumbItem> items = new ObservableCollection<BreadcrumbItem>();
 
         for (int i = 0; i < labels.Length; i++)
         {
-            var index = i;
+            int index = i;
             items.Add(new BreadcrumbItem
             {
                 Label = labels[i],

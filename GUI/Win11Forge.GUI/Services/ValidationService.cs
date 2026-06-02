@@ -15,6 +15,7 @@
  */
 
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using DataAnnotations = System.ComponentModel.DataAnnotations;
 
@@ -74,8 +75,8 @@ public class ValidationService : IValidationService
             };
         }
 
-        var results = new List<DataAnnotations.ValidationResult>();
-        var context = new DataAnnotations.ValidationContext(model);
+        List<DataAnnotations.ValidationResult> results = new List<DataAnnotations.ValidationResult>();
+        ValidationContext context = new DataAnnotations.ValidationContext(model);
 
         DataAnnotations.Validator.TryValidateObject(model, context, results, validateAllProperties: true);
 
@@ -90,7 +91,7 @@ public class ValidationService : IValidationService
             throw new DataAnnotations.ValidationException("Model cannot be null");
         }
 
-        var context = new DataAnnotations.ValidationContext(model);
+        ValidationContext context = new DataAnnotations.ValidationContext(model);
         DataAnnotations.Validator.ValidateObject(model, context, validateAllProperties: true);
     }
 
@@ -99,8 +100,8 @@ public class ValidationService : IValidationService
     {
         if (model == null) return false;
 
-        var results = new List<DataAnnotations.ValidationResult>();
-        var context = new DataAnnotations.ValidationContext(model);
+        List<DataAnnotations.ValidationResult> results = new List<DataAnnotations.ValidationResult>();
+        ValidationContext context = new DataAnnotations.ValidationContext(model);
 
         return DataAnnotations.Validator.TryValidateObject(model, context, results, validateAllProperties: true);
     }
@@ -108,14 +109,14 @@ public class ValidationService : IValidationService
     /// <inheritdoc/>
     public string? GetValidationErrorsAsString<T>(T model) where T : class
     {
-        var results = Validate(model);
+        IList<DataAnnotations.ValidationResult> results = Validate(model);
 
         if (results.Count == 0) return null;
 
-        var errors = results
+        IEnumerable<string> errors = results
             .Select(r =>
             {
-                var members = r.MemberNames.Any()
+                string members = r.MemberNames.Any()
                     ? $"[{string.Join(", ", r.MemberNames)}] "
                     : "";
                 return $"{members}{r.ErrorMessage}";

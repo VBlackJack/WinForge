@@ -85,10 +85,10 @@ public class AppSettingsService : IAppSettingsService
             {
                 if (File.Exists(_settingsFilePath))
                 {
-                    var json = File.ReadAllText(_settingsFilePath);
+                    string json = File.ReadAllText(_settingsFilePath);
                     if (!string.IsNullOrEmpty(json))
                     {
-                        var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
+                        AppSettings? settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
                         if (settings != null)
                         {
                             if (TryMigrateThemeSettings(settings, json))
@@ -121,13 +121,13 @@ public class AppSettingsService : IAppSettingsService
         {
             try
             {
-                var directory = Path.GetDirectoryName(_settingsFilePath);
+                string? directory = Path.GetDirectoryName(_settingsFilePath);
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
 
-                var json = JsonSerializer.Serialize(settings, JsonOptions);
+                string json = JsonSerializer.Serialize(settings, JsonOptions);
                 File.WriteAllText(_settingsFilePath, json);
                 _cachedSettings = settings;
                 return true;
@@ -157,13 +157,13 @@ public class AppSettingsService : IAppSettingsService
         {
             if (File.Exists(_settingsFilePath))
             {
-                var json = await File.ReadAllTextAsync(_settingsFilePath, cancellationToken);
+                string json = await File.ReadAllTextAsync(_settingsFilePath, cancellationToken);
                 if (!string.IsNullOrEmpty(json))
                 {
-                    var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
+                    AppSettings? settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
                     if (settings != null)
                     {
-                        var migrated = TryMigrateThemeSettings(settings, json);
+                        bool migrated = TryMigrateThemeSettings(settings, json);
                         lock (_cacheLock)
                         {
                             _cachedSettings = settings;
@@ -190,7 +190,7 @@ public class AppSettingsService : IAppSettingsService
         }
 
         // Return and cache default settings
-        var defaultSettings = new AppSettings();
+        AppSettings defaultSettings = new AppSettings();
         lock (_cacheLock)
         {
             _cachedSettings = defaultSettings;
@@ -203,13 +203,13 @@ public class AppSettingsService : IAppSettingsService
     {
         try
         {
-            var directory = Path.GetDirectoryName(_settingsFilePath);
+            string? directory = Path.GetDirectoryName(_settingsFilePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(settings, JsonOptions);
+            string json = JsonSerializer.Serialize(settings, JsonOptions);
             await File.WriteAllTextAsync(_settingsFilePath, json, cancellationToken);
 
             lock (_cacheLock)
@@ -263,7 +263,7 @@ public class AppSettingsService : IAppSettingsService
         {
             if (!string.IsNullOrEmpty(settings.LanguageCode))
             {
-                var culture = new CultureInfo(settings.LanguageCode);
+                CultureInfo culture = new CultureInfo(settings.LanguageCode);
                 CultureInfo.CurrentCulture = culture;
                 CultureInfo.CurrentUICulture = culture;
                 Thread.CurrentThread.CurrentCulture = culture;
@@ -284,14 +284,14 @@ public class AppSettingsService : IAppSettingsService
     /// </summary>
     public static void ApplyStartupSettings()
     {
-        var service = new AppSettingsService();
-        var settings = service.LoadSettings();
+        AppSettingsService service = new AppSettingsService();
+        AppSettings settings = service.LoadSettings();
         service.ApplySettings(settings);
     }
 
     private static bool TryMigrateThemeSettings(AppSettings settings, string json)
     {
-        var migrated = TryMigrateThemeName(settings, json);
+        bool migrated = TryMigrateThemeName(settings, json);
         migrated |= TryMigrateAccentTintName(settings, json);
         return migrated;
     }
@@ -300,14 +300,14 @@ public class AppSettingsService : IAppSettingsService
     {
         if (!HasThemeNameProperty(json) || string.IsNullOrWhiteSpace(settings.ThemeName))
         {
-            var legacyIsDark = TryReadLegacyIsDarkTheme(json);
+            bool legacyIsDark = TryReadLegacyIsDarkTheme(json);
             settings.ThemeName = legacyIsDark
                 ? ThemeNames.Default
                 : ThemeNames.Folio;
             return true;
         }
 
-        var canonicalTheme = ThemeService.NormalizeThemeName(settings.ThemeName);
+        string canonicalTheme = ThemeService.NormalizeThemeName(settings.ThemeName);
         if (string.Equals(settings.ThemeName, canonicalTheme, StringComparison.Ordinal))
         {
             return false;
@@ -325,7 +325,7 @@ public class AppSettingsService : IAppSettingsService
             return true;
         }
 
-        var canonicalAccentTint = ThemeService.NormalizeAccentTintName(settings.AccentTintName);
+        string canonicalAccentTint = ThemeService.NormalizeAccentTintName(settings.AccentTintName);
         if (string.Equals(settings.AccentTintName, canonicalAccentTint, StringComparison.Ordinal))
         {
             return false;
@@ -339,7 +339,7 @@ public class AppSettingsService : IAppSettingsService
     {
         try
         {
-            using var document = JsonDocument.Parse(json);
+            using JsonDocument document = JsonDocument.Parse(json);
             return document.RootElement.TryGetProperty("themeName", out _)
                 || document.RootElement.TryGetProperty("ThemeName", out _);
         }
@@ -353,7 +353,7 @@ public class AppSettingsService : IAppSettingsService
     {
         try
         {
-            using var document = JsonDocument.Parse(json);
+            using JsonDocument document = JsonDocument.Parse(json);
             return document.RootElement.TryGetProperty("accentTintName", out _)
                 || document.RootElement.TryGetProperty("AccentTintName", out _);
         }
@@ -367,14 +367,14 @@ public class AppSettingsService : IAppSettingsService
     {
         try
         {
-            using var document = JsonDocument.Parse(json);
-            if (document.RootElement.TryGetProperty("isDarkTheme", out var camelCaseValue)
+            using JsonDocument document = JsonDocument.Parse(json);
+            if (document.RootElement.TryGetProperty("isDarkTheme", out JsonElement camelCaseValue)
                 && (camelCaseValue.ValueKind is JsonValueKind.True or JsonValueKind.False))
             {
                 return camelCaseValue.GetBoolean();
             }
 
-            if (document.RootElement.TryGetProperty("IsDarkTheme", out var pascalCaseValue)
+            if (document.RootElement.TryGetProperty("IsDarkTheme", out JsonElement pascalCaseValue)
                 && (pascalCaseValue.ValueKind is JsonValueKind.True or JsonValueKind.False))
             {
                 return pascalCaseValue.GetBoolean();
@@ -392,13 +392,13 @@ public class AppSettingsService : IAppSettingsService
     {
         try
         {
-            var directory = Path.GetDirectoryName(_settingsFilePath);
+            string? directory = Path.GetDirectoryName(_settingsFilePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(settings, JsonOptions);
+            string json = JsonSerializer.Serialize(settings, JsonOptions);
             File.WriteAllText(_settingsFilePath, json);
         }
         catch (Exception ex)

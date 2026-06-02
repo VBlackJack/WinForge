@@ -51,13 +51,13 @@ public class DeploymentStateServiceTests
 
         public void StartDeployment(IEnumerable<ApplicationModel> apps)
         {
-            foreach (var existingApp in Applications)
+            foreach (ApplicationModel existingApp in Applications)
             {
                 existingApp.LogOutput = string.Empty;
             }
 
             Applications.Clear();
-            foreach (var app in apps)
+            foreach (ApplicationModel app in apps)
             {
                 app.LogOutput = string.Empty;
                 Applications.Add(app);
@@ -116,7 +116,7 @@ public class DeploymentStateServiceTests
 
         public void ClearApplicationLogs()
         {
-            foreach (var app in Applications)
+            foreach (ApplicationModel app in Applications)
             {
                 app.LogOutput = string.Empty;
             }
@@ -157,7 +157,7 @@ public class DeploymentStateServiceTests
 
     private static List<ApplicationModel> CreateTestApps(int count)
     {
-        var apps = new List<ApplicationModel>();
+        List<ApplicationModel> apps = new List<ApplicationModel>();
         for (int i = 1; i <= count; i++)
         {
             apps.Add(new ApplicationModel
@@ -178,7 +178,7 @@ public class DeploymentStateServiceTests
     public void NewService_ShouldHaveCleanState()
     {
         // Arrange & Act
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
 
         // Assert
         Assert.False(service.IsDeploying);
@@ -205,8 +205,8 @@ public class DeploymentStateServiceTests
     public void StartDeployment_ShouldSetDeployingStateAndPopulateApps()
     {
         // Arrange
-        using var service = CreateService();
-        var apps = CreateTestApps(3);
+        using TestableDeploymentStateService service = CreateService();
+        List<ApplicationModel> apps = CreateTestApps(3);
 
         // Act
         service.StartDeployment(apps);
@@ -228,8 +228,8 @@ public class DeploymentStateServiceTests
     public void StartDeployment_ShouldRaiseStateChanged()
     {
         // Arrange
-        using var service = CreateService();
-        var eventRaised = false;
+        using TestableDeploymentStateService service = CreateService();
+        bool eventRaised = false;
         service.StateChanged += (_, _) => eventRaised = true;
 
         // Act
@@ -246,7 +246,7 @@ public class DeploymentStateServiceTests
     public void StartDeployment_ShouldClearPreviousDeployment()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(3));
         service.UpdateProgress("App1", 2, 3, "In progress");
 
@@ -267,8 +267,8 @@ public class DeploymentStateServiceTests
     public void StartDeployment_ShouldClearLogOutputOnApps()
     {
         // Arrange
-        using var service = CreateService();
-        var apps = CreateTestApps(2);
+        using TestableDeploymentStateService service = CreateService();
+        List<ApplicationModel> apps = CreateTestApps(2);
         apps[0].LogOutput = "Some previous log data";
         apps[1].LogOutput = "More log data from before";
 
@@ -287,7 +287,7 @@ public class DeploymentStateServiceTests
     public void StartDeployment_EmptyList_ShouldSetTotalCountZero()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
 
         // Act
         service.StartDeployment([]);
@@ -309,7 +309,7 @@ public class DeploymentStateServiceTests
     public void UpdateProgress_ShouldUpdateAllProgressProperties()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(4));
 
         // Act
@@ -330,9 +330,9 @@ public class DeploymentStateServiceTests
     public void UpdateProgress_ShouldRaiseStateChanged()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(2));
-        var eventCount = 0;
+        int eventCount = 0;
         service.StateChanged += (_, _) => eventCount++;
 
         // Act
@@ -353,7 +353,7 @@ public class DeploymentStateServiceTests
     public void UpdateProgress_ShouldCalculatePercentageCorrectly(int completed, int total, double expectedPercentage)
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(total));
 
         // Act
@@ -370,7 +370,7 @@ public class DeploymentStateServiceTests
     public void UpdateProgress_ZeroTotal_ShouldSetPercentageToZero()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment([]);
 
         // Act
@@ -391,7 +391,7 @@ public class DeploymentStateServiceTests
     public void UpdateTime_ShouldSetTimeProperties()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(2));
 
         // Act
@@ -409,8 +409,8 @@ public class DeploymentStateServiceTests
     public void UpdateTime_ShouldRaiseStateChanged()
     {
         // Arrange
-        using var service = CreateService();
-        var eventRaised = false;
+        using TestableDeploymentStateService service = CreateService();
+        bool eventRaised = false;
         service.StateChanged += (_, _) => eventRaised = true;
 
         // Act
@@ -427,7 +427,7 @@ public class DeploymentStateServiceTests
     public void UpdateTime_NullValues_ShouldSetToNull()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.UpdateTime("00:05:00", "00:05:00");
 
         // Act
@@ -449,7 +449,7 @@ public class DeploymentStateServiceTests
     public void SetPaused_True_ShouldSetIsPaused()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(2));
 
         // Act
@@ -466,7 +466,7 @@ public class DeploymentStateServiceTests
     public void SetPaused_False_ShouldClearIsPaused()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(2));
         service.SetPaused(true);
 
@@ -484,8 +484,8 @@ public class DeploymentStateServiceTests
     public void SetPaused_ShouldRaiseStateChanged()
     {
         // Arrange
-        using var service = CreateService();
-        var eventRaised = false;
+        using TestableDeploymentStateService service = CreateService();
+        bool eventRaised = false;
         service.StateChanged += (_, _) => eventRaised = true;
 
         // Act
@@ -506,7 +506,7 @@ public class DeploymentStateServiceTests
     public void EndDeployment_ShouldClearDeployingState()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(3));
         service.SetPaused(true);
 
@@ -526,9 +526,9 @@ public class DeploymentStateServiceTests
     public void EndDeployment_ShouldRaiseStateChanged()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(2));
-        var eventRaised = false;
+        bool eventRaised = false;
         service.StateChanged += (_, _) => eventRaised = true;
 
         // Act
@@ -545,7 +545,7 @@ public class DeploymentStateServiceTests
     public void EndDeployment_ShouldPreserveApplications()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(3));
 
         // Act
@@ -566,8 +566,8 @@ public class DeploymentStateServiceTests
     public void ClearApplicationLogs_ShouldClearAllLogs()
     {
         // Arrange
-        using var service = CreateService();
-        var apps = CreateTestApps(3);
+        using TestableDeploymentStateService service = CreateService();
+        List<ApplicationModel> apps = CreateTestApps(3);
         service.StartDeployment(apps);
         service.Applications[0].LogOutput = "Log for app 1";
         service.Applications[1].LogOutput = "Log for app 2";
@@ -588,9 +588,9 @@ public class DeploymentStateServiceTests
     public void ClearApplicationLogs_ShouldRaiseStateChanged()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(1));
-        var eventRaised = false;
+        bool eventRaised = false;
         service.StateChanged += (_, _) => eventRaised = true;
 
         // Act
@@ -611,8 +611,8 @@ public class DeploymentStateServiceTests
     public void RequestPause_ShouldRaisePauseRequestedEvent()
     {
         // Arrange
-        using var service = CreateService();
-        var eventRaised = false;
+        using TestableDeploymentStateService service = CreateService();
+        bool eventRaised = false;
         service.PauseRequested += (_, _) => eventRaised = true;
 
         // Act
@@ -629,8 +629,8 @@ public class DeploymentStateServiceTests
     public void RequestResume_ShouldRaiseResumeRequestedEvent()
     {
         // Arrange
-        using var service = CreateService();
-        var eventRaised = false;
+        using TestableDeploymentStateService service = CreateService();
+        bool eventRaised = false;
         service.ResumeRequested += (_, _) => eventRaised = true;
 
         // Act
@@ -647,8 +647,8 @@ public class DeploymentStateServiceTests
     public void RequestCancel_ShouldRaiseCancelRequestedEventAndSetFlag()
     {
         // Arrange
-        using var service = CreateService();
-        var eventRaised = false;
+        using TestableDeploymentStateService service = CreateService();
+        bool eventRaised = false;
         service.CancelRequested += (_, _) => eventRaised = true;
 
         // Act
@@ -666,10 +666,10 @@ public class DeploymentStateServiceTests
     public void RequestPause_NoHandlers_ShouldNotThrow()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
 
         // Act & Assert
-        var exception = Record.Exception(() => service.RequestPause());
+        Exception exception = Record.Exception(() => service.RequestPause());
         Assert.Null(exception);
     }
 
@@ -680,10 +680,10 @@ public class DeploymentStateServiceTests
     public void RequestResume_NoHandlers_ShouldNotThrow()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
 
         // Act & Assert
-        var exception = Record.Exception(() => service.RequestResume());
+        Exception exception = Record.Exception(() => service.RequestResume());
         Assert.Null(exception);
     }
 
@@ -694,10 +694,10 @@ public class DeploymentStateServiceTests
     public void RequestCancel_NoHandlers_ShouldNotThrow()
     {
         // Arrange
-        using var service = CreateService();
+        using TestableDeploymentStateService service = CreateService();
 
         // Act & Assert
-        var exception = Record.Exception(() => service.RequestCancel());
+        Exception exception = Record.Exception(() => service.RequestCancel());
         Assert.Null(exception);
     }
 
@@ -712,9 +712,9 @@ public class DeploymentStateServiceTests
     public void Dispose_ShouldClearApplicationsAndHandlers()
     {
         // Arrange
-        var service = CreateService();
+        TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(3));
-        var stateChangedAfterDispose = false;
+        bool stateChangedAfterDispose = false;
         service.StateChanged += (_, _) => stateChangedAfterDispose = true;
 
         // Act
@@ -736,11 +736,11 @@ public class DeploymentStateServiceTests
     public void Dispose_CalledTwice_ShouldNotThrow()
     {
         // Arrange
-        var service = CreateService();
+        TestableDeploymentStateService service = CreateService();
         service.StartDeployment(CreateTestApps(2));
 
         // Act & Assert
-        var exception = Record.Exception(() =>
+        Exception exception = Record.Exception(() =>
         {
             service.Dispose();
             service.Dispose();
@@ -759,8 +759,8 @@ public class DeploymentStateServiceTests
     public void FullLifecycle_StartProgressPauseResumeComplete()
     {
         // Arrange
-        using var service = CreateService();
-        var stateChangedCount = 0;
+        using TestableDeploymentStateService service = CreateService();
+        int stateChangedCount = 0;
         service.StateChanged += (_, _) => stateChangedCount++;
 
         // Act - Start
@@ -805,8 +805,8 @@ public class DeploymentStateServiceTests
     public void FullLifecycle_StartProgressCancel()
     {
         // Arrange
-        using var service = CreateService();
-        var cancelRaised = false;
+        using TestableDeploymentStateService service = CreateService();
+        bool cancelRaised = false;
         service.CancelRequested += (_, _) => cancelRaised = true;
 
         // Act - Start

@@ -27,10 +27,10 @@ public class AppUninstallCoordinatorTests
     [Fact]
     public async Task UninstallAsync_WithEmptyList_ShouldReturnEmptyResult()
     {
-        var bridge = CreateBridge();
-        var coordinator = CreateCoordinator(bridge.Object);
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        AppUninstallCoordinator coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.UninstallAsync([]);
+        AppUninstallResult result = await coordinator.UninstallAsync([]);
 
         Assert.Equal(0, result.Total);
         Assert.Equal(0, result.UninstalledCount);
@@ -47,11 +47,11 @@ public class AppUninstallCoordinatorTests
     [Fact]
     public async Task UninstallAsync_WithSuccessfulApps_ShouldAggregateUninstalledCount()
     {
-        var apps = CreateApps("App1", "App2");
-        var bridge = CreateBridge();
-        var coordinator = CreateCoordinator(bridge.Object);
+        List<ApplicationModel> apps = CreateApps("App1", "App2");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        AppUninstallCoordinator coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.UninstallAsync(apps);
+        AppUninstallResult result = await coordinator.UninstallAsync(apps);
 
         Assert.Equal(2, result.Total);
         Assert.Equal(2, result.UninstalledCount);
@@ -68,8 +68,8 @@ public class AppUninstallCoordinatorTests
     [Fact]
     public async Task UninstallAsync_WithMixedResults_ShouldSplitFinalCounters()
     {
-        var apps = CreateApps("Uninstalled", "Failed");
-        var bridge = CreateBridge();
+        List<ApplicationModel> apps = CreateApps("Uninstalled", "Failed");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
         bridge
             .Setup(x => x.UninstallApplicationAsync(
                 It.IsAny<ApplicationModel>(),
@@ -78,9 +78,9 @@ public class AppUninstallCoordinatorTests
                 app.AppId == "Failed"
                     ? InstallResult.Failed("Uninstall failed", "failed-log")
                     : InstallResult.Successful("Uninstalled", "uninstalled-log"));
-        var coordinator = CreateCoordinator(bridge.Object);
+        AppUninstallCoordinator coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.UninstallAsync(apps);
+        AppUninstallResult result = await coordinator.UninstallAsync(apps);
 
         Assert.Equal(1, result.UninstalledCount);
         Assert.Equal(1, result.FailedCount);
@@ -93,26 +93,26 @@ public class AppUninstallCoordinatorTests
     [Fact]
     public async Task UninstallAsync_WhenPaused_ShouldWaitUntilResumed()
     {
-        var apps = CreateApps("App1");
-        var bridge = CreateBridge();
-        var uninstallCalls = 0;
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        int uninstallCalls = 0;
         bridge
             .Setup(x => x.UninstallApplicationAsync(
                 It.IsAny<ApplicationModel>(),
                 It.IsAny<Action<string>?>()))
             .Callback(() => Interlocked.Increment(ref uninstallCalls))
             .ReturnsAsync(InstallResult.Successful("Uninstalled", "log"));
-        using var pauseGate = new PauseGate();
+        using PauseGate pauseGate = new PauseGate();
         pauseGate.Pause();
-        var coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate);
+        AppUninstallCoordinator coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate);
 
-        var uninstallTask = coordinator.UninstallAsync(apps);
+        Task<AppUninstallResult> uninstallTask = coordinator.UninstallAsync(apps);
         await Task.Delay(75);
 
         Assert.Equal(0, Volatile.Read(ref uninstallCalls));
 
         pauseGate.Resume();
-        var result = await uninstallTask.WaitAsync(TimeSpan.FromSeconds(2));
+        AppUninstallResult result = await uninstallTask.WaitAsync(TimeSpan.FromSeconds(2));
 
         Assert.Equal(1, result.UninstalledCount);
         Assert.Equal(1, Volatile.Read(ref uninstallCalls));
@@ -121,18 +121,18 @@ public class AppUninstallCoordinatorTests
     [Fact]
     public async Task UninstallAsync_WhenCancelledDuringPause_ShouldReturnCancelledResult()
     {
-        var apps = CreateApps("App1");
-        var bridge = CreateBridge();
-        using var pauseGate = new PauseGate();
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        using PauseGate pauseGate = new PauseGate();
         pauseGate.Pause();
-        var coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate);
-        using var cts = new CancellationTokenSource();
+        AppUninstallCoordinator coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate);
+        using CancellationTokenSource cts = new CancellationTokenSource();
 
-        var uninstallTask = coordinator.UninstallAsync(apps, cancellationToken: cts.Token);
+        Task<AppUninstallResult> uninstallTask = coordinator.UninstallAsync(apps, cancellationToken: cts.Token);
         await Task.Delay(50);
         cts.Cancel();
 
-        var result = await uninstallTask;
+        AppUninstallResult result = await uninstallTask;
 
         Assert.True(result.WasCancelled);
         Assert.Equal(1, result.SkippedCount);
@@ -142,9 +142,9 @@ public class AppUninstallCoordinatorTests
     [Fact]
     public async Task UninstallAsync_ShouldReportProgressForEachApplication()
     {
-        var apps = CreateApps("App1", "App2");
-        var coordinator = CreateCoordinator();
-        var progress = new TestProgress<AppOperationProgress>();
+        List<ApplicationModel> apps = CreateApps("App1", "App2");
+        AppUninstallCoordinator coordinator = CreateCoordinator();
+        TestProgress<AppOperationProgress> progress = new TestProgress<AppOperationProgress>();
 
         await coordinator.UninstallAsync(apps, progress);
 
@@ -164,7 +164,7 @@ public class AppUninstallCoordinatorTests
 
     private static Mock<IPowerShellBridge> CreateBridge()
     {
-        var bridge = new Mock<IPowerShellBridge>();
+        Mock<IPowerShellBridge> bridge = new Mock<IPowerShellBridge>();
         bridge
             .Setup(x => x.UninstallApplicationAsync(
                 It.IsAny<ApplicationModel>(),
@@ -179,11 +179,11 @@ public class AppUninstallCoordinatorTests
         IPauseGate? pauseGate = null,
         IBatchResumeService? resumeService = null)
     {
-        var settings = new MockAppSettingsService
+        MockAppSettingsService settings = new MockAppSettingsService
         {
             SettingsToReturn = new AppSettings { MaxParallelInstalls = 2 }
         };
-        var pauseGateMock = new Mock<IPauseGate>();
+        Mock<IPauseGate> pauseGateMock = new Mock<IPauseGate>();
         pauseGateMock
             .Setup(x => x.WaitAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -197,7 +197,7 @@ public class AppUninstallCoordinatorTests
 
     private static Mock<IBatchResumeService> CreateResumeServiceMock()
     {
-        var mock = new Mock<IBatchResumeService>();
+        Mock<IBatchResumeService> mock = new Mock<IBatchResumeService>();
         mock.Setup(x => x.BeginBatchAsync(
                 It.IsAny<BatchOperationKind>(),
                 It.IsAny<IReadOnlyList<string>>(),
@@ -220,9 +220,9 @@ public class AppUninstallCoordinatorTests
     [Fact]
     public async Task UninstallAsync_ShouldBeginBatchWithUninstallKindAndAppIds()
     {
-        var apps = CreateApps("Foo", "Bar");
-        var resume = CreateResumeServiceMock();
-        var coordinator = CreateCoordinator(resumeService: resume.Object);
+        List<ApplicationModel> apps = CreateApps("Foo", "Bar");
+        Mock<IBatchResumeService> resume = CreateResumeServiceMock();
+        AppUninstallCoordinator coordinator = CreateCoordinator(resumeService: resume.Object);
 
         await coordinator.UninstallAsync(apps);
 
@@ -238,9 +238,9 @@ public class AppUninstallCoordinatorTests
     [Fact]
     public async Task UninstallAsync_ShouldAppendUninstalledOutcomeForSuccess()
     {
-        var apps = CreateApps("App1");
-        var resume = CreateResumeServiceMock();
-        var coordinator = CreateCoordinator(resumeService: resume.Object);
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IBatchResumeService> resume = CreateResumeServiceMock();
+        AppUninstallCoordinator coordinator = CreateCoordinator(resumeService: resume.Object);
 
         await coordinator.UninstallAsync(apps);
 
@@ -256,9 +256,9 @@ public class AppUninstallCoordinatorTests
     [Fact]
     public async Task UninstallAsync_OnSuccess_ShouldMarkBatchCompleted()
     {
-        var apps = CreateApps("App1");
-        var resume = CreateResumeServiceMock();
-        var coordinator = CreateCoordinator(resumeService: resume.Object);
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IBatchResumeService> resume = CreateResumeServiceMock();
+        AppUninstallCoordinator coordinator = CreateCoordinator(resumeService: resume.Object);
 
         await coordinator.UninstallAsync(apps);
 

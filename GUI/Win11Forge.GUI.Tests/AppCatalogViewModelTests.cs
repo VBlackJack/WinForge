@@ -17,6 +17,7 @@
 using System.Globalization;
 using System.Windows;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
 using Loc = Win11Forge.GUI.Resources.Resources;
@@ -121,8 +122,8 @@ public class AppCatalogViewModelTests
     public async Task LoadApplications_ShouldPopulateCollection()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var viewModel = CreateViewModel(dbService);
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        AppCatalogViewModel viewModel = CreateViewModel(dbService);
 
         // Act
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
@@ -139,7 +140,7 @@ public class AppCatalogViewModelTests
     public async Task LoadApplications_ShouldLoadCategories()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        AppCatalogViewModel viewModel = CreateViewModel();
 
         // Act
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
@@ -158,11 +159,11 @@ public class AppCatalogViewModelTests
     public async Task Add_ShouldOpenEditorAndSaveReturnedApplication()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var undoService = new MockUndoService();
-        var editorDialogService = new TestApplicationEditorDialogService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        MockUndoService undoService = new MockUndoService();
+        TestApplicationEditorDialogService editorDialogService = new TestApplicationEditorDialogService();
         editorDialogService.QueueAddResult(CreateEditableApplication("NewApp", "New Application"));
-        var viewModel = CreateViewModel(
+        AppCatalogViewModel viewModel = CreateViewModel(
             dbService: dbService,
             undoService: undoService,
             applicationEditorDialogService: editorDialogService);
@@ -184,10 +185,10 @@ public class AppCatalogViewModelTests
     public async Task Add_WhenEditorCancelled_ShouldNotSave()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var editorDialogService = new TestApplicationEditorDialogService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        TestApplicationEditorDialogService editorDialogService = new TestApplicationEditorDialogService();
         editorDialogService.QueueAddResult(null);
-        var viewModel = CreateViewModel(
+        AppCatalogViewModel viewModel = CreateViewModel(
             dbService: dbService,
             applicationEditorDialogService: editorDialogService);
 
@@ -206,11 +207,11 @@ public class AppCatalogViewModelTests
     public async Task Edit_ShouldOpenEditorAndSaveReturnedApplication()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var undoService = new MockUndoService();
-        var editorDialogService = new TestApplicationEditorDialogService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        MockUndoService undoService = new MockUndoService();
+        TestApplicationEditorDialogService editorDialogService = new TestApplicationEditorDialogService();
         editorDialogService.QueueEditResult(CreateEditableApplication("VSCode", "Edited Visual Studio Code"));
-        var viewModel = CreateViewModel(
+        AppCatalogViewModel viewModel = CreateViewModel(
             dbService: dbService,
             undoService: undoService,
             applicationEditorDialogService: editorDialogService);
@@ -235,7 +236,7 @@ public class AppCatalogViewModelTests
     public async Task Edit_ShouldBeDisabledWhenNoSelection()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        AppCatalogViewModel viewModel = CreateViewModel();
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         viewModel.SelectedApplication = null;
 
@@ -250,10 +251,10 @@ public class AppCatalogViewModelTests
     public async Task Delete_WhenNotConfirmed_ShouldNotDelete()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var dialogService = new TestDialogService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var viewModel = CreateViewModel(dbService: dbService, dialogService: dialogService);
+        AppCatalogViewModel viewModel = CreateViewModel(dbService: dbService, dialogService: dialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         viewModel.SelectedApplication = viewModel.Applications[0];
 
@@ -273,10 +274,10 @@ public class AppCatalogViewModelTests
     public async Task Delete_WhenConfirmed_ShouldDeleteSelectedApplication()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var dialogService = new TestDialogService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(true);
-        var viewModel = CreateViewModel(dbService: dbService, dialogService: dialogService);
+        AppCatalogViewModel viewModel = CreateViewModel(dbService: dbService, dialogService: dialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         viewModel.SelectedApplication = viewModel.Applications[0];
 
@@ -297,14 +298,14 @@ public class AppCatalogViewModelTests
     public async Task Duplicate_ShouldOpenEditorAndSaveReturnedApplicationAsNew()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var editorDialogService = new TestApplicationEditorDialogService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        TestApplicationEditorDialogService editorDialogService = new TestApplicationEditorDialogService();
         editorDialogService.QueueAddResult(CreateEditableApplication("VSCode-Copy", "Visual Studio Code Copy"));
-        var viewModel = CreateViewModel(
+        AppCatalogViewModel viewModel = CreateViewModel(
             dbService: dbService,
             applicationEditorDialogService: editorDialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
-        var original = viewModel.Applications[0];
+        EditableApplicationModel original = viewModel.Applications[0];
         original.Sources.Chocolatey = "vscode";
         original.Sources.DirectUrl = "https://example.com/vscode.exe";
         original.Sources.WingetConfig = new WingetSourceConfig
@@ -338,7 +339,7 @@ public class AppCatalogViewModelTests
 
         // Assert
         Assert.Equal(1, editorDialogService.ShowAddCallCount);
-        var duplicate = Assert.Single(editorDialogService.AddRequests);
+        EditableApplicationModel? duplicate = Assert.Single(editorDialogService.AddRequests);
         Assert.NotNull(duplicate);
         Assert.NotSame(original, duplicate);
         Assert.StartsWith($"{original.AppId}-copy-", duplicate.AppId);
@@ -370,8 +371,8 @@ public class AppCatalogViewModelTests
     public async Task Duplicate_WithoutSelection_ShouldBeDisabled()
     {
         // Arrange
-        var editorDialogService = new TestApplicationEditorDialogService();
-        var viewModel = CreateViewModel(applicationEditorDialogService: editorDialogService);
+        TestApplicationEditorDialogService editorDialogService = new TestApplicationEditorDialogService();
+        AppCatalogViewModel viewModel = CreateViewModel(applicationEditorDialogService: editorDialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         viewModel.SelectedApplication = null;
 
@@ -387,7 +388,7 @@ public class AppCatalogViewModelTests
     public async Task ClearFilters_ShouldResetFilters()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        AppCatalogViewModel viewModel = CreateViewModel();
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         viewModel.SearchText = "test";
         viewModel.SelectedCategory = "Development";
@@ -407,11 +408,11 @@ public class AppCatalogViewModelTests
     public void EmptyState_DuringLoad_NotVisible()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var converter = new Win11Forge.GUI.Resources.AndZeroToVisibilityConverter();
+        AppCatalogViewModel viewModel = CreateViewModel();
+        AndZeroToVisibilityConverter converter = new Win11Forge.GUI.Resources.AndZeroToVisibilityConverter();
 
         // Act
-        var result = converter.Convert(
+        object result = converter.Convert(
             new object[] { viewModel.IsLoading, viewModel.HasLoadError, viewModel.FilteredCount },
             typeof(Visibility),
             null!,
@@ -429,14 +430,14 @@ public class AppCatalogViewModelTests
     public async Task EmptyState_AfterLoadFailure_NotVisible_ErrorVisible()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
         dbService.SetLoadException(new InvalidOperationException("catalog unavailable"));
-        var viewModel = CreateViewModel(dbService: dbService);
-        var converter = new Win11Forge.GUI.Resources.AndZeroToVisibilityConverter();
+        AppCatalogViewModel viewModel = CreateViewModel(dbService: dbService);
+        AndZeroToVisibilityConverter converter = new Win11Forge.GUI.Resources.AndZeroToVisibilityConverter();
 
         // Act
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
-        var emptyStateVisibility = converter.Convert(
+        object emptyStateVisibility = converter.Convert(
             new object[] { viewModel.IsLoading, viewModel.HasLoadError, viewModel.FilteredCount },
             typeof(Visibility),
             null!,
@@ -457,15 +458,15 @@ public class AppCatalogViewModelTests
     public async Task EmptyState_WhenDatabaseIsEmpty_UsesDatabaseMessage()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
         dbService.ReplaceApplications();
-        var viewModel = CreateViewModel(dbService: dbService);
+        AppCatalogViewModel viewModel = CreateViewModel(dbService: dbService);
 
         // Act
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
 
         // Assert
-        var expected = Loc.ResourceManager.GetString("AppCatalog_EmptyDatabase", Loc.Culture);
+        string? expected = Loc.ResourceManager.GetString("AppCatalog_EmptyDatabase", Loc.Culture);
         Assert.Equal(0, viewModel.TotalCount);
         Assert.Equal(expected, viewModel.EmptyStateMessage);
     }
@@ -477,13 +478,13 @@ public class AppCatalogViewModelTests
     public void EmptyState_WhenLoadedApplicationsAreFilteredOut_UsesFilterMessage()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        AppCatalogViewModel viewModel = CreateViewModel();
 
         // Act
         viewModel.TotalCount = 5;
 
         // Assert
-        var expected = Loc.ResourceManager.GetString("AppCatalog_EmptyFilter", Loc.Culture);
+        string? expected = Loc.ResourceManager.GetString("AppCatalog_EmptyFilter", Loc.Culture);
         Assert.Equal(expected, viewModel.EmptyStateMessage);
     }
 
@@ -494,9 +495,9 @@ public class AppCatalogViewModelTests
     public async Task Undo_ShouldCallUndoService()
     {
         // Arrange
-        var undoService = new MockUndoService();
+        MockUndoService undoService = new MockUndoService();
         undoService.SetCanUndo(true);
-        var viewModel = CreateViewModel(undoService: undoService);
+        AppCatalogViewModel viewModel = CreateViewModel(undoService: undoService);
 
         // Act
         await viewModel.UndoCommand.ExecuteAsync(null);
@@ -512,9 +513,9 @@ public class AppCatalogViewModelTests
     public async Task Redo_ShouldCallUndoService()
     {
         // Arrange
-        var undoService = new MockUndoService();
+        MockUndoService undoService = new MockUndoService();
         undoService.SetCanRedo(true);
-        var viewModel = CreateViewModel(undoService: undoService);
+        AppCatalogViewModel viewModel = CreateViewModel(undoService: undoService);
 
         // Act
         await viewModel.RedoCommand.ExecuteAsync(null);
@@ -530,10 +531,10 @@ public class AppCatalogViewModelTests
     public async Task ExportAll_ShouldShowSaveDialogAndExportAllIds()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var fileDialogService = new TestFileDialogService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
         fileDialogService.QueueSaveResult(@"C:\Exports\applications.json");
-        var viewModel = CreateViewModel(dbService: dbService, fileDialogService: fileDialogService);
+        AppCatalogViewModel viewModel = CreateViewModel(dbService: dbService, fileDialogService: fileDialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
 
         // Act
@@ -552,10 +553,10 @@ public class AppCatalogViewModelTests
     public async Task ExportAll_WhenNoApplications_ShouldShowInfoAndNotExport()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var dialogService = new TestDialogService();
-        var fileDialogService = new TestFileDialogService();
-        var viewModel = CreateViewModel(
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        TestDialogService dialogService = new TestDialogService();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
+        AppCatalogViewModel viewModel = CreateViewModel(
             dbService: dbService,
             dialogService: dialogService,
             fileDialogService: fileDialogService);
@@ -576,10 +577,10 @@ public class AppCatalogViewModelTests
     public async Task ExportSelected_WhenDialogCancelled_ShouldNotExport()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var fileDialogService = new TestFileDialogService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
         fileDialogService.QueueSaveResult(null);
-        var viewModel = CreateViewModel(dbService: dbService, fileDialogService: fileDialogService);
+        AppCatalogViewModel viewModel = CreateViewModel(dbService: dbService, fileDialogService: fileDialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         viewModel.SelectedApplication = viewModel.Applications[0];
 
@@ -598,12 +599,12 @@ public class AppCatalogViewModelTests
     public async Task Import_WhenReplaceSelected_ShouldImportWithReplaceMode()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var dialogService = new TestDialogService();
-        var fileDialogService = new TestFileDialogService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        TestDialogService dialogService = new TestDialogService();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
         fileDialogService.QueueOpenResult(@"C:\Imports\applications.json");
         dialogService.QueueYesNoCancelResult(true);
-        var viewModel = CreateViewModel(
+        AppCatalogViewModel viewModel = CreateViewModel(
             dbService: dbService,
             dialogService: dialogService,
             fileDialogService: fileDialogService);
@@ -625,12 +626,12 @@ public class AppCatalogViewModelTests
     public async Task Import_WhenMergeSelected_ShouldImportWithMergeMode()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var dialogService = new TestDialogService();
-        var fileDialogService = new TestFileDialogService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        TestDialogService dialogService = new TestDialogService();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
         fileDialogService.QueueOpenResult(@"C:\Imports\applications.json");
         dialogService.QueueYesNoCancelResult(false);
-        var viewModel = CreateViewModel(
+        AppCatalogViewModel viewModel = CreateViewModel(
             dbService: dbService,
             dialogService: dialogService,
             fileDialogService: fileDialogService);
@@ -650,12 +651,12 @@ public class AppCatalogViewModelTests
     public async Task Import_WhenModeCancelled_ShouldNotImport()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var dialogService = new TestDialogService();
-        var fileDialogService = new TestFileDialogService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        TestDialogService dialogService = new TestDialogService();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
         fileDialogService.QueueOpenResult(@"C:\Imports\applications.json");
         dialogService.QueueYesNoCancelResult(null);
-        var viewModel = CreateViewModel(
+        AppCatalogViewModel viewModel = CreateViewModel(
             dbService: dbService,
             dialogService: dialogService,
             fileDialogService: fileDialogService);
@@ -675,11 +676,11 @@ public class AppCatalogViewModelTests
     public async Task Import_WhenFileDialogCancelled_ShouldNotAskForMode()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var dialogService = new TestDialogService();
-        var fileDialogService = new TestFileDialogService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        TestDialogService dialogService = new TestDialogService();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
         fileDialogService.QueueOpenResult(null);
-        var viewModel = CreateViewModel(
+        AppCatalogViewModel viewModel = CreateViewModel(
             dbService: dbService,
             dialogService: dialogService,
             fileDialogService: fileDialogService);
@@ -699,15 +700,15 @@ public class AppCatalogViewModelTests
     public async Task Import_ShouldUseJsonOpenDialogOptions()
     {
         // Arrange
-        var fileDialogService = new TestFileDialogService();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
         fileDialogService.QueueOpenResult(null);
-        var viewModel = CreateViewModel(fileDialogService: fileDialogService);
+        AppCatalogViewModel viewModel = CreateViewModel(fileDialogService: fileDialogService);
 
         // Act
         await viewModel.ImportCommand.ExecuteAsync(null);
 
         // Assert
-        var options = Assert.Single(fileDialogService.OpenOptions);
+        FileDialogOptions options = Assert.Single(fileDialogService.OpenOptions);
         Assert.Equal(Win11Forge.GUI.Resources.Resources.AppCatalog_Import, options.Title);
         Assert.Equal("JSON files (*.json)|*.json|All files (*.*)|*.*", options.Filter);
         Assert.Equal(".json", options.DefaultExtension);
@@ -720,10 +721,10 @@ public class AppCatalogViewModelTests
     public async Task SaveApplicationAsync_NewApp_ShouldRecordUndoAction()
     {
         // Arrange
-        var undoService = new MockUndoService();
-        var viewModel = CreateViewModel(undoService: undoService);
+        MockUndoService undoService = new MockUndoService();
+        AppCatalogViewModel viewModel = CreateViewModel(undoService: undoService);
 
-        var newApp = new EditableApplicationModel
+        EditableApplicationModel newApp = new EditableApplicationModel
         {
             AppId = "NewApp",
             Name = "New Application",
@@ -747,10 +748,10 @@ public class AppCatalogViewModelTests
     public async Task SaveApplicationAsync_EditedApp_ShouldRecordUndoAction()
     {
         // Arrange
-        var undoService = new MockUndoService();
-        var viewModel = CreateViewModel(undoService: undoService);
+        MockUndoService undoService = new MockUndoService();
+        AppCatalogViewModel viewModel = CreateViewModel(undoService: undoService);
 
-        var originalApp = new EditableApplicationModel
+        EditableApplicationModel originalApp = new EditableApplicationModel
         {
             AppId = "TestApp",
             Name = "Original Name",
@@ -758,7 +759,7 @@ public class AppCatalogViewModelTests
             Sources = new ApplicationSourcesModel { Winget = "Test.App" }
         };
 
-        var editedApp = originalApp.Clone();
+        EditableApplicationModel editedApp = originalApp.Clone();
         editedApp.Name = "Edited Name";
 
         // Act
@@ -775,11 +776,11 @@ public class AppCatalogViewModelTests
     public async Task ImportApplicationsAsync_Success_ShouldUpdateStatus()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
-        var viewModel = CreateViewModel(dbService);
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
+        AppCatalogViewModel viewModel = CreateViewModel(dbService);
 
         // Act
-        var result = await viewModel.ImportApplicationsAsync(@"C:\test.json", ImportMode.Merge);
+        ApplicationImportResult result = await viewModel.ImportApplicationsAsync(@"C:\test.json", ImportMode.Merge);
 
         // Assert
         Assert.True(result.Success);
@@ -793,10 +794,10 @@ public class AppCatalogViewModelTests
     public async Task ExportApplicationsAsync_Success_ShouldUpdateStatus()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        AppCatalogViewModel viewModel = CreateViewModel();
 
         // Act
-        var success = await viewModel.ExportApplicationsAsync(new[] { "VSCode" }, @"C:\test.json");
+        bool success = await viewModel.ExportApplicationsAsync(new[] { "VSCode" }, @"C:\test.json");
 
         // Assert
         Assert.True(success);
@@ -1039,7 +1040,7 @@ internal class MockApplicationDatabaseService : IApplicationDatabaseService
     {
         DeleteCallCount++;
 
-        var app = _applications.FirstOrDefault(a => a.AppId == appId);
+        EditableApplicationModel? app = _applications.FirstOrDefault(a => a.AppId == appId);
         if (app != null)
         {
             _applications.Remove(app);
@@ -1052,7 +1053,7 @@ internal class MockApplicationDatabaseService : IApplicationDatabaseService
     {
         if (_customValidationResult != null)
         {
-            var result = _customValidationResult;
+            ApplicationValidationResult result = _customValidationResult;
             _customValidationResult = null;
             return Task.FromResult(result);
         }
@@ -1198,7 +1199,7 @@ internal class MockPackageVerificationService : IPackageVerificationService
 
     public Task<ApplicationSourcesVerificationResult> VerifyAllSourcesAsync(ApplicationSourcesForVerification sources, CancellationToken cancellationToken = default)
     {
-        var result = new ApplicationSourcesVerificationResult(
+        ApplicationSourcesVerificationResult result = new ApplicationSourcesVerificationResult(
             sources.Winget != null ? PackageVerificationResult.Found(sources.Winget, PackageSource.Winget) : null,
             sources.Chocolatey != null ? PackageVerificationResult.Found(sources.Chocolatey, PackageSource.Chocolatey) : null,
             sources.Store != null ? PackageVerificationResult.Found(sources.Store, PackageSource.Store) : null,

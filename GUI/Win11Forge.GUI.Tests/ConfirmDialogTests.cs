@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-using CommunityToolkit.Mvvm.Messaging;
 using System.IO;
+using CommunityToolkit.Mvvm.Messaging;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Services.Coordinators;
@@ -32,18 +32,18 @@ public class ConfirmDialogTests
     [Fact]
     public async Task UninstallSelected_WithOneApp_UsesSingularCopyAndActionButtons()
     {
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var viewModel = CreateAppsViewModel(dialogService: dialogService);
+        AppsViewModel viewModel = CreateAppsViewModel(dialogService: dialogService);
         await viewModel.InitializeAsync();
-        var app = viewModel.FilteredApplications.Cast<ApplicationModel>().First();
+        ApplicationModel app = viewModel.FilteredApplications.Cast<ApplicationModel>().First();
         app.Status = ApplicationStatus.Installed;
         app.IsSelected = true;
         viewModel.UpdateSelectedCount();
 
         await viewModel.UninstallSelectedCommand.ExecuteAsync(null);
 
-        var request = Assert.Single(dialogService.ConfirmRequests);
+        (string Title, string Message, string? ConfirmText, string? CancelText) request = Assert.Single(dialogService.ConfirmRequests);
         Assert.Equal(Loc.Confirm_Uninstall_Title_Single, request.Title);
         Assert.Equal(Loc.Confirm_Uninstall_Message_Single, request.Message);
         Assert.Equal(Loc.Confirm_Uninstall_Btn, request.ConfirmText);
@@ -53,12 +53,12 @@ public class ConfirmDialogTests
     [Fact]
     public async Task UninstallSelected_WithMultipleApps_UsesPluralCopyAndActionButtons()
     {
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var viewModel = CreateAppsViewModel(dialogService: dialogService);
+        AppsViewModel viewModel = CreateAppsViewModel(dialogService: dialogService);
         await viewModel.InitializeAsync();
-        var apps = viewModel.FilteredApplications.Cast<ApplicationModel>().Take(2).ToList();
-        foreach (var app in apps)
+        List<ApplicationModel> apps = viewModel.FilteredApplications.Cast<ApplicationModel>().Take(2).ToList();
+        foreach (ApplicationModel? app in apps)
         {
             app.Status = ApplicationStatus.Installed;
             app.IsSelected = true;
@@ -68,7 +68,7 @@ public class ConfirmDialogTests
 
         await viewModel.UninstallSelectedCommand.ExecuteAsync(null);
 
-        var request = Assert.Single(dialogService.ConfirmRequests);
+        (string Title, string Message, string? ConfirmText, string? CancelText) request = Assert.Single(dialogService.ConfirmRequests);
         Assert.Equal(string.Format(Loc.Confirm_Uninstall_Title_Multiple, 2), request.Title);
         Assert.Equal(string.Format(Loc.Confirm_Uninstall_Message_Multiple, 2), request.Message);
         Assert.Equal(Loc.Confirm_Uninstall_Btn, request.ConfirmText);
@@ -78,15 +78,15 @@ public class ConfirmDialogTests
     [Fact]
     public async Task AppCatalogDelete_UsesDeleteAndCancelButtons()
     {
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var viewModel = CreateAppCatalogViewModel(dialogService: dialogService);
+        AppCatalogViewModel viewModel = CreateAppCatalogViewModel(dialogService: dialogService);
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
         viewModel.SelectedApplication = viewModel.Applications[0];
 
         await viewModel.DeleteCommand.ExecuteAsync(null);
 
-        var request = Assert.Single(dialogService.ConfirmRequests);
+        (string Title, string Message, string? ConfirmText, string? CancelText) request = Assert.Single(dialogService.ConfirmRequests);
         Assert.Equal(Loc.Confirm_Delete_Btn, request.ConfirmText);
         Assert.Equal(Loc.Common_Cancel, request.CancelText);
     }
@@ -94,17 +94,17 @@ public class ConfirmDialogTests
     [Fact]
     public async Task AppCatalogImport_UsesReplaceSkipCancelButtons()
     {
-        var dialogService = new TestDialogService();
-        var fileDialogService = new TestFileDialogService();
+        TestDialogService dialogService = new TestDialogService();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
         fileDialogService.QueueOpenResult(@"C:\Imports\applications.json");
         dialogService.QueueYesNoCancelResult(null);
-        var viewModel = CreateAppCatalogViewModel(
+        AppCatalogViewModel viewModel = CreateAppCatalogViewModel(
             dialogService: dialogService,
             fileDialogService: fileDialogService);
 
         await viewModel.ImportCommand.ExecuteAsync(null);
 
-        var request = Assert.Single(dialogService.YesNoCancelRequests);
+        (string Title, string Message, string? YesText, string? NoText, string? CancelText) request = Assert.Single(dialogService.YesNoCancelRequests);
         Assert.Equal(Loc.AppCatalog_Import_Replace, request.YesText);
         Assert.Equal(Loc.AppCatalog_Import_Skip, request.NoText);
         Assert.Equal(Loc.Common_Cancel, request.CancelText);
@@ -115,9 +115,9 @@ public class ConfirmDialogTests
     [Fact]
     public async Task SettingsAndLogsConfirmations_UseActionAndCancelButtons()
     {
-        var historyDialog = new TestDialogService();
+        TestDialogService historyDialog = new TestDialogService();
         historyDialog.QueueConfirmResult(false);
-        var settingsViewModel = new SettingsViewModel(
+        SettingsViewModel settingsViewModel = new SettingsViewModel(
             new MockAppSettingsService(),
             new MockDeploymentHistoryService(),
             new MockPowerShellBridge(),
@@ -125,23 +125,23 @@ public class ConfirmDialogTests
 
         await settingsViewModel.ClearHistoryCommand.ExecuteAsync(null);
 
-        var historyRequest = Assert.Single(historyDialog.ConfirmRequests);
+        (string Title, string Message, string? ConfirmText, string? CancelText) historyRequest = Assert.Single(historyDialog.ConfirmRequests);
         Assert.Equal(Loc.Confirm_ClearHistory_Btn, historyRequest.ConfirmText);
         Assert.Equal(Loc.Common_Cancel, historyRequest.CancelText);
 
-        var logsDialog = new TestDialogService();
+        TestDialogService logsDialog = new TestDialogService();
         logsDialog.QueueConfirmResult(false);
-        var logsViewModel = new LogsViewModel(dialogService: logsDialog);
+        LogsViewModel logsViewModel = new LogsViewModel(dialogService: logsDialog);
 
         await logsViewModel.ClearOldLogsCommand.ExecuteAsync(null);
 
-        var logsRequest = Assert.Single(logsDialog.ConfirmRequests);
+        (string Title, string Message, string? ConfirmText, string? CancelText) logsRequest = Assert.Single(logsDialog.ConfirmRequests);
         Assert.Equal(Loc.Confirm_ClearOldLogs_Btn, logsRequest.ConfirmText);
         Assert.Equal(Loc.Common_Cancel, logsRequest.CancelText);
 
-        var resetDialog = new TestDialogService();
+        TestDialogService resetDialog = new TestDialogService();
         resetDialog.QueueConfirmResult(false);
-        var resetSettingsViewModel = new SettingsViewModel(
+        SettingsViewModel resetSettingsViewModel = new SettingsViewModel(
             new MockAppSettingsService(),
             new MockDeploymentHistoryService(),
             new MockPowerShellBridge(),
@@ -149,7 +149,7 @@ public class ConfirmDialogTests
 
         await resetSettingsViewModel.ResetToDefaultsCommand.ExecuteAsync(null);
 
-        var resetRequest = Assert.Single(resetDialog.ConfirmRequests);
+        (string Title, string Message, string? ConfirmText, string? CancelText) resetRequest = Assert.Single(resetDialog.ConfirmRequests);
         Assert.Equal(Loc.Confirm_Reset_Btn, resetRequest.ConfirmText);
         Assert.Equal(Loc.Common_Cancel, resetRequest.CancelText);
     }
@@ -157,23 +157,23 @@ public class ConfirmDialogTests
     [Fact]
     public void ConfirmDialogCallSites_DoNotUseGenericYesNoButtons()
     {
-        var failures = new List<string>();
-        var viewModelsPath = Path.Combine(FindRepositoryRoot(), "GUI", "Win11Forge.GUI", "ViewModels");
-        foreach (var file in Directory.EnumerateFiles(viewModelsPath, "*.cs", SearchOption.AllDirectories))
+        List<string> failures = new List<string>();
+        string viewModelsPath = Path.Combine(FindRepositoryRoot(), "GUI", "Win11Forge.GUI", "ViewModels");
+        foreach (string file in Directory.EnumerateFiles(viewModelsPath, "*.cs", SearchOption.AllDirectories))
         {
-            var text = File.ReadAllText(file);
-            foreach (var marker in new[] { "ShowConfirmAsync(", "ShowYesNoCancelAsync(" })
+            string text = File.ReadAllText(file);
+            foreach (string? marker in new[] { "ShowConfirmAsync(", "ShowYesNoCancelAsync(" })
             {
-                var index = text.IndexOf(marker, StringComparison.Ordinal);
+                int index = text.IndexOf(marker, StringComparison.Ordinal);
                 while (index >= 0)
                 {
-                    var end = text.IndexOf(");", index, StringComparison.Ordinal);
+                    int end = text.IndexOf(");", index, StringComparison.Ordinal);
                     if (end < 0)
                     {
                         break;
                     }
 
-                    var call = text[index..end];
+                    string call = text[index..end];
                     if (call.Contains("Common_Yes", StringComparison.Ordinal) ||
                         call.Contains("Common_No", StringComparison.Ordinal))
                     {
@@ -192,7 +192,7 @@ public class ConfirmDialogTests
         IDialogService? dialogService = null,
         IAppUninstallCoordinator? uninstallCoordinator = null)
     {
-        var viewModel = new AppsViewModel(
+        AppsViewModel viewModel = new AppsViewModel(
             new MockPowerShellBridge(),
             new MockAppSettingsService(),
             new MockDeploymentStateService(),
@@ -224,7 +224,7 @@ public class ConfirmDialogTests
 
     private static string FindRepositoryRoot()
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory != null)
         {
             if (File.Exists(Path.Combine(directory.FullName, "TODO.md")) &&

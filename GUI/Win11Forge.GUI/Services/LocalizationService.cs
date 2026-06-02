@@ -58,7 +58,7 @@ public static class LocalizationService
         }
 
         // Check if the language is RTL
-        var languageCode = culture.TwoLetterISOLanguageName.ToLowerInvariant();
+        string languageCode = culture.TwoLetterISOLanguageName.ToLowerInvariant();
         return RtlLanguages.Contains(languageCode)
             ? FlowDirection.RightToLeft
             : FlowDirection.LeftToRight;
@@ -74,7 +74,7 @@ public static class LocalizationService
             return FlowDirection.LeftToRight;
         }
 
-        var code = languageCode.ToLowerInvariant();
+        string code = languageCode.ToLowerInvariant();
         if (code.Contains('-'))
         {
             code = code.Split('-')[0];

@@ -74,7 +74,7 @@ public partial class SplashScreen : Window
                 return;
             }
 
-            var rotation = new DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(2)))
+            DoubleAnimation rotation = new DoubleAnimation(0, 360, new Duration(TimeSpan.FromSeconds(2)))
             {
                 RepeatBehavior = RepeatBehavior.Forever
             };
@@ -95,7 +95,7 @@ public partial class SplashScreen : Window
                 return;
             }
 
-            var fadeOut = AnimationHelper.CreateFadeAnimation(1.0, 0.0, 300);
+            DoubleAnimation fadeOut = AnimationHelper.CreateFadeAnimation(1.0, 0.0, 300);
             fadeOut.Completed += (s, e) => Close();
             BeginAnimation(OpacityProperty, fadeOut);
         });

@@ -117,7 +117,7 @@ public partial class SaveProfileDialogViewModel : ObservableObject
         SelectedAppsCount = selectedAppsCount;
 
         // Build parent list with "None" option
-        var parents = new List<string> { Resources.Resources.Editor_NoParent };
+        List<string> parents = new List<string> { Resources.Resources.Editor_NoParent };
         parents.AddRange(availableProfiles.Where(p => p != currentProfile));
         AvailableParents = new ObservableCollection<string>(parents);
         SelectedParent = parents[0];

@@ -37,7 +37,7 @@ public partial class AppsViewModel
 
         try
         {
-            var result = await _installationCoordinator.InstallAsync(
+            AppInstallationResult result = await _installationCoordinator.InstallAsync(
                 [app],
                 new AppInstallationOptions(ForceUpdate: false));
             InstalledCount += result.InstalledCount;
@@ -72,7 +72,7 @@ public partial class AppsViewModel
     [RelayCommand(CanExecute = nameof(CanInstallSelected))]
     private async Task InstallSelectedAsync()
     {
-        var selectedApps = _allApplications.Where(a => a.IsSelected).ToList();
+        List<ApplicationModel> selectedApps = _allApplications.Where(a => a.IsSelected).ToList();
         if (selectedApps.Count == 0) return;
 
         _lastOperationType = "install";
@@ -98,7 +98,7 @@ public partial class AppsViewModel
 
         try
         {
-            var result = await _installationCoordinator.InstallAsync(
+            AppInstallationResult result = await _installationCoordinator.InstallAsync(
                 selectedApps,
                 new AppInstallationOptions(ForceUpdate: true),
                 new Progress<AppOperationProgress>(ApplyBatchProgress),

@@ -24,6 +24,7 @@ using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Exceptions;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Views;
 
 namespace Win11Forge.GUI.ViewModels;
 
@@ -149,7 +150,7 @@ public partial class AppsViewModel
 
     private void SyncSelectedProfileSelectorItem(string? profileName)
     {
-        var selectedItem = string.IsNullOrEmpty(profileName)
+        ProfileSelectorItem? selectedItem = string.IsNullOrEmpty(profileName)
             ? ProfileSelectorItems.FirstOrDefault(item => item.IsCustom)
             : ProfileSelectorItems.FirstOrDefault(
                 item => string.Equals(item.ProfileName, profileName, StringComparison.OrdinalIgnoreCase));
@@ -180,22 +181,22 @@ public partial class AppsViewModel
         _rawProfileAppIdsCache.Clear();
         _profileInheritanceCache.Clear();
 
-        var profileDirectories = GetProfileReadDirectories();
+        IReadOnlyList<string> profileDirectories = GetProfileReadDirectories();
         if (profileDirectories.Count == 0)
         {
             return;
         }
 
         // Load all profiles from JSON files
-        foreach (var profileName in profileNames)
+        foreach (string profileName in profileNames)
         {
             try
             {
-                var rawAppIds = await ReadProfileAppIdsFromJsonAsync(profileDirectories, profileName);
+                List<string> rawAppIds = await ReadProfileAppIdsFromJsonAsync(profileDirectories, profileName);
                 _rawProfileAppIdsCache[profileName] = rawAppIds;
 
                 // Resolve inheritance to get all app IDs
-                var resolvedAppIds = await ResolveProfileInheritanceAsync(profileDirectories, profileName);
+                HashSet<string> resolvedAppIds = await ResolveProfileInheritanceAsync(profileDirectories, profileName);
                 _resolvedProfileAppIdsCache[profileName] = resolvedAppIds;
             }
             catch
@@ -226,7 +227,7 @@ public partial class AppsViewModel
     /// </summary>
     private string GetProfilesWriteDirectory()
     {
-        var profilesDir = _pathService.UserProfilesDirectory;
+        string profilesDir = _pathService.UserProfilesDirectory;
         Directory.CreateDirectory(profilesDir);
         return profilesDir;
     }
@@ -238,26 +239,26 @@ public partial class AppsViewModel
         IReadOnlyList<string> profileDirectories,
         string profileName)
     {
-        var profilePath = TryGetProfilePath(profileDirectories, profileName);
+        string? profilePath = TryGetProfilePath(profileDirectories, profileName);
         if (profilePath == null)
         {
             return [];
         }
 
-        var jsonContent = await File.ReadAllTextAsync(profilePath);
-        using var document = JsonDocument.Parse(jsonContent);
-        var root = document.RootElement;
+        string jsonContent = await File.ReadAllTextAsync(profilePath);
+        using JsonDocument document = JsonDocument.Parse(jsonContent);
+        JsonElement root = document.RootElement;
 
-        var appIds = new List<string>();
+        List<string> appIds = new List<string>();
 
-        if (root.TryGetProperty("Applications", out var appsElement) &&
+        if (root.TryGetProperty("Applications", out JsonElement appsElement) &&
             appsElement.ValueKind == JsonValueKind.Array)
         {
-            foreach (var appElement in appsElement.EnumerateArray())
+            foreach (JsonElement appElement in appsElement.EnumerateArray())
             {
                 if (appElement.ValueKind == JsonValueKind.String)
                 {
-                    var appId = appElement.GetString();
+                    string? appId = appElement.GetString();
                     if (!string.IsNullOrEmpty(appId))
                     {
                         appIds.Add(appId);
@@ -276,9 +277,9 @@ public partial class AppsViewModel
         IReadOnlyList<string> profileDirectories,
         string profileName)
     {
-        var allAppIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var profileChain = new List<string>();
+        HashSet<string> allAppIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        List<string> profileChain = new List<string>();
 
         await ResolveProfileRecursiveAsync(profileDirectories, profileName, allAppIds, visited, profileChain);
         _profileInheritanceCache[profileName] = profileChain;
@@ -302,23 +303,23 @@ public partial class AppsViewModel
         }
         visited.Add(profileName);
 
-        var profilePath = TryGetProfilePath(profileDirectories, profileName);
+        string? profilePath = TryGetProfilePath(profileDirectories, profileName);
         if (profilePath == null)
         {
             return;
         }
 
-        var jsonContent = await File.ReadAllTextAsync(profilePath);
-        using var document = JsonDocument.Parse(jsonContent);
-        var root = document.RootElement;
+        string jsonContent = await File.ReadAllTextAsync(profilePath);
+        using JsonDocument document = JsonDocument.Parse(jsonContent);
+        JsonElement root = document.RootElement;
 
         // First, resolve parent profiles
-        if (root.TryGetProperty("Inherits", out var inheritsElement) &&
+        if (root.TryGetProperty("Inherits", out JsonElement inheritsElement) &&
             inheritsElement.ValueKind == JsonValueKind.Array)
         {
-            foreach (var parentElement in inheritsElement.EnumerateArray())
+            foreach (JsonElement parentElement in inheritsElement.EnumerateArray())
             {
-                var parentName = parentElement.GetString();
+                string? parentName = parentElement.GetString();
                 if (!string.IsNullOrEmpty(parentName))
                 {
                     await ResolveProfileRecursiveAsync(profileDirectories, parentName, allAppIds, visited, profileChain);
@@ -327,15 +328,15 @@ public partial class AppsViewModel
         }
 
         // Then add this profile's applications
-        var rawAppIds = new List<string>();
-        if (root.TryGetProperty("Applications", out var appsElement) &&
+        List<string> rawAppIds = new List<string>();
+        if (root.TryGetProperty("Applications", out JsonElement appsElement) &&
             appsElement.ValueKind == JsonValueKind.Array)
         {
-            foreach (var appElement in appsElement.EnumerateArray())
+            foreach (JsonElement appElement in appsElement.EnumerateArray())
             {
                 if (appElement.ValueKind == JsonValueKind.String)
                 {
-                    var appId = appElement.GetString();
+                    string? appId = appElement.GetString();
                     if (!string.IsNullOrEmpty(appId))
                     {
                         rawAppIds.Add(appId);
@@ -354,7 +355,7 @@ public partial class AppsViewModel
     /// </summary>
     private async Task ApplyProfileSelectionAsync()
     {
-        var selectedProfile = SelectedProfile;
+        string? selectedProfile = SelectedProfile;
 
         if (string.IsNullOrEmpty(selectedProfile))
         {
@@ -367,17 +368,17 @@ public partial class AppsViewModel
 
         try
         {
-            var mergeWithManualSelection = false;
+            bool mergeWithManualSelection = false;
             if (ShouldPromptBeforeApplyingProfile(selectedProfile))
             {
-                var manualCount = _allApplications.Count(app => app.IsSelected);
-                var applyMessage = string.Format(
+                int manualCount = _allApplications.Count(app => app.IsSelected);
+                string applyMessage = string.Format(
                     System.Globalization.CultureInfo.CurrentCulture,
                     Resources.Resources.Profile_Apply_Message_HasManualSelection,
                     manualCount,
                     selectedProfile);
 
-                var applyMode = await _dialogService.ShowYesNoCancelAsync(
+                bool? applyMode = await _dialogService.ShowYesNoCancelAsync(
                     Resources.Resources.Profile_Apply_Title,
                     applyMessage,
                     Resources.Resources.Profile_Apply_Replace,
@@ -398,14 +399,14 @@ public partial class AppsViewModel
             HashSet<string> profileAppIds;
 
             // Try cache first
-            if (_resolvedProfileAppIdsCache.TryGetValue(selectedProfile, out var cachedIds) && cachedIds.Count > 0)
+            if (_resolvedProfileAppIdsCache.TryGetValue(selectedProfile, out HashSet<string>? cachedIds) && cachedIds.Count > 0)
             {
                 profileAppIds = cachedIds;
             }
             else
             {
                 // Load on-demand from JSON
-                var profileDirectories = GetProfileReadDirectories();
+                IReadOnlyList<string> profileDirectories = GetProfileReadDirectories();
                 if (profileDirectories.Count == 0)
                 {
                     ErrorMessage = GetLocalizedString(
@@ -417,7 +418,7 @@ public partial class AppsViewModel
                 profileAppIds = await ResolveProfileInheritanceAsync(profileDirectories, selectedProfile);
                 _resolvedProfileAppIdsCache[selectedProfile] = profileAppIds;
 
-                var rawAppIds = await ReadProfileAppIdsFromJsonAsync(profileDirectories, selectedProfile);
+                List<string> rawAppIds = await ReadProfileAppIdsFromJsonAsync(profileDirectories, selectedProfile);
                 _rawProfileAppIdsCache[selectedProfile] = rawAppIds;
             }
 
@@ -425,14 +426,14 @@ public partial class AppsViewModel
             BuildProfileTierMapping(selectedProfile);
 
             // Select apps from the profile
-            foreach (var app in _allApplications)
+            foreach (ApplicationModel app in _allApplications)
             {
                 if (profileAppIds.Contains(app.AppId))
                 {
                     app.IsSelected = true;
 
                     // Assign tier badge
-                    if (_profileAppTiers.TryGetValue(app.AppId, out var tier))
+                    if (_profileAppTiers.TryGetValue(app.AppId, out string? tier))
                     {
                         app.ProfileTier = tier;
                     }
@@ -492,7 +493,7 @@ public partial class AppsViewModel
 
     private void ClearProfileTiers()
     {
-        foreach (var app in _allApplications)
+        foreach (ApplicationModel app in _allApplications)
         {
             app.ProfileTier = string.Empty;
         }
@@ -538,17 +539,17 @@ public partial class AppsViewModel
     /// </summary>
     private void BuildProfileTierMapping(string profileName)
     {
-        var hierarchy = _profileInheritanceCache.TryGetValue(profileName, out var cachedHierarchy) &&
+        List<string> hierarchy = _profileInheritanceCache.TryGetValue(profileName, out List<string>? cachedHierarchy) &&
             cachedHierarchy.Count > 0
                 ? cachedHierarchy
                 : new List<string> { profileName };
 
         // Build tier mapping (most specific wins, so iterate from base to specific)
-        foreach (var tier in hierarchy)
+        foreach (string tier in hierarchy)
         {
-            if (_rawProfileAppIdsCache.TryGetValue(tier, out var appIds))
+            if (_rawProfileAppIdsCache.TryGetValue(tier, out List<string>? appIds))
             {
-                foreach (var appId in appIds)
+                foreach (string appId in appIds)
                 {
                     // Overwrite so most specific tier wins
                     _profileAppTiers[appId] = tier;
@@ -572,7 +573,7 @@ public partial class AppsViewModel
     [RelayCommand]
     private async Task ShowSaveProfileDialogAsync()
     {
-        var selectedApps = _allApplications.Where(a => a.IsSelected).ToList();
+        List<ApplicationModel> selectedApps = _allApplications.Where(a => a.IsSelected).ToList();
 
         if (selectedApps.Count == 0)
         {
@@ -581,12 +582,12 @@ public partial class AppsViewModel
         }
 
         // Create dialog viewmodel
-        var dialogViewModel = new SaveProfileDialogViewModel(
+        SaveProfileDialogViewModel dialogViewModel = new SaveProfileDialogViewModel(
             SelectedProfile,
             AvailableProfiles,
             selectedApps.Count);
 
-        var dialog = new Views.SaveProfileDialog
+        SaveProfileDialog dialog = new Views.SaveProfileDialog
         {
             DataContext = dialogViewModel
         };
@@ -614,14 +615,14 @@ public partial class AppsViewModel
     {
         try
         {
-            var profilesDir = GetProfilesWriteDirectory();
+            string profilesDir = GetProfilesWriteDirectory();
 
-            var profilePath = Path.Combine(
+            string profilePath = Path.Combine(
                 profilesDir,
                 $"{saveResult.ProfileName}{Win11ForgePathNames.JsonFileExtension}");
 
             // Build profile JSON
-            var profile = new Dictionary<string, object>
+            Dictionary<string, object> profile = new Dictionary<string, object>
             {
                 ["Name"] = saveResult.ProfileName,
                 ["Description"] = saveResult.Description,
@@ -634,25 +635,25 @@ public partial class AppsViewModel
 
             // If inheriting, remove apps that are already in the parent
             if (!string.IsNullOrEmpty(saveResult.ParentProfile) &&
-                _resolvedProfileAppIdsCache.TryGetValue(saveResult.ParentProfile, out var parentAppIds))
+                _resolvedProfileAppIdsCache.TryGetValue(saveResult.ParentProfile, out HashSet<string>? parentAppIds))
             {
-                var ownApps = selectedApps
+                string[] ownApps = selectedApps
                     .Where(a => !parentAppIds.Contains(a.AppId))
                     .Select(a => a.AppId)
                     .ToArray();
                 profile["Applications"] = ownApps;
             }
 
-            var jsonOptions = new JsonSerializerOptions
+            JsonSerializerOptions jsonOptions = new JsonSerializerOptions
             {
                 WriteIndented = true
             };
 
-            var jsonContent = JsonSerializer.Serialize(profile, jsonOptions);
+            string jsonContent = JsonSerializer.Serialize(profile, jsonOptions);
             await File.WriteAllTextAsync(profilePath, jsonContent);
 
             // Update cache
-            var appIds = selectedApps.Select(a => a.AppId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> appIds = selectedApps.Select(a => a.AppId).ToHashSet(StringComparer.OrdinalIgnoreCase);
             _resolvedProfileAppIdsCache[saveResult.ProfileName] = appIds;
 
             if (profile["Applications"] is string[] ownAppIds)
@@ -660,10 +661,10 @@ public partial class AppsViewModel
                 _rawProfileAppIdsCache[saveResult.ProfileName] = ownAppIds.ToList();
             }
 
-            var inheritanceChain = new List<string>();
+            List<string> inheritanceChain = new List<string>();
             if (!string.IsNullOrEmpty(saveResult.ParentProfile))
             {
-                if (_profileInheritanceCache.TryGetValue(saveResult.ParentProfile, out var parentChain))
+                if (_profileInheritanceCache.TryGetValue(saveResult.ParentProfile, out List<string>? parentChain))
                 {
                     inheritanceChain.AddRange(parentChain);
                 }
@@ -709,11 +710,11 @@ public partial class AppsViewModel
 
     private static string? TryGetProfilePath(IReadOnlyList<string> profileDirectories, string profileName)
     {
-        foreach (var profilesDir in profileDirectories)
+        foreach (string profilesDir in profileDirectories)
         {
-            var profilePath = Path.Combine(profilesDir, $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
-            var fullPath = Path.GetFullPath(profilePath);
-            var fullProfilesDir = Path.GetFullPath(profilesDir);
+            string profilePath = Path.Combine(profilesDir, $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
+            string fullPath = Path.GetFullPath(profilePath);
+            string fullProfilesDir = Path.GetFullPath(profilesDir);
             if (!fullProfilesDir.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
                 fullProfilesDir += Path.DirectorySeparatorChar;

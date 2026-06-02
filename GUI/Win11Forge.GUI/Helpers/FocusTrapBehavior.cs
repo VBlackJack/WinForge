@@ -136,7 +136,7 @@ public static class FocusTrapBehavior
 
     private static void SetInitialFocus(UIElement container)
     {
-        var initialElement = GetInitialFocusElement(container);
+        UIElement? initialElement = GetInitialFocusElement(container);
         if (initialElement != null && initialElement.Focusable)
         {
             initialElement.Focus();
@@ -145,7 +145,7 @@ public static class FocusTrapBehavior
         }
 
         // Find first focusable element
-        var firstFocusable = FindFirstFocusableElement(container);
+        UIElement? firstFocusable = FindFirstFocusableElement(container);
         if (firstFocusable != null)
         {
             firstFocusable.Focus();
@@ -158,15 +158,15 @@ public static class FocusTrapBehavior
         if (e.Key != Key.Tab || sender is not UIElement container)
             return;
 
-        var focusableElements = GetFocusableElements(container);
+        List<UIElement> focusableElements = GetFocusableElements(container);
         if (focusableElements.Count == 0)
             return;
 
-        var currentElement = Keyboard.FocusedElement as UIElement;
+        UIElement? currentElement = Keyboard.FocusedElement as UIElement;
         if (currentElement == null)
             return;
 
-        var currentIndex = focusableElements.IndexOf(currentElement);
+        int currentIndex = focusableElements.IndexOf(currentElement);
 
         // Handle Tab navigation
         if (Keyboard.Modifiers == ModifierKeys.Shift)
@@ -193,18 +193,18 @@ public static class FocusTrapBehavior
 
     private static List<UIElement> GetFocusableElements(UIElement container)
     {
-        var elements = new List<UIElement>();
+        List<UIElement> elements = new List<UIElement>();
         CollectFocusableElements(container, elements);
         return elements;
     }
 
     private static void CollectFocusableElements(DependencyObject parent, List<UIElement> elements)
     {
-        var childCount = System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);
+        int childCount = System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent);
 
         for (int i = 0; i < childCount; i++)
         {
-            var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+            DependencyObject child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
 
             if (child is UIElement element)
             {
@@ -237,13 +237,13 @@ public static class FocusTrapBehavior
 
     private static UIElement? FindFirstFocusableElement(UIElement container)
     {
-        var elements = GetFocusableElements(container);
+        List<UIElement> elements = GetFocusableElements(container);
         return elements.Count > 0 ? elements[0] : null;
     }
 
     private static bool IsDescendantOf(DependencyObject element, DependencyObject container)
     {
-        var parent = System.Windows.Media.VisualTreeHelper.GetParent(element);
+        DependencyObject parent = System.Windows.Media.VisualTreeHelper.GetParent(element);
         while (parent != null)
         {
             if (parent == container)

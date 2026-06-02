@@ -291,12 +291,12 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     {
         if (_detectionService == null) return;
 
-        var stats = _detectionService.GetCacheStatistics();
+        CacheStatistics stats = _detectionService.GetCacheStatistics();
         CachePackageCount = stats.PackageCount;
         CacheHits = stats.Hits;
         CacheMisses = stats.Misses;
 
-        var total = stats.Hits + stats.Misses;
+        int total = stats.Hits + stats.Misses;
         CacheHitRate = total > 0
             ? $"{(stats.Hits * 100.0 / total):F1}%"
             : "0%";
@@ -419,8 +419,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         }
 
         // Load version and scheduled deployments in parallel
-        var versionTask = _powerShellBridge.GetWin11ForgeVersionAsync();
-        var deploymentsTask = LoadScheduledDeploymentsAsync();
+        Task<string> versionTask = _powerShellBridge.GetWin11ForgeVersionAsync();
+        Task deploymentsTask = LoadScheduledDeploymentsAsync();
 
         await Task.WhenAll(versionTask, deploymentsTask);
         AppVersion = await versionTask;
@@ -434,7 +434,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         _isLoadingSettings = true;
         try
         {
-            var settings = _settingsService.LoadSettings();
+            AppSettings settings = _settingsService.LoadSettings();
 
             AvailableThemes = new ObservableCollection<ThemeDescriptor>(_themeService.AvailableThemes);
             _themeService.ApplyTheme(settings.ThemeName);
@@ -590,7 +590,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         // Set the culture for immediate partial effect
         try
         {
-            var culture = new CultureInfo(SelectedLanguage.Code);
+            CultureInfo culture = new CultureInfo(SelectedLanguage.Code);
             CultureInfo.CurrentCulture = culture;
             CultureInfo.CurrentUICulture = culture;
             Thread.CurrentThread.CurrentCulture = culture;
@@ -614,7 +614,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            var currentExecutablePath = Environment.ProcessPath;
+            string? currentExecutablePath = Environment.ProcessPath;
             if (!string.IsNullOrEmpty(currentExecutablePath))
             {
                 _processLauncher.Start(new System.Diagnostics.ProcessStartInfo
@@ -637,7 +637,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private bool TrySaveSettings()
     {
         // Load existing settings to preserve fields not managed by this view
-        var settings = _settingsService.LoadSettings();
+        AppSettings settings = _settingsService.LoadSettings();
         settings.ThemeName = SelectedTheme?.Name ?? ThemeNames.Default;
         settings.AccentTintName = SelectedAccentTint?.Name ?? ThemeNames.DefaultAccentTint;
         settings.IsHighContrastEnabled = IsHighContrastEnabled;
@@ -652,7 +652,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
             return true;
         }
 
-        var saveFailedMessage = Resources.Resources.Settings_SaveFailed;
+        string saveFailedMessage = Resources.Resources.Settings_SaveFailed;
         StatusMessage = saveFailedMessage;
         _toastService?.ShowError(saveFailedMessage);
         return false;
@@ -664,7 +664,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private async Task ClearHistoryAsync()
     {
-        var confirmed = await _dialogService.ShowConfirmAsync(
+        bool confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.Confirm_ClearHistory_Title,
             Resources.Resources.Confirm_ClearHistory_Message,
             Resources.Resources.Confirm_ClearHistory_Btn,
@@ -687,7 +687,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            var logFolderPath = _pathService.LogsDirectory;
+            string logFolderPath = _pathService.LogsDirectory;
 
             // Create the directory if it doesn't exist
             if (!Directory.Exists(logFolderPath))
@@ -696,7 +696,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
             }
 
             // Open in Windows Explorer
-            using var process = Process.Start(new ProcessStartInfo
+            using Process? process = Process.Start(new ProcessStartInfo
             {
                 FileName = logFolderPath,
                 UseShellExecute = true
@@ -716,7 +716,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            using var process = Process.Start(new ProcessStartInfo
+            using Process? process = Process.Start(new ProcessStartInfo
             {
                 FileName = ProjectLinks.Repository,
                 UseShellExecute = true
@@ -736,7 +736,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
+            string? filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
                 string.Empty,
                 FileDialogFilters.Json,
                 DefaultFileName: $"Win11Forge_Settings_{DateTime.Now:yyyyMMdd}",
@@ -744,8 +744,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
             if (filePath != null)
             {
-                var settings = _settingsService.LoadSettings();
-                var json = System.Text.Json.JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions
+                AppSettings settings = _settingsService.LoadSettings();
+                string json = System.Text.Json.JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions
                 {
                     WriteIndented = true
                 });
@@ -767,15 +767,15 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
+            string? filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
                 string.Empty,
                 FileDialogFilters.Json,
                 DefaultExtension: FileDialogFilters.JsonDefaultExtension));
 
             if (filePath != null)
             {
-                var json = await File.ReadAllTextAsync(filePath);
-                var importedSettings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json);
+                string json = await File.ReadAllTextAsync(filePath);
+                AppSettings? importedSettings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json);
 
                 if (importedSettings != null)
                 {
@@ -806,7 +806,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     [RelayCommand]
     private async Task ResetToDefaultsAsync()
     {
-        var confirmed = await _dialogService.ShowConfirmAsync(
+        bool confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.Confirm_ResetSettings_Title,
             Resources.Resources.Confirm_ResetSettings_Message,
             Resources.Resources.Confirm_Reset_Btn,
@@ -819,7 +819,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
         try
         {
-            var defaultSettings = new AppSettings();
+            AppSettings defaultSettings = new AppSettings();
             if (!_settingsService.SaveSettings(defaultSettings))
             {
                 StatusMessage = Resources.Resources.Settings_SaveFailed;
@@ -845,7 +845,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         {
             IsLoadingScheduledDeployments = true;
 
-            var availability = await _scheduledDeploymentService.GetAvailabilityAsync();
+            ScheduledDeploymentAvailability availability = await _scheduledDeploymentService.GetAvailabilityAsync();
             IsScheduledDeploymentsAvailable = availability.IsAvailable;
 
             if (!IsScheduledDeploymentsAvailable)
@@ -854,9 +854,9 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
             }
 
             // Load available profiles
-            var profiles = await _powerShellBridge.GetAvailableProfilesAsync();
+            List<string> profiles = await _powerShellBridge.GetAvailableProfilesAsync();
             AvailableProfiles.Clear();
-            foreach (var profile in profiles)
+            foreach (string profile in profiles)
             {
                 AvailableProfiles.Add(profile);
             }
@@ -867,8 +867,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
             }
 
             ScheduledDeployments.Clear();
-            var deployments = await _scheduledDeploymentService.GetScheduledDeploymentsAsync();
-            foreach (var deployment in deployments)
+            IReadOnlyList<ScheduledDeploymentModel> deployments = await _scheduledDeploymentService.GetScheduledDeploymentsAsync();
+            foreach (ScheduledDeploymentModel deployment in deployments)
             {
                 ScheduledDeployments.Add(deployment);
             }
@@ -897,7 +897,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
         try
         {
-            var deploymentId = await _scheduledDeploymentService.CreateScheduledDeploymentAsync(
+            string? deploymentId = await _scheduledDeploymentService.CreateScheduledDeploymentAsync(
                 NewScheduledProfile,
                 NewScheduledTime,
                 NewScheduledTriggerType);
@@ -925,7 +925,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
             return;
         }
 
-        var confirmed = await _dialogService.ShowConfirmAsync(
+        bool confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.ScheduledDeployment_ConfirmRemoveTitle,
             Resources.Resources.ScheduledDeployment_ConfirmRemove,
             Resources.Resources.Confirm_Delete_Btn,

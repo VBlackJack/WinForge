@@ -364,10 +364,10 @@ public partial class ApplicationEditorViewModel : ObservableObject
     /// </summary>
     private async Task LoadCategoriesAsync()
     {
-        var existingCategories = await _databaseService.GetCategoriesAsync();
+        IEnumerable<string> existingCategories = await _databaseService.GetCategoriesAsync();
 
         Categories.Clear();
-        foreach (var category in existingCategories.OrderBy(c => c))
+        foreach (string? category in existingCategories.OrderBy(c => c))
         {
             Categories.Add(category);
         }
@@ -399,14 +399,14 @@ public partial class ApplicationEditorViewModel : ObservableObject
         if (value == Loc.AppEditor_AddNewCategory)
         {
             // Request new category input
-            var args = new NewCategoryEventArgs();
+            NewCategoryEventArgs args = new NewCategoryEventArgs();
             NewCategoryRequested?.Invoke(this, args);
 
             if (!string.IsNullOrWhiteSpace(args.NewCategory))
             {
                 // Add new category and select it
-                var newCategory = args.NewCategory.Trim();
-                var insertIndex = Categories.Count - 1; // Before "Add new..."
+                string newCategory = args.NewCategory.Trim();
+                int insertIndex = Categories.Count - 1; // Before "Add new..."
 
                 // Find correct sorted position
                 for (int i = 0; i < Categories.Count - 1; i++)
@@ -457,14 +457,14 @@ public partial class ApplicationEditorViewModel : ObservableObject
 
         try
         {
-            var sources = new ApplicationSourcesForVerification(
+            ApplicationSourcesForVerification sources = new ApplicationSourcesForVerification(
                 WingetEnabled ? Application.Sources.Winget : null,
                 ChocolateyEnabled ? Application.Sources.Chocolatey : null,
                 StoreEnabled ? Application.Sources.Store : null,
                 DirectDownloadEnabled ? Application.Sources.DirectUrl : null
             );
 
-            var result = await _verificationService.VerifyAllSourcesAsync(sources);
+            ApplicationSourcesVerificationResult result = await _verificationService.VerifyAllSourcesAsync(sources);
 
             if (result.HasValidSource)
             {
@@ -515,7 +515,7 @@ public partial class ApplicationEditorViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanSearchWingetPackages))]
     private async Task SearchWingetPackagesAsync()
     {
-        var query = WingetSearchQuery?.Trim();
+        string? query = WingetSearchQuery?.Trim();
         if (string.IsNullOrWhiteSpace(query))
         {
             WingetSearchStatus = string.Empty;
@@ -537,7 +537,7 @@ public partial class ApplicationEditorViewModel : ObservableObject
 
         try
         {
-            var results = await _packageSearchService.SearchWingetAsync(query, PackageSearchLimit);
+            IReadOnlyList<PackageSearchResult> results = await _packageSearchService.SearchWingetAsync(query, PackageSearchLimit);
             SetSearchResults(WingetSearchResults, results);
 
             SelectedWingetSearchResult = WingetSearchResults.FirstOrDefault();
@@ -561,7 +561,7 @@ public partial class ApplicationEditorViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanSearchChocolateyPackages))]
     private async Task SearchChocolateyPackagesAsync()
     {
-        var query = ChocolateySearchQuery?.Trim();
+        string? query = ChocolateySearchQuery?.Trim();
         if (string.IsNullOrWhiteSpace(query))
         {
             ChocolateySearchStatus = string.Empty;
@@ -583,7 +583,7 @@ public partial class ApplicationEditorViewModel : ObservableObject
 
         try
         {
-            var results = await _packageSearchService.SearchChocolateyAsync(query, PackageSearchLimit);
+            IReadOnlyList<PackageSearchResult> results = await _packageSearchService.SearchChocolateyAsync(query, PackageSearchLimit);
             SetSearchResults(ChocolateySearchResults, results);
 
             SelectedChocolateySearchResult = ChocolateySearchResults.FirstOrDefault();
@@ -607,7 +607,7 @@ public partial class ApplicationEditorViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanSearchStorePackages))]
     private async Task SearchStorePackagesAsync()
     {
-        var query = StoreSearchQuery?.Trim();
+        string? query = StoreSearchQuery?.Trim();
         if (string.IsNullOrWhiteSpace(query))
         {
             StoreSearchStatus = string.Empty;
@@ -629,7 +629,7 @@ public partial class ApplicationEditorViewModel : ObservableObject
 
         try
         {
-            var results = await _packageSearchService.SearchStoreAsync(query, PackageSearchLimit);
+            IReadOnlyList<PackageSearchResult> results = await _packageSearchService.SearchStoreAsync(query, PackageSearchLimit);
             SetSearchResults(StoreSearchResults, results);
 
             SelectedStoreSearchResult = StoreSearchResults.FirstOrDefault();
@@ -728,7 +728,7 @@ public partial class ApplicationEditorViewModel : ObservableObject
         IReadOnlyList<PackageSearchResult> results)
     {
         target.Clear();
-        foreach (var result in results)
+        foreach (PackageSearchResult result in results)
         {
             target.Add(result);
         }
@@ -748,7 +748,7 @@ public partial class ApplicationEditorViewModel : ObservableObject
 
         if (IsNewApplication && string.IsNullOrWhiteSpace(Application.AppId))
         {
-            var candidate = BuildAppIdCandidate(result);
+            string candidate = BuildAppIdCandidate(result);
             if (!string.IsNullOrWhiteSpace(candidate))
             {
                 Application.AppId = candidate;
@@ -761,11 +761,11 @@ public partial class ApplicationEditorViewModel : ObservableObject
     /// </summary>
     private static string BuildAppIdCandidate(PackageSearchResult result)
     {
-        var seed = !string.IsNullOrWhiteSpace(result.PackageId)
+        string seed = !string.IsNullOrWhiteSpace(result.PackageId)
             ? result.PackageId
             : result.DisplayName;
 
-        var normalized = AppIdSanitizerRegex().Replace(seed ?? string.Empty, string.Empty);
+        string normalized = AppIdSanitizerRegex().Replace(seed ?? string.Empty, string.Empty);
 
         if (string.IsNullOrWhiteSpace(normalized))
         {
@@ -794,7 +794,7 @@ public partial class ApplicationEditorViewModel : ObservableObject
         try
         {
             // Validate
-            var validation = await _databaseService.ValidateApplicationAsync(Application, IsNewApplication);
+            ApplicationValidationResult validation = await _databaseService.ValidateApplicationAsync(Application, IsNewApplication);
             if (!validation.IsValid)
             {
                 ValidationMessage = string.Join("\n", validation.Errors.Select(e => $"{e.Field}: {e.Message}"));
@@ -802,7 +802,7 @@ public partial class ApplicationEditorViewModel : ObservableObject
             }
 
             // Save
-            var result = await _databaseService.SaveApplicationAsync(Application, IsNewApplication);
+            ApplicationSaveResult result = await _databaseService.SaveApplicationAsync(Application, IsNewApplication);
             if (result.Success)
             {
                 DialogResult = true;
@@ -836,7 +836,7 @@ public partial class ApplicationEditorViewModel : ObservableObject
     {
         if (IsDirty)
         {
-            var args = new ConfirmDiscardEventArgs();
+            ConfirmDiscardEventArgs args = new ConfirmDiscardEventArgs();
             ConfirmDiscardRequested?.Invoke(this, args);
 
             if (!args.Discard)

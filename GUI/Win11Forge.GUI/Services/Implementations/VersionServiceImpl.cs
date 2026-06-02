@@ -59,7 +59,7 @@ public partial class VersionServiceImpl : IVersionService
     /// <inheritdoc/>
     public async Task<string> GetWin11ForgeVersionAsync()
     {
-        var versionFilePath = _pathService.GetPath("Config", "version.json");
+        string versionFilePath = _pathService.GetPath("Config", "version.json");
 
         if (!File.Exists(versionFilePath))
         {
@@ -68,10 +68,10 @@ public partial class VersionServiceImpl : IVersionService
 
         try
         {
-            var jsonContent = await File.ReadAllTextAsync(versionFilePath);
-            using var document = JsonDocument.Parse(jsonContent);
+            string jsonContent = await File.ReadAllTextAsync(versionFilePath);
+            using JsonDocument document = JsonDocument.Parse(jsonContent);
 
-            if (document.RootElement.TryGetProperty("Version", out var versionElement))
+            if (document.RootElement.TryGetProperty("Version", out JsonElement versionElement))
             {
                 return versionElement.GetString() ?? "Unknown";
             }
@@ -94,7 +94,7 @@ public partial class VersionServiceImpl : IVersionService
         try
         {
             // SAFE COMMAND: winget list only reads information, never modifies
-            var startInfo = new ProcessStartInfo
+            ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = "winget",
                 Arguments = $"list --id \"{wingetId}\" --exact --disable-interactivity",
@@ -104,11 +104,11 @@ public partial class VersionServiceImpl : IVersionService
                 CreateNoWindow = true
             };
 
-            using var process = new Process { StartInfo = startInfo };
+            using Process process = new Process { StartInfo = startInfo };
             process.Start();
 
-            var output = await process.StandardOutput.ReadToEndAsync();
-            using var timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
+            string output = await process.StandardOutput.ReadToEndAsync();
+            using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
             try
             {
                 await process.WaitForExitAsync(timeoutCts.Token);
@@ -120,7 +120,7 @@ public partial class VersionServiceImpl : IVersionService
             }
 
             // Clean output from progress indicators before parsing
-            var cleanOutput = CleanWingetOutput(output);
+            string cleanOutput = CleanWingetOutput(output);
 
             // Parse version from list output using column-based parsing
             return ParseVersionFromWingetList(cleanOutput);
@@ -141,7 +141,7 @@ public partial class VersionServiceImpl : IVersionService
         try
         {
             // SAFE COMMAND: winget show only displays info, never modifies
-            var startInfo = new ProcessStartInfo
+            ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = "winget",
                 Arguments = $"show --id \"{wingetId}\" --exact --disable-interactivity",
@@ -151,11 +151,11 @@ public partial class VersionServiceImpl : IVersionService
                 CreateNoWindow = true
             };
 
-            using var process = new Process { StartInfo = startInfo };
+            using Process process = new Process { StartInfo = startInfo };
             process.Start();
 
-            var output = await process.StandardOutput.ReadToEndAsync();
-            using var timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
+            string output = await process.StandardOutput.ReadToEndAsync();
+            using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
             try
             {
                 await process.WaitForExitAsync(timeoutCts.Token);
@@ -167,7 +167,7 @@ public partial class VersionServiceImpl : IVersionService
             }
 
             // Clean output from progress indicators before parsing
-            var cleanOutput = CleanWingetOutput(output);
+            string cleanOutput = CleanWingetOutput(output);
 
             // Parse version from show output
             return ParseVersionFromWingetShow(cleanOutput);
@@ -186,14 +186,14 @@ public partial class VersionServiceImpl : IVersionService
         if (string.IsNullOrEmpty(output))
             return output;
 
-        var cleanLines = new List<string>();
-        var lines = output.Split('\n');
+        List<string> cleanLines = new List<string>();
+        string[] lines = output.Split('\n');
 
-        foreach (var line in lines)
+        foreach (string line in lines)
         {
             // Split by \r and take the last non-empty segment
-            var segments = line.Split('\r');
-            var lastSegment = segments
+            string[] segments = line.Split('\r');
+            string? lastSegment = segments
                 .Select(s => s.Trim())
                 .LastOrDefault(s => !string.IsNullOrEmpty(s) &&
                                     !s.All(c => c == '-' || c == '\\' || c == '|' || c == '/' || c == ' '));
@@ -215,15 +215,15 @@ public partial class VersionServiceImpl : IVersionService
         if (string.IsNullOrWhiteSpace(output))
             return string.Empty;
 
-        var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        string[] lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
         int versionColumnStart = -1;
         int sourceColumnStart = -1;
         string? headerLine = null;
 
-        foreach (var line in lines)
+        foreach (string line in lines)
         {
-            var trimmedLine = line.Trim();
+            string trimmedLine = line.Trim();
 
             if (string.IsNullOrEmpty(trimmedLine) || trimmedLine.StartsWith("-"))
                 continue;
@@ -254,16 +254,16 @@ public partial class VersionServiceImpl : IVersionService
                     ? Math.Min(sourceColumnStart, line.Length)
                     : line.Length;
 
-                var versionPart = line.Substring(versionColumnStart, endPos - versionColumnStart).Trim();
+                string versionPart = line.Substring(versionColumnStart, endPos - versionColumnStart).Trim();
 
-                var versionMatch = WingetVersionPattern().Match(versionPart);
+                Match versionMatch = WingetVersionPattern().Match(versionPart);
 
                 if (versionMatch.Success && versionMatch.Value.Contains('.'))
                 {
                     return versionMatch.Value;
                 }
 
-                var firstWord = versionPart.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                string? firstWord = versionPart.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
                 if (!string.IsNullOrEmpty(firstWord) && char.IsDigit(firstWord[0]))
                 {
                     return firstWord;
@@ -282,20 +282,20 @@ public partial class VersionServiceImpl : IVersionService
         if (string.IsNullOrWhiteSpace(output))
             return string.Empty;
 
-        var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        string[] lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-        foreach (var line in lines)
+        foreach (string line in lines)
         {
-            var trimmedLine = line.TrimStart();
+            string trimmedLine = line.TrimStart();
 
             if (trimmedLine.StartsWith("Version", StringComparison.OrdinalIgnoreCase))
             {
-                var colonIndex = line.IndexOf(':');
+                int colonIndex = line.IndexOf(':');
                 if (colonIndex > 0 && colonIndex < line.Length - 1)
                 {
-                    var version = line.Substring(colonIndex + 1).Trim();
+                    string version = line.Substring(colonIndex + 1).Trim();
 
-                    var match = WingetVersionPattern().Match(version);
+                    Match match = WingetVersionPattern().Match(version);
 
                     if (match.Success && match.Value.Contains('.'))
                     {
@@ -323,24 +323,24 @@ public partial class VersionServiceImpl : IVersionService
         if (string.IsNullOrEmpty(v1)) return -1;
         if (string.IsNullOrEmpty(v2)) return 1;
 
-        var parts1 = v1.Split('.', '-').Select(p =>
+        int[] parts1 = v1.Split('.', '-').Select(p =>
         {
-            var numMatch = LeadingDigitsPattern().Match(p);
+            Match numMatch = LeadingDigitsPattern().Match(p);
             return numMatch.Success ? int.Parse(numMatch.Value) : 0;
         }).ToArray();
 
-        var parts2 = v2.Split('.', '-').Select(p =>
+        int[] parts2 = v2.Split('.', '-').Select(p =>
         {
-            var numMatch = LeadingDigitsPattern().Match(p);
+            Match numMatch = LeadingDigitsPattern().Match(p);
             return numMatch.Success ? int.Parse(numMatch.Value) : 0;
         }).ToArray();
 
-        var maxLength = Math.Max(parts1.Length, parts2.Length);
+        int maxLength = Math.Max(parts1.Length, parts2.Length);
 
         for (int i = 0; i < maxLength; i++)
         {
-            var p1 = i < parts1.Length ? parts1[i] : 0;
-            var p2 = i < parts2.Length ? parts2[i] : 0;
+            int p1 = i < parts1.Length ? parts1[i] : 0;
+            int p2 = i < parts2.Length ? parts2[i] : 0;
 
             if (p1 < p2) return -1;
             if (p1 > p2) return 1;

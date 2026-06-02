@@ -92,31 +92,31 @@ public class JsonApplicationDetectionService
                     return;
                 }
 
-                var json = File.ReadAllText(_databasePath);
-                var options = new JsonSerializerOptions
+                string json = File.ReadAllText(_databasePath);
+                JsonSerializerOptions options = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true,
                     ReadCommentHandling = JsonCommentHandling.Skip
                 };
 
                 // Parse the root structure which contains "Applications" property
-                var root = JsonSerializer.Deserialize<ApplicationsDatabase>(json, options);
+                ApplicationsDatabase? root = JsonSerializer.Deserialize<ApplicationsDatabase>(json, options);
 
                 _applicationDatabase = root?.Applications
                     ?? new Dictionary<string, ApplicationJsonEntry>();
 
                 // Build reverse lookup: WinGet ID -> JSON key
                 _wingetIdToJsonKey = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                var appsWithDetection = 0;
-                foreach (var kvp in _applicationDatabase)
+                int appsWithDetection = 0;
+                foreach (KeyValuePair<string, ApplicationJsonEntry> kvp in _applicationDatabase)
                 {
-                    var wingetId = kvp.Value.Sources?.Winget;
+                    string? wingetId = kvp.Value.Sources?.Winget;
                     if (!string.IsNullOrEmpty(wingetId))
                     {
                         _wingetIdToJsonKey[wingetId] = kvp.Key;
                     }
                     // Also index by Chocolatey ID
-                    var chocoId = kvp.Value.Sources?.Chocolatey;
+                    string? chocoId = kvp.Value.Sources?.Chocolatey;
                     if (!string.IsNullOrEmpty(chocoId) && !_wingetIdToJsonKey.ContainsKey(chocoId))
                     {
                         _wingetIdToJsonKey[chocoId] = kvp.Key;
@@ -160,14 +160,14 @@ public class JsonApplicationDetectionService
         EnsureDatabaseLoaded();
 
         // Try direct lookup first (JSON key)
-        if (_applicationDatabase!.TryGetValue(appId, out var app) && app.Detection != null)
+        if (_applicationDatabase!.TryGetValue(appId, out ApplicationJsonEntry? app) && app.Detection != null)
         {
-            var primaryId = app.GetPrimaryId(appId);
+            string primaryId = app.GetPrimaryId(appId);
             return await DetectAsync(primaryId, app.Name, app.Detection);
         }
 
         // Try reverse lookup (WinGet/Chocolatey ID)
-        if (_wingetIdToJsonKey!.TryGetValue(appId, out var jsonKey) &&
+        if (_wingetIdToJsonKey!.TryGetValue(appId, out string? jsonKey) &&
             _applicationDatabase.TryGetValue(jsonKey, out app) && app.Detection != null)
         {
             return await DetectAsync(appId, app.Name, app.Detection);
@@ -190,14 +190,14 @@ public class JsonApplicationDetectionService
     {
         EnsureDatabaseLoaded();
 
-        var results = new Dictionary<string, InstalledPackageInfo>(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, InstalledPackageInfo> results = new Dictionary<string, InstalledPackageInfo>(StringComparer.OrdinalIgnoreCase);
 
         IEnumerable<KeyValuePair<string, ApplicationJsonEntry>> appsToCheck;
 
         if (appIds != null)
         {
             // Filter by provided IDs - could be JSON keys or WinGet IDs
-            var appIdSet = new HashSet<string>(appIds, StringComparer.OrdinalIgnoreCase);
+            HashSet<string> appIdSet = new HashSet<string>(appIds, StringComparer.OrdinalIgnoreCase);
             appsToCheck = _applicationDatabase!.Where(kvp =>
             {
                 if (kvp.Value.Detection == null) return false;
@@ -216,15 +216,15 @@ public class JsonApplicationDetectionService
         }
 
         // Use parallel detection for performance, but limit concurrency
-        using var semaphore = new SemaphoreSlim(4);
-        var tasks = appsToCheck.Select(async kvp =>
+        using SemaphoreSlim semaphore = new SemaphoreSlim(4);
+        IEnumerable<Task<(string JsonKey, string PrimaryId, InstalledPackageInfo? Result)>> tasks = appsToCheck.Select(async kvp =>
         {
             await semaphore.WaitAsync(cancellationToken);
             try
             {
                 // Use WinGet ID as the key for results (matches ApplicationModel.AppId)
-                var primaryId = kvp.Value.GetPrimaryId(kvp.Key);
-                var result = await DetectAsync(primaryId, kvp.Value.Name, kvp.Value.Detection!);
+                string primaryId = kvp.Value.GetPrimaryId(kvp.Key);
+                InstalledPackageInfo? result = await DetectAsync(primaryId, kvp.Value.Name, kvp.Value.Detection!);
                 return (JsonKey: kvp.Key, PrimaryId: primaryId, Result: result);
             }
             finally
@@ -233,9 +233,9 @@ public class JsonApplicationDetectionService
             }
         });
 
-        var detectionResults = await Task.WhenAll(tasks);
+        (string JsonKey, string PrimaryId, InstalledPackageInfo? Result)[] detectionResults = await Task.WhenAll(tasks);
 
-        foreach (var (jsonKey, primaryId, info) in detectionResults)
+        foreach ((string? jsonKey, string? primaryId, InstalledPackageInfo? info) in detectionResults)
         {
             if (info != null)
             {
@@ -286,10 +286,10 @@ public class JsonApplicationDetectionService
         try
         {
             // Parse registry path (supports HKLM:, HKCU:, etc.)
-            var (hive, subKey) = ParseRegistryPath(config.Path);
+            (RegistryKey? hive, string? subKey) = ParseRegistryPath(config.Path);
             if (hive == null || subKey == null) return null;
 
-            using var key = hive.OpenSubKey(subKey);
+            using RegistryKey? key = hive.OpenSubKey(subKey);
             if (key == null) return null;
 
             string? version = null;
@@ -297,7 +297,7 @@ public class JsonApplicationDetectionService
             // Get version from VersionKey if specified
             if (!string.IsNullOrEmpty(config.VersionKey))
             {
-                var versionValue = key.GetValue(config.VersionKey);
+                object? versionValue = key.GetValue(config.VersionKey);
                 if (versionValue != null)
                 {
                     version = versionValue.ToString();
@@ -307,7 +307,7 @@ public class JsonApplicationDetectionService
                     {
                         try
                         {
-                            var match = Regex.Match(version, config.VersionRegex, RegexOptions.None, RegexTimeout);
+                            Match match = Regex.Match(version, config.VersionRegex, RegexOptions.None, RegexTimeout);
                             if (match.Success && match.Groups.Count > 1)
                             {
                                 version = match.Groups[1].Value;
@@ -323,7 +323,7 @@ public class JsonApplicationDetectionService
             // Check for specific registry value
             else if (!string.IsNullOrEmpty(config.RegistryValue))
             {
-                var value = key.GetValue(config.RegistryValue);
+                object? value = key.GetValue(config.RegistryValue);
                 if (value == null) return null;
 
                 // If ExpectedValue is set, check for match
@@ -363,7 +363,7 @@ public class JsonApplicationDetectionService
     private static (RegistryKey? Hive, string? SubKey) ParseRegistryPath(string path)
     {
         // Handle PowerShell-style paths (HKLM:\, HKCU:\, etc.)
-        var normalizedPath = path.Replace("\\", "\\").TrimEnd('\\');
+        string normalizedPath = path.Replace("\\", "\\").TrimEnd('\\');
 
         RegistryKey? hive = null;
         string? subKey = null;
@@ -398,14 +398,14 @@ public class JsonApplicationDetectionService
         try
         {
             // Parse command and arguments
-            var parts = config.Command.Split(' ', 2);
-            var executable = parts[0];
-            var args = parts.Length > 1 ? parts[1] : "";
+            string[] parts = config.Command.Split(' ', 2);
+            string executable = parts[0];
+            string args = parts.Length > 1 ? parts[1] : "";
 
             // Try to resolve common executables to full paths
             executable = ResolveExecutablePath(executable);
 
-            var psi = new ProcessStartInfo
+            ProcessStartInfo psi = new ProcessStartInfo
             {
                 FileName = executable,
                 Arguments = args,
@@ -415,7 +415,7 @@ public class JsonApplicationDetectionService
                 CreateNoWindow = true
             };
 
-            using var process = new Process { StartInfo = psi };
+            using Process process = new Process { StartInfo = psi };
 
             try
             {
@@ -428,13 +428,13 @@ public class JsonApplicationDetectionService
                 return null;
             }
 
-            var output = await process.StandardOutput.ReadToEndAsync();
-            var errorOutput = await process.StandardError.ReadToEndAsync();
+            string output = await process.StandardOutput.ReadToEndAsync();
+            string errorOutput = await process.StandardError.ReadToEndAsync();
 
             // Some programs output version to stderr (like java -version)
-            var combinedOutput = output + "\n" + errorOutput;
+            string combinedOutput = output + "\n" + errorOutput;
 
-            var completed = process.WaitForExit(CommandTimeoutMs);
+            bool completed = process.WaitForExit(CommandTimeoutMs);
             if (!completed)
             {
                 try { process.Kill(); }
@@ -461,11 +461,11 @@ public class JsonApplicationDetectionService
             if (!string.IsNullOrEmpty(config.VersionRegex))
             {
                 // For filtered output, try to find version on the line containing the filter
-                var searchText = combinedOutput;
+                string searchText = combinedOutput;
                 if (!string.IsNullOrEmpty(config.Arguments))
                 {
-                    var lines = combinedOutput.Split('\n');
-                    var matchingLine = lines.FirstOrDefault(l =>
+                    string[] lines = combinedOutput.Split('\n');
+                    string? matchingLine = lines.FirstOrDefault(l =>
                         l.Contains(config.Arguments, StringComparison.OrdinalIgnoreCase));
                     if (matchingLine != null)
                     {
@@ -475,7 +475,7 @@ public class JsonApplicationDetectionService
 
                 try
                 {
-                    var match = Regex.Match(searchText, config.VersionRegex, RegexOptions.None, RegexTimeout);
+                    Match match = Regex.Match(searchText, config.VersionRegex, RegexOptions.None, RegexTimeout);
                     if (match.Success)
                     {
                         version = match.Groups.Count > 1 ? match.Groups[1].Value : match.Value;
@@ -512,7 +512,7 @@ public class JsonApplicationDetectionService
         try
         {
             // Expand environment variables
-            var expandedPath = Environment.ExpandEnvironmentVariables(config.Path);
+            string expandedPath = Environment.ExpandEnvironmentVariables(config.Path);
 
             // Security: Validate expanded path for safety
             if (!IsValidExpandedPath(expandedPath))
@@ -528,7 +528,7 @@ public class JsonApplicationDetectionService
             // Try to get file version - handles file not found atomically
             try
             {
-                var versionInfo = FileVersionInfo.GetVersionInfo(expandedPath);
+                FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(expandedPath);
                 version = versionInfo.FileVersion ?? versionInfo.ProductVersion;
             }
             catch (FileNotFoundException)
@@ -579,7 +579,7 @@ public class JsonApplicationDetectionService
         }
 
         // Block command injection characters
-        var dangerousChars = new[] { ';', '&', '|', '`', '$', '(', ')', '<', '>', '"', '\'' };
+        char[] dangerousChars = new[] { ';', '&', '|', '`', '$', '(', ')', '<', '>', '"', '\'' };
         if (path.IndexOfAny(dangerousChars) >= 0) return false;
 
         // Validate it's a plausible file path (contains drive letter or UNC path)
@@ -588,7 +588,7 @@ public class JsonApplicationDetectionService
         // Security: Normalize the path and verify it doesn't escape to unexpected locations
         try
         {
-            var normalizedPath = Path.GetFullPath(path);
+            string normalizedPath = Path.GetFullPath(path);
 
             // After normalization, ensure no path traversal remains
             if (normalizedPath.Contains(".."))
@@ -598,18 +598,18 @@ public class JsonApplicationDetectionService
             }
 
             // Ensure normalized path starts with expected root (system drive or Program Files)
-            var windowsPath = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            var systemDrive = windowsPath?.Length >= 3 ? windowsPath.Substring(0, 3) : "C:\\";
-            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string windowsPath = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            string systemDrive = windowsPath?.Length >= 3 ? windowsPath.Substring(0, 3) : "C:\\";
+            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            var allowedRoots = new[] { programFiles, programFilesX86, localAppData, appData, userProfile, systemDrive };
+            string[] allowedRoots = new[] { programFiles, programFilesX86, localAppData, appData, userProfile, systemDrive };
 
             bool isAllowed = false;
-            foreach (var root in allowedRoots)
+            foreach (string? root in allowedRoots)
             {
                 if (!string.IsNullOrEmpty(root) && normalizedPath.StartsWith(root, StringComparison.OrdinalIgnoreCase))
                 {
@@ -652,11 +652,11 @@ public class JsonApplicationDetectionService
         {
             // Security: Use -EncodedCommand with Base64 encoding to prevent command injection
             // This is more secure than escaping quotes in string interpolation
-            var command = $"(Get-WindowsOptionalFeature -Online -FeatureName '{config.FeatureName}').State";
-            var commandBytes = System.Text.Encoding.Unicode.GetBytes(command);
-            var encodedCommand = Convert.ToBase64String(commandBytes);
+            string command = $"(Get-WindowsOptionalFeature -Online -FeatureName '{config.FeatureName}').State";
+            byte[] commandBytes = System.Text.Encoding.Unicode.GetBytes(command);
+            string encodedCommand = Convert.ToBase64String(commandBytes);
 
-            var psi = new ProcessStartInfo
+            ProcessStartInfo psi = new ProcessStartInfo
             {
                 FileName = "powershell.exe",
                 Arguments = $"-NoProfile -EncodedCommand {encodedCommand}",
@@ -666,18 +666,18 @@ public class JsonApplicationDetectionService
                 CreateNoWindow = true
             };
 
-            using var process = Process.Start(psi);
+            using Process? process = Process.Start(psi);
             if (process == null) return null;
 
             // Read both stdout and stderr to prevent deadlock
-            var outputTask = process.StandardOutput.ReadToEndAsync();
-            var errorTask = process.StandardError.ReadToEndAsync();
+            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+            Task<string> errorTask = process.StandardError.ReadToEndAsync();
 
             // Wait for both streams with timeout
-            var completedInTime = process.WaitForExit(CommandTimeoutMs);
+            bool completedInTime = process.WaitForExit(CommandTimeoutMs);
 
-            var output = await outputTask;
-            var error = await errorTask;  // Consume stderr even if not used
+            string output = await outputTask;
+            string error = await errorTask;  // Consume stderr even if not used
 
             if (!completedInTime)
             {
@@ -733,15 +733,15 @@ public class JsonApplicationDetectionService
         if (Path.IsPathRooted(executable) && File.Exists(executable))
             return executable;
 
-        var executableLower = executable.ToLowerInvariant();
-        var pathResolvedExecutable = ResolveExecutableFromPath(executable);
+        string executableLower = executable.ToLowerInvariant();
+        string? pathResolvedExecutable = ResolveExecutableFromPath(executable);
         if (!string.IsNullOrEmpty(pathResolvedExecutable))
         {
             return pathResolvedExecutable;
         }
 
         // Common executable paths
-        var knownPaths = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        Dictionary<string, string[]> knownPaths = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
         {
             ["dotnet"] = new[]
             {
@@ -804,9 +804,9 @@ public class JsonApplicationDetectionService
         };
 
         // Check if we have known paths for this executable
-        if (knownPaths.TryGetValue(executableLower, out var paths))
+        if (knownPaths.TryGetValue(executableLower, out string[]? paths))
         {
-            foreach (var path in paths)
+            foreach (string path in paths)
             {
                 if (!string.IsNullOrEmpty(path) && File.Exists(path))
                 {
@@ -822,18 +822,18 @@ public class JsonApplicationDetectionService
 
     private static string? ResolveExecutableFromPath(string executable)
     {
-        var path = Environment.GetEnvironmentVariable("PATH");
+        string? path = Environment.GetEnvironmentVariable("PATH");
         if (string.IsNullOrWhiteSpace(path))
         {
             return null;
         }
 
-        var extensions = GetExecutableExtensions(executable);
-        foreach (var directory in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+        IReadOnlyList<string> extensions = GetExecutableExtensions(executable);
+        foreach (string directory in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
         {
-            foreach (var extension in extensions)
+            foreach (string extension in extensions)
             {
-                var candidate = Path.Combine(directory.Trim(), executable + extension);
+                string candidate = Path.Combine(directory.Trim(), executable + extension);
                 if (File.Exists(candidate))
                 {
                     Debug.WriteLine($"Resolved '{executable}' to '{candidate}' from PATH");
@@ -852,7 +852,7 @@ public class JsonApplicationDetectionService
             return [string.Empty];
         }
 
-        var pathext = Environment.GetEnvironmentVariable("PATHEXT");
+        string? pathext = Environment.GetEnvironmentVariable("PATHEXT");
         if (string.IsNullOrWhiteSpace(pathext))
         {
             return [".exe", ".cmd", ".bat", ".ps1", string.Empty];

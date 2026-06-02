@@ -73,13 +73,13 @@ public static partial class ValidationHelper
     /// </summary>
     public static ValidationResult ValidateProfileName(string? value, IEnumerable<string>? existingNames = null)
     {
-        var required = ValidateRequired(value);
+        ValidationResult required = ValidateRequired(value);
         if (!required.IsValid) return required;
 
-        var maxLength = ValidateMaxLength(value, 100);
+        ValidationResult maxLength = ValidateMaxLength(value, 100);
         if (!maxLength.IsValid) return maxLength;
 
-        var fileName = ValidateFileName(value);
+        ValidationResult fileName = ValidateFileName(value);
         if (!fileName.IsValid) return fileName;
 
         if (existingNames != null && value != null)

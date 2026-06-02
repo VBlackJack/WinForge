@@ -52,8 +52,8 @@ public class AccessibilityHardeningTests
     [Fact]
     public void ThemeServiceHc_HighContrastEnabled_ReappliesHighContrastResources()
     {
-        var reapplyCount = 0;
-        var settingsService = new MockAppSettingsService
+        int reapplyCount = 0;
+        MockAppSettingsService settingsService = new MockAppSettingsService
         {
             SettingsToReturn = new AppSettings
             {
@@ -61,7 +61,7 @@ public class AccessibilityHardeningTests
                 IsHighContrastEnabled = true
             }
         };
-        var themeService = new ThemeService(settingsService, () => reapplyCount++);
+        ThemeService themeService = new ThemeService(settingsService, () => reapplyCount++);
 
         themeService.ReapplyHighContrastIfEnabled(isHighContrastEnabled: true);
 
@@ -71,7 +71,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void ReducedMotionPropagation_WhenEnabled_SetsMotionResourcesToZero()
     {
-        var resources = new ResourceDictionary();
+        ResourceDictionary resources = new ResourceDictionary();
 
         App.ApplyAnimationResources(resources, reducedMotion: true);
 
@@ -84,7 +84,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void ReducedMotionPropagation_WhenDisabled_RestoresMotionResources()
     {
-        var resources = new ResourceDictionary();
+        ResourceDictionary resources = new ResourceDictionary();
 
         App.ApplyAnimationResources(resources, reducedMotion: false);
 
@@ -97,8 +97,8 @@ public class AccessibilityHardeningTests
     [Fact]
     public void ReducedMotionPropagation_AppXamlDoesNotDefineGlobalMotionStoryboards()
     {
-        var appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
-        var forbiddenElements = new[]
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        string[] forbiddenElements = new[]
         {
             "BeginStoryboard",
             "Storyboard",
@@ -108,7 +108,7 @@ public class AccessibilityHardeningTests
             "EventTrigger"
         };
 
-        foreach (var elementName in forbiddenElements)
+        foreach (string? elementName in forbiddenElements)
         {
             Assert.DoesNotContain(appXaml.Descendants(), element => element.Name.LocalName == elementName);
         }
@@ -117,8 +117,8 @@ public class AccessibilityHardeningTests
     [Fact]
     public void FocusVisualStyleApplied_AppResourcesDefineImplicitKeyboardFocusStyles()
     {
-        var appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
-        var styles = appXaml.Descendants()
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
 
@@ -134,7 +134,7 @@ public class AccessibilityHardeningTests
         AssertNamedFocusStyle(styles, "HoverScaleIconButton");
         AssertNamedFocusStyle(styles, "AnimatedSelectionCheckBox");
 
-        var focusVisualBorder = appXaml.Descendants()
+        XElement focusVisualBorder = appXaml.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Border"
                 && string.Equals(
@@ -154,8 +154,8 @@ public class AccessibilityHardeningTests
     [Fact]
     public void ThemeAwareFlyoutStyles_AppResourcesCoverNativeMenusAndComboBoxes()
     {
-        var appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
-        var styles = appXaml.Descendants()
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
 
@@ -167,7 +167,7 @@ public class AccessibilityHardeningTests
         AssertImplicitStyleSetter(styles, "ContextMenu", "Background", "{DynamicResource CardBackgroundFillColorDefaultBrush}");
         AssertImplicitStyleSetter(styles, "MenuItem", "Foreground", "{DynamicResource TextFillColorPrimaryBrush}");
 
-        var menuItemStyle = FindImplicitStyle(styles, "MenuItem");
+        XElement menuItemStyle = FindImplicitStyle(styles, "MenuItem");
         Assert.Contains(
             menuItemStyle.Descendants(),
             element =>
@@ -182,7 +182,7 @@ public class AccessibilityHardeningTests
                     "MenuItemRoot",
                     StringComparison.Ordinal));
 
-        var selectedComboBoxItemTrigger = FindImplicitStyle(styles, "ComboBoxItem")
+        XElement selectedComboBoxItemTrigger = FindImplicitStyle(styles, "ComboBoxItem")
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Trigger"
@@ -203,15 +203,15 @@ public class AccessibilityHardeningTests
     [Fact]
     public void ThemeAwareDataGridStyles_AppResourcesPreventSystemSelectionBrushBleed()
     {
-        var appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
-        var styles = appXaml.Descendants()
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
 
         AssertImplicitStyleSetter(styles, "DataGrid", "CellStyle", "{StaticResource EnhancedDataGridCellStyle}");
         AssertNamedStyleSetter(styles, "EnhancedDataGridCellStyle", "BorderThickness", "0");
 
-        var selectedRowTrigger = FindNamedStyle(styles, "EnhancedDataGridRowStyle")
+        XElement selectedRowTrigger = FindNamedStyle(styles, "EnhancedDataGridRowStyle")
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Trigger"
@@ -228,7 +228,7 @@ public class AccessibilityHardeningTests
                     "{DynamicResource ControlFillColorSecondaryBrush}",
                     StringComparison.Ordinal));
 
-        var selectedCellTrigger = FindNamedStyle(styles, "EnhancedDataGridCellStyle")
+        XElement selectedCellTrigger = FindNamedStyle(styles, "EnhancedDataGridCellStyle")
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Trigger"
@@ -255,8 +255,8 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppsDataGridRowStyle_BasesOnEnhancedRowStyleForSelectionContrast()
     {
-        var appsXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
-        var rowStyle = appsXaml.Descendants()
+        XDocument appsXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        XElement rowStyle = appsXaml.Descendants()
             .Single(element => element.Name.LocalName == "DataGrid.RowStyle")
             .Elements()
             .Single(element => element.Name.LocalName == "Style");
@@ -270,9 +270,9 @@ public class AccessibilityHardeningTests
     [MemberData(nameof(RequiredA11yLocKeyCases))]
     public void RequiredA11yLocKeys_ArePresentInXaml(string relativePath, string[] requiredKeys)
     {
-        var xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", relativePath));
+        string xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", relativePath));
 
-        foreach (var key in requiredKeys)
+        foreach (string key in requiredKeys)
         {
             Assert.Contains($"{{loc:Loc {key}}}", xaml, StringComparison.Ordinal);
         }
@@ -281,7 +281,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void HighContrastMode_TextOnAccentBrushes_AreRemapped()
     {
-        var src = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml.cs"));
+        string src = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml.cs"));
 
         Assert.Contains("SwapIfExists(app, \"TextOnAccentFillColorPrimaryBrush\"", src, StringComparison.Ordinal);
         Assert.Contains("SwapIfExists(app, \"TextOnAccentFillColorSecondaryBrush\"", src, StringComparison.Ordinal);
@@ -291,9 +291,9 @@ public class AccessibilityHardeningTests
     [Fact]
     public void DeadResourceCleanup_RemovesBulkDeleteKeysAndLogsFallbacks()
     {
-        var enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
-        var frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
-        var logsViewModel = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "ViewModels", "LogsViewModel.cs"));
+        string enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
+        string frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
+        string logsViewModel = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "ViewModels", "LogsViewModel.cs"));
 
         Assert.DoesNotContain("AppCatalog_DeleteMultipleConfirm", enResx, StringComparison.Ordinal);
         Assert.DoesNotContain("AppCatalog_DeleteMultipleTitle", enResx, StringComparison.Ordinal);
@@ -306,8 +306,8 @@ public class AccessibilityHardeningTests
     [Fact]
     public void DeadResourceCleanup_RemovesUnusedKeys2026May()
     {
-        var enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
-        var frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
+        string enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
+        string frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
 
         string[] removedKeys =
         [
@@ -327,7 +327,7 @@ public class AccessibilityHardeningTests
             "Accessibility_DeploymentStarted"
         ];
 
-        foreach (var key in removedKeys)
+        foreach (string key in removedKeys)
         {
             Assert.DoesNotContain($"name=\"{key}\"", enResx, StringComparison.Ordinal);
             Assert.DoesNotContain($"name=\"{key}\"", frResx, StringComparison.Ordinal);
@@ -337,8 +337,8 @@ public class AccessibilityHardeningTests
     [Fact]
     public void Resume_LocalizationKeys_ArePresentInEnAndFrResx()
     {
-        var enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
-        var frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
+        string enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
+        string frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
 
         string[] requiredKeys =
         [
@@ -351,7 +351,7 @@ public class AccessibilityHardeningTests
             "Resume_Action_KeepForLater"
         ];
 
-        foreach (var key in requiredKeys)
+        foreach (string key in requiredKeys)
         {
             Assert.Contains($"name=\"{key}\"", enResx, StringComparison.Ordinal);
             Assert.Contains($"name=\"{key}\"", frResx, StringComparison.Ordinal);
@@ -361,13 +361,13 @@ public class AccessibilityHardeningTests
     [Fact]
     public void HighContrastTheme_ImplicitlyStylesWpfUiButton()
     {
-        var xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "HighContrastTheme.xaml"));
-        var implicitUiButtonStyle = xaml.Descendants()
+        XDocument xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "HighContrastTheme.xaml"));
+        XElement? implicitUiButtonStyle = xaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .FirstOrDefault(element =>
             {
-                var target = element.Attribute("TargetType")?.Value ?? string.Empty;
-                var hasKey = element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) is not null;
+                string target = element.Attribute("TargetType")?.Value ?? string.Empty;
+                bool hasKey = element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) is not null;
                 return target.Contains("ui:Button", StringComparison.Ordinal) && !hasKey;
             });
 
@@ -381,7 +381,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppsView_HeaderUsesIconTitleSubtitlePattern()
     {
-        var xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        string xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
 
         Assert.Contains("Symbol=\"Apps24\"", xaml, StringComparison.Ordinal);
         Assert.Contains("{loc:Loc Apps_Title}", xaml, StringComparison.Ordinal);
@@ -392,9 +392,9 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppsView_DoesNotForceHorizontalScrollOnFilterCards()
     {
-        var xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
-        var profileSelector = ExtractXamlSection(xaml, "<!-- Profile Selector Card -->", "<!-- Filter Bar Card -->");
-        var filterBar = ExtractXamlSection(xaml, "<!-- Filter Bar Card -->", "<!-- Selection Action Bar -->");
+        string xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        string profileSelector = ExtractXamlSection(xaml, "<!-- Profile Selector Card -->", "<!-- Filter Bar Card -->");
+        string filterBar = ExtractXamlSection(xaml, "<!-- Filter Bar Card -->", "<!-- Selection Action Bar -->");
 
         Assert.DoesNotContain("MinWidth=\"920\"", xaml, StringComparison.Ordinal);
         Assert.DoesNotContain("HorizontalScrollBarVisibility=\"Auto\"", profileSelector, StringComparison.Ordinal);
@@ -404,12 +404,12 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppCatalog_HidesUnavailableActionGroups()
     {
-        var xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml"));
+        XDocument xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml"));
 
         AssertButtonVisibilityBinding(xaml, "UndoCommand", "CanUndo");
         AssertButtonVisibilityBinding(xaml, "RedoCommand", "CanRedo");
 
-        var selectionActions = xaml.Descendants()
+        XElement selectionActions = xaml.Descendants()
             .Single(element =>
                 element.Name.LocalName == "StackPanel"
                 && string.Equals(element.Attribute("Grid.Column")?.Value, "3", StringComparison.Ordinal)
@@ -431,9 +431,9 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppsView_ProfileCardDoesNotDuplicateInstallSelected()
     {
-        var xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
-        var profileSelector = ExtractXamlSection(xaml, "<!-- Profile Selector Card -->", "<!-- Filter Bar Card -->");
-        var selectionActionBar = ExtractXamlSection(xaml, "<!-- Selection Action Bar -->", "<!-- Applications DataGrid -->");
+        string xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        string profileSelector = ExtractXamlSection(xaml, "<!-- Profile Selector Card -->", "<!-- Filter Bar Card -->");
+        string selectionActionBar = ExtractXamlSection(xaml, "<!-- Selection Action Bar -->", "<!-- Applications DataGrid -->");
 
         Assert.DoesNotContain("InstallSelectedCommand", profileSelector, StringComparison.Ordinal);
         Assert.Contains("InstallSelectedCommand", selectionActionBar, StringComparison.Ordinal);
@@ -443,14 +443,14 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppXaml_DefinesReinforcedTabItemStyleAsImplicit()
     {
-        var xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
-        var styles = xaml.Descendants()
+        XDocument xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        List<XElement> styles = xaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
-        var implicitTabItemStyle = styles.FirstOrDefault(element =>
+        XElement? implicitTabItemStyle = styles.FirstOrDefault(element =>
         {
-            var target = element.Attribute("TargetType")?.Value ?? string.Empty;
-            var hasKey = element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) is not null;
+            string target = element.Attribute("TargetType")?.Value ?? string.Empty;
+            bool hasKey = element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) is not null;
             return target.Contains("TabItem", StringComparison.Ordinal) && !hasKey;
         });
 
@@ -462,7 +462,7 @@ public class AccessibilityHardeningTests
         AssertNamedStyleSetter(styles, "ReinforcedTabItemStyle", "BorderThickness", "0,0,0,3");
         AssertNamedStyleSetter(styles, "ReinforcedTabItemStyle", "BorderBrush", "Transparent");
 
-        var selectedTrigger = FindNamedStyle(styles, "ReinforcedTabItemStyle")
+        XElement selectedTrigger = FindNamedStyle(styles, "ReinforcedTabItemStyle")
             .Descendants()
             .Single(element =>
                 element.Name.LocalName == "Trigger"
@@ -492,17 +492,17 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppXaml_TabItemUsesThemeAwareTemplate()
     {
-        var xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
-        var styles = xaml.Descendants()
+        XDocument xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        List<XElement> styles = xaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
-        var tabItemStyle = FindNamedStyle(styles, "ReinforcedTabItemStyle");
+        XElement tabItemStyle = FindNamedStyle(styles, "ReinforcedTabItemStyle");
 
         AssertNamedStyleSetter(styles, "ReinforcedTabItemStyle", "Background", "Transparent");
         AssertNamedStyleSetter(styles, "ReinforcedTabItemStyle", "Foreground", "{DynamicResource TextFillColorPrimaryBrush}");
         AssertNamedStyleSetter(styles, "ReinforcedTabItemStyle", "FocusVisualStyle", "{StaticResource HighVisibilityFocusVisual}");
 
-        var template = tabItemStyle.Descendants()
+        XElement template = tabItemStyle.Descendants()
             .Single(element =>
                 element.Name.LocalName == "ControlTemplate"
                 && string.Equals(element.Attribute("TargetType")?.Value, "{x:Type TabItem}", StringComparison.Ordinal));
@@ -534,7 +534,7 @@ public class AccessibilityHardeningTests
                 && string.Equals(element.Attribute("Property")?.Value, "IsKeyboardFocused", StringComparison.Ordinal)
                 && string.Equals(element.Attribute("Value")?.Value, "True", StringComparison.Ordinal));
 
-        var selectedTrigger = tabItemStyle.Descendants()
+        XElement selectedTrigger = tabItemStyle.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Trigger"
                 && string.Equals(element.Attribute("Property")?.Value, "IsSelected", StringComparison.Ordinal)
@@ -551,10 +551,10 @@ public class AccessibilityHardeningTests
     [Fact]
     public void MainWindow_NavSplitsWorkflowAndConfigClusters()
     {
-        var xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml"));
-        var sepIdx = xaml.IndexOf("<ui:NavigationViewItemSeparator", StringComparison.Ordinal);
-        var appCatalogIdx = xaml.IndexOf("Tag=\"5\"", sepIdx, StringComparison.Ordinal);
-        var settingsIdx = xaml.IndexOf("Tag=\"4\"", sepIdx, StringComparison.Ordinal);
+        string xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml"));
+        int sepIdx = xaml.IndexOf("<ui:NavigationViewItemSeparator", StringComparison.Ordinal);
+        int appCatalogIdx = xaml.IndexOf("Tag=\"5\"", sepIdx, StringComparison.Ordinal);
+        int settingsIdx = xaml.IndexOf("Tag=\"4\"", sepIdx, StringComparison.Ordinal);
 
         Assert.True(sepIdx > 0);
         Assert.True(appCatalogIdx > sepIdx);
@@ -563,10 +563,10 @@ public class AccessibilityHardeningTests
 
     private static string ExtractXamlSection(string xaml, string startMarker, string endMarker)
     {
-        var start = xaml.IndexOf(startMarker, StringComparison.Ordinal);
+        int start = xaml.IndexOf(startMarker, StringComparison.Ordinal);
         Assert.True(start >= 0, $"Could not find section start marker: {startMarker}");
 
-        var end = xaml.IndexOf(endMarker, start + startMarker.Length, StringComparison.Ordinal);
+        int end = xaml.IndexOf(endMarker, start + startMarker.Length, StringComparison.Ordinal);
         Assert.True(end > start, $"Could not find section end marker: {endMarker}");
 
         return xaml[start..end];
@@ -574,7 +574,7 @@ public class AccessibilityHardeningTests
 
     private static void AssertButtonVisibilityBinding(XDocument xaml, string commandName, string visibilitySource)
     {
-        var button = xaml.Descendants()
+        XElement button = xaml.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Button"
                 && string.Equals(element.Attribute("Command")?.Value, $"{{Binding {commandName}}}", StringComparison.Ordinal));
@@ -586,8 +586,8 @@ public class AccessibilityHardeningTests
 
     private static int CountOccurrences(string value, string pattern)
     {
-        var count = 0;
-        var index = 0;
+        int count = 0;
+        int index = 0;
         while ((index = value.IndexOf(pattern, index, StringComparison.Ordinal)) >= 0)
         {
             count++;
@@ -599,8 +599,8 @@ public class AccessibilityHardeningTests
 
     private static void AssertImplicitFocusStyle(IReadOnlyCollection<XElement> styles, string targetType)
     {
-        var style = FindImplicitStyle(styles, targetType);
-        var focusSetter = style.Elements()
+        XElement style = FindImplicitStyle(styles, targetType);
+        XElement? focusSetter = style.Elements()
             .SingleOrDefault(element =>
                 element.Name.LocalName == "Setter"
                 && string.Equals(element.Attribute("Property")?.Value, "FocusVisualStyle", StringComparison.Ordinal));
@@ -617,8 +617,8 @@ public class AccessibilityHardeningTests
         string property,
         string expectedValue)
     {
-        var style = FindImplicitStyle(styles, targetType);
-        var setter = style.Elements()
+        XElement style = FindImplicitStyle(styles, targetType);
+        XElement? setter = style.Elements()
             .SingleOrDefault(element =>
                 element.Name.LocalName == "Setter"
                 && string.Equals(element.Attribute("Property")?.Value, property, StringComparison.Ordinal));
@@ -633,8 +633,8 @@ public class AccessibilityHardeningTests
         string property,
         string expectedValue)
     {
-        var style = FindNamedStyle(styles, styleKey);
-        var setter = style.Elements()
+        XElement style = FindNamedStyle(styles, styleKey);
+        XElement? setter = style.Elements()
             .SingleOrDefault(element =>
                 element.Name.LocalName == "Setter"
                 && string.Equals(element.Attribute("Property")?.Value, property, StringComparison.Ordinal));
@@ -648,7 +648,7 @@ public class AccessibilityHardeningTests
         string targetType,
         string expectedBasedOn)
     {
-        var style = FindImplicitStyle(styles, targetType);
+        XElement style = FindImplicitStyle(styles, targetType);
 
         Assert.Equal(expectedBasedOn, style.Attribute("BasedOn")?.Value);
     }
@@ -662,15 +662,15 @@ public class AccessibilityHardeningTests
 
     private static XElement FindNamedStyle(IReadOnlyCollection<XElement> styles, string styleKey)
     {
-        var xKey = XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml");
+        XName xKey = XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml");
         return styles.Single(element =>
             string.Equals(element.Attribute(xKey)?.Value, styleKey, StringComparison.Ordinal));
     }
 
     private static void AssertNamedFocusStyle(IReadOnlyCollection<XElement> styles, string styleKey)
     {
-        var style = FindNamedStyle(styles, styleKey);
-        var focusSetter = style.Elements()
+        XElement style = FindNamedStyle(styles, styleKey);
+        XElement? focusSetter = style.Elements()
             .SingleOrDefault(element =>
                 element.Name.LocalName == "Setter"
                 && string.Equals(element.Attribute("Property")?.Value, "FocusVisualStyle", StringComparison.Ordinal));
@@ -683,11 +683,11 @@ public class AccessibilityHardeningTests
 
     private static string FindRepoFile(params string[] relativeParts)
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
 
         while (directory is not null)
         {
-            var candidate = Path.Combine([directory.FullName, .. relativeParts]);
+            string candidate = Path.Combine([directory.FullName, .. relativeParts]);
             if (File.Exists(candidate))
             {
                 return candidate;
@@ -702,7 +702,7 @@ public class AccessibilityHardeningTests
 
     private static void AssertDuration(TimeSpan expected, object? actual)
     {
-        var duration = Assert.IsType<Duration>(actual);
+        Duration duration = Assert.IsType<Duration>(actual);
         Assert.Equal(expected, duration.TimeSpan);
     }
 

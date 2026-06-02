@@ -31,9 +31,9 @@ public class LoadingOverlayTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            using var reducedMotion = ReducedMotionOverride(true);
-            var overlay = new LoadingOverlay { Opacity = 0 };
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            using IDisposable reducedMotion = ReducedMotionOverride(true);
+            LoadingOverlay overlay = new LoadingOverlay { Opacity = 0 };
 
             overlay.Show("Loading", "Please wait");
 
@@ -50,9 +50,9 @@ public class LoadingOverlayTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            using var reducedMotion = ReducedMotionOverride(true);
-            var overlay = new LoadingOverlay { Opacity = 0 };
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            using IDisposable reducedMotion = ReducedMotionOverride(true);
+            LoadingOverlay overlay = new LoadingOverlay { Opacity = 0 };
 
             overlay.ShowWithProgress("Installing", 42, "3 of 7");
 
@@ -69,9 +69,9 @@ public class LoadingOverlayTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            using var reducedMotion = ReducedMotionOverride(true);
-            var overlay = new LoadingOverlay
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            using IDisposable reducedMotion = ReducedMotionOverride(true);
+            LoadingOverlay overlay = new LoadingOverlay
             {
                 Opacity = 1,
                 Visibility = Visibility.Visible
@@ -89,9 +89,9 @@ public class LoadingOverlayTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            using var reducedMotion = ReducedMotionOverride(false);
-            var overlay = new LoadingOverlay { Opacity = 0.42 };
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            using IDisposable reducedMotion = ReducedMotionOverride(false);
+            LoadingOverlay overlay = new LoadingOverlay { Opacity = 0.42 };
 
             overlay.Show("Loading");
 
@@ -102,9 +102,9 @@ public class LoadingOverlayTests
 
     private static IDisposable ReducedMotionOverride(bool enabled)
     {
-        var appOverride = new DelegateDisposable(() => App.SetReducedMotionOverride(null));
+        DelegateDisposable appOverride = new DelegateDisposable(() => App.SetReducedMotionOverride(null));
         App.SetReducedMotionOverride(enabled);
-        var helperOverride = AnimationHelperTests.AnimationHelperReducedMotionOverride(enabled);
+        IDisposable helperOverride = AnimationHelperTests.AnimationHelperReducedMotionOverride(enabled);
 
         return new DelegateDisposable(() =>
         {

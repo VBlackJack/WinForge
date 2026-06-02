@@ -43,8 +43,8 @@ public sealed class ValidUrlAttribute : ValidationAttribute
             return ValidationResult.Success;
         }
 
-        var url = value.ToString()!;
-        var memberNames = validationContext.MemberName != null ? new[] { validationContext.MemberName } : null;
+        string url = value.ToString()!;
+        string[]? memberNames = validationContext.MemberName != null ? new[] { validationContext.MemberName } : null;
 
         // Check if it's a well-formed URI
         if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
@@ -53,13 +53,13 @@ public sealed class ValidUrlAttribute : ValidationAttribute
         }
 
         // Parse and validate scheme
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
         {
             return new ValidationResult(FormatErrorMessage(validationContext.DisplayName), memberNames);
         }
 
         // Validate scheme (HTTP/HTTPS)
-        var scheme = uri.Scheme.ToLowerInvariant();
+        string scheme = uri.Scheme.ToLowerInvariant();
         if (scheme != "https" && (scheme != "http" || !AllowHttp))
         {
             return new ValidationResult(FormatErrorMessage(validationContext.DisplayName), memberNames);
@@ -96,7 +96,7 @@ public sealed class SemanticVersionAttribute : ValidationAttribute
             return ValidationResult.Success;
         }
 
-        var version = value.ToString()!;
+        string version = value.ToString()!;
 
         if (!VersionPattern.IsMatch(version))
         {

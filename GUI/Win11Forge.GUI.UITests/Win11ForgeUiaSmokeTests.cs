@@ -15,6 +15,7 @@
  */
 
 using System.IO;
+using System.Windows.Automation;
 using Xunit.Abstractions;
 
 namespace Win11Forge.GUI.UITests;
@@ -31,10 +32,10 @@ public sealed class Win11ForgeUiaSmokeTests
     [UiaFact]
     public void CanNavigateCoreScreensAndCaptureScreenshots()
     {
-        using var app = Win11ForgeAppSession.Launch();
+        using Win11ForgeAppSession app = Win11ForgeAppSession.Launch();
         app.WaitForElementByAutomationId("PageDashboard", TimeSpan.FromSeconds(10));
 
-        var screenshots = new[]
+        string[] screenshots = new[]
         {
             app.CaptureWindow("01-dashboard"),
             CaptureAfterNavigation(app, "NavApplications", "PageApplications", "02-applications"),
@@ -44,7 +45,7 @@ public sealed class Win11ForgeUiaSmokeTests
             CaptureAfterNavigation(app, "NavPrerequisites", "PagePrerequisites", "06-prerequisites")
         };
 
-        foreach (var screenshot in screenshots)
+        foreach (string? screenshot in screenshots)
         {
             _output.WriteLine(screenshot);
             Assert.True(File.Exists(screenshot), $"Screenshot was not written: {screenshot}");
@@ -55,12 +56,12 @@ public sealed class Win11ForgeUiaSmokeTests
     [UiaFact]
     public void SettingsThemePicker_IsDiscoverable()
     {
-        using var app = Win11ForgeAppSession.Launch();
+        using Win11ForgeAppSession app = Win11ForgeAppSession.Launch();
         app.WaitForElementByAutomationId("PageDashboard", TimeSpan.FromSeconds(10));
 
         app.NavigateByAutomationId("NavSettings");
-        var themePicker = app.WaitForElementByAutomationId("ThemePicker", TimeSpan.FromSeconds(10));
-        var screenshot = app.CaptureWindow("settings-theme-picker");
+        AutomationElement themePicker = app.WaitForElementByAutomationId("ThemePicker", TimeSpan.FromSeconds(10));
+        string screenshot = app.CaptureWindow("settings-theme-picker");
 
         _output.WriteLine(screenshot);
         Assert.Equal("ThemePicker", themePicker.Current.AutomationId);
@@ -70,14 +71,14 @@ public sealed class Win11ForgeUiaSmokeTests
     [UiaFact]
     public void AppCatalog_UndoRedoButtons_HaveNonEmptyBounds()
     {
-        using var app = Win11ForgeAppSession.Launch();
+        using Win11ForgeAppSession app = Win11ForgeAppSession.Launch();
         app.WaitForElementByAutomationId("PageDashboard", TimeSpan.FromSeconds(10));
 
         app.NavigateByAutomationId("NavAppCatalog");
         app.WaitForElementByAutomationId("PageAppCatalog", TimeSpan.FromSeconds(10));
 
-        var undoButton = app.WaitForElementByName("Undo last action", TimeSpan.FromSeconds(10));
-        var redoButton = app.WaitForElementByName("Redo last action", TimeSpan.FromSeconds(10));
+        AutomationElement undoButton = app.WaitForElementByName("Undo last action", TimeSpan.FromSeconds(10));
+        AutomationElement redoButton = app.WaitForElementByName("Redo last action", TimeSpan.FromSeconds(10));
 
         Assert.True(undoButton.Current.BoundingRectangle.Width > 0, "Undo button should render with visible width.");
         Assert.True(undoButton.Current.BoundingRectangle.Height > 0, "Undo button should render with visible height.");

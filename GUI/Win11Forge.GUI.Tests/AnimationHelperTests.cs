@@ -17,6 +17,7 @@
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Tests.TestInfrastructure;
 
@@ -37,8 +38,8 @@ public class AnimationHelperTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var reducedMotion = AnimationHelperReducedMotionOverride(true);
-            var element = new Border { Opacity = 0 };
+            using IDisposable reducedMotion = AnimationHelperReducedMotionOverride(true);
+            Border element = new Border { Opacity = 0 };
 
             AnimationHelper.FadeIn(element);
 
@@ -51,8 +52,8 @@ public class AnimationHelperTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var reducedMotion = AnimationHelperReducedMotionOverride(false);
-            var element = new Border { Opacity = 0.42 };
+            using IDisposable reducedMotion = AnimationHelperReducedMotionOverride(false);
+            Border element = new Border { Opacity = 0.42 };
 
             AnimationHelper.FadeIn(element);
 
@@ -65,8 +66,8 @@ public class AnimationHelperTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var reducedMotion = AnimationHelperReducedMotionOverride(true);
-            var element = new Border { Opacity = 1 };
+            using IDisposable reducedMotion = AnimationHelperReducedMotionOverride(true);
+            Border element = new Border { Opacity = 1 };
 
             AnimationHelper.FadeOut(element);
 
@@ -79,8 +80,8 @@ public class AnimationHelperTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var reducedMotion = AnimationHelperReducedMotionOverride(false);
-            var element = new Border { Opacity = 0.42 };
+            using IDisposable reducedMotion = AnimationHelperReducedMotionOverride(false);
+            Border element = new Border { Opacity = 0.42 };
 
             AnimationHelper.FadeOut(element);
 
@@ -91,9 +92,9 @@ public class AnimationHelperTests
     [Fact]
     public void CreateFadeAnimation_WithReducedMotion_CollapsesFromToAndDuration()
     {
-        using var reducedMotion = AnimationHelperReducedMotionOverride(true);
+        using IDisposable reducedMotion = AnimationHelperReducedMotionOverride(true);
 
-        var animation = AnimationHelper.CreateFadeAnimation(0, 1, 250);
+        DoubleAnimation animation = AnimationHelper.CreateFadeAnimation(0, 1, 250);
 
         Assert.Equal(1, animation.From);
         Assert.Equal(1, animation.To);
@@ -103,9 +104,9 @@ public class AnimationHelperTests
     [Fact]
     public void CreateFadeAnimation_WithoutReducedMotion_PreservesFromToAndDuration()
     {
-        using var reducedMotion = AnimationHelperReducedMotionOverride(false);
+        using IDisposable reducedMotion = AnimationHelperReducedMotionOverride(false);
 
-        var animation = AnimationHelper.CreateFadeAnimation(0, 1, 250);
+        DoubleAnimation animation = AnimationHelper.CreateFadeAnimation(0, 1, 250);
 
         Assert.Equal(0, animation.From);
         Assert.Equal(1, animation.To);
@@ -115,11 +116,11 @@ public class AnimationHelperTests
     [Fact]
     public void CreateSlideAnimation_WithReducedMotion_CollapsesFromToAndDuration()
     {
-        using var reducedMotion = AnimationHelperReducedMotionOverride(true);
-        var from = new Thickness(0, 15, 0, 0);
-        var to = new Thickness(0);
+        using IDisposable reducedMotion = AnimationHelperReducedMotionOverride(true);
+        Thickness from = new Thickness(0, 15, 0, 0);
+        Thickness to = new Thickness(0);
 
-        var animation = AnimationHelper.CreateSlideAnimation(from, to, 250);
+        ThicknessAnimation animation = AnimationHelper.CreateSlideAnimation(from, to, 250);
 
         Assert.Equal(to, animation.From);
         Assert.Equal(to, animation.To);
@@ -129,11 +130,11 @@ public class AnimationHelperTests
     [Fact]
     public void CreateSlideAnimation_WithoutReducedMotion_PreservesFromToAndDuration()
     {
-        using var reducedMotion = AnimationHelperReducedMotionOverride(false);
-        var from = new Thickness(0, 15, 0, 0);
-        var to = new Thickness(0);
+        using IDisposable reducedMotion = AnimationHelperReducedMotionOverride(false);
+        Thickness from = new Thickness(0, 15, 0, 0);
+        Thickness to = new Thickness(0);
 
-        var animation = AnimationHelper.CreateSlideAnimation(from, to, 250);
+        ThicknessAnimation animation = AnimationHelper.CreateSlideAnimation(from, to, 250);
 
         Assert.Equal(from, animation.From);
         Assert.Equal(to, animation.To);
@@ -143,10 +144,10 @@ public class AnimationHelperTests
     [Fact]
     public void GetDuration_WithReducedMotion_ReturnsZero()
     {
-        using var reducedMotion = AnimationHelperReducedMotionOverride(true);
+        using IDisposable reducedMotion = AnimationHelperReducedMotionOverride(true);
 
-        var duration = AnimationHelper.GetDuration(new Duration(TimeSpan.FromMilliseconds(300)));
-        var durationFromMilliseconds = AnimationHelper.GetDuration(300);
+        Duration duration = AnimationHelper.GetDuration(new Duration(TimeSpan.FromMilliseconds(300)));
+        Duration durationFromMilliseconds = AnimationHelper.GetDuration(300);
 
         Assert.Equal(TimeSpan.Zero, duration.TimeSpan);
         Assert.Equal(TimeSpan.Zero, durationFromMilliseconds.TimeSpan);
@@ -155,10 +156,10 @@ public class AnimationHelperTests
     [Fact]
     public void GetDuration_WithoutReducedMotion_ReturnsInput()
     {
-        using var reducedMotion = AnimationHelperReducedMotionOverride(false);
+        using IDisposable reducedMotion = AnimationHelperReducedMotionOverride(false);
 
-        var duration = AnimationHelper.GetDuration(new Duration(TimeSpan.FromMilliseconds(300)));
-        var durationFromMilliseconds = AnimationHelper.GetDuration(250);
+        Duration duration = AnimationHelper.GetDuration(new Duration(TimeSpan.FromMilliseconds(300)));
+        Duration durationFromMilliseconds = AnimationHelper.GetDuration(250);
 
         Assert.Equal(TimeSpan.FromMilliseconds(300), duration.TimeSpan);
         Assert.Equal(TimeSpan.FromMilliseconds(250), durationFromMilliseconds.TimeSpan);
@@ -167,9 +168,9 @@ public class AnimationHelperTests
     [Fact]
     public void GetTimeSpan_WithReducedMotion_ReturnsZero()
     {
-        using var reducedMotion = AnimationHelperReducedMotionOverride(true);
+        using IDisposable reducedMotion = AnimationHelperReducedMotionOverride(true);
 
-        var timeSpan = AnimationHelper.GetTimeSpan(TimeSpan.FromMilliseconds(300));
+        TimeSpan timeSpan = AnimationHelper.GetTimeSpan(TimeSpan.FromMilliseconds(300));
 
         Assert.Equal(TimeSpan.Zero, timeSpan);
     }
@@ -177,17 +178,17 @@ public class AnimationHelperTests
     [Fact]
     public void GetTimeSpan_WithoutReducedMotion_ReturnsInput()
     {
-        using var reducedMotion = AnimationHelperReducedMotionOverride(false);
-        var expected = TimeSpan.FromMilliseconds(300);
+        using IDisposable reducedMotion = AnimationHelperReducedMotionOverride(false);
+        TimeSpan expected = TimeSpan.FromMilliseconds(300);
 
-        var timeSpan = AnimationHelper.GetTimeSpan(expected);
+        TimeSpan timeSpan = AnimationHelper.GetTimeSpan(expected);
 
         Assert.Equal(expected, timeSpan);
     }
 
     internal static IDisposable AnimationHelperReducedMotionOverride(bool enabled)
     {
-        var original = ReducedMotionField.GetValue(null);
+        object? original = ReducedMotionField.GetValue(null);
         ReducedMotionField.SetValue(null, enabled);
         return new DelegateDisposable(() => ReducedMotionField.SetValue(null, original));
     }

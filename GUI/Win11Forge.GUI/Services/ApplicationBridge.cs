@@ -52,7 +52,7 @@ public class ApplicationBridge : IApplicationBridge
     /// <inheritdoc/>
     public async Task<List<ApplicationModel>> GetApplicationsByCategoryAsync(string category)
     {
-        var allApps = await GetAllApplicationsAsync();
+        List<ApplicationModel> allApps = await GetAllApplicationsAsync();
         return allApps
             .Where(a => string.Equals(a.Category, category, StringComparison.OrdinalIgnoreCase))
             .ToList();
@@ -61,7 +61,7 @@ public class ApplicationBridge : IApplicationBridge
     /// <inheritdoc/>
     public async Task<List<string>> GetCategoriesAsync()
     {
-        var allApps = await GetAllApplicationsAsync();
+        List<ApplicationModel> allApps = await GetAllApplicationsAsync();
         return allApps
             .Select(a => a.Category)
             .Where(c => !string.IsNullOrWhiteSpace(c))

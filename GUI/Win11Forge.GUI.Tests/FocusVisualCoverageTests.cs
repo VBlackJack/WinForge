@@ -37,7 +37,7 @@ public class FocusVisualCoverageTests
         string targetType,
         string expectedBasedOn)
     {
-        var style = FindImplicitStyle(targetType);
+        XElement style = FindImplicitStyle(targetType);
 
         Assert.Equal(expectedBasedOn, style.Attribute("BasedOn")?.Value);
         AssertSetter(style, "FocusVisualStyle", FocusVisualStyle);
@@ -46,8 +46,8 @@ public class FocusVisualCoverageTests
     [Fact]
     public void HighVisibilityFocusVisual_UsesThemeFocusIndicatorBrush()
     {
-        var appXaml = LoadAppXaml();
-        var focusVisual = appXaml.Descendants()
+        XDocument appXaml = LoadAppXaml();
+        XElement focusVisual = appXaml.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
                 && string.Equals(
@@ -55,7 +55,7 @@ public class FocusVisualCoverageTests
                     "HighVisibilityFocusVisual",
                     StringComparison.Ordinal));
 
-        var focusBorder = focusVisual.Descendants()
+        XElement focusBorder = focusVisual.Descendants()
             .Single(element => element.Name.LocalName == "Border");
 
         Assert.Equal("{DynamicResource FocusIndicatorBrush}", focusBorder.Attribute("BorderBrush")?.Value);
@@ -64,7 +64,7 @@ public class FocusVisualCoverageTests
 
     private static XElement FindImplicitStyle(string targetType)
     {
-        var appXaml = LoadAppXaml();
+        XDocument appXaml = LoadAppXaml();
         return appXaml.Descendants()
             .Single(element =>
                 element.Name.LocalName == "Style"
@@ -74,7 +74,7 @@ public class FocusVisualCoverageTests
 
     private static void AssertSetter(XElement style, string property, string expectedValue)
     {
-        var setter = style.Elements()
+        XElement? setter = style.Elements()
             .SingleOrDefault(element =>
                 element.Name.LocalName == "Setter"
                 && string.Equals(element.Attribute("Property")?.Value, property, StringComparison.Ordinal));
@@ -90,11 +90,11 @@ public class FocusVisualCoverageTests
 
     private static string FindRepoFile(params string[] relativeParts)
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
 
         while (directory is not null)
         {
-            var candidate = Path.Combine([directory.FullName, .. relativeParts]);
+            string candidate = Path.Combine([directory.FullName, .. relativeParts]);
             if (File.Exists(candidate))
             {
                 return candidate;

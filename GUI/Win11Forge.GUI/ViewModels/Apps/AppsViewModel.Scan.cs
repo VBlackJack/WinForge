@@ -16,6 +16,7 @@
 
 using System.Diagnostics;
 using System.Windows.Input;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Exceptions;
 using Win11Forge.GUI.Models;
@@ -38,8 +39,8 @@ public partial class AppsViewModel
             _externalCompletionCallback?.Invoke(0);
             return;
         }
-        var hasActiveFilter = HasSearchFilter || HasCategoryFilter || HasStatusFilter;
-        var appsToScan = hasActiveFilter
+        bool hasActiveFilter = HasSearchFilter || HasCategoryFilter || HasStatusFilter;
+        List<ApplicationModel> appsToScan = hasActiveFilter
             ? FilteredApplications.Cast<ApplicationModel>().ToList()
             : _allApplications;
         if (appsToScan.Count == 0)
@@ -48,7 +49,7 @@ public partial class AppsViewModel
             return;
         }
         AppScanResult? scanResult = null;
-        var completionCallback = _externalCompletionCallback;
+        Action<int>? completionCallback = _externalCompletionCallback;
         _lastOperationType = "scan";
         IsScanning = true;
         ResetScanState(appsToScan, resetGlobalCounters: !hasActiveFilter);
@@ -115,7 +116,7 @@ public partial class AppsViewModel
     [RelayCommand]
     private async Task ScanSelectedAsync()
     {
-        var selectedApps = _allApplications.Where(a => a.IsSelected).ToList();
+        List<ApplicationModel> selectedApps = _allApplications.Where(a => a.IsSelected).ToList();
         if (selectedApps.Count == 0 || IsScanning) return;
         IsScanning = true;
         ResetScanState(selectedApps, resetGlobalCounters: false);
@@ -159,7 +160,7 @@ public partial class AppsViewModel
             InstalledCount = 0;
             UpdatesAvailableCount = 0;
         }
-        foreach (var app in apps) PrepareAppForScan(app);
+        foreach (ApplicationModel app in apps) PrepareAppForScan(app);
     }
 
     private static void PrepareAppForScan(ApplicationModel app)
@@ -182,7 +183,7 @@ public partial class AppsViewModel
 
     private static async Task InvokeOnUiAsync(Action action)
     {
-        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        Dispatcher? dispatcher = System.Windows.Application.Current?.Dispatcher;
         if (dispatcher == null || dispatcher.CheckAccess())
         {
             action();

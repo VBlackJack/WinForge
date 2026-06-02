@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-using CommunityToolkit.Mvvm.Input;
 using System.Globalization;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Win11Forge.GUI.ViewModels;
 
@@ -59,7 +59,7 @@ public partial class AppsViewModel
     [RelayCommand]
     private async Task CancelBatchAsync()
     {
-        var confirmed = await _dialogService.ShowConfirmAsync(
+        bool confirmed = await _dialogService.ShowConfirmAsync(
             GetLocalizedString("Apps_CancelBatch_Title", "Cancel operation"),
             string.Format(
                 CultureInfo.CurrentCulture,

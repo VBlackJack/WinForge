@@ -202,7 +202,7 @@ public partial class ApplicationSourcesModel : ObservableValidator
     /// </summary>
     public string GetSourcesSummary()
     {
-        var sources = new List<string>();
+        List<string> sources = new List<string>();
         if (!string.IsNullOrWhiteSpace(Winget)) sources.Add("Winget");
         if (!string.IsNullOrWhiteSpace(Chocolatey)) sources.Add("Chocolatey");
         if (!string.IsNullOrWhiteSpace(Store)) sources.Add("Store");

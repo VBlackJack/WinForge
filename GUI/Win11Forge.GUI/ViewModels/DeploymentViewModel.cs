@@ -16,6 +16,7 @@
 
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Models;
@@ -206,7 +207,7 @@ public partial class DeploymentViewModel : ViewModelBase, IDisposable
     private void OnDeploymentStateChanged(object? sender, EventArgs e)
     {
         // Update on UI thread
-        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        Dispatcher? dispatcher = System.Windows.Application.Current?.Dispatcher;
         if (dispatcher == null) return;
 
         if (dispatcher.CheckAccess())
@@ -224,7 +225,7 @@ public partial class DeploymentViewModel : ViewModelBase, IDisposable
     /// </summary>
     private void SyncFromService()
     {
-        var wasDeploying = IsDeploying;
+        bool wasDeploying = IsDeploying;
 
         // Use property setters to trigger proper change notifications
         IsDeploying = _deploymentStateService.IsDeploying;
@@ -263,7 +264,7 @@ public partial class DeploymentViewModel : ViewModelBase, IDisposable
     /// </summary>
     private void CalculateDeploymentResult()
     {
-        var apps = DeploymentApplications.ToList();
+        List<ApplicationModel> apps = DeploymentApplications.ToList();
         SuccessCount = apps.Count(a => a.Status == Models.ApplicationStatus.Installed);
         FailureCount = apps.Count(a => a.Status == Models.ApplicationStatus.Failed);
         SkippedCount = apps.Count(a => a.Status == Models.ApplicationStatus.Skipped ||
@@ -318,7 +319,7 @@ public partial class DeploymentViewModel : ViewModelBase, IDisposable
     [RelayCommand(CanExecute = nameof(IsDeploying))]
     private async Task CancelDeploymentAsync()
     {
-        var confirmed = await _dialogService.ShowConfirmAsync(
+        bool confirmed = await _dialogService.ShowConfirmAsync(
             GetLocalizedString("Deployment_Cancel_Title", "Cancel deployment"),
             string.Format(
                 CultureInfo.CurrentCulture,

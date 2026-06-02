@@ -16,6 +16,7 @@
 
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
 using Win11Forge.GUI.Helpers;
 
 namespace Win11Forge.GUI.Controls;
@@ -209,7 +210,7 @@ public partial class LoadingOverlay : UserControl
         }
         else
         {
-            var fadeOut = Helpers.AnimationHelper.CreateFadeAnimation(1.0, 0.0, 200);
+            DoubleAnimation fadeOut = Helpers.AnimationHelper.CreateFadeAnimation(1.0, 0.0, 200);
             fadeOut.Completed += (s, e) =>
             {
                 Visibility = Visibility.Collapsed;
@@ -254,7 +255,7 @@ public partial class LoadingOverlay : UserControl
     {
         if (d is LoadingOverlay overlay)
         {
-            var text = e.NewValue as string ?? string.Empty;
+            string text = e.NewValue as string ?? string.Empty;
             overlay.SubMessageText.Text = text;
             overlay.SubMessageText.Visibility = string.IsNullOrEmpty(text) ? Visibility.Collapsed : Visibility.Visible;
         }
@@ -289,7 +290,7 @@ public partial class LoadingOverlay : UserControl
     {
         if (d is LoadingOverlay overlay)
         {
-            var text = e.NewValue as string ?? string.Empty;
+            string text = e.NewValue as string ?? string.Empty;
             overlay.ProgressText.Text = text;
             overlay.ProgressText.Visibility = string.IsNullOrEmpty(text) ? Visibility.Collapsed : Visibility.Visible;
         }

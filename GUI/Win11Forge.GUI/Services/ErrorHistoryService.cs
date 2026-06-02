@@ -134,7 +134,7 @@ public class ErrorHistoryService : IErrorHistoryService
     /// <inheritdoc/>
     public void AddError(string message, string? details = null, string? source = null, string? applicationName = null, ErrorSeverity severity = ErrorSeverity.Error)
     {
-        var entry = new ErrorHistoryEntry
+        ErrorHistoryEntry entry = new ErrorHistoryEntry
         {
             Message = message,
             Details = details,

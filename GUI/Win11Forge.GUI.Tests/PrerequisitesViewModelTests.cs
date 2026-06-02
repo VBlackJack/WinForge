@@ -32,11 +32,11 @@ public class PrerequisitesViewModelTests
     public void Constructor_ShouldInitializeWithDefaults()
     {
         // Arrange
-        var powerShellBridge = new MockPowerShellBridge();
-        var dialogService = new MockDialogServiceForPrerequisites();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        MockDialogServiceForPrerequisites dialogService = new MockDialogServiceForPrerequisites();
 
         // Act
-        var viewModel = new PrerequisitesViewModel(powerShellBridge, dialogService);
+        PrerequisitesViewModel viewModel = new PrerequisitesViewModel(powerShellBridge, dialogService);
 
         // Assert
         Assert.Null(viewModel.Status);
@@ -53,9 +53,9 @@ public class PrerequisitesViewModelTests
     public void IsChecking_ShouldBeSettable()
     {
         // Arrange
-        var powerShellBridge = new MockPowerShellBridge();
-        var dialogService = new MockDialogServiceForPrerequisites();
-        var viewModel = new PrerequisitesViewModel(powerShellBridge, dialogService);
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        MockDialogServiceForPrerequisites dialogService = new MockDialogServiceForPrerequisites();
+        PrerequisitesViewModel viewModel = new PrerequisitesViewModel(powerShellBridge, dialogService);
 
         // Act
         viewModel.IsChecking = true;
@@ -71,9 +71,9 @@ public class PrerequisitesViewModelTests
     public void IsInstalling_ShouldBeSettable()
     {
         // Arrange
-        var powerShellBridge = new MockPowerShellBridge();
-        var dialogService = new MockDialogServiceForPrerequisites();
-        var viewModel = new PrerequisitesViewModel(powerShellBridge, dialogService);
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        MockDialogServiceForPrerequisites dialogService = new MockDialogServiceForPrerequisites();
+        PrerequisitesViewModel viewModel = new PrerequisitesViewModel(powerShellBridge, dialogService);
 
         // Act
         viewModel.IsInstalling = true;
@@ -89,10 +89,10 @@ public class PrerequisitesViewModelTests
     public void Status_ShouldTriggerPropertyChanged()
     {
         // Arrange
-        var powerShellBridge = new MockPowerShellBridge();
-        var dialogService = new MockDialogServiceForPrerequisites();
-        var viewModel = new PrerequisitesViewModel(powerShellBridge, dialogService);
-        var propertyChanged = false;
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        MockDialogServiceForPrerequisites dialogService = new MockDialogServiceForPrerequisites();
+        PrerequisitesViewModel viewModel = new PrerequisitesViewModel(powerShellBridge, dialogService);
+        bool propertyChanged = false;
         viewModel.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(viewModel.Status))
@@ -120,9 +120,9 @@ public class PrerequisitesViewModelTests
     public void ProgressMessage_ShouldBeSettable()
     {
         // Arrange
-        var powerShellBridge = new MockPowerShellBridge();
-        var dialogService = new MockDialogServiceForPrerequisites();
-        var viewModel = new PrerequisitesViewModel(powerShellBridge, dialogService);
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        MockDialogServiceForPrerequisites dialogService = new MockDialogServiceForPrerequisites();
+        PrerequisitesViewModel viewModel = new PrerequisitesViewModel(powerShellBridge, dialogService);
 
         // Act
         viewModel.ProgressMessage = "Installing PowerShell 7...";
@@ -138,9 +138,9 @@ public class PrerequisitesViewModelTests
     public void LogOutput_ShouldAccumulateMessages()
     {
         // Arrange
-        var powerShellBridge = new MockPowerShellBridge();
-        var dialogService = new MockDialogServiceForPrerequisites();
-        var viewModel = new PrerequisitesViewModel(powerShellBridge, dialogService);
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        MockDialogServiceForPrerequisites dialogService = new MockDialogServiceForPrerequisites();
+        PrerequisitesViewModel viewModel = new PrerequisitesViewModel(powerShellBridge, dialogService);
 
         // Act
         viewModel.LogOutput = "Line 1\n";
@@ -158,11 +158,11 @@ public class PrerequisitesViewModelTests
     public async Task InstallPrerequisitesCommand_WhenRestartConfirmed_ShouldLaunchProcessAndRequestShutdown()
     {
         // Arrange
-        var powerShellBridge = new MockPowerShellBridge();
-        var dialogService = new MockDialogServiceForPrerequisites { NextConfirmResult = true };
-        var lifetimeService = new MockApplicationLifetimeService();
-        var processLauncher = new MockProcessLauncher();
-        var viewModel = new PrerequisitesViewModel(
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        MockDialogServiceForPrerequisites dialogService = new MockDialogServiceForPrerequisites { NextConfirmResult = true };
+        MockApplicationLifetimeService lifetimeService = new MockApplicationLifetimeService();
+        MockProcessLauncher processLauncher = new MockProcessLauncher();
+        PrerequisitesViewModel viewModel = new PrerequisitesViewModel(
             powerShellBridge,
             dialogService,
             lifetimeService,

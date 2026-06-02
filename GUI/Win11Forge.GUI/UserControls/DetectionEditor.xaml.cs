@@ -16,13 +16,14 @@
 
 #nullable enable
 
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Wpf.Ui.Controls;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
+using Wpf.Ui.Controls;
 using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.UserControls;
@@ -385,7 +386,7 @@ public partial class DetectionEditor : UserControl
     {
         try
         {
-            var path = Path;
+            string path = Path;
             if (string.IsNullOrWhiteSpace(path))
             {
                 Dispatcher.Invoke(() =>
@@ -417,11 +418,11 @@ public partial class DetectionEditor : UserControl
                 subKeyPath = path;
             }
 
-            using var key = baseKey.OpenSubKey(subKeyPath);
+            using RegistryKey? key = baseKey.OpenSubKey(subKeyPath);
             if (key != null)
             {
                 string? version = null;
-                var versionKey = VersionKey;
+                string versionKey = VersionKey;
                 if (!string.IsNullOrWhiteSpace(versionKey))
                 {
                     version = key.GetValue(versionKey)?.ToString();
@@ -467,7 +468,7 @@ public partial class DetectionEditor : UserControl
     {
         try
         {
-            var expandedPath = Environment.ExpandEnvironmentVariables(Path);
+            string expandedPath = Environment.ExpandEnvironmentVariables(Path);
 
             // Security: Validate expanded path doesn't contain dangerous patterns
             if (!IsValidExpandedPath(expandedPath))
@@ -485,7 +486,7 @@ public partial class DetectionEditor : UserControl
                 string? version = null;
                 try
                 {
-                    var versionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(expandedPath);
+                    FileVersionInfo versionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(expandedPath);
                     version = versionInfo.FileVersion ?? versionInfo.ProductVersion;
                 }
                 catch { /* Version info not available */ }
@@ -531,7 +532,7 @@ public partial class DetectionEditor : UserControl
         if (path.Contains('%')) return false;
 
         // Block command injection characters
-        var dangerousChars = new[] { ';', '&', '|', '`', '$', '(', ')', '<', '>', '"', '\'' };
+        char[] dangerousChars = new[] { ';', '&', '|', '`', '$', '(', ')', '<', '>', '"', '\'' };
         if (path.IndexOfAny(dangerousChars) >= 0) return false;
 
         // Validate it's a plausible file path (contains drive letter or UNC path)
@@ -559,7 +560,7 @@ public partial class DetectionEditor : UserControl
                 return;
             }
 
-            var startInfo = new System.Diagnostics.ProcessStartInfo
+            ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo
             {
                 FileName = "cmd.exe",
                 // Security: Quote the entire path to prevent argument injection
@@ -570,7 +571,7 @@ public partial class DetectionEditor : UserControl
                 CreateNoWindow = true
             };
 
-            using var process = System.Diagnostics.Process.Start(startInfo);
+            using Process? process = System.Diagnostics.Process.Start(startInfo);
             if (process != null)
             {
                 // Wait with timeout and kill if necessary
@@ -585,7 +586,7 @@ public partial class DetectionEditor : UserControl
                     return;
                 }
 
-                var output = process.StandardOutput.ReadToEnd().Trim();
+                string output = process.StandardOutput.ReadToEnd().Trim();
 
                 Dispatcher.Invoke(() =>
                 {
@@ -623,7 +624,7 @@ public partial class DetectionEditor : UserControl
         if (string.IsNullOrWhiteSpace(path)) return false;
 
         // Block dangerous command injection characters
-        var dangerousChars = new[] { ';', '&', '|', '`', '$', '(', ')', '<', '>', '"', '\'', '\n', '\r' };
+        char[] dangerousChars = new[] { ';', '&', '|', '`', '$', '(', ')', '<', '>', '"', '\'', '\n', '\r' };
         if (path.IndexOfAny(dangerousChars) >= 0) return false;
 
         // Block common injection patterns
@@ -669,7 +670,7 @@ public partial class DetectionEditor : UserControl
     /// </summary>
     private void ExecuteBrowse()
     {
-        var dialog = new OpenFileDialog
+        OpenFileDialog dialog = new OpenFileDialog
         {
             Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*",
             Title = Loc.Detection_SelectFile

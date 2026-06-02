@@ -38,7 +38,7 @@ internal static class WindowPlacementHelper
         Size defaultSize,
         Size minimumSize)
     {
-        var validWorkAreas = workAreas
+        Rect[] validWorkAreas = workAreas
             .Where(IsUsableRect)
             .ToArray();
 
@@ -54,9 +54,9 @@ internal static class WindowPlacementHelper
             ];
         }
 
-        var primaryWorkArea = validWorkAreas[0];
-        var requestedState = ParseWindowState(savedPlacement?.WindowState);
-        var defaultBounds = CenterInWorkArea(
+        Rect primaryWorkArea = validWorkAreas[0];
+        WindowState requestedState = ParseWindowState(savedPlacement?.WindowState);
+        Rect defaultBounds = CenterInWorkArea(
             ClampSize(defaultSize, primaryWorkArea, minimumSize),
             primaryWorkArea);
 
@@ -65,9 +65,9 @@ internal static class WindowPlacementHelper
             return new WindowPlacementDecision(defaultBounds, WindowState.Normal);
         }
 
-        if (TryCreateSavedBounds(savedPlacement, out var savedBounds))
+        if (TryCreateSavedBounds(savedPlacement, out Rect savedBounds))
         {
-            var targetWorkArea = FindBestIntersectingWorkArea(savedBounds, validWorkAreas);
+            Rect? targetWorkArea = FindBestIntersectingWorkArea(savedBounds, validWorkAreas);
             if (targetWorkArea.HasValue && IsMeaningfullyVisible(savedBounds, targetWorkArea.Value))
             {
                 return new WindowPlacementDecision(
@@ -83,19 +83,19 @@ internal static class WindowPlacementHelper
     {
         ArgumentNullException.ThrowIfNull(window);
 
-        var workAreas = GetMonitorWorkAreas(window);
-        var decision = CalculatePlacement(
+        IReadOnlyList<Rect> workAreas = GetMonitorWorkAreas(window);
+        WindowPlacementDecision decision = CalculatePlacement(
             savedPlacement,
             workAreas,
             new Size(DefaultWindowWidth, DefaultWindowHeight),
             new Size(window.MinWidth, window.MinHeight));
 
-        var targetWorkArea = FindBestIntersectingWorkArea(decision.Bounds, workAreas)
+        Rect targetWorkArea = FindBestIntersectingWorkArea(decision.Bounds, workAreas)
             ?? workAreas.FirstOrDefault();
 
         if (IsUsableRect(targetWorkArea))
         {
-            var maxSize = GetAvailableSize(targetWorkArea);
+            Size maxSize = GetAvailableSize(targetWorkArea);
             window.MinWidth = Math.Min(window.MinWidth, maxSize.Width);
             window.MinHeight = Math.Min(window.MinHeight, maxSize.Height);
         }
@@ -117,11 +117,11 @@ internal static class WindowPlacementHelper
     {
         ArgumentNullException.ThrowIfNull(window);
 
-        var persistedState = window.WindowState == WindowState.Maximized
+        WindowState persistedState = window.WindowState == WindowState.Maximized
             ? WindowState.Maximized
             : WindowState.Normal;
 
-        var bounds = window.WindowState == WindowState.Normal
+        Rect bounds = window.WindowState == WindowState.Normal
             ? new Rect(window.Left, window.Top, window.Width, window.Height)
             : window.RestoreBounds;
 
@@ -142,7 +142,7 @@ internal static class WindowPlacementHelper
 
     private static WindowState ParseWindowState(string? value)
     {
-        return Enum.TryParse<WindowState>(value, ignoreCase: true, out var state)
+        return Enum.TryParse<WindowState>(value, ignoreCase: true, out WindowState state)
             && state == WindowState.Maximized
                 ? WindowState.Maximized
                 : WindowState.Normal;
@@ -157,22 +157,22 @@ internal static class WindowPlacementHelper
     private static Rect? FindBestIntersectingWorkArea(Rect bounds, IReadOnlyList<Rect> workAreas)
     {
         Rect? bestWorkArea = null;
-        var bestArea = 0d;
+        double bestArea = 0d;
 
-        foreach (var workArea in workAreas)
+        foreach (Rect workArea in workAreas)
         {
             if (!IsUsableRect(workArea))
             {
                 continue;
             }
 
-            var intersection = Rect.Intersect(bounds, workArea);
+            Rect intersection = Rect.Intersect(bounds, workArea);
             if (intersection.IsEmpty)
             {
                 continue;
             }
 
-            var area = intersection.Width * intersection.Height;
+            double area = intersection.Width * intersection.Height;
             if (area > bestArea)
             {
                 bestArea = area;
@@ -185,14 +185,14 @@ internal static class WindowPlacementHelper
 
     private static bool IsMeaningfullyVisible(Rect bounds, Rect workArea)
     {
-        var intersection = Rect.Intersect(bounds, workArea);
+        Rect intersection = Rect.Intersect(bounds, workArea);
         if (intersection.IsEmpty)
         {
             return false;
         }
 
-        var requiredWidth = Math.Min(MinimumVisibleLength, Math.Min(bounds.Width, workArea.Width));
-        var requiredHeight = Math.Min(MinimumVisibleLength, Math.Min(bounds.Height, workArea.Height));
+        double requiredWidth = Math.Min(MinimumVisibleLength, Math.Min(bounds.Width, workArea.Width));
+        double requiredHeight = Math.Min(MinimumVisibleLength, Math.Min(bounds.Height, workArea.Height));
 
         return intersection.Width >= requiredWidth
             && intersection.Height >= requiredHeight;
@@ -200,20 +200,20 @@ internal static class WindowPlacementHelper
 
     private static Rect ClampBoundsToWorkArea(Rect bounds, Rect workArea, Size minimumSize)
     {
-        var size = ClampSize(new Size(bounds.Width, bounds.Height), workArea, minimumSize);
-        var availableSize = GetAvailableSize(workArea);
-        var paddingX = workArea.Width > availableSize.Width ? WorkAreaPadding : 0;
-        var paddingY = workArea.Height > availableSize.Height ? WorkAreaPadding : 0;
+        Size size = ClampSize(new Size(bounds.Width, bounds.Height), workArea, minimumSize);
+        Size availableSize = GetAvailableSize(workArea);
+        double paddingX = workArea.Width > availableSize.Width ? WorkAreaPadding : 0;
+        double paddingY = workArea.Height > availableSize.Height ? WorkAreaPadding : 0;
 
-        var minLeft = workArea.Left + paddingX;
-        var maxLeft = workArea.Right - paddingX - size.Width;
-        var minTop = workArea.Top + paddingY;
-        var maxTop = workArea.Bottom - paddingY - size.Height;
+        double minLeft = workArea.Left + paddingX;
+        double maxLeft = workArea.Right - paddingX - size.Width;
+        double minTop = workArea.Top + paddingY;
+        double maxTop = workArea.Bottom - paddingY - size.Height;
 
-        var left = maxLeft >= minLeft
+        double left = maxLeft >= minLeft
             ? Math.Clamp(bounds.Left, minLeft, maxLeft)
             : workArea.Left + Math.Max(0, (workArea.Width - size.Width) / 2);
-        var top = maxTop >= minTop
+        double top = maxTop >= minTop
             ? Math.Clamp(bounds.Top, minTop, maxTop)
             : workArea.Top + Math.Max(0, (workArea.Height - size.Height) / 2);
 
@@ -231,15 +231,15 @@ internal static class WindowPlacementHelper
 
     private static Size ClampSize(Size requestedSize, Rect workArea, Size minimumSize)
     {
-        var availableSize = GetAvailableSize(workArea);
-        var minimumWidth = Math.Min(SanitizeLength(minimumSize.Width, 1), availableSize.Width);
-        var minimumHeight = Math.Min(SanitizeLength(minimumSize.Height, 1), availableSize.Height);
+        Size availableSize = GetAvailableSize(workArea);
+        double minimumWidth = Math.Min(SanitizeLength(minimumSize.Width, 1), availableSize.Width);
+        double minimumHeight = Math.Min(SanitizeLength(minimumSize.Height, 1), availableSize.Height);
 
-        var width = Math.Clamp(
+        double width = Math.Clamp(
             SanitizeLength(requestedSize.Width, minimumWidth),
             minimumWidth,
             availableSize.Width);
-        var height = Math.Clamp(
+        double height = Math.Clamp(
             SanitizeLength(requestedSize.Height, minimumHeight),
             minimumHeight,
             availableSize.Height);
@@ -249,10 +249,10 @@ internal static class WindowPlacementHelper
 
     private static Size GetAvailableSize(Rect workArea)
     {
-        var width = workArea.Width > WorkAreaPadding * 2
+        double width = workArea.Width > WorkAreaPadding * 2
             ? workArea.Width - WorkAreaPadding * 2
             : workArea.Width;
-        var height = workArea.Height > WorkAreaPadding * 2
+        double height = workArea.Height > WorkAreaPadding * 2
             ? workArea.Height - WorkAreaPadding * 2
             : workArea.Height;
 
@@ -280,18 +280,18 @@ internal static class WindowPlacementHelper
     {
         try
         {
-            var dpi = VisualTreeHelper.GetDpi(window);
-            var scaleX = dpi.DpiScaleX > 0 ? dpi.DpiScaleX : 1;
-            var scaleY = dpi.DpiScaleY > 0 ? dpi.DpiScaleY : 1;
-            var primary = new List<Rect>();
-            var secondary = new List<Rect>();
+            DpiScale dpi = VisualTreeHelper.GetDpi(window);
+            double scaleX = dpi.DpiScaleX > 0 ? dpi.DpiScaleX : 1;
+            double scaleY = dpi.DpiScaleY > 0 ? dpi.DpiScaleY : 1;
+            List<Rect> primary = new List<Rect>();
+            List<Rect> secondary = new List<Rect>();
 
             NativeMethods.EnumDisplayMonitors(
                 IntPtr.Zero,
                 IntPtr.Zero,
                 (IntPtr monitor, IntPtr _, ref NativeMethods.NativeRect __, IntPtr ___) =>
                 {
-                    var info = new NativeMethods.MonitorInfo
+                    NativeMethods.MonitorInfo info = new NativeMethods.MonitorInfo
                     {
                         Size = Marshal.SizeOf<NativeMethods.MonitorInfo>()
                     };
@@ -301,7 +301,7 @@ internal static class WindowPlacementHelper
                         return true;
                     }
 
-                    var workArea = ToDeviceIndependentRect(info.WorkArea, scaleX, scaleY);
+                    Rect workArea = ToDeviceIndependentRect(info.WorkArea, scaleX, scaleY);
                     if (info.IsPrimary)
                     {
                         primary.Add(workArea);
@@ -315,7 +315,7 @@ internal static class WindowPlacementHelper
                 },
                 IntPtr.Zero);
 
-            var workAreas = primary.Concat(secondary).Where(IsUsableRect).ToArray();
+            Rect[] workAreas = primary.Concat(secondary).Where(IsUsableRect).ToArray();
             if (workAreas.Length > 0)
             {
                 return workAreas;

@@ -54,7 +54,7 @@ public partial class AppsViewModel
 
         try
         {
-            using var process = Process.Start(new ProcessStartInfo
+            using Process? process = Process.Start(new ProcessStartInfo
             {
                 FileName = app.OfficialUrl,
                 UseShellExecute = true
@@ -90,7 +90,7 @@ public partial class AppsViewModel
         try
         {
             // Try to find and launch the application
-            var launched = await _powerShellBridge.LaunchApplicationAsync(app);
+            bool launched = await _powerShellBridge.LaunchApplicationAsync(app);
 
             if (!launched)
             {

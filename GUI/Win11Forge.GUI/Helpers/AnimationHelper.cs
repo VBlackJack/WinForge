@@ -92,7 +92,7 @@ public static class AnimationHelper
     /// <returns>A configured DoubleAnimation for opacity.</returns>
     public static DoubleAnimation CreateFadeAnimation(double from, double to, double durationMs = 300)
     {
-        var animation = new DoubleAnimation
+        DoubleAnimation animation = new DoubleAnimation
         {
             From = from,
             To = to,
@@ -117,7 +117,7 @@ public static class AnimationHelper
     /// <returns>A configured ThicknessAnimation for margin.</returns>
     public static ThicknessAnimation CreateSlideAnimation(Thickness from, Thickness to, double durationMs = 300)
     {
-        var animation = new ThicknessAnimation
+        ThicknessAnimation animation = new ThicknessAnimation
         {
             From = ReducedMotion ? to : from,
             To = to,
@@ -141,7 +141,7 @@ public static class AnimationHelper
             return;
         }
 
-        var animation = CreateFadeAnimation(0, 1, durationMs);
+        DoubleAnimation animation = CreateFadeAnimation(0, 1, durationMs);
         element.BeginAnimation(UIElement.OpacityProperty, animation);
     }
 
@@ -158,7 +158,7 @@ public static class AnimationHelper
             return;
         }
 
-        var animation = CreateFadeAnimation(1, 0, durationMs);
+        DoubleAnimation animation = CreateFadeAnimation(1, 0, durationMs);
         element.BeginAnimation(UIElement.OpacityProperty, animation);
     }
 
@@ -172,10 +172,10 @@ public static class AnimationHelper
         {
             // Check Windows animation setting via registry
             // HKEY_CURRENT_USER\Control Panel\Desktop\WindowMetrics
-            using var key = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop\WindowMetrics");
+            using RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop\WindowMetrics");
             if (key != null)
             {
-                var minAnimate = key.GetValue("MinAnimate") as string;
+                string? minAnimate = key.GetValue("MinAnimate") as string;
                 if (minAnimate == "0")
                 {
                     return true;
@@ -184,11 +184,11 @@ public static class AnimationHelper
 
             // Check Visual Effects settings
             // HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects
-            using var visualKey = Registry.CurrentUser.OpenSubKey(
+            using RegistryKey? visualKey = Registry.CurrentUser.OpenSubKey(
                 @"Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects");
             if (visualKey != null)
             {
-                var visualFx = visualKey.GetValue("VisualFXSetting");
+                object? visualFx = visualKey.GetValue("VisualFXSetting");
                 if (visualFx is int setting && setting == 2)
                 {
                     // 2 = "Adjust for best performance" (minimal animations)
@@ -198,10 +198,10 @@ public static class AnimationHelper
 
             // Check SystemParametersInfo for UI effects
             // HKEY_CURRENT_USER\Control Panel\Desktop\UserPreferencesMask
-            using var desktopKey = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop");
+            using RegistryKey? desktopKey = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop");
             if (desktopKey != null)
             {
-                var userPrefs = desktopKey.GetValue("UserPreferencesMask") as byte[];
+                byte[]? userPrefs = desktopKey.GetValue("UserPreferencesMask") as byte[];
                 if (userPrefs != null && userPrefs.Length > 0)
                 {
                     // Bit 1 of first byte controls menu animations

@@ -51,13 +51,13 @@ public class ProgressEstimator
     {
         lock (_syncRoot)
         {
-            var previousCompleted = _completedItems;
+            int previousCompleted = _completedItems;
             _completedItems = completedItems;
 
             // Calculate rate for this batch
             if (_completedItems > previousCompleted && _stopwatch.Elapsed.TotalSeconds > 0)
             {
-                var rate = _completedItems / _stopwatch.Elapsed.TotalSeconds;
+                double rate = _completedItems / _stopwatch.Elapsed.TotalSeconds;
                 _recentRates.Enqueue(rate);
 
                 // Keep only recent samples for better accuracy
@@ -82,20 +82,20 @@ public class ProgressEstimator
                 return null;
             }
 
-            var remainingItems = _totalItems - _completedItems;
+            int remainingItems = _totalItems - _completedItems;
             if (remainingItems <= 0)
             {
                 return TimeSpan.Zero;
             }
 
             // Use average of recent rates for smoother estimate
-            var avgRate = _recentRates.Average();
+            double avgRate = _recentRates.Average();
             if (avgRate <= 0)
             {
                 return null;
             }
 
-            var estimatedSeconds = remainingItems / avgRate;
+            double estimatedSeconds = remainingItems / avgRate;
             return TimeSpan.FromSeconds(estimatedSeconds);
         }
     }
@@ -105,7 +105,7 @@ public class ProgressEstimator
     /// </summary>
     public string GetFormattedTimeRemaining()
     {
-        var remaining = GetEstimatedTimeRemaining();
+        TimeSpan? remaining = GetEstimatedTimeRemaining();
 
         if (remaining == null)
         {

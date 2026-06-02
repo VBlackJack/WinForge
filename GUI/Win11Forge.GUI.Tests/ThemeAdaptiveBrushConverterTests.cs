@@ -15,6 +15,7 @@
  */
 
 using System.Globalization;
+using System.Windows;
 using System.Windows.Media;
 using Win11Forge.GUI;
 using Win11Forge.GUI.Resources;
@@ -34,16 +35,16 @@ public class ThemeAdaptiveBrushConverterTests
     {
         RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            var app = scope.Application;
-            var expectedBrush = new SolidColorBrush(Colors.MediumPurple);
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            Application app = scope.Application;
+            SolidColorBrush expectedBrush = new SolidColorBrush(Colors.MediumPurple);
             app.Resources["AccentBrush"] = expectedBrush;
 
-            var themeService = new MockThemeService();
+            MockThemeService themeService = new MockThemeService();
             themeService.ApplyTheme(ThemeNames.Drakul);
-            var converter = new ThemeAdaptiveBrushConverter();
+            ThemeAdaptiveBrushConverter converter = new ThemeAdaptiveBrushConverter();
 
-            var result = converter.Convert(
+            object result = converter.Convert(
                 themeService,
                 typeof(Brush),
                 null!,
@@ -58,18 +59,18 @@ public class ThemeAdaptiveBrushConverterTests
     {
         RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
             ApplicationThemeManager.Apply(ApplicationTheme.Light);
 
-            var app = scope.Application;
-            var expectedBrush = new SolidColorBrush(Colors.MediumSeaGreen);
+            Application app = scope.Application;
+            SolidColorBrush expectedBrush = new SolidColorBrush(Colors.MediumSeaGreen);
             app.Resources["PrimaryHueMidBrush"] = expectedBrush;
 
-            var themeService = new MockThemeService();
+            MockThemeService themeService = new MockThemeService();
             themeService.ApplyTheme(ThemeNames.Folio);
-            var converter = new ThemeAdaptiveBrushConverter();
+            ThemeAdaptiveBrushConverter converter = new ThemeAdaptiveBrushConverter();
 
-            var result = converter.Convert(
+            object result = converter.Convert(
                 themeService,
                 typeof(Brush),
                 null!,
@@ -84,16 +85,16 @@ public class ThemeAdaptiveBrushConverterTests
     {
         RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
             ApplicationThemeManager.Apply(ApplicationTheme.Dark);
 
-            var app = scope.Application;
-            var expectedBrush = new SolidColorBrush(Colors.Gold);
+            Application app = scope.Application;
+            SolidColorBrush expectedBrush = new SolidColorBrush(Colors.Gold);
             app.Resources["SecondaryHueMidBrush"] = expectedBrush;
 
-            var converter = new ThemeAdaptiveBrushConverter();
+            ThemeAdaptiveBrushConverter converter = new ThemeAdaptiveBrushConverter();
 
-            var result = converter.Convert(
+            object result = converter.Convert(
                 null!,
                 typeof(Brush),
                 null!,

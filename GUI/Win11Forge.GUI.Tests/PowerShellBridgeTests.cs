@@ -15,9 +15,10 @@
  */
 
 using System.IO;
+using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.PowerShell;
 using Win11Forge.GUI.Services.Implementations;
+using Win11Forge.GUI.Services.PowerShell;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -44,7 +45,7 @@ public class PowerShellServicesIntegrationTests
     public void RepositoryPathService_ShouldFindRoot()
     {
         // Arrange & Act
-        var repositoryRoot = _pathService.RepositoryRoot;
+        string repositoryRoot = _pathService.RepositoryRoot;
 
         // Assert - Root should not be null or empty
         Assert.False(string.IsNullOrEmpty(repositoryRoot),
@@ -58,11 +59,11 @@ public class PowerShellServicesIntegrationTests
     public void RepositoryPathService_ShouldContainVersionFile()
     {
         // Arrange
-        var repositoryRoot = _pathService.RepositoryRoot;
+        string repositoryRoot = _pathService.RepositoryRoot;
 
         // Act
-        var versionFilePath = Path.Combine(repositoryRoot, "Config", "version.json");
-        var versionFileExists = File.Exists(versionFilePath);
+        string versionFilePath = Path.Combine(repositoryRoot, "Config", "version.json");
+        bool versionFileExists = File.Exists(versionFilePath);
 
         // Assert
         Assert.True(versionFileExists,
@@ -76,11 +77,11 @@ public class PowerShellServicesIntegrationTests
     public void RepositoryPathService_ShouldContainModulesDirectory()
     {
         // Arrange
-        var repositoryRoot = _pathService.RepositoryRoot;
+        string repositoryRoot = _pathService.RepositoryRoot;
 
         // Act
-        var modulesPath = Path.Combine(repositoryRoot, "Modules");
-        var modulesExists = Directory.Exists(modulesPath);
+        string modulesPath = Path.Combine(repositoryRoot, "Modules");
+        bool modulesExists = Directory.Exists(modulesPath);
 
         // Assert
         Assert.True(modulesExists,
@@ -94,11 +95,11 @@ public class PowerShellServicesIntegrationTests
     public void RepositoryPathService_ShouldContainProfilesDirectory()
     {
         // Arrange
-        var repositoryRoot = _pathService.RepositoryRoot;
+        string repositoryRoot = _pathService.RepositoryRoot;
 
         // Act
-        var profilesPath = Path.Combine(repositoryRoot, "Profiles");
-        var profilesExists = Directory.Exists(profilesPath);
+        string profilesPath = Path.Combine(repositoryRoot, "Profiles");
+        bool profilesExists = Directory.Exists(profilesPath);
 
         // Assert
         Assert.True(profilesExists,
@@ -112,7 +113,7 @@ public class PowerShellServicesIntegrationTests
     public void RepositoryPathService_GetPath_ShouldCombinePaths()
     {
         // Arrange & Act
-        var configPath = _pathService.GetPath("Config", "version.json");
+        string configPath = _pathService.GetPath("Config", "version.json");
 
         // Assert
         Assert.EndsWith("version.json", configPath);
@@ -129,8 +130,8 @@ public class VersionServiceIntegrationTests
 
     public VersionServiceIntegrationTests()
     {
-        var pathService = new RepositoryPathService();
-        var executionService = new PowerShellExecutionService(pathService);
+        RepositoryPathService pathService = new RepositoryPathService();
+        PowerShellExecutionService executionService = new PowerShellExecutionService(pathService);
         _versionService = new VersionServiceImpl(pathService, executionService);
     }
 
@@ -141,7 +142,7 @@ public class VersionServiceIntegrationTests
     public async Task GetWin11ForgeVersionAsync_ShouldReturnVersion()
     {
         // Act
-        var version = await _versionService.GetWin11ForgeVersionAsync();
+        string version = await _versionService.GetWin11ForgeVersionAsync();
 
         // Assert
         Assert.False(string.IsNullOrEmpty(version),
@@ -159,10 +160,10 @@ public class ProfileManagementServiceIntegrationTests
 
     public ProfileManagementServiceIntegrationTests()
     {
-        var pathService = new RepositoryPathService();
-        var executionService = new PowerShellExecutionService(pathService);
-        var cacheService = new ApplicationCacheService(pathService);
-        var versionService = new VersionServiceImpl(pathService, executionService);
+        RepositoryPathService pathService = new RepositoryPathService();
+        PowerShellExecutionService executionService = new PowerShellExecutionService(pathService);
+        ApplicationCacheService cacheService = new ApplicationCacheService(pathService);
+        VersionServiceImpl versionService = new VersionServiceImpl(pathService, executionService);
         _profileService = new ProfileManagementServiceImpl(pathService, executionService, cacheService, versionService);
     }
 
@@ -173,7 +174,7 @@ public class ProfileManagementServiceIntegrationTests
     public async Task GetAvailableProfilesAsync_ShouldReturnProfiles()
     {
         // Act
-        var profiles = await _profileService.GetAvailableProfilesAsync();
+        List<string> profiles = await _profileService.GetAvailableProfilesAsync();
 
         // Assert
         Assert.NotNull(profiles);
@@ -188,7 +189,7 @@ public class ProfileManagementServiceIntegrationTests
     public async Task LoadProfileAsync_Base_ShouldLoadSuccessfully()
     {
         // Act
-        var profile = await _profileService.LoadProfileAsync("Base");
+        DeploymentProfileModel profile = await _profileService.LoadProfileAsync("Base");
 
         // Assert
         Assert.NotNull(profile);
@@ -207,11 +208,11 @@ public class ApplicationManagementServiceIntegrationTests
 
     public ApplicationManagementServiceIntegrationTests()
     {
-        var loggerFactory = new LoggerFactory();
-        var pathService = new RepositoryPathService();
-        var executionService = new PowerShellExecutionService(pathService);
-        var cacheService = new ApplicationCacheService(pathService);
-        var detectionService = new HybridDetectionService(loggerFactory, pathService);
+        LoggerFactory loggerFactory = new LoggerFactory();
+        RepositoryPathService pathService = new RepositoryPathService();
+        PowerShellExecutionService executionService = new PowerShellExecutionService(pathService);
+        ApplicationCacheService cacheService = new ApplicationCacheService(pathService);
+        HybridDetectionService detectionService = new HybridDetectionService(loggerFactory, pathService);
         _appService = new ApplicationManagementServiceImpl(
             pathService,
             executionService,
@@ -227,7 +228,7 @@ public class ApplicationManagementServiceIntegrationTests
     public async Task GetAllApplicationsAsync_ShouldReturnApplications()
     {
         // Act
-        var apps = await _appService.GetAllApplicationsAsync();
+        List<ApplicationModel> apps = await _appService.GetAllApplicationsAsync();
 
         // Assert
         Assert.NotNull(apps);

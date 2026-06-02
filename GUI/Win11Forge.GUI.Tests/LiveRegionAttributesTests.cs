@@ -27,7 +27,7 @@ public class LiveRegionAttributesTests
     [Fact]
     public void ScreenReaderLiveRegion_IsNotCollapsed()
     {
-        var element = ExtractScreenReaderLiveRegionElement();
+        string element = ExtractScreenReaderLiveRegionElement();
 
         Assert.DoesNotContain(@"Visibility=""Collapsed""", element, StringComparison.Ordinal);
         Assert.DoesNotContain(@"Visibility=""Hidden""", element, StringComparison.Ordinal);
@@ -36,7 +36,7 @@ public class LiveRegionAttributesTests
     [Fact]
     public void ScreenReaderLiveRegion_HasZeroSize()
     {
-        var element = ExtractScreenReaderLiveRegionElement();
+        string element = ExtractScreenReaderLiveRegionElement();
 
         Assert.Contains(@"Width=""0""", element, StringComparison.Ordinal);
         Assert.Contains(@"Height=""0""", element, StringComparison.Ordinal);
@@ -45,7 +45,7 @@ public class LiveRegionAttributesTests
     [Fact]
     public void ScreenReaderLiveRegion_IsInvisibleWithoutLeavingAutomationTree()
     {
-        var element = ExtractScreenReaderLiveRegionElement();
+        string element = ExtractScreenReaderLiveRegionElement();
 
         Assert.Contains(@"Opacity=""0""", element, StringComparison.Ordinal);
         Assert.Contains(@"IsHitTestVisible=""False""", element, StringComparison.Ordinal);
@@ -55,7 +55,7 @@ public class LiveRegionAttributesTests
     [Fact]
     public void ScreenReaderLiveRegion_PreservesPoliteLiveSetting()
     {
-        var element = ExtractScreenReaderLiveRegionElement();
+        string element = ExtractScreenReaderLiveRegionElement();
 
         Assert.Contains(@"AutomationProperties.LiveSetting=""Polite""", element, StringComparison.Ordinal);
     }
@@ -63,15 +63,15 @@ public class LiveRegionAttributesTests
     [Fact]
     public void ScreenReaderLiveRegion_PreservesAccessibleName()
     {
-        var element = ExtractScreenReaderLiveRegionElement();
+        string element = ExtractScreenReaderLiveRegionElement();
 
         Assert.Contains(@"AutomationProperties.Name=""{loc:Loc Accessibility_LiveRegion}""", element, StringComparison.Ordinal);
     }
 
     private static string ExtractScreenReaderLiveRegionElement()
     {
-        var content = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml"));
-        var match = Regex.Match(
+        string content = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml"));
+        Match match = Regex.Match(
             content,
             @"<TextBlock\s+x:Name=""ScreenReaderLiveRegion""[\s\S]*?/>",
             RegexOptions.CultureInvariant);
@@ -82,11 +82,11 @@ public class LiveRegionAttributesTests
 
     private static string FindRepoFile(params string[] relativeParts)
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
 
         while (directory is not null)
         {
-            var candidate = Path.Combine([directory.FullName, .. relativeParts]);
+            string candidate = Path.Combine([directory.FullName, .. relativeParts]);
             if (File.Exists(candidate))
             {
                 return candidate;

@@ -80,7 +80,7 @@ public class DialogService : IDialogService
 
         try
         {
-            var content = new StackPanel();
+            StackPanel content = new StackPanel();
             content.Children.Add(new System.Windows.Controls.TextBlock
             {
                 Text = message,
@@ -103,7 +103,7 @@ public class DialogService : IDialogService
                 });
             }
 
-            var dialog = new ContentDialog(_dialogHost)
+            ContentDialog dialog = new ContentDialog(_dialogHost)
             {
                 Title = title,
                 Content = content,
@@ -114,7 +114,7 @@ public class DialogService : IDialogService
                 dialog.PrimaryButtonText = Loc.Common_TryAgain ?? "Retry";
             }
 
-            var result = await dialog.ShowAsync();
+            ContentDialogResult result = await dialog.ShowAsync();
             return result == ContentDialogResult.Primary ? DialogAction.Retry : DialogAction.Ok;
         }
         catch
@@ -139,7 +139,7 @@ public class DialogService : IDialogService
 
         try
         {
-            var dialog = new ContentDialog(_dialogHost)
+            ContentDialog dialog = new ContentDialog(_dialogHost)
             {
                 Title = title,
                 Content = new System.Windows.Controls.TextBlock
@@ -168,7 +168,7 @@ public class DialogService : IDialogService
 
         try
         {
-            var dialog = new ContentDialog(_dialogHost)
+            ContentDialog dialog = new ContentDialog(_dialogHost)
             {
                 Title = title,
                 Content = new System.Windows.Controls.TextBlock
@@ -196,7 +196,7 @@ public class DialogService : IDialogService
 
         try
         {
-            var dialog = new ContentDialog(_dialogHost)
+            ContentDialog dialog = new ContentDialog(_dialogHost)
             {
                 Title = title,
                 Content = new System.Windows.Controls.TextBlock
@@ -208,7 +208,7 @@ public class DialogService : IDialogService
                 CloseButtonText = cancelText ?? Loc.Common_Cancel ?? "Cancel"
             };
 
-            var result = await dialog.ShowAsync();
+            ContentDialogResult result = await dialog.ShowAsync();
             return result == ContentDialogResult.Primary;
         }
         catch
@@ -232,7 +232,7 @@ public class DialogService : IDialogService
 
         try
         {
-            var dialog = new ContentDialog(_dialogHost)
+            ContentDialog dialog = new ContentDialog(_dialogHost)
             {
                 Title = title,
                 Content = new System.Windows.Controls.TextBlock
@@ -245,7 +245,7 @@ public class DialogService : IDialogService
                 CloseButtonText = cancelText ?? Loc.Common_Cancel ?? "Cancel"
             };
 
-            var result = await dialog.ShowAsync();
+            ContentDialogResult result = await dialog.ShowAsync();
             return result switch
             {
                 ContentDialogResult.Primary => true,
@@ -275,7 +275,7 @@ public class DialogService : IDialogService
         IDialogCloseRequester? closeRequester = content as IDialogCloseRequester;
         try
         {
-            var dialog = new ContentDialog(_dialogHost)
+            ContentDialog dialog = new ContentDialog(_dialogHost)
             {
                 Title = title,
                 Content = content,
@@ -308,7 +308,7 @@ public class DialogService : IDialogService
 
     private static bool? ShowYesNoCancelMessageBox(string title, string message)
     {
-        var result = System.Windows.MessageBox.Show(
+        System.Windows.MessageBoxResult result = System.Windows.MessageBox.Show(
             message,
             title,
             System.Windows.MessageBoxButton.YesNoCancel,

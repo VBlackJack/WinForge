@@ -56,10 +56,10 @@ public sealed class AppUninstallCoordinator : IAppUninstallCoordinator
             return new AppUninstallResult(0, 0, 0, 0, WasCancelled: false);
         }
 
-        var apps = applications.ToList();
-        var runner = CreateRunner();
+        List<ApplicationModel> apps = applications.ToList();
+        AppOperationRunner runner = CreateRunner();
 
-        var batchId = await _resumeService.BeginBatchAsync(
+        Guid batchId = await _resumeService.BeginBatchAsync(
             BatchOperationKind.Uninstall,
             apps.Select(app => app.AppId).ToArray(),
             new BatchOptions(ForceUpdate: false),
@@ -67,7 +67,7 @@ public sealed class AppUninstallCoordinator : IAppUninstallCoordinator
 
         try
         {
-            var itemResults = await runner.RunAsync(
+            IReadOnlyList<AppUninstallItemResult> itemResults = await runner.RunAsync(
                 apps,
                 UninstallApplicationAsync,
                 app => app,
@@ -111,7 +111,7 @@ public sealed class AppUninstallCoordinator : IAppUninstallCoordinator
             app.Status = ApplicationStatus.Uninstalling;
             app.StatusMessage = Resources.Resources.Status_Uninstalling;
 
-            var result = await _powerShellBridge.UninstallApplicationAsync(
+            InstallResult result = await _powerShellBridge.UninstallApplicationAsync(
                 app,
                 progress => app.StatusMessage = progress).ConfigureAwait(false);
 
@@ -146,7 +146,7 @@ public sealed class AppUninstallCoordinator : IAppUninstallCoordinator
 
     private AppOperationRunner CreateRunner()
     {
-        var maxParallelInstalls = Math.Clamp(_settingsService.LoadSettings().MaxParallelInstalls, 1, 10);
+        int maxParallelInstalls = Math.Clamp(_settingsService.LoadSettings().MaxParallelInstalls, 1, 10);
         return new AppOperationRunner(maxParallelInstalls);
     }
 

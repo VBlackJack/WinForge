@@ -55,7 +55,7 @@ public class ProfileManagementServiceImpl : IProfileManagementService
     {
         return await Task.Run(() =>
         {
-            var profiles = GetProfileReadDirectories()
+            List<string> profiles = GetProfileReadDirectories()
                 .SelectMany(directory => Directory.GetFiles(directory, $"*{Win11ForgePathNames.JsonFileExtension}"))
                 .Select(f => Path.GetFileNameWithoutExtension(f))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -87,7 +87,7 @@ public class ProfileManagementServiceImpl : IProfileManagementService
 
         await _cacheService.EnsureApplicationsCacheAsync();
 
-        var profilePath = ResolveProfilePath(profileName);
+        string? profilePath = ResolveProfilePath(profileName);
 
         // Load raw profile directly from JSON (no inheritance resolution)
         if (string.IsNullOrEmpty(profilePath))
@@ -95,11 +95,11 @@ public class ProfileManagementServiceImpl : IProfileManagementService
             throw new FileNotFoundException($"Profile not found: {profileName}");
         }
 
-        var jsonContent = await File.ReadAllTextAsync(profilePath);
-        using var document = JsonDocument.Parse(jsonContent);
-        var root = document.RootElement;
+        string jsonContent = await File.ReadAllTextAsync(profilePath);
+        using JsonDocument document = JsonDocument.Parse(jsonContent);
+        JsonElement root = document.RootElement;
 
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = JsonHelper.GetJsonString(root, "Name") ?? profileName,
             Description = JsonHelper.GetJsonString(root, "Description") ?? string.Empty,
@@ -107,12 +107,12 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         };
 
         // Get parent profile (Inherits property) but don't resolve it
-        if (root.TryGetProperty("Inherits", out var inheritsElement) &&
+        if (root.TryGetProperty("Inherits", out JsonElement inheritsElement) &&
             inheritsElement.ValueKind == JsonValueKind.Array)
         {
-            foreach (var parentName in inheritsElement.EnumerateArray())
+            foreach (JsonElement parentName in inheritsElement.EnumerateArray())
             {
-                var parentNameStr = parentName.GetString();
+                string? parentNameStr = parentName.GetString();
                 if (!string.IsNullOrEmpty(parentNameStr))
                 {
                     profile.InheritedFrom.Add(parentNameStr);
@@ -121,11 +121,11 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         }
 
         // Get applications defined in this profile only (no inheritance)
-        var appIds = new List<string>();
-        if (root.TryGetProperty("Applications", out var appsElement) &&
+        List<string> appIds = new List<string>();
+        if (root.TryGetProperty("Applications", out JsonElement appsElement) &&
             appsElement.ValueKind == JsonValueKind.Array)
         {
-            foreach (var appElement in appsElement.EnumerateArray())
+            foreach (JsonElement appElement in appsElement.EnumerateArray())
             {
                 string? appId = null;
 
@@ -170,8 +170,8 @@ public class ProfileManagementServiceImpl : IProfileManagementService
             parentProfile = PowerShellValidation.ValidateProfileName(parentProfile);
         }
 
-        var profilesDir = _pathService.UserProfilesDirectory;
-        var profilePath = Path.Combine(
+        string profilesDir = _pathService.UserProfilesDirectory;
+        string profilePath = Path.Combine(
             profilesDir,
             $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
 
@@ -185,7 +185,7 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         }
 
         // Get current version for the profile
-        var version = await _versionService.GetWin11ForgeVersionAsync();
+        string version = await _versionService.GetWin11ForgeVersionAsync();
         if (version == "Unknown" || version == "Error")
         {
             version = "2.6.0";
@@ -194,7 +194,7 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         await Task.Run(() =>
         {
             // Build the profile JSON structure
-            var profileObj = new Dictionary<string, object>
+            Dictionary<string, object> profileObj = new Dictionary<string, object>
             {
                 ["Name"] = profileName,
                 ["Description"] = description,
@@ -219,13 +219,13 @@ public class ProfileManagementServiceImpl : IProfileManagementService
             }
 
             // Serialize with indentation
-            var options = new JsonSerializerOptions
+            JsonSerializerOptions options = new JsonSerializerOptions
             {
                 WriteIndented = true,
                 PropertyNamingPolicy = null // Keep PascalCase
             };
 
-            var jsonContent = JsonSerializer.Serialize(profileObj, options);
+            string jsonContent = JsonSerializer.Serialize(profileObj, options);
 
             // Write to file
             File.WriteAllText(profilePath, jsonContent);
@@ -239,17 +239,17 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         string profileName,
         List<string> inheritanceChain)
     {
-        var profilePath = ResolveProfilePath(profileName);
+        string? profilePath = ResolveProfilePath(profileName);
         if (string.IsNullOrEmpty(profilePath))
         {
             throw new FileNotFoundException($"Profile not found: {profileName}");
         }
 
-        var jsonContent = await File.ReadAllTextAsync(profilePath);
-        using var document = JsonDocument.Parse(jsonContent);
-        var root = document.RootElement;
+        string jsonContent = await File.ReadAllTextAsync(profilePath);
+        using JsonDocument document = JsonDocument.Parse(jsonContent);
+        JsonElement root = document.RootElement;
 
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = JsonHelper.GetJsonString(root, "Name") ?? profileName,
             Description = JsonHelper.GetJsonString(root, "Description") ?? string.Empty,
@@ -260,21 +260,21 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         inheritanceChain.Add(profileName);
 
         // Handle inheritance
-        var allAppIds = new List<string>();
+        List<string> allAppIds = new List<string>();
 
-        if (root.TryGetProperty("Inherits", out var inheritsElement) &&
+        if (root.TryGetProperty("Inherits", out JsonElement inheritsElement) &&
             inheritsElement.ValueKind == JsonValueKind.Array)
         {
-            foreach (var parentName in inheritsElement.EnumerateArray())
+            foreach (JsonElement parentName in inheritsElement.EnumerateArray())
             {
-                var parentNameStr = parentName.GetString();
+                string? parentNameStr = parentName.GetString();
                 if (!string.IsNullOrEmpty(parentNameStr) && !inheritanceChain.Contains(parentNameStr))
                 {
                     profile.InheritedFrom.Add(parentNameStr);
 
                     // Load parent profile and merge apps
-                    var parentProfile = await LoadProfileFromJsonAsync(parentNameStr, inheritanceChain);
-                    foreach (var app in parentProfile.Applications)
+                    DeploymentProfileModel parentProfile = await LoadProfileFromJsonAsync(parentNameStr, inheritanceChain);
+                    foreach (ApplicationModel app in parentProfile.Applications)
                     {
                         if (!allAppIds.Contains(app.AppId))
                         {
@@ -286,10 +286,10 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         }
 
         // Add this profile's applications
-        if (root.TryGetProperty("Applications", out var appsElement) &&
+        if (root.TryGetProperty("Applications", out JsonElement appsElement) &&
             appsElement.ValueKind == JsonValueKind.Array)
         {
-            foreach (var appElement in appsElement.EnumerateArray())
+            foreach (JsonElement appElement in appsElement.EnumerateArray())
             {
                 string? appId = null;
 
@@ -323,7 +323,7 @@ public class ProfileManagementServiceImpl : IProfileManagementService
     /// </summary>
     private ApplicationModel CreateApplicationModel(string appId)
     {
-        var app = new ApplicationModel
+        ApplicationModel app = new ApplicationModel
         {
             AppId = appId,
             Name = appId,
@@ -335,19 +335,19 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         };
 
         // Enrich from applications database
-        if (_cacheService.TryGetApplicationData(appId, out var appData))
+        if (_cacheService.TryGetApplicationData(appId, out JsonElement appData))
         {
             app.Name = JsonHelper.GetJsonString(appData, "Name") ?? appId;
             app.Category = JsonHelper.GetJsonString(appData, "Category") ?? "Unknown";
             app.Description = JsonHelper.GetJsonString(appData, "Description") ?? string.Empty;
 
-            if (appData.TryGetProperty("DefaultPriority", out var priorityProp) &&
+            if (appData.TryGetProperty("DefaultPriority", out JsonElement priorityProp) &&
                 priorityProp.ValueKind == JsonValueKind.Number)
             {
                 app.Priority = priorityProp.GetInt32();
             }
 
-            if (appData.TryGetProperty("DefaultRequired", out var requiredProp) &&
+            if (appData.TryGetProperty("DefaultRequired", out JsonElement requiredProp) &&
                 requiredProp.ValueKind == JsonValueKind.True)
             {
                 app.IsRequired = true;
@@ -371,9 +371,9 @@ public class ProfileManagementServiceImpl : IProfileManagementService
 
     private string? ResolveProfilePath(string profileName)
     {
-        foreach (var profilesDir in GetProfileReadDirectories())
+        foreach (string profilesDir in GetProfileReadDirectories())
         {
-            var profilePath = Path.Combine(
+            string profilePath = Path.Combine(
                 profilesDir,
                 $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
 

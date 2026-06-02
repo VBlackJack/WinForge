@@ -52,7 +52,7 @@ public class LocalizationProvider
     {
         get
         {
-            var value = Resources.ResourceManager.GetString(key);
+            string? value = Resources.ResourceManager.GetString(key);
             return value ?? $"[{key}]";
         }
     }

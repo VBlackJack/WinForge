@@ -42,7 +42,7 @@ public partial class AppsViewModel
     {
         ErrorMessage = null;
 
-        var operation = _lastOperationType;
+        string operation = _lastOperationType;
         _lastOperationType = string.Empty;
 
         switch (operation)

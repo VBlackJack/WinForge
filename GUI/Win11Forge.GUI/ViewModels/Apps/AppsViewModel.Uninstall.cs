@@ -31,7 +31,7 @@ public partial class AppsViewModel
     {
         if (app == null) return;
 
-        var confirmed = await _dialogService.ShowConfirmAsync(
+        bool confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.Confirm_Uninstall_Title_Single,
             Resources.Resources.Confirm_Uninstall_Message_Single,
             Resources.Resources.Confirm_Uninstall_Btn,
@@ -43,7 +43,7 @@ public partial class AppsViewModel
 
         try
         {
-            var result = await _uninstallCoordinator.UninstallAsync([app]);
+            AppUninstallResult result = await _uninstallCoordinator.UninstallAsync([app]);
             InstalledCount = Math.Max(0, InstalledCount - result.UninstalledCount);
         }
         catch (Exception ex)
@@ -71,7 +71,7 @@ public partial class AppsViewModel
     [RelayCommand(CanExecute = nameof(CanUninstallSelected))]
     private async Task UninstallSelectedAsync()
     {
-        var selectedApps = _allApplications
+        List<ApplicationModel> selectedApps = _allApplications
             .Where(a => a.IsSelected &&
                 (a.Status == ApplicationStatus.Installed ||
                  a.Status == ApplicationStatus.AlreadyInstalled))
@@ -79,14 +79,14 @@ public partial class AppsViewModel
 
         if (selectedApps.Count == 0) return;
 
-        var isSingle = selectedApps.Count == 1;
-        var confirmTitle = isSingle
+        bool isSingle = selectedApps.Count == 1;
+        string confirmTitle = isSingle
             ? Resources.Resources.Confirm_Uninstall_Title_Single
             : string.Format(Resources.Resources.Confirm_Uninstall_Title_Multiple, selectedApps.Count);
-        var confirmMessage = isSingle
+        string confirmMessage = isSingle
             ? Resources.Resources.Confirm_Uninstall_Message_Single
             : string.Format(Resources.Resources.Confirm_Uninstall_Message_Multiple, selectedApps.Count);
-        var confirmed = await _dialogService.ShowConfirmAsync(
+        bool confirmed = await _dialogService.ShowConfirmAsync(
             confirmTitle,
             confirmMessage,
             Resources.Resources.Confirm_Uninstall_Btn,
@@ -115,7 +115,7 @@ public partial class AppsViewModel
 
         try
         {
-            var result = await _uninstallCoordinator.UninstallAsync(
+            AppUninstallResult result = await _uninstallCoordinator.UninstallAsync(
                 selectedApps,
                 new Progress<AppOperationProgress>(ApplyUninstallProgress),
                 _batchCancellationTokenSource.Token);

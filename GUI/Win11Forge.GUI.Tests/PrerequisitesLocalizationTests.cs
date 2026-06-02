@@ -38,7 +38,7 @@ public class PrerequisitesLocalizationTests
         string? languageCode,
         string expected)
     {
-        var actual = PrerequisitesServiceImpl.ResolvePowerShellLocaleCode(languageCode);
+        string actual = PrerequisitesServiceImpl.ResolvePowerShellLocaleCode(languageCode);
 
         Assert.Equal(expected, actual);
     }
@@ -46,27 +46,27 @@ public class PrerequisitesLocalizationTests
     [Fact]
     public void SupportedLocales_HaveMatchingResxFiles()
     {
-        var resourcesDirectory = RepositoryPathHelper.FindDirectory("GUI", "Win11Forge.GUI", "Resources");
-        var expectedFiles = SupportedLocales.Codes
+        string resourcesDirectory = RepositoryPathHelper.FindDirectory("GUI", "Win11Forge.GUI", "Resources");
+        List<string> expectedFiles = SupportedLocales.Codes
             .Select(code => code == SupportedLocales.Default
                 ? "Resources.resx"
                 : $"Resources.{code}.resx")
             .ToList();
 
-        foreach (var file in expectedFiles)
+        foreach (string? file in expectedFiles)
         {
-            var path = Path.Combine(resourcesDirectory, file);
+            string path = Path.Combine(resourcesDirectory, file);
             Assert.True(File.Exists(path), $"Missing resx for declared locale: {file}");
         }
 
-        var localizedResxFiles = Directory.GetFiles(resourcesDirectory, "Resources.*.resx")
+        List<(string FileName, string Code)> localizedResxFiles = Directory.GetFiles(resourcesDirectory, "Resources.*.resx")
             .Select(path => (
                 FileName: Path.GetFileName(path),
                 Code: Path.GetFileNameWithoutExtension(path)!
                     .Replace("Resources.", string.Empty, StringComparison.Ordinal)))
             .ToList();
 
-        foreach (var resxFile in localizedResxFiles)
+        foreach ((string FileName, string Code) resxFile in localizedResxFiles)
         {
             Assert.True(
                 SupportedLocales.Codes.Contains(resxFile.Code, StringComparer.OrdinalIgnoreCase),
@@ -77,20 +77,20 @@ public class PrerequisitesLocalizationTests
     [Fact]
     public async Task InstallPrerequisitesAsync_InitializesPowerShellLocaleFromAppSettings()
     {
-        var executionService = new CapturingPowerShellExecutionService();
-        var settingsService = new Mock<IAppSettingsService>();
+        CapturingPowerShellExecutionService executionService = new CapturingPowerShellExecutionService();
+        Mock<IAppSettingsService> settingsService = new Mock<IAppSettingsService>();
         settingsService
             .Setup(service => service.LoadSettings())
             .Returns(new AppSettings { LanguageCode = "fr-FR" });
 
-        var service = new PrerequisitesServiceImpl(
+        PrerequisitesServiceImpl service = new PrerequisitesServiceImpl(
             new RepositoryPathService(),
             executionService,
             Mock.Of<IVersionService>(),
             Mock.Of<ISystemInfoService>(),
             settingsService.Object);
 
-        var success = await service.InstallPrerequisitesAsync();
+        bool success = await service.InstallPrerequisitesAsync();
 
         Assert.True(success);
         Assert.NotNull(executionService.StreamingScript);

@@ -16,6 +16,7 @@
 
 using System.Diagnostics;
 using System.Security.Principal;
+using Microsoft.Win32;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services.PowerShell;
 
@@ -45,7 +46,7 @@ public class SystemInfoServiceImpl : ISystemInfoService
     {
         return await Task.Run(() =>
         {
-            var info = new SystemInfoModel
+            SystemInfoModel info = new SystemInfoModel
             {
                 Hostname = Environment.MachineName,
                 Username = Environment.UserName,
@@ -65,12 +66,12 @@ public class SystemInfoServiceImpl : ISystemInfoService
                 info.IsAdministrator = IsRunningAsAdministrator();
 
                 // Check Winget availability using process
-                var wingetVer = GetCommandVersion("winget", "--version");
+                string wingetVer = GetCommandVersion("winget", "--version");
                 info.WingetAvailable = !string.IsNullOrEmpty(wingetVer);
                 info.WingetVersion = wingetVer;
 
                 // Check Chocolatey availability using process
-                var chocoVer = GetCommandVersion("choco", "--version");
+                string chocoVer = GetCommandVersion("choco", "--version");
                 info.ChocolateyAvailable = !string.IsNullOrEmpty(chocoVer);
                 info.ChocolateyVersion = chocoVer;
             }
@@ -90,9 +91,9 @@ public class SystemInfoServiceImpl : ISystemInfoService
     {
         try
         {
-            using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-            var productName = key?.GetValue("ProductName")?.ToString() ?? "Windows";
-            var displayVersion = key?.GetValue("DisplayVersion")?.ToString();
+            using RegistryKey? key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+            string productName = key?.GetValue("ProductName")?.ToString() ?? "Windows";
+            string? displayVersion = key?.GetValue("DisplayVersion")?.ToString();
             if (!string.IsNullOrEmpty(displayVersion))
             {
                 return $"{productName} ({displayVersion})";
@@ -112,9 +113,9 @@ public class SystemInfoServiceImpl : ISystemInfoService
     {
         try
         {
-            using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-            var build = key?.GetValue("CurrentBuildNumber")?.ToString() ?? key?.GetValue("CurrentBuild")?.ToString();
-            var ubr = key?.GetValue("UBR")?.ToString();
+            using RegistryKey? key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+            string? build = key?.GetValue("CurrentBuildNumber")?.ToString() ?? key?.GetValue("CurrentBuild")?.ToString();
+            string? ubr = key?.GetValue("UBR")?.ToString();
             if (!string.IsNullOrEmpty(build))
             {
                 return !string.IsNullOrEmpty(ubr) ? $"{build}.{ubr}" : build;
@@ -135,7 +136,7 @@ public class SystemInfoServiceImpl : ISystemInfoService
         try
         {
             // Use GC to get approximate total memory (not perfect but works without WMI)
-            var gcInfo = GC.GetGCMemoryInfo();
+            GCMemoryInfo gcInfo = GC.GetGCMemoryInfo();
             return Math.Round(gcInfo.TotalAvailableMemoryBytes / 1024.0 / 1024.0 / 1024.0, 1);
         }
         catch
@@ -151,8 +152,8 @@ public class SystemInfoServiceImpl : ISystemInfoService
     {
         try
         {
-            using var identity = WindowsIdentity.GetCurrent();
-            var principal = new WindowsPrincipal(identity);
+            using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            WindowsPrincipal principal = new WindowsPrincipal(identity);
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
         catch
@@ -168,7 +169,7 @@ public class SystemInfoServiceImpl : ISystemInfoService
     {
         try
         {
-            var startInfo = new ProcessStartInfo
+            ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = command,
                 Arguments = arguments,
@@ -178,12 +179,12 @@ public class SystemInfoServiceImpl : ISystemInfoService
                 CreateNoWindow = true
             };
 
-            using var process = Process.Start(startInfo);
+            using Process? process = Process.Start(startInfo);
             if (process == null) return string.Empty;
 
             try
             {
-                var output = process.StandardOutput.ReadToEnd().Trim();
+                string output = process.StandardOutput.ReadToEnd().Trim();
                 return output;
             }
             finally

@@ -26,9 +26,9 @@ public class AppScanCoordinatorTests
     [Fact]
     public async Task ScanAsync_WithEmptyList_ShouldReturnEmptyResult()
     {
-        var coordinator = CreateCoordinator();
+        AppScanCoordinator coordinator = CreateCoordinator();
 
-        var result = await coordinator.ScanAsync([]);
+        AppScanResult result = await coordinator.ScanAsync([]);
 
         Assert.Equal(0, result.Total);
         Assert.Equal(0, result.InstalledCount);
@@ -39,8 +39,8 @@ public class AppScanCoordinatorTests
     [Fact]
     public async Task ScanAsync_WithBatchInstalledApps_ShouldAggregateInstalledCount()
     {
-        var apps = CreateApps("App1", "App2");
-        var bridge = CreateBridge();
+        List<ApplicationModel> apps = CreateApps("App1", "App2");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
         bridge
             .Setup(x => x.GetBatchApplicationStatusAsync(It.IsAny<IReadOnlyList<ApplicationModel>>()))
             .ReturnsAsync(new Dictionary<string, BatchAppStatus>
@@ -48,11 +48,11 @@ public class AppScanCoordinatorTests
                 ["App1"] = new(ApplicationStatus.Installed, "1.0"),
                 ["App2"] = new(ApplicationStatus.AlreadyInstalled, "2.0")
             });
-        var detection = CreateDetectionService();
+        Mock<IApplicationDetectionService> detection = CreateDetectionService();
         detection.Setup(x => x.GetAvailableUpdatesAsync()).ReturnsAsync([]);
-        var coordinator = CreateCoordinator(bridge.Object, detection.Object);
+        AppScanCoordinator coordinator = CreateCoordinator(bridge.Object, detection.Object);
 
-        var result = await coordinator.ScanAsync(apps);
+        AppScanResult result = await coordinator.ScanAsync(apps);
 
         Assert.Equal(2, result.Total);
         Assert.Equal(2, result.InstalledCount);
@@ -63,8 +63,8 @@ public class AppScanCoordinatorTests
     [Fact]
     public async Task ScanAsync_WithMixedBatchResults_ShouldMarkMissingApps()
     {
-        var apps = CreateApps("InstalledApp", "MissingApp");
-        var bridge = CreateBridge();
+        List<ApplicationModel> apps = CreateApps("InstalledApp", "MissingApp");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
         bridge
             .Setup(x => x.GetBatchApplicationStatusAsync(It.IsAny<IReadOnlyList<ApplicationModel>>()))
             .ReturnsAsync(new Dictionary<string, BatchAppStatus>
@@ -72,11 +72,11 @@ public class AppScanCoordinatorTests
                 ["InstalledApp"] = new(ApplicationStatus.Installed, "1.0"),
                 ["MissingApp"] = new(ApplicationStatus.Pending, null)
             });
-        var detection = CreateDetectionService();
+        Mock<IApplicationDetectionService> detection = CreateDetectionService();
         detection.Setup(x => x.GetAvailableUpdatesAsync()).ReturnsAsync([]);
-        var coordinator = CreateCoordinator(bridge.Object, detection.Object);
+        AppScanCoordinator coordinator = CreateCoordinator(bridge.Object, detection.Object);
 
-        var result = await coordinator.ScanAsync(apps);
+        AppScanResult result = await coordinator.ScanAsync(apps);
 
         Assert.Equal(1, result.InstalledCount);
         Assert.Equal(ApplicationStatus.Installed, apps[0].Status);
@@ -87,16 +87,16 @@ public class AppScanCoordinatorTests
     [Fact]
     public async Task ScanAsync_WithBatchUpdates_ShouldUseDetectionService()
     {
-        var apps = CreateApps("App1");
+        List<ApplicationModel> apps = CreateApps("App1");
         apps[0].Name = "Application One";
-        var bridge = CreateBridge();
+        Mock<IPowerShellBridge> bridge = CreateBridge();
         bridge
             .Setup(x => x.GetBatchApplicationStatusAsync(It.IsAny<IReadOnlyList<ApplicationModel>>()))
             .ReturnsAsync(new Dictionary<string, BatchAppStatus>
             {
                 ["App1"] = new(ApplicationStatus.Installed, "1.0")
             });
-        var detection = CreateDetectionService();
+        Mock<IApplicationDetectionService> detection = CreateDetectionService();
         detection
             .Setup(x => x.GetAvailableUpdatesAsync())
             .ReturnsAsync(
@@ -109,9 +109,9 @@ public class AppScanCoordinatorTests
                     NewVersion = "2.0"
                 }
             ]);
-        var coordinator = CreateCoordinator(bridge.Object, detection.Object);
+        AppScanCoordinator coordinator = CreateCoordinator(bridge.Object, detection.Object);
 
-        var result = await coordinator.ScanAsync(apps);
+        AppScanResult result = await coordinator.ScanAsync(apps);
 
         Assert.Equal(1, result.UpdatesAvailableCount);
         Assert.Equal(ApplicationStatus.UpdateAvailable, apps[0].Status);
@@ -122,8 +122,8 @@ public class AppScanCoordinatorTests
     [Fact]
     public async Task ScanAsync_WhenCancelled_ShouldReturnCancelledResult()
     {
-        var apps = CreateApps("App1", "App2");
-        var bridge = CreateBridge();
+        List<ApplicationModel> apps = CreateApps("App1", "App2");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
         bridge
             .Setup(x => x.GetBatchApplicationStatusAsync(It.IsAny<IReadOnlyList<ApplicationModel>>()))
             .ReturnsAsync((Dictionary<string, BatchAppStatus>?)null);
@@ -131,9 +131,9 @@ public class AppScanCoordinatorTests
             .Setup(x => x.GetApplicationStatusAsync(It.IsAny<string>()))
             .Callback(() => throw new OperationCanceledException())
             .ReturnsAsync(ApplicationStatus.Pending);
-        var coordinator = CreateCoordinator(bridge.Object);
+        AppScanCoordinator coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.ScanAsync(apps, cancellationToken: new CancellationToken(canceled: false));
+        AppScanResult result = await coordinator.ScanAsync(apps, cancellationToken: new CancellationToken(canceled: false));
 
         Assert.True(result.WasCancelled);
         Assert.Equal(2, result.Total);
@@ -148,7 +148,7 @@ public class AppScanCoordinatorTests
 
     private static Mock<IPowerShellBridge> CreateBridge()
     {
-        var bridge = new Mock<IPowerShellBridge>();
+        Mock<IPowerShellBridge> bridge = new Mock<IPowerShellBridge>();
         bridge
             .Setup(x => x.GetBatchApplicationStatusAsync(It.IsAny<IReadOnlyList<ApplicationModel>>()))
             .ReturnsAsync((Dictionary<string, BatchAppStatus>?)null);
@@ -160,7 +160,7 @@ public class AppScanCoordinatorTests
 
     private static Mock<IApplicationDetectionService> CreateDetectionService()
     {
-        var detection = new Mock<IApplicationDetectionService>();
+        Mock<IApplicationDetectionService> detection = new Mock<IApplicationDetectionService>();
         detection.Setup(x => x.GetAvailableUpdatesAsync()).ReturnsAsync([]);
         return detection;
     }
@@ -169,7 +169,7 @@ public class AppScanCoordinatorTests
         IPowerShellBridge? bridge = null,
         IApplicationDetectionService? detectionService = null)
     {
-        var settings = new MockAppSettingsService
+        MockAppSettingsService settings = new MockAppSettingsService
         {
             SettingsToReturn = new AppSettings { MaxParallelScans = 2 }
         };

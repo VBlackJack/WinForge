@@ -23,10 +23,10 @@ public class ProgressEstimatorTests
     [Fact]
     public async Task ProgressEstimator_ShouldSupportConcurrentUpdatesAndReads()
     {
-        var estimator = new ProgressEstimator();
+        ProgressEstimator estimator = new ProgressEstimator();
         estimator.Start(totalItems: 200);
 
-        var updateTasks = Enumerable.Range(1, 200)
+        IEnumerable<Task> updateTasks = Enumerable.Range(1, 200)
             .Select(value => Task.Run(() =>
             {
                 estimator.UpdateProgress(value);

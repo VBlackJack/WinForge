@@ -15,6 +15,7 @@
  */
 
 using System.Diagnostics;
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Win11Forge.GUI.Services;
 
@@ -32,7 +33,7 @@ public class ApplicationLifetimeServiceTests
     public void ApplicationLifetimeService_ShouldImplementInterface()
     {
         // Arrange & act
-        var service = new ApplicationLifetimeService();
+        ApplicationLifetimeService service = new ApplicationLifetimeService();
 
         // Assert
         Assert.IsAssignableFrom<IApplicationLifetimeService>(service);
@@ -45,12 +46,12 @@ public class ApplicationLifetimeServiceTests
     public void RequestShutdown_ShouldRemainSynchronousMinimalApi()
     {
         // Act
-        var method = typeof(IApplicationLifetimeService).GetMethod(nameof(IApplicationLifetimeService.RequestShutdown));
+        MethodInfo? method = typeof(IApplicationLifetimeService).GetMethod(nameof(IApplicationLifetimeService.RequestShutdown));
 
         // Assert
         Assert.NotNull(method);
         Assert.Equal(typeof(void), method.ReturnType);
-        var parameter = Assert.Single(method.GetParameters());
+        ParameterInfo parameter = Assert.Single(method.GetParameters());
         Assert.Equal(typeof(int), parameter.ParameterType);
         Assert.True(parameter.HasDefaultValue);
         Assert.Equal(0, parameter.DefaultValue);
@@ -63,12 +64,12 @@ public class ApplicationLifetimeServiceTests
     public void AddWin11ForgeServices_ShouldRegisterApplicationLifetimeSingleton()
     {
         // Arrange
-        var services = new ServiceCollection();
+        ServiceCollection services = new ServiceCollection();
 
         // Act
-        using var provider = services.AddWin11ForgeServices().BuildServiceProvider();
-        var first = provider.GetRequiredService<IApplicationLifetimeService>();
-        var second = provider.GetRequiredService<IApplicationLifetimeService>();
+        using ServiceProvider provider = services.AddWin11ForgeServices().BuildServiceProvider();
+        IApplicationLifetimeService first = provider.GetRequiredService<IApplicationLifetimeService>();
+        IApplicationLifetimeService second = provider.GetRequiredService<IApplicationLifetimeService>();
 
         // Assert
         Assert.IsType<ApplicationLifetimeService>(first);
@@ -82,12 +83,12 @@ public class ApplicationLifetimeServiceTests
     public void AddWin11ForgeServices_ShouldRegisterProcessLauncherSingleton()
     {
         // Arrange
-        var services = new ServiceCollection();
+        ServiceCollection services = new ServiceCollection();
 
         // Act
-        using var provider = services.AddWin11ForgeServices().BuildServiceProvider();
-        var first = provider.GetRequiredService<IProcessLauncher>();
-        var second = provider.GetRequiredService<IProcessLauncher>();
+        using ServiceProvider provider = services.AddWin11ForgeServices().BuildServiceProvider();
+        IProcessLauncher first = provider.GetRequiredService<IProcessLauncher>();
+        IProcessLauncher second = provider.GetRequiredService<IProcessLauncher>();
 
         // Assert
         Assert.IsType<ProcessLauncher>(first);
@@ -101,12 +102,12 @@ public class ApplicationLifetimeServiceTests
     public void ProcessLauncher_ShouldExposeSingleVoidStartMethod()
     {
         // Act
-        var method = typeof(IProcessLauncher).GetMethod(nameof(IProcessLauncher.Start));
+        MethodInfo? method = typeof(IProcessLauncher).GetMethod(nameof(IProcessLauncher.Start));
 
         // Assert
         Assert.NotNull(method);
         Assert.Equal(typeof(void), method!.ReturnType);
-        var parameter = Assert.Single(method.GetParameters());
+        ParameterInfo parameter = Assert.Single(method.GetParameters());
         Assert.Equal(typeof(ProcessStartInfo), parameter.ParameterType);
     }
 
@@ -117,7 +118,7 @@ public class ApplicationLifetimeServiceTests
     public void ProcessLauncher_ShouldRejectNullStartInfo()
     {
         // Arrange
-        var launcher = new ProcessLauncher();
+        ProcessLauncher launcher = new ProcessLauncher();
 
         // Act & assert
         Assert.Throws<ArgumentNullException>(() => launcher.Start(null!));

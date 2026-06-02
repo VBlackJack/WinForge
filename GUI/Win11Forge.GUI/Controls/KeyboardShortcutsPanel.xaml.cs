@@ -16,8 +16,8 @@
 
 using System.Windows;
 using System.Windows.Controls;
-using Wpf.Ui.Controls;
 using Win11Forge.GUI.Services;
+using Wpf.Ui.Controls;
 using Res = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Controls;

@@ -27,14 +27,14 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void Constructor_DefaultsToPending()
     {
-        var sm = new ApplicationStatusStateMachine();
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine();
         Assert.Equal(ApplicationStatus.Pending, sm.CurrentStatus);
     }
 
     [Fact]
     public void Constructor_AcceptsInitialStatus()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Installed);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Installed);
         Assert.Equal(ApplicationStatus.Installed, sm.CurrentStatus);
     }
 
@@ -55,22 +55,22 @@ public class ApplicationStatusStateMachineTests
     [InlineData(ApplicationStatus.Failed, ApplicationStatus.Skipped, true)]
     public void CanTransitionTo_ValidatesCorrectly(ApplicationStatus from, ApplicationStatus to, bool expected)
     {
-        var sm = new ApplicationStatusStateMachine(from);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(from);
         Assert.Equal(expected, sm.CanTransitionTo(to));
     }
 
     [Fact]
     public void CanTransitionTo_ReturnsFalse_ForSameState()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
         Assert.False(sm.CanTransitionTo(ApplicationStatus.Pending));
     }
 
     [Fact]
     public void TryTransitionTo_ReturnsTrue_ForValidTransition()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
-        var result = sm.TryTransitionTo(ApplicationStatus.Installing);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
+        bool result = sm.TryTransitionTo(ApplicationStatus.Installing);
 
         Assert.True(result);
         Assert.Equal(ApplicationStatus.Installing, sm.CurrentStatus);
@@ -79,8 +79,8 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void TryTransitionTo_ReturnsFalse_ForInvalidTransition()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
-        var result = sm.TryTransitionTo(ApplicationStatus.Installed);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
+        bool result = sm.TryTransitionTo(ApplicationStatus.Installed);
 
         Assert.False(result);
         Assert.Equal(ApplicationStatus.Pending, sm.CurrentStatus);
@@ -89,7 +89,7 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void TransitionTo_Throws_ForInvalidTransition()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
 
         Assert.Throws<InvalidOperationException>(() =>
             sm.TransitionTo(ApplicationStatus.Installed));
@@ -98,7 +98,7 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void TransitionTo_Succeeds_ForValidTransition()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
         sm.TransitionTo(ApplicationStatus.Installing);
 
         Assert.Equal(ApplicationStatus.Installing, sm.CurrentStatus);
@@ -107,7 +107,7 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void TransitioningFrom_EventRaised_BeforeTransition()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
         ApplicationStatus? capturedFrom = null;
         ApplicationStatus? capturedTo = null;
 
@@ -126,8 +126,8 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void TransitionedTo_EventRaised_AfterTransition()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
-        var eventRaised = false;
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
+        bool eventRaised = false;
         ApplicationStatus? capturedFrom = null;
         ApplicationStatus? capturedTo = null;
 
@@ -148,8 +148,8 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void TransitionDenied_EventRaised_ForInvalidTransition()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
-        var eventRaised = false;
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
+        bool eventRaised = false;
 
         sm.TransitionDenied += (_, e) =>
         {
@@ -166,8 +166,8 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void GetValidTransitions_ReturnsCorrectTransitions()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
-        var transitions = sm.GetValidTransitions();
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
+        IReadOnlyCollection<ApplicationStatus> transitions = sm.GetValidTransitions();
 
         Assert.Contains(ApplicationStatus.Installing, transitions);
         Assert.Contains(ApplicationStatus.Skipped, transitions);
@@ -178,7 +178,7 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void Reset_ChangesStatusToPending()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Installed);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Installed);
         sm.Reset();
 
         Assert.Equal(ApplicationStatus.Pending, sm.CurrentStatus);
@@ -187,7 +187,7 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void Reset_ChangesStatusToSpecifiedValue()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Pending);
         sm.Reset(ApplicationStatus.AlreadyInstalled);
 
         Assert.Equal(ApplicationStatus.AlreadyInstalled, sm.CurrentStatus);
@@ -202,7 +202,7 @@ public class ApplicationStatusStateMachineTests
     [InlineData(ApplicationStatus.Installing, false)]
     public void IsSuccessState_ReturnsCorrectValue(ApplicationStatus status, bool expected)
     {
-        var sm = new ApplicationStatusStateMachine(status);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(status);
         Assert.Equal(expected, sm.IsSuccessState);
     }
 
@@ -212,7 +212,7 @@ public class ApplicationStatusStateMachineTests
     [InlineData(ApplicationStatus.Pending, false)]
     public void IsFailureState_ReturnsCorrectValue(ApplicationStatus status, bool expected)
     {
-        var sm = new ApplicationStatusStateMachine(status);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(status);
         Assert.Equal(expected, sm.IsFailureState);
     }
 
@@ -224,7 +224,7 @@ public class ApplicationStatusStateMachineTests
     [InlineData(ApplicationStatus.Installed, false)]
     public void IsInProgress_ReturnsCorrectValue(ApplicationStatus status, bool expected)
     {
-        var sm = new ApplicationStatusStateMachine(status);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(status);
         Assert.Equal(expected, sm.IsInProgress);
     }
 
@@ -235,15 +235,15 @@ public class ApplicationStatusStateMachineTests
     [InlineData(ApplicationStatus.Pending, false)]
     public void CanRetry_ReturnsCorrectValue(ApplicationStatus status, bool expected)
     {
-        var sm = new ApplicationStatusStateMachine(status);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(status);
         Assert.Equal(expected, sm.CanRetry);
     }
 
     [Fact]
     public void Clone_CreatesIndependentCopy()
     {
-        var original = new ApplicationStatusStateMachine(ApplicationStatus.Installing);
-        var clone = original.Clone();
+        ApplicationStatusStateMachine original = new ApplicationStatusStateMachine(ApplicationStatus.Installing);
+        ApplicationStatusStateMachine clone = original.Clone();
 
         clone.TryTransitionTo(ApplicationStatus.Installed);
 
@@ -254,7 +254,7 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void FullInstallationWorkflow_Succeeds()
     {
-        var sm = new ApplicationStatusStateMachine();
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine();
 
         // Pending -> Installing
         Assert.True(sm.TryTransitionTo(ApplicationStatus.Installing));
@@ -270,7 +270,7 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void FailAndRetryWorkflow_Succeeds()
     {
-        var sm = new ApplicationStatusStateMachine();
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine();
 
         // Pending -> Installing
         sm.TryTransitionTo(ApplicationStatus.Installing);
@@ -291,7 +291,7 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void UpdateWorkflow_Succeeds()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Installed);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Installed);
 
         // Installed -> UpdateAvailable
         Assert.True(sm.TryTransitionTo(ApplicationStatus.UpdateAvailable));
@@ -308,7 +308,7 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void UninstallWorkflow_Succeeds()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Installed);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Installed);
 
         // Installed -> Uninstalling
         Assert.True(sm.TryTransitionTo(ApplicationStatus.Uninstalling));
@@ -325,7 +325,7 @@ public class ApplicationStatusStateMachineTests
     [Fact]
     public void ToString_ReturnsCurrentStatus()
     {
-        var sm = new ApplicationStatusStateMachine(ApplicationStatus.Installing);
+        ApplicationStatusStateMachine sm = new ApplicationStatusStateMachine(ApplicationStatus.Installing);
         Assert.Equal("Installing", sm.ToString());
     }
 }

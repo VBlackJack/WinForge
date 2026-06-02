@@ -103,14 +103,14 @@ public class CacheWarmingService : IDisposable
         _logger.LogInfo("Starting initial cache warming...");
         WarmingStarted?.Invoke(this, EventArgs.Empty);
 
-        var stopwatch = Stopwatch.StartNew();
+        Stopwatch stopwatch = Stopwatch.StartNew();
 
         try
         {
             await _detectionService.WarmCacheAsync().ConfigureAwait(false);
             stopwatch.Stop();
 
-            var stats = _detectionService.GetCacheStatistics();
+            CacheStatistics stats = _detectionService.GetCacheStatistics();
             _logger.LogInfo($"Initial cache warming completed: {stats.PackageCount} packages in {stopwatch.ElapsedMilliseconds}ms");
 
             WarmingCompleted?.Invoke(this, new CacheWarmingCompletedEventArgs
@@ -150,7 +150,7 @@ public class CacheWarmingService : IDisposable
                 await _detectionService.GetInstalledPackagesAsync(forceRefresh: true).ConfigureAwait(false);
                 stopwatch.Stop();
 
-                var stats = _detectionService.GetCacheStatistics();
+                CacheStatistics stats = _detectionService.GetCacheStatistics();
                 _logger.LogDebug($"Periodic cache refresh completed: {stats.PackageCount} packages in {stopwatch.ElapsedMilliseconds}ms");
 
                 WarmingCompleted?.Invoke(this, new CacheWarmingCompletedEventArgs
@@ -178,7 +178,7 @@ public class CacheWarmingService : IDisposable
     /// </summary>
     public async Task ForceRefreshAsync()
     {
-        var stopwatch = Stopwatch.StartNew();
+        Stopwatch stopwatch = Stopwatch.StartNew();
         WarmingStarted?.Invoke(this, EventArgs.Empty);
 
         try
@@ -186,7 +186,7 @@ public class CacheWarmingService : IDisposable
             await _detectionService.GetInstalledPackagesAsync(forceRefresh: true);
             stopwatch.Stop();
 
-            var stats = _detectionService.GetCacheStatistics();
+            CacheStatistics stats = _detectionService.GetCacheStatistics();
 
             WarmingCompleted?.Invoke(this, new CacheWarmingCompletedEventArgs
             {

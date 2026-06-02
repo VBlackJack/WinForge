@@ -58,10 +58,10 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
             return new AppInstallationResult(0, 0, 0, 0, 0, WasCancelled: false);
         }
 
-        var apps = applications.ToList();
-        var runner = CreateRunner();
+        List<ApplicationModel> apps = applications.ToList();
+        AppOperationRunner runner = CreateRunner();
 
-        var batchId = await _resumeService.BeginBatchAsync(
+        Guid batchId = await _resumeService.BeginBatchAsync(
             BatchOperationKind.Install,
             apps.Select(app => app.AppId).ToArray(),
             new BatchOptions(options.ForceUpdate),
@@ -69,7 +69,7 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
 
         try
         {
-            var itemResults = await runner.RunAsync(
+            IReadOnlyList<AppInstallationItemResult> itemResults = await runner.RunAsync(
                 apps,
                 (app, token) => InstallApplicationAsync(app, options, token),
                 app => app,
@@ -117,7 +117,7 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
             app.Status = ApplicationStatus.Installing;
             app.StatusMessage = Resources.Resources.Status_Installing;
 
-            var result = await _powerShellBridge.InstallApplicationAsync(
+            InstallResult result = await _powerShellBridge.InstallApplicationAsync(
                 app,
                 isDryRun: false,
                 forceUpdate: options.ForceUpdate,
@@ -161,7 +161,7 @@ public sealed class AppInstallationCoordinator : IAppInstallationCoordinator
 
     private AppOperationRunner CreateRunner()
     {
-        var maxParallelInstalls = Math.Clamp(_settingsService.LoadSettings().MaxParallelInstalls, 1, 10);
+        int maxParallelInstalls = Math.Clamp(_settingsService.LoadSettings().MaxParallelInstalls, 1, 10);
         return new AppOperationRunner(maxParallelInstalls);
     }
 

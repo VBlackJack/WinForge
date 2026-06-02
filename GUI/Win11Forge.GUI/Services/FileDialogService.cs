@@ -49,7 +49,7 @@ public sealed class FileDialogService : IFileDialogService
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        var dialog = _openDialogFactory();
+        IFileDialogAdapter dialog = _openDialogFactory();
         ApplyOptions(dialog, options);
 
         return Task.FromResult(dialog.ShowDialog() == true ? dialog.FileName : null);
@@ -60,7 +60,7 @@ public sealed class FileDialogService : IFileDialogService
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        var dialog = _saveDialogFactory();
+        IFileDialogAdapter dialog = _saveDialogFactory();
         ApplyOptions(dialog, options);
 
         return Task.FromResult(dialog.ShowDialog() == true ? dialog.FileName : null);

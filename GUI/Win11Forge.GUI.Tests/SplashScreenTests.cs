@@ -31,9 +31,9 @@ public class SplashScreenTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            using var reducedMotion = ReducedMotionOverride(true);
-            var splash = new SplashScreenView();
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            using IDisposable reducedMotion = ReducedMotionOverride(true);
+            SplashScreenView splash = new SplashScreenView();
             splash.IconRotateTransform.Angle = 42;
 
             splash.ApplyReducedMotionPreference();
@@ -49,9 +49,9 @@ public class SplashScreenTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            using var reducedMotion = ReducedMotionOverride(false);
-            var splash = new SplashScreenView();
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            using IDisposable reducedMotion = ReducedMotionOverride(false);
+            SplashScreenView splash = new SplashScreenView();
 
             splash.ApplyReducedMotionPreference();
 
@@ -65,8 +65,8 @@ public class SplashScreenTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            var splash = new SplashScreenView();
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            SplashScreenView splash = new SplashScreenView();
 
             using (ReducedMotionOverride(false))
             {
@@ -90,9 +90,9 @@ public class SplashScreenTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            using var reducedMotion = ReducedMotionOverride(true);
-            var splash = new SplashScreenView();
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            using IDisposable reducedMotion = ReducedMotionOverride(true);
+            SplashScreenView splash = new SplashScreenView();
             splash.IconRotateTransform.Angle = 42;
 
             splash.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));

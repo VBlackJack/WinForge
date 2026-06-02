@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
@@ -64,17 +65,17 @@ public partial class RegistryDetectionService
     /// <returns>Dictionary of installed packages indexed by various identifiers.</returns>
     public async Task<Dictionary<string, InstalledPackageInfo>> ScanInstalledApplicationsAsync()
     {
-        var stopwatch = Stopwatch.StartNew();
-        var results = new Dictionary<string, InstalledPackageInfo>(StringComparer.OrdinalIgnoreCase);
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        Dictionary<string, InstalledPackageInfo> results = new Dictionary<string, InstalledPackageInfo>(StringComparer.OrdinalIgnoreCase);
 
         await Task.Run(() =>
         {
             // Scan all combinations of roots and paths in parallel
-            var scanTasks = new List<(RegistryKey root, string path, bool isUserScope)>();
+            List<(RegistryKey root, string path, bool isUserScope)> scanTasks = new List<(RegistryKey root, string path, bool isUserScope)>();
 
-            foreach (var root in RegistryRoots)
+            foreach (RegistryKey root in RegistryRoots)
             {
-                foreach (var path in RegistryPaths)
+                foreach (string path in RegistryPaths)
                 {
                     // WOW6432Node only exists in HKLM
                     if (path.Contains("WOW6432Node") && root == Registry.CurrentUser)
@@ -85,10 +86,10 @@ public partial class RegistryDetectionService
             }
 
             // Use Parallel.ForEach for concurrent scanning with controlled parallelism
-            var localResults = new System.Collections.Concurrent.ConcurrentBag<InstalledPackageInfo>();
+            ConcurrentBag<InstalledPackageInfo> localResults = new System.Collections.Concurrent.ConcurrentBag<InstalledPackageInfo>();
 
             // Limit parallelism to avoid excessive thread pool usage on high-core systems
-            var parallelOptions = new ParallelOptions
+            ParallelOptions parallelOptions = new ParallelOptions
             {
                 MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4)
             };
@@ -106,13 +107,13 @@ public partial class RegistryDetectionService
             });
 
             // Consolidate results, preferring entries with more information
-            foreach (var package in localResults)
+            foreach (InstalledPackageInfo package in localResults)
             {
                 // Index by multiple identifiers for faster lookup
-                var keys = GetPackageKeys(package);
-                foreach (var key in keys)
+                IEnumerable<string> keys = GetPackageKeys(package);
+                foreach (string key in keys)
                 {
-                    if (!results.TryGetValue(key, out var existing) ||
+                    if (!results.TryGetValue(key, out InstalledPackageInfo? existing) ||
                         HasBetterInfo(package, existing))
                     {
                         results[key] = package;
@@ -136,19 +137,19 @@ public partial class RegistryDetectionService
         bool isUserScope,
         System.Collections.Concurrent.ConcurrentBag<InstalledPackageInfo> results)
     {
-        using var key = root.OpenSubKey(path);
+        using RegistryKey? key = root.OpenSubKey(path);
         if (key == null) return;
 
-        var subKeyNames = key.GetSubKeyNames();
+        string[] subKeyNames = key.GetSubKeyNames();
 
-        foreach (var subKeyName in subKeyNames)
+        foreach (string subKeyName in subKeyNames)
         {
             try
             {
-                using var subKey = key.OpenSubKey(subKeyName);
+                using RegistryKey? subKey = key.OpenSubKey(subKeyName);
                 if (subKey == null) continue;
 
-                var displayName = subKey.GetValue("DisplayName") as string;
+                string? displayName = subKey.GetValue("DisplayName") as string;
                 if (string.IsNullOrWhiteSpace(displayName)) continue;
 
                 // Skip Windows updates and patches
@@ -156,7 +157,7 @@ public partial class RegistryDetectionService
                 if (displayName.Contains("Security Update")) continue;
                 if (displayName.Contains("Hotfix")) continue;
 
-                var package = new InstalledPackageInfo
+                InstalledPackageInfo package = new InstalledPackageInfo
                 {
                     Id = subKeyName,
                     Name = displayName.Trim(),
@@ -182,7 +183,7 @@ public partial class RegistryDetectionService
     private static string GetVersionString(RegistryKey key)
     {
         // Try DisplayVersion first (more reliable)
-        var version = key.GetValue("DisplayVersion") as string;
+        string? version = key.GetValue("DisplayVersion") as string;
         if (!string.IsNullOrWhiteSpace(version))
             return version.Trim();
 
@@ -192,8 +193,8 @@ public partial class RegistryDetectionService
             return version.Trim();
 
         // Try to construct from major/minor
-        var major = key.GetValue("VersionMajor");
-        var minor = key.GetValue("VersionMinor");
+        object? major = key.GetValue("VersionMajor");
+        object? minor = key.GetValue("VersionMinor");
         if (major != null)
         {
             return minor != null ? $"{major}.{minor}" : major.ToString()!;
@@ -211,12 +212,12 @@ public partial class RegistryDetectionService
         yield return package.Id;
 
         // Secondary key: normalized name for fuzzy matching
-        var normalizedName = NormalizeName(package.Name);
+        string normalizedName = NormalizeName(package.Name);
         if (!string.IsNullOrEmpty(normalizedName))
             yield return normalizedName;
 
         // Tertiary: name without version suffix
-        var nameWithoutVersion = RemoveVersionSuffix(package.Name);
+        string nameWithoutVersion = RemoveVersionSuffix(package.Name);
         if (!string.IsNullOrEmpty(nameWithoutVersion) && nameWithoutVersion != normalizedName)
             yield return nameWithoutVersion;
     }
@@ -244,7 +245,7 @@ public partial class RegistryDetectionService
         if (string.IsNullOrEmpty(name)) return string.Empty;
 
         // Common patterns: "App Name 1.2.3", "App Name v1.2.3", "App Name (x64)"
-        var result = name;
+        string result = name;
         result = VersionSuffixPattern().Replace(result, "");
         result = X64SuffixPattern().Replace(result, "");
         result = X86SuffixPattern().Replace(result, "");
@@ -282,19 +283,19 @@ public partial class RegistryDetectionService
     /// </summary>
     public bool IsInstalledByKeyName(string keyName)
     {
-        foreach (var root in RegistryRoots)
+        foreach (RegistryKey root in RegistryRoots)
         {
-            foreach (var path in RegistryPaths)
+            foreach (string path in RegistryPaths)
             {
                 if (path.Contains("WOW6432Node") && root == Registry.CurrentUser)
                     continue;
 
                 try
                 {
-                    using var key = root.OpenSubKey($@"{path}\{keyName}");
+                    using RegistryKey? key = root.OpenSubKey($@"{path}\{keyName}");
                     if (key != null)
                     {
-                        var displayName = key.GetValue("DisplayName") as string;
+                        string? displayName = key.GetValue("DisplayName") as string;
                         if (!string.IsNullOrWhiteSpace(displayName))
                             return true;
                     }
@@ -314,19 +315,19 @@ public partial class RegistryDetectionService
     /// </summary>
     public InstalledPackageInfo? GetByKeyName(string keyName)
     {
-        foreach (var root in RegistryRoots)
+        foreach (RegistryKey root in RegistryRoots)
         {
-            foreach (var path in RegistryPaths)
+            foreach (string path in RegistryPaths)
             {
                 if (path.Contains("WOW6432Node") && root == Registry.CurrentUser)
                     continue;
 
                 try
                 {
-                    using var key = root.OpenSubKey($@"{path}\{keyName}");
+                    using RegistryKey? key = root.OpenSubKey($@"{path}\{keyName}");
                     if (key != null)
                     {
-                        var displayName = key.GetValue("DisplayName") as string;
+                        string? displayName = key.GetValue("DisplayName") as string;
                         if (!string.IsNullOrWhiteSpace(displayName))
                         {
                             return new InstalledPackageInfo

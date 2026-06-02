@@ -55,10 +55,10 @@ internal class PowerShellProcessWrapper : IDisposable
     {
         if (_scripts.Count > 0)
         {
-            var lastScript = _scripts[^1];
+            string lastScript = _scripts[^1];
             if (value != null)
             {
-                var valueStr = PowerShellValidation.EscapeForPowerShell(value.ToString() ?? "");
+                string valueStr = PowerShellValidation.EscapeForPowerShell(value.ToString() ?? "");
                 _scripts[^1] = $"{lastScript} -{name} '{valueStr}'";
             }
             else
@@ -78,15 +78,15 @@ internal class PowerShellProcessWrapper : IDisposable
 
     public Collection<PSObject> Invoke()
     {
-        var result = new Collection<PSObject>();
+        Collection<PSObject> result = new Collection<PSObject>();
 
         if (_scripts.Count == 0)
             return result;
 
-        var fullScript = string.Join("; ", _scripts);
-        var encodedScript = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(fullScript));
+        string fullScript = string.Join("; ", _scripts);
+        string encodedScript = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(fullScript));
 
-        var startInfo = new ProcessStartInfo
+        ProcessStartInfo startInfo = new ProcessStartInfo
         {
             FileName = _psPath,
             Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -EncodedCommand {encodedScript}",
@@ -99,11 +99,11 @@ internal class PowerShellProcessWrapper : IDisposable
 
         try
         {
-            using var process = new Process { StartInfo = startInfo };
+            using Process process = new Process { StartInfo = startInfo };
             process.Start();
 
-            var output = process.StandardOutput.ReadToEnd();
-            var error = process.StandardError.ReadToEnd();
+            string output = process.StandardOutput.ReadToEnd();
+            string error = process.StandardError.ReadToEnd();
 
             // Wait with timeout (5 minutes for script execution)
             if (!process.WaitForExit(ProcessTimeoutMs))
@@ -120,7 +120,7 @@ internal class PowerShellProcessWrapper : IDisposable
 
             if (!string.IsNullOrEmpty(output))
             {
-                foreach (var line in output.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                foreach (string line in output.Split('\n', StringSplitOptions.RemoveEmptyEntries))
                 {
                     result.Add(new PSObject(line.Trim()));
                 }

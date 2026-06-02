@@ -20,9 +20,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Wpf.Ui.Controls;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Services;
+using Wpf.Ui.Controls;
 using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.UserControls;
@@ -256,7 +256,7 @@ public partial class WingetSourceEditor : UserControl
     /// </summary>
     private async Task ExecuteDefaultTestAsync()
     {
-        var packageId = PackageId?.Trim();
+        string? packageId = PackageId?.Trim();
         if (string.IsNullOrWhiteSpace(packageId))
         {
             TestSuccess = null;
@@ -270,7 +270,7 @@ public partial class WingetSourceEditor : UserControl
 
         try
         {
-            var verificationService = ResolveVerificationService();
+            IPackageVerificationService verificationService = ResolveVerificationService();
 
             if (!verificationService.IsWingetAvailable)
             {
@@ -279,7 +279,7 @@ public partial class WingetSourceEditor : UserControl
                 return;
             }
 
-            var result = await verificationService.VerifyWingetPackageAsync(packageId);
+            PackageVerificationResult result = await verificationService.VerifyWingetPackageAsync(packageId);
 
             if (!result.IsSuccess)
             {
@@ -290,7 +290,7 @@ public partial class WingetSourceEditor : UserControl
 
             if (result.Exists)
             {
-                var packageDisplay = string.IsNullOrWhiteSpace(result.Version)
+                string packageDisplay = string.IsNullOrWhiteSpace(result.Version)
                     ? result.PackageId
                     : $"{result.PackageId} ({result.Version})";
 

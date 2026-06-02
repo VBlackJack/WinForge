@@ -27,14 +27,14 @@ public class ProfileMigrationServiceTests
     [Fact]
     public void EnsureProfilesMigrated_WhenUserProfilesDoNotExist_ShouldCopyDefaultsAndWriteSentinel()
     {
-        using var workspace = new TestWorkspace();
-        var defaultsDirectory = CreateDefaultsDirectory(workspace);
-        var defaultProfilePath = WriteProfile(defaultsDirectory, "Base", "default");
-        var defaultReadmePath = Path.Combine(defaultsDirectory, "README.md");
+        using TestWorkspace workspace = new TestWorkspace();
+        string defaultsDirectory = CreateDefaultsDirectory(workspace);
+        string defaultProfilePath = WriteProfile(defaultsDirectory, "Base", "default");
+        string defaultReadmePath = Path.Combine(defaultsDirectory, "README.md");
         File.WriteAllText(defaultReadmePath, "default documentation");
 
-        var service = CreateService(workspace);
-        var result = service.EnsureProfilesMigrated();
+        ProfileMigrationService service = CreateService(workspace);
+        ProfileMigrationResult result = service.EnsureProfilesMigrated();
 
         Assert.True(result.MigrationPerformed);
         Assert.True(result.SourceDefaults);
@@ -47,19 +47,19 @@ public class ProfileMigrationServiceTests
     [Fact]
     public void EnsureProfilesMigrated_WhenSentinelExists_ShouldNotCopyAgain()
     {
-        using var workspace = new TestWorkspace();
-        var defaultsDirectory = CreateDefaultsDirectory(workspace);
+        using TestWorkspace workspace = new TestWorkspace();
+        string defaultsDirectory = CreateDefaultsDirectory(workspace);
         WriteProfile(defaultsDirectory, "Base", "default");
 
-        var service = CreateService(workspace);
+        ProfileMigrationService service = CreateService(workspace);
         service.EnsureProfilesMigrated();
 
-        var userProfilePath = Path.Combine(
+        string userProfilePath = Path.Combine(
             workspace.UserProfilesDirectory,
             $"Base{Win11ForgePathNames.JsonFileExtension}");
         File.WriteAllText(userProfilePath, "user modified");
 
-        var secondResult = service.EnsureProfilesMigrated();
+        ProfileMigrationResult secondResult = service.EnsureProfilesMigrated();
 
         Assert.False(secondResult.MigrationPerformed);
         Assert.Equal("user modified", File.ReadAllText(userProfilePath));
@@ -68,18 +68,18 @@ public class ProfileMigrationServiceTests
     [Fact]
     public void EnsureProfilesMigrated_WhenLegacyProfilesExist_ShouldMigrateNonDefaultsAndConflicts()
     {
-        using var workspace = new TestWorkspace();
-        var defaultsDirectory = CreateDefaultsDirectory(workspace);
+        using TestWorkspace workspace = new TestWorkspace();
+        string defaultsDirectory = CreateDefaultsDirectory(workspace);
         WriteProfile(defaultsDirectory, "Base", "default base");
         WriteProfile(defaultsDirectory, "Office", "default office");
 
-        var legacyDirectory = Path.Combine(workspace.RepositoryRoot, Win11ForgePathNames.ProfilesDirectoryName);
+        string legacyDirectory = Path.Combine(workspace.RepositoryRoot, Win11ForgePathNames.ProfilesDirectoryName);
         WriteProfile(legacyDirectory, "Base", "user modified base");
         WriteProfile(legacyDirectory, "Office", "default office");
         WriteProfile(legacyDirectory, "Custom", "custom profile");
 
-        var service = CreateService(workspace);
-        var result = service.EnsureProfilesMigrated();
+        ProfileMigrationService service = CreateService(workspace);
+        ProfileMigrationResult result = service.EnsureProfilesMigrated();
 
         Assert.True(result.MigrationPerformed);
         Assert.True(result.SourceDefaults);
@@ -101,13 +101,13 @@ public class ProfileMigrationServiceTests
 
     private static ProfileMigrationService CreateService(TestWorkspace workspace)
     {
-        var pathService = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
+        RepositoryPathService pathService = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
         return new ProfileMigrationService(pathService);
     }
 
     private static string CreateDefaultsDirectory(TestWorkspace workspace)
     {
-        var defaultsDirectory = Path.Combine(
+        string defaultsDirectory = Path.Combine(
             workspace.RepositoryRoot,
             Win11ForgePathNames.ProfilesDirectoryName,
             Win11ForgePathNames.DefaultProfilesDirectoryName);
@@ -118,7 +118,7 @@ public class ProfileMigrationServiceTests
     private static string WriteProfile(string directory, string name, string content)
     {
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, $"{name}{Win11ForgePathNames.JsonFileExtension}");
+        string path = Path.Combine(directory, $"{name}{Win11ForgePathNames.JsonFileExtension}");
         File.WriteAllText(path, content);
         return path;
     }
@@ -126,11 +126,11 @@ public class ProfileMigrationServiceTests
     private static void AssertSentinel(string sentinelPath, bool sourceDefaults, bool sourceLegacy)
     {
         Assert.True(File.Exists(sentinelPath));
-        using var document = JsonDocument.Parse(File.ReadAllText(sentinelPath));
-        var root = document.RootElement;
+        using JsonDocument document = JsonDocument.Parse(File.ReadAllText(sentinelPath));
+        JsonElement root = document.RootElement;
 
         Assert.Equal(Win11ForgePathNames.ProfileMigrationVersion, root.GetProperty("version").GetInt32());
-        Assert.True(root.TryGetProperty("migratedAt", out var migratedAt));
+        Assert.True(root.TryGetProperty("migratedAt", out JsonElement migratedAt));
         Assert.False(string.IsNullOrWhiteSpace(migratedAt.GetString()));
         Assert.Equal(sourceDefaults, root.GetProperty("sourceDefaults").GetBoolean());
         Assert.Equal(sourceLegacy, root.GetProperty("sourceLegacy").GetBoolean());

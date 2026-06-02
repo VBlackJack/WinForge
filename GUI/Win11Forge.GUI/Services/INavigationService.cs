@@ -87,7 +87,7 @@ public class NavigationService : INavigationService
                 // Limit history size to prevent memory issues
                 if (_navigationHistory.Count > 50)
                 {
-                    var temp = _navigationHistory.ToArray();
+                    int[] temp = _navigationHistory.ToArray();
                     _navigationHistory.Clear();
                     for (int i = 0; i < 25; i++)
                     {

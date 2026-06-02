@@ -55,7 +55,7 @@ public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
             ? throw new ArgumentException("History file path cannot be empty.", nameof(historyFilePath))
             : historyFilePath;
 
-        var directory = Path.GetDirectoryName(_historyFilePath);
+        string? directory = Path.GetDirectoryName(_historyFilePath);
         if (!string.IsNullOrEmpty(directory))
         {
             Directory.CreateDirectory(directory);
@@ -74,7 +74,7 @@ public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
         await _fileLock.WaitAsync();
         try
         {
-            var history = await LoadHistoryInternalAsync();
+            List<DeploymentHistoryEntry> history = await LoadHistoryInternalAsync();
             history.Insert(0, entry); // Add at beginning (newest first)
 
             // Keep only the last 100 entries
@@ -101,7 +101,7 @@ public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
         await _fileLock.WaitAsync();
         try
         {
-            var history = await LoadHistoryInternalAsync();
+            List<DeploymentHistoryEntry> history = await LoadHistoryInternalAsync();
             return history.Take(limit).ToList();
         }
         catch
@@ -154,13 +154,13 @@ public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
                 return [];
             }
 
-            var json = await File.ReadAllTextAsync(_historyFilePath);
+            string json = await File.ReadAllTextAsync(_historyFilePath);
             if (string.IsNullOrEmpty(json))
             {
                 return [];
             }
 
-            var history = JsonSerializer.Deserialize<List<DeploymentHistoryEntry>>(json, _jsonOptions);
+            List<DeploymentHistoryEntry>? history = JsonSerializer.Deserialize<List<DeploymentHistoryEntry>>(json, _jsonOptions);
             return history ?? [];
         }
         catch
@@ -184,13 +184,13 @@ public class DeploymentHistoryService : IDeploymentHistoryService, IDisposable
             }
 
             // Ensure directory exists before writing
-            var directory = Path.GetDirectoryName(_historyFilePath);
+            string? directory = Path.GetDirectoryName(_historyFilePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(history, _jsonOptions);
+            string json = JsonSerializer.Serialize(history, _jsonOptions);
             await File.WriteAllTextAsync(_historyFilePath, json);
         }
         catch

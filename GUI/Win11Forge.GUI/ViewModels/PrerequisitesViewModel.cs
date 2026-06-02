@@ -132,7 +132,7 @@ public partial class PrerequisitesViewModel : ViewModelBase
 
         try
         {
-            var success = await _powerShellBridge.InstallPrerequisitesAsync(msg =>
+            bool success = await _powerShellBridge.InstallPrerequisitesAsync(msg =>
             {
                 System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
                 {
@@ -149,7 +149,7 @@ public partial class PrerequisitesViewModel : ViewModelBase
                 // This happens because the current process doesn't have the updated PATH
                 LogOutput += Environment.NewLine + Resources.Resources.Prerequisites_RestartRequired + Environment.NewLine;
 
-                var shouldRestart = await _dialogService.ShowConfirmAsync(
+                bool shouldRestart = await _dialogService.ShowConfirmAsync(
                     Resources.Resources.Prerequisites_Complete,
                     Resources.Resources.Prerequisites_RestartRequired,
                     Resources.Resources.Prerequisites_RestartApp,
@@ -188,11 +188,11 @@ public partial class PrerequisitesViewModel : ViewModelBase
     {
         try
         {
-            var exePath = Environment.ProcessPath;
+            string? exePath = Environment.ProcessPath;
             if (!string.IsNullOrEmpty(exePath))
             {
                 // Start new instance
-                var startInfo = new ProcessStartInfo
+                ProcessStartInfo startInfo = new ProcessStartInfo
                 {
                     FileName = exePath,
                     UseShellExecute = true,

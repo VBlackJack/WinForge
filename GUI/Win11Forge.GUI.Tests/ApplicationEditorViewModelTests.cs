@@ -62,8 +62,8 @@ public class ApplicationEditorViewModelTests
     public async Task Initialize_NewApplication_ShouldSetIsNewTrue()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = new EditableApplicationModel { Sources = new ApplicationSourcesModel() };
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = new EditableApplicationModel { Sources = new ApplicationSourcesModel() };
 
         // Act
         await viewModel.InitializeAsync(app, isNew: true);
@@ -79,8 +79,8 @@ public class ApplicationEditorViewModelTests
     public async Task Initialize_ExistingApplication_ShouldSetIsNewFalse()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = CreateTestApplication();
 
         // Act
         await viewModel.InitializeAsync(app, isNew: false);
@@ -96,16 +96,16 @@ public class ApplicationEditorViewModelTests
     public async Task CanEditAppId_ShouldBeTrueOnlyForNew()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = CreateTestApplication();
 
         // Act - New app
         await viewModel.InitializeAsync(app.Clone(), isNew: true);
-        var canEditNew = viewModel.CanEditAppId;
+        bool canEditNew = viewModel.CanEditAppId;
 
         // Act - Existing app
         await viewModel.InitializeAsync(app.Clone(), isNew: false);
-        var canEditExisting = viewModel.CanEditAppId;
+        bool canEditExisting = viewModel.CanEditAppId;
 
         // Assert
         Assert.True(canEditNew);
@@ -119,16 +119,16 @@ public class ApplicationEditorViewModelTests
     public async Task DialogTitle_ShouldDifferByMode()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = CreateTestApplication();
 
         // Act - New app
         await viewModel.InitializeAsync(app.Clone(), isNew: true);
-        var newTitle = viewModel.DialogTitle;
+        string newTitle = viewModel.DialogTitle;
 
         // Act - Existing app
         await viewModel.InitializeAsync(app.Clone(), isNew: false);
-        var editTitle = viewModel.DialogTitle;
+        string editTitle = viewModel.DialogTitle;
 
         // Assert
         Assert.NotEqual(newTitle, editTitle);
@@ -141,8 +141,8 @@ public class ApplicationEditorViewModelTests
     public async Task Initialize_ShouldSetIsDirtyFalse()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = CreateTestApplication();
 
         // Act
         await viewModel.InitializeAsync(app, isNew: false);
@@ -158,8 +158,8 @@ public class ApplicationEditorViewModelTests
     public async Task PropertyChange_ShouldSetIsDirty()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = CreateTestApplication();
         await viewModel.InitializeAsync(app, isNew: false);
 
         // Act
@@ -176,8 +176,8 @@ public class ApplicationEditorViewModelTests
     public async Task Initialize_ShouldLoadCategories()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = CreateTestApplication();
 
         // Act
         await viewModel.InitializeAsync(app, isNew: true);
@@ -194,8 +194,8 @@ public class ApplicationEditorViewModelTests
     public async Task Initialize_ExistingApp_ShouldSetSourceEnabledBasedOnContent()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = new EditableApplicationModel
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = new EditableApplicationModel
         {
             AppId = "Test",
             Name = "Test",
@@ -229,8 +229,8 @@ public class ApplicationEditorViewModelTests
     public async Task Initialize_NewApp_ShouldEnableAllSources()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = new EditableApplicationModel
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = new EditableApplicationModel
         {
             Sources = new ApplicationSourcesModel
             {
@@ -257,11 +257,11 @@ public class ApplicationEditorViewModelTests
     public async Task Cancel_NotDirty_ShouldRaiseCloseRequested()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = CreateTestApplication();
         await viewModel.InitializeAsync(app, isNew: false);
 
-        var closeRequested = false;
+        bool closeRequested = false;
         viewModel.CloseRequested += (_, _) => closeRequested = true;
 
         // Act
@@ -279,8 +279,8 @@ public class ApplicationEditorViewModelTests
     public async Task Cancel_WhenDirty_ShouldRequestConfirmation()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = CreateTestApplication();
         await viewModel.InitializeAsync(app, isNew: false);
 
         // Make dirty
@@ -293,7 +293,7 @@ public class ApplicationEditorViewModelTests
             args.Discard = false; // Cancel the discard
         };
 
-        var closeRequested = false;
+        bool closeRequested = false;
         viewModel.CloseRequested += (_, _) => closeRequested = true;
 
         // Act
@@ -311,11 +311,11 @@ public class ApplicationEditorViewModelTests
     public async Task Save_ValidApplication_ShouldSaveAndClose()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = CreateTestApplication();
         await viewModel.InitializeAsync(app, isNew: true);
 
-        var closeRequested = false;
+        bool closeRequested = false;
         viewModel.CloseRequested += (_, _) => closeRequested = true;
 
         // Act
@@ -333,11 +333,11 @@ public class ApplicationEditorViewModelTests
     public async Task Save_InvalidApplication_ShouldShowValidationMessage()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
         dbService.SetValidationResult(ApplicationValidationResult.Invalid("AppId", "ID is required"));
-        var viewModel = CreateViewModel(dbService);
+        ApplicationEditorViewModel viewModel = CreateViewModel(dbService);
 
-        var app = new EditableApplicationModel
+        EditableApplicationModel app = new EditableApplicationModel
         {
             AppId = "",
             Name = "Test",
@@ -365,9 +365,9 @@ public class ApplicationEditorViewModelTests
     public async Task VerifySources_ShouldCallVerificationService()
     {
         // Arrange
-        var verificationService = new MockPackageVerificationService();
-        var viewModel = CreateViewModel(verificationService: verificationService);
-        var app = CreateTestApplication();
+        MockPackageVerificationService verificationService = new MockPackageVerificationService();
+        ApplicationEditorViewModel viewModel = CreateViewModel(verificationService: verificationService);
+        EditableApplicationModel app = CreateTestApplication();
         await viewModel.InitializeAsync(app, isNew: false);
 
         // Act
@@ -385,8 +385,8 @@ public class ApplicationEditorViewModelTests
     public async Task Cleanup_ShouldNotThrow()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = CreateTestApplication();
         await viewModel.InitializeAsync(app, isNew: false);
 
         // Act & Assert (should not throw)
@@ -400,8 +400,8 @@ public class ApplicationEditorViewModelTests
     public async Task SelectAddNewCategory_ShouldRaiseNewCategoryRequested()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel();
+        EditableApplicationModel app = CreateTestApplication();
         await viewModel.InitializeAsync(app, isNew: true);
 
         NewCategoryEventArgs? receivedArgs = null;
@@ -427,10 +427,10 @@ public class ApplicationEditorViewModelTests
     public async Task PropertyChange_ShouldClearValidationMessage()
     {
         // Arrange
-        var dbService = new MockApplicationDatabaseService();
+        MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
         dbService.SetValidationResult(ApplicationValidationResult.Invalid("Name", "Invalid"));
-        var viewModel = CreateViewModel(dbService);
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel(dbService);
+        EditableApplicationModel app = CreateTestApplication();
         await viewModel.InitializeAsync(app, isNew: true);
 
         // Trigger validation error
@@ -451,12 +451,12 @@ public class ApplicationEditorViewModelTests
     public async Task SearchWingetPackages_ShouldPopulateResults()
     {
         // Arrange
-        var searchService = new MockPackageSearchService();
+        MockPackageSearchService searchService = new MockPackageSearchService();
         searchService.SetWingetResults(
             new PackageSearchResult("Microsoft.VisualStudioCode", "Visual Studio Code", "1.100.0", PackageSource.Winget));
 
-        var viewModel = CreateViewModel(searchService: searchService);
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel(searchService: searchService);
+        EditableApplicationModel app = CreateTestApplication();
         await viewModel.InitializeAsync(app, isNew: true);
         viewModel.WingetSearchQuery = "visual";
 
@@ -476,12 +476,12 @@ public class ApplicationEditorViewModelTests
     public async Task ApplyWingetSearchResult_ShouldPopulateSourceAndMetadata()
     {
         // Arrange
-        var searchService = new MockPackageSearchService();
+        MockPackageSearchService searchService = new MockPackageSearchService();
         searchService.SetWingetResults(
             new PackageSearchResult("Google.Chrome", "Google Chrome", "123.0.0", PackageSource.Winget));
 
-        var viewModel = CreateViewModel(searchService: searchService);
-        var app = new EditableApplicationModel
+        ApplicationEditorViewModel viewModel = CreateViewModel(searchService: searchService);
+        EditableApplicationModel app = new EditableApplicationModel
         {
             AppId = string.Empty,
             Name = string.Empty,
@@ -515,12 +515,12 @@ public class ApplicationEditorViewModelTests
     public async Task SearchStorePackages_ShouldPopulateResults()
     {
         // Arrange
-        var searchService = new MockPackageSearchService();
+        MockPackageSearchService searchService = new MockPackageSearchService();
         searchService.SetStoreResults(
             new PackageSearchResult("9WZDNCRFJBMP", "Spotify Music", null, PackageSource.Store));
 
-        var viewModel = CreateViewModel(searchService: searchService);
-        var app = CreateTestApplication();
+        ApplicationEditorViewModel viewModel = CreateViewModel(searchService: searchService);
+        EditableApplicationModel app = CreateTestApplication();
         await viewModel.InitializeAsync(app, isNew: true);
         viewModel.StoreSearchQuery = "spotify";
 

@@ -30,7 +30,7 @@ public class UndoServiceTests
     public void NewService_ShouldHaveNoUndoRedo()
     {
         // Arrange & Act
-        using var service = new UndoService();
+        using UndoService service = new UndoService();
 
         // Assert
         Assert.False(service.CanUndo);
@@ -46,8 +46,8 @@ public class UndoServiceTests
     public void RecordAction_ShouldEnableUndo()
     {
         // Arrange
-        using var service = new UndoService();
-        var action = new UndoableAction
+        using UndoService service = new UndoService();
+        UndoableAction action = new UndoableAction
         {
             Description = "Test action",
             UndoAction = () => Task.CompletedTask
@@ -68,9 +68,9 @@ public class UndoServiceTests
     public async Task Undo_ShouldExecuteUndoAction()
     {
         // Arrange
-        using var service = new UndoService();
-        var undoExecuted = false;
-        var action = new UndoableAction
+        using UndoService service = new UndoService();
+        bool undoExecuted = false;
+        UndoableAction action = new UndoableAction
         {
             Description = "Test action",
             UndoAction = () => { undoExecuted = true; return Task.CompletedTask; }
@@ -78,7 +78,7 @@ public class UndoServiceTests
         service.RecordAction(action);
 
         // Act
-        var result = await service.UndoAsync();
+        bool result = await service.UndoAsync();
 
         // Assert
         Assert.True(result);
@@ -94,9 +94,9 @@ public class UndoServiceTests
     public async Task Redo_ShouldExecuteDoAction()
     {
         // Arrange
-        using var service = new UndoService();
-        var doExecuted = false;
-        var action = new UndoableAction
+        using UndoService service = new UndoService();
+        bool doExecuted = false;
+        UndoableAction action = new UndoableAction
         {
             Description = "Test action",
             UndoAction = () => Task.CompletedTask,
@@ -106,7 +106,7 @@ public class UndoServiceTests
         await service.UndoAsync();
 
         // Act
-        var result = await service.RedoAsync();
+        bool result = await service.RedoAsync();
 
         // Assert
         Assert.True(result);
@@ -122,13 +122,13 @@ public class UndoServiceTests
     public async Task RecordAction_ShouldClearRedoStack()
     {
         // Arrange
-        using var service = new UndoService();
-        var action1 = new UndoableAction
+        using UndoService service = new UndoService();
+        UndoableAction action1 = new UndoableAction
         {
             Description = "Action 1",
             UndoAction = () => Task.CompletedTask
         };
-        var action2 = new UndoableAction
+        UndoableAction action2 = new UndoableAction
         {
             Description = "Action 2",
             UndoAction = () => Task.CompletedTask
@@ -154,7 +154,7 @@ public class UndoServiceTests
     public async Task ClearHistory_ShouldRemoveAllActions()
     {
         // Arrange
-        using var service = new UndoService();
+        using UndoService service = new UndoService();
         service.RecordAction(new UndoableAction { Description = "Action 1", UndoAction = () => Task.CompletedTask });
         service.RecordAction(new UndoableAction { Description = "Action 2", UndoAction = () => Task.CompletedTask });
         await service.UndoAsync();
@@ -176,7 +176,7 @@ public class UndoServiceTests
     public void MaxHistorySize_ShouldLimitUndoStack()
     {
         // Arrange
-        using var service = new UndoService();
+        using UndoService service = new UndoService();
         service.MaxHistorySize = 3;
 
         // Act - Add more actions than max
@@ -190,7 +190,7 @@ public class UndoServiceTests
         }
 
         // Assert
-        var history = service.GetUndoHistory();
+        IReadOnlyList<UndoableAction> history = service.GetUndoHistory();
         Assert.True(history.Count <= 3);
     }
 
@@ -201,8 +201,8 @@ public class UndoServiceTests
     public void RecordAction_ShouldRaiseStateChanged()
     {
         // Arrange
-        using var service = new UndoService();
-        var eventRaised = false;
+        using UndoService service = new UndoService();
+        bool eventRaised = false;
         service.StateChanged += (_, _) => eventRaised = true;
 
         // Act
@@ -223,14 +223,14 @@ public class UndoServiceTests
     public async Task Undo_ShouldRaiseStateChanged()
     {
         // Arrange
-        using var service = new UndoService();
+        using UndoService service = new UndoService();
         service.RecordAction(new UndoableAction
         {
             Description = "Test",
             UndoAction = () => Task.CompletedTask
         });
 
-        var eventRaised = false;
+        bool eventRaised = false;
         service.StateChanged += (_, _) => eventRaised = true;
 
         // Act
@@ -247,7 +247,7 @@ public class UndoServiceTests
     public async Task Redo_ShouldRaiseStateChanged()
     {
         // Arrange
-        using var service = new UndoService();
+        using UndoService service = new UndoService();
         service.RecordAction(new UndoableAction
         {
             Description = "Test",
@@ -256,7 +256,7 @@ public class UndoServiceTests
         });
         await service.UndoAsync();
 
-        var eventRaised = false;
+        bool eventRaised = false;
         service.StateChanged += (_, _) => eventRaised = true;
 
         // Act
@@ -273,10 +273,10 @@ public class UndoServiceTests
     public async Task Undo_EmptyStack_ShouldReturnFalse()
     {
         // Arrange
-        using var service = new UndoService();
+        using UndoService service = new UndoService();
 
         // Act
-        var result = await service.UndoAsync();
+        bool result = await service.UndoAsync();
 
         // Assert
         Assert.False(result);
@@ -289,10 +289,10 @@ public class UndoServiceTests
     public async Task Redo_EmptyStack_ShouldReturnFalse()
     {
         // Arrange
-        using var service = new UndoService();
+        using UndoService service = new UndoService();
 
         // Act
-        var result = await service.RedoAsync();
+        bool result = await service.RedoAsync();
 
         // Assert
         Assert.False(result);
@@ -305,13 +305,13 @@ public class UndoServiceTests
     public void GetUndoHistory_ShouldReturnMostRecentFirst()
     {
         // Arrange
-        using var service = new UndoService();
+        using UndoService service = new UndoService();
         service.RecordAction(new UndoableAction { Description = "Action 1", UndoAction = () => Task.CompletedTask });
         service.RecordAction(new UndoableAction { Description = "Action 2", UndoAction = () => Task.CompletedTask });
         service.RecordAction(new UndoableAction { Description = "Action 3", UndoAction = () => Task.CompletedTask });
 
         // Act
-        var history = service.GetUndoHistory();
+        IReadOnlyList<UndoableAction> history = service.GetUndoHistory();
 
         // Assert
         Assert.Equal(3, history.Count);
@@ -327,14 +327,14 @@ public class UndoServiceTests
     public void RecordAction_WithDescriptionKey_ShouldWork()
     {
         // Arrange
-        using var service = new UndoService();
+        using UndoService service = new UndoService();
 
         // Act
         service.RecordAction("test.key", () => Task.CompletedTask, "TestCategory");
 
         // Assert
         Assert.True(service.CanUndo);
-        var history = service.GetUndoHistory();
+        IReadOnlyList<UndoableAction> history = service.GetUndoHistory();
         Assert.Single(history);
         Assert.Equal("TestCategory", history[0].Category);
     }
@@ -346,7 +346,7 @@ public class UndoServiceTests
     public void Dispose_ShouldClearStacks()
     {
         // Arrange
-        var service = new UndoService();
+        UndoService service = new UndoService();
         service.RecordAction(new UndoableAction
         {
             Description = "Test",
@@ -368,7 +368,7 @@ public class UndoServiceTests
     public async Task Undo_WhenFails_ShouldRestoreAction()
     {
         // Arrange
-        using var service = new UndoService();
+        using UndoService service = new UndoService();
         service.RecordAction(new UndoableAction
         {
             Description = "Failing action",
@@ -376,7 +376,7 @@ public class UndoServiceTests
         });
 
         // Act
-        var result = await service.UndoAsync();
+        bool result = await service.UndoAsync();
 
         // Assert
         Assert.False(result);
@@ -390,7 +390,7 @@ public class UndoServiceTests
     public async Task Redo_WhenFails_ShouldRestoreAction()
     {
         // Arrange
-        using var service = new UndoService();
+        using UndoService service = new UndoService();
         service.RecordAction(new UndoableAction
         {
             Description = "Action",
@@ -400,7 +400,7 @@ public class UndoServiceTests
         await service.UndoAsync();
 
         // Act
-        var result = await service.RedoAsync();
+        bool result = await service.RedoAsync();
 
         // Assert
         Assert.False(result);
@@ -414,7 +414,7 @@ public class UndoServiceTests
     public void UndoableAction_ShouldHaveCorrectDefaults()
     {
         // Arrange & Act
-        var action = new UndoableAction();
+        UndoableAction action = new UndoableAction();
 
         // Assert
         Assert.NotEmpty(action.Id);
@@ -434,7 +434,7 @@ public class UndoServiceTests
     public void UndoableAction_CanUndo_ShouldBeTrueWhenUndoActionSet()
     {
         // Arrange & Act
-        var action = new UndoableAction
+        UndoableAction action = new UndoableAction
         {
             UndoAction = () => Task.CompletedTask
         };
@@ -450,7 +450,7 @@ public class UndoServiceTests
     public void MaxHistorySize_ShouldClampValues()
     {
         // Arrange
-        using var service = new UndoService();
+        using UndoService service = new UndoService();
 
         // Act & Assert - Too low
         service.MaxHistorySize = -10;

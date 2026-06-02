@@ -53,7 +53,7 @@ internal static class PowerShellValidation
         }
 
         // Check for other invalid path characters
-        var invalidChars = Path.GetInvalidFileNameChars();
+        char[] invalidChars = Path.GetInvalidFileNameChars();
         if (profileName.IndexOfAny(invalidChars) >= 0)
         {
             throw new ArgumentException("Profile name contains invalid characters.", nameof(profileName));
@@ -77,8 +77,8 @@ internal static class PowerShellValidation
     /// <exception cref="ArgumentException">Thrown if the path escapes the expected directory.</exception>
     public static string ValidatePathWithinDirectory(string filePath, string expectedBaseDir)
     {
-        var fullPath = Path.GetFullPath(filePath);
-        var fullBaseDir = Path.GetFullPath(expectedBaseDir);
+        string fullPath = Path.GetFullPath(filePath);
+        string fullBaseDir = Path.GetFullPath(expectedBaseDir);
 
         // Ensure the base directory ends with a separator for proper prefix checking
         if (!fullBaseDir.EndsWith(Path.DirectorySeparatorChar.ToString()))

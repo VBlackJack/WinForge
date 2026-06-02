@@ -35,7 +35,7 @@ public sealed class ScheduledDeploymentService : IScheduledDeploymentService
 
     public async Task<ScheduledDeploymentAvailability> GetAvailabilityAsync(CancellationToken cancellationToken = default)
     {
-        var result = await _powerShellBridge.ExecuteCommandAsync($@"
+        string result = await _powerShellBridge.ExecuteCommandAsync($@"
 {GetModuleImportScript()}
 @{{
     TaskSchedulerAvailable = Test-ScheduledTasksAvailable
@@ -48,13 +48,13 @@ public sealed class ScheduledDeploymentService : IScheduledDeploymentService
             return new ScheduledDeploymentAvailability(false, false);
         }
 
-        var availability = JsonSerializer.Deserialize<ScheduledDeploymentAvailability>(result, JsonOptions);
+        ScheduledDeploymentAvailability? availability = JsonSerializer.Deserialize<ScheduledDeploymentAvailability>(result, JsonOptions);
         return availability ?? new ScheduledDeploymentAvailability(false, false);
     }
 
     public async Task<IReadOnlyList<ScheduledDeploymentModel>> GetScheduledDeploymentsAsync(CancellationToken cancellationToken = default)
     {
-        var result = await _powerShellBridge.ExecuteCommandAsync($@"
+        string result = await _powerShellBridge.ExecuteCommandAsync($@"
 {GetModuleImportScript()}
 Get-ScheduledDeployment | ForEach-Object {{
     @{{
@@ -76,8 +76,8 @@ Get-ScheduledDeployment | ForEach-Object {{
             return [];
         }
 
-        var trimmed = result.TrimStart();
-        var deployments = trimmed.StartsWith('[')
+        string trimmed = result.TrimStart();
+        List<ScheduledDeploymentJson>? deployments = trimmed.StartsWith('[')
             ? JsonSerializer.Deserialize<List<ScheduledDeploymentJson>>(result, JsonOptions)
             : DeserializeSingleDeployment(result);
 
@@ -90,11 +90,11 @@ Get-ScheduledDeployment | ForEach-Object {{
         ScheduledTriggerType triggerType,
         CancellationToken cancellationToken = default)
     {
-        var escapedProfile = EscapePowerShellSingleQuotedString(profileName);
-        var triggerTypeText = EscapePowerShellSingleQuotedString(triggerType.ToString());
-        var scheduledTimeText = EscapePowerShellSingleQuotedString(scheduledTime.ToString("o"));
+        string escapedProfile = EscapePowerShellSingleQuotedString(profileName);
+        string triggerTypeText = EscapePowerShellSingleQuotedString(triggerType.ToString());
+        string scheduledTimeText = EscapePowerShellSingleQuotedString(scheduledTime.ToString("o"));
 
-        var result = await _powerShellBridge.ExecuteCommandAsync($@"
+        string result = await _powerShellBridge.ExecuteCommandAsync($@"
 {GetModuleImportScript()}
 $deployment = New-ScheduledDeployment -ProfileName '{escapedProfile}' -ScheduledTime ([datetime]'{scheduledTimeText}') -TriggerType '{triggerTypeText}'
 @{{
@@ -108,17 +108,17 @@ $deployment = New-ScheduledDeployment -ProfileName '{escapedProfile}' -Scheduled
             return null;
         }
 
-        using var document = JsonDocument.Parse(result);
-        return document.RootElement.TryGetProperty("Success", out var successProp)
+        using JsonDocument document = JsonDocument.Parse(result);
+        return document.RootElement.TryGetProperty("Success", out JsonElement successProp)
             && successProp.GetBoolean()
-            && document.RootElement.TryGetProperty("Id", out var idProp)
+            && document.RootElement.TryGetProperty("Id", out JsonElement idProp)
             ? idProp.GetString()
             : null;
     }
 
     public Task RemoveScheduledDeploymentAsync(string id, CancellationToken cancellationToken = default)
     {
-        var escapedId = EscapePowerShellSingleQuotedString(id);
+        string escapedId = EscapePowerShellSingleQuotedString(id);
         return _powerShellBridge.ExecuteCommandAsync($@"
 {GetModuleImportScript()}
 Remove-ScheduledDeployment -Id '{escapedId}' -Force
@@ -127,7 +127,7 @@ Remove-ScheduledDeployment -Id '{escapedId}' -Force
 
     public Task StartScheduledDeploymentAsync(string id, CancellationToken cancellationToken = default)
     {
-        var escapedId = EscapePowerShellSingleQuotedString(id);
+        string escapedId = EscapePowerShellSingleQuotedString(id);
         return _powerShellBridge.ExecuteCommandAsync($@"
 {GetModuleImportScript()}
 Start-ScheduledDeployment -Id '{escapedId}'
@@ -136,7 +136,7 @@ Start-ScheduledDeployment -Id '{escapedId}'
 
     private string GetModuleImportScript()
     {
-        var repoRoot = EscapePowerShellSingleQuotedString(_powerShellBridge.RepositoryRoot);
+        string repoRoot = EscapePowerShellSingleQuotedString(_powerShellBridge.RepositoryRoot);
         return $"Import-Module (Join-Path '{repoRoot}' 'Modules\\ScheduledDeployment.psm1') -Force -ErrorAction Stop";
     }
 
@@ -147,13 +147,13 @@ Start-ScheduledDeployment -Id '{escapedId}'
 
     private static List<ScheduledDeploymentJson>? DeserializeSingleDeployment(string json)
     {
-        var deployment = JsonSerializer.Deserialize<ScheduledDeploymentJson>(json, JsonOptions);
+        ScheduledDeploymentJson? deployment = JsonSerializer.Deserialize<ScheduledDeploymentJson>(json, JsonOptions);
         return deployment == null ? null : [deployment];
     }
 
     private static ScheduledDeploymentModel MapToModel(ScheduledDeploymentJson json)
     {
-        var status = json.Status?.ToLowerInvariant() switch
+        ScheduledDeploymentStatus status = json.Status?.ToLowerInvariant() switch
         {
             "pending" => ScheduledDeploymentStatus.Pending,
             "running" => ScheduledDeploymentStatus.Running,
@@ -163,7 +163,7 @@ Start-ScheduledDeployment -Id '{escapedId}'
             _ => ScheduledDeploymentStatus.Unknown
         };
 
-        var triggerType = json.TriggerType?.ToLowerInvariant() switch
+        ScheduledTriggerType triggerType = json.TriggerType?.ToLowerInvariant() switch
         {
             "onetime" => ScheduledTriggerType.OneTime,
             "daily" => ScheduledTriggerType.Daily,
@@ -177,12 +177,12 @@ Start-ScheduledDeployment -Id '{escapedId}'
         {
             Id = json.Id ?? string.Empty,
             ProfileName = json.ProfileName ?? string.Empty,
-            ScheduledTime = DateTime.TryParse(json.ScheduledTime, out var scheduledTime) ? scheduledTime : DateTime.Now,
+            ScheduledTime = DateTime.TryParse(json.ScheduledTime, out DateTime scheduledTime) ? scheduledTime : DateTime.Now,
             TriggerType = triggerType,
             Status = status,
             CreatedBy = json.CreatedBy ?? string.Empty,
-            CreatedAt = DateTime.TryParse(json.CreatedAt, out var createdAt) ? createdAt : DateTime.Now,
-            LastRunTime = DateTime.TryParse(json.LastRunTime, out var lastRunTime) ? lastRunTime : null,
+            CreatedAt = DateTime.TryParse(json.CreatedAt, out DateTime createdAt) ? createdAt : DateTime.Now,
+            LastRunTime = DateTime.TryParse(json.LastRunTime, out DateTime lastRunTime) ? lastRunTime : null,
             LastRunResult = json.LastRunResult
         };
     }

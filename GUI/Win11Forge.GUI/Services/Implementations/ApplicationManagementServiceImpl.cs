@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services.PowerShell;
@@ -60,20 +61,20 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
     {
         await _cacheService.EnsureApplicationsCacheAsync();
 
-        var cache = _cacheService.ApplicationsCache;
+        IReadOnlyDictionary<string, JsonElement>? cache = _cacheService.ApplicationsCache;
         if (cache == null || cache.Count == 0)
         {
             return [];
         }
 
-        var applications = new List<ApplicationModel>();
+        List<ApplicationModel> applications = new List<ApplicationModel>();
 
-        foreach (var kvp in cache)
+        foreach (KeyValuePair<string, JsonElement> kvp in cache)
         {
-            var appId = kvp.Key;
-            var appData = kvp.Value;
+            string appId = kvp.Key;
+            JsonElement appData = kvp.Value;
 
-            var app = new ApplicationModel
+            ApplicationModel app = new ApplicationModel
             {
                 AppId = appId,
                 Name = JsonHelper.GetJsonString(appData, "Name") ?? appId,
@@ -84,43 +85,43 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
             };
 
             // Get priority from DefaultPriority
-            if (appData.TryGetProperty("DefaultPriority", out var priorityProp) &&
+            if (appData.TryGetProperty("DefaultPriority", out JsonElement priorityProp) &&
                 priorityProp.ValueKind == JsonValueKind.Number)
             {
                 app.Priority = priorityProp.GetInt32();
             }
 
             // Get required from DefaultRequired
-            if (appData.TryGetProperty("DefaultRequired", out var requiredProp) &&
+            if (appData.TryGetProperty("DefaultRequired", out JsonElement requiredProp) &&
                 (requiredProp.ValueKind == JsonValueKind.True || requiredProp.ValueKind == JsonValueKind.False))
             {
                 app.IsRequired = requiredProp.GetBoolean();
             }
 
             // Build sources list from Sources object
-            var sourcesList = new List<string>();
-            if (appData.TryGetProperty("Sources", out var sourcesObj) &&
+            List<string> sourcesList = new List<string>();
+            if (appData.TryGetProperty("Sources", out JsonElement sourcesObj) &&
                 sourcesObj.ValueKind == JsonValueKind.Object)
             {
-                if (sourcesObj.TryGetProperty("Winget", out var winget) &&
+                if (sourcesObj.TryGetProperty("Winget", out JsonElement winget) &&
                     winget.ValueKind == JsonValueKind.String &&
                     !string.IsNullOrEmpty(winget.GetString()))
                 {
                     sourcesList.Add("Winget");
                 }
-                if (sourcesObj.TryGetProperty("Chocolatey", out var choco) &&
+                if (sourcesObj.TryGetProperty("Chocolatey", out JsonElement choco) &&
                     choco.ValueKind == JsonValueKind.String &&
                     !string.IsNullOrEmpty(choco.GetString()))
                 {
                     sourcesList.Add("Chocolatey");
                 }
-                if (sourcesObj.TryGetProperty("Store", out var store) &&
+                if (sourcesObj.TryGetProperty("Store", out JsonElement store) &&
                     store.ValueKind == JsonValueKind.String &&
                     !string.IsNullOrEmpty(store.GetString()))
                 {
                     sourcesList.Add("Store");
                 }
-                if (sourcesObj.TryGetProperty("DirectUrl", out var url) &&
+                if (sourcesObj.TryGetProperty("DirectUrl", out JsonElement url) &&
                     url.ValueKind == JsonValueKind.String &&
                     !string.IsNullOrEmpty(url.GetString()))
                 {
@@ -131,7 +132,7 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
             app.Sources = string.Join(", ", sourcesList);
 
             // Get ManualInstallOnly flag
-            if (appData.TryGetProperty("ManualInstallOnly", out var manualProp) &&
+            if (appData.TryGetProperty("ManualInstallOnly", out JsonElement manualProp) &&
                 manualProp.ValueKind == JsonValueKind.True)
             {
                 app.ManualInstallOnly = true;
@@ -152,16 +153,16 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
     /// <inheritdoc/>
     public async Task<ApplicationStatus> GetApplicationStatusAsync(string appId)
     {
-        var corePath = _pathService.GetPathForPowerShell("Core", "Core.psm1");
-        var dbModulePath = _pathService.GetPathForPowerShell("Modules", "ApplicationDatabase.psm1");
-        var enginePath = _pathService.GetPathForPowerShell("Modules", "InstallationEngine.psm1");
-        var detectionPath = _pathService.GetPathForPowerShell("Modules", "ApplicationDetection.psm1");
+        string corePath = _pathService.GetPathForPowerShell("Core", "Core.psm1");
+        string dbModulePath = _pathService.GetPathForPowerShell("Modules", "ApplicationDatabase.psm1");
+        string enginePath = _pathService.GetPathForPowerShell("Modules", "InstallationEngine.psm1");
+        string detectionPath = _pathService.GetPathForPowerShell("Modules", "ApplicationDetection.psm1");
 
         try
         {
-            var escapedAppId = PowerShellValidation.EscapeForPowerShell(appId);
+            string escapedAppId = PowerShellValidation.EscapeForPowerShell(appId);
 
-            var script = $@"
+            string script = $@"
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
 $ErrorActionPreference = 'SilentlyContinue'
 
@@ -188,8 +189,8 @@ try {{
 }}
 ";
 
-            var output = await _executionService.ExecutePowerShellScriptAsync(script);
-            var result = output.Trim().Split('\n').LastOrDefault()?.Trim() ?? string.Empty;
+            string output = await _executionService.ExecutePowerShellScriptAsync(script);
+            string result = output.Trim().Split('\n').LastOrDefault()?.Trim() ?? string.Empty;
 
             return result switch
             {
@@ -213,7 +214,7 @@ try {{
         }
 
         // Try fast detection first
-        var fastResult = await GetBatchApplicationStatusFastAsync(apps);
+        Dictionary<string, BatchAppStatus>? fastResult = await GetBatchApplicationStatusFastAsync(apps);
         if (fastResult != null)
         {
             return fastResult;
@@ -230,13 +231,13 @@ try {{
     {
         try
         {
-            var detectionResult = await _detectionService.GetInstalledPackagesAsync();
-            var result = new Dictionary<string, BatchAppStatus>(StringComparer.OrdinalIgnoreCase);
+            BatchDetectionResult detectionResult = await _detectionService.GetInstalledPackagesAsync();
+            Dictionary<string, BatchAppStatus> result = new Dictionary<string, BatchAppStatus>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var app in apps)
+            foreach (ApplicationModel app in apps)
             {
-                var appId = app.AppId;
-                var packageInfo = FindDetectedPackage(app, detectionResult);
+                string appId = app.AppId;
+                InstalledPackageInfo? packageInfo = FindDetectedPackage(app, detectionResult);
 
                 if (packageInfo != null)
                 {
@@ -265,7 +266,7 @@ try {{
     {
         if (!string.IsNullOrEmpty(app.AppId))
         {
-            var packageInfo = detectionResult.GetPackage(app.AppId);
+            InstalledPackageInfo? packageInfo = detectionResult.GetPackage(app.AppId);
             if (packageInfo != null)
             {
                 return packageInfo;
@@ -274,15 +275,15 @@ try {{
 
         if (!string.IsNullOrEmpty(app.Name))
         {
-            var normalizedName = NormalizePackageLookupKey(app.Name);
-            var packageInfo = detectionResult.GetPackage(normalizedName);
+            string normalizedName = NormalizePackageLookupKey(app.Name);
+            InstalledPackageInfo? packageInfo = detectionResult.GetPackage(normalizedName);
             if (packageInfo != null)
             {
                 return packageInfo;
             }
         }
 
-        foreach (var packageInfo in detectionResult.Packages.Values.DistinctBy(p => $"{p.Id}|{p.Name}"))
+        foreach (InstalledPackageInfo? packageInfo in detectionResult.Packages.Values.DistinctBy(p => $"{p.Id}|{p.Name}"))
         {
             if (IsPackageMatch(app, packageInfo))
             {
@@ -300,10 +301,10 @@ try {{
             return false;
         }
 
-        foreach (var candidate in new[] { packageInfo.Name, packageInfo.Id }.Where(static c => !string.IsNullOrWhiteSpace(c)))
+        foreach (string? candidate in new[] { packageInfo.Name, packageInfo.Id }.Where(static c => !string.IsNullOrWhiteSpace(c)))
         {
-            var normalizedAppName = NormalizePackageLookupKey(app.Name);
-            var normalizedCandidate = NormalizePackageLookupKey(candidate);
+            string normalizedAppName = NormalizePackageLookupKey(app.Name);
+            string normalizedCandidate = NormalizePackageLookupKey(candidate);
 
             if (normalizedAppName.Length >= 4 &&
                 normalizedCandidate.Length >= 4 &&
@@ -329,8 +330,8 @@ try {{
             return string.Empty;
         }
 
-        var builder = new StringBuilder(value.Length);
-        foreach (var ch in value)
+        StringBuilder builder = new StringBuilder(value.Length);
+        foreach (char ch in value)
         {
             if (char.IsLetterOrDigit(ch))
             {
@@ -343,22 +344,22 @@ try {{
 
     private static bool HasMeaningfulTokenOverlap(string appName, string packageName)
     {
-        var appTokens = GetMeaningfulTokens(appName);
+        HashSet<string> appTokens = GetMeaningfulTokens(appName);
         if (appTokens.Count == 0)
         {
             return false;
         }
 
-        var packageTokens = GetMeaningfulTokens(packageName);
+        HashSet<string> packageTokens = GetMeaningfulTokens(packageName);
         return packageTokens.Any(appTokens.Contains);
     }
 
     private static HashSet<string> GetMeaningfulTokens(string value)
     {
-        var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var builder = new StringBuilder();
+        HashSet<string> tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        StringBuilder builder = new StringBuilder();
 
-        foreach (var ch in value)
+        foreach (char ch in value)
         {
             if (char.IsLetterOrDigit(ch))
             {
@@ -381,7 +382,7 @@ try {{
             return;
         }
 
-        var token = builder.ToString();
+        string token = builder.ToString();
         builder.Clear();
 
         if (token.Length < 4 || CommonPackageMatchTokens.Contains(token))
@@ -409,17 +410,17 @@ try {{
     /// </summary>
     private async Task<Dictionary<string, BatchAppStatus>?> GetBatchApplicationStatusPowerShellAsync(IReadOnlyList<ApplicationModel> apps)
     {
-        var corePath = _pathService.GetPathForPowerShell("Core", "Core.psm1");
-        var dbModulePath = _pathService.GetPathForPowerShell("Modules", "ApplicationDatabase.psm1");
-        var enginePath = _pathService.GetPathForPowerShell("Modules", "InstallationEngine.psm1");
-        var detectionPath = _pathService.GetPathForPowerShell("Modules", "ApplicationDetection.psm1");
+        string corePath = _pathService.GetPathForPowerShell("Core", "Core.psm1");
+        string dbModulePath = _pathService.GetPathForPowerShell("Modules", "ApplicationDatabase.psm1");
+        string enginePath = _pathService.GetPathForPowerShell("Modules", "InstallationEngine.psm1");
+        string detectionPath = _pathService.GetPathForPowerShell("Modules", "ApplicationDetection.psm1");
 
         try
         {
-            var appIds = apps.Select(a => a.AppId).ToList();
-            var appIdsJson = PowerShellValidation.EscapeForPowerShell(JsonSerializer.Serialize(appIds));
+            List<string> appIds = apps.Select(a => a.AppId).ToList();
+            string appIdsJson = PowerShellValidation.EscapeForPowerShell(JsonSerializer.Serialize(appIds));
 
-            var script = $@"
+            string script = $@"
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
 $ErrorActionPreference = 'SilentlyContinue'
 
@@ -445,10 +446,10 @@ try {{
 }}
 ";
 
-            var output = await _executionService.ExecutePowerShellScriptAsync(script);
-            var lines = output.Trim().Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            string output = await _executionService.ExecutePowerShellScriptAsync(script);
+            string[] lines = output.Trim().Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var line in lines)
+            foreach (string line in lines)
             {
                 if (line.Contains("___BATCH_ERROR___"))
                 {
@@ -456,28 +457,28 @@ try {{
                 }
             }
 
-            foreach (var line in lines.Reverse())
+            foreach (string? line in lines.Reverse())
             {
-                var trimmed = line.Trim();
+                string trimmed = line.Trim();
                 if (trimmed.StartsWith("{") && trimmed.EndsWith("}"))
                 {
-                    using var doc = JsonDocument.Parse(trimmed);
-                    var root = doc.RootElement;
+                    using JsonDocument doc = JsonDocument.Parse(trimmed);
+                    JsonElement root = doc.RootElement;
 
-                    var result = new Dictionary<string, BatchAppStatus>();
-                    foreach (var prop in root.EnumerateObject())
+                    Dictionary<string, BatchAppStatus> result = new Dictionary<string, BatchAppStatus>();
+                    foreach (JsonProperty prop in root.EnumerateObject())
                     {
-                        var appId = prop.Name;
-                        var isInstalled = false;
+                        string appId = prop.Name;
+                        bool isInstalled = false;
                         string? version = null;
 
                         if (prop.Value.ValueKind == JsonValueKind.Object)
                         {
-                            if (prop.Value.TryGetProperty("IsInstalled", out var installedProp))
+                            if (prop.Value.TryGetProperty("IsInstalled", out JsonElement installedProp))
                             {
                                 isInstalled = installedProp.ValueKind == JsonValueKind.True;
                             }
-                            if (prop.Value.TryGetProperty("Version", out var versionProp) &&
+                            if (prop.Value.TryGetProperty("Version", out JsonElement versionProp) &&
                                 versionProp.ValueKind == JsonValueKind.String)
                             {
                                 version = versionProp.GetString();
@@ -489,7 +490,7 @@ try {{
                             isInstalled = prop.Value.GetBoolean();
                         }
 
-                        var status = isInstalled ? ApplicationStatus.Installed : ApplicationStatus.Pending;
+                        ApplicationStatus status = isInstalled ? ApplicationStatus.Installed : ApplicationStatus.Pending;
                         result[appId] = new BatchAppStatus(status, version);
                     }
 
@@ -520,25 +521,25 @@ try {{
             return InstallResult.DryRun(app.Name);
         }
 
-        var corePath = _pathService.GetPathForPowerShell("Core", "Core.psm1");
-        var dbModulePath = _pathService.GetPathForPowerShell("Modules", "ApplicationDatabase.psm1");
-        var enginePath = _pathService.GetPathForPowerShell("Modules", "InstallationEngine.psm1");
-        var orchestratorPath = _pathService.GetPathForPowerShell("Modules", "InstallationOrchestrator.psm1");
+        string corePath = _pathService.GetPathForPowerShell("Core", "Core.psm1");
+        string dbModulePath = _pathService.GetPathForPowerShell("Modules", "ApplicationDatabase.psm1");
+        string enginePath = _pathService.GetPathForPowerShell("Modules", "InstallationEngine.psm1");
+        string orchestratorPath = _pathService.GetPathForPowerShell("Modules", "InstallationOrchestrator.psm1");
 
         return await Task.Run(async () =>
         {
-            var logBuilder = new StringBuilder();
-            var outputLines = new List<string>();
+            StringBuilder logBuilder = new StringBuilder();
+            List<string> outputLines = new List<string>();
 
             try
             {
                 progressCallback?.Invoke($"Preparing to install {app.Name}...");
 
-                var forceUpdateSwitch = forceUpdate ? " -ForceUpdate" : "";
-                var validatedAppId = PowerShellValidation.ValidateAppId(app.AppId);
-                var escapedAppId = PowerShellValidation.EscapeForPowerShell(validatedAppId);
+                string forceUpdateSwitch = forceUpdate ? " -ForceUpdate" : "";
+                string validatedAppId = PowerShellValidation.ValidateAppId(app.AppId);
+                string escapedAppId = PowerShellValidation.EscapeForPowerShell(validatedAppId);
 
-                var script = $@"
+                string script = $@"
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
 $ErrorActionPreference = 'Continue'
 
@@ -568,11 +569,11 @@ try {{
 
                 progressCallback?.Invoke($"Installing {app.Name}...");
 
-                var psPath = _executionService.GetPowerShellPath();
-                var repoRoot = _pathService.GetSafeRepositoryRoot();
-                var encodedScript = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
+                string psPath = _executionService.GetPowerShellPath();
+                string repoRoot = _pathService.GetSafeRepositoryRoot();
+                string encodedScript = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
 
-                var startInfo = new ProcessStartInfo
+                ProcessStartInfo startInfo = new ProcessStartInfo
                 {
                     FileName = psPath,
                     Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -EncodedCommand {encodedScript}",
@@ -583,13 +584,13 @@ try {{
                     CreateNoWindow = true
                 };
 
-                using var process = new Process { StartInfo = startInfo };
+                using Process process = new Process { StartInfo = startInfo };
 
                 process.OutputDataReceived += (sender, e) =>
                 {
                     if (e.Data != null)
                     {
-                        var line = e.Data.Trim();
+                        string line = e.Data.Trim();
                         if (!string.IsNullOrWhiteSpace(line))
                         {
                             outputLines.Add(line);
@@ -616,7 +617,7 @@ try {{
                 {
                     if (!string.IsNullOrWhiteSpace(e.Data))
                     {
-                        var cleanLine = ExtractReadableMessage(e.Data);
+                        string cleanLine = ExtractReadableMessage(e.Data);
                         if (!string.IsNullOrWhiteSpace(cleanLine))
                         {
                             logBuilder.AppendLine($"[STDERR] {cleanLine}");
@@ -629,7 +630,7 @@ try {{
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
-                using var installTimeoutCts = new CancellationTokenSource(_executionService.InstallationTimeoutMs);
+                using CancellationTokenSource installTimeoutCts = new CancellationTokenSource(_executionService.InstallationTimeoutMs);
                 try
                 {
                     await process.WaitForExitAsync(installTimeoutCts.Token);
@@ -644,7 +645,7 @@ try {{
                 string? jsonLine = null;
                 for (int i = outputLines.Count - 1; i >= 0; i--)
                 {
-                    var trimmed = outputLines[i].Trim();
+                    string trimmed = outputLines[i].Trim();
                     if (trimmed.StartsWith("{") && trimmed.EndsWith("}"))
                     {
                         jsonLine = trimmed;
@@ -656,18 +657,18 @@ try {{
                 {
                     try
                     {
-                        using var doc = JsonDocument.Parse(jsonLine);
-                        var root = doc.RootElement;
+                        using JsonDocument doc = JsonDocument.Parse(jsonLine);
+                        JsonElement root = doc.RootElement;
 
-                        var success = root.TryGetProperty("Success", out var successProp) &&
+                        bool success = root.TryGetProperty("Success", out JsonElement successProp) &&
                                       successProp.ValueKind == JsonValueKind.True;
-                        var message = root.TryGetProperty("Message", out var msgProp)
+                        string message = root.TryGetProperty("Message", out JsonElement msgProp)
                             ? msgProp.GetString() ?? string.Empty
                             : string.Empty;
-                        var method = root.TryGetProperty("Method", out var methodProp)
+                        string method = root.TryGetProperty("Method", out JsonElement methodProp)
                             ? methodProp.GetString() ?? string.Empty
                             : string.Empty;
-                        var alreadyInstalled = root.TryGetProperty("AlreadyInstalled", out var aiProp) &&
+                        bool alreadyInstalled = root.TryGetProperty("AlreadyInstalled", out JsonElement aiProp) &&
                                                aiProp.ValueKind == JsonValueKind.True;
 
                         logBuilder.AppendLine($"Result: Success={success}, Method={method}, Message={message}");
@@ -689,7 +690,7 @@ try {{
                     }
                 }
 
-                var fullOutput = string.Join("\n", outputLines);
+                string fullOutput = string.Join("\n", outputLines);
                 if (fullOutput.Contains("successfully", StringComparison.OrdinalIgnoreCase) ||
                     fullOutput.Contains("installed", StringComparison.OrdinalIgnoreCase))
                 {
@@ -721,7 +722,7 @@ try {{
 
         return await Task.Run(async () =>
         {
-            var logBuilder = new StringBuilder();
+            StringBuilder logBuilder = new StringBuilder();
 
             try
             {
@@ -731,9 +732,9 @@ try {{
                 string? wingetId = null;
                 string? chocoPackage = null;
 
-                if (_cacheService.TryGetApplicationData(app.AppId, out var appData))
+                if (_cacheService.TryGetApplicationData(app.AppId, out JsonElement appData))
                 {
-                    if (appData.TryGetProperty("Sources", out var sources))
+                    if (appData.TryGetProperty("Sources", out JsonElement sources))
                     {
                         wingetId = JsonHelper.GetJsonString(sources, "Winget");
                         chocoPackage = JsonHelper.GetJsonString(sources, "Chocolatey");
@@ -759,7 +760,7 @@ try {{
                     progressCallback?.Invoke($"Uninstalling via Winget: {wingetId}");
                     logBuilder.AppendLine($"Uninstalling via Winget: {wingetId}");
 
-                    var wingetResult = await ExecuteUninstallCommandAsync(
+                    (bool Success, int ExitCode, string Output) wingetResult = await ExecuteUninstallCommandAsync(
                         "winget",
                         $"uninstall --id \"{wingetId}\" --silent --accept-source-agreements",
                         logBuilder);
@@ -784,7 +785,7 @@ try {{
                     progressCallback?.Invoke($"Uninstalling via Chocolatey: {chocoPackage}");
                     logBuilder.AppendLine($"Uninstalling via Chocolatey: {chocoPackage}");
 
-                    var chocoResult = await ExecuteUninstallCommandAsync(
+                    (bool Success, int ExitCode, string Output) chocoResult = await ExecuteUninstallCommandAsync(
                         "choco",
                         $"uninstall {chocoPackage} -y --no-progress",
                         logBuilder);
@@ -841,9 +842,9 @@ try {{
             {
                 string? wingetId = null;
 
-                if (_cacheService.TryGetApplicationData(app.AppId, out var appData))
+                if (_cacheService.TryGetApplicationData(app.AppId, out JsonElement appData))
                 {
-                    if (appData.TryGetProperty("Sources", out var sources))
+                    if (appData.TryGetProperty("Sources", out JsonElement sources))
                     {
                         wingetId = JsonHelper.GetJsonString(sources, "Winget");
                     }
@@ -897,7 +898,7 @@ try {{
 
         return await Task.Run(async () =>
         {
-            var logBuilder = new StringBuilder();
+            StringBuilder logBuilder = new StringBuilder();
 
             try
             {
@@ -907,9 +908,9 @@ try {{
                 string? wingetId = null;
                 string? chocoPackage = null;
 
-                if (_cacheService.TryGetApplicationData(app.AppId, out var appData))
+                if (_cacheService.TryGetApplicationData(app.AppId, out JsonElement appData))
                 {
-                    if (appData.TryGetProperty("Sources", out var sources))
+                    if (appData.TryGetProperty("Sources", out JsonElement sources))
                     {
                         wingetId = JsonHelper.GetJsonString(sources, "Winget");
                         chocoPackage = JsonHelper.GetJsonString(sources, "Chocolatey");
@@ -935,7 +936,7 @@ try {{
                     progressCallback?.Invoke($"Updating via Winget: {wingetId}");
                     logBuilder.AppendLine($"Updating via Winget: {wingetId}");
 
-                    var wingetResult = await ExecuteUpdateCommandAsync(
+                    (bool Success, int ExitCode, string Output) wingetResult = await ExecuteUpdateCommandAsync(
                         "winget",
                         $"upgrade --id \"{wingetId}\" --silent --accept-package-agreements --accept-source-agreements",
                         logBuilder);
@@ -970,7 +971,7 @@ try {{
                     progressCallback?.Invoke($"Updating via Chocolatey: {chocoPackage}");
                     logBuilder.AppendLine($"Updating via Chocolatey: {chocoPackage}");
 
-                    var chocoResult = await ExecuteUpdateCommandAsync(
+                    (bool Success, int ExitCode, string Output) chocoResult = await ExecuteUpdateCommandAsync(
                         "choco",
                         $"upgrade {chocoPackage} -y --no-progress",
                         logBuilder);
@@ -1034,7 +1035,7 @@ try {{
     {
         try
         {
-            var startInfo = new ProcessStartInfo
+            ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = "winget",
                 Arguments = $"list --id \"{wingetId}\" --exact --disable-interactivity",
@@ -1044,11 +1045,11 @@ try {{
                 CreateNoWindow = true
             };
 
-            using var process = new Process { StartInfo = startInfo };
+            using Process process = new Process { StartInfo = startInfo };
             process.Start();
 
-            var output = await process.StandardOutput.ReadToEndAsync();
-            using var timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
+            string output = await process.StandardOutput.ReadToEndAsync();
+            using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
             try
             {
                 await process.WaitForExitAsync(timeoutCts.Token);
@@ -1059,7 +1060,7 @@ try {{
                 return string.Empty;
             }
 
-            var cleanOutput = CleanWingetOutput(output);
+            string cleanOutput = CleanWingetOutput(output);
             return VersionServiceImpl.ParseVersionFromWingetList(cleanOutput);
         }
         catch
@@ -1075,7 +1076,7 @@ try {{
     {
         try
         {
-            var startInfo = new ProcessStartInfo
+            ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = "winget",
                 Arguments = $"show --id \"{wingetId}\" --exact --disable-interactivity",
@@ -1085,11 +1086,11 @@ try {{
                 CreateNoWindow = true
             };
 
-            using var process = new Process { StartInfo = startInfo };
+            using Process process = new Process { StartInfo = startInfo };
             process.Start();
 
-            var output = await process.StandardOutput.ReadToEndAsync();
-            using var timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
+            string output = await process.StandardOutput.ReadToEndAsync();
+            using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
             try
             {
                 await process.WaitForExitAsync(timeoutCts.Token);
@@ -1100,7 +1101,7 @@ try {{
                 return string.Empty;
             }
 
-            var cleanOutput = CleanWingetOutput(output);
+            string cleanOutput = CleanWingetOutput(output);
             return VersionServiceImpl.ParseVersionFromWingetShow(cleanOutput);
         }
         catch
@@ -1117,13 +1118,13 @@ try {{
         if (string.IsNullOrEmpty(output))
             return output;
 
-        var cleanLines = new List<string>();
-        var lines = output.Split('\n');
+        List<string> cleanLines = new List<string>();
+        string[] lines = output.Split('\n');
 
-        foreach (var line in lines)
+        foreach (string line in lines)
         {
-            var segments = line.Split('\r');
-            var lastSegment = segments
+            string[] segments = line.Split('\r');
+            string? lastSegment = segments
                 .Select(s => s.Trim())
                 .LastOrDefault(s => !string.IsNullOrEmpty(s) &&
                                     !s.All(c => c == '-' || c == '\\' || c == '|' || c == '/' || c == ' '));
@@ -1147,7 +1148,7 @@ try {{
     {
         try
         {
-            var startInfo = new ProcessStartInfo
+            ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = command,
                 Arguments = arguments,
@@ -1157,13 +1158,13 @@ try {{
                 CreateNoWindow = true
             };
 
-            using var process = new Process { StartInfo = startInfo };
+            using Process process = new Process { StartInfo = startInfo };
             process.Start();
 
-            var outputTask = process.StandardOutput.ReadToEndAsync();
-            var errorTask = process.StandardError.ReadToEndAsync();
+            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+            Task<string> errorTask = process.StandardError.ReadToEndAsync();
 
-            using var updateTimeoutCts = new CancellationTokenSource(_executionService.InstallationTimeoutMs);
+            using CancellationTokenSource updateTimeoutCts = new CancellationTokenSource(_executionService.InstallationTimeoutMs);
             try
             {
                 await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(updateTimeoutCts.Token));
@@ -1175,8 +1176,8 @@ try {{
                 return (false, -1, "Update command timed out");
             }
 
-            var output = await outputTask;
-            var error = await errorTask;
+            string output = await outputTask;
+            string error = await errorTask;
 
             logBuilder.AppendLine(output);
             if (!string.IsNullOrEmpty(error))
@@ -1203,7 +1204,7 @@ try {{
     {
         try
         {
-            var startInfo = new ProcessStartInfo
+            ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = command,
                 Arguments = arguments,
@@ -1213,13 +1214,13 @@ try {{
                 CreateNoWindow = true
             };
 
-            using var process = new Process { StartInfo = startInfo };
+            using Process process = new Process { StartInfo = startInfo };
             process.Start();
 
-            var outputTask = process.StandardOutput.ReadToEndAsync();
-            var errorTask = process.StandardError.ReadToEndAsync();
+            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+            Task<string> errorTask = process.StandardError.ReadToEndAsync();
 
-            using var uninstallTimeoutCts = new CancellationTokenSource(_executionService.InstallationTimeoutMs);
+            using CancellationTokenSource uninstallTimeoutCts = new CancellationTokenSource(_executionService.InstallationTimeoutMs);
             try
             {
                 await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(uninstallTimeoutCts.Token));
@@ -1231,8 +1232,8 @@ try {{
                 return (false, -1, "Uninstall command timed out");
             }
 
-            var output = await outputTask;
-            var error = await errorTask;
+            string output = await outputTask;
+            string error = await errorTask;
 
             logBuilder.AppendLine(output);
             if (!string.IsNullOrEmpty(error))
@@ -1280,16 +1281,16 @@ try {{
 
         if (line.Contains("<Objs") || line.Contains("<ToString>"))
         {
-            var messages = new List<string>();
+            List<string> messages = new List<string>();
 
-            var toStringPattern = new System.Text.RegularExpressions.Regex(
+            Regex toStringPattern = new System.Text.RegularExpressions.Regex(
                 @"<ToString>([^<]*)</ToString>",
                 System.Text.RegularExpressions.RegexOptions.Compiled);
 
-            var matches = toStringPattern.Matches(line);
+            MatchCollection matches = toStringPattern.Matches(line);
             foreach (System.Text.RegularExpressions.Match match in matches)
             {
-                var message = match.Groups[1].Value;
+                string message = match.Groups[1].Value;
                 if (!string.IsNullOrWhiteSpace(message))
                 {
                     message = message.Replace("_x000D__x000A_", "\n")

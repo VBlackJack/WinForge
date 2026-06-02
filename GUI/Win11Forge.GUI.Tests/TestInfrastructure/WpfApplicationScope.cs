@@ -58,7 +58,7 @@ internal sealed class WpfApplicationScope : IDisposable
     public static void RunOnStaThread(Action action)
     {
         ExceptionDispatchInfo? exception = null;
-        var thread = new Thread(() =>
+        Thread thread = new Thread(() =>
         {
             try
             {
@@ -82,7 +82,7 @@ internal sealed class WpfApplicationScope : IDisposable
     /// <returns>A disposable application scope.</returns>
     public static WpfApplicationScope Create()
     {
-        var app = Application.Current;
+        Application? app = Application.Current;
 
         if (app is not null && app.Dispatcher != Dispatcher.CurrentDispatcher)
         {

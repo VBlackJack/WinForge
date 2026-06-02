@@ -15,6 +15,7 @@
  */
 
 using System.Collections.Concurrent;
+using System.Resources;
 
 namespace Win11Forge.GUI.Services;
 
@@ -158,7 +159,7 @@ public class UndoService : IUndoService
     {
         get
         {
-            if (_undoStack.TryPeek(out var action))
+            if (_undoStack.TryPeek(out UndoableAction? action))
             {
                 return action.Description;
             }
@@ -171,7 +172,7 @@ public class UndoService : IUndoService
     {
         get
         {
-            if (_redoStack.TryPeek(out var action))
+            if (_redoStack.TryPeek(out UndoableAction? action))
             {
                 return action.Description;
             }
@@ -211,7 +212,7 @@ public class UndoService : IUndoService
     /// <inheritdoc/>
     public void RecordAction(string descriptionKey, Func<Task> undoAction, string category = "General")
     {
-        var action = new UndoableAction
+        UndoableAction action = new UndoableAction
         {
             DescriptionKey = descriptionKey,
             Description = GetLocalizedDescription(descriptionKey),
@@ -347,12 +348,12 @@ public class UndoService : IUndoService
         // Already under lock
         while (_undoStack.Count > _maxHistorySize)
         {
-            var tempStack = new Stack<UndoableAction>();
+            Stack<UndoableAction> tempStack = new Stack<UndoableAction>();
 
             // Pop all but the oldest
             while (_undoStack.Count > 1)
             {
-                if (_undoStack.TryPop(out var item))
+                if (_undoStack.TryPop(out UndoableAction? item))
                 {
                     tempStack.Push(item);
                 }
@@ -376,8 +377,8 @@ public class UndoService : IUndoService
         try
         {
             // Try to get localized string from resources
-            var resourceManager = Resources.Resources.ResourceManager;
-            var localized = resourceManager.GetString(key);
+            ResourceManager resourceManager = Resources.Resources.ResourceManager;
+            string? localized = resourceManager.GetString(key);
             return localized ?? key;
         }
         catch (Exception ex)

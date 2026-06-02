@@ -16,9 +16,9 @@
 
 using System.Globalization;
 using System.IO;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
-using Wpf.Ui.Appearance;
 using Microsoft.Extensions.DependencyInjection;
 using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Helpers;
@@ -27,6 +27,7 @@ using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Services.PowerShell;
 using Win11Forge.GUI.Services.Resume;
 using Win11Forge.GUI.Views;
+using Wpf.Ui.Appearance;
 
 namespace Win11Forge.GUI;
 
@@ -93,7 +94,7 @@ public partial class App : Application
 
     private static IServiceProvider ConfigureServices()
     {
-        var services = new ServiceCollection();
+        ServiceCollection services = new ServiceCollection();
         services.AddWin11ForgeServices();
         return services.BuildServiceProvider();
     }
@@ -139,13 +140,13 @@ public partial class App : Application
             // Step 2: Load settings FIRST (before any UI)
             Log("Loading settings...");
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingSettings);
-            var settingsService = Services.GetRequiredService<IAppSettingsService>();
-            var settings = Task.Run(() => settingsService.LoadSettingsAsync()).GetAwaiter().GetResult();
+            IAppSettingsService settingsService = Services.GetRequiredService<IAppSettingsService>();
+            AppSettings settings = Task.Run(() => settingsService.LoadSettingsAsync()).GetAwaiter().GetResult();
 
             // Get version for splash screen
             try
             {
-                var version = Task.Run(ReadVersionForSplash).GetAwaiter().GetResult();
+                string version = Task.Run(ReadVersionForSplash).GetAwaiter().GetResult();
                 splash.SetVersion(version);
             }
             catch (Exception ex)
@@ -161,7 +162,7 @@ public partial class App : Application
             {
                 try
                 {
-                    var culture = new CultureInfo(settings.LanguageCode);
+                    CultureInfo culture = new CultureInfo(settings.LanguageCode);
                     Thread.CurrentThread.CurrentUICulture = culture;
                     Thread.CurrentThread.CurrentCulture = culture;
                     CultureInfo.CurrentUICulture = culture;
@@ -179,7 +180,7 @@ public partial class App : Application
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_ApplyingTheme);
             try
             {
-                var themeService = Services.GetRequiredService<IThemeService>();
+                IThemeService themeService = Services.GetRequiredService<IThemeService>();
                 themeService.ApplyTheme(settings.ThemeName);
                 themeService.ApplyAccentTint(settings.AccentTintName);
             }
@@ -210,7 +211,7 @@ public partial class App : Application
             // Step 7: NOW create and show MainWindow (after culture is set)
             Log("Creating MainWindow...");
             splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingInterface);
-            var mainWindow = new MainWindow();
+            MainWindow mainWindow = new MainWindow();
 
             // Keep the persisted in-app theme stable across navigation and restarts.
             // Do not auto-follow OS theme changes unless an explicit user option is added.
@@ -228,7 +229,7 @@ public partial class App : Application
             // run unawaited from the startup path.
             try
             {
-                var resumeService = Services.GetRequiredService<IBatchResumeService>();
+                IBatchResumeService resumeService = Services.GetRequiredService<IBatchResumeService>();
                 _ = Task.Run(async () =>
                 {
                     try
@@ -267,7 +268,7 @@ public partial class App : Application
             // Still try to show MainWindow even if settings failed
             try
             {
-                var mainWindow = new MainWindow();
+                MainWindow mainWindow = new MainWindow();
                 mainWindow.Show();
             }
             catch (Exception innerEx)
@@ -285,13 +286,13 @@ public partial class App : Application
 
     private static string ReadVersionForSplash()
     {
-        var pathService = Services.GetService<IRepositoryPathService>();
+        IRepositoryPathService? pathService = Services.GetService<IRepositoryPathService>();
         if (pathService == null)
         {
             return string.Empty;
         }
 
-        var versionPath = pathService.GetPath(
+        string versionPath = pathService.GetPath(
             Win11ForgePathNames.ConfigDirectoryName,
             Win11ForgePathNames.VersionFileName);
         if (!File.Exists(versionPath))
@@ -299,9 +300,9 @@ public partial class App : Application
             return string.Empty;
         }
 
-        using var stream = File.OpenRead(versionPath);
-        using var versionJson = System.Text.Json.JsonDocument.Parse(stream);
-        return versionJson.RootElement.TryGetProperty("Version", out var versionElement)
+        using FileStream stream = File.OpenRead(versionPath);
+        using JsonDocument versionJson = System.Text.Json.JsonDocument.Parse(stream);
+        return versionJson.RootElement.TryGetProperty("Version", out JsonElement versionElement)
             ? versionElement.GetString() ?? string.Empty
             : string.Empty;
     }
@@ -315,8 +316,8 @@ public partial class App : Application
     {
         try
         {
-            var logPath = GetStartupLogPath();
-            var logDirectory = Path.GetDirectoryName(logPath);
+            string logPath = GetStartupLogPath();
+            string? logDirectory = Path.GetDirectoryName(logPath);
             if (!string.IsNullOrEmpty(logDirectory))
             {
                 Directory.CreateDirectory(logDirectory);
@@ -335,8 +336,8 @@ public partial class App : Application
     {
         try
         {
-            var logPath = GetStartupLogPath();
-            var logDirectory = Path.GetDirectoryName(logPath);
+            string logPath = GetStartupLogPath();
+            string? logDirectory = Path.GetDirectoryName(logPath);
             if (!string.IsNullOrEmpty(logDirectory))
             {
                 Directory.CreateDirectory(logDirectory);
@@ -354,7 +355,7 @@ public partial class App : Application
 
     private static string GetStartupLogPath()
     {
-        var pathService = GetLoggingPathService();
+        IRepositoryPathService pathService = GetLoggingPathService();
         return Path.Combine(pathService.LogsDirectory, Win11ForgePathNames.StartupLogFileName);
     }
 
@@ -370,7 +371,7 @@ public partial class App : Application
 
     private static void LogUserDataFallbackIfActive()
     {
-        var pathService = Services.GetRequiredService<IRepositoryPathService>();
+        IRepositoryPathService pathService = Services.GetRequiredService<IRepositoryPathService>();
         if (!pathService.IsUserDataFallbackActive)
         {
             return;
@@ -383,8 +384,8 @@ public partial class App : Application
     {
         try
         {
-            var migrationService = Services.GetRequiredService<IProfileMigrationService>();
-            var result = migrationService.EnsureProfilesMigrated();
+            IProfileMigrationService migrationService = Services.GetRequiredService<IProfileMigrationService>();
+            ProfileMigrationResult result = migrationService.EnsureProfilesMigrated();
             if (result.MigrationPerformed)
             {
                 Log($"Profile migration completed. sourceDefaults={result.SourceDefaults}, sourceLegacy={result.SourceLegacy}");
@@ -418,7 +419,7 @@ public partial class App : Application
     /// </summary>
     private static void ApplyAnimationResources(bool reducedMotion)
     {
-        var app = Current;
+        Application app = Current;
         if (app?.Resources == null)
             return;
 
@@ -451,13 +452,13 @@ public partial class App : Application
     /// </summary>
     internal static void ApplyHighContrastMode(bool enable)
     {
-        var app = Current;
+        Application app = Current;
         if (app?.Resources == null) return;
 
-        var highContrastUri = new Uri("Resources/HighContrastTheme.xaml", UriKind.Relative);
+        Uri highContrastUri = new Uri("Resources/HighContrastTheme.xaml", UriKind.Relative);
 
         ResourceDictionary? existingDict = null;
-        foreach (var dict in app.Resources.MergedDictionaries)
+        foreach (ResourceDictionary? dict in app.Resources.MergedDictionaries)
         {
             if (dict.Source?.OriginalString.Contains("HighContrastTheme", StringComparison.Ordinal) == true)
             {
@@ -475,7 +476,7 @@ public partial class App : Application
         {
             try
             {
-                var highContrastDict = new ResourceDictionary { Source = highContrastUri };
+                ResourceDictionary highContrastDict = new ResourceDictionary { Source = highContrastUri };
                 app.Resources.MergedDictionaries.Add(highContrastDict);
 
                 // Override commonly-used Fluent brush keys so high contrast is actually visible.
@@ -544,13 +545,13 @@ public partial class App : Application
                 {
                     if (IsServicesInitialized)
                     {
-                        var themeService = GetService<IThemeService>();
+                        IThemeService themeService = GetService<IThemeService>();
                         themeService.ApplyTheme(themeService.CurrentTheme);
                         themeService.ApplyAccentTint(themeService.CurrentAccentTint);
                     }
                     else
                     {
-                        var isDark = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
+                        bool isDark = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
                         ApplyThemeResources(isDark);
                     }
                 }
@@ -570,13 +571,13 @@ public partial class App : Application
     /// </summary>
     internal static void ApplyThemeResources(bool isDark)
     {
-        var app = Application.Current;
+        Application app = Application.Current;
         if (app?.Resources == null) return;
 
         try
         {
             // Accent brush: Light blue for dark theme, Windows blue for light theme
-            var accentBrush = isDark
+            SolidColorBrush accentBrush = isDark
                 ? new SolidColorBrush(Color.FromRgb(96, 205, 255))   // #60CDFF - Accent Blue
                 : new SolidColorBrush(Color.FromRgb(0, 95, 184));    // #005FB8 - Windows 11 Blue
             app.Resources["ThemeAdaptiveAccentBrush"] = accentBrush;
@@ -741,7 +742,7 @@ public partial class App : Application
     /// </summary>
     private static void SwapIfExists(Application app, string targetKey, string sourceKey)
     {
-        var source = app.TryFindResource(sourceKey);
+        object source = app.TryFindResource(sourceKey);
         if (source != null)
         {
             app.Resources[targetKey] = source;

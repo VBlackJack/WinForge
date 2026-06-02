@@ -21,6 +21,7 @@ using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI.ViewModels;
 
@@ -229,7 +230,7 @@ public partial class AppsViewModel
     {
         try
         {
-            var settings = _settingsService.LoadSettings();
+            AppSettings settings = _settingsService.LoadSettings();
             settings.AppsLastSearchText = SearchText ?? string.Empty;
             settings.AppsLastSelectedCategory = SelectedCategory ?? string.Empty;
             settings.AppsLastStatusFilter = (int)SelectedStatusFilter;
@@ -261,8 +262,8 @@ public partial class AppsViewModel
         // Filter by search text (case-insensitive)
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
-            var searchLower = SearchText.ToLowerInvariant();
-            var matchesSearch =
+            string searchLower = SearchText.ToLowerInvariant();
+            bool matchesSearch =
                 app.Name.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
                 app.AppId.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
                 app.Description.Contains(searchLower, StringComparison.OrdinalIgnoreCase);

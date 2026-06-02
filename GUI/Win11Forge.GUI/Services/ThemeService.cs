@@ -17,16 +17,16 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media;
-using ThemeForgeAccentTint = ThemeForge.Theme.AccentTint;
-using ThemeForgeAccentTints = ThemeForge.Theme.AccentTints;
-using ThemeForgeIThemeService = ThemeForge.Theme.IThemeService;
-using ThemeForgeNames = ThemeForge.Theme.ThemeNames;
-using ThemeForgeThemeService = ThemeForge.Theme.ThemeService;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using ThemeForgeAccentTint = ThemeForge.Theme.AccentTint;
+using ThemeForgeAccentTints = ThemeForge.Theme.AccentTints;
+using ThemeForgeIThemeService = ThemeForge.Theme.IThemeService;
+using ThemeForgeNames = ThemeForge.Theme.ThemeNames;
+using ThemeForgeThemeService = ThemeForge.Theme.ThemeService;
 
 namespace Win11Forge.GUI.Services;
 
@@ -72,7 +72,7 @@ public sealed class ThemeService : IThemeService
         ThemeForgeAccentTints.All
             .Select(tint =>
             {
-                var name = tint.ToString();
+                string name = tint.ToString();
                 return new AccentTintDescriptor(name, BuildAccentDisplayKey(name));
             })
             .ToArray();
@@ -262,10 +262,10 @@ public sealed class ThemeService : IThemeService
     /// <inheritdoc/>
     public void ApplyTheme(string? themeName)
     {
-        var canonicalTheme = NormalizeThemeName(themeName);
+        string canonicalTheme = NormalizeThemeName(themeName);
         PersistCanonicalThemeIfNeeded(themeName, canonicalTheme);
 
-        var app = Application.Current;
+        Application? app = Application.Current;
         if (app is null)
         {
             CommitWithoutApplication(canonicalTheme, _currentAccentTint);
@@ -274,9 +274,9 @@ public sealed class ThemeService : IThemeService
 
         try
         {
-            var engine = GetThemeEngine(app);
-            var revisionBefore = engine.ThemeRevision;
-            var changed = !string.Equals(engine.CurrentTheme, canonicalTheme, StringComparison.Ordinal);
+            ThemeForgeIThemeService engine = GetThemeEngine(app);
+            int revisionBefore = engine.ThemeRevision;
+            bool changed = !string.Equals(engine.CurrentTheme, canonicalTheme, StringComparison.Ordinal);
 
             if (changed)
             {
@@ -298,10 +298,10 @@ public sealed class ThemeService : IThemeService
     /// <inheritdoc/>
     public void ApplyAccentTint(string? accentTintName)
     {
-        var canonicalTint = NormalizeAccentTintName(accentTintName);
+        string canonicalTint = NormalizeAccentTintName(accentTintName);
         PersistCanonicalAccentTintIfNeeded(accentTintName, canonicalTint);
 
-        var app = Application.Current;
+        Application? app = Application.Current;
         if (app is null)
         {
             CommitWithoutApplication(_currentTheme, canonicalTint);
@@ -310,14 +310,14 @@ public sealed class ThemeService : IThemeService
 
         try
         {
-            var engine = GetThemeEngine(app);
+            ThemeForgeIThemeService engine = GetThemeEngine(app);
             if (string.IsNullOrWhiteSpace(engine.CurrentTheme))
             {
                 engine.ApplyTheme(_currentTheme);
             }
 
-            var revisionBefore = engine.ThemeRevision;
-            var tint = Enum.Parse<ThemeForgeAccentTint>(canonicalTint, ignoreCase: false);
+            int revisionBefore = engine.ThemeRevision;
+            ThemeForgeAccentTint tint = Enum.Parse<ThemeForgeAccentTint>(canonicalTint, ignoreCase: false);
             if (engine.CurrentAccentTint != tint)
             {
                 ClearPaletteBridgeResources(app.Resources);
@@ -341,13 +341,13 @@ public sealed class ThemeService : IThemeService
             return ThemeNames.Default;
         }
 
-        var trimmed = themeName.Trim();
-        if (ThemeLookup.TryGetValue(trimmed, out var descriptor))
+        string trimmed = themeName.Trim();
+        if (ThemeLookup.TryGetValue(trimmed, out ThemeDescriptor? descriptor))
         {
             return descriptor.Name;
         }
 
-        return LegacyThemeMap.TryGetValue(trimmed, out var mappedTheme)
+        return LegacyThemeMap.TryGetValue(trimmed, out string? mappedTheme)
             ? mappedTheme
             : ThemeNames.Default;
     }
@@ -359,35 +359,35 @@ public sealed class ThemeService : IThemeService
             return ThemeNames.DefaultAccentTint;
         }
 
-        var trimmed = accentTintName.Trim();
-        return AccentTintLookup.TryGetValue(trimmed, out var canonical)
+        string trimmed = accentTintName.Trim();
+        return AccentTintLookup.TryGetValue(trimmed, out string? canonical)
             ? canonical
             : ThemeNames.DefaultAccentTint;
     }
 
     internal static void ApplyPaletteBridgeResources(ResourceDictionary resources)
     {
-        var background = ResolveBrush(resources, "#282A36", "BackgroundBrush");
-        var surface = ResolveBrush(resources, "#282A36", "SurfaceBrush", "BackgroundBrush");
-        var card = ResolveBrush(resources, "#44475A", "SurfaceAltBrush", "CurrentLineBrush", "SurfaceBrush");
-        var highlight = ResolveBrush(resources, "#44475A", "SurfaceAltBrush", "SelectionBrush", "CurrentLineBrush");
-        var border = ResolveBrush(resources, "#44475A", "BorderBrush", "SurfaceAltBrush");
-        var textPrimary = ResolveBrush(resources, "#F8F8F2", "TextPrimaryBrush", "ForegroundBrush");
-        var textSecondary = ResolveReadableTextBrush(
+        SolidColorBrush background = ResolveBrush(resources, "#282A36", "BackgroundBrush");
+        SolidColorBrush surface = ResolveBrush(resources, "#282A36", "SurfaceBrush", "BackgroundBrush");
+        SolidColorBrush card = ResolveBrush(resources, "#44475A", "SurfaceAltBrush", "CurrentLineBrush", "SurfaceBrush");
+        SolidColorBrush highlight = ResolveBrush(resources, "#44475A", "SurfaceAltBrush", "SelectionBrush", "CurrentLineBrush");
+        SolidColorBrush border = ResolveBrush(resources, "#44475A", "BorderBrush", "SurfaceAltBrush");
+        SolidColorBrush textPrimary = ResolveBrush(resources, "#F8F8F2", "TextPrimaryBrush", "ForegroundBrush");
+        SolidColorBrush textSecondary = ResolveReadableTextBrush(
             resources,
             ResolveBrush(resources, "#B3BBD6", "TextSecondaryBrush", "CommentBrush"),
             card,
             textPrimary);
-        var textDisabled = CloneBrush(textSecondary, 0.65);
-        var accent = ResolveBrush(resources, "#BD93F9", "AccentBrush", "PurpleBrush");
-        var accentHover = ResolveBrush(resources, "#D5BEFC", "AccentHoverBrush", "AccentBrush", "PurpleBrush");
-        var accentPressed = ResolveBrush(resources, "#A170E6", "AccentPressedBrush", "AccentBrush", "PurpleBrush");
-        var badgeText = ResolveReadableTextBrush(resources, background, accent, textPrimary);
-        var success = ResolveBrush(resources, "#50FA7B", "SuccessBrush", "GreenBrush");
-        var warning = ResolveBrush(resources, "#FFB86C", "WarningBrush", "OrangeBrush");
-        var error = ResolveBrush(resources, "#FF5555", "ErrorBrush", "RedBrush");
-        var info = ResolveBrush(resources, "#8BE9FD", "InfoBrush", "CyanBrush");
-        var overlay = CreateBrush("#B3000000");
+        SolidColorBrush textDisabled = CloneBrush(textSecondary, 0.65);
+        SolidColorBrush accent = ResolveBrush(resources, "#BD93F9", "AccentBrush", "PurpleBrush");
+        SolidColorBrush accentHover = ResolveBrush(resources, "#D5BEFC", "AccentHoverBrush", "AccentBrush", "PurpleBrush");
+        SolidColorBrush accentPressed = ResolveBrush(resources, "#A170E6", "AccentPressedBrush", "AccentBrush", "PurpleBrush");
+        SolidColorBrush badgeText = ResolveReadableTextBrush(resources, background, accent, textPrimary);
+        SolidColorBrush success = ResolveBrush(resources, "#50FA7B", "SuccessBrush", "GreenBrush");
+        SolidColorBrush warning = ResolveBrush(resources, "#FFB86C", "WarningBrush", "OrangeBrush");
+        SolidColorBrush error = ResolveBrush(resources, "#FF5555", "ErrorBrush", "RedBrush");
+        SolidColorBrush info = ResolveBrush(resources, "#8BE9FD", "InfoBrush", "CyanBrush");
+        SolidColorBrush overlay = CreateBrush("#B3000000");
 
         SetBrush(resources, "ApplicationBackgroundBrush", background);
         SetBrush(resources, "SolidBackgroundFillColorBaseBrush", background);
@@ -529,7 +529,7 @@ public sealed class ThemeService : IThemeService
 
     internal static void ClearPaletteBridgeResources(ResourceDictionary resources)
     {
-        foreach (var key in PaletteBridgeResourceKeys)
+        foreach (string key in PaletteBridgeResourceKeys)
         {
             resources.Remove(key);
         }
@@ -560,7 +560,7 @@ public sealed class ThemeService : IThemeService
 
     private static void ApplyWpfUiTheme(string canonicalTheme)
     {
-        var appTheme = ThemeNames.IsLightTheme(canonicalTheme)
+        ApplicationTheme appTheme = ThemeNames.IsLightTheme(canonicalTheme)
             ? ApplicationTheme.Light
             : ApplicationTheme.Dark;
 
@@ -569,7 +569,7 @@ public sealed class ThemeService : IThemeService
 
     private static SolidColorBrush ResolveBrush(ResourceDictionary resources, string fallbackColor, params string[] keys)
     {
-        foreach (var key in keys)
+        foreach (string key in keys)
         {
             if (TryFindResource(resources, key) is SolidColorBrush brush)
             {
@@ -591,7 +591,7 @@ public sealed class ThemeService : IThemeService
             return CloneBrush(preferred);
         }
 
-        var liftedDraculaComment = CreateBrush("#B3BBD6");
+        SolidColorBrush liftedDraculaComment = CreateBrush("#B3BBD6");
         if (ContrastRatio(liftedDraculaComment.Color, background.Color) >= 4.5)
         {
             return liftedDraculaComment;
@@ -602,8 +602,8 @@ public sealed class ThemeService : IThemeService
             return CloneBrush(fallback);
         }
 
-        var black = CreateBrush("#000000");
-        var white = CreateBrush("#FFFFFF");
+        SolidColorBrush black = CreateBrush("#000000");
+        SolidColorBrush white = CreateBrush("#FFFFFF");
         return ContrastRatio(black.Color, background.Color) >= ContrastRatio(white.Color, background.Color)
             ? black
             : white;
@@ -616,9 +616,9 @@ public sealed class ThemeService : IThemeService
             return resources[key];
         }
 
-        for (var index = resources.MergedDictionaries.Count - 1; index >= 0; index--)
+        for (int index = resources.MergedDictionaries.Count - 1; index >= 0; index--)
         {
-            var resource = TryFindResource(resources.MergedDictionaries[index], key);
+            object? resource = TryFindResource(resources.MergedDictionaries[index], key);
             if (resource is not null)
             {
                 return resource;
@@ -653,10 +653,10 @@ public sealed class ThemeService : IThemeService
 
     private static double ContrastRatio(Color foreground, Color background)
     {
-        var foregroundLuminance = RelativeLuminance(foreground);
-        var backgroundLuminance = RelativeLuminance(background);
-        var lighter = Math.Max(foregroundLuminance, backgroundLuminance);
-        var darker = Math.Min(foregroundLuminance, backgroundLuminance);
+        double foregroundLuminance = RelativeLuminance(foreground);
+        double backgroundLuminance = RelativeLuminance(background);
+        double lighter = Math.Max(foregroundLuminance, backgroundLuminance);
+        double darker = Math.Min(foregroundLuminance, backgroundLuminance);
         return (lighter + 0.05) / (darker + 0.05);
     }
 
@@ -664,7 +664,7 @@ public sealed class ThemeService : IThemeService
     {
         static double Channel(byte channel)
         {
-            var normalized = channel / 255.0;
+            double normalized = channel / 255.0;
             return normalized <= 0.03928
                 ? normalized / 12.92
                 : Math.Pow((normalized + 0.055) / 1.055, 2.4);
@@ -715,7 +715,7 @@ public sealed class ThemeService : IThemeService
 
         if (engine.ThemeRevision != revisionBefore)
         {
-            var app = Application.Current;
+            Application? app = Application.Current;
             if (app is not null)
             {
                 ApplicationAccentColorManager.Apply(ResolveAccentColor(app));
@@ -775,7 +775,7 @@ public sealed class ThemeService : IThemeService
         {
             try
             {
-                var settings = await _settingsService.LoadSettingsAsync();
+                AppSettings settings = await _settingsService.LoadSettingsAsync();
                 if (!string.Equals(getCurrentValue(settings), canonicalValue, StringComparison.Ordinal))
                 {
                     setCurrentValue(settings, canonicalValue);

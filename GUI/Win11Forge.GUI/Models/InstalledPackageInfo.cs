@@ -131,5 +131,5 @@ public class BatchDetectionResult
 
     /// <summary>Gets package info if installed.</summary>
     public InstalledPackageInfo? GetPackage(string appId) =>
-        Packages.TryGetValue(appId, out var info) ? info : null;
+        Packages.TryGetValue(appId, out InstalledPackageInfo? info) ? info : null;
 }

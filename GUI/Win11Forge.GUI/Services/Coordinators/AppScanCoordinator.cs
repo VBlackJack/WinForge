@@ -57,11 +57,11 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
             return new AppScanResult(0, 0, 0, WasCancelled: false);
         }
 
-        var apps = applications.ToList();
+        List<ApplicationModel> apps = applications.ToList();
 
         try
         {
-            var batchResults = await _powerShellBridge.GetBatchApplicationStatusAsync(apps).ConfigureAwait(false);
+            Dictionary<string, BatchAppStatus>? batchResults = await _powerShellBridge.GetBatchApplicationStatusAsync(apps).ConfigureAwait(false);
             if (batchResults != null)
             {
                 _logger.LogInfo($"Batch detection succeeded: {batchResults.Count} apps checked");
@@ -72,8 +72,8 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
                     cancellationToken).ConfigureAwait(false);
             }
 
-            var runner = CreateRunner();
-            var itemResults = await runner.RunAsync(
+            AppOperationRunner runner = CreateRunner();
+            IReadOnlyList<AppScanItemResult> itemResults = await runner.RunAsync(
                 apps,
                 ScanApplicationAsync,
                 app => app,
@@ -94,15 +94,15 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
         IProgress<AppOperationProgress>? progress,
         CancellationToken cancellationToken)
     {
-        var installedApps = new List<ApplicationModel>();
-        var installedCount = 0;
-        var completed = 0;
+        List<ApplicationModel> installedApps = new List<ApplicationModel>();
+        int installedCount = 0;
+        int completed = 0;
 
-        foreach (var app in apps)
+        foreach (ApplicationModel app in apps)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (batchResults.TryGetValue(app.AppId, out var batchStatus))
+            if (batchResults.TryGetValue(app.AppId, out BatchAppStatus? batchStatus))
             {
                 app.Status = batchStatus.Status;
                 if (IsInstalledStatus(batchStatus.Status))
@@ -131,7 +131,7 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
             progress?.Report(new AppOperationProgress(completed, apps.Count, app));
         }
 
-        var updatesCount = installedApps.Count > 0
+        int updatesCount = installedApps.Count > 0
             ? await CheckBatchUpdatesAsync(installedApps, cancellationToken).ConfigureAwait(false)
             : 0;
 
@@ -144,10 +144,10 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
     {
         try
         {
-            var batchUpdates = await _detectionService.GetAvailableUpdatesAsync().ConfigureAwait(false);
+            IReadOnlyList<UpdateInfo> batchUpdates = await _detectionService.GetAvailableUpdatesAsync().ConfigureAwait(false);
             if (batchUpdates.Count > 0)
             {
-                var matchedUpdates = ApplyBatchUpdates(installedApps, batchUpdates, cancellationToken);
+                int matchedUpdates = ApplyBatchUpdates(installedApps, batchUpdates, cancellationToken);
                 _logger.LogInfo($"Batch update check: {batchUpdates.Count} updates found, {matchedUpdates} matched");
                 return matchedUpdates;
             }
@@ -157,7 +157,7 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
             _logger.LogWarning($"Batch update detection failed, falling back to individual checks: {ex.Message}");
         }
 
-        var appsNeedingIndividualCheck = installedApps
+        List<ApplicationModel> appsNeedingIndividualCheck = installedApps
             .Where(a => string.IsNullOrEmpty(a.CurrentVersion))
             .ToList();
 
@@ -166,8 +166,8 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
             return 0;
         }
 
-        var runner = CreateRunner();
-        var updateResults = await runner.RunAsync(
+        AppOperationRunner runner = CreateRunner();
+        IReadOnlyList<AppScanItemResult> updateResults = await runner.RunAsync(
             appsNeedingIndividualCheck,
             CheckAppUpdateAsync,
             app => app,
@@ -182,17 +182,17 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
         IReadOnlyList<UpdateInfo> batchUpdates,
         CancellationToken cancellationToken)
     {
-        var updateLookup = batchUpdates.ToDictionary(
+        Dictionary<string, UpdateInfo> updateLookup = batchUpdates.ToDictionary(
             u => u.Id,
             u => u,
             StringComparer.OrdinalIgnoreCase);
-        var matchedUpdates = 0;
+        int matchedUpdates = 0;
 
-        foreach (var app in installedApps)
+        foreach (ApplicationModel app in installedApps)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (updateLookup.TryGetValue(app.AppId, out var directUpdate))
+            if (updateLookup.TryGetValue(app.AppId, out UpdateInfo? directUpdate))
             {
                 if (ApplyUpdateInfo(app, directUpdate))
                 {
@@ -202,7 +202,7 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
                 continue;
             }
 
-            var matchingUpdate = batchUpdates.FirstOrDefault(u =>
+            UpdateInfo? matchingUpdate = batchUpdates.FirstOrDefault(u =>
                 u.Name.Equals(app.Name, StringComparison.OrdinalIgnoreCase) ||
                 u.Id.Contains(app.Name, StringComparison.OrdinalIgnoreCase) ||
                 app.Name.Contains(u.Name, StringComparison.OrdinalIgnoreCase));
@@ -218,7 +218,7 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
 
     private static bool ApplyUpdateInfo(ApplicationModel app, UpdateInfo updateInfo)
     {
-        var currentVersion = !string.IsNullOrEmpty(app.CurrentVersion)
+        string currentVersion = !string.IsNullOrEmpty(app.CurrentVersion)
             ? app.CurrentVersion
             : updateInfo.CurrentVersion;
 
@@ -241,7 +241,7 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var updateResult = await _powerShellBridge.CheckApplicationUpdateAsync(app).ConfigureAwait(false);
+        UpdateCheckResult updateResult = await _powerShellBridge.CheckApplicationUpdateAsync(app).ConfigureAwait(false);
         if (updateResult.HasUpdate)
         {
             app.Status = ApplicationStatus.UpdateAvailable;
@@ -261,12 +261,12 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var status = await _powerShellBridge.GetApplicationStatusAsync(app.AppId).ConfigureAwait(false);
+        ApplicationStatus status = await _powerShellBridge.GetApplicationStatusAsync(app.AppId).ConfigureAwait(false);
         if (IsInstalledStatus(status))
         {
             app.Status = status;
 
-            var updateResult = await _powerShellBridge.CheckApplicationUpdateAsync(app).ConfigureAwait(false);
+            UpdateCheckResult updateResult = await _powerShellBridge.CheckApplicationUpdateAsync(app).ConfigureAwait(false);
             if (updateResult.HasUpdate)
             {
                 app.Status = ApplicationStatus.UpdateAvailable;
@@ -288,7 +288,7 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
 
     private AppOperationRunner CreateRunner()
     {
-        var maxParallelScans = Math.Clamp(_settingsService.LoadSettings().MaxParallelScans, 1, 20);
+        int maxParallelScans = Math.Clamp(_settingsService.LoadSettings().MaxParallelScans, 1, 20);
         return new AppOperationRunner(maxParallelScans, _loggerFactory);
     }
 

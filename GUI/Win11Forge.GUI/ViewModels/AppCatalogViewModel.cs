@@ -55,7 +55,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
     private static string FormatLocalized(string resourceKey, string fallbackFormat, params object[] args)
     {
-        var format = GetLocalizedString(resourceKey, fallbackFormat);
+        string format = GetLocalizedString(resourceKey, fallbackFormat);
         return string.Format(CultureInfo.CurrentCulture, format, args);
     }
 
@@ -244,18 +244,18 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
         try
         {
-            var apps = await _databaseService.LoadApplicationsAsync();
-            var categories = await _databaseService.GetCategoriesAsync();
+            IEnumerable<EditableApplicationModel> apps = await _databaseService.LoadApplicationsAsync();
+            IEnumerable<string> categories = await _databaseService.GetCategoriesAsync();
 
             Applications.Clear();
-            foreach (var app in apps)
+            foreach (EditableApplicationModel app in apps)
             {
                 Applications.Add(app);
             }
 
             Categories.Clear();
             Categories.Add(Loc.Apps_CategoryAll);
-            foreach (var category in categories.OrderBy(c => c))
+            foreach (string? category in categories.OrderBy(c => c))
             {
                 Categories.Add(category);
             }
@@ -303,7 +303,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     {
         if (SelectedApplication == null) return;
 
-        var original = SelectedApplication.Clone();
+        EditableApplicationModel original = SelectedApplication.Clone();
         await OpenEditorForEditAsync(SelectedApplication, original);
     }
 
@@ -315,7 +315,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     {
         if (SelectedApplication == null) return;
 
-        var confirmed = await ConfirmDeleteAsync(SelectedApplication);
+        bool confirmed = await ConfirmDeleteAsync(SelectedApplication);
         if (!confirmed) return;
 
         IsLoading = true;
@@ -323,7 +323,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
         try
         {
-            var success = await DeleteApplicationWithUndoAsync(SelectedApplication);
+            bool success = await DeleteApplicationWithUndoAsync(SelectedApplication);
             if (success)
             {
                 Applications.Remove(SelectedApplication);
@@ -361,7 +361,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     {
         if (SelectedApplication == null) return;
 
-        var duplicate = CreateDuplicateApplication(SelectedApplication);
+        EditableApplicationModel duplicate = CreateDuplicateApplication(SelectedApplication);
         await OpenEditorForAddAsync(duplicate);
     }
 
@@ -399,7 +399,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(GetCanUndo))]
     private async Task UndoAsync()
     {
-        var success = await _undoService.UndoAsync();
+        bool success = await _undoService.UndoAsync();
         if (success)
         {
             StatusMessage = string.Format(Loc.Undo_ActionUndone, _undoService.NextRedoDescription ?? Loc.Undo_Action);
@@ -412,7 +412,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(GetCanRedo))]
     private async Task RedoAsync()
     {
-        var success = await _undoService.RedoAsync();
+        bool success = await _undoService.RedoAsync();
         if (success)
         {
             StatusMessage = string.Format(Loc.Undo_ActionRedone, _undoService.NextUndoDescription ?? Loc.Undo_Action);
@@ -425,7 +425,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(HasSelectedApplications))]
     private async Task ExportSelectedAsync()
     {
-        var selectedIds = GetSelectedApplicationIds();
+        List<string> selectedIds = GetSelectedApplicationIds();
         await ExportApplicationsWithDialogAsync(selectedIds);
     }
 
@@ -435,7 +435,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ExportAllAsync()
     {
-        var allIds = Applications.Select(a => a.AppId).ToList();
+        List<string> allIds = Applications.Select(a => a.AppId).ToList();
         await ExportApplicationsWithDialogAsync(allIds);
     }
 
@@ -455,7 +455,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     {
         try
         {
-            var savedApplication = await _applicationEditorDialogService.ShowAddDialogAsync(initialApplication);
+            EditableApplicationModel? savedApplication = await _applicationEditorDialogService.ShowAddDialogAsync(initialApplication);
             if (savedApplication != null)
             {
                 await SaveApplicationAsync(savedApplication, isNew: true);
@@ -463,7 +463,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            var message = string.Format(Loc.AppCatalog_EditorOpenError, ex.Message, ex.StackTrace);
+            string message = string.Format(Loc.AppCatalog_EditorOpenError, ex.Message, ex.StackTrace);
             StatusMessage = message;
             Debug.WriteLine($"Application editor add failed: {ex}");
             await _dialogService.ShowErrorAsync(Loc.Common_Error, message);
@@ -480,7 +480,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
         try
         {
-            var savedApplication = await _applicationEditorDialogService.ShowEditDialogAsync(application);
+            EditableApplicationModel? savedApplication = await _applicationEditorDialogService.ShowEditDialogAsync(application);
             if (savedApplication != null)
             {
                 await SaveApplicationAsync(savedApplication, isNew: false, originalApplication: originalApplication);
@@ -488,7 +488,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            var message = string.Format(Loc.AppCatalog_EditorOpenError, ex.Message, ex.StackTrace);
+            string message = string.Format(Loc.AppCatalog_EditorOpenError, ex.Message, ex.StackTrace);
             StatusMessage = message;
             Debug.WriteLine($"Application editor edit failed: {ex}");
             await _dialogService.ShowErrorAsync(Loc.Common_Error, message);
@@ -497,7 +497,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
     private async Task<bool> ConfirmDeleteAsync(EditableApplicationModel application)
     {
-        var message = string.Format(
+        string message = string.Format(
             Loc.AppCatalog_DeleteConfirm,
             application.Name,
             application.AppId);
@@ -513,7 +513,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     {
         try
         {
-            var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
+            string? filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
                 Loc.AppCatalog_Import,
                 FileDialogFilters.Json,
                 DefaultExtension: FileDialogFilters.JsonDefaultExtension));
@@ -523,7 +523,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
                 return;
             }
 
-            var replaceExisting = await _dialogService.ShowYesNoCancelAsync(
+            bool? replaceExisting = await _dialogService.ShowYesNoCancelAsync(
                 Loc.AppCatalog_Import,
                 Loc.AppCatalog_ImportModeConfirm,
                 Loc.AppCatalog_Import_Replace,
@@ -535,7 +535,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
                 return;
             }
 
-            var mode = replaceExisting.Value ? ImportMode.Replace : ImportMode.Merge;
+            ImportMode mode = replaceExisting.Value ? ImportMode.Replace : ImportMode.Merge;
             await ImportApplicationsAsync(filePath, mode);
         }
         catch (Exception ex)
@@ -548,7 +548,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
     private async Task ExportApplicationsWithDialogAsync(IEnumerable<string> appIds)
     {
-        var appIdList = appIds.ToList();
+        List<string> appIdList = appIds.ToList();
         if (appIdList.Count == 0)
         {
             await _dialogService.ShowInfoAsync(Loc.AppCatalog_Export, Loc.AppCatalog_NoExportSelection);
@@ -557,7 +557,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
         try
         {
-            var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
+            string? filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
                 Loc.AppCatalog_Export,
                 FileDialogFilters.Json,
                 DefaultFileName: $"applications-export-{DateTime.Now:yyyyMMdd}",
@@ -588,16 +588,16 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         IsVerifying = true;
         VerificationProgress = 0;
 
-        var apps = Applications.ToList();
-        var total = apps.Count;
-        var current = 0;
-        var validCount = 0;
-        var invalidCount = 0;
-        var errorCount = 0;
+        List<EditableApplicationModel> apps = Applications.ToList();
+        int total = apps.Count;
+        int current = 0;
+        int validCount = 0;
+        int invalidCount = 0;
+        int errorCount = 0;
 
         try
         {
-            foreach (var app in apps)
+            foreach (EditableApplicationModel? app in apps)
             {
                 if (_verificationCts.Token.IsCancellationRequested)
                 {
@@ -618,14 +618,14 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
                 try
                 {
-                    var sources = new ApplicationSourcesForVerification(
+                    ApplicationSourcesForVerification sources = new ApplicationSourcesForVerification(
                         app.Sources?.Winget,
                         app.Sources?.Chocolatey,
                         app.Sources?.Store,
                         app.Sources?.DirectUrl
                     );
 
-                    var result = await _verificationService.VerifyAllSourcesAsync(sources, _verificationCts.Token);
+                    ApplicationSourcesVerificationResult result = await _verificationService.VerifyAllSourcesAsync(sources, _verificationCts.Token);
 
                     app.Verified = result.HasValidSource;
                     if (result.HasValidSource) validCount++;
@@ -702,14 +702,14 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
         try
         {
-            var sources = new ApplicationSourcesForVerification(
+            ApplicationSourcesForVerification sources = new ApplicationSourcesForVerification(
                 SelectedApplication.Sources?.Winget,
                 SelectedApplication.Sources?.Chocolatey,
                 SelectedApplication.Sources?.Store,
                 SelectedApplication.Sources?.DirectUrl
             );
 
-            var result = await _verificationService.VerifyAllSourcesAsync(sources);
+            ApplicationSourcesVerificationResult result = await _verificationService.VerifyAllSourcesAsync(sources);
 
             SelectedApplication.Verified = result.HasValidSource;
 
@@ -817,7 +817,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         // Search filter
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
-            var search = SearchText.Trim();
+            string search = SearchText.Trim();
             return app.AppId.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                    app.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                    (app.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false) ||
@@ -851,7 +851,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        var duplicate = application.Clone();
+        EditableApplicationModel duplicate = application.Clone();
         duplicate.AppId = CreateDuplicateAppId(application.AppId);
         duplicate.Name = $"{application.Name} (Copy)";
         return duplicate;
@@ -859,9 +859,9 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
     private static string CreateDuplicateAppId(string appId)
     {
-        var sourceAppId = string.IsNullOrWhiteSpace(appId) ? "App" : appId.Trim();
-        var suffix = $"-copy-{Guid.NewGuid():N}";
-        var maxBaseLength = Math.Max(1, DuplicateAppIdMaxLength - suffix.Length);
+        string sourceAppId = string.IsNullOrWhiteSpace(appId) ? "App" : appId.Trim();
+        string suffix = $"-copy-{Guid.NewGuid():N}";
+        int maxBaseLength = Math.Max(1, DuplicateAppIdMaxLength - suffix.Length);
 
         if (sourceAppId.Length > maxBaseLength)
         {
@@ -878,7 +878,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
     private void SetLoadError(Exception ex)
     {
-        var message = FormatLocalized(
+        string message = FormatLocalized(
             "AppCatalog_LoadError",
             "Failed to load applications: {0}",
             ex.Message);
@@ -910,7 +910,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     /// <param name="originalApplication">The original application before editing (for undo).</param>
     public async Task<bool> SaveApplicationAsync(EditableApplicationModel application, bool isNew, EditableApplicationModel? originalApplication = null)
     {
-        var result = await _databaseService.SaveApplicationAsync(application, isNew);
+        ApplicationSaveResult result = await _databaseService.SaveApplicationAsync(application, isNew);
         if (result.Success)
         {
             StatusMessage = isNew ? Loc.AppCatalog_Added : Loc.AppCatalog_Updated;
@@ -919,8 +919,8 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
             if (isNew)
             {
                 // For new apps: undo = delete, redo = add back
-                var appClone = application.Clone();
-                var description = string.Format(Loc.Undo_AddApplication, application.Name);
+                EditableApplicationModel appClone = application.Clone();
+                string description = string.Format(Loc.Undo_AddApplication, application.Name);
 
                 _undoService.RecordAction(new UndoableAction
                 {
@@ -940,9 +940,9 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
             else if (originalApplication != null)
             {
                 // For edits: undo = restore original, redo = apply edit
-                var originalClone = originalApplication.Clone();
-                var editedClone = application.Clone();
-                var description = string.Format(Loc.Undo_EditApplication, application.Name);
+                EditableApplicationModel originalClone = originalApplication.Clone();
+                EditableApplicationModel editedClone = application.Clone();
+                string description = string.Format(Loc.Undo_EditApplication, application.Name);
 
                 _undoService.RecordAction(new UndoableAction
                 {
@@ -972,12 +972,12 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task<bool> DeleteApplicationWithUndoAsync(EditableApplicationModel application)
     {
-        var appClone = application.Clone();
-        var success = await _databaseService.DeleteApplicationAsync(application.AppId);
+        EditableApplicationModel appClone = application.Clone();
+        bool success = await _databaseService.DeleteApplicationAsync(application.AppId);
 
         if (success)
         {
-            var description = string.Format(Loc.Undo_DeleteApplication, application.Name);
+            string description = string.Format(Loc.Undo_DeleteApplication, application.Name);
 
             _undoService.RecordAction(new UndoableAction
             {
@@ -1005,7 +1005,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     /// <param name="mode">Import mode.</param>
     public async Task<ApplicationImportResult> ImportApplicationsAsync(string filePath, ImportMode mode)
     {
-        var result = await _databaseService.ImportApplicationsAsync(filePath, mode);
+        ApplicationImportResult result = await _databaseService.ImportApplicationsAsync(filePath, mode);
         if (result.Success)
         {
             StatusMessage = string.Format(Loc.AppCatalog_ImportSuccess, result.AddedCount, result.UpdatedCount);
@@ -1024,7 +1024,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     /// <param name="filePath">Destination file path.</param>
     public async Task<bool> ExportApplicationsAsync(IEnumerable<string> appIds, string filePath)
     {
-        var success = await _databaseService.ExportApplicationsAsync(appIds, filePath);
+        bool success = await _databaseService.ExportApplicationsAsync(appIds, filePath);
         if (success)
         {
             StatusMessage = string.Format(Loc.AppCatalog_ExportSuccess, appIds.Count());

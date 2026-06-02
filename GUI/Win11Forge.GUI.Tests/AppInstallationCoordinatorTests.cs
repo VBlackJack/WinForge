@@ -27,10 +27,10 @@ public class AppInstallationCoordinatorTests
     [Fact]
     public async Task InstallAsync_WithEmptyList_ShouldReturnEmptyResult()
     {
-        var bridge = CreateBridge();
-        var coordinator = CreateCoordinator(bridge.Object);
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        AppInstallationCoordinator coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.InstallAsync([], new AppInstallationOptions(ForceUpdate: false));
+        AppInstallationResult result = await coordinator.InstallAsync([], new AppInstallationOptions(ForceUpdate: false));
 
         Assert.Equal(0, result.Total);
         Assert.Equal(0, result.InstalledCount);
@@ -50,11 +50,11 @@ public class AppInstallationCoordinatorTests
     [Fact]
     public async Task InstallAsync_WithSuccessfulApps_ShouldAggregateInstalledCount()
     {
-        var apps = CreateApps("App1", "App2");
-        var bridge = CreateBridge();
-        var coordinator = CreateCoordinator(bridge.Object);
+        List<ApplicationModel> apps = CreateApps("App1", "App2");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        AppInstallationCoordinator coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: true));
+        AppInstallationResult result = await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: true));
 
         Assert.Equal(2, result.Total);
         Assert.Equal(2, result.InstalledCount);
@@ -73,8 +73,8 @@ public class AppInstallationCoordinatorTests
     [Fact]
     public async Task InstallAsync_WithMixedResults_ShouldSplitFinalCounters()
     {
-        var apps = CreateApps("Installed", "Already", "Failed");
-        var bridge = CreateBridge();
+        List<ApplicationModel> apps = CreateApps("Installed", "Already", "Failed");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
         bridge
             .Setup(x => x.InstallApplicationAsync(
                 It.IsAny<ApplicationModel>(),
@@ -88,9 +88,9 @@ public class AppInstallationCoordinatorTests
                     "Failed" => InstallResult.Failed("Install failed", "failed-log"),
                     _ => InstallResult.Successful("Installed", "installed-log")
                 });
-        var coordinator = CreateCoordinator(bridge.Object);
+        AppInstallationCoordinator coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: true));
+        AppInstallationResult result = await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: true));
 
         Assert.Equal(1, result.InstalledCount);
         Assert.Equal(1, result.AlreadyInstalledCount);
@@ -105,9 +105,9 @@ public class AppInstallationCoordinatorTests
     [Fact]
     public async Task InstallAsync_WhenPaused_ShouldWaitUntilResumed()
     {
-        var apps = CreateApps("App1");
-        var bridge = CreateBridge();
-        var installCalls = 0;
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        int installCalls = 0;
         bridge
             .Setup(x => x.InstallApplicationAsync(
                 It.IsAny<ApplicationModel>(),
@@ -116,17 +116,17 @@ public class AppInstallationCoordinatorTests
                 It.IsAny<Action<string>?>()))
             .Callback(() => Interlocked.Increment(ref installCalls))
             .ReturnsAsync(InstallResult.Successful("Installed", "log"));
-        using var pauseGate = new PauseGate();
+        using PauseGate pauseGate = new PauseGate();
         pauseGate.Pause();
-        var coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate);
+        AppInstallationCoordinator coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate);
 
-        var installTask = coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: true));
+        Task<AppInstallationResult> installTask = coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: true));
         await Task.Delay(75);
 
         Assert.Equal(0, Volatile.Read(ref installCalls));
 
         pauseGate.Resume();
-        var result = await installTask.WaitAsync(TimeSpan.FromSeconds(2));
+        AppInstallationResult result = await installTask.WaitAsync(TimeSpan.FromSeconds(2));
 
         Assert.Equal(1, result.InstalledCount);
         Assert.Equal(1, Volatile.Read(ref installCalls));
@@ -135,21 +135,21 @@ public class AppInstallationCoordinatorTests
     [Fact]
     public async Task InstallAsync_WhenCancelledDuringPause_ShouldReturnCancelledResult()
     {
-        var apps = CreateApps("App1");
-        var bridge = CreateBridge();
-        using var pauseGate = new PauseGate();
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        using PauseGate pauseGate = new PauseGate();
         pauseGate.Pause();
-        var coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate);
-        using var cts = new CancellationTokenSource();
+        AppInstallationCoordinator coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate);
+        using CancellationTokenSource cts = new CancellationTokenSource();
 
-        var installTask = coordinator.InstallAsync(
+        Task<AppInstallationResult> installTask = coordinator.InstallAsync(
             apps,
             new AppInstallationOptions(ForceUpdate: true),
             cancellationToken: cts.Token);
         await Task.Delay(50);
         cts.Cancel();
 
-        var result = await installTask;
+        AppInstallationResult result = await installTask;
 
         Assert.True(result.WasCancelled);
         Assert.Equal(1, result.SkippedCount);
@@ -161,9 +161,9 @@ public class AppInstallationCoordinatorTests
     [InlineData(true)]
     public async Task InstallAsync_ShouldPropagateForceUpdateOption(bool forceUpdate)
     {
-        var apps = CreateApps("App1");
-        var bridge = CreateBridge();
-        var coordinator = CreateCoordinator(bridge.Object);
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        AppInstallationCoordinator coordinator = CreateCoordinator(bridge.Object);
 
         await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: forceUpdate));
 
@@ -185,7 +185,7 @@ public class AppInstallationCoordinatorTests
 
     private static Mock<IPowerShellBridge> CreateBridge()
     {
-        var bridge = new Mock<IPowerShellBridge>();
+        Mock<IPowerShellBridge> bridge = new Mock<IPowerShellBridge>();
         bridge
             .Setup(x => x.InstallApplicationAsync(
                 It.IsAny<ApplicationModel>(),
@@ -202,11 +202,11 @@ public class AppInstallationCoordinatorTests
         IPauseGate? pauseGate = null,
         IBatchResumeService? resumeService = null)
     {
-        var settings = new MockAppSettingsService
+        MockAppSettingsService settings = new MockAppSettingsService
         {
             SettingsToReturn = new AppSettings { MaxParallelInstalls = 2 }
         };
-        var pauseGateMock = new Mock<IPauseGate>();
+        Mock<IPauseGate> pauseGateMock = new Mock<IPauseGate>();
         pauseGateMock
             .Setup(x => x.WaitAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -220,7 +220,7 @@ public class AppInstallationCoordinatorTests
 
     private static Mock<IBatchResumeService> CreateResumeServiceMock()
     {
-        var mock = new Mock<IBatchResumeService>();
+        Mock<IBatchResumeService> mock = new Mock<IBatchResumeService>();
         mock.Setup(x => x.BeginBatchAsync(
                 It.IsAny<BatchOperationKind>(),
                 It.IsAny<IReadOnlyList<string>>(),
@@ -243,9 +243,9 @@ public class AppInstallationCoordinatorTests
     [Fact]
     public async Task InstallAsync_ShouldBeginBatchWithInstallKindAndAppIds()
     {
-        var apps = CreateApps("App1", "App2");
-        var resume = CreateResumeServiceMock();
-        var coordinator = CreateCoordinator(resumeService: resume.Object);
+        List<ApplicationModel> apps = CreateApps("App1", "App2");
+        Mock<IBatchResumeService> resume = CreateResumeServiceMock();
+        AppInstallationCoordinator coordinator = CreateCoordinator(resumeService: resume.Object);
 
         await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: true));
 
@@ -261,8 +261,8 @@ public class AppInstallationCoordinatorTests
     [Fact]
     public async Task InstallAsync_ShouldAppendCompletedPerAppWithMappedOutcome()
     {
-        var apps = CreateApps("Installed", "Already", "Failed");
-        var bridge = CreateBridge();
+        List<ApplicationModel> apps = CreateApps("Installed", "Already", "Failed");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
         bridge
             .Setup(x => x.InstallApplicationAsync(
                 It.IsAny<ApplicationModel>(),
@@ -276,8 +276,8 @@ public class AppInstallationCoordinatorTests
                     "Failed" => InstallResult.Failed("nope", "log"),
                     _ => InstallResult.Successful("ok", "log")
                 });
-        var resume = CreateResumeServiceMock();
-        var coordinator = CreateCoordinator(bridge.Object, resumeService: resume.Object);
+        Mock<IBatchResumeService> resume = CreateResumeServiceMock();
+        AppInstallationCoordinator coordinator = CreateCoordinator(bridge.Object, resumeService: resume.Object);
 
         await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: false));
 
@@ -295,9 +295,9 @@ public class AppInstallationCoordinatorTests
     [Fact]
     public async Task InstallAsync_OnSuccess_ShouldMarkBatchCompleted()
     {
-        var apps = CreateApps("App1");
-        var resume = CreateResumeServiceMock();
-        var coordinator = CreateCoordinator(resumeService: resume.Object);
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IBatchResumeService> resume = CreateResumeServiceMock();
+        AppInstallationCoordinator coordinator = CreateCoordinator(resumeService: resume.Object);
 
         await coordinator.InstallAsync(apps, new AppInstallationOptions(ForceUpdate: false));
 
@@ -309,15 +309,15 @@ public class AppInstallationCoordinatorTests
     [Fact]
     public async Task InstallAsync_OnCancellation_ShouldStillMarkBatchCompleted()
     {
-        var apps = CreateApps("App1");
-        var bridge = CreateBridge();
-        using var pauseGate = new PauseGate();
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        using PauseGate pauseGate = new PauseGate();
         pauseGate.Pause();
-        var resume = CreateResumeServiceMock();
-        var coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate, resumeService: resume.Object);
-        using var cts = new CancellationTokenSource();
+        Mock<IBatchResumeService> resume = CreateResumeServiceMock();
+        AppInstallationCoordinator coordinator = CreateCoordinator(bridge.Object, pauseGate: pauseGate, resumeService: resume.Object);
+        using CancellationTokenSource cts = new CancellationTokenSource();
 
-        var installTask = coordinator.InstallAsync(
+        Task<AppInstallationResult> installTask = coordinator.InstallAsync(
             apps,
             new AppInstallationOptions(ForceUpdate: false),
             cancellationToken: cts.Token);

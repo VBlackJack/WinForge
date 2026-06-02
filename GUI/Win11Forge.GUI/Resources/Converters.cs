@@ -18,12 +18,12 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
+using Win11Forge.GUI.Models;
+using Win11Forge.GUI.ViewModels;
 using Wpf.Ui;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using IWinThemeService = Win11Forge.GUI.Services.IThemeService;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.ViewModels;
 
 namespace Win11Forge.GUI.Resources;
 
@@ -128,7 +128,7 @@ public class SourceStringToVisibilityConverter : IValueConverter
             return Visibility.Collapsed;
         }
 
-        var tokens = sources
+        string[] tokens = sources
             .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
         return tokens.Any(token => token.Equals(sourceName, StringComparison.OrdinalIgnoreCase))
@@ -168,7 +168,7 @@ public class BoolToRequiredColorConverter : IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        var app = Application.Current;
+        Application app = Application.Current;
         if (value is true)
         {
             return app?.TryFindResource("RequiredBrush") ?? FallbackRequiredBrush;
@@ -226,7 +226,7 @@ public class StatusToColorConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         // Try to get brushes from App.xaml resources first, fallback to hardcoded
-        var app = Application.Current;
+        Application app = Application.Current;
 
         return value switch
         {
@@ -339,7 +339,7 @@ public class BoolToInstalledColorConverter : IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        var app = Application.Current;
+        Application app = Application.Current;
         if (value is true)
         {
             return app?.TryFindResource("StatusInstalledBrush") ?? FallbackInstalledBrush;
@@ -423,7 +423,7 @@ public class BoolToFavoriteColorConverter : IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        var app = Application.Current;
+        Application app = Application.Current;
         if (value is true)
         {
             return app?.TryFindResource("FavoriteActiveBrush") ?? FallbackFavoriteBrush;
@@ -447,7 +447,7 @@ public class StatusToRowBackgroundConverter : IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        var app = Application.Current;
+        Application app = Application.Current;
 
         return value switch
         {
@@ -561,7 +561,7 @@ public class BooleanToPhaseColorConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        var app = Application.Current;
+        Application app = Application.Current;
         if (value is true)
         {
             return app?.TryFindResource("PrimaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(33, 150, 243));
@@ -622,7 +622,7 @@ public class ThemeAdaptiveBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        var app = Application.Current;
+        Application? app = Application.Current;
         if (app is null)
         {
             return new SolidColorBrush(Color.FromRgb(96, 205, 255));
@@ -630,10 +630,10 @@ public class ThemeAdaptiveBrushConverter : IValueConverter
 
         try
         {
-            var themeService = ResolveThemeService(value);
+            IWinThemeService? themeService = ResolveThemeService(value);
             if (!string.IsNullOrWhiteSpace(themeService?.CurrentTheme))
             {
-                var accent = app.TryFindResource("AccentBrush") as Brush;
+                Brush? accent = app.TryFindResource("AccentBrush") as Brush;
                 if (accent is not null)
                 {
                     return accent;
@@ -645,7 +645,7 @@ public class ThemeAdaptiveBrushConverter : IValueConverter
             // Services may not be initialized during very early startup.
         }
 
-        var isDark = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
+        bool isDark = ApplicationThemeManager.GetAppTheme() == ApplicationTheme.Dark;
         if (isDark)
         {
             return app.TryFindResource("SecondaryHueMidBrush") ?? new SolidColorBrush(Color.FromRgb(205, 220, 57));

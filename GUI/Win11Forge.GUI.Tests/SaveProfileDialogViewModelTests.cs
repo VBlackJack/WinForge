@@ -35,7 +35,7 @@ public class SaveProfileDialogViewModelTests
     public void Constructor_ShouldInitializeWithDefaults()
     {
         // Act
-        var viewModel = CreateViewModel();
+        SaveProfileDialogViewModel viewModel = CreateViewModel();
 
         // Assert
         Assert.False(viewModel.HasExistingProfile);
@@ -54,7 +54,7 @@ public class SaveProfileDialogViewModelTests
     public void HasExistingProfile_ShouldBeTrueWithCurrentProfile()
     {
         // Arrange & Act
-        var viewModel = CreateViewModel("TestProfile");
+        SaveProfileDialogViewModel viewModel = CreateViewModel("TestProfile");
 
         // Assert
         Assert.True(viewModel.HasExistingProfile);
@@ -67,7 +67,7 @@ public class SaveProfileDialogViewModelTests
     public void OverwriteExisting_ShouldBeToggleable()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        SaveProfileDialogViewModel viewModel = CreateViewModel();
 
         // Act
         viewModel.OverwriteExisting = true;
@@ -89,8 +89,8 @@ public class SaveProfileDialogViewModelTests
     public void ExistingProfileName_ShouldTriggerPropertyChanged()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var propertyChanged = false;
+        SaveProfileDialogViewModel viewModel = CreateViewModel();
+        bool propertyChanged = false;
         viewModel.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(viewModel.ExistingProfileName))
@@ -112,7 +112,7 @@ public class SaveProfileDialogViewModelTests
     public void NewProfileName_ShouldBeSettable()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        SaveProfileDialogViewModel viewModel = CreateViewModel();
 
         // Act
         viewModel.NewProfileName = "MyNewProfile";
@@ -128,7 +128,7 @@ public class SaveProfileDialogViewModelTests
     public void SelectedParent_ShouldBeSettable()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        SaveProfileDialogViewModel viewModel = CreateViewModel();
         viewModel.AvailableParents.Add("Base");
         viewModel.AvailableParents.Add("Developer");
 
@@ -146,7 +146,7 @@ public class SaveProfileDialogViewModelTests
     public void Description_ShouldBeSettable()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        SaveProfileDialogViewModel viewModel = CreateViewModel();
 
         // Act
         viewModel.Description = "My custom profile for development";
@@ -162,7 +162,7 @@ public class SaveProfileDialogViewModelTests
     public void SelectedAppsCount_ShouldBeSettable()
     {
         // Arrange
-        var viewModel = CreateViewModel();
+        SaveProfileDialogViewModel viewModel = CreateViewModel();
 
         // Act
         viewModel.SelectedAppsCount = 15;
@@ -178,8 +178,8 @@ public class SaveProfileDialogViewModelTests
     public void AvailableParents_ShouldBePopulatable()
     {
         // Arrange
-        var viewModel = CreateViewModel();
-        var initialCount = viewModel.AvailableParents.Count;
+        SaveProfileDialogViewModel viewModel = CreateViewModel();
+        int initialCount = viewModel.AvailableParents.Count;
 
         // Act
         viewModel.AvailableParents.Add("Gaming");
@@ -204,7 +204,7 @@ public class SaveProfileResultTests
     public void Constructor_ShouldInitializeWithDefaults()
     {
         // Act
-        var result = new SaveProfileResult();
+        SaveProfileResult result = new SaveProfileResult();
 
         // Assert
         Assert.False(result.OverwriteExisting);
@@ -220,7 +220,7 @@ public class SaveProfileResultTests
     public void Properties_ShouldBeSettable()
     {
         // Act
-        var result = new SaveProfileResult
+        SaveProfileResult result = new SaveProfileResult
         {
             OverwriteExisting = true,
             ProfileName = "TestProfile",

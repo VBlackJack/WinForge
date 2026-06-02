@@ -112,7 +112,7 @@ public partial class PackageVerificationService : IPackageVerificationService
 
         try
         {
-            var result = await RunProcessAsync(
+            (int ExitCode, string Output) result = await RunProcessAsync(
                 "winget",
                 $"search --id \"{packageId}\" --exact --accept-source-agreements",
                 cancellationToken);
@@ -120,7 +120,7 @@ public partial class PackageVerificationService : IPackageVerificationService
             if (result.ExitCode == 0 && result.Output.Contains(packageId, StringComparison.OrdinalIgnoreCase))
             {
                 // Try to extract version from output
-                var version = ExtractVersionFromWingetOutput(result.Output, packageId);
+                string? version = ExtractVersionFromWingetOutput(result.Output, packageId);
                 return PackageVerificationResult.Found(packageId, PackageSource.Winget, version);
             }
 
@@ -161,7 +161,7 @@ public partial class PackageVerificationService : IPackageVerificationService
 
         try
         {
-            var result = await RunProcessAsync(
+            (int ExitCode, string Output) result = await RunProcessAsync(
                 "choco",
                 $"search \"{packageName}\" --exact --limit-output",
                 cancellationToken);
@@ -169,14 +169,14 @@ public partial class PackageVerificationService : IPackageVerificationService
             if (result.ExitCode == 0 && !string.IsNullOrWhiteSpace(result.Output))
             {
                 // Chocolatey --limit-output format: packageName|version
-                var lines = result.Output.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                var matchLine = lines.FirstOrDefault(l =>
+                string[] lines = result.Output.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                string? matchLine = lines.FirstOrDefault(l =>
                     l.StartsWith(packageName + "|", StringComparison.OrdinalIgnoreCase));
 
                 if (matchLine != null)
                 {
-                    var parts = matchLine.Split('|');
-                    var version = parts.Length > 1 ? parts[1].Trim() : null;
+                    string[] parts = matchLine.Split('|');
+                    string? version = parts.Length > 1 ? parts[1].Trim() : null;
                     return PackageVerificationResult.Found(packageName, PackageSource.Chocolatey, version);
                 }
             }
@@ -213,12 +213,12 @@ public partial class PackageVerificationService : IPackageVerificationService
         try
         {
             // Try to access the Microsoft Store product page
-            var url = $"https://apps.microsoft.com/detail/{storeId}";
+            string url = $"https://apps.microsoft.com/detail/{storeId}";
 
-            using var request = new HttpRequestMessage(HttpMethod.Head, url);
+            using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, url);
             request.Headers.Add("User-Agent", UserAgentValue);
 
-            using var response = await SharedHttpClient.SendAsync(request, cancellationToken);
+            using HttpResponseMessage response = await SharedHttpClient.SendAsync(request, cancellationToken);
 
             if (response.IsSuccessStatusCode)
             {
@@ -258,7 +258,7 @@ public partial class PackageVerificationService : IPackageVerificationService
             return PackageVerificationResult.Error(url, PackageSource.DirectUrl, "URL is required");
         }
 
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+        if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
             return PackageVerificationResult.Error(url, PackageSource.DirectUrl, "Invalid URL format");
@@ -266,10 +266,10 @@ public partial class PackageVerificationService : IPackageVerificationService
 
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Head, url);
+            using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, url);
             request.Headers.Add("User-Agent", UserAgentValue);
 
-            using var response = await SharedHttpClient.SendAsync(request, cancellationToken);
+            using HttpResponseMessage response = await SharedHttpClient.SendAsync(request, cancellationToken);
 
             if (response.IsSuccessStatusCode)
             {
@@ -284,11 +284,11 @@ public partial class PackageVerificationService : IPackageVerificationService
             // Some servers don't support HEAD, try GET with small range
             if (response.StatusCode == System.Net.HttpStatusCode.MethodNotAllowed)
             {
-                using var getRequest = new HttpRequestMessage(HttpMethod.Get, url);
+                using HttpRequestMessage getRequest = new HttpRequestMessage(HttpMethod.Get, url);
                 getRequest.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(0, 0);
                 getRequest.Headers.Add("User-Agent", UserAgentValue);
 
-                using var getResponse = await SharedHttpClient.SendAsync(getRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                using HttpResponseMessage getResponse = await SharedHttpClient.SendAsync(getRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
                 if (getResponse.IsSuccessStatusCode || getResponse.StatusCode == System.Net.HttpStatusCode.PartialContent)
                 {
@@ -320,19 +320,19 @@ public partial class PackageVerificationService : IPackageVerificationService
         CancellationToken cancellationToken = default)
     {
         // Start all verification tasks in parallel
-        var wingetTask = !string.IsNullOrWhiteSpace(sources.Winget)
+        Task<PackageVerificationResult?> wingetTask = !string.IsNullOrWhiteSpace(sources.Winget)
             ? ToNullableTask(VerifyWingetPackageAsync(sources.Winget, cancellationToken))
             : Task.FromResult<PackageVerificationResult?>(null);
 
-        var chocoTask = !string.IsNullOrWhiteSpace(sources.Chocolatey)
+        Task<PackageVerificationResult?> chocoTask = !string.IsNullOrWhiteSpace(sources.Chocolatey)
             ? ToNullableTask(VerifyChocolateyPackageAsync(sources.Chocolatey, cancellationToken))
             : Task.FromResult<PackageVerificationResult?>(null);
 
-        var storeTask = !string.IsNullOrWhiteSpace(sources.Store)
+        Task<PackageVerificationResult?> storeTask = !string.IsNullOrWhiteSpace(sources.Store)
             ? ToNullableTask(VerifyStoreProductAsync(sources.Store, cancellationToken))
             : Task.FromResult<PackageVerificationResult?>(null);
 
-        var directTask = !string.IsNullOrWhiteSpace(sources.DirectUrl)
+        Task<PackageVerificationResult?> directTask = !string.IsNullOrWhiteSpace(sources.DirectUrl)
             ? ToNullableTask(VerifyDirectUrlAsync(sources.DirectUrl, cancellationToken))
             : Task.FromResult<PackageVerificationResult?>(null);
 
@@ -357,7 +357,7 @@ public partial class PackageVerificationService : IPackageVerificationService
     {
         try
         {
-            var result = RunProcessSync("winget", "--version");
+            (int ExitCode, string Output) result = RunProcessSync("winget", "--version");
             return result.ExitCode == 0;
         }
         catch
@@ -370,7 +370,7 @@ public partial class PackageVerificationService : IPackageVerificationService
     {
         try
         {
-            var result = RunProcessSync("choco", "--version");
+            (int ExitCode, string Output) result = RunProcessSync("choco", "--version");
             return result.ExitCode == 0;
         }
         catch
@@ -381,7 +381,7 @@ public partial class PackageVerificationService : IPackageVerificationService
 
     private static (int ExitCode, string Output) RunProcessSync(string fileName, string arguments)
     {
-        using var process = new Process
+        using Process process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
@@ -395,7 +395,7 @@ public partial class PackageVerificationService : IPackageVerificationService
         };
 
         process.Start();
-        var output = process.StandardOutput.ReadToEnd();
+        string output = process.StandardOutput.ReadToEnd();
         process.WaitForExit(5000);
 
         return (process.ExitCode, output);
@@ -406,7 +406,7 @@ public partial class PackageVerificationService : IPackageVerificationService
         string arguments,
         CancellationToken cancellationToken)
     {
-        using var process = new Process
+        using Process process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
@@ -422,10 +422,10 @@ public partial class PackageVerificationService : IPackageVerificationService
         process.Start();
 
         // Read both streams concurrently to prevent deadlocks
-        var outputTask = process.StandardOutput.ReadToEndAsync();
-        var errorTask = process.StandardError.ReadToEndAsync();
+        Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+        Task<string> errorTask = process.StandardError.ReadToEndAsync();
 
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        using CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(TimeoutDefaults.PackageOperation);
 
         try
@@ -451,14 +451,14 @@ public partial class PackageVerificationService : IPackageVerificationService
     {
         // Winget output has a table format with Version column
         // Try to extract version using regex
-        var lines = output.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+        string[] lines = output.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
-        foreach (var line in lines)
+        foreach (string line in lines)
         {
             if (line.Contains(packageId, StringComparison.OrdinalIgnoreCase))
             {
                 // Try to find version pattern (e.g., 1.2.3, 1.2.3.4, v1.2.3)
-                var versionMatch = VersionPattern().Match(line);
+                Match versionMatch = VersionPattern().Match(line);
                 if (versionMatch.Success)
                 {
                     return versionMatch.Groups[1].Value;

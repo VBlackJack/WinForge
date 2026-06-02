@@ -44,17 +44,17 @@ public partial class AppsViewModel
             await InitializeAsync().ConfigureAwait(false);
         }
 
-        var remainingIds = checkpoint.GetRemainingAppIds();
+        IReadOnlyList<string> remainingIds = checkpoint.GetRemainingAppIds();
         if (remainingIds.Count == 0)
         {
             return;
         }
 
-        var byId = _allApplications.ToDictionary(a => a.AppId, StringComparer.OrdinalIgnoreCase);
-        var apps = new List<ApplicationModel>(remainingIds.Count);
-        foreach (var id in remainingIds)
+        Dictionary<string, ApplicationModel> byId = _allApplications.ToDictionary(a => a.AppId, StringComparer.OrdinalIgnoreCase);
+        List<ApplicationModel> apps = new List<ApplicationModel>(remainingIds.Count);
+        foreach (string id in remainingIds)
         {
-            if (byId.TryGetValue(id, out var app))
+            if (byId.TryGetValue(id, out ApplicationModel? app))
             {
                 apps.Add(app);
             }
@@ -73,7 +73,7 @@ public partial class AppsViewModel
         switch (checkpoint.OperationKind)
         {
             case BatchOperationKind.Install:
-                var installResult = await _installationCoordinator.InstallAsync(
+                AppInstallationResult installResult = await _installationCoordinator.InstallAsync(
                     apps,
                     new AppInstallationOptions(ForceUpdate: checkpoint.Options.ForceUpdate),
                     cancellationToken: cancellationToken).ConfigureAwait(false);

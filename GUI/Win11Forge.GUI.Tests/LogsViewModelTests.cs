@@ -33,7 +33,7 @@ public class LogsViewModelTests
     public void Constructor_ShouldInitializeWithDefaults()
     {
         // Act
-        var viewModel = new LogsViewModel();
+        LogsViewModel viewModel = new LogsViewModel();
 
         // Assert
         Assert.Empty(viewModel.SearchText);
@@ -50,7 +50,7 @@ public class LogsViewModelTests
     public void LogLevels_ShouldContainExpectedOptions()
     {
         // Arrange
-        var viewModel = new LogsViewModel();
+        LogsViewModel viewModel = new LogsViewModel();
 
         // Assert
         Assert.Contains(Loc.Logs_Filter_All, viewModel.LogLevels);
@@ -67,7 +67,7 @@ public class LogsViewModelTests
     public void HasNoLogs_ShouldBeTrueWhenEmpty()
     {
         // Arrange
-        var viewModel = new LogsViewModel();
+        LogsViewModel viewModel = new LogsViewModel();
 
         // Act - Wait for initial load to complete
         // In tests, we check the initial state before async load
@@ -84,7 +84,7 @@ public class LogsViewModelTests
     public void SelectedLogFile_ShouldBeSettable()
     {
         // Arrange
-        var viewModel = new LogsViewModel();
+        LogsViewModel viewModel = new LogsViewModel();
 
         // Act
         viewModel.SelectedLogFile = null;
@@ -100,8 +100,8 @@ public class LogsViewModelTests
     public void SearchText_ShouldTriggerPropertyChanged()
     {
         // Arrange
-        var viewModel = new LogsViewModel();
-        var propertyChanged = false;
+        LogsViewModel viewModel = new LogsViewModel();
+        bool propertyChanged = false;
         viewModel.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(viewModel.SearchText))
@@ -123,7 +123,7 @@ public class LogsViewModelTests
     public void TotalSizeFormatted_ShouldHaveInitialValue()
     {
         // Arrange
-        var viewModel = new LogsViewModel();
+        LogsViewModel viewModel = new LogsViewModel();
 
         // Assert
         Assert.Equal("0 B", viewModel.TotalSizeFormatted);
@@ -133,9 +133,9 @@ public class LogsViewModelTests
     public async Task ExportLogs_WhenDialogCancelled_ShouldUseZipDialogOptions()
     {
         // Arrange
-        var fileDialogService = new TestFileDialogService();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
         fileDialogService.QueueSaveResult(null);
-        var viewModel = new LogsViewModel(fileDialogService);
+        LogsViewModel viewModel = new LogsViewModel(fileDialogService);
 
         // Act
         await viewModel.ExportLogsCommand.ExecuteAsync(null);
@@ -151,15 +151,15 @@ public class LogsViewModelTests
     public async Task ClearOldLogs_WhenCancelled_ShouldOnlyAskForConfirmation()
     {
         // Arrange
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var viewModel = new LogsViewModel(dialogService: dialogService);
+        LogsViewModel viewModel = new LogsViewModel(dialogService: dialogService);
 
         // Act
         await viewModel.ClearOldLogsCommand.ExecuteAsync(null);
 
         // Assert
-        var request = Assert.Single(dialogService.ConfirmRequests);
+        (string Title, string Message, string? ConfirmText, string? CancelText) request = Assert.Single(dialogService.ConfirmRequests);
         Assert.Equal(Loc.Confirm_ClearOldLogs_Title, request.Title);
         Assert.Equal(Loc.Confirm_ClearOldLogs_Message, request.Message);
         Assert.Equal(Loc.Confirm_ClearOldLogs_Btn, request.ConfirmText);
@@ -170,10 +170,10 @@ public class LogsViewModelTests
     public async Task DeleteLog_WhenCancelled_ShouldNotRemoveLog()
     {
         // Arrange
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var viewModel = new LogsViewModel(dialogService: dialogService);
-        var logFile = new LogFileEntry
+        LogsViewModel viewModel = new LogsViewModel(dialogService: dialogService);
+        LogFileEntry logFile = new LogFileEntry
         {
             FileName = "test.log",
             FullPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.log"),
@@ -187,7 +187,7 @@ public class LogsViewModelTests
         await viewModel.DeleteLogCommand.ExecuteAsync(logFile);
 
         // Assert
-        var request = Assert.Single(dialogService.ConfirmRequests);
+        (string Title, string Message, string? ConfirmText, string? CancelText) request = Assert.Single(dialogService.ConfirmRequests);
         Assert.Equal(Loc.Confirm_DeleteLog_Title, request.Title);
         Assert.Equal(string.Format(Loc.Confirm_DeleteLog_Message, logFile.FileName), request.Message);
         Assert.Equal(Loc.Confirm_Delete_Btn, request.ConfirmText);
@@ -199,18 +199,18 @@ public class LogsViewModelTests
     [Fact]
     public void LogsViewModel_UserFacingStatusAndDialogStrings_ShouldUseResources()
     {
-        var sourcePath = RepositoryPathHelper.FindFile(
+        string sourcePath = RepositoryPathHelper.FindFile(
             "GUI",
             "Win11Forge.GUI",
             "ViewModels",
             "LogsViewModel.cs");
-        var source = File.ReadAllText(sourcePath);
+        string source = File.ReadAllText(sourcePath);
 
         Assert.DoesNotContain("StatusMessage = $\"", source, StringComparison.Ordinal);
         Assert.DoesNotContain("StatusMessage = \"", source, StringComparison.Ordinal);
         Assert.DoesNotContain("ShowConfirmAsync(\"", source, StringComparison.Ordinal);
 
-        var forbiddenUserFacingStrings = new[]
+        string[] forbiddenUserFacingStrings = new[]
         {
             "Loading logs...",
             "log files found",
@@ -230,7 +230,7 @@ public class LogsViewModelTests
             "Error deleting log:"
         };
 
-        foreach (var text in forbiddenUserFacingStrings)
+        foreach (string? text in forbiddenUserFacingStrings)
         {
             Assert.DoesNotContain(text, source, StringComparison.Ordinal);
         }

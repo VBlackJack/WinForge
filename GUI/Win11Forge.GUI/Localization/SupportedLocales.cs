@@ -58,7 +58,7 @@ internal static class SupportedLocales
             return Default;
         }
 
-        var twoLetter = languageCode
+        string twoLetter = languageCode
             .Split('-', StringSplitOptions.RemoveEmptyEntries)[0]
             .Trim()
             .ToLowerInvariant();

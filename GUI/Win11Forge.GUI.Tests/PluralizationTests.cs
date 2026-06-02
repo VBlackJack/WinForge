@@ -38,11 +38,11 @@ public class PluralizationTests
     [Fact]
     public void UninstallConfirmation_French_UsesDedicatedSingularAndPluralResources()
     {
-        var culture = CultureInfo.GetCultureInfo("fr");
-        var titleSingle = GetString("Confirm_Uninstall_Title_Single", culture);
-        var titleMultiple = GetString("Confirm_Uninstall_Title_Multiple", culture);
-        var messageSingle = GetString("Confirm_Uninstall_Message_Single", culture);
-        var messageMultiple = GetString("Confirm_Uninstall_Message_Multiple", culture);
+        CultureInfo culture = CultureInfo.GetCultureInfo("fr");
+        string titleSingle = GetString("Confirm_Uninstall_Title_Single", culture);
+        string titleMultiple = GetString("Confirm_Uninstall_Title_Multiple", culture);
+        string messageSingle = GetString("Confirm_Uninstall_Message_Single", culture);
+        string messageMultiple = GetString("Confirm_Uninstall_Message_Multiple", culture);
 
         Assert.DoesNotContain("{0}", titleSingle);
         Assert.DoesNotContain("{0}", messageSingle);
@@ -57,9 +57,9 @@ public class PluralizationTests
     [Fact]
     public void ImportConfirmationResources_DoNotDescribeGenericYesNoButtons()
     {
-        var frenchCulture = CultureInfo.GetCultureInfo("fr");
-        var englishMessage = Loc.AppCatalog_ImportModeConfirm;
-        var frenchMessage = GetString("AppCatalog_ImportModeConfirm", frenchCulture);
+        CultureInfo frenchCulture = CultureInfo.GetCultureInfo("fr");
+        string englishMessage = Loc.AppCatalog_ImportModeConfirm;
+        string frenchMessage = GetString("AppCatalog_ImportModeConfirm", frenchCulture);
 
         Assert.DoesNotContain("Yes", englishMessage, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("No", englishMessage, StringComparison.OrdinalIgnoreCase);

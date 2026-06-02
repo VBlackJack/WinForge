@@ -311,7 +311,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
 
     private static string FormatLocalized(string resourceKey, string fallbackFormat, params object[] args)
     {
-        var format = GetLocalizedString(resourceKey, fallbackFormat);
+        string format = GetLocalizedString(resourceKey, fallbackFormat);
         return string.Format(CultureInfo.CurrentCulture, format, args);
     }
 
@@ -348,7 +348,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         _deploymentStateService.CancelRequested += OnCancelRequested;
 
         // Restore persisted view state from settings
-        var settings = _settingsService.LoadSettings();
+        AppSettings settings = _settingsService.LoadSettings();
 
         // Restore persisted filter state from settings
         _searchText = settings.AppsLastSearchText ?? string.Empty;
@@ -442,13 +442,13 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
 
             // Sync to ObservableCollection for CollectionView
             _applicationsSource.Clear();
-            foreach (var app in _allApplications)
+            foreach (ApplicationModel app in _allApplications)
             {
                 _applicationsSource.Add(app);
             }
 
             // Build categories list
-            var categoryList = _allApplications
+            List<string> categoryList = _allApplications
                 .Select(a => a.Category)
                 .Where(c => !string.IsNullOrEmpty(c))
                 .Distinct()
@@ -460,8 +460,8 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
                 new[] { Resources.Resources.Apps_CategoryAll }.Concat(categoryList));
 
             // Restore persisted category filter, or default to "All Categories"
-            var settings = _settingsService.LoadSettings();
-            var persistedCategory = settings.AppsLastSelectedCategory;
+            AppSettings settings = _settingsService.LoadSettings();
+            string persistedCategory = settings.AppsLastSelectedCategory;
             if (!string.IsNullOrEmpty(persistedCategory) && Categories.Contains(persistedCategory))
             {
                 SelectedCategory = persistedCategory;
@@ -476,7 +476,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
                 Enum.GetValues<StatusFilterOption>());
 
             // Load available profiles and pre-cache them
-            var profiles = await _powerShellBridge.GetAvailableProfilesAsync();
+            List<string> profiles = await _powerShellBridge.GetAvailableProfilesAsync();
             AvailableProfiles = new ObservableCollection<string>(profiles);
             await PreloadProfilesCacheAsync(profiles);
 

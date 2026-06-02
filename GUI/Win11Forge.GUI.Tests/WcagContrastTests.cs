@@ -36,14 +36,14 @@ public class WcagContrastTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            var service = new ThemeService(new MockAppSettingsService());
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            ThemeService service = new ThemeService(new MockAppSettingsService());
 
-            foreach (var themeName in ThemeForge.Theme.ThemeNames.All)
+            foreach (string themeName in ThemeForge.Theme.ThemeNames.All)
             {
                 service.ApplyTheme(themeName);
 
-                var card = ReadBrushColor("CardBackgroundFillColorDefaultBrush");
+                Color card = ReadBrushColor("CardBackgroundFillColorDefaultBrush");
                 AssertContrastMeetsAA(ReadBrushColor("TextFillColorPrimaryBrush"), card, $"{themeName}: primary text on card");
                 AssertContrastMeetsAA(ReadBrushColor("TextFillColorSecondaryBrush"), card, $"{themeName}: secondary text on card");
                 AssertContrastMeetsAA(ReadBrushColor("TextFillColorTertiaryBrush"), card, $"{themeName}: tertiary text on card");
@@ -56,14 +56,14 @@ public class WcagContrastTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            var service = new ThemeService(new MockAppSettingsService());
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            ThemeService service = new ThemeService(new MockAppSettingsService());
 
-            foreach (var themeName in ThemeForge.Theme.ThemeNames.All)
+            foreach (string themeName in ThemeForge.Theme.ThemeNames.All)
             {
                 service.ApplyTheme(themeName);
 
-                foreach (var accentTint in ThemeForge.Theme.AccentTints.All)
+                foreach (ThemeForge.Theme.AccentTint accentTint in ThemeForge.Theme.AccentTints.All)
                 {
                     service.ApplyAccentTint(accentTint.ToString());
 
@@ -79,8 +79,8 @@ public class WcagContrastTests
     [Fact]
     public void HighContrast_AppCatalogHeaderTextOnMappedSurface_MeetsAA()
     {
-        var colors = ParseHighContrastBrushColors();
-        var appSource = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml.cs"));
+        Dictionary<string, string> colors = ParseHighContrastBrushColors();
+        string appSource = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml.cs"));
 
         Assert.Contains(
             "SwapIfExists(app, \"SolidBackgroundFillColorSecondaryBrush\", \"HighContrastSurfaceBrush\")",
@@ -98,20 +98,20 @@ public class WcagContrastTests
 
     private static Color ReadBrushColor(string key)
     {
-        var brush = Assert.IsType<SolidColorBrush>(System.Windows.Application.Current.Resources[key]);
+        SolidColorBrush brush = Assert.IsType<SolidColorBrush>(System.Windows.Application.Current.Resources[key]);
         return brush.Color;
     }
 
     private static Dictionary<string, string> ParseHighContrastBrushColors()
     {
-        var doc = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "HighContrastTheme.xaml"));
+        XDocument doc = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "HighContrastTheme.xaml"));
         XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
-        var colors = new Dictionary<string, string>(StringComparer.Ordinal);
+        Dictionary<string, string> colors = new Dictionary<string, string>(StringComparer.Ordinal);
 
-        foreach (var element in doc.Descendants().Where(element => element.Name.LocalName == "SolidColorBrush"))
+        foreach (XElement? element in doc.Descendants().Where(element => element.Name.LocalName == "SolidColorBrush"))
         {
-            var key = element.Attribute(x + "Key")?.Value;
-            var color = element.Attribute("Color")?.Value;
+            string? key = element.Attribute(x + "Key")?.Value;
+            string? color = element.Attribute("Color")?.Value;
 
             if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(color))
             {
@@ -124,7 +124,7 @@ public class WcagContrastTests
 
     private static void AssertContrastMeetsAA(Color foreground, Color background, string context)
     {
-        var ratio = ContrastRatio(foreground, background);
+        double ratio = ContrastRatio(foreground, background);
 
         Assert.True(
             ratio >= AaBodyText,
@@ -138,10 +138,10 @@ public class WcagContrastTests
 
     private static double ContrastRatio(Color foreground, Color background)
     {
-        var foregroundLuminance = RelativeLuminance(foreground);
-        var backgroundLuminance = RelativeLuminance(background);
-        var lighter = Math.Max(foregroundLuminance, backgroundLuminance);
-        var darker = Math.Min(foregroundLuminance, backgroundLuminance);
+        double foregroundLuminance = RelativeLuminance(foreground);
+        double backgroundLuminance = RelativeLuminance(background);
+        double lighter = Math.Max(foregroundLuminance, backgroundLuminance);
+        double darker = Math.Min(foregroundLuminance, backgroundLuminance);
 
         return (lighter + 0.05) / (darker + 0.05);
     }
@@ -155,7 +155,7 @@ public class WcagContrastTests
     {
         static double Channel(byte channel)
         {
-            var normalized = channel / 255.0;
+            double normalized = channel / 255.0;
             return normalized <= 0.03928
                 ? normalized / 12.92
                 : Math.Pow((normalized + 0.055) / 1.055, 2.4);
@@ -170,11 +170,11 @@ public class WcagContrastTests
 
     private static string FindRepoFile(params string[] relativeParts)
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
 
         while (directory is not null)
         {
-            var candidate = Path.Combine([directory.FullName, .. relativeParts]);
+            string candidate = Path.Combine([directory.FullName, .. relativeParts]);
             if (File.Exists(candidate))
             {
                 return candidate;

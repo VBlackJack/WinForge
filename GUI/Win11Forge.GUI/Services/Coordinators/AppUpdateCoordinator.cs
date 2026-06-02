@@ -58,13 +58,13 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
             return new AppUpdateScanResult(0, 0, WasCancelled: false);
         }
 
-        var apps = installedApps.ToList();
-        var maxParallelScans = Math.Clamp(_settingsService.LoadSettings().MaxParallelScans, 1, 20);
+        List<ApplicationModel> apps = installedApps.ToList();
+        int maxParallelScans = Math.Clamp(_settingsService.LoadSettings().MaxParallelScans, 1, 20);
         AppOperationRunner runner = new AppOperationRunner(maxParallelScans, _loggerFactory);
 
         try
         {
-            var itemResults = await runner.RunAsync(
+            IReadOnlyList<AppUpdateScanItemResult> itemResults = await runner.RunAsync(
                 apps,
                 CheckApplicationUpdateAsync,
                 app => app,
@@ -98,14 +98,14 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
             return new AppUpdateResult(0, 0, 0, 0, WasCancelled: false);
         }
 
-        var apps = applications.ToList();
-        var updatedCount = 0;
-        var failedCount = 0;
-        var skippedCount = 0;
-        var completed = 0;
-        var wasCancelled = false;
+        List<ApplicationModel> apps = applications.ToList();
+        int updatedCount = 0;
+        int failedCount = 0;
+        int skippedCount = 0;
+        int completed = 0;
+        bool wasCancelled = false;
 
-        var batchId = await _resumeService.BeginBatchAsync(
+        Guid batchId = await _resumeService.BeginBatchAsync(
             BatchOperationKind.Update,
             apps.Select(app => app.AppId).ToArray(),
             new BatchOptions(ForceUpdate: false),
@@ -113,7 +113,7 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
 
         try
         {
-            foreach (var app in apps)
+            foreach (ApplicationModel? app in apps)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -122,7 +122,7 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
                     break;
                 }
 
-                var itemResult = await UpdateApplicationAsync(app, cancellationToken).ConfigureAwait(false);
+                AppUpdateItemResult itemResult = await UpdateApplicationAsync(app, cancellationToken).ConfigureAwait(false);
                 completed++;
 
                 switch (itemResult.Status)
@@ -197,7 +197,7 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
         cancellationToken.ThrowIfCancellationRequested();
 
         app.StatusMessage = Resources.Resources.Common_Loading;
-        var result = await _powerShellBridge.CheckApplicationUpdateAsync(app).ConfigureAwait(false);
+        UpdateCheckResult result = await _powerShellBridge.CheckApplicationUpdateAsync(app).ConfigureAwait(false);
 
         if (result.HasUpdate)
         {
@@ -226,7 +226,7 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
             app.Status = ApplicationStatus.Updating;
             app.StatusMessage = Resources.Resources.Status_Updating;
 
-            var result = await _powerShellBridge.UpdateApplicationAsync(
+            InstallResult result = await _powerShellBridge.UpdateApplicationAsync(
                 app,
                 progress => app.StatusMessage = progress).ConfigureAwait(false);
 
@@ -260,7 +260,7 @@ public sealed class AppUpdateCoordinator : IAppUpdateCoordinator
 
     private async Task RefreshUpdatedApplicationAsync(ApplicationModel app)
     {
-        var updateCheck = await _powerShellBridge.CheckApplicationUpdateAsync(app).ConfigureAwait(false);
+        UpdateCheckResult updateCheck = await _powerShellBridge.CheckApplicationUpdateAsync(app).ConfigureAwait(false);
 
         if (!string.IsNullOrEmpty(updateCheck.CurrentVersion))
         {

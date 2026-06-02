@@ -18,8 +18,8 @@
 
 using Win11Forge.GUI.Models;
 using DataAnnotationsValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
-using DataAnnotationsValidator = System.ComponentModel.DataAnnotations.Validator;
 using DataAnnotationsValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
+using DataAnnotationsValidator = System.ComponentModel.DataAnnotations.Validator;
 
 namespace Win11Forge.GUI.Services;
 
@@ -70,8 +70,8 @@ public class ProfileValidationService : IProfileValidationService
         if (profile.InheritedFrom == null || profile.InheritedFrom.Count == 0)
             return ValidationResult.Success;
 
-        var availableSet = new HashSet<string>(availableProfiles, StringComparer.OrdinalIgnoreCase);
-        var missingProfiles = profile.InheritedFrom
+        HashSet<string> availableSet = new HashSet<string>(availableProfiles, StringComparer.OrdinalIgnoreCase);
+        List<string> missingProfiles = profile.InheritedFrom
             .Where(p => !availableSet.Contains(p))
             .ToList();
 
@@ -95,17 +95,17 @@ public class ProfileValidationService : IProfileValidationService
         if (inheritedFrom == null || inheritedFrom.Count == 0)
             return ValidationResult.Success;
 
-        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { profileName };
-        var queue = new Queue<(string Profile, int Depth)>();
+        HashSet<string> visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { profileName };
+        Queue<(string Profile, int Depth)> queue = new Queue<(string Profile, int Depth)>();
 
-        foreach (var parent in inheritedFrom)
+        foreach (string parent in inheritedFrom)
         {
             queue.Enqueue((parent, 1));
         }
 
         while (queue.Count > 0)
         {
-            var (current, depth) = queue.Dequeue();
+            (string? current, int depth) = queue.Dequeue();
 
             // Check for circular reference back to original profile
             if (string.Equals(current, profileName, StringComparison.OrdinalIgnoreCase))
@@ -128,10 +128,10 @@ public class ProfileValidationService : IProfileValidationService
                 continue;
 
             // Get parent's parents
-            var parentParents = getParentProfiles(current);
+            IReadOnlyList<string>? parentParents = getParentProfiles(current);
             if (parentParents != null)
             {
-                foreach (var grandparent in parentParents)
+                foreach (string grandparent in parentParents)
                 {
                     queue.Enqueue((grandparent, depth + 1));
                 }
@@ -149,8 +149,8 @@ public class ProfileValidationService : IProfileValidationService
         if (profile.Applications == null || profile.Applications.Count == 0)
             return ValidationResult.Success;
 
-        var availableSet = new HashSet<string>(availableAppIds, StringComparer.OrdinalIgnoreCase);
-        var missingApps = profile.Applications
+        HashSet<string> availableSet = new HashSet<string>(availableAppIds, StringComparer.OrdinalIgnoreCase);
+        List<string> missingApps = profile.Applications
             .Select(a => a.AppId)
             .Where(id => !string.IsNullOrEmpty(id) && !availableSet.Contains(id))
             .Distinct()
@@ -174,15 +174,15 @@ public class ProfileValidationService : IProfileValidationService
         IEnumerable<string> availableAppIds,
         Func<string, IReadOnlyList<string>?> getParentProfiles)
     {
-        var results = new List<ValidationResult>();
+        List<ValidationResult> results = new List<ValidationResult>();
 
         // Standard DataAnnotations validation
-        var context = new DataAnnotationsValidationContext(profile);
-        var annotationResults = new List<DataAnnotationsValidationResult>();
+        DataAnnotationsValidationContext context = new DataAnnotationsValidationContext(profile);
+        List<DataAnnotationsValidationResult> annotationResults = new List<DataAnnotationsValidationResult>();
         DataAnnotationsValidator.TryValidateObject(profile, context, annotationResults, validateAllProperties: true);
 
         // Convert DataAnnotations results to our ValidationResult type
-        foreach (var result in annotationResults)
+        foreach (DataAnnotationsValidationResult result in annotationResults)
         {
             if (result != DataAnnotationsValidationResult.Success && result.ErrorMessage != null)
             {
@@ -191,7 +191,7 @@ public class ProfileValidationService : IProfileValidationService
         }
 
         // IValidatableObject validation
-        foreach (var result in profile.Validate(context))
+        foreach (DataAnnotationsValidationResult result in profile.Validate(context))
         {
             if (result != DataAnnotationsValidationResult.Success && result.ErrorMessage != null)
             {
@@ -200,18 +200,18 @@ public class ProfileValidationService : IProfileValidationService
         }
 
         // Cross-model validations
-        var inheritanceExists = ValidateInheritanceExists(profile, availableProfiles);
+        ValidationResult inheritanceExists = ValidateInheritanceExists(profile, availableProfiles);
         if (!inheritanceExists.IsValid)
             results.Add(inheritanceExists);
 
-        var circularCheck = ValidateNoCircularInheritance(
+        ValidationResult circularCheck = ValidateNoCircularInheritance(
             profile.Name,
             profile.InheritedFrom,
             getParentProfiles);
         if (!circularCheck.IsValid)
             results.Add(circularCheck);
 
-        var appsExist = ValidateApplicationsExist(profile, availableAppIds);
+        ValidationResult appsExist = ValidateApplicationsExist(profile, availableAppIds);
         if (!appsExist.IsValid)
             results.Add(appsExist);
 

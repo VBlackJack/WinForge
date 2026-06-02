@@ -146,14 +146,14 @@ public class PowerShellBridgeFacade : IPowerShellBridge, IDisposable
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var scriptPath = _pathService.GetPath(relativePath);
+        string scriptPath = _pathService.GetPath(relativePath);
 
         if (!System.IO.File.Exists(scriptPath))
         {
             throw new System.IO.FileNotFoundException($"Script not found: {scriptPath}");
         }
 
-        var script = $@"
+        string script = $@"
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
 & '{scriptPath.Replace("\\", "/")}'
 ";
@@ -166,9 +166,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var repoRoot = _pathService.GetSafeRepositoryRoot();
+        string repoRoot = _pathService.GetSafeRepositoryRoot();
 
-        var script = $@"
+        string script = $@"
 Set-Location '{repoRoot.Replace("\\", "/")}'
 {command}
 ";

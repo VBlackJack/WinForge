@@ -16,6 +16,7 @@
 
 using System.Globalization;
 using System.Windows;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -143,7 +144,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         try
         {
-            var version = await _powerShellBridge.GetWin11ForgeVersionAsync();
+            string version = await _powerShellBridge.GetWin11ForgeVersionAsync();
             WindowTitle = string.Format(Loc.App_Title, version);
         }
         catch (Exception ex)
@@ -195,24 +196,24 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var ordered = pending.OrderByDescending(c => c.LastCheckpointAt).ToArray();
-        var latest = ordered[0];
-        for (var i = 1; i < ordered.Length; i++)
+        BatchCheckpoint[] ordered = pending.OrderByDescending(c => c.LastCheckpointAt).ToArray();
+        BatchCheckpoint latest = ordered[0];
+        for (int i = 1; i < ordered.Length; i++)
         {
             System.Diagnostics.Debug.WriteLine(
                 $"[MainWindow] Ignoring older pending checkpoint {ordered[i].BatchId} " +
                 $"(LastCheckpointAt={ordered[i].LastCheckpointAt:o}); will be re-offered or pruned later.");
         }
 
-        var remaining = latest.Plan.Count - latest.Completed.Count;
-        var messageTemplate = latest.OperationKind switch
+        int remaining = latest.Plan.Count - latest.Completed.Count;
+        string messageTemplate = latest.OperationKind switch
         {
             BatchOperationKind.Install => Loc.Resume_Message_Install,
             BatchOperationKind.Update => Loc.Resume_Message_Update,
             BatchOperationKind.Uninstall => Loc.Resume_Message_Uninstall,
             _ => Loc.Resume_Message_Install
         };
-        var message = string.Format(
+        string message = string.Format(
             CultureInfo.CurrentCulture,
             messageTemplate,
             latest.Plan.Count,
@@ -314,7 +315,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         try
         {
-            var shortcutsPanel = new KeyboardShortcutsPanel();
+            KeyboardShortcutsPanel shortcutsPanel = new KeyboardShortcutsPanel();
             await _dialogService.ShowContentAsync(
                 Loc.Help_KeyboardShortcuts ?? "Keyboard Shortcuts",
                 shortcutsPanel,
@@ -329,31 +330,31 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private async Task UndoAsync()
     {
-        var description = _undoService.NextUndoDescription;
-        var success = await _undoService.UndoAsync();
+        string? description = _undoService.NextUndoDescription;
+        bool success = await _undoService.UndoAsync();
 
         if (success)
         {
-            var message = string.Format(Loc.Undo_ActionUndone, description ?? "");
+            string message = string.Format(Loc.Undo_ActionUndone, description ?? "");
             _toastService.ShowInfo(message);
         }
     }
 
     private async Task RedoAsync()
     {
-        var description = _undoService.NextRedoDescription;
-        var success = await _undoService.RedoAsync();
+        string? description = _undoService.NextRedoDescription;
+        bool success = await _undoService.RedoAsync();
 
         if (success)
         {
-            var message = string.Format(Loc.Undo_ActionRedone, description ?? "");
+            string message = string.Format(Loc.Undo_ActionRedone, description ?? "");
             _toastService.ShowInfo(message);
         }
     }
 
     private void DispatchUndoStateChanged()
     {
-        var dispatcher = Application.Current?.Dispatcher;
+        Dispatcher? dispatcher = Application.Current?.Dispatcher;
         if (dispatcher == null || dispatcher.CheckAccess())
         {
             RaiseUndoStateChanged();

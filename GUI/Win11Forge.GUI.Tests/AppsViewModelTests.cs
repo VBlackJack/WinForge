@@ -77,7 +77,7 @@ public class AppsViewModelTests
 
     private static async Task WaitForConditionAsync(Func<bool> condition)
     {
-        for (var i = 0; i < 50; i++)
+        for (int i = 0; i < 50; i++)
         {
             if (condition())
             {
@@ -92,7 +92,7 @@ public class AppsViewModelTests
 
     private static void ClearSelection(AppsViewModel viewModel)
     {
-        foreach (var app in GetFilteredApps(viewModel.FilteredApplications))
+        foreach (ApplicationModel app in GetFilteredApps(viewModel.FilteredApplications))
         {
             app.IsSelected = false;
         }
@@ -127,7 +127,7 @@ public class AppsViewModelTests
         IToastService? toastService = null,
         IRepositoryPathService? pathService = null)
     {
-        var viewModel = new AppsViewModel(
+        AppsViewModel viewModel = new AppsViewModel(
             bridge ?? CreateMockBridge(),
             settings ?? CreateMockSettingsService(),
             deploymentState ?? CreateMockDeploymentStateService(),
@@ -152,15 +152,15 @@ public class AppsViewModelTests
     public async Task Filter_ShouldReturnOnlyMatchingNames()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var viewModel = CreateViewModel(bridge);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        AppsViewModel viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
         // Act - Search for "Visual"
         viewModel.SearchText = "Visual";
 
         // Assert
-        var filteredApps = GetFilteredApps(viewModel.FilteredApplications);
+        List<ApplicationModel> filteredApps = GetFilteredApps(viewModel.FilteredApplications);
         Assert.True(filteredApps.Count > 0,
             "Should find at least one application matching 'Visual'");
         Assert.All(filteredApps, app =>
@@ -178,15 +178,15 @@ public class AppsViewModelTests
     public async Task Filter_ShouldReturnOnlyMatchingCategories()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var viewModel = CreateViewModel(bridge);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        AppsViewModel viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
         // Act - Select "Development" category
         viewModel.SelectedCategory = "Development";
 
         // Assert
-        var filteredApps = GetFilteredApps(viewModel.FilteredApplications);
+        List<ApplicationModel> filteredApps = GetFilteredApps(viewModel.FilteredApplications);
         Assert.True(filteredApps.Count > 0,
             "Should find at least one application in 'Development' category");
         Assert.All(filteredApps, app =>
@@ -200,8 +200,8 @@ public class AppsViewModelTests
     public async Task Filter_ShouldCombineNameAndCategory()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var viewModel = CreateViewModel(bridge);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        AppsViewModel viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
         // Act - Search for "Code" in "Development" category
@@ -209,7 +209,7 @@ public class AppsViewModelTests
         viewModel.SearchText = "Code";
 
         // Assert
-        var filteredApps = GetFilteredApps(viewModel.FilteredApplications);
+        List<ApplicationModel> filteredApps = GetFilteredApps(viewModel.FilteredApplications);
         Assert.All(filteredApps, app =>
         {
             Assert.Equal("Development", app.Category, StringComparer.OrdinalIgnoreCase);
@@ -228,10 +228,10 @@ public class AppsViewModelTests
     public async Task ClearFilters_ShouldRestoreFullList()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var viewModel = CreateViewModel(bridge);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        AppsViewModel viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
-        var originalCount = GetFilteredCount(viewModel.FilteredApplications);
+        int originalCount = GetFilteredCount(viewModel.FilteredApplications);
 
         // Apply some filters
         viewModel.SearchText = "NonexistentApp12345";
@@ -252,8 +252,8 @@ public class AppsViewModelTests
     public async Task Categories_ShouldBeExtractedFromApplications()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var viewModel = CreateViewModel(bridge);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        AppsViewModel viewModel = CreateViewModel(bridge);
 
         // Act
         await viewModel.InitializeAsync();
@@ -271,19 +271,19 @@ public class AppsViewModelTests
     public async Task Filter_ShouldBeCaseInsensitive()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var viewModel = CreateViewModel(bridge);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        AppsViewModel viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
         // Act - Search with different cases
         viewModel.SearchText = "visual";
-        var lowerCount = GetFilteredCount(viewModel.FilteredApplications);
+        int lowerCount = GetFilteredCount(viewModel.FilteredApplications);
 
         viewModel.SearchText = "VISUAL";
-        var upperCount = GetFilteredCount(viewModel.FilteredApplications);
+        int upperCount = GetFilteredCount(viewModel.FilteredApplications);
 
         viewModel.SearchText = "ViSuAl";
-        var mixedCount = GetFilteredCount(viewModel.FilteredApplications);
+        int mixedCount = GetFilteredCount(viewModel.FilteredApplications);
 
         // Assert
         Assert.Equal(lowerCount, upperCount);
@@ -297,10 +297,10 @@ public class AppsViewModelTests
     public async Task FilteredCount_ShouldUpdateWhenFiltering()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var viewModel = CreateViewModel(bridge);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        AppsViewModel viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
-        var totalCount = viewModel.FilteredCount;
+        int totalCount = viewModel.FilteredCount;
 
         // Act
         viewModel.SearchText = "Visual";
@@ -318,13 +318,13 @@ public class AppsViewModelTests
     public async Task Filter_EmptySearch_ShouldReturnAllInCategory()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var viewModel = CreateViewModel(bridge);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        AppsViewModel viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
         // Select a category first
         viewModel.SelectedCategory = "Development";
-        var categoryCount = GetFilteredCount(viewModel.FilteredApplications);
+        int categoryCount = GetFilteredCount(viewModel.FilteredApplications);
 
         // Act - Set empty search
         viewModel.SearchText = "";
@@ -337,12 +337,12 @@ public class AppsViewModelTests
     public async Task SelectWithUpdates_ShouldOnlyMutateFilteredApplications()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var viewModel = CreateViewModel(bridge);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        AppsViewModel viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
-        var visibleUpdate = bridge.Applications.Single(app => app.AppId == "Git.Git");
-        var hiddenUpdate = bridge.Applications.Single(app => app.AppId == "Mozilla.Firefox");
+        ApplicationModel visibleUpdate = bridge.Applications.Single(app => app.AppId == "Git.Git");
+        ApplicationModel hiddenUpdate = bridge.Applications.Single(app => app.AppId == "Mozilla.Firefox");
         visibleUpdate.Status = ApplicationStatus.UpdateAvailable;
         hiddenUpdate.Status = ApplicationStatus.UpdateAvailable;
         hiddenUpdate.IsSelected = false;
@@ -360,11 +360,11 @@ public class AppsViewModelTests
     public async Task SelectNotInstalled_ShouldOnlyMutateFilteredApplications()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var viewModel = CreateViewModel(bridge);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        AppsViewModel viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
-        var hiddenNotInstalled = bridge.Applications.Single(app => app.AppId == "Mozilla.Firefox");
+        ApplicationModel hiddenNotInstalled = bridge.Applications.Single(app => app.AppId == "Mozilla.Firefox");
         hiddenNotInstalled.Status = ApplicationStatus.Pending;
         hiddenNotInstalled.IsSelected = false;
         viewModel.SelectedCategory = "Development";
@@ -381,12 +381,12 @@ public class AppsViewModelTests
     public async Task SelectFavorites_ShouldOnlyMutateFilteredApplications()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var viewModel = CreateViewModel(bridge);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        AppsViewModel viewModel = CreateViewModel(bridge);
         await viewModel.InitializeAsync();
 
-        var visibleFavorite = bridge.Applications.Single(app => app.AppId == "Git.Git");
-        var hiddenFavorite = bridge.Applications.Single(app => app.AppId == "Mozilla.Firefox");
+        ApplicationModel visibleFavorite = bridge.Applications.Single(app => app.AppId == "Git.Git");
+        ApplicationModel hiddenFavorite = bridge.Applications.Single(app => app.AppId == "Mozilla.Firefox");
         visibleFavorite.IsFavorite = true;
         hiddenFavorite.IsFavorite = true;
         hiddenFavorite.IsSelected = false;
@@ -404,13 +404,13 @@ public class AppsViewModelTests
     public async Task ExportSelection_ShouldWriteSelectedApplicationIdsToChosenFile()
     {
         // Arrange
-        using var tempDirectory = new TestTemporaryDirectory();
-        var fileDialogService = new TestFileDialogService();
-        var filePath = tempDirectory.GetFilePath("selection.json");
+        using TestTemporaryDirectory tempDirectory = new TestTemporaryDirectory();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
+        string filePath = tempDirectory.GetFilePath("selection.json");
         fileDialogService.QueueSaveResult(filePath);
-        var viewModel = CreateViewModel(fileDialogService: fileDialogService);
+        AppsViewModel viewModel = CreateViewModel(fileDialogService: fileDialogService);
         await viewModel.InitializeAsync();
-        var apps = GetFilteredApps(viewModel.FilteredApplications);
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications);
         apps[0].IsSelected = true;
         apps[1].IsSelected = true;
 
@@ -425,7 +425,7 @@ public class AppsViewModelTests
         Assert.Equal("win11forge-selection", fileDialogService.SaveOptions[0].DefaultFileName);
         Assert.True(File.Exists(filePath), $"Expected selection export file at {filePath}.");
 
-        var exportedIds = JsonSerializer.Deserialize<List<string>>(await File.ReadAllTextAsync(filePath));
+        List<string>? exportedIds = JsonSerializer.Deserialize<List<string>>(await File.ReadAllTextAsync(filePath));
         Assert.NotNull(exportedIds);
         Assert.Contains("Microsoft.VisualStudioCode", exportedIds);
         Assert.Contains("Microsoft.VisualStudio.2022.Community", exportedIds);
@@ -435,12 +435,12 @@ public class AppsViewModelTests
     public async Task ImportSelection_ShouldApplySelectedApplicationIdsFromChosenFile()
     {
         // Arrange
-        using var tempDirectory = new TestTemporaryDirectory();
-        var fileDialogService = new TestFileDialogService();
-        var filePath = tempDirectory.GetFilePath("selection.json");
+        using TestTemporaryDirectory tempDirectory = new TestTemporaryDirectory();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
+        string filePath = tempDirectory.GetFilePath("selection.json");
         await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "Git.Git" }));
         fileDialogService.QueueOpenResult(filePath);
-        var viewModel = CreateViewModel(fileDialogService: fileDialogService);
+        AppsViewModel viewModel = CreateViewModel(fileDialogService: fileDialogService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
@@ -453,7 +453,7 @@ public class AppsViewModelTests
         Assert.Equal("JSON files (*.json)|*.json", fileDialogService.OpenOptions[0].Filter);
         Assert.Equal(".json", fileDialogService.OpenOptions[0].DefaultExtension);
 
-        var selectedApps = GetFilteredApps(viewModel.FilteredApplications)
+        List<ApplicationModel> selectedApps = GetFilteredApps(viewModel.FilteredApplications)
             .Where(app => app.IsSelected)
             .ToList();
         Assert.Single(selectedApps);
@@ -464,11 +464,11 @@ public class AppsViewModelTests
     public async Task ExportFavorites_ShouldWriteFavoriteApplicationIdsToChosenFile()
     {
         // Arrange
-        using var tempDirectory = new TestTemporaryDirectory();
-        var fileDialogService = new TestFileDialogService();
-        var filePath = tempDirectory.GetFilePath("favorites.json");
+        using TestTemporaryDirectory tempDirectory = new TestTemporaryDirectory();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
+        string filePath = tempDirectory.GetFilePath("favorites.json");
         fileDialogService.QueueSaveResult(filePath);
-        var viewModel = CreateViewModel(fileDialogService: fileDialogService);
+        AppsViewModel viewModel = CreateViewModel(fileDialogService: fileDialogService);
         await viewModel.InitializeAsync();
         GetFilteredApps(viewModel.FilteredApplications)[0].IsFavorite = true;
 
@@ -481,7 +481,7 @@ public class AppsViewModelTests
         Assert.Equal("win11forge-favorites", fileDialogService.SaveOptions[0].DefaultFileName);
         Assert.True(File.Exists(filePath), $"Expected favorites export file at {filePath}.");
 
-        var exportedIds = JsonSerializer.Deserialize<List<string>>(await File.ReadAllTextAsync(filePath));
+        List<string>? exportedIds = JsonSerializer.Deserialize<List<string>>(await File.ReadAllTextAsync(filePath));
         Assert.NotNull(exportedIds);
         Assert.Single(exportedIds);
         Assert.Equal("Microsoft.VisualStudioCode", exportedIds[0]);
@@ -491,14 +491,14 @@ public class AppsViewModelTests
     public async Task ImportFavorites_ShouldApplyFavoriteApplicationIdsFromChosenFile()
     {
         // Arrange
-        using var tempDirectory = new TestTemporaryDirectory();
-        var fileDialogService = new TestFileDialogService();
-        var filePath = tempDirectory.GetFilePath("favorites.json");
+        using TestTemporaryDirectory tempDirectory = new TestTemporaryDirectory();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
+        string filePath = tempDirectory.GetFilePath("favorites.json");
         await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "Mozilla.Firefox" }));
         fileDialogService.QueueOpenResult(filePath);
-        var viewModel = CreateViewModel(fileDialogService: fileDialogService);
+        AppsViewModel viewModel = CreateViewModel(fileDialogService: fileDialogService);
         await viewModel.InitializeAsync();
-        foreach (var app in GetFilteredApps(viewModel.FilteredApplications))
+        foreach (ApplicationModel app in GetFilteredApps(viewModel.FilteredApplications))
         {
             app.IsFavorite = false;
         }
@@ -510,7 +510,7 @@ public class AppsViewModelTests
         // Assert
         Assert.Null(viewModel.ErrorMessage);
         Assert.Single(fileDialogService.OpenOptions);
-        var favoriteApps = GetFilteredApps(viewModel.FilteredApplications)
+        List<ApplicationModel> favoriteApps = GetFilteredApps(viewModel.FilteredApplications)
             .Where(app => app.IsFavorite)
             .ToList();
         Assert.Single(favoriteApps);
@@ -522,14 +522,14 @@ public class AppsViewModelTests
     public async Task ImportSelection_WithExistingSelectionAndReplace_ShouldClearCurrentAndSummarizeMissing()
     {
         // Arrange
-        using var tempDirectory = new TestTemporaryDirectory();
-        var fileDialogService = new TestFileDialogService();
-        var dialogService = new TestDialogService();
-        var filePath = tempDirectory.GetFilePath("selection.json");
+        using TestTemporaryDirectory tempDirectory = new TestTemporaryDirectory();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
+        TestDialogService dialogService = new TestDialogService();
+        string filePath = tempDirectory.GetFilePath("selection.json");
         await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "git.git", "Missing.App", " " }));
         fileDialogService.QueueOpenResult(filePath);
         dialogService.QueueYesNoCancelResult(true);
-        var viewModel = CreateViewModel(fileDialogService: fileDialogService, dialogService: dialogService);
+        AppsViewModel viewModel = CreateViewModel(fileDialogService: fileDialogService, dialogService: dialogService);
         await viewModel.InitializeAsync();
         FindApp(viewModel, "Mozilla.Firefox").IsSelected = true;
         viewModel.UpdateSelectedCount();
@@ -539,7 +539,7 @@ public class AppsViewModelTests
 
         // Assert
         Assert.Null(viewModel.ErrorMessage);
-        var request = Assert.Single(dialogService.YesNoCancelRequests);
+        (string Title, string Message, string? YesText, string? NoText, string? CancelText) request = Assert.Single(dialogService.YesNoCancelRequests);
         Assert.Equal(Loc("Apps_Import_Replace"), request.YesText);
         Assert.Equal(Loc("Apps_Import_Merge"), request.NoText);
         Assert.Equal(Resources.Resources.Common_Cancel, request.CancelText);
@@ -553,14 +553,14 @@ public class AppsViewModelTests
     public async Task ImportFavorites_WithExistingFavoritesAndMerge_ShouldPreserveCurrentAndAddMatches()
     {
         // Arrange
-        using var tempDirectory = new TestTemporaryDirectory();
-        var fileDialogService = new TestFileDialogService();
-        var dialogService = new TestDialogService();
-        var filePath = tempDirectory.GetFilePath("favorites.json");
+        using TestTemporaryDirectory tempDirectory = new TestTemporaryDirectory();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
+        TestDialogService dialogService = new TestDialogService();
+        string filePath = tempDirectory.GetFilePath("favorites.json");
         await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "mozilla.firefox", "Mozilla.Firefox", "Missing.App" }));
         fileDialogService.QueueOpenResult(filePath);
         dialogService.QueueYesNoCancelResult(false);
-        var viewModel = CreateViewModel(fileDialogService: fileDialogService, dialogService: dialogService);
+        AppsViewModel viewModel = CreateViewModel(fileDialogService: fileDialogService, dialogService: dialogService);
         await viewModel.InitializeAsync();
         FindApp(viewModel, "Google.Chrome").IsFavorite = true;
         viewModel.FavoritesCount = 1;
@@ -581,14 +581,14 @@ public class AppsViewModelTests
     public async Task ImportSelection_WhenConflictCancelled_ShouldLeaveCurrentSelectionUntouched()
     {
         // Arrange
-        using var tempDirectory = new TestTemporaryDirectory();
-        var fileDialogService = new TestFileDialogService();
-        var dialogService = new TestDialogService();
-        var filePath = tempDirectory.GetFilePath("selection.json");
+        using TestTemporaryDirectory tempDirectory = new TestTemporaryDirectory();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
+        TestDialogService dialogService = new TestDialogService();
+        string filePath = tempDirectory.GetFilePath("selection.json");
         await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(new[] { "Mozilla.Firefox" }));
         fileDialogService.QueueOpenResult(filePath);
         dialogService.QueueYesNoCancelResult(null);
-        var viewModel = CreateViewModel(fileDialogService: fileDialogService, dialogService: dialogService);
+        AppsViewModel viewModel = CreateViewModel(fileDialogService: fileDialogService, dialogService: dialogService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
         FindApp(viewModel, "Git.Git").IsSelected = true;
@@ -610,11 +610,11 @@ public class AppsViewModelTests
     public async Task InstallSelected_ShouldDelegateToCoordinatorAndApplyResultCounters()
     {
         // Arrange
-        var installationCoordinator = new TestAppInstallationCoordinator
+        TestAppInstallationCoordinator installationCoordinator = new TestAppInstallationCoordinator
         {
             Result = new AppInstallationResult(0, 2, 1, 1, 0, WasCancelled: false)
         };
-        var viewModel = CreateViewModel(installationCoordinator: installationCoordinator);
+        AppsViewModel viewModel = CreateViewModel(installationCoordinator: installationCoordinator);
         await viewModel.InitializeAsync();
         viewModel.UpdateSelectedCount();
 
@@ -622,8 +622,8 @@ public class AppsViewModelTests
         await viewModel.InstallSelectedCommand.ExecuteAsync(null);
 
         // Assert
-        var call = Assert.Single(installationCoordinator.Calls);
-        var options = Assert.Single(installationCoordinator.Options);
+        IReadOnlyCollection<ApplicationModel> call = Assert.Single(installationCoordinator.Calls);
+        AppInstallationOptions options = Assert.Single(installationCoordinator.Options);
         Assert.Equal(7, call.Count);
         Assert.True(options.ForceUpdate);
         Assert.Equal(2, viewModel.InstalledCount);
@@ -638,20 +638,20 @@ public class AppsViewModelTests
     public async Task InstallApp_ShouldDelegateWithForceUpdateFalse()
     {
         // Arrange
-        var installationCoordinator = new TestAppInstallationCoordinator
+        TestAppInstallationCoordinator installationCoordinator = new TestAppInstallationCoordinator
         {
             Result = new AppInstallationResult(0, 1, 0, 0, 0, WasCancelled: false)
         };
-        var viewModel = CreateViewModel(installationCoordinator: installationCoordinator);
+        AppsViewModel viewModel = CreateViewModel(installationCoordinator: installationCoordinator);
         await viewModel.InitializeAsync();
-        var app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        ApplicationModel app = GetFilteredApps(viewModel.FilteredApplications)[0];
 
         // Act
         await viewModel.InstallAppCommand.ExecuteAsync(app);
 
         // Assert
-        var call = Assert.Single(installationCoordinator.Calls);
-        var options = Assert.Single(installationCoordinator.Options);
+        IReadOnlyCollection<ApplicationModel> call = Assert.Single(installationCoordinator.Calls);
+        AppInstallationOptions options = Assert.Single(installationCoordinator.Options);
         Assert.Same(app, Assert.Single(call));
         Assert.False(options.ForceUpdate);
     }
@@ -660,14 +660,14 @@ public class AppsViewModelTests
     public async Task ScanUpdates_ShouldDelegateToCoordinatorAndApplyResultCount()
     {
         // Arrange
-        var updateCoordinator = new TestAppUpdateCoordinator
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator
         {
             ScanResult = new AppUpdateScanResult(0, 2, WasCancelled: false)
         };
-        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        AppsViewModel viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
         await viewModel.InitializeAsync();
-        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
-        foreach (var app in apps)
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
+        foreach (ApplicationModel? app in apps)
         {
             app.Status = ApplicationStatus.Installed;
         }
@@ -678,7 +678,7 @@ public class AppsViewModelTests
         await viewModel.ScanUpdatesCommand.ExecuteAsync(null);
 
         // Assert
-        var call = Assert.Single(updateCoordinator.ScanCalls);
+        IReadOnlyCollection<ApplicationModel> call = Assert.Single(updateCoordinator.ScanCalls);
         Assert.Equal(3, call.Count);
         Assert.Equal(2, viewModel.UpdatesAvailableCount);
         Assert.False(viewModel.IsScanningUpdates);
@@ -688,13 +688,13 @@ public class AppsViewModelTests
     public async Task UpdateApp_ShouldDelegateSingleAppAndDecrementUpdateCount()
     {
         // Arrange
-        var updateCoordinator = new TestAppUpdateCoordinator
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator
         {
             UpdateResult = new AppUpdateResult(0, 1, 0, 0, WasCancelled: false)
         };
-        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        AppsViewModel viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
         await viewModel.InitializeAsync();
-        var app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        ApplicationModel app = GetFilteredApps(viewModel.FilteredApplications)[0];
         app.Status = ApplicationStatus.UpdateAvailable;
         viewModel.UpdatesAvailableCount = 1;
 
@@ -702,7 +702,7 @@ public class AppsViewModelTests
         await viewModel.UpdateAppCommand.ExecuteAsync(app);
 
         // Assert
-        var call = Assert.Single(updateCoordinator.UpdateCalls);
+        IReadOnlyCollection<ApplicationModel> call = Assert.Single(updateCoordinator.UpdateCalls);
         Assert.Same(app, Assert.Single(call));
         Assert.Equal(0, viewModel.UpdatesAvailableCount);
         Assert.False(viewModel.IsInstalling);
@@ -712,17 +712,17 @@ public class AppsViewModelTests
     public async Task UpdateSelected_ShouldDelegateSelectedAppsAndApplyFilter()
     {
         // Arrange
-        var updateCoordinator = new TestAppUpdateCoordinator
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator
         {
             UpdateResult = new AppUpdateResult(0, 2, 0, 0, WasCancelled: false)
         };
-        var deploymentState = CreateMockDeploymentStateService();
-        var viewModel = CreateViewModel(
+        MockDeploymentStateService deploymentState = CreateMockDeploymentStateService();
+        AppsViewModel viewModel = CreateViewModel(
             deploymentState: deploymentState,
             updateCoordinator: updateCoordinator);
         await viewModel.InitializeAsync();
-        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
-        foreach (var app in apps)
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
+        foreach (ApplicationModel? app in apps)
         {
             app.Status = ApplicationStatus.UpdateAvailable;
             app.IsSelected = false;
@@ -736,7 +736,7 @@ public class AppsViewModelTests
         await viewModel.UpdateSelectedCommand.ExecuteAsync(null);
 
         // Assert
-        var call = Assert.Single(updateCoordinator.UpdateCalls);
+        IReadOnlyCollection<ApplicationModel> call = Assert.Single(updateCoordinator.UpdateCalls);
         Assert.Equal([apps[0], apps[1]], call);
         Assert.Equal(1, viewModel.UpdatesAvailableCount);
         Assert.False(viewModel.IsInstalling);
@@ -759,21 +759,21 @@ public class AppsViewModelTests
     public async Task UpdateSelected_WhileRunning_ShouldHidePauseResumeControls()
     {
         // Arrange
-        var updateBlocker = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var updateCoordinator = new TestAppUpdateCoordinator
+        TaskCompletionSource<bool> updateBlocker = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator
         {
             UpdateBlocker = updateBlocker,
             UpdateResult = new AppUpdateResult(0, 1, 0, 0, WasCancelled: false)
         };
-        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        AppsViewModel viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
         await viewModel.InitializeAsync();
-        var app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        ApplicationModel app = GetFilteredApps(viewModel.FilteredApplications)[0];
         app.Status = ApplicationStatus.UpdateAvailable;
         app.IsSelected = true;
         viewModel.UpdatesAvailableCount = 1;
 
         // Act
-        var updateTask = viewModel.UpdateSelectedCommand.ExecuteAsync(null);
+        Task updateTask = viewModel.UpdateSelectedCommand.ExecuteAsync(null);
 
         try
         {
@@ -802,10 +802,10 @@ public class AppsViewModelTests
     public async Task CancelBatch_WhenDeclined_ShouldNotRequestCancellation()
     {
         // Arrange
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var pauseGate = new TestPauseGate();
-        var viewModel = CreateViewModel(dialogService: dialogService, pauseGate: pauseGate);
+        TestPauseGate pauseGate = new TestPauseGate();
+        AppsViewModel viewModel = CreateViewModel(dialogService: dialogService, pauseGate: pauseGate);
         viewModel.BatchProgressCurrent = 2;
         viewModel.BatchProgressTotal = 7;
         viewModel.IsPaused = true;
@@ -814,7 +814,7 @@ public class AppsViewModelTests
         await viewModel.CancelBatchCommand.ExecuteAsync(null);
 
         // Assert
-        var request = Assert.Single(dialogService.ConfirmRequests);
+        (string Title, string Message, string? ConfirmText, string? CancelText) request = Assert.Single(dialogService.ConfirmRequests);
         Assert.Contains("2", request.Message, StringComparison.Ordinal);
         Assert.Contains("7", request.Message, StringComparison.Ordinal);
         Assert.True(viewModel.IsPaused);
@@ -826,10 +826,10 @@ public class AppsViewModelTests
     public async Task CancelBatch_WhenConfirmed_ShouldSetStatusAndResumePausedBatch()
     {
         // Arrange
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(true);
-        var pauseGate = new TestPauseGate();
-        var viewModel = CreateViewModel(dialogService: dialogService, pauseGate: pauseGate);
+        TestPauseGate pauseGate = new TestPauseGate();
+        AppsViewModel viewModel = CreateViewModel(dialogService: dialogService, pauseGate: pauseGate);
         viewModel.BatchProgressCurrent = 3;
         viewModel.BatchProgressTotal = 8;
         viewModel.IsPaused = true;
@@ -848,14 +848,14 @@ public class AppsViewModelTests
     public async Task UpdateSelected_WhenNothingSelected_ShouldUpdateAllAvailableUpdates()
     {
         // Arrange
-        var updateCoordinator = new TestAppUpdateCoordinator
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator
         {
             UpdateResult = new AppUpdateResult(0, 2, 0, 0, WasCancelled: false)
         };
-        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        AppsViewModel viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
         await viewModel.InitializeAsync();
-        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
-        foreach (var app in apps)
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
+        foreach (ApplicationModel? app in apps)
         {
             app.Status = ApplicationStatus.UpdateAvailable;
             app.IsSelected = false;
@@ -867,7 +867,7 @@ public class AppsViewModelTests
         await viewModel.UpdateSelectedCommand.ExecuteAsync(null);
 
         // Assert
-        var call = Assert.Single(updateCoordinator.UpdateCalls);
+        IReadOnlyCollection<ApplicationModel> call = Assert.Single(updateCoordinator.UpdateCalls);
         Assert.Equal([apps[0], apps[1]], call);
         Assert.Equal(0, viewModel.UpdatesAvailableCount);
         Assert.True(viewModel.IsSummaryDialogOpen);
@@ -877,14 +877,14 @@ public class AppsViewModelTests
     public async Task UpdateSelected_WhenPartialFailure_ShouldShowPartialSummary()
     {
         // Arrange
-        var updateCoordinator = new TestAppUpdateCoordinator
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator
         {
             UpdateResult = new AppUpdateResult(0, 1, 1, 0, WasCancelled: false)
         };
-        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        AppsViewModel viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
         await viewModel.InitializeAsync();
-        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
-        foreach (var app in apps)
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
+        foreach (ApplicationModel? app in apps)
         {
             app.Status = ApplicationStatus.UpdateAvailable;
             app.IsSelected = true;
@@ -907,14 +907,14 @@ public class AppsViewModelTests
     public async Task UpdateSelected_WhenCancelled_ShouldShowCancelledSummary()
     {
         // Arrange
-        var updateCoordinator = new TestAppUpdateCoordinator
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator
         {
             UpdateResult = new AppUpdateResult(0, 1, 0, 1, WasCancelled: true)
         };
-        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        AppsViewModel viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
         await viewModel.InitializeAsync();
-        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
-        foreach (var app in apps)
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
+        foreach (ApplicationModel? app in apps)
         {
             app.Status = ApplicationStatus.UpdateAvailable;
             app.IsSelected = true;
@@ -937,14 +937,14 @@ public class AppsViewModelTests
     public async Task UpdateSelected_WhenAllFail_ShouldShowFailedSummary()
     {
         // Arrange
-        var updateCoordinator = new TestAppUpdateCoordinator
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator
         {
             UpdateResult = new AppUpdateResult(0, 0, 2, 0, WasCancelled: false)
         };
-        var viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        AppsViewModel viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
         await viewModel.InitializeAsync();
-        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
-        foreach (var app in apps)
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
+        foreach (ApplicationModel? app in apps)
         {
             app.Status = ApplicationStatus.UpdateAvailable;
             app.IsSelected = true;
@@ -967,13 +967,13 @@ public class AppsViewModelTests
     public async Task UpdateSelected_WhenCoordinatorThrows_ShouldCleanupDeploymentState()
     {
         // Arrange
-        var updateCoordinator = new TestAppUpdateCoordinator { ShouldThrow = true };
-        var deploymentState = CreateMockDeploymentStateService();
-        var viewModel = CreateViewModel(
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator { ShouldThrow = true };
+        MockDeploymentStateService deploymentState = CreateMockDeploymentStateService();
+        AppsViewModel viewModel = CreateViewModel(
             deploymentState: deploymentState,
             updateCoordinator: updateCoordinator);
         await viewModel.InitializeAsync();
-        var app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        ApplicationModel app = GetFilteredApps(viewModel.FilteredApplications)[0];
         app.Status = ApplicationStatus.UpdateAvailable;
         app.IsSelected = true;
         viewModel.UpdatesAvailableCount = 1;
@@ -993,15 +993,15 @@ public class AppsViewModelTests
     public async Task UninstallSelected_WhenCancelled_ShouldAskForConfirmationAndNotDelegate()
     {
         // Arrange
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var uninstallCoordinator = new TestAppUninstallCoordinator();
-        var viewModel = CreateViewModel(
+        TestAppUninstallCoordinator uninstallCoordinator = new TestAppUninstallCoordinator();
+        AppsViewModel viewModel = CreateViewModel(
             uninstallCoordinator: uninstallCoordinator,
             dialogService: dialogService);
         await viewModel.InitializeAsync();
-        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
-        foreach (var app in apps)
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
+        foreach (ApplicationModel? app in apps)
         {
             app.Status = ApplicationStatus.Installed;
             app.IsSelected = true;
@@ -1022,18 +1022,18 @@ public class AppsViewModelTests
     public async Task UninstallSelected_ShouldDelegateAndApplyResultCounters()
     {
         // Arrange
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(true);
-        var uninstallCoordinator = new TestAppUninstallCoordinator
+        TestAppUninstallCoordinator uninstallCoordinator = new TestAppUninstallCoordinator
         {
             Result = new AppUninstallResult(0, 2, 1, 0, WasCancelled: false)
         };
-        var viewModel = CreateViewModel(
+        AppsViewModel viewModel = CreateViewModel(
             uninstallCoordinator: uninstallCoordinator,
             dialogService: dialogService);
         await viewModel.InitializeAsync();
-        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
-        foreach (var app in apps)
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
+        foreach (ApplicationModel? app in apps)
         {
             app.Status = ApplicationStatus.Installed;
             app.IsSelected = true;
@@ -1046,7 +1046,7 @@ public class AppsViewModelTests
         await viewModel.UninstallSelectedCommand.ExecuteAsync(null);
 
         // Assert
-        var call = Assert.Single(uninstallCoordinator.Calls);
+        IReadOnlyCollection<ApplicationModel> call = Assert.Single(uninstallCoordinator.Calls);
         Assert.Equal(3, call.Count);
         Assert.Equal(1, viewModel.InstalledCount);
         Assert.Equal(2, viewModel.SuccessCount);
@@ -1061,18 +1061,18 @@ public class AppsViewModelTests
     public async Task UninstallSelected_WhenCoordinatorReportsCancelled_ShouldSetCancelledResult()
     {
         // Arrange
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(true);
-        var uninstallCoordinator = new TestAppUninstallCoordinator
+        TestAppUninstallCoordinator uninstallCoordinator = new TestAppUninstallCoordinator
         {
             Result = new AppUninstallResult(0, 1, 0, 1, WasCancelled: true)
         };
-        var viewModel = CreateViewModel(
+        AppsViewModel viewModel = CreateViewModel(
             uninstallCoordinator: uninstallCoordinator,
             dialogService: dialogService);
         await viewModel.InitializeAsync();
-        var apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
-        foreach (var app in apps)
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
+        foreach (ApplicationModel? app in apps)
         {
             app.Status = ApplicationStatus.Installed;
             app.IsSelected = true;
@@ -1098,17 +1098,17 @@ public class AppsViewModelTests
     public async Task UninstallApp_ShouldDelegateSingleAppAndDecrementInstalledCount()
     {
         // Arrange
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(true);
-        var uninstallCoordinator = new TestAppUninstallCoordinator
+        TestAppUninstallCoordinator uninstallCoordinator = new TestAppUninstallCoordinator
         {
             Result = new AppUninstallResult(0, 1, 0, 0, WasCancelled: false)
         };
-        var viewModel = CreateViewModel(
+        AppsViewModel viewModel = CreateViewModel(
             uninstallCoordinator: uninstallCoordinator,
             dialogService: dialogService);
         await viewModel.InitializeAsync();
-        var app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        ApplicationModel app = GetFilteredApps(viewModel.FilteredApplications)[0];
         app.Status = ApplicationStatus.Installed;
         viewModel.InstalledCount = 1;
 
@@ -1116,10 +1116,10 @@ public class AppsViewModelTests
         await viewModel.UninstallAppCommand.ExecuteAsync(app);
 
         // Assert
-        var confirmation = Assert.Single(dialogService.ConfirmRequests);
+        (string Title, string Message, string? ConfirmText, string? CancelText) confirmation = Assert.Single(dialogService.ConfirmRequests);
         Assert.Equal(Resources.Resources.Confirm_Uninstall_Btn, confirmation.ConfirmText);
         Assert.Equal(Resources.Resources.Common_Cancel, confirmation.CancelText);
-        var call = Assert.Single(uninstallCoordinator.Calls);
+        IReadOnlyCollection<ApplicationModel> call = Assert.Single(uninstallCoordinator.Calls);
         Assert.Same(app, Assert.Single(call));
         Assert.Equal(0, viewModel.InstalledCount);
         Assert.False(viewModel.IsSummaryDialogOpen);
@@ -1129,14 +1129,14 @@ public class AppsViewModelTests
     public async Task UninstallApp_WhenCancelled_ShouldAskForConfirmationAndNotDelegate()
     {
         // Arrange
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var uninstallCoordinator = new TestAppUninstallCoordinator();
-        var viewModel = CreateViewModel(
+        TestAppUninstallCoordinator uninstallCoordinator = new TestAppUninstallCoordinator();
+        AppsViewModel viewModel = CreateViewModel(
             uninstallCoordinator: uninstallCoordinator,
             dialogService: dialogService);
         await viewModel.InitializeAsync();
-        var app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        ApplicationModel app = GetFilteredApps(viewModel.FilteredApplications)[0];
         app.Status = ApplicationStatus.Installed;
         viewModel.InstalledCount = 1;
 
@@ -1157,11 +1157,11 @@ public class AppsViewModelTests
     public async Task InstallAppAsync_OnFailure_SurfacesErrorMessageBanner()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var failingInstaller = new TestAppInstallationCoordinator { ShouldThrow = true };
-        var viewModel = CreateViewModel(bridge, installationCoordinator: failingInstaller);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        TestAppInstallationCoordinator failingInstaller = new TestAppInstallationCoordinator { ShouldThrow = true };
+        AppsViewModel viewModel = CreateViewModel(bridge, installationCoordinator: failingInstaller);
         await viewModel.InitializeAsync();
-        var app = bridge.Applications.First();
+        ApplicationModel app = bridge.Applications.First();
 
         // Act
         await viewModel.InstallAppCommand.ExecuteAsync(app);
@@ -1180,16 +1180,16 @@ public class AppsViewModelTests
     public async Task UninstallAppAsync_OnFailure_SurfacesErrorMessageBanner()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var dialogService = new TestDialogService();
+        MockPowerShellBridge bridge = CreateMockBridge();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(true);
-        var failingUninstaller = new TestAppUninstallCoordinator { ShouldThrow = true };
-        var viewModel = CreateViewModel(
+        TestAppUninstallCoordinator failingUninstaller = new TestAppUninstallCoordinator { ShouldThrow = true };
+        AppsViewModel viewModel = CreateViewModel(
             bridge,
             uninstallCoordinator: failingUninstaller,
             dialogService: dialogService);
         await viewModel.InitializeAsync();
-        var app = bridge.Applications.First();
+        ApplicationModel app = bridge.Applications.First();
 
         // Act
         await viewModel.UninstallAppCommand.ExecuteAsync(app);
@@ -1208,11 +1208,11 @@ public class AppsViewModelTests
     public async Task UpdateAppAsync_OnFailure_SurfacesErrorMessageBanner()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var failingUpdater = new TestAppUpdateCoordinator { ShouldThrow = true };
-        var viewModel = CreateViewModel(bridge, updateCoordinator: failingUpdater);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        TestAppUpdateCoordinator failingUpdater = new TestAppUpdateCoordinator { ShouldThrow = true };
+        AppsViewModel viewModel = CreateViewModel(bridge, updateCoordinator: failingUpdater);
         await viewModel.InitializeAsync();
-        var app = bridge.Applications.First();
+        ApplicationModel app = bridge.Applications.First();
 
         // Act
         await viewModel.UpdateAppCommand.ExecuteAsync(app);
@@ -1230,11 +1230,11 @@ public class AppsViewModelTests
     public async Task CopyAppId_OnException_FiresWarningToast()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var toast = new TestToastService();
-        var viewModel = CreateViewModel(bridge, toastService: toast);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        TestToastService toast = new TestToastService();
+        AppsViewModel viewModel = CreateViewModel(bridge, toastService: toast);
         await viewModel.InitializeAsync();
-        var app = bridge.Applications.First();
+        ApplicationModel app = bridge.Applications.First();
 
         // Act
         viewModel.CopyAppIdCommand.Execute(app);
@@ -1242,7 +1242,7 @@ public class AppsViewModelTests
         // Assert
         if (toast.Toasts.Count > 0)
         {
-            var toastMessage = Assert.Single(toast.Toasts);
+            (string Message, ToastLevel Level) toastMessage = Assert.Single(toast.Toasts);
             Assert.Equal(ToastLevel.Warning, toastMessage.Level);
         }
     }
@@ -1255,17 +1255,17 @@ public class AppsViewModelTests
     public async Task RetryLastOperation_AfterFailedInstall_TriggersInstallSelected_NotInitialize()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var failingInstaller = new TestAppInstallationCoordinator { ShouldThrow = true };
-        var viewModel = CreateViewModel(bridge, installationCoordinator: failingInstaller);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        TestAppInstallationCoordinator failingInstaller = new TestAppInstallationCoordinator { ShouldThrow = true };
+        AppsViewModel viewModel = CreateViewModel(bridge, installationCoordinator: failingInstaller);
         await viewModel.InitializeAsync();
         viewModel.UpdateSelectedCount();
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => viewModel.InstallSelectedCommand.ExecuteAsync(null));
 
-        var initializeCallsBefore = bridge.GetAllApplicationsCallCount;
-        var installCallsBefore = failingInstaller.InstallCallCount;
+        int initializeCallsBefore = bridge.GetAllApplicationsCallCount;
+        int installCallsBefore = failingInstaller.InstallCallCount;
         failingInstaller.ShouldThrow = false;
 
         // Act
@@ -1283,9 +1283,9 @@ public class AppsViewModelTests
     public async Task RetryLastOperation_NoTrackedOperation_FallsBackToInitialize()
     {
         // Arrange
-        var bridge = CreateMockBridge();
-        var viewModel = CreateViewModel(bridge);
-        var initializeCallsBefore = bridge.GetAllApplicationsCallCount;
+        MockPowerShellBridge bridge = CreateMockBridge();
+        AppsViewModel viewModel = CreateViewModel(bridge);
+        int initializeCallsBefore = bridge.GetAllApplicationsCallCount;
 
         // Act
         await viewModel.RetryLastOperationCommand.ExecuteAsync(null);
@@ -1298,11 +1298,11 @@ public class AppsViewModelTests
     public async Task ProfileSelector_WhenNoProfileSelected_ShowsCustomEntry()
     {
         // Arrange
-        using var profiles = new TestProfilesDirectory(
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
             ("Work", [], ["Git.Git"]));
-        var bridge = CreateMockBridge();
+        MockPowerShellBridge bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work"];
-        var viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
+        AppsViewModel viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
 
         // Act
         await viewModel.InitializeAsync();
@@ -1322,11 +1322,11 @@ public class AppsViewModelTests
     public async Task ProfileSelector_SelectingCustomEntry_ClearsSelectedProfile()
     {
         // Arrange
-        using var profiles = new TestProfilesDirectory(
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
             ("Work", [], ["Git.Git"]));
-        var bridge = CreateMockBridge();
+        MockPowerShellBridge bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work"];
-        var viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
+        AppsViewModel viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
@@ -1348,16 +1348,16 @@ public class AppsViewModelTests
     public async Task ProfileSelection_WithManualSelectionAndCancel_RestoresManualSelection()
     {
         // Arrange
-        using var profiles = new TestProfilesDirectory(
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
             ("Work", [], ["Git.Git"]));
-        var bridge = CreateMockBridge();
+        MockPowerShellBridge bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work"];
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueYesNoCancelResult(null);
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
+        AppsViewModel viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
-        var manualApp = FindApp(viewModel, "Mozilla.Firefox");
+        ApplicationModel manualApp = FindApp(viewModel, "Mozilla.Firefox");
         manualApp.IsSelected = true;
         viewModel.UpdateSelectedCount();
 
@@ -1375,16 +1375,16 @@ public class AppsViewModelTests
     public async Task ProfileSelection_WithManualSelectionAndReplace_ReplacesManualSelection()
     {
         // Arrange
-        using var profiles = new TestProfilesDirectory(
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
             ("Work", [], ["Git.Git"]));
-        var bridge = CreateMockBridge();
+        MockPowerShellBridge bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work"];
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueYesNoCancelResult(true);
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
+        AppsViewModel viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
-        var manualApp = FindApp(viewModel, "Mozilla.Firefox");
+        ApplicationModel manualApp = FindApp(viewModel, "Mozilla.Firefox");
         manualApp.IsSelected = true;
         viewModel.UpdateSelectedCount();
 
@@ -1393,7 +1393,7 @@ public class AppsViewModelTests
         await WaitForConditionAsync(() => FindApp(viewModel, "Git.Git").IsSelected && !manualApp.IsSelected);
 
         // Assert
-        var request = Assert.Single(dialogService.YesNoCancelRequests);
+        (string Title, string Message, string? YesText, string? NoText, string? CancelText) request = Assert.Single(dialogService.YesNoCancelRequests);
         Assert.Equal(
             string.Format(
                 System.Globalization.CultureInfo.CurrentCulture,
@@ -1411,16 +1411,16 @@ public class AppsViewModelTests
     public async Task ProfileSelection_WithManualSelectionAndMerge_PreservesManualSelection()
     {
         // Arrange
-        using var profiles = new TestProfilesDirectory(
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
             ("Work", [], ["Git.Git"]));
-        var bridge = CreateMockBridge();
+        MockPowerShellBridge bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work"];
-        var dialogService = new TestDialogService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueYesNoCancelResult(false);
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
+        AppsViewModel viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
-        var manualApp = FindApp(viewModel, "Mozilla.Firefox");
+        ApplicationModel manualApp = FindApp(viewModel, "Mozilla.Firefox");
         manualApp.IsSelected = true;
         viewModel.UpdateSelectedCount();
 
@@ -1437,12 +1437,12 @@ public class AppsViewModelTests
     public async Task ProfileSelection_WithoutManualSelection_AppliesSilently()
     {
         // Arrange
-        using var profiles = new TestProfilesDirectory(
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
             ("Work", [], ["Git.Git"]));
-        var bridge = CreateMockBridge();
+        MockPowerShellBridge bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work"];
-        var dialogService = new TestDialogService();
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
+        TestDialogService dialogService = new TestDialogService();
+        AppsViewModel viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
@@ -1459,13 +1459,13 @@ public class AppsViewModelTests
     public async Task ProfileSelection_FromAppliedProfileWithoutManualChanges_AppliesSilently()
     {
         // Arrange
-        using var profiles = new TestProfilesDirectory(
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
             ("Work", [], ["Git.Git"]),
             ("Gaming", [], ["Google.Chrome"]));
-        var bridge = CreateMockBridge();
+        MockPowerShellBridge bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work", "Gaming"];
-        var dialogService = new TestDialogService();
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
+        TestDialogService dialogService = new TestDialogService();
+        AppsViewModel viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
@@ -1489,19 +1489,19 @@ public class AppsViewModelTests
     public async Task ProfileSelection_FromAppliedProfileWithManualChangeAndCancel_RestoresPreviousProfile()
     {
         // Arrange
-        using var profiles = new TestProfilesDirectory(
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
             ("Work", [], ["Git.Git"]),
             ("Gaming", [], ["Google.Chrome"]));
-        var bridge = CreateMockBridge();
+        MockPowerShellBridge bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work", "Gaming"];
-        var dialogService = new TestDialogService();
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
+        TestDialogService dialogService = new TestDialogService();
+        AppsViewModel viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
         viewModel.SelectedProfile = "Work";
         await WaitForConditionAsync(() => FindApp(viewModel, "Git.Git").IsSelected);
-        var manualApp = FindApp(viewModel, "Mozilla.Firefox");
+        ApplicationModel manualApp = FindApp(viewModel, "Mozilla.Firefox");
         manualApp.IsSelected = true;
         viewModel.UpdateSelectedCount();
 
@@ -1514,7 +1514,7 @@ public class AppsViewModelTests
             viewModel.SelectedProfile == "Work");
 
         // Assert
-        var request = Assert.Single(dialogService.YesNoCancelRequests);
+        (string Title, string Message, string? YesText, string? NoText, string? CancelText) request = Assert.Single(dialogService.YesNoCancelRequests);
         Assert.Equal(Resources.Resources.Profile_Apply_Replace, request.YesText);
         Assert.Equal(Resources.Resources.Profile_Apply_Merge, request.NoText);
         Assert.Equal(Resources.Resources.Common_Cancel, request.CancelText);
@@ -1528,19 +1528,19 @@ public class AppsViewModelTests
     public async Task ProfileSelection_FromAppliedProfileWithManualChangeAndReplace_ReplacesSelection()
     {
         // Arrange
-        using var profiles = new TestProfilesDirectory(
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
             ("Work", [], ["Git.Git"]),
             ("Gaming", [], ["Google.Chrome"]));
-        var bridge = CreateMockBridge();
+        MockPowerShellBridge bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Work", "Gaming"];
-        var dialogService = new TestDialogService();
-        var viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
+        TestDialogService dialogService = new TestDialogService();
+        AppsViewModel viewModel = CreateViewModel(bridge, dialogService: dialogService, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
         viewModel.SelectedProfile = "Work";
         await WaitForConditionAsync(() => FindApp(viewModel, "Git.Git").IsSelected);
-        var manualApp = FindApp(viewModel, "Mozilla.Firefox");
+        ApplicationModel manualApp = FindApp(viewModel, "Mozilla.Firefox");
         manualApp.IsSelected = true;
         viewModel.UpdateSelectedCount();
 
@@ -1563,13 +1563,13 @@ public class AppsViewModelTests
     public async Task ProfileTierMapping_UsesCustomInheritanceChain()
     {
         // Arrange
-        using var profiles = new TestProfilesDirectory(
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
             ("Base", [], ["Git.Git"]),
             ("Enterprise", ["Base"], ["Microsoft.VisualStudioCode"]),
             ("Developer", ["Enterprise"], ["Mozilla.Firefox"]));
-        var bridge = CreateMockBridge();
+        MockPowerShellBridge bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Base", "Enterprise", "Developer"];
-        var viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
+        AppsViewModel viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
@@ -1587,12 +1587,12 @@ public class AppsViewModelTests
     public async Task ProfileTierMapping_MostSpecificProfileWinsForDuplicateApps()
     {
         // Arrange
-        using var profiles = new TestProfilesDirectory(
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
             ("Base", [], ["Git.Git"]),
             ("Enterprise", ["Base"], ["Git.Git"]));
-        var bridge = CreateMockBridge();
+        MockPowerShellBridge bridge = CreateMockBridge();
         bridge.AvailableProfiles = ["Base", "Enterprise"];
-        var viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
+        AppsViewModel viewModel = CreateViewModel(bridge, pathService: profiles.PathService);
         await viewModel.InitializeAsync();
         ClearSelection(viewModel);
 
@@ -1612,12 +1612,12 @@ public class AppsViewModelTests
     [Fact]
     public async Task ResumeBatchAsync_OnInstallKind_ShouldOnlyRunCoordinatorOnRemainingApps()
     {
-        var bridge = CreateMockBridge();
-        var installCoordinator = new TestAppInstallationCoordinator();
-        var viewModel = CreateViewModel(bridge, installationCoordinator: installCoordinator);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        TestAppInstallationCoordinator installCoordinator = new TestAppInstallationCoordinator();
+        AppsViewModel viewModel = CreateViewModel(bridge, installationCoordinator: installCoordinator);
         await viewModel.InitializeAsync();
 
-        var checkpoint = new BatchCheckpoint(
+        BatchCheckpoint checkpoint = new BatchCheckpoint(
             SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
             BatchId: Guid.NewGuid(),
             OperationKind: BatchOperationKind.Install,
@@ -1631,7 +1631,7 @@ public class AppsViewModelTests
         await viewModel.ResumeBatchAsync(checkpoint);
 
         Assert.Single(installCoordinator.Calls);
-        var resumed = installCoordinator.Calls[0].Select(a => a.AppId).ToArray();
+        string[] resumed = installCoordinator.Calls[0].Select(a => a.AppId).ToArray();
         Assert.Equal(new[] { "Git.Git", "Mozilla.Firefox" }, resumed);
         Assert.DoesNotContain("Microsoft.VisualStudioCode", resumed);
     }
@@ -1645,12 +1645,12 @@ public class AppsViewModelTests
     [Fact]
     public async Task ResumeBatchAsync_OnUpdateKind_ShouldOnlyRunCoordinatorOnRemainingApps()
     {
-        var bridge = CreateMockBridge();
-        var updateCoordinator = new TestAppUpdateCoordinator();
-        var viewModel = CreateViewModel(bridge, updateCoordinator: updateCoordinator);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator();
+        AppsViewModel viewModel = CreateViewModel(bridge, updateCoordinator: updateCoordinator);
         await viewModel.InitializeAsync();
 
-        var checkpoint = new BatchCheckpoint(
+        BatchCheckpoint checkpoint = new BatchCheckpoint(
             SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
             BatchId: Guid.NewGuid(),
             OperationKind: BatchOperationKind.Update,
@@ -1664,7 +1664,7 @@ public class AppsViewModelTests
         await viewModel.ResumeBatchAsync(checkpoint);
 
         Assert.Single(updateCoordinator.UpdateCalls);
-        var resumed = updateCoordinator.UpdateCalls[0].Select(a => a.AppId).ToArray();
+        string[] resumed = updateCoordinator.UpdateCalls[0].Select(a => a.AppId).ToArray();
         Assert.Equal(new[] { "Git.Git", "Mozilla.Firefox" }, resumed);
         Assert.DoesNotContain("Microsoft.VisualStudioCode", resumed);
     }
@@ -1672,16 +1672,16 @@ public class AppsViewModelTests
     [Fact]
     public async Task ResumeBatchAsync_OnUninstallKind_ShouldRouteToUninstallCoordinator()
     {
-        var bridge = CreateMockBridge();
-        var installCoordinator = new TestAppInstallationCoordinator();
-        var uninstallCoordinator = new TestAppUninstallCoordinator();
-        var viewModel = CreateViewModel(
+        MockPowerShellBridge bridge = CreateMockBridge();
+        TestAppInstallationCoordinator installCoordinator = new TestAppInstallationCoordinator();
+        TestAppUninstallCoordinator uninstallCoordinator = new TestAppUninstallCoordinator();
+        AppsViewModel viewModel = CreateViewModel(
             bridge,
             installationCoordinator: installCoordinator,
             uninstallCoordinator: uninstallCoordinator);
         await viewModel.InitializeAsync();
 
-        var checkpoint = new BatchCheckpoint(
+        BatchCheckpoint checkpoint = new BatchCheckpoint(
             SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
             BatchId: Guid.NewGuid(),
             OperationKind: BatchOperationKind.Uninstall,
@@ -1702,13 +1702,13 @@ public class AppsViewModelTests
     [Fact]
     public async Task ResumeBatchAsync_WithAllItemsCompleted_ShouldNotInvokeAnyCoordinator()
     {
-        var bridge = CreateMockBridge();
-        var installCoordinator = new TestAppInstallationCoordinator();
-        var viewModel = CreateViewModel(bridge, installationCoordinator: installCoordinator);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        TestAppInstallationCoordinator installCoordinator = new TestAppInstallationCoordinator();
+        AppsViewModel viewModel = CreateViewModel(bridge, installationCoordinator: installCoordinator);
         await viewModel.InitializeAsync();
 
-        var planIds = new[] { "Git.Git", "Mozilla.Firefox" };
-        var checkpoint = new BatchCheckpoint(
+        string[] planIds = new[] { "Git.Git", "Mozilla.Firefox" };
+        BatchCheckpoint checkpoint = new BatchCheckpoint(
             SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
             BatchId: Guid.NewGuid(),
             OperationKind: BatchOperationKind.Install,
@@ -1729,12 +1729,12 @@ public class AppsViewModelTests
     [Fact]
     public async Task ResumeBatchAsync_WithUnknownAppIdsInCatalog_ShouldSkipMissingAndProceed()
     {
-        var bridge = CreateMockBridge();
-        var installCoordinator = new TestAppInstallationCoordinator();
-        var viewModel = CreateViewModel(bridge, installationCoordinator: installCoordinator);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        TestAppInstallationCoordinator installCoordinator = new TestAppInstallationCoordinator();
+        AppsViewModel viewModel = CreateViewModel(bridge, installationCoordinator: installCoordinator);
         await viewModel.InitializeAsync();
 
-        var checkpoint = new BatchCheckpoint(
+        BatchCheckpoint checkpoint = new BatchCheckpoint(
             SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
             BatchId: Guid.NewGuid(),
             OperationKind: BatchOperationKind.Install,
@@ -1748,19 +1748,19 @@ public class AppsViewModelTests
         await viewModel.ResumeBatchAsync(checkpoint);
 
         Assert.Single(installCoordinator.Calls);
-        var resumed = installCoordinator.Calls[0].Select(a => a.AppId).ToArray();
+        string[] resumed = installCoordinator.Calls[0].Select(a => a.AppId).ToArray();
         Assert.Equal(new[] { "Git.Git", "Mozilla.Firefox" }, resumed);
     }
 
     [Fact]
     public async Task ResumeBatchAsync_ShouldPropagateForceUpdateFromCheckpoint()
     {
-        var bridge = CreateMockBridge();
-        var installCoordinator = new TestAppInstallationCoordinator();
-        var viewModel = CreateViewModel(bridge, installationCoordinator: installCoordinator);
+        MockPowerShellBridge bridge = CreateMockBridge();
+        TestAppInstallationCoordinator installCoordinator = new TestAppInstallationCoordinator();
+        AppsViewModel viewModel = CreateViewModel(bridge, installationCoordinator: installCoordinator);
         await viewModel.InitializeAsync();
 
-        var checkpoint = new BatchCheckpoint(
+        BatchCheckpoint checkpoint = new BatchCheckpoint(
             SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
             BatchId: Guid.NewGuid(),
             OperationKind: BatchOperationKind.Install,
@@ -1805,7 +1805,7 @@ public class AppsViewModelTests
 
         private static void DeleteDirectoryWithRetry(string directoryPath)
         {
-            for (var attempt = 1; attempt <= DeleteRetryCount; attempt++)
+            for (int attempt = 1; attempt <= DeleteRetryCount; attempt++)
             {
                 try
                 {
@@ -1845,17 +1845,16 @@ public class AppsViewModelTests
             _profilesPath = PathService.LegacyInstallProfilesDirectory;
 
             Directory.CreateDirectory(_profilesPath);
-            foreach (var profile in profiles)
+            foreach ((string Name, string[] Inherits, string[] Applications) profile in profiles)
             {
-                var payload = new
-                {
+                var payload = new {
                     profile.Name,
                     Description = $"{profile.Name} test profile",
                     Version = "1.0.0",
                     Inherits = profile.Inherits,
                     Applications = profile.Applications
                 };
-                var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
+                string json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(
                     Path.Combine(_profilesPath, $"{profile.Name}{Win11ForgePathNames.JsonFileExtension}"),
                     json);
@@ -2069,7 +2068,7 @@ internal class MockDeploymentStateService : IDeploymentStateService
 
     public void StartDeployment(IEnumerable<ApplicationModel> apps)
     {
-        var appList = apps.ToList();
+        List<ApplicationModel> appList = apps.ToList();
         StartDeploymentCallCount++;
         StartedDeployments.Add(appList);
         IsDeploying = true;
@@ -2078,7 +2077,7 @@ internal class MockDeploymentStateService : IDeploymentStateService
         CompletedCount = 0;
         TotalCount = appList.Count;
         Applications.Clear();
-        foreach (var app in appList)
+        foreach (ApplicationModel? app in appList)
         {
             Applications.Add(app);
         }
@@ -2119,7 +2118,7 @@ internal class MockDeploymentStateService : IDeploymentStateService
 
     public void ClearApplicationLogs()
     {
-        foreach (var app in Applications)
+        foreach (ApplicationModel app in Applications)
         {
             app.LogOutput = string.Empty;
         }
@@ -2154,8 +2153,8 @@ internal sealed class TestAppScanCoordinator : IAppScanCoordinator
     {
         Calls.Add(applications);
 
-        var completed = 0;
-        foreach (var app in applications)
+        int completed = 0;
+        foreach (ApplicationModel app in applications)
         {
             completed++;
             progress?.Report(new AppOperationProgress(completed, applications.Count, app));
@@ -2194,8 +2193,8 @@ internal sealed class TestAppInstallationCoordinator : IAppInstallationCoordinat
             throw new InvalidOperationException("Installation failed for test.");
         }
 
-        var completed = 0;
-        foreach (var app in applications)
+        int completed = 0;
+        foreach (ApplicationModel app in applications)
         {
             completed++;
             progress?.Report(new AppOperationProgress(completed, applications.Count, app));
@@ -2231,8 +2230,8 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
     {
         ScanCalls.Add(installedApps);
 
-        var completed = 0;
-        foreach (var app in installedApps)
+        int completed = 0;
+        foreach (ApplicationModel app in installedApps)
         {
             completed++;
             progress?.Report(new AppOperationProgress(completed, installedApps.Count, app));
@@ -2259,8 +2258,8 @@ internal sealed class TestAppUpdateCoordinator : IAppUpdateCoordinator
             await UpdateBlocker.Task.WaitAsync(cancellationToken);
         }
 
-        var completed = 0;
-        foreach (var app in applications)
+        int completed = 0;
+        foreach (ApplicationModel app in applications)
         {
             completed++;
             progress?.Report(new AppOperationProgress(completed, applications.Count, app));
@@ -2293,8 +2292,8 @@ internal sealed class TestAppUninstallCoordinator : IAppUninstallCoordinator
             throw new InvalidOperationException("Uninstall failed for test.");
         }
 
-        var completed = 0;
-        foreach (var app in applications)
+        int completed = 0;
+        foreach (ApplicationModel app in applications)
         {
             completed++;
             progress?.Report(new AppOperationProgress(completed, applications.Count, app));

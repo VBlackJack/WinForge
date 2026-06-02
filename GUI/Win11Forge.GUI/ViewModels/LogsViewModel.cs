@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Win11Forge.GUI.Configuration;
@@ -86,7 +87,7 @@ public partial class LogsViewModel : ObservableObject
     {
         _fileDialogService = fileDialogService ?? new FileDialogService();
         _dialogService = dialogService ?? new DialogService();
-        var resolvedPathService = pathService ?? new RepositoryPathService();
+        IRepositoryPathService resolvedPathService = pathService ?? new RepositoryPathService();
         _logsPath = resolvedPathService.LogsDirectory;
         _jsonLogsPath = Path.Combine(_logsPath, Win11ForgePathNames.JsonLogsDirectoryName);
 
@@ -118,22 +119,22 @@ public partial class LogsViewModel : ObservableObject
         {
             await Task.Run(() =>
             {
-                var files = new List<LogFileEntry>();
+                List<LogFileEntry> files = new List<LogFileEntry>();
                 long totalSize = 0;
-                var logsRoot = Path.GetFullPath(_logsPath);
-                var jsonRoot = Path.GetFullPath(_jsonLogsPath);
+                string logsRoot = Path.GetFullPath(_logsPath);
+                string jsonRoot = Path.GetFullPath(_jsonLogsPath);
 
                 if (Directory.Exists(_logsPath))
                 {
-                    foreach (var file in Directory.EnumerateFiles(_logsPath, "*.*", SearchOption.AllDirectories))
+                    foreach (string file in Directory.EnumerateFiles(_logsPath, "*.*", SearchOption.AllDirectories))
                     {
-                        var info = new FileInfo(file);
-                        var fileDirectory = Path.GetFullPath(info.DirectoryName ?? string.Empty);
-                        var isTopLevelTextLog = string.Equals(fileDirectory, logsRoot, StringComparison.OrdinalIgnoreCase)
+                        FileInfo info = new FileInfo(file);
+                        string fileDirectory = Path.GetFullPath(info.DirectoryName ?? string.Empty);
+                        bool isTopLevelTextLog = string.Equals(fileDirectory, logsRoot, StringComparison.OrdinalIgnoreCase)
                             && string.Equals(info.Extension, ".log", StringComparison.OrdinalIgnoreCase);
-                        var isJsonLog = fileDirectory.StartsWith(jsonRoot, StringComparison.OrdinalIgnoreCase)
+                        bool isJsonLog = fileDirectory.StartsWith(jsonRoot, StringComparison.OrdinalIgnoreCase)
                             && string.Equals(info.Extension, ".json", StringComparison.OrdinalIgnoreCase);
-                        var isErrorLog = info.Name.Contains("error", StringComparison.OrdinalIgnoreCase)
+                        bool isErrorLog = info.Name.Contains("error", StringComparison.OrdinalIgnoreCase)
                             && string.Equals(info.Extension, ".log", StringComparison.OrdinalIgnoreCase);
 
                         if (!isTopLevelTextLog && !isJsonLog && !isErrorLog)
@@ -141,17 +142,17 @@ public partial class LogsViewModel : ObservableObject
                             continue;
                         }
 
-                        var logType = isTopLevelTextLog
+                        string logType = isTopLevelTextLog
                             ? Resources.Resources.Logs_Filter_Text
                             : isJsonLog
                                 ? Resources.Resources.Logs_Filter_Json
                                 : Resources.Resources.Logs_Filter_Error;
-                        var icon = isJsonLog
+                        SymbolRegular icon = isJsonLog
                             ? SymbolRegular.BracesVariable24
                             : isErrorLog && !isTopLevelTextLog
                                 ? SymbolRegular.ErrorCircle24
                                 : SymbolRegular.Document24;
-                        var iconColor = isJsonLog
+                        SolidColorBrush iconColor = isJsonLog
                             ? Brushes.DodgerBlue
                             : isErrorLog && !isTopLevelTextLog
                                 ? Brushes.Red
@@ -171,13 +172,13 @@ public partial class LogsViewModel : ObservableObject
                     }
                 }
 
-                var dispatcher = Application.Current?.Dispatcher;
+                Dispatcher? dispatcher = Application.Current?.Dispatcher;
                 if (dispatcher != null)
                 {
                     dispatcher.Invoke(() =>
                     {
                         LogFiles.Clear();
-                        foreach (var file in files.OrderByDescending(f => f.LastModified))
+                        foreach (LogFileEntry? file in files.OrderByDescending(f => f.LastModified))
                         {
                             LogFiles.Add(file);
                         }
@@ -217,7 +218,7 @@ public partial class LogsViewModel : ObservableObject
 
     private void ApplyFilters()
     {
-        var filtered = LogFiles.AsEnumerable();
+        IEnumerable<LogFileEntry> filtered = LogFiles.AsEnumerable();
 
         // Apply search filter
         if (!string.IsNullOrWhiteSpace(SearchText))
@@ -239,7 +240,7 @@ public partial class LogsViewModel : ObservableObject
         }
 
         FilteredLogFiles.Clear();
-        foreach (var file in filtered)
+        foreach (LogFileEntry? file in filtered)
         {
             FilteredLogFiles.Add(file);
         }
@@ -256,7 +257,7 @@ public partial class LogsViewModel : ObservableObject
             {
                 Directory.CreateDirectory(_logsPath);
             }
-            using var process = Process.Start(new ProcessStartInfo
+            using Process? process = Process.Start(new ProcessStartInfo
             {
                 FileName = _logsPath,
                 UseShellExecute = true
@@ -273,7 +274,7 @@ public partial class LogsViewModel : ObservableObject
     {
         try
         {
-            var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
+            string? filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
                 string.Empty,
                 Resources.Resources.Logs_Export_Filter,
                 DefaultFileName: $"Win11Forge_Logs_{DateTime.Now:yyyyMMdd_HHmmss}",
@@ -282,29 +283,29 @@ public partial class LogsViewModel : ObservableObject
             if (filePath != null)
             {
                 // Security: Use unpredictable random temp directory name
-                var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                string tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
                 Directory.CreateDirectory(tempDir);
-                var tempDirFullPath = Path.GetFullPath(tempDir);
+                string tempDirFullPath = Path.GetFullPath(tempDir);
 
                 try
                 {
-                    var copiedCount = 0;
-                    foreach (var logFile in FilteredLogFiles)
+                    int copiedCount = 0;
+                    foreach (LogFileEntry logFile in FilteredLogFiles)
                     {
                         try
                         {
                             // Security: Validate filename doesn't contain path traversal
-                            var safeFileName = Path.GetFileName(logFile.FileName);
+                            string safeFileName = Path.GetFileName(logFile.FileName);
                             if (string.IsNullOrWhiteSpace(safeFileName) || safeFileName.Contains(".."))
                             {
                                 System.Diagnostics.Debug.WriteLine($"Skipping unsafe filename: {logFile.FileName}");
                                 continue;
                             }
 
-                            var destPath = Path.Combine(tempDir, safeFileName);
+                            string destPath = Path.Combine(tempDir, safeFileName);
 
                             // Security: Verify destination stays within temp directory (TOCTOU protection)
-                            var destFullPath = Path.GetFullPath(destPath);
+                            string destFullPath = Path.GetFullPath(destPath);
                             if (!destFullPath.StartsWith(tempDirFullPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
                             {
                                 System.Diagnostics.Debug.WriteLine($"Path traversal attempt blocked: {destPath}");
@@ -367,7 +368,7 @@ public partial class LogsViewModel : ObservableObject
     [RelayCommand]
     private async Task ClearOldLogsAsync()
     {
-        var confirmed = await _dialogService.ShowConfirmAsync(
+        bool confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.Confirm_ClearOldLogs_Title,
             Resources.Resources.Confirm_ClearOldLogs_Message,
             Resources.Resources.Confirm_ClearOldLogs_Btn,
@@ -377,10 +378,10 @@ public partial class LogsViewModel : ObservableObject
 
         try
         {
-            var cutoffDate = DateTime.Now.AddDays(-7);
-            var deletedCount = 0;
+            DateTime cutoffDate = DateTime.Now.AddDays(-7);
+            int deletedCount = 0;
 
-            foreach (var file in LogFiles.Where(f => f.LastModified < cutoffDate).ToList())
+            foreach (LogFileEntry? file in LogFiles.Where(f => f.LastModified < cutoffDate).ToList())
             {
                 try
                 {
@@ -422,7 +423,7 @@ public partial class LogsViewModel : ObservableObject
                 return;
             }
 
-            using var process = Process.Start(new ProcessStartInfo
+            using Process? process = Process.Start(new ProcessStartInfo
             {
                 FileName = logFile.FullPath,
                 UseShellExecute = true
@@ -455,7 +456,7 @@ public partial class LogsViewModel : ObservableObject
     {
         if (logFile == null) return;
 
-        var confirmed = await _dialogService.ShowConfirmAsync(
+        bool confirmed = await _dialogService.ShowConfirmAsync(
             Resources.Resources.Confirm_DeleteLog_Title,
             string.Format(Resources.Resources.Confirm_DeleteLog_Message, logFile.FileName),
             Resources.Resources.Confirm_Delete_Btn,

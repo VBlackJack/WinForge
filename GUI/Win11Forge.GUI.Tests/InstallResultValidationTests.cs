@@ -29,8 +29,8 @@ public class InstallResultValidationTests
     /// </summary>
     private static IList<ValidationResult> ValidateModel(object model)
     {
-        var validationResults = new List<ValidationResult>();
-        var ctx = new ValidationContext(model, null, null);
+        List<ValidationResult> validationResults = new List<ValidationResult>();
+        ValidationContext ctx = new ValidationContext(model, null, null);
         Validator.TryValidateObject(model, ctx, validationResults, true);
         return validationResults;
     }
@@ -42,10 +42,10 @@ public class InstallResultValidationTests
     public void Successful_Result_Passes_Validation()
     {
         // Arrange
-        var result = InstallResult.Successful("Installed successfully", "Installation logs...");
+        InstallResult result = InstallResult.Successful("Installed successfully", "Installation logs...");
 
         // Act
-        var validationResults = ValidateModel(result);
+        IList<ValidationResult> validationResults = ValidateModel(result);
 
         // Assert
         Assert.Empty(validationResults);
@@ -58,10 +58,10 @@ public class InstallResultValidationTests
     public void Failed_Result_With_Message_Passes_Validation()
     {
         // Arrange
-        var result = InstallResult.Failed("Installation failed: error XYZ", "Error logs...");
+        InstallResult result = InstallResult.Failed("Installation failed: error XYZ", "Error logs...");
 
         // Act
-        var validationResults = ValidateModel(result);
+        IList<ValidationResult> validationResults = ValidateModel(result);
 
         // Assert
         Assert.Empty(validationResults);
@@ -74,10 +74,10 @@ public class InstallResultValidationTests
     public void DryRun_Result_Passes_Validation()
     {
         // Arrange
-        var result = InstallResult.DryRun("TestApp");
+        InstallResult result = InstallResult.DryRun("TestApp");
 
         // Act
-        var validationResults = ValidateModel(result);
+        IList<ValidationResult> validationResults = ValidateModel(result);
 
         // Assert
         Assert.Empty(validationResults);
@@ -90,7 +90,7 @@ public class InstallResultValidationTests
     public void ManualInstall_With_Success_Fails_Validation()
     {
         // Arrange - Create invalid state where manual install is marked as success
-        var result = new InstallResult
+        InstallResult result = new InstallResult
         {
             Success = true,
             IsManualInstallRequired = true,
@@ -98,7 +98,7 @@ public class InstallResultValidationTests
         };
 
         // Act
-        var validationResults = ValidateModel(result);
+        IList<ValidationResult> validationResults = ValidateModel(result);
 
         // Assert
         Assert.NotEmpty(validationResults);
@@ -113,7 +113,7 @@ public class InstallResultValidationTests
     public void DryRun_With_Failure_Fails_Validation()
     {
         // Arrange - Create invalid state where dry run is marked as failed
-        var result = new InstallResult
+        InstallResult result = new InstallResult
         {
             Success = false,
             IsDryRun = true,
@@ -121,7 +121,7 @@ public class InstallResultValidationTests
         };
 
         // Act
-        var validationResults = ValidateModel(result);
+        IList<ValidationResult> validationResults = ValidateModel(result);
 
         // Assert
         Assert.NotEmpty(validationResults);
@@ -136,14 +136,14 @@ public class InstallResultValidationTests
     public void Failed_Without_Message_Fails_Validation()
     {
         // Arrange - Create invalid state where failure has no message
-        var result = new InstallResult
+        InstallResult result = new InstallResult
         {
             Success = false,
             Message = ""
         };
 
         // Act
-        var validationResults = ValidateModel(result);
+        IList<ValidationResult> validationResults = ValidateModel(result);
 
         // Assert
         Assert.NotEmpty(validationResults);
@@ -158,7 +158,7 @@ public class InstallResultValidationTests
     public void ManualInstallRequired_Factory_Creates_Valid_Result()
     {
         // Arrange & Act
-        var result = InstallResult.ManualInstallRequired("TestApp", "https://example.com/download");
+        InstallResult result = InstallResult.ManualInstallRequired("TestApp", "https://example.com/download");
 
         // Assert
         Assert.True(result.IsManualInstallRequired);
@@ -166,7 +166,7 @@ public class InstallResultValidationTests
         Assert.Contains("TestApp", result.Message);
 
         // Validate
-        var validationResults = ValidateModel(result);
+        IList<ValidationResult> validationResults = ValidateModel(result);
         Assert.Empty(validationResults);
     }
 
@@ -177,7 +177,7 @@ public class InstallResultValidationTests
     public void UpdateAvailable_Factory_Creates_Correct_Result()
     {
         // Arrange & Act
-        var result = UpdateCheckResult.UpdateAvailable("1.0.0", "2.0.0");
+        UpdateCheckResult result = UpdateCheckResult.UpdateAvailable("1.0.0", "2.0.0");
 
         // Assert
         Assert.True(result.HasUpdate);
@@ -193,7 +193,7 @@ public class InstallResultValidationTests
     public void UpToDate_Factory_Creates_Correct_Result()
     {
         // Arrange & Act
-        var result = UpdateCheckResult.UpToDate("1.0.0");
+        UpdateCheckResult result = UpdateCheckResult.UpToDate("1.0.0");
 
         // Assert
         Assert.False(result.HasUpdate);
@@ -208,7 +208,7 @@ public class InstallResultValidationTests
     public void Failed_UpdateCheck_Has_ErrorMessage()
     {
         // Arrange & Act
-        var result = UpdateCheckResult.Failed("Network error");
+        UpdateCheckResult result = UpdateCheckResult.Failed("Network error");
 
         // Assert
         Assert.False(result.HasUpdate);

@@ -99,9 +99,9 @@ public sealed class BatchResumeService : IBatchResumeService
         ArgumentNullException.ThrowIfNull(plan);
         ArgumentNullException.ThrowIfNull(options);
 
-        var batchId = Guid.NewGuid();
-        var nowUtc = _now();
-        var checkpoint = new BatchCheckpoint(
+        Guid batchId = Guid.NewGuid();
+        DateTimeOffset nowUtc = _now();
+        BatchCheckpoint checkpoint = new BatchCheckpoint(
             SchemaVersion: BatchCheckpoint.CurrentSchemaVersion,
             BatchId: batchId,
             OperationKind: kind,
@@ -128,14 +128,14 @@ public sealed class BatchResumeService : IBatchResumeService
         await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var existing = await ReadCheckpointAsync(batchId, cancellationToken).ConfigureAwait(false);
+            BatchCheckpoint? existing = await ReadCheckpointAsync(batchId, cancellationToken).ConfigureAwait(false);
             if (existing == null)
             {
                 _logger.LogWarning($"[BatchResumeService] Cannot append to missing checkpoint {batchId}.");
                 return;
             }
 
-            var updated = existing with
+            BatchCheckpoint updated = existing with
             {
                 LastCheckpointAt = _now(),
                 Completed = existing.Completed
@@ -157,14 +157,14 @@ public sealed class BatchResumeService : IBatchResumeService
         await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var existing = await ReadCheckpointAsync(batchId, cancellationToken).ConfigureAwait(false);
+            BatchCheckpoint? existing = await ReadCheckpointAsync(batchId, cancellationToken).ConfigureAwait(false);
             if (existing == null)
             {
                 _logger.LogWarning($"[BatchResumeService] Cannot mark missing checkpoint {batchId} completed.");
                 return;
             }
 
-            var updated = existing with
+            BatchCheckpoint updated = existing with
             {
                 State = BatchState.Completed,
                 LastCheckpointAt = _now()
@@ -186,13 +186,13 @@ public sealed class BatchResumeService : IBatchResumeService
             return Array.Empty<BatchCheckpoint>();
         }
 
-        var pending = new List<BatchCheckpoint>();
-        var threshold = _now() - _staleAfter;
+        List<BatchCheckpoint> pending = new List<BatchCheckpoint>();
+        DateTimeOffset threshold = _now() - _staleAfter;
 
-        foreach (var path in Directory.EnumerateFiles(_stateDirectory, FilePrefix + "*" + FileSuffix))
+        foreach (string path in Directory.EnumerateFiles(_stateDirectory, FilePrefix + "*" + FileSuffix))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var checkpoint = await ReadCheckpointFromPathAsync(path, cancellationToken).ConfigureAwait(false);
+            BatchCheckpoint? checkpoint = await ReadCheckpointFromPathAsync(path, cancellationToken).ConfigureAwait(false);
             if (checkpoint == null)
             {
                 continue;
@@ -221,7 +221,7 @@ public sealed class BatchResumeService : IBatchResumeService
     public Task DeleteCheckpointAsync(Guid batchId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var path = GetCheckpointPath(batchId);
+        string path = GetCheckpointPath(batchId);
         try
         {
             if (File.Exists(path))
@@ -244,16 +244,16 @@ public sealed class BatchResumeService : IBatchResumeService
             return;
         }
 
-        var threshold = _now() - _staleAfter;
+        DateTimeOffset threshold = _now() - _staleAfter;
 
-        foreach (var path in Directory.EnumerateFiles(_stateDirectory, FilePrefix + "*" + FileSuffix))
+        foreach (string path in Directory.EnumerateFiles(_stateDirectory, FilePrefix + "*" + FileSuffix))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
-                var checkpoint = await ReadCheckpointFromPathAsync(path, cancellationToken).ConfigureAwait(false);
-                var shouldDelete = checkpoint == null || checkpoint.LastCheckpointAt < threshold;
+                BatchCheckpoint? checkpoint = await ReadCheckpointFromPathAsync(path, cancellationToken).ConfigureAwait(false);
+                bool shouldDelete = checkpoint == null || checkpoint.LastCheckpointAt < threshold;
                 if (shouldDelete)
                 {
                     File.Delete(path);
@@ -281,13 +281,13 @@ public sealed class BatchResumeService : IBatchResumeService
 
     private async Task WriteCheckpointUnlockedAsync(BatchCheckpoint checkpoint, CancellationToken cancellationToken)
     {
-        var finalPath = GetCheckpointPath(checkpoint.BatchId);
-        var tempPath = finalPath + ".tmp";
+        string finalPath = GetCheckpointPath(checkpoint.BatchId);
+        string tempPath = finalPath + ".tmp";
 
         try
         {
             EnsureStateDirectoryExists();
-            var json = JsonSerializer.Serialize(checkpoint, JsonOptions);
+            string json = JsonSerializer.Serialize(checkpoint, JsonOptions);
             await File.WriteAllTextAsync(tempPath, json, cancellationToken).ConfigureAwait(false);
             File.Move(tempPath, finalPath, overwrite: true);
         }
@@ -310,7 +310,7 @@ public sealed class BatchResumeService : IBatchResumeService
 
     private async Task<BatchCheckpoint?> ReadCheckpointAsync(Guid batchId, CancellationToken cancellationToken)
     {
-        var path = GetCheckpointPath(batchId);
+        string path = GetCheckpointPath(batchId);
         return await ReadCheckpointFromPathAsync(path, cancellationToken).ConfigureAwait(false);
     }
 
@@ -323,8 +323,8 @@ public sealed class BatchResumeService : IBatchResumeService
 
         try
         {
-            var json = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
-            var checkpoint = JsonSerializer.Deserialize<BatchCheckpoint>(json, JsonOptions);
+            string json = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+            BatchCheckpoint? checkpoint = JsonSerializer.Deserialize<BatchCheckpoint>(json, JsonOptions);
             if (checkpoint == null)
             {
                 return null;
@@ -373,13 +373,13 @@ public sealed class BatchResumeService : IBatchResumeService
     private static string ResolveDefaultStateDirectory(ILoggerFactory? loggerFactory = null)
     {
         ILoggingService logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<BatchResumeService>();
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         if (string.IsNullOrEmpty(localAppData))
         {
             localAppData = Path.GetTempPath();
         }
 
-        var win11ForgePath = Path.Combine(localAppData, "Win11Forge");
+        string win11ForgePath = Path.Combine(localAppData, "Win11Forge");
         try
         {
             if (!Directory.Exists(win11ForgePath))

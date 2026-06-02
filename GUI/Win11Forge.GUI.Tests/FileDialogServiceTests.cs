@@ -27,21 +27,21 @@ public class FileDialogServiceTests
     public async Task ShowOpenFileDialogAsync_WhenAccepted_ReturnsSelectedPathAndAppliesOptions()
     {
         // Arrange
-        var fakeDialog = new FakeFileDialogAdapter
+        FakeFileDialogAdapter fakeDialog = new FakeFileDialogAdapter
         {
             ShowDialogResult = true,
             SelectedFileName = @"C:\Temp\selected.json"
         };
-        var service = new FileDialogService(() => fakeDialog, () => new FakeFileDialogAdapter());
+        FileDialogService service = new FileDialogService(() => fakeDialog, () => new FakeFileDialogAdapter());
 
-        var options = new FileDialogOptions(
+        FileDialogOptions options = new FileDialogOptions(
             "Import",
             "JSON files (*.json)|*.json",
             InitialDirectory: @"C:\Temp",
             DefaultExtension: ".json");
 
         // Act
-        var result = await service.ShowOpenAsync(options);
+        string? result = await service.ShowOpenAsync(options);
 
         // Assert
         Assert.Equal(@"C:\Temp\selected.json", result);
@@ -56,15 +56,15 @@ public class FileDialogServiceTests
     public async Task ShowOpenFileDialogAsync_WhenCancelled_ReturnsNull()
     {
         // Arrange
-        var fakeDialog = new FakeFileDialogAdapter
+        FakeFileDialogAdapter fakeDialog = new FakeFileDialogAdapter
         {
             ShowDialogResult = false,
             SelectedFileName = @"C:\Temp\ignored.json"
         };
-        var service = new FileDialogService(() => fakeDialog, () => new FakeFileDialogAdapter());
+        FileDialogService service = new FileDialogService(() => fakeDialog, () => new FakeFileDialogAdapter());
 
         // Act
-        var result = await service.ShowOpenAsync(new FileDialogOptions("Import", "JSON files (*.json)|*.json"));
+        string? result = await service.ShowOpenAsync(new FileDialogOptions("Import", "JSON files (*.json)|*.json"));
 
         // Assert
         Assert.Null(result);
@@ -75,21 +75,21 @@ public class FileDialogServiceTests
     public async Task ShowSaveFileDialogAsync_WhenAccepted_ReturnsSelectedPathAndAppliesDefaultFileName()
     {
         // Arrange
-        var fakeDialog = new FakeFileDialogAdapter
+        FakeFileDialogAdapter fakeDialog = new FakeFileDialogAdapter
         {
             ShowDialogResult = true,
             SelectedFileName = @"C:\Exports\settings.json"
         };
-        var service = new FileDialogService(() => new FakeFileDialogAdapter(), () => fakeDialog);
+        FileDialogService service = new FileDialogService(() => new FakeFileDialogAdapter(), () => fakeDialog);
 
-        var options = new FileDialogOptions(
+        FileDialogOptions options = new FileDialogOptions(
             "Export",
             "JSON files (*.json)|*.json|All files (*.*)|*.*",
             DefaultFileName: "settings",
             DefaultExtension: ".json");
 
         // Act
-        var result = await service.ShowSaveAsync(options);
+        string? result = await service.ShowSaveAsync(options);
 
         // Assert
         Assert.Equal(@"C:\Exports\settings.json", result);
@@ -104,15 +104,15 @@ public class FileDialogServiceTests
     public async Task ShowSaveFileDialogAsync_WhenCancelled_ReturnsNull()
     {
         // Arrange
-        var fakeDialog = new FakeFileDialogAdapter
+        FakeFileDialogAdapter fakeDialog = new FakeFileDialogAdapter
         {
             ShowDialogResult = null,
             SelectedFileName = @"C:\Exports\ignored.zip"
         };
-        var service = new FileDialogService(() => new FakeFileDialogAdapter(), () => fakeDialog);
+        FileDialogService service = new FileDialogService(() => new FakeFileDialogAdapter(), () => fakeDialog);
 
         // Act
-        var result = await service.ShowSaveAsync(new FileDialogOptions("Export", "ZIP Archive (*.zip)|*.zip"));
+        string? result = await service.ShowSaveAsync(new FileDialogOptions("Export", "ZIP Archive (*.zip)|*.zip"));
 
         // Assert
         Assert.Null(result);

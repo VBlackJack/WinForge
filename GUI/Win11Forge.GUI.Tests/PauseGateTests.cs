@@ -23,7 +23,7 @@ public class PauseGateTests
     [Fact]
     public async Task WaitAsync_WhenNotPaused_ShouldCompleteImmediately()
     {
-        using var pauseGate = new PauseGate();
+        using PauseGate pauseGate = new PauseGate();
 
         await pauseGate.WaitAsync().WaitAsync(TimeSpan.FromSeconds(1));
     }
@@ -31,10 +31,10 @@ public class PauseGateTests
     [Fact]
     public async Task WaitAsync_WhenPaused_ShouldBlockUntilResumed()
     {
-        using var pauseGate = new PauseGate();
+        using PauseGate pauseGate = new PauseGate();
         pauseGate.Pause();
 
-        var waitTask = pauseGate.WaitAsync();
+        Task waitTask = pauseGate.WaitAsync();
         await Task.Delay(75);
 
         Assert.False(waitTask.IsCompleted);
@@ -46,11 +46,11 @@ public class PauseGateTests
     [Fact]
     public async Task WaitAsync_WhenCancelled_ShouldPropagateCancellation()
     {
-        using var pauseGate = new PauseGate();
-        using var cts = new CancellationTokenSource();
+        using PauseGate pauseGate = new PauseGate();
+        using CancellationTokenSource cts = new CancellationTokenSource();
         pauseGate.Pause();
 
-        var waitTask = pauseGate.WaitAsync(cts.Token);
+        Task waitTask = pauseGate.WaitAsync(cts.Token);
         await cts.CancelAsync();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => waitTask);

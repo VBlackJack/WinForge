@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Reflection;
 using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI.Tests;
@@ -30,10 +31,10 @@ public class FocusedInterfacesTests
     public void IVersionService_Should_Have_Single_Responsibility()
     {
         // Arrange
-        var interfaceType = typeof(IVersionService);
+        Type interfaceType = typeof(IVersionService);
 
         // Act
-        var methods = interfaceType.GetMethods()
+        List<MethodInfo> methods = interfaceType.GetMethods()
             .Where(m => !m.IsSpecialName) // Exclude property accessors
             .ToList();
 
@@ -49,10 +50,10 @@ public class FocusedInterfacesTests
     public void IProfileManagementService_Should_Have_Profile_Methods_Only()
     {
         // Arrange
-        var interfaceType = typeof(IProfileManagementService);
+        Type interfaceType = typeof(IProfileManagementService);
 
         // Act
-        var methods = interfaceType.GetMethods()
+        List<string> methods = interfaceType.GetMethods()
             .Where(m => !m.IsSpecialName)
             .Select(m => m.Name)
             .ToList();
@@ -73,10 +74,10 @@ public class FocusedInterfacesTests
     public void IApplicationManagementService_Should_Have_App_Methods_Only()
     {
         // Arrange
-        var interfaceType = typeof(IApplicationManagementService);
+        Type interfaceType = typeof(IApplicationManagementService);
 
         // Act
-        var methods = interfaceType.GetMethods()
+        List<string> methods = interfaceType.GetMethods()
             .Where(m => !m.IsSpecialName)
             .Select(m => m.Name)
             .ToList();
@@ -100,15 +101,15 @@ public class FocusedInterfacesTests
     public void IApplicationBridge_Should_Not_Expose_Unused_BatchInstall_Api()
     {
         // Arrange
-        var interfaceType = typeof(IApplicationBridge);
+        Type interfaceType = typeof(IApplicationBridge);
 
         // Act
-        var methods = interfaceType.GetMethods()
+        List<string> methods = interfaceType.GetMethods()
             .Where(m => !m.IsSpecialName)
             .Select(m => m.Name)
             .ToList();
 
-        var serviceTypeNames = interfaceType.Assembly.GetTypes()
+        List<string> serviceTypeNames = interfaceType.Assembly.GetTypes()
             .Select(t => t.Name)
             .ToList();
 
@@ -125,15 +126,15 @@ public class FocusedInterfacesTests
     public void ISystemInfoService_Should_Have_SystemInfo_Members()
     {
         // Arrange
-        var interfaceType = typeof(ISystemInfoService);
+        Type interfaceType = typeof(ISystemInfoService);
 
         // Act
-        var methods = interfaceType.GetMethods()
+        List<string> methods = interfaceType.GetMethods()
             .Where(m => !m.IsSpecialName)
             .Select(m => m.Name)
             .ToList();
 
-        var properties = interfaceType.GetProperties()
+        List<string> properties = interfaceType.GetProperties()
             .Select(p => p.Name)
             .ToList();
 
@@ -151,10 +152,10 @@ public class FocusedInterfacesTests
     public void IPowerShellBridge_Should_Inherit_From_All_Focused_Interfaces()
     {
         // Arrange
-        var compositeType = typeof(IPowerShellBridge);
+        Type compositeType = typeof(IPowerShellBridge);
 
         // Act
-        var implementedInterfaces = compositeType.GetInterfaces();
+        Type[] implementedInterfaces = compositeType.GetInterfaces();
 
         // Assert
         Assert.Contains(typeof(IVersionService), implementedInterfaces);
@@ -170,10 +171,10 @@ public class FocusedInterfacesTests
     public void IPowerShellBridge_Should_Have_Prerequisites_Methods()
     {
         // Arrange
-        var interfaceType = typeof(IPowerShellBridge);
+        Type interfaceType = typeof(IPowerShellBridge);
 
         // Act
-        var methods = interfaceType.GetMethods()
+        List<string> methods = interfaceType.GetMethods()
             .Where(m => !m.IsSpecialName && m.DeclaringType == interfaceType)
             .Select(m => m.Name)
             .ToList();
@@ -193,10 +194,10 @@ public class FocusedInterfacesTests
         // instead of the full IPowerShellBridge
 
         // Arrange - A hypothetical consumer
-        var versionServiceType = typeof(IVersionService);
+        Type versionServiceType = typeof(IVersionService);
 
         // Assert - The interface is small and focused
-        var memberCount = versionServiceType.GetMembers()
+        int memberCount = versionServiceType.GetMembers()
             .Where(m => m.MemberType == System.Reflection.MemberTypes.Method)
             .Count();
 
@@ -210,7 +211,7 @@ public class FocusedInterfacesTests
     public void All_Focused_Interfaces_Should_Be_Public()
     {
         // Arrange
-        var interfaces = new[]
+        Type[] interfaces = new[]
         {
             typeof(IVersionService),
             typeof(IProfileManagementService),

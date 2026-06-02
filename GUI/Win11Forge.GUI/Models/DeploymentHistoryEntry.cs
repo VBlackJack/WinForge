@@ -120,7 +120,7 @@ public class DeploymentHistoryEntry : IValidatableObject
     {
         get
         {
-            var ts = TimeSpan.FromSeconds(DurationSeconds);
+            TimeSpan ts = TimeSpan.FromSeconds(DurationSeconds);
             if (ts.TotalMinutes < 1)
                 return $"{ts.Seconds}s";
             if (ts.TotalHours < 1)
@@ -145,7 +145,7 @@ public class DeploymentHistoryEntry : IValidatableObject
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         // Sum of apps should equal total
-        var calculatedTotal = SuccessfulApps + FailedApps + SkippedApps;
+        int calculatedTotal = SuccessfulApps + FailedApps + SkippedApps;
         if (calculatedTotal > TotalApps)
         {
             yield return new ValidationResult(

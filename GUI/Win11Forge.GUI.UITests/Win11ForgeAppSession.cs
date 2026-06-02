@@ -19,6 +19,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Windows;
 using System.Windows.Automation;
 
 namespace Win11Forge.GUI.UITests;
@@ -41,11 +42,11 @@ internal sealed class Win11ForgeAppSession : IDisposable
 
     public static Win11ForgeAppSession Launch()
     {
-        var appAssemblyPath = ResolveAppAssemblyPath();
-        var artifactDirectory = ResolveArtifactDirectory();
+        string appAssemblyPath = ResolveAppAssemblyPath();
+        string artifactDirectory = ResolveArtifactDirectory();
         Directory.CreateDirectory(artifactDirectory);
 
-        var process = Process.Start(new ProcessStartInfo
+        Process process = Process.Start(new ProcessStartInfo
         {
             FileName = "dotnet",
             Arguments = $"\"{appAssemblyPath}\"",
@@ -53,7 +54,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
             UseShellExecute = false
         }) ?? throw new InvalidOperationException($"Failed to launch {appAssemblyPath}.");
 
-        var session = new Win11ForgeAppSession(
+        Win11ForgeAppSession session = new Win11ForgeAppSession(
             process,
             WaitForMainWindow(process, DefaultTimeout),
             artifactDirectory);
@@ -66,13 +67,13 @@ internal sealed class Win11ForgeAppSession : IDisposable
     public string CaptureWindow(string name)
     {
         MainWindow = WaitForMainWindow(_process, DefaultTimeout);
-        var rect = MainWindow.Current.BoundingRectangle;
+        Rect rect = MainWindow.Current.BoundingRectangle;
         if (rect.IsEmpty || rect.Width <= 0 || rect.Height <= 0)
         {
             throw new InvalidOperationException("Main window has an invalid bounding rectangle.");
         }
 
-        var path = Path.Combine(ArtifactDirectory, $"{name}.png");
+        string path = Path.Combine(ArtifactDirectory, $"{name}.png");
         CaptureScreenRect(rect, path);
         return path;
     }
@@ -107,7 +108,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
 
     public void NavigateByAutomationId(string automationId)
     {
-        var element = WaitForElementByAutomationId(automationId, DefaultTimeout);
+        AutomationElement element = WaitForElementByAutomationId(automationId, DefaultTimeout);
         BringMainWindowToFront();
         InvokeOrClick(element);
         WaitForIdle();
@@ -145,7 +146,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
             return;
         }
 
-        var windowHandle = _process.MainWindowHandle;
+        nint windowHandle = _process.MainWindowHandle;
         NativeMethods.ShowWindow(windowHandle, NativeMethods.SwRestore);
         NativeMethods.SetWindowPos(
             windowHandle,
@@ -202,24 +203,24 @@ internal sealed class Win11ForgeAppSession : IDisposable
 
     private static void InvokeOrClick(AutomationElement element)
     {
-        var rect = element.Current.BoundingRectangle;
+        Rect rect = element.Current.BoundingRectangle;
         if (!rect.IsEmpty)
         {
-            var x = (int)(rect.Left + rect.Width / 2);
-            var y = (int)(rect.Top + rect.Height / 2);
+            int x = (int)(rect.Left + rect.Width / 2);
+            int y = (int)(rect.Top + rect.Height / 2);
             NativeMethods.SetCursorPos(x, y);
             NativeMethods.mouse_event(NativeMethods.MouseEventLeftDown, 0, 0, 0, UIntPtr.Zero);
             NativeMethods.mouse_event(NativeMethods.MouseEventLeftUp, 0, 0, 0, UIntPtr.Zero);
             return;
         }
 
-        if (element.TryGetCurrentPattern(InvokePattern.Pattern, out var invokePattern))
+        if (element.TryGetCurrentPattern(InvokePattern.Pattern, out object? invokePattern))
         {
             ((InvokePattern)invokePattern).Invoke();
             return;
         }
 
-        if (element.TryGetCurrentPattern(SelectionItemPattern.Pattern, out var selectionPattern))
+        if (element.TryGetCurrentPattern(SelectionItemPattern.Pattern, out object? selectionPattern))
         {
             ((SelectionItemPattern)selectionPattern).Select();
             return;
@@ -244,8 +245,8 @@ internal sealed class Win11ForgeAppSession : IDisposable
                     return AutomationElement.FromHandle(process.MainWindowHandle);
                 }
 
-                var processIdCondition = new PropertyCondition(AutomationElement.ProcessIdProperty, process.Id);
-                var windows = AutomationElement.RootElement.FindAll(TreeScope.Children, processIdCondition);
+                PropertyCondition processIdCondition = new PropertyCondition(AutomationElement.ProcessIdProperty, process.Id);
+                AutomationElementCollection windows = AutomationElement.RootElement.FindAll(TreeScope.Children, processIdCondition);
                 foreach (AutomationElement window in windows)
                 {
                     return window;
@@ -260,14 +261,14 @@ internal sealed class Win11ForgeAppSession : IDisposable
     private static T WaitUntil<T>(Func<T?> query, TimeSpan timeout, string failureMessage)
         where T : class
     {
-        var stopwatch = Stopwatch.StartNew();
+        Stopwatch stopwatch = Stopwatch.StartNew();
         Exception? lastException = null;
 
         while (stopwatch.Elapsed < timeout)
         {
             try
             {
-                var result = query();
+                T? result = query();
                 if (result is not null)
                 {
                     return result;
@@ -288,17 +289,17 @@ internal sealed class Win11ForgeAppSession : IDisposable
 
     private static string ResolveAppAssemblyPath()
     {
-        var baseDirectory = AppContext.BaseDirectory;
-        var localCopy = Path.Combine(baseDirectory, "Win11Forge.GUI.dll");
+        string baseDirectory = AppContext.BaseDirectory;
+        string localCopy = Path.Combine(baseDirectory, "Win11Forge.GUI.dll");
         if (File.Exists(localCopy))
         {
             return localCopy;
         }
 
-        var directory = new DirectoryInfo(baseDirectory);
+        DirectoryInfo? directory = new DirectoryInfo(baseDirectory);
         while (directory is not null)
         {
-            var candidate = Path.Combine(
+            string candidate = Path.Combine(
                 directory.FullName,
                 "Win11Forge.GUI",
                 "bin",
@@ -318,7 +319,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
 
     private static string ResolveArtifactDirectory()
     {
-        var configuredDirectory = Environment.GetEnvironmentVariable("WIN11FORGE_UIA_ARTIFACTS");
+        string? configuredDirectory = Environment.GetEnvironmentVariable("WIN11FORGE_UIA_ARTIFACTS");
         if (!string.IsNullOrWhiteSpace(configuredDirectory))
         {
             return Path.GetFullPath(configuredDirectory);
@@ -333,8 +334,8 @@ internal sealed class Win11ForgeAppSession : IDisposable
 
     private static void CaptureScreenRect(System.Windows.Rect rect, string path)
     {
-        using var bitmap = new Bitmap((int)Math.Ceiling(rect.Width), (int)Math.Ceiling(rect.Height), PixelFormat.Format32bppArgb);
-        using var graphics = Graphics.FromImage(bitmap);
+        using Bitmap bitmap = new Bitmap((int)Math.Ceiling(rect.Width), (int)Math.Ceiling(rect.Height), PixelFormat.Format32bppArgb);
+        using Graphics graphics = Graphics.FromImage(bitmap);
         graphics.CopyFromScreen(
             (int)Math.Floor(rect.Left),
             (int)Math.Floor(rect.Top),

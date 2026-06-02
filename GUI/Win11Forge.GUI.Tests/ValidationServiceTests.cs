@@ -42,7 +42,7 @@ public class ValidationServiceTests
     public void Validate_NullModel_ReturnsNullError()
     {
         // Act
-        var results = _service.Validate<DeploymentProfileModel>(null!);
+        IList<DataAnnotationsValidationResult> results = _service.Validate<DeploymentProfileModel>(null!);
 
         // Assert
         Assert.Single(results);
@@ -56,14 +56,14 @@ public class ValidationServiceTests
     public void Validate_ValidModel_ReturnsEmptyList()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "TestProfile",
             Description = "A valid test profile"
         };
 
         // Act
-        var results = _service.Validate(profile);
+        IList<DataAnnotationsValidationResult> results = _service.Validate(profile);
 
         // Assert
         Assert.Empty(results);
@@ -76,13 +76,13 @@ public class ValidationServiceTests
     public void Validate_MissingRequiredField_ReturnsErrors()
     {
         // Arrange - Name is required but empty
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = string.Empty
         };
 
         // Act
-        var results = _service.Validate(profile);
+        IList<DataAnnotationsValidationResult> results = _service.Validate(profile);
 
         // Assert
         Assert.NotEmpty(results);
@@ -95,13 +95,13 @@ public class ValidationServiceTests
     public void Validate_InvalidNamePattern_ReturnsErrors()
     {
         // Arrange - Name contains invalid characters (spaces not allowed by regex)
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "Invalid Profile Name!"
         };
 
         // Act
-        var results = _service.Validate(profile);
+        IList<DataAnnotationsValidationResult> results = _service.Validate(profile);
 
         // Assert
         Assert.NotEmpty(results);
@@ -114,13 +114,13 @@ public class ValidationServiceTests
     public void Validate_HyphenatedName_PassesValidation()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "My-Profile_v2"
         };
 
         // Act
-        var results = _service.Validate(profile);
+        IList<DataAnnotationsValidationResult> results = _service.Validate(profile);
 
         // Assert
         Assert.Empty(results);
@@ -133,13 +133,13 @@ public class ValidationServiceTests
     public void Validate_NameExceedsMaxLength_ReturnsErrors()
     {
         // Arrange - Name max is 128 chars
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = new string('A', 200)
         };
 
         // Act
-        var results = _service.Validate(profile);
+        IList<DataAnnotationsValidationResult> results = _service.Validate(profile);
 
         // Assert
         Assert.NotEmpty(results);
@@ -152,14 +152,14 @@ public class ValidationServiceTests
     public void Validate_InvalidVersionPattern_ReturnsErrors()
     {
         // Arrange - Version must match ^\d+\.\d+(\.\d+)?$
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "TestProfile",
             Version = "not-a-version"
         };
 
         // Act
-        var results = _service.Validate(profile);
+        IList<DataAnnotationsValidationResult> results = _service.Validate(profile);
 
         // Assert
         Assert.NotEmpty(results);
@@ -175,14 +175,14 @@ public class ValidationServiceTests
     public void Validate_ValidVersion_PassesValidation(string version)
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "TestProfile",
             Version = version
         };
 
         // Act
-        var results = _service.Validate(profile);
+        IList<DataAnnotationsValidationResult> results = _service.Validate(profile);
 
         // Assert
         Assert.Empty(results);
@@ -195,7 +195,7 @@ public class ValidationServiceTests
     public void Validate_TooManyInheritedProfiles_ReturnsErrors()
     {
         // Arrange - MaxLength of InheritedFrom is 10
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "TestProfile"
         };
@@ -205,7 +205,7 @@ public class ValidationServiceTests
         }
 
         // Act
-        var results = _service.Validate(profile);
+        IList<DataAnnotationsValidationResult> results = _service.Validate(profile);
 
         // Assert
         Assert.NotEmpty(results);
@@ -233,14 +233,14 @@ public class ValidationServiceTests
     public void ValidateAndThrow_ValidModel_DoesNotThrow()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "ValidProfile",
             Description = "A valid profile"
         };
 
         // Act & Assert - should not throw
-        var exception = Record.Exception(() => _service.ValidateAndThrow(profile));
+        Exception exception = Record.Exception(() => _service.ValidateAndThrow(profile));
         Assert.Null(exception);
     }
 
@@ -251,7 +251,7 @@ public class ValidationServiceTests
     public void ValidateAndThrow_InvalidModel_ThrowsValidationException()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = string.Empty // Required field
         };
@@ -271,7 +271,7 @@ public class ValidationServiceTests
     public void IsValid_NullModel_ReturnsFalse()
     {
         // Act
-        var result = _service.IsValid<DeploymentProfileModel>(null!);
+        bool result = _service.IsValid<DeploymentProfileModel>(null!);
 
         // Assert
         Assert.False(result);
@@ -284,13 +284,13 @@ public class ValidationServiceTests
     public void IsValid_ValidModel_ReturnsTrue()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "ValidProfile"
         };
 
         // Act
-        var result = _service.IsValid(profile);
+        bool result = _service.IsValid(profile);
 
         // Assert
         Assert.True(result);
@@ -303,13 +303,13 @@ public class ValidationServiceTests
     public void IsValid_InvalidModel_ReturnsFalse()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = string.Empty
         };
 
         // Act
-        var result = _service.IsValid(profile);
+        bool result = _service.IsValid(profile);
 
         // Assert
         Assert.False(result);
@@ -326,13 +326,13 @@ public class ValidationServiceTests
     public void GetValidationErrorsAsString_ValidModel_ReturnsNull()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "ValidProfile"
         };
 
         // Act
-        var result = _service.GetValidationErrorsAsString(profile);
+        string? result = _service.GetValidationErrorsAsString(profile);
 
         // Assert
         Assert.Null(result);
@@ -345,13 +345,13 @@ public class ValidationServiceTests
     public void GetValidationErrorsAsString_InvalidModel_ReturnsErrorString()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = string.Empty
         };
 
         // Act
-        var result = _service.GetValidationErrorsAsString(profile);
+        string? result = _service.GetValidationErrorsAsString(profile);
 
         // Assert
         Assert.NotNull(result);
@@ -365,7 +365,7 @@ public class ValidationServiceTests
     public void GetValidationErrorsAsString_NullModel_ReturnsNullErrorString()
     {
         // Act
-        var result = _service.GetValidationErrorsAsString<DeploymentProfileModel>(null!);
+        string? result = _service.GetValidationErrorsAsString<DeploymentProfileModel>(null!);
 
         // Assert
         Assert.NotNull(result);
@@ -379,13 +379,13 @@ public class ValidationServiceTests
     public void GetValidationErrorsAsString_InvalidModel_IncludesMemberNames()
     {
         // Arrange - Invalid pattern will produce member name
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "Invalid Name With Spaces!"
         };
 
         // Act
-        var result = _service.GetValidationErrorsAsString(profile);
+        string? result = _service.GetValidationErrorsAsString(profile);
 
         // Assert
         Assert.NotNull(result);
@@ -404,14 +404,14 @@ public class ValidationServiceTests
     public void Validate_ProfileInheritsFromSelf_ReturnsErrors()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "SelfRef",
             InheritedFrom = ["SelfRef"]
         };
 
         // Act
-        var results = _service.Validate(profile);
+        IList<DataAnnotationsValidationResult> results = _service.Validate(profile);
 
         // Assert
         Assert.NotEmpty(results);
@@ -424,14 +424,14 @@ public class ValidationServiceTests
     public void Validate_DuplicateParents_ReturnsErrors()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "TestProfile",
             InheritedFrom = ["Base", "Base"]
         };
 
         // Act
-        var results = _service.Validate(profile);
+        IList<DataAnnotationsValidationResult> results = _service.Validate(profile);
 
         // Assert
         Assert.NotEmpty(results);
@@ -444,7 +444,7 @@ public class ValidationServiceTests
     public void Validate_DuplicateApplicationIds_ReturnsErrors()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "TestProfile"
         };
@@ -452,7 +452,7 @@ public class ValidationServiceTests
         profile.Applications.Add(new ApplicationModel { AppId = "App1", Name = "Application 1 Duplicate" });
 
         // Act
-        var results = _service.Validate(profile);
+        IList<DataAnnotationsValidationResult> results = _service.Validate(profile);
 
         // Assert
         Assert.NotEmpty(results);

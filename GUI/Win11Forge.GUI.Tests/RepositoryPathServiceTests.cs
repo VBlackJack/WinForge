@@ -26,14 +26,14 @@ public class RepositoryPathServiceTests
     [Fact]
     public void Constructor_ShouldResolveExposedPaths()
     {
-        using var workspace = new TestWorkspace();
-        var defaultProfiles = Path.Combine(
+        using TestWorkspace workspace = new TestWorkspace();
+        string defaultProfiles = Path.Combine(
             workspace.RepositoryRoot,
             Win11ForgePathNames.ProfilesDirectoryName,
             Win11ForgePathNames.DefaultProfilesDirectoryName);
         Directory.CreateDirectory(defaultProfiles);
 
-        var service = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
+        RepositoryPathService service = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
 
         Assert.Equal(workspace.RepositoryRoot, service.RepositoryRoot);
         Assert.Equal(Path.Combine(workspace.UserDataBasePath, Win11ForgePathNames.ProductDirectoryName), service.UserDataRoot);
@@ -49,16 +49,16 @@ public class RepositoryPathServiceTests
     [Fact]
     public void Constructor_WhenPreferredUserDataIsUnavailable_ShouldUseFallbackAndEmitDebug()
     {
-        using var workspace = new TestWorkspace();
-        var blockedBasePath = Path.Combine(workspace.RootPath, "blocked");
+        using TestWorkspace workspace = new TestWorkspace();
+        string blockedBasePath = Path.Combine(workspace.RootPath, "blocked");
         File.WriteAllText(blockedBasePath, "not a directory");
-        var fallbackBasePath = Path.Combine(workspace.RootPath, "fallback");
-        using var listener = new CapturingTraceListener();
+        string fallbackBasePath = Path.Combine(workspace.RootPath, "fallback");
+        using CapturingTraceListener listener = new CapturingTraceListener();
         Trace.Listeners.Add(listener);
 
         try
         {
-            var service = new RepositoryPathService(workspace.RepositoryRoot, [blockedBasePath, fallbackBasePath]);
+            RepositoryPathService service = new RepositoryPathService(workspace.RepositoryRoot, [blockedBasePath, fallbackBasePath]);
 
             Assert.True(service.IsUserDataFallbackActive);
             Assert.Equal(Path.Combine(fallbackBasePath, Win11ForgePathNames.ProductDirectoryName), service.UserDataRoot);
@@ -76,13 +76,13 @@ public class RepositoryPathServiceTests
     [Fact]
     public void DefaultProfilesDirectory_WhenDefaultsFolderMissing_ShouldFallBackToLegacyInstallProfiles()
     {
-        using var workspace = new TestWorkspace();
-        var legacyProfilesDirectory = Path.Combine(
+        using TestWorkspace workspace = new TestWorkspace();
+        string legacyProfilesDirectory = Path.Combine(
             workspace.RepositoryRoot,
             Win11ForgePathNames.ProfilesDirectoryName);
         Directory.CreateDirectory(legacyProfilesDirectory);
 
-        var service = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
+        RepositoryPathService service = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
 
         Assert.Equal(service.LegacyInstallProfilesDirectory, service.DefaultProfilesDirectory);
         Assert.Equal(legacyProfilesDirectory, service.DefaultProfilesDirectory);
@@ -92,14 +92,14 @@ public class RepositoryPathServiceTests
     [Fact]
     public void DefaultProfilesDirectory_WhenDefaultsFolderExists_ShouldReturnDefaultsPath()
     {
-        using var workspace = new TestWorkspace();
-        var defaultsDirectory = Path.Combine(
+        using TestWorkspace workspace = new TestWorkspace();
+        string defaultsDirectory = Path.Combine(
             workspace.RepositoryRoot,
             Win11ForgePathNames.ProfilesDirectoryName,
             Win11ForgePathNames.DefaultProfilesDirectoryName);
         Directory.CreateDirectory(defaultsDirectory);
 
-        var service = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
+        RepositoryPathService service = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
 
         Assert.Equal(defaultsDirectory, service.DefaultProfilesDirectory);
         Assert.EndsWith(Win11ForgePathNames.DefaultProfilesDirectoryName, service.DefaultProfilesDirectory);

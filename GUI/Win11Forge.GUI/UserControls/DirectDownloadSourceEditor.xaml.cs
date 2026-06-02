@@ -21,8 +21,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Wpf.Ui.Controls;
 using CommunityToolkit.Mvvm.Input;
+using Wpf.Ui.Controls;
 using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.UserControls;
@@ -279,7 +279,7 @@ public partial class DirectDownloadSourceEditor : UserControl
     /// </summary>
     private static bool IsValidUrl(string url)
     {
-        return Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
+        return Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) &&
                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
 
@@ -293,13 +293,13 @@ public partial class DirectDownloadSourceEditor : UserControl
 
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Head, DownloadUrl);
-            using var response = await SharedHttpClient.SendAsync(request);
+            using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, DownloadUrl);
+            using HttpResponseMessage response = await SharedHttpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
-                var contentLength = response.Content.Headers.ContentLength;
-                var contentType = response.Content.Headers.ContentType?.MediaType ?? "unknown";
+                long? contentLength = response.Content.Headers.ContentLength;
+                string contentType = response.Content.Headers.ContentType?.MediaType ?? "unknown";
 
                 TestSuccess = true;
                 TestResult = contentLength.HasValue

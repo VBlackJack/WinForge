@@ -20,10 +20,10 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Win11Forge.GUI.Models;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using DataValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
 using DataValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 using DataValidator = System.ComponentModel.DataAnnotations.Validator;
-using DataValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
+using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI.Services;
 
@@ -93,30 +93,30 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             return Enumerable.Empty<EditableApplicationModel>();
         }
 
-        var applications = new List<EditableApplicationModel>();
+        List<EditableApplicationModel> applications = new List<EditableApplicationModel>();
 
         try
         {
             // Security: Validate file size to prevent DoS via large files
-            var fileInfo = new FileInfo(_databasePath);
+            FileInfo fileInfo = new FileInfo(_databasePath);
             if (fileInfo.Length > MaxDatabaseFileSizeBytes)
             {
                 System.Diagnostics.Debug.WriteLine($"Database file too large: {fileInfo.Length} bytes (max: {MaxDatabaseFileSizeBytes})");
                 return Enumerable.Empty<EditableApplicationModel>();
             }
 
-            var jsonContent = await File.ReadAllTextAsync(_databasePath, cancellationToken);
+            string jsonContent = await File.ReadAllTextAsync(_databasePath, cancellationToken);
             // Security: Use secure JSON options with depth limit
-            using var document = JsonDocument.Parse(jsonContent, SecureJsonDocumentOptions);
+            using JsonDocument document = JsonDocument.Parse(jsonContent, SecureJsonDocumentOptions);
 
-            if (TryGetPropertyCaseInsensitive(document.RootElement, "Applications", out var appsElement))
+            if (TryGetPropertyCaseInsensitive(document.RootElement, "Applications", out JsonElement appsElement))
             {
-                foreach (var appProperty in appsElement.EnumerateObject())
+                foreach (JsonProperty appProperty in appsElement.EnumerateObject())
                 {
-                    var appId = appProperty.Name;
-                    var appData = appProperty.Value;
+                    string appId = appProperty.Name;
+                    JsonElement appData = appProperty.Value;
 
-                    var app = ParseApplicationFromJson(appData);
+                    EditableApplicationModel? app = ParseApplicationFromJson(appData);
                     if (app != null)
                     {
                         app.AppId = appId; // AppId is the property name in JSON
@@ -153,21 +153,21 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         try
         {
             // Security: Validate file size to prevent DoS via large files
-            var fileInfo = new FileInfo(_databasePath);
+            FileInfo fileInfo = new FileInfo(_databasePath);
             if (fileInfo.Length > MaxDatabaseFileSizeBytes)
             {
                 System.Diagnostics.Debug.WriteLine($"Database file too large: {fileInfo.Length} bytes");
                 return null;
             }
 
-            var jsonContent = await File.ReadAllTextAsync(_databasePath, cancellationToken);
+            string jsonContent = await File.ReadAllTextAsync(_databasePath, cancellationToken);
             // Security: Use secure JSON options with depth limit
-            using var document = JsonDocument.Parse(jsonContent, SecureJsonDocumentOptions);
+            using JsonDocument document = JsonDocument.Parse(jsonContent, SecureJsonDocumentOptions);
 
-            if (TryGetPropertyCaseInsensitive(document.RootElement, "Applications", out var appsElement) &&
-                TryGetPropertyCaseInsensitive(appsElement, appId, out var appData))
+            if (TryGetPropertyCaseInsensitive(document.RootElement, "Applications", out JsonElement appsElement) &&
+                TryGetPropertyCaseInsensitive(appsElement, appId, out JsonElement appData))
             {
-                var app = ParseApplicationFromJson(appData);
+                EditableApplicationModel? app = ParseApplicationFromJson(appData);
                 if (app != null)
                 {
                     app.AppId = appId;
@@ -192,7 +192,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         ArgumentNullException.ThrowIfNull(application);
 
         // Validate locally first
-        var validation = await ValidateApplicationAsync(application, isNew, cancellationToken);
+        ApplicationValidationResult validation = await ValidateApplicationAsync(application, isNew, cancellationToken);
         if (!validation.IsValid)
         {
             return new ApplicationSaveResult(
@@ -204,9 +204,9 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         await _operationLock.WaitAsync(cancellationToken);
         try
         {
-            var appJson = ConvertToJsonObject(application);
+            string appJson = ConvertToJsonObject(application);
 
-            var script = $@"
+            string script = $@"
                 Import-Module '{EscapePath(Path.Combine(_repositoryRoot, "Modules", "ApplicationDatabase.psm1"))}' -Force
                 $appData = @'
 {appJson}
@@ -215,27 +215,27 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
                 $result | ConvertTo-Json -Depth 5 -Compress
             ";
 
-            var result = await ExecutePowerShellAsync(script, cancellationToken);
+            string result = await ExecutePowerShellAsync(script, cancellationToken);
 
             if (string.IsNullOrWhiteSpace(result))
             {
                 return new ApplicationSaveResult(false, Loc.Apps_SaveFailed);
             }
 
-            using var document = JsonDocument.Parse(result);
-            var root = document.RootElement;
+            using JsonDocument document = JsonDocument.Parse(result);
+            JsonElement root = document.RootElement;
 
-            var success = root.TryGetProperty("Success", out var successProp) && successProp.GetBoolean();
+            bool success = root.TryGetProperty("Success", out JsonElement successProp) && successProp.GetBoolean();
 
             if (!success)
             {
-                var errors = new List<string>();
-                if (root.TryGetProperty("Errors", out var errorsProp) && errorsProp.ValueKind == JsonValueKind.Array)
+                List<string> errors = new List<string>();
+                if (root.TryGetProperty("Errors", out JsonElement errorsProp) && errorsProp.ValueKind == JsonValueKind.Array)
                 {
-                    foreach (var error in errorsProp.EnumerateArray())
+                    foreach (JsonElement error in errorsProp.EnumerateArray())
                     {
-                        var field = error.TryGetProperty("Field", out var fieldProp) ? fieldProp.GetString() : "Unknown";
-                        var message = error.TryGetProperty("Message", out var msgProp) ? msgProp.GetString() : "Error";
+                        string? field = error.TryGetProperty("Field", out JsonElement fieldProp) ? fieldProp.GetString() : "Unknown";
+                        string? message = error.TryGetProperty("Message", out JsonElement msgProp) ? msgProp.GetString() : "Error";
                         errors.Add($"{field}: {message}");
                     }
                 }
@@ -244,7 +244,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             }
 
             // Raise event
-            var changeType = isNew ? DatabaseChangeType.Added : DatabaseChangeType.Updated;
+            DatabaseChangeType changeType = isNew ? DatabaseChangeType.Added : DatabaseChangeType.Updated;
             OnDatabaseChanged(new DatabaseChangedEventArgs
             {
                 ChangeType = changeType,
@@ -270,21 +270,21 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         await _operationLock.WaitAsync(cancellationToken);
         try
         {
-            var script = $@"
+            string script = $@"
                 Import-Module '{EscapePath(Path.Combine(_repositoryRoot, "Modules", "ApplicationDatabase.psm1"))}' -Force
                 $result = Remove-Application -AppId '{EscapeForPowerShell(appId)}'
                 $result | ConvertTo-Json -Depth 5 -Compress
             ";
 
-            var result = await ExecutePowerShellAsync(script, cancellationToken);
+            string result = await ExecutePowerShellAsync(script, cancellationToken);
 
             if (string.IsNullOrWhiteSpace(result))
             {
                 return false;
             }
 
-            using var document = JsonDocument.Parse(result);
-            var success = document.RootElement.TryGetProperty("Success", out var successProp) && successProp.GetBoolean();
+            using JsonDocument document = JsonDocument.Parse(result);
+            bool success = document.RootElement.TryGetProperty("Success", out JsonElement successProp) && successProp.GetBoolean();
 
             if (success)
             {
@@ -307,16 +307,16 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        var errors = new List<ApplicationValidationError>();
+        List<ApplicationValidationError> errors = new List<ApplicationValidationError>();
 
         // Local validation using DataAnnotations
-        var validationContext = new DataValidationContext(application);
-        var validationResults = new List<DataValidationResult>();
+        DataValidationContext validationContext = new DataValidationContext(application);
+        List<DataValidationResult> validationResults = new List<DataValidationResult>();
         DataValidator.TryValidateObject(application, validationContext, validationResults, true);
 
-        foreach (var vr in validationResults)
+        foreach (DataValidationResult vr in validationResults)
         {
-            var fieldName = vr.MemberNames.FirstOrDefault() ?? "Unknown";
+            string fieldName = vr.MemberNames.FirstOrDefault() ?? "Unknown";
             errors.Add(new ApplicationValidationError(fieldName, vr.ErrorMessage ?? "Validation failed"));
         }
 
@@ -377,7 +377,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             return false;
         }
 
-        var existing = await GetApplicationAsync(appId, cancellationToken);
+        EditableApplicationModel? existing = await GetApplicationAsync(appId, cancellationToken);
         return existing != null;
     }
 
@@ -394,19 +394,19 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
 
         try
         {
-            var jsonContent = await File.ReadAllTextAsync(_databasePath, cancellationToken);
-            using var document = JsonDocument.Parse(jsonContent);
+            string jsonContent = await File.ReadAllTextAsync(_databasePath, cancellationToken);
+            using JsonDocument document = JsonDocument.Parse(jsonContent);
 
-            var categories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> categories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            if (TryGetPropertyCaseInsensitive(document.RootElement, "Applications", out var appsElement))
+            if (TryGetPropertyCaseInsensitive(document.RootElement, "Applications", out JsonElement appsElement))
             {
-                foreach (var appProperty in appsElement.EnumerateObject())
+                foreach (JsonProperty appProperty in appsElement.EnumerateObject())
                 {
-                    if (TryGetPropertyCaseInsensitive(appProperty.Value, "Category", out var categoryElement) &&
+                    if (TryGetPropertyCaseInsensitive(appProperty.Value, "Category", out JsonElement categoryElement) &&
                         categoryElement.ValueKind == JsonValueKind.String)
                     {
-                        var category = categoryElement.GetString();
+                        string? category = categoryElement.GetString();
                         if (!string.IsNullOrEmpty(category))
                         {
                             categories.Add(category);
@@ -437,33 +437,33 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         await _operationLock.WaitAsync(cancellationToken);
         try
         {
-            var modeString = mode.ToString();
+            string modeString = mode.ToString();
 
-            var script = $@"
+            string script = $@"
                 Import-Module '{EscapePath(Path.Combine(_repositoryRoot, "Modules", "ApplicationDatabase.psm1"))}' -Force
                 $result = Import-ApplicationsFromFile -Path '{EscapePath(filePath)}' -Mode '{modeString}'
                 $result | ConvertTo-Json -Depth 5 -Compress
             ";
 
-            var result = await ExecutePowerShellAsync(script, cancellationToken);
+            string result = await ExecutePowerShellAsync(script, cancellationToken);
 
             if (string.IsNullOrWhiteSpace(result))
             {
                 return new ApplicationImportResult(false, 0, 0, 0, new[] { Loc.Apps_ImportFailed });
             }
 
-            using var document = JsonDocument.Parse(result);
-            var root = document.RootElement;
+            using JsonDocument document = JsonDocument.Parse(result);
+            JsonElement root = document.RootElement;
 
-            var success = root.TryGetProperty("Success", out var successProp) && successProp.GetBoolean();
-            var added = root.TryGetProperty("Added", out var addedProp) ? addedProp.GetInt32() : 0;
-            var updated = root.TryGetProperty("Updated", out var updatedProp) ? updatedProp.GetInt32() : 0;
-            var skipped = root.TryGetProperty("Skipped", out var skippedProp) ? skippedProp.GetInt32() : 0;
+            bool success = root.TryGetProperty("Success", out JsonElement successProp) && successProp.GetBoolean();
+            int added = root.TryGetProperty("Added", out JsonElement addedProp) ? addedProp.GetInt32() : 0;
+            int updated = root.TryGetProperty("Updated", out JsonElement updatedProp) ? updatedProp.GetInt32() : 0;
+            int skipped = root.TryGetProperty("Skipped", out JsonElement skippedProp) ? skippedProp.GetInt32() : 0;
 
-            var errors = new List<string>();
-            if (root.TryGetProperty("Error", out var errorProp) && errorProp.ValueKind == JsonValueKind.String)
+            List<string> errors = new List<string>();
+            if (root.TryGetProperty("Error", out JsonElement errorProp) && errorProp.ValueKind == JsonValueKind.String)
             {
-                var error = errorProp.GetString();
+                string? error = errorProp.GetString();
                 if (!string.IsNullOrEmpty(error))
                 {
                     errors.Add(error);
@@ -492,22 +492,22 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         string filePath,
         CancellationToken cancellationToken = default)
     {
-        var appIdList = appIds?.ToList();
+        List<string>? appIdList = appIds?.ToList();
         if (appIdList == null || appIdList.Count == 0 || string.IsNullOrWhiteSpace(filePath))
         {
             return false;
         }
 
         // Validate and escape app IDs
-        var escapedIds = string.Join("','", appIdList.Select(EscapeForPowerShell));
+        string escapedIds = string.Join("','", appIdList.Select(EscapeForPowerShell));
 
-        var script = $@"
+        string script = $@"
             Import-Module '{EscapePath(Path.Combine(_repositoryRoot, "Modules", "ApplicationDatabase.psm1"))}' -Force
             $appIds = @('{escapedIds}')
             Export-ApplicationsToFile -AppIds $appIds -Path '{EscapePath(filePath)}'
         ";
 
-        var result = await ExecutePowerShellAsync(script, cancellationToken);
+        string result = await ExecutePowerShellAsync(script, cancellationToken);
 
         // PowerShell returns "True" or "False" for boolean output
         return result?.Trim().Equals("True", StringComparison.OrdinalIgnoreCase) ?? false;
@@ -516,12 +516,12 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     /// <inheritdoc/>
     public async Task<string> CreateBackupAsync(CancellationToken cancellationToken = default)
     {
-        var script = $@"
+        string script = $@"
             Import-Module '{EscapePath(Path.Combine(_repositoryRoot, "Modules", "ApplicationDatabase.psm1"))}' -Force
             New-DatabaseBackup
         ";
 
-        var result = await ExecutePowerShellAsync(script, cancellationToken);
+        string result = await ExecutePowerShellAsync(script, cancellationToken);
         return result?.Trim() ?? string.Empty;
     }
 
@@ -574,19 +574,19 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         };
 
         // Parse Sources
-        if (TryGetPropertyCaseInsensitive(element, "Sources", out var sourcesElement) && sourcesElement.ValueKind == JsonValueKind.Object)
+        if (TryGetPropertyCaseInsensitive(element, "Sources", out JsonElement sourcesElement) && sourcesElement.ValueKind == JsonValueKind.Object)
         {
             app.Sources = ParseSourcesFromJson(sourcesElement, app.InstallArguments);
         }
 
         // Parse Detection
-        if (TryGetPropertyCaseInsensitive(element, "Detection", out var detectionElement) && detectionElement.ValueKind == JsonValueKind.Object)
+        if (TryGetPropertyCaseInsensitive(element, "Detection", out JsonElement detectionElement) && detectionElement.ValueKind == JsonValueKind.Object)
         {
             app.Detection = ParseDetectionFromJson(detectionElement);
         }
 
         // Parse Tags
-        if (TryGetPropertyCaseInsensitive(element, "Tags", out var tagsElement) && tagsElement.ValueKind == JsonValueKind.Array)
+        if (TryGetPropertyCaseInsensitive(element, "Tags", out JsonElement tagsElement) && tagsElement.ValueKind == JsonValueKind.Array)
         {
             app.Tags = tagsElement.EnumerateArray()
                 .Select(e => e.GetString())
@@ -596,7 +596,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         }
 
         // Parse EnvironmentRestrictions
-        if (TryGetPropertyCaseInsensitive(element, "EnvironmentRestrictions", out var envElement) && envElement.ValueKind == JsonValueKind.Array)
+        if (TryGetPropertyCaseInsensitive(element, "EnvironmentRestrictions", out JsonElement envElement) && envElement.ValueKind == JsonValueKind.Array)
         {
             app.EnvironmentRestrictions = envElement.EnumerateArray()
                 .Select(e => e.GetString())
@@ -622,7 +622,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         };
 
         // Parse extended configs
-        if (TryGetPropertyCaseInsensitive(element, "WingetConfig", out var wingetConfig) && wingetConfig.ValueKind == JsonValueKind.Object)
+        if (TryGetPropertyCaseInsensitive(element, "WingetConfig", out JsonElement wingetConfig) && wingetConfig.ValueKind == JsonValueKind.Object)
         {
             sources.WingetConfig = new WingetSourceConfig
             {
@@ -632,7 +632,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             };
         }
 
-        if (TryGetPropertyCaseInsensitive(element, "ChocolateyConfig", out var chocoConfig) && chocoConfig.ValueKind == JsonValueKind.Object)
+        if (TryGetPropertyCaseInsensitive(element, "ChocolateyConfig", out JsonElement chocoConfig) && chocoConfig.ValueKind == JsonValueKind.Object)
         {
             sources.ChocolateyConfig = new ChocolateySourceConfig
             {
@@ -641,7 +641,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             };
         }
 
-        if (TryGetPropertyCaseInsensitive(element, "DirectDownloadConfig", out var directConfig) && directConfig.ValueKind == JsonValueKind.Object)
+        if (TryGetPropertyCaseInsensitive(element, "DirectDownloadConfig", out JsonElement directConfig) && directConfig.ValueKind == JsonValueKind.Object)
         {
             sources.DirectDownloadConfig = new DirectDownloadSourceConfig
             {
@@ -804,7 +804,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     /// </summary>
     private static string? GetStringProperty(JsonElement element, string propertyName)
     {
-        return TryGetPropertyCaseInsensitive(element, propertyName, out var prop) && prop.ValueKind == JsonValueKind.String
+        return TryGetPropertyCaseInsensitive(element, propertyName, out JsonElement prop) && prop.ValueKind == JsonValueKind.String
             ? prop.GetString()
             : null;
     }
@@ -814,7 +814,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     /// </summary>
     private static int GetIntProperty(JsonElement element, string propertyName, int defaultValue = 0)
     {
-        if (TryGetPropertyCaseInsensitive(element, propertyName, out var prop))
+        if (TryGetPropertyCaseInsensitive(element, propertyName, out JsonElement prop))
         {
             if (prop.ValueKind == JsonValueKind.Number)
             {
@@ -829,7 +829,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     /// </summary>
     private static bool GetBoolProperty(JsonElement element, string propertyName, bool defaultValue = false)
     {
-        if (TryGetPropertyCaseInsensitive(element, propertyName, out var prop))
+        if (TryGetPropertyCaseInsensitive(element, propertyName, out JsonElement prop))
         {
             return prop.ValueKind switch
             {
@@ -848,7 +848,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     {
         if (element.ValueKind == JsonValueKind.Object)
         {
-            foreach (var prop in element.EnumerateObject())
+            foreach (JsonProperty prop in element.EnumerateObject())
             {
                 if (string.Equals(prop.Name, propertyName, StringComparison.OrdinalIgnoreCase))
                 {

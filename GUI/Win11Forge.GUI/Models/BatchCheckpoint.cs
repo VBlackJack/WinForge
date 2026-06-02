@@ -112,7 +112,7 @@ public sealed record BatchCheckpoint(
             return Plan;
         }
 
-        var done = new HashSet<string>(Completed.Select(c => c.AppId), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> done = new HashSet<string>(Completed.Select(c => c.AppId), StringComparer.OrdinalIgnoreCase);
         return Plan.Where(id => !done.Contains(id)).ToList();
     }
 }

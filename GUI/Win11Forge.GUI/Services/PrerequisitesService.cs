@@ -59,7 +59,7 @@ public class PrerequisitesService : IPrerequisitesService
         CancellationToken cancellationToken = default)
     {
         // Validate prerequisite name
-        var validPrerequisites = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        HashSet<string> validPrerequisites = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "PowerShell7",
             "Chocolatey",
@@ -79,7 +79,7 @@ public class PrerequisitesService : IPrerequisitesService
 
         // For now, delegate to full prerequisites installation
         // In future, this could be expanded to install individual prerequisites
-        var result = await _powerShellBridge.InstallPrerequisitesAsync(progressCallback, cancellationToken);
+        bool result = await _powerShellBridge.InstallPrerequisitesAsync(progressCallback, cancellationToken);
         return result;
     }
 
@@ -98,7 +98,7 @@ public class PrerequisitesService : IPrerequisitesService
     /// <inheritdoc/>
     public async Task<bool> IsPowerShell7AvailableAsync()
     {
-        var prereqs = await CheckPrerequisitesAsync();
+        PrerequisitesStatus prereqs = await CheckPrerequisitesAsync();
         return prereqs.PowerShell7Installed;
     }
 
@@ -110,8 +110,8 @@ public class PrerequisitesService : IPrerequisitesService
             return false;
         }
 
-        using var identity = WindowsIdentity.GetCurrent();
-        var principal = new WindowsPrincipal(identity);
+        using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+        WindowsPrincipal principal = new WindowsPrincipal(identity);
         return principal.IsInRole(WindowsBuiltInRole.Administrator);
     }
 }

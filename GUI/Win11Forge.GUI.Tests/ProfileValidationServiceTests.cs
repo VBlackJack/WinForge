@@ -40,14 +40,14 @@ public class ProfileValidationServiceTests
     public void ValidateInheritanceExists_NoInheritance_ReturnsSuccess()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "Standalone",
             InheritedFrom = []
         };
 
         // Act
-        var result = _service.ValidateInheritanceExists(profile, ["Base", "Office"]);
+        ValidationResult result = _service.ValidateInheritanceExists(profile, ["Base", "Office"]);
 
         // Assert
         Assert.True(result.IsValid);
@@ -60,14 +60,14 @@ public class ProfileValidationServiceTests
     public void ValidateInheritanceExists_NullInheritance_ReturnsSuccess()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "Standalone",
             InheritedFrom = null!
         };
 
         // Act
-        var result = _service.ValidateInheritanceExists(profile, ["Base"]);
+        ValidationResult result = _service.ValidateInheritanceExists(profile, ["Base"]);
 
         // Assert
         Assert.True(result.IsValid);
@@ -80,14 +80,14 @@ public class ProfileValidationServiceTests
     public void ValidateInheritanceExists_AllParentsExist_ReturnsSuccess()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "Gaming",
             InheritedFrom = ["Base", "Office"]
         };
 
         // Act
-        var result = _service.ValidateInheritanceExists(profile, ["Base", "Office", "Gaming"]);
+        ValidationResult result = _service.ValidateInheritanceExists(profile, ["Base", "Office", "Gaming"]);
 
         // Assert
         Assert.True(result.IsValid);
@@ -100,14 +100,14 @@ public class ProfileValidationServiceTests
     public void ValidateInheritanceExists_MissingParent_ReturnsFailure()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "Gaming",
             InheritedFrom = ["Base", "NonExistent"]
         };
 
         // Act
-        var result = _service.ValidateInheritanceExists(profile, ["Base", "Office"]);
+        ValidationResult result = _service.ValidateInheritanceExists(profile, ["Base", "Office"]);
 
         // Assert
         Assert.False(result.IsValid);
@@ -121,14 +121,14 @@ public class ProfileValidationServiceTests
     public void ValidateInheritanceExists_CaseInsensitiveMatch_ReturnsSuccess()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "Gaming",
             InheritedFrom = ["base", "OFFICE"]
         };
 
         // Act
-        var result = _service.ValidateInheritanceExists(profile, ["Base", "Office"]);
+        ValidationResult result = _service.ValidateInheritanceExists(profile, ["Base", "Office"]);
 
         // Assert
         Assert.True(result.IsValid);
@@ -141,14 +141,14 @@ public class ProfileValidationServiceTests
     public void ValidateInheritanceExists_MultipleMissingParents_ReportsAll()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "Custom",
             InheritedFrom = ["Missing1", "Missing2", "Base"]
         };
 
         // Act
-        var result = _service.ValidateInheritanceExists(profile, ["Base"]);
+        ValidationResult result = _service.ValidateInheritanceExists(profile, ["Base"]);
 
         // Assert
         Assert.False(result.IsValid);
@@ -167,7 +167,7 @@ public class ProfileValidationServiceTests
     public void ValidateNoCircularInheritance_NoParents_ReturnsSuccess()
     {
         // Act
-        var result = _service.ValidateNoCircularInheritance(
+        ValidationResult result = _service.ValidateNoCircularInheritance(
             "Base",
             [],
             _ => null);
@@ -183,7 +183,7 @@ public class ProfileValidationServiceTests
     public void ValidateNoCircularInheritance_NullParents_ReturnsSuccess()
     {
         // Act
-        var result = _service.ValidateNoCircularInheritance(
+        ValidationResult result = _service.ValidateNoCircularInheritance(
             "Base",
             null!,
             _ => null);
@@ -207,7 +207,7 @@ public class ProfileValidationServiceTests
         };
 
         // Act
-        var result = _service.ValidateNoCircularInheritance(
+        ValidationResult result = _service.ValidateNoCircularInheritance(
             "Gaming",
             new List<string> { "Office" },
             GetParents);
@@ -230,7 +230,7 @@ public class ProfileValidationServiceTests
         };
 
         // Act
-        var result = _service.ValidateNoCircularInheritance(
+        ValidationResult result = _service.ValidateNoCircularInheritance(
             "A",
             new List<string> { "B" },
             GetParents);
@@ -255,7 +255,7 @@ public class ProfileValidationServiceTests
         };
 
         // Act
-        var result = _service.ValidateNoCircularInheritance(
+        ValidationResult result = _service.ValidateNoCircularInheritance(
             "A",
             new List<string> { "B" },
             GetParents);
@@ -282,7 +282,7 @@ public class ProfileValidationServiceTests
         };
 
         // Act
-        var result = _service.ValidateNoCircularInheritance(
+        ValidationResult result = _service.ValidateNoCircularInheritance(
             "Root",
             new List<string> { "P1" },
             GetParents,
@@ -309,7 +309,7 @@ public class ProfileValidationServiceTests
         };
 
         // Act
-        var result = _service.ValidateNoCircularInheritance(
+        ValidationResult result = _service.ValidateNoCircularInheritance(
             "D",
             new List<string> { "B", "C" },
             GetParents);
@@ -332,7 +332,7 @@ public class ProfileValidationServiceTests
         };
 
         // Act
-        var result = _service.ValidateNoCircularInheritance(
+        ValidationResult result = _service.ValidateNoCircularInheritance(
             "myProfile",
             new List<string> { "B" },
             GetParents);
@@ -351,7 +351,7 @@ public class ProfileValidationServiceTests
         IReadOnlyList<string>? GetParents(string _) => null;
 
         // Act
-        var result = _service.ValidateNoCircularInheritance(
+        ValidationResult result = _service.ValidateNoCircularInheritance(
             "Profile",
             new List<string> { "Unknown1", "Unknown2" },
             GetParents);
@@ -371,13 +371,13 @@ public class ProfileValidationServiceTests
     public void ValidateApplicationsExist_NoApplications_ReturnsSuccess()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "Empty"
         };
 
         // Act
-        var result = _service.ValidateApplicationsExist(profile, ["App1", "App2"]);
+        ValidationResult result = _service.ValidateApplicationsExist(profile, ["App1", "App2"]);
 
         // Assert
         Assert.True(result.IsValid);
@@ -390,12 +390,12 @@ public class ProfileValidationServiceTests
     public void ValidateApplicationsExist_AllAppsExist_ReturnsSuccess()
     {
         // Arrange
-        var profile = new DeploymentProfileModel { Name = "Test" };
+        DeploymentProfileModel profile = new DeploymentProfileModel { Name = "Test" };
         profile.Applications.Add(new ApplicationModel { AppId = "Chrome", Name = "Google Chrome" });
         profile.Applications.Add(new ApplicationModel { AppId = "Firefox", Name = "Mozilla Firefox" });
 
         // Act
-        var result = _service.ValidateApplicationsExist(profile, ["Chrome", "Firefox", "VLC"]);
+        ValidationResult result = _service.ValidateApplicationsExist(profile, ["Chrome", "Firefox", "VLC"]);
 
         // Assert
         Assert.True(result.IsValid);
@@ -408,12 +408,12 @@ public class ProfileValidationServiceTests
     public void ValidateApplicationsExist_MissingApps_ReturnsFailure()
     {
         // Arrange
-        var profile = new DeploymentProfileModel { Name = "Test" };
+        DeploymentProfileModel profile = new DeploymentProfileModel { Name = "Test" };
         profile.Applications.Add(new ApplicationModel { AppId = "Chrome", Name = "Google Chrome" });
         profile.Applications.Add(new ApplicationModel { AppId = "NonExistentApp", Name = "Unknown" });
 
         // Act
-        var result = _service.ValidateApplicationsExist(profile, ["Chrome", "Firefox"]);
+        ValidationResult result = _service.ValidateApplicationsExist(profile, ["Chrome", "Firefox"]);
 
         // Assert
         Assert.False(result.IsValid);
@@ -427,11 +427,11 @@ public class ProfileValidationServiceTests
     public void ValidateApplicationsExist_CaseInsensitiveMatch_ReturnsSuccess()
     {
         // Arrange
-        var profile = new DeploymentProfileModel { Name = "Test" };
+        DeploymentProfileModel profile = new DeploymentProfileModel { Name = "Test" };
         profile.Applications.Add(new ApplicationModel { AppId = "chrome", Name = "Google Chrome" });
 
         // Act
-        var result = _service.ValidateApplicationsExist(profile, ["Chrome"]);
+        ValidationResult result = _service.ValidateApplicationsExist(profile, ["Chrome"]);
 
         // Assert
         Assert.True(result.IsValid);
@@ -444,12 +444,12 @@ public class ProfileValidationServiceTests
     public void ValidateApplicationsExist_EmptyAppId_IsIgnored()
     {
         // Arrange
-        var profile = new DeploymentProfileModel { Name = "Test" };
+        DeploymentProfileModel profile = new DeploymentProfileModel { Name = "Test" };
         profile.Applications.Add(new ApplicationModel { AppId = string.Empty, Name = "Empty ID" });
         profile.Applications.Add(new ApplicationModel { AppId = "Chrome", Name = "Google Chrome" });
 
         // Act
-        var result = _service.ValidateApplicationsExist(profile, ["Chrome"]);
+        ValidationResult result = _service.ValidateApplicationsExist(profile, ["Chrome"]);
 
         // Assert
         Assert.True(result.IsValid);
@@ -462,14 +462,14 @@ public class ProfileValidationServiceTests
     public void ValidateApplicationsExist_ManyMissingApps_TruncatesMessage()
     {
         // Arrange
-        var profile = new DeploymentProfileModel { Name = "Test" };
+        DeploymentProfileModel profile = new DeploymentProfileModel { Name = "Test" };
         for (int i = 1; i <= 15; i++)
         {
             profile.Applications.Add(new ApplicationModel { AppId = $"MissingApp{i}", Name = $"Missing {i}" });
         }
 
         // Act
-        var result = _service.ValidateApplicationsExist(profile, []);
+        ValidationResult result = _service.ValidateApplicationsExist(profile, []);
 
         // Assert
         Assert.False(result.IsValid);
@@ -483,17 +483,17 @@ public class ProfileValidationServiceTests
     public void ValidateApplicationsExist_DuplicateMissingApps_ReportsDistinct()
     {
         // Arrange
-        var profile = new DeploymentProfileModel { Name = "Test" };
+        DeploymentProfileModel profile = new DeploymentProfileModel { Name = "Test" };
         profile.Applications.Add(new ApplicationModel { AppId = "MissingApp", Name = "Missing 1" });
         profile.Applications.Add(new ApplicationModel { AppId = "MissingApp", Name = "Missing 2" });
 
         // Act
-        var result = _service.ValidateApplicationsExist(profile, []);
+        ValidationResult result = _service.ValidateApplicationsExist(profile, []);
 
         // Assert
         Assert.False(result.IsValid);
         // "MissingApp" should appear only once in the error message
-        var occurrences = result.ErrorMessage!.Split("MissingApp").Length - 1;
+        int occurrences = result.ErrorMessage!.Split("MissingApp").Length - 1;
         Assert.Equal(1, occurrences);
     }
 
@@ -508,7 +508,7 @@ public class ProfileValidationServiceTests
     public void ValidateProfile_ValidProfile_ReturnsNoErrors()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "Gaming",
             Description = "Gaming profile",
@@ -524,7 +524,7 @@ public class ProfileValidationServiceTests
         };
 
         // Act
-        var results = _service.ValidateProfile(
+        IEnumerable<ValidationResult> results = _service.ValidateProfile(
             profile,
             ["Base", "Gaming"],
             ["Steam", "Discord"],
@@ -541,7 +541,7 @@ public class ProfileValidationServiceTests
     public void ValidateProfile_MultipleIssues_ReturnsAllErrors()
     {
         // Arrange - Profile with invalid name, missing parent, and missing app
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = string.Empty, // Invalid - required
             InheritedFrom = ["NonExistentParent"]
@@ -551,7 +551,7 @@ public class ProfileValidationServiceTests
         IReadOnlyList<string>? GetParents(string _) => null;
 
         // Act
-        var results = _service.ValidateProfile(
+        List<ValidationResult> results = _service.ValidateProfile(
             profile,
             [],
             [],
@@ -568,7 +568,7 @@ public class ProfileValidationServiceTests
     public void ValidateProfile_CircularInheritance_ReturnsError()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "A",
             InheritedFrom = ["B"]
@@ -581,7 +581,7 @@ public class ProfileValidationServiceTests
         };
 
         // Act
-        var results = _service.ValidateProfile(
+        List<ValidationResult> results = _service.ValidateProfile(
             profile,
             ["A", "B"],
             [],
@@ -599,7 +599,7 @@ public class ProfileValidationServiceTests
     public void ValidateProfile_SelfReference_ReturnsError()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "SelfRef",
             InheritedFrom = ["SelfRef"]
@@ -608,7 +608,7 @@ public class ProfileValidationServiceTests
         IReadOnlyList<string>? GetParents(string _) => null;
 
         // Act
-        var results = _service.ValidateProfile(
+        List<ValidationResult> results = _service.ValidateProfile(
             profile,
             ["SelfRef"],
             [],
@@ -625,7 +625,7 @@ public class ProfileValidationServiceTests
     public void ValidateProfile_DuplicateParents_ReturnsError()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "Test",
             InheritedFrom = ["Base", "Base"]
@@ -638,7 +638,7 @@ public class ProfileValidationServiceTests
         };
 
         // Act
-        var results = _service.ValidateProfile(
+        List<ValidationResult> results = _service.ValidateProfile(
             profile,
             ["Base", "Test"],
             [],
@@ -655,7 +655,7 @@ public class ProfileValidationServiceTests
     public void ValidateProfile_MissingApplications_ReturnsError()
     {
         // Arrange
-        var profile = new DeploymentProfileModel
+        DeploymentProfileModel profile = new DeploymentProfileModel
         {
             Name = "Test"
         };
@@ -664,7 +664,7 @@ public class ProfileValidationServiceTests
         IReadOnlyList<string>? GetParents(string _) => null;
 
         // Act
-        var results = _service.ValidateProfile(
+        List<ValidationResult> results = _service.ValidateProfile(
             profile,
             ["Test"],
             ["ExistingApp"],

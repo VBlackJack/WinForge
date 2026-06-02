@@ -31,7 +31,7 @@ public class ApplicationManagementServiceDetectionMatchingTests
         string packageId,
         string packageName)
     {
-        var detectionResult = new BatchDetectionResult
+        BatchDetectionResult detectionResult = new BatchDetectionResult
         {
             Packages = new Dictionary<string, InstalledPackageInfo>(StringComparer.OrdinalIgnoreCase)
             {
@@ -45,18 +45,18 @@ public class ApplicationManagementServiceDetectionMatchingTests
             }
         };
 
-        var app = new ApplicationModel
+        ApplicationModel app = new ApplicationModel
         {
             AppId = appId,
             Name = appName
         };
 
-        var method = typeof(ApplicationManagementServiceImpl).GetMethod(
+        MethodInfo? method = typeof(ApplicationManagementServiceImpl).GetMethod(
             "FindDetectedPackage",
             BindingFlags.NonPublic | BindingFlags.Static);
 
         Assert.NotNull(method);
-        var match = Assert.IsType<InstalledPackageInfo>(
+        InstalledPackageInfo match = Assert.IsType<InstalledPackageInfo>(
             method.Invoke(null, new object[] { app, detectionResult }));
         Assert.Equal(packageId, match.Id);
     }

@@ -43,10 +43,10 @@ public class ApplicationPickerViewModelTests
     public void Constructor_ShouldInitializeWithApplications()
     {
         // Arrange
-        var apps = CreateTestApplications();
+        List<ApplicationModel> apps = CreateTestApplications();
 
         // Act
-        var viewModel = new ApplicationPickerViewModel(apps);
+        ApplicationPickerViewModel viewModel = new ApplicationPickerViewModel(apps);
 
         // Assert
         Assert.Equal(5, viewModel.FilteredApplications.Count);
@@ -60,10 +60,10 @@ public class ApplicationPickerViewModelTests
     public void Categories_ShouldContainAllUniqueCategories()
     {
         // Arrange
-        var apps = CreateTestApplications();
+        List<ApplicationModel> apps = CreateTestApplications();
 
         // Act
-        var viewModel = new ApplicationPickerViewModel(apps);
+        ApplicationPickerViewModel viewModel = new ApplicationPickerViewModel(apps);
 
         // Assert - Should have "All" + 3 unique categories
         Assert.Equal(4, viewModel.Categories.Count);
@@ -79,8 +79,8 @@ public class ApplicationPickerViewModelTests
     public void HasSelection_ShouldBeFalseWhenNoSelection()
     {
         // Arrange
-        var apps = CreateTestApplications();
-        var viewModel = new ApplicationPickerViewModel(apps);
+        List<ApplicationModel> apps = CreateTestApplications();
+        ApplicationPickerViewModel viewModel = new ApplicationPickerViewModel(apps);
 
         // Assert
         Assert.False(viewModel.HasSelection);
@@ -94,8 +94,8 @@ public class ApplicationPickerViewModelTests
     public void HasSelection_ShouldBeTrueWhenSelected()
     {
         // Arrange
-        var apps = CreateTestApplications();
-        var viewModel = new ApplicationPickerViewModel(apps);
+        List<ApplicationModel> apps = CreateTestApplications();
+        ApplicationPickerViewModel viewModel = new ApplicationPickerViewModel(apps);
 
         // Act
         viewModel.SelectedApplication = apps[0];
@@ -111,10 +111,10 @@ public class ApplicationPickerViewModelTests
     public void IsEmpty_ShouldBeFalseWithApplications()
     {
         // Arrange
-        var apps = CreateTestApplications();
+        List<ApplicationModel> apps = CreateTestApplications();
 
         // Act
-        var viewModel = new ApplicationPickerViewModel(apps);
+        ApplicationPickerViewModel viewModel = new ApplicationPickerViewModel(apps);
 
         // Assert
         Assert.False(viewModel.IsEmpty);
@@ -127,8 +127,8 @@ public class ApplicationPickerViewModelTests
     public void IsEmpty_ShouldBeTrueWithNoMatches()
     {
         // Arrange
-        var apps = CreateTestApplications();
-        var viewModel = new ApplicationPickerViewModel(apps);
+        List<ApplicationModel> apps = CreateTestApplications();
+        ApplicationPickerViewModel viewModel = new ApplicationPickerViewModel(apps);
 
         // Act - Search for something that doesn't exist
         viewModel.SearchText = "NonExistentApplication12345";
@@ -144,8 +144,8 @@ public class ApplicationPickerViewModelTests
     public void SearchText_ShouldFilterApplications()
     {
         // Arrange
-        var apps = CreateTestApplications();
-        var viewModel = new ApplicationPickerViewModel(apps);
+        List<ApplicationModel> apps = CreateTestApplications();
+        ApplicationPickerViewModel viewModel = new ApplicationPickerViewModel(apps);
 
         // Act
         viewModel.SearchText = "Visual";
@@ -162,8 +162,8 @@ public class ApplicationPickerViewModelTests
     public void SearchText_ShouldBeCaseInsensitive()
     {
         // Arrange
-        var apps = CreateTestApplications();
-        var viewModel = new ApplicationPickerViewModel(apps);
+        List<ApplicationModel> apps = CreateTestApplications();
+        ApplicationPickerViewModel viewModel = new ApplicationPickerViewModel(apps);
 
         // Act
         viewModel.SearchText = "VISUAL";
@@ -179,10 +179,10 @@ public class ApplicationPickerViewModelTests
     public void FilteredApplications_ShouldBeSortedByName()
     {
         // Arrange
-        var apps = CreateTestApplications();
+        List<ApplicationModel> apps = CreateTestApplications();
 
         // Act
-        var viewModel = new ApplicationPickerViewModel(apps);
+        ApplicationPickerViewModel viewModel = new ApplicationPickerViewModel(apps);
 
         // Assert - 7-Zip should be first (sorts before letters)
         Assert.Equal("7-Zip", viewModel.FilteredApplications[0].Name);

@@ -78,7 +78,7 @@ public partial class ApplicationPickerViewModel : ObservableObject
         _allApplications = availableApplications.OrderBy(a => a.Name).ToList();
 
         // Build category list
-        var categories = _allApplications
+        List<string> categories = _allApplications
             .Select(a => a.Category)
             .Where(c => !string.IsNullOrWhiteSpace(c))
             .Distinct()
@@ -131,12 +131,12 @@ public partial class ApplicationPickerViewModel : ObservableObject
     /// </summary>
     private void ApplyFilter()
     {
-        var filtered = _allApplications.AsEnumerable();
+        IEnumerable<ApplicationModel> filtered = _allApplications.AsEnumerable();
 
         // Apply search filter
         if (!string.IsNullOrWhiteSpace(SearchText))
         {
-            var searchLower = SearchText.Trim();
+            string searchLower = SearchText.Trim();
             filtered = filtered.Where(a =>
                 a.Name.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
                 a.AppId.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||

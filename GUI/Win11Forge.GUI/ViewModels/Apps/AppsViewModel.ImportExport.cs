@@ -38,14 +38,14 @@ public partial class AppsViewModel
     [RelayCommand]
     private async Task ExportSelectionAsync()
     {
-        var selectedIds = _allApplications
+        List<string> selectedIds = _allApplications
             .Where(a => a.IsSelected)
             .Select(a => a.AppId)
             .ToList();
 
         if (selectedIds.Count == 0) return;
 
-        var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
+        string? filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
             string.Empty,
             FileDialogFilters.JsonOnly,
             DefaultFileName: "win11forge-selection",
@@ -55,7 +55,7 @@ public partial class AppsViewModel
         {
             try
             {
-                var json = JsonSerializer.Serialize(selectedIds, new JsonSerializerOptions
+                string json = JsonSerializer.Serialize(selectedIds, new JsonSerializerOptions
                 {
                     WriteIndented = true
                 });
@@ -78,7 +78,7 @@ public partial class AppsViewModel
     [RelayCommand]
     private async Task ImportSelectionAsync()
     {
-        var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
+        string? filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
             string.Empty,
             FileDialogFilters.JsonOnly,
             DefaultExtension: FileDialogFilters.JsonDefaultExtension));
@@ -87,8 +87,8 @@ public partial class AppsViewModel
         {
             try
             {
-                var json = await File.ReadAllTextAsync(filePath);
-                var selectedIds = NormalizeImportedIds(JsonSerializer.Deserialize<List<string>>(json));
+                string json = await File.ReadAllTextAsync(filePath);
+                HashSet<string> selectedIds = NormalizeImportedIds(JsonSerializer.Deserialize<List<string>>(json));
                 await ImportApplicationStateAsync(selectedIds, ImportStateTarget.Selection);
             }
             catch (Exception ex)
@@ -108,14 +108,14 @@ public partial class AppsViewModel
     [RelayCommand]
     private async Task ExportFavoritesAsync()
     {
-        var favoriteIds = _allApplications
+        List<string> favoriteIds = _allApplications
             .Where(a => a.IsFavorite)
             .Select(a => a.AppId)
             .ToList();
 
         if (favoriteIds.Count == 0) return;
 
-        var filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
+        string? filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
             string.Empty,
             FileDialogFilters.JsonOnly,
             DefaultFileName: "win11forge-favorites",
@@ -125,7 +125,7 @@ public partial class AppsViewModel
         {
             try
             {
-                var json = JsonSerializer.Serialize(favoriteIds, new JsonSerializerOptions
+                string json = JsonSerializer.Serialize(favoriteIds, new JsonSerializerOptions
                 {
                     WriteIndented = true
                 });
@@ -148,7 +148,7 @@ public partial class AppsViewModel
     [RelayCommand]
     private async Task ImportFavoritesAsync()
     {
-        var filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
+        string? filePath = await _fileDialogService.ShowOpenAsync(new FileDialogOptions(
             string.Empty,
             FileDialogFilters.JsonOnly,
             DefaultExtension: FileDialogFilters.JsonDefaultExtension));
@@ -157,8 +157,8 @@ public partial class AppsViewModel
         {
             try
             {
-                var json = await File.ReadAllTextAsync(filePath);
-                var favoriteIds = NormalizeImportedIds(JsonSerializer.Deserialize<List<string>>(json));
+                string json = await File.ReadAllTextAsync(filePath);
+                HashSet<string> favoriteIds = NormalizeImportedIds(JsonSerializer.Deserialize<List<string>>(json));
                 await ImportApplicationStateAsync(favoriteIds, ImportStateTarget.Favorites);
             }
             catch (Exception ex)
@@ -174,19 +174,19 @@ public partial class AppsViewModel
 
     private async Task ImportApplicationStateAsync(HashSet<string> importedIds, ImportStateTarget target)
     {
-        var matchedApps = _allApplications
+        List<ApplicationModel> matchedApps = _allApplications
             .Where(app => importedIds.Contains(app.AppId))
             .ToList();
-        var matchedIds = matchedApps
+        HashSet<string> matchedIds = matchedApps
             .Select(app => app.AppId)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var missingCount = importedIds.Count(id => !matchedIds.Contains(id));
-        var currentCount = CountCurrentState(target);
-        var replace = true;
+        int missingCount = importedIds.Count(id => !matchedIds.Contains(id));
+        int currentCount = CountCurrentState(target);
+        bool replace = true;
 
         if (currentCount > 0)
         {
-            var mode = await _dialogService.ShowYesNoCancelAsync(
+            bool? mode = await _dialogService.ShowYesNoCancelAsync(
                 GetImportTitle(target),
                 string.Format(
                     CultureInfo.CurrentCulture,
@@ -208,13 +208,13 @@ public partial class AppsViewModel
 
         if (replace)
         {
-            foreach (var app in _allApplications)
+            foreach (ApplicationModel app in _allApplications)
             {
                 SetImportedState(app, target, false);
             }
         }
 
-        foreach (var app in matchedApps)
+        foreach (ApplicationModel? app in matchedApps)
         {
             SetImportedState(app, target, true);
         }
@@ -231,13 +231,13 @@ public partial class AppsViewModel
 
     private static HashSet<string> NormalizeImportedIds(IEnumerable<string>? importedIds)
     {
-        var normalizedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> normalizedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         if (importedIds is null)
         {
             return normalizedIds;
         }
 
-        foreach (var appId in importedIds)
+        foreach (string appId in importedIds)
         {
             if (!string.IsNullOrWhiteSpace(appId))
             {

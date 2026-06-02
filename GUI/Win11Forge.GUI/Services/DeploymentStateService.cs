@@ -245,13 +245,13 @@ public partial class DeploymentStateService : ObservableObject, IDeploymentState
         lock (_applicationsLock)
         {
             // Clear logs from previous deployment to free memory
-            foreach (var existingApp in Applications)
+            foreach (ApplicationModel existingApp in Applications)
             {
                 existingApp.LogOutput = string.Empty;
             }
 
             Applications.Clear();
-            foreach (var app in apps)
+            foreach (ApplicationModel app in apps)
             {
                 // Clear any existing logs on the new apps
                 app.LogOutput = string.Empty;
@@ -318,7 +318,7 @@ public partial class DeploymentStateService : ObservableObject, IDeploymentState
     {
         lock (_applicationsLock)
         {
-            foreach (var app in Applications)
+            foreach (ApplicationModel app in Applications)
             {
                 // Clear log output to free memory (can be 256KB per app)
                 app.LogOutput = string.Empty;

@@ -42,7 +42,7 @@ public partial class AppsViewModel
         try
         {
             // Get installed apps only (includes UpdateAvailable which are also installed)
-            var installedApps = _allApplications
+            List<ApplicationModel> installedApps = _allApplications
                 .Where(a => a.Status == ApplicationStatus.Installed ||
                            a.Status == ApplicationStatus.AlreadyInstalled ||
                            a.Status == ApplicationStatus.UpdateAvailable)
@@ -54,7 +54,7 @@ public partial class AppsViewModel
                 return;
             }
 
-            var result = await _updateCoordinator.ScanForUpdatesAsync(installedApps);
+            AppUpdateScanResult result = await _updateCoordinator.ScanForUpdatesAsync(installedApps);
             UpdatesAvailableCount = result.UpdatesAvailableCount;
 
             // Apply filter to refresh view
@@ -81,7 +81,7 @@ public partial class AppsViewModel
 
         try
         {
-            var result = await _updateCoordinator.UpdateAsync([app]);
+            AppUpdateResult result = await _updateCoordinator.UpdateAsync([app]);
             if (result.UpdatedCount > 0 && UpdatesAvailableCount > 0)
             {
                 UpdatesAvailableCount--;
@@ -111,7 +111,7 @@ public partial class AppsViewModel
     [RelayCommand(CanExecute = nameof(CanUpdateSelected))]
     private async Task UpdateSelectedAsync()
     {
-        var appsWithUpdates = _allApplications
+        List<ApplicationModel> appsWithUpdates = _allApplications
             .Where(a => a.Status == ApplicationStatus.UpdateAvailable && a.IsSelected)
             .ToList();
 
@@ -146,7 +146,7 @@ public partial class AppsViewModel
 
         try
         {
-            var result = await _updateCoordinator.UpdateAsync(
+            AppUpdateResult result = await _updateCoordinator.UpdateAsync(
                 appsWithUpdates,
                 new Progress<AppOperationProgress>(ApplyBatchProgress),
                 _batchCancellationTokenSource.Token);

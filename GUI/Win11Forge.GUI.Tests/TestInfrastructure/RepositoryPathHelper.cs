@@ -22,11 +22,11 @@ internal static class RepositoryPathHelper
 {
     public static string FindDirectory(params string[] relativeParts)
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
 
         while (directory is not null)
         {
-            var candidate = Path.Combine([directory.FullName, .. relativeParts]);
+            string candidate = Path.Combine([directory.FullName, .. relativeParts]);
             if (Directory.Exists(candidate))
             {
                 return candidate;
@@ -41,11 +41,11 @@ internal static class RepositoryPathHelper
 
     public static string FindFile(params string[] relativeParts)
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
 
         while (directory is not null)
         {
-            var candidate = Path.Combine([directory.FullName, .. relativeParts]);
+            string candidate = Path.Combine([directory.FullName, .. relativeParts]);
             if (File.Exists(candidate))
             {
                 return candidate;

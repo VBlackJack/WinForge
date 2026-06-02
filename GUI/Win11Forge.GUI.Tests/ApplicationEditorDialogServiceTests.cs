@@ -28,11 +28,11 @@ public class ApplicationEditorDialogServiceTests
     public async Task ShowAddDialogAsync_WhenDialogReturnsApplication_ReturnsApplication()
     {
         // Arrange
-        var owner = new object();
-        var savedApplication = CreateApplication("NewApp");
+        object owner = new object();
+        EditableApplicationModel savedApplication = CreateApplication("NewApp");
         object? receivedOwner = null;
 
-        var service = new ApplicationEditorDialogService(
+        ApplicationEditorDialogService service = new ApplicationEditorDialogService(
             () => owner,
             dialogOwner =>
             {
@@ -42,7 +42,7 @@ public class ApplicationEditorDialogServiceTests
             (_, _) => Task.FromResult<EditableApplicationModel?>(null));
 
         // Act
-        var result = await service.ShowAddDialogAsync();
+        EditableApplicationModel? result = await service.ShowAddDialogAsync();
 
         // Assert
         Assert.Same(savedApplication, result);
@@ -53,12 +53,12 @@ public class ApplicationEditorDialogServiceTests
     public async Task ShowAddDialogAsync_WhenInitialApplicationProvided_PassesItToDialog()
     {
         // Arrange
-        var owner = new object();
-        var initialApplication = CreateApplication("SeedApp");
+        object owner = new object();
+        EditableApplicationModel initialApplication = CreateApplication("SeedApp");
         object? receivedOwner = null;
         EditableApplicationModel? receivedApplication = null;
 
-        var service = new ApplicationEditorDialogService(
+        ApplicationEditorDialogService service = new ApplicationEditorDialogService(
             () => owner,
             (dialogOwner, application) =>
             {
@@ -69,7 +69,7 @@ public class ApplicationEditorDialogServiceTests
             (_, _) => Task.FromResult<EditableApplicationModel?>(null));
 
         // Act
-        var result = await service.ShowAddDialogAsync(initialApplication);
+        EditableApplicationModel? result = await service.ShowAddDialogAsync(initialApplication);
 
         // Assert
         Assert.Same(initialApplication, result);
@@ -81,12 +81,12 @@ public class ApplicationEditorDialogServiceTests
     public async Task ShowEditDialogAsync_WhenDialogReturnsApplication_ReturnsApplicationAndPassesInput()
     {
         // Arrange
-        var owner = new object();
-        var inputApplication = CreateApplication("ExistingApp");
-        var savedApplication = CreateApplication("EditedApp");
+        object owner = new object();
+        EditableApplicationModel inputApplication = CreateApplication("ExistingApp");
+        EditableApplicationModel savedApplication = CreateApplication("EditedApp");
         EditableApplicationModel? receivedApplication = null;
 
-        var service = new ApplicationEditorDialogService(
+        ApplicationEditorDialogService service = new ApplicationEditorDialogService(
             () => owner,
             _ => Task.FromResult<EditableApplicationModel?>(null),
             (_, application) =>
@@ -96,7 +96,7 @@ public class ApplicationEditorDialogServiceTests
             });
 
         // Act
-        var result = await service.ShowEditDialogAsync(inputApplication);
+        EditableApplicationModel? result = await service.ShowEditDialogAsync(inputApplication);
 
         // Assert
         Assert.Same(savedApplication, result);
@@ -107,7 +107,7 @@ public class ApplicationEditorDialogServiceTests
     public async Task ShowAddDialogAsync_WhenOwnerMissing_ThrowsInvalidOperationException()
     {
         // Arrange
-        var service = new ApplicationEditorDialogService(
+        ApplicationEditorDialogService service = new ApplicationEditorDialogService(
             () => null,
             _ => Task.FromResult<EditableApplicationModel?>(CreateApplication("Ignored")),
             (_, _) => Task.FromResult<EditableApplicationModel?>(null));
@@ -120,7 +120,7 @@ public class ApplicationEditorDialogServiceTests
     public async Task ShowEditDialogAsync_WhenApplicationNull_ThrowsArgumentNullException()
     {
         // Arrange
-        var service = new ApplicationEditorDialogService(
+        ApplicationEditorDialogService service = new ApplicationEditorDialogService(
             () => new object(),
             _ => Task.FromResult<EditableApplicationModel?>(null),
             (_, _) => Task.FromResult<EditableApplicationModel?>(null));

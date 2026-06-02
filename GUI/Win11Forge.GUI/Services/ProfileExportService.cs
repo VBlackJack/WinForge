@@ -115,15 +115,15 @@ public class ProfileExportService : IProfileExportService
     /// <inheritdoc/>
     public Task<string> ExportToJsonAsync(DeploymentProfileModel profile)
     {
-        var exported = ConvertToExported(profile);
-        var json = JsonSerializer.Serialize(exported, JsonOptions);
+        ExportedProfile exported = ConvertToExported(profile);
+        string json = JsonSerializer.Serialize(exported, JsonOptions);
         return Task.FromResult(json);
     }
 
     /// <inheritdoc/>
     public async Task ExportToFileAsync(DeploymentProfileModel profile, string filePath)
     {
-        var json = await ExportToJsonAsync(profile);
+        string json = await ExportToJsonAsync(profile);
         await File.WriteAllTextAsync(filePath, json);
     }
 
@@ -132,7 +132,7 @@ public class ProfileExportService : IProfileExportService
     {
         try
         {
-            var profile = JsonSerializer.Deserialize<ExportedProfile>(json, JsonOptions);
+            ExportedProfile? profile = JsonSerializer.Deserialize<ExportedProfile>(json, JsonOptions);
             return Task.FromResult(profile);
         }
         catch (JsonException)
@@ -149,7 +149,7 @@ public class ProfileExportService : IProfileExportService
             return null;
         }
 
-        var json = await File.ReadAllTextAsync(filePath);
+        string json = await File.ReadAllTextAsync(filePath);
         return await ImportFromJsonAsync(json);
     }
 
@@ -166,7 +166,7 @@ public class ProfileExportService : IProfileExportService
             return (false, "Profile must contain at least one application");
         }
 
-        foreach (var app in profile.Applications)
+        foreach (ExportedApplication app in profile.Applications)
         {
             if (string.IsNullOrWhiteSpace(app.Name))
             {

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.Concurrent;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services.Coordinators;
 using Win11Forge.GUI.Services.Coordinators.Internal;
@@ -25,15 +26,15 @@ public class AppOperationRunnerTests
     [Fact]
     public async Task RunAsync_ShouldRespectMaxParallelism()
     {
-        var runner = new AppOperationRunner(maxParallelism: 2);
-        var active = 0;
-        var maxObserved = 0;
+        AppOperationRunner runner = new AppOperationRunner(maxParallelism: 2);
+        int active = 0;
+        int maxObserved = 0;
 
         await runner.RunAsync(
             Enumerable.Range(1, 8).ToList(),
             async (item, _) =>
             {
-                var current = Interlocked.Increment(ref active);
+                int current = Interlocked.Increment(ref active);
                 maxObserved = Math.Max(maxObserved, current);
                 await Task.Delay(25);
                 Interlocked.Decrement(ref active);
@@ -47,8 +48,8 @@ public class AppOperationRunnerTests
     [Fact]
     public async Task RunAsync_ShouldPropagateCancellation()
     {
-        var runner = new AppOperationRunner(maxParallelism: 2);
-        using var cts = new CancellationTokenSource();
+        AppOperationRunner runner = new AppOperationRunner(maxParallelism: 2);
+        using CancellationTokenSource cts = new CancellationTokenSource();
         cts.Cancel();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
@@ -62,9 +63,9 @@ public class AppOperationRunnerTests
     [Fact]
     public async Task RunAsync_ShouldReportProgressForEachCompletedItem()
     {
-        var runner = new AppOperationRunner(maxParallelism: 2);
-        var progress = new RecordingProgress<AppOperationProgress>();
-        var apps = new[]
+        AppOperationRunner runner = new AppOperationRunner(maxParallelism: 2);
+        RecordingProgress<AppOperationProgress> progress = new RecordingProgress<AppOperationProgress>();
+        ApplicationModel[] apps = new[]
         {
             new ApplicationModel { AppId = "App1", Name = "Application 1" },
             new ApplicationModel { AppId = "App2", Name = "Application 2" },
@@ -86,7 +87,7 @@ public class AppOperationRunnerTests
     [Fact]
     public async Task RunAsync_ShouldPropagateOperationExceptions()
     {
-        var runner = new AppOperationRunner(maxParallelism: 2);
+        AppOperationRunner runner = new AppOperationRunner(maxParallelism: 2);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             runner.RunAsync(
@@ -100,8 +101,8 @@ public class AppOperationRunnerTests
     [Fact]
     public async Task RunAsync_ShouldInvokeOnItemCompletedCallbackPerItem()
     {
-        var runner = new AppOperationRunner(maxParallelism: 4);
-        var observed = new System.Collections.Concurrent.ConcurrentBag<(int item, int result)>();
+        AppOperationRunner runner = new AppOperationRunner(maxParallelism: 4);
+        ConcurrentBag<(int item, int result)> observed = new System.Collections.Concurrent.ConcurrentBag<(int item, int result)>();
 
         await runner.RunAsync(
             Enumerable.Range(1, 6).ToList(),
@@ -124,10 +125,10 @@ public class AppOperationRunnerTests
     [Fact]
     public async Task RunAsync_WhenOnItemCompletedThrows_ShouldNotAbortBatch()
     {
-        var runner = new AppOperationRunner(maxParallelism: 2);
-        var processed = 0;
+        AppOperationRunner runner = new AppOperationRunner(maxParallelism: 2);
+        int processed = 0;
 
-        var results = await runner.RunAsync(
+        IReadOnlyList<int> results = await runner.RunAsync(
             Enumerable.Range(1, 5).ToList(),
             (item, _) =>
             {

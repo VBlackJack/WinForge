@@ -33,10 +33,10 @@ public class DeploymentViewModelTests
     public void Constructor_ShouldSyncWithService()
     {
         // Arrange
-        var stateService = new MockDeploymentStateServiceForTests();
+        MockDeploymentStateServiceForTests stateService = new MockDeploymentStateServiceForTests();
 
         // Act
-        var viewModel = new DeploymentViewModel(stateService);
+        DeploymentViewModel viewModel = new DeploymentViewModel(stateService);
 
         // Assert
         Assert.False(viewModel.IsDeploying);
@@ -50,10 +50,10 @@ public class DeploymentViewModelTests
     public void IsDeploying_ShouldReflectServiceState()
     {
         // Arrange
-        var stateService = new MockDeploymentStateServiceForTests { MockIsDeploying = true };
+        MockDeploymentStateServiceForTests stateService = new MockDeploymentStateServiceForTests { MockIsDeploying = true };
 
         // Act
-        var viewModel = new DeploymentViewModel(stateService);
+        DeploymentViewModel viewModel = new DeploymentViewModel(stateService);
 
         // Assert
         Assert.True(viewModel.IsDeploying);
@@ -66,8 +66,8 @@ public class DeploymentViewModelTests
     public void PauseCommand_ShouldBeExecutableWhenDeploying()
     {
         // Arrange
-        var stateService = new MockDeploymentStateServiceForTests { MockIsDeploying = true };
-        var viewModel = new DeploymentViewModel(stateService);
+        MockDeploymentStateServiceForTests stateService = new MockDeploymentStateServiceForTests { MockIsDeploying = true };
+        DeploymentViewModel viewModel = new DeploymentViewModel(stateService);
 
         // Assert
         Assert.True(viewModel.CanPauseDeployment);
@@ -80,12 +80,12 @@ public class DeploymentViewModelTests
     public void ResumeCommand_ShouldBeExecutableWhenPaused()
     {
         // Arrange
-        var stateService = new MockDeploymentStateServiceForTests
+        MockDeploymentStateServiceForTests stateService = new MockDeploymentStateServiceForTests
         {
             MockIsDeploying = true,
             MockIsPaused = true
         };
-        var viewModel = new DeploymentViewModel(stateService);
+        DeploymentViewModel viewModel = new DeploymentViewModel(stateService);
 
         // Assert
         Assert.True(viewModel.CanResumeDeployment);
@@ -98,16 +98,16 @@ public class DeploymentViewModelTests
     public async Task CancelCommand_WhenConfirmed_ShouldInvokeServiceCancel()
     {
         // Arrange
-        var stateService = new MockDeploymentStateServiceForTests { MockIsDeploying = true };
-        var dialogService = new TestDialogService();
+        MockDeploymentStateServiceForTests stateService = new MockDeploymentStateServiceForTests { MockIsDeploying = true };
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(true);
-        var viewModel = new DeploymentViewModel(stateService, dialogService);
+        DeploymentViewModel viewModel = new DeploymentViewModel(stateService, dialogService);
 
         // Act
         await viewModel.CancelDeploymentCommand.ExecuteAsync(null);
 
         // Assert
-        var request = Assert.Single(dialogService.ConfirmRequests);
+        (string Title, string Message, string? ConfirmText, string? CancelText) request = Assert.Single(dialogService.ConfirmRequests);
         Assert.Contains("5", request.Message, StringComparison.Ordinal);
         Assert.Contains("10", request.Message, StringComparison.Ordinal);
         Assert.True(stateService.CancelRequestedFlag);
@@ -120,10 +120,10 @@ public class DeploymentViewModelTests
     public async Task CancelCommand_WhenDeclined_ShouldNotInvokeServiceCancel()
     {
         // Arrange
-        var stateService = new MockDeploymentStateServiceForTests { MockIsDeploying = true };
-        var dialogService = new TestDialogService();
+        MockDeploymentStateServiceForTests stateService = new MockDeploymentStateServiceForTests { MockIsDeploying = true };
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var viewModel = new DeploymentViewModel(stateService, dialogService);
+        DeploymentViewModel viewModel = new DeploymentViewModel(stateService, dialogService);
 
         // Act
         await viewModel.CancelDeploymentCommand.ExecuteAsync(null);
@@ -140,8 +140,8 @@ public class DeploymentViewModelTests
     public void Dispose_ShouldUnsubscribeFromEvents()
     {
         // Arrange
-        var stateService = new MockDeploymentStateServiceForTests();
-        var viewModel = new DeploymentViewModel(stateService);
+        MockDeploymentStateServiceForTests stateService = new MockDeploymentStateServiceForTests();
+        DeploymentViewModel viewModel = new DeploymentViewModel(stateService);
 
         // Act
         viewModel.Dispose();
@@ -157,10 +157,10 @@ public class DeploymentViewModelTests
     public void ProgressPercentage_ShouldSyncFromService()
     {
         // Arrange
-        var stateService = new MockDeploymentStateServiceForTests { MockProgressPercentage = 50.0 };
+        MockDeploymentStateServiceForTests stateService = new MockDeploymentStateServiceForTests { MockProgressPercentage = 50.0 };
 
         // Act
-        var viewModel = new DeploymentViewModel(stateService);
+        DeploymentViewModel viewModel = new DeploymentViewModel(stateService);
 
         // Assert
         Assert.Equal(50.0, viewModel.ProgressPercentage);

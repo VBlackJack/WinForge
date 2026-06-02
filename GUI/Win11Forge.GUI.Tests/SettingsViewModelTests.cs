@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
+using System.IO;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
-using System.IO;
 
 namespace Win11Forge.GUI.Tests;
 
@@ -35,13 +35,13 @@ public class SettingsViewModelTests
     public void ChangeTheme_ShouldUpdateConfiguration()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
-        var themeService = new MockThemeService();
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge, themeService);
+        MockAppSettingsService settingsService = new MockAppSettingsService();
+        MockThemeService themeService = new MockThemeService();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge, themeService);
 
-        var targetTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Folio);
+        ThemeDescriptor targetTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Folio);
 
         // Act
         viewModel.SelectedTheme = targetTheme;
@@ -59,14 +59,14 @@ public class SettingsViewModelTests
     public void ChangeLanguage_ShouldRequireRestart()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
+        MockAppSettingsService settingsService = new MockAppSettingsService();
         settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", ThemeName = ThemeNames.Drakul };
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Act - Change language to French
-        var frenchOption = viewModel.AvailableLanguages.First(l => l.Code == "fr");
+        LanguageOption frenchOption = viewModel.AvailableLanguages.First(l => l.Code == "fr");
         viewModel.SelectedLanguage = frenchOption;
 
         // Assert
@@ -81,14 +81,14 @@ public class SettingsViewModelTests
     public void ApplyLanguage_ShouldSaveSettingsAndRequireRestart()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
+        MockAppSettingsService settingsService = new MockAppSettingsService();
         settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", ThemeName = ThemeNames.Drakul };
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Change language
-        var frenchOption = viewModel.AvailableLanguages.First(l => l.Code == "fr");
+        LanguageOption frenchOption = viewModel.AvailableLanguages.First(l => l.Code == "fr");
         viewModel.SelectedLanguage = frenchOption;
 
         // Act
@@ -107,12 +107,12 @@ public class SettingsViewModelTests
     public async Task ClearHistory_ShouldInvokeService()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var dialogService = new TestDialogService();
+        MockAppSettingsService settingsService = new MockAppSettingsService();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(true);
-        var viewModel = new SettingsViewModel(
+        SettingsViewModel viewModel = new SettingsViewModel(
             settingsService,
             historyService,
             powerShellBridge,
@@ -135,10 +135,10 @@ public class SettingsViewModelTests
     public async Task ClearHistory_WhenCancelled_ShouldNotInvokeService()
     {
         // Arrange
-        var historyService = new MockDeploymentHistoryService();
-        var dialogService = new TestDialogService();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        TestDialogService dialogService = new TestDialogService();
         dialogService.QueueConfirmResult(false);
-        var viewModel = new SettingsViewModel(
+        SettingsViewModel viewModel = new SettingsViewModel(
             new MockAppSettingsService(),
             historyService,
             new MockPowerShellBridge(),
@@ -159,17 +159,17 @@ public class SettingsViewModelTests
     public void Initialize_ShouldLoadSettings()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
+        MockAppSettingsService settingsService = new MockAppSettingsService();
         settingsService.SettingsToReturn = new AppSettings
         {
             ThemeName = ThemeNames.Folio,
             LanguageCode = "fr"
         };
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
 
         // Act
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Assert
         Assert.Equal(ThemeNames.Folio, viewModel.SelectedTheme?.Name);
@@ -183,10 +183,10 @@ public class SettingsViewModelTests
     public void ThemeChange_ShouldPersistImmediately()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        MockAppSettingsService settingsService = new MockAppSettingsService();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Act - Change theme multiple times
         viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Folio);
@@ -200,11 +200,11 @@ public class SettingsViewModelTests
     [Fact]
     public void AccentTintChange_ShouldPersistImmediately()
     {
-        var settingsService = new MockAppSettingsService();
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var themeService = new MockThemeService();
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge, themeService);
+        MockAppSettingsService settingsService = new MockAppSettingsService();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        MockThemeService themeService = new MockThemeService();
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge, themeService);
 
         viewModel.SelectedAccentTint = viewModel.AvailableAccentTints.First(tint => tint.Name == "Green");
 
@@ -217,11 +217,11 @@ public class SettingsViewModelTests
     public void AutoSaveChanges_ShouldUpdateStatusWithoutInfoToastSpam()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var toastService = new TestToastService();
-        var viewModel = new SettingsViewModel(
+        MockAppSettingsService settingsService = new MockAppSettingsService();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        TestToastService toastService = new TestToastService();
+        SettingsViewModel viewModel = new SettingsViewModel(
             settingsService,
             historyService,
             powerShellBridge,
@@ -248,14 +248,14 @@ public class SettingsViewModelTests
     public void ThemeChange_WhenSaveFails_ShouldShowSaveError()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService
+        MockAppSettingsService settingsService = new MockAppSettingsService
         {
             SaveShouldSucceed = false
         };
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
-        var expected = Win11Forge.GUI.Resources.Resources.ResourceManager.GetString(
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        string expected = Win11Forge.GUI.Resources.Resources.ResourceManager.GetString(
             "Settings_SaveFailed",
             Win11Forge.GUI.Resources.Resources.Culture) ?? "Failed to save settings";
 
@@ -273,10 +273,10 @@ public class SettingsViewModelTests
     public async Task InitializeAsync_ShouldNotReloadSettingsWhenAlreadyLoaded()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        MockAppSettingsService settingsService = new MockAppSettingsService();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Assert precondition
         Assert.Equal(1, settingsService.LoadSettingsCallCount);
@@ -295,7 +295,7 @@ public class SettingsViewModelTests
     public void Initialize_ShouldNotSaveDuringInitialLoad()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService
+        MockAppSettingsService settingsService = new MockAppSettingsService
         {
             SettingsToReturn = new AppSettings
             {
@@ -305,11 +305,11 @@ public class SettingsViewModelTests
                 LanguageCode = "fr"
             }
         };
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
 
         // Act
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Assert
         Assert.Null(settingsService.LastSavedSettings);
@@ -325,10 +325,10 @@ public class SettingsViewModelTests
     public void HighContrastToggle_ShouldPersistImmediately()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        MockAppSettingsService settingsService = new MockAppSettingsService();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Act
         viewModel.IsHighContrastEnabled = true;
@@ -345,11 +345,11 @@ public class SettingsViewModelTests
     public void ReducedMotionToggle_ShouldPersistOverride()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
-        var toggledValue = !viewModel.ReducedMotion;
+        MockAppSettingsService settingsService = new MockAppSettingsService();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        bool toggledValue = !viewModel.ReducedMotion;
 
         // Act
         viewModel.ReducedMotion = toggledValue;
@@ -366,14 +366,14 @@ public class SettingsViewModelTests
     public void SameLanguage_ShouldNotRequireRestart()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
+        MockAppSettingsService settingsService = new MockAppSettingsService();
         settingsService.SettingsToReturn = new AppSettings { LanguageCode = "en", ThemeName = ThemeNames.Drakul };
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Act - Select same language
-        var englishOption = viewModel.AvailableLanguages.First(l => l.Code == "en");
+        LanguageOption englishOption = viewModel.AvailableLanguages.First(l => l.Code == "en");
         viewModel.SelectedLanguage = englishOption;
 
         // Assert
@@ -388,12 +388,12 @@ public class SettingsViewModelTests
     public void AvailableLanguages_ShouldContainEnglishAndFrench()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
+        MockAppSettingsService settingsService = new MockAppSettingsService();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
 
         // Act
-        var viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
+        SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
 
         // Assert
         Assert.Equal(2, viewModel.AvailableLanguages.Count);
@@ -408,12 +408,12 @@ public class SettingsViewModelTests
     public void RestartApplicationCommand_ShouldLaunchProcessAndRequestShutdown()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
-        var historyService = new MockDeploymentHistoryService();
-        var powerShellBridge = new MockPowerShellBridge();
-        var lifetimeService = new MockApplicationLifetimeService();
-        var processLauncher = new MockProcessLauncher();
-        var viewModel = new SettingsViewModel(
+        MockAppSettingsService settingsService = new MockAppSettingsService();
+        MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
+        MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
+        MockApplicationLifetimeService lifetimeService = new MockApplicationLifetimeService();
+        MockProcessLauncher processLauncher = new MockProcessLauncher();
+        SettingsViewModel viewModel = new SettingsViewModel(
             settingsService,
             historyService,
             powerShellBridge,
@@ -435,14 +435,14 @@ public class SettingsViewModelTests
     public async Task ExportSettingsCommand_ShouldWriteSettingsToChosenFile()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService
+        MockAppSettingsService settingsService = new MockAppSettingsService
         {
             SettingsToReturn = new AppSettings { ThemeName = ThemeNames.Folio, LanguageCode = "fr" }
         };
-        var fileDialogService = new TestFileDialogService();
-        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        TestFileDialogService fileDialogService = new TestFileDialogService();
+        string filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
         fileDialogService.QueueSaveResult(filePath);
-        var viewModel = new SettingsViewModel(
+        SettingsViewModel viewModel = new SettingsViewModel(
             settingsService,
             new MockDeploymentHistoryService(),
             new MockPowerShellBridge(),
@@ -475,13 +475,13 @@ public class SettingsViewModelTests
     public async Task ImportSettingsCommand_ShouldLoadSettingsFromChosenFile()
     {
         // Arrange
-        var settingsService = new MockAppSettingsService();
-        var fileDialogService = new TestFileDialogService();
-        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
-        var importedSettings = new AppSettings { ThemeName = ThemeNames.Folio, AccentTintName = "Purple", LanguageCode = "fr" };
+        MockAppSettingsService settingsService = new MockAppSettingsService();
+        TestFileDialogService fileDialogService = new TestFileDialogService();
+        string filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        AppSettings importedSettings = new AppSettings { ThemeName = ThemeNames.Folio, AccentTintName = "Purple", LanguageCode = "fr" };
         await File.WriteAllTextAsync(filePath, System.Text.Json.JsonSerializer.Serialize(importedSettings));
         fileDialogService.QueueOpenResult(filePath);
-        var viewModel = new SettingsViewModel(
+        SettingsViewModel viewModel = new SettingsViewModel(
             settingsService,
             new MockDeploymentHistoryService(),
             new MockPowerShellBridge(),

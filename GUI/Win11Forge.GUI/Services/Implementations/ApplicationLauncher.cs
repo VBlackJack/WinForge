@@ -16,6 +16,7 @@
 
 using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services.PowerShell;
@@ -48,7 +49,7 @@ public class ApplicationLauncher : IApplicationLauncher
             {
                 string? executableName = null;
 
-                if (_cacheService.TryGetApplicationData(app.AppId, out var appData))
+                if (_cacheService.TryGetApplicationData(app.AppId, out JsonElement appData))
                 {
                     executableName = JsonHelper.GetJsonString(appData, "Executable");
                 }
@@ -60,7 +61,7 @@ public class ApplicationLauncher : IApplicationLauncher
                     {
                         // Process.Start returns null if UseShellExecute=true and shell handled it
                         // No exception means shell accepted the request
-                        using var process = Process.Start(new ProcessStartInfo
+                        using Process? process = Process.Start(new ProcessStartInfo
                         {
                             FileName = executableName,
                             UseShellExecute = true
@@ -75,38 +76,38 @@ public class ApplicationLauncher : IApplicationLauncher
                     }
                 }
 
-                var searchTerms = new List<string> { app.Name };
+                List<string> searchTerms = new List<string> { app.Name };
 
                 if (!string.IsNullOrEmpty(app.AppId))
                 {
-                    var idParts = app.AppId.Split('.');
+                    string[] idParts = app.AppId.Split('.');
                     searchTerms.AddRange(idParts.Where(p => p.Length > 2));
                 }
 
                 // Strategy 2: Try to find in Start Menu
-                var startMenuPaths = new[]
+                string[] startMenuPaths = new[]
                 {
                     Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
                     Environment.GetFolderPath(Environment.SpecialFolder.StartMenu)
                 };
 
-                foreach (var startMenuPath in startMenuPaths)
+                foreach (string? startMenuPath in startMenuPaths)
                 {
-                    var programsPath = Path.Combine(startMenuPath, "Programs");
+                    string programsPath = Path.Combine(startMenuPath, "Programs");
                     if (!Directory.Exists(programsPath))
                         continue;
 
                     try
                     {
-                        var shortcuts = Directory.GetFiles(programsPath, "*.lnk", SearchOption.AllDirectories);
+                        string[] shortcuts = Directory.GetFiles(programsPath, "*.lnk", SearchOption.AllDirectories);
 
-                        var exactMatch = shortcuts.FirstOrDefault(s =>
+                        string? exactMatch = shortcuts.FirstOrDefault(s =>
                             Path.GetFileNameWithoutExtension(s)
                                 .Equals(app.Name, StringComparison.OrdinalIgnoreCase));
 
                         if (exactMatch != null)
                         {
-                            using var process = Process.Start(new ProcessStartInfo
+                            using Process? process = Process.Start(new ProcessStartInfo
                             {
                                 FileName = exactMatch,
                                 UseShellExecute = true
@@ -114,18 +115,18 @@ public class ApplicationLauncher : IApplicationLauncher
                             return true;
                         }
 
-                        foreach (var term in searchTerms.Distinct())
+                        foreach (string? term in searchTerms.Distinct())
                         {
-                            var matchingShortcut = shortcuts.FirstOrDefault(s =>
+                            string? matchingShortcut = shortcuts.FirstOrDefault(s =>
                             {
-                                var shortcutName = Path.GetFileNameWithoutExtension(s);
+                                string shortcutName = Path.GetFileNameWithoutExtension(s);
                                 return shortcutName.Contains(term, StringComparison.OrdinalIgnoreCase) ||
                                        term.Contains(shortcutName, StringComparison.OrdinalIgnoreCase);
                             });
 
                             if (matchingShortcut != null)
                             {
-                                using var process = Process.Start(new ProcessStartInfo
+                                using Process? process = Process.Start(new ProcessStartInfo
                                 {
                                     FileName = matchingShortcut,
                                     UseShellExecute = true
@@ -141,28 +142,28 @@ public class ApplicationLauncher : IApplicationLauncher
                 }
 
                 // Strategy 3: Search in Program Files
-                var programDirs = new[]
+                string[] programDirs = new[]
                 {
                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
                     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs")
                 };
 
-                foreach (var programDir in programDirs.Where(d => Directory.Exists(d)))
+                foreach (string? programDir in programDirs.Where(d => Directory.Exists(d)))
                 {
-                    foreach (var term in searchTerms.Distinct())
+                    foreach (string? term in searchTerms.Distinct())
                     {
                         try
                         {
-                            var appFolders = Directory.GetDirectories(programDir, $"*{term}*",
+                            string[] appFolders = Directory.GetDirectories(programDir, $"*{term}*",
                                 SearchOption.TopDirectoryOnly);
 
-                            foreach (var folder in appFolders)
+                            foreach (string folder in appFolders)
                             {
-                                var exeFiles = Directory.GetFiles(folder, "*.exe", SearchOption.TopDirectoryOnly);
-                                var mainExe = exeFiles.FirstOrDefault(e =>
+                                string[] exeFiles = Directory.GetFiles(folder, "*.exe", SearchOption.TopDirectoryOnly);
+                                string? mainExe = exeFiles.FirstOrDefault(e =>
                                 {
-                                    var exeName = Path.GetFileNameWithoutExtension(e);
+                                    string exeName = Path.GetFileNameWithoutExtension(e);
                                     return searchTerms.Any(t =>
                                         exeName.Contains(t, StringComparison.OrdinalIgnoreCase) ||
                                         t.Contains(exeName, StringComparison.OrdinalIgnoreCase));
@@ -170,7 +171,7 @@ public class ApplicationLauncher : IApplicationLauncher
 
                                 if (mainExe != null)
                                 {
-                                    using var process = Process.Start(new ProcessStartInfo
+                                    using Process? process = Process.Start(new ProcessStartInfo
                                     {
                                         FileName = mainExe,
                                         UseShellExecute = true
@@ -187,7 +188,7 @@ public class ApplicationLauncher : IApplicationLauncher
                 }
 
                 // Strategy 4: Try common executable names in PATH
-                var possibleExeNames = searchTerms
+                IEnumerable<string> possibleExeNames = searchTerms
                     .SelectMany(name => new[]
                     {
                         $"{name}.exe",
@@ -198,11 +199,11 @@ public class ApplicationLauncher : IApplicationLauncher
                     })
                     .Distinct();
 
-                foreach (var exeName in possibleExeNames)
+                foreach (string? exeName in possibleExeNames)
                 {
                     try
                     {
-                        using var process = Process.Start(new ProcessStartInfo
+                        using Process? process = Process.Start(new ProcessStartInfo
                         {
                             FileName = exeName,
                             UseShellExecute = true

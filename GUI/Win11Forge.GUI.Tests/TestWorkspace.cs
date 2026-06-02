@@ -51,7 +51,7 @@ internal sealed class TestWorkspace : IDisposable
 
     public void Dispose()
     {
-        for (var attempt = 1; attempt <= DeleteRetryCount; attempt++)
+        for (int attempt = 1; attempt <= DeleteRetryCount; attempt++)
         {
             try
             {

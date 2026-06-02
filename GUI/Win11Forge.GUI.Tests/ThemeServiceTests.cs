@@ -31,7 +31,7 @@ public class ThemeServiceTests
     [Fact]
     public void AvailableThemes_UsesThemeForgeCatalogue()
     {
-        var service = CreateService();
+        ThemeService service = CreateService();
 
         Assert.Equal(ThemeForge.Theme.ThemeNames.All.Count, service.AvailableThemes.Count);
         Assert.Equal(ThemeNames.Drakul, service.AvailableThemes[1].Name);
@@ -41,7 +41,7 @@ public class ThemeServiceTests
     [Fact]
     public void AvailableAccentTints_UsesThemeForgeCatalogue()
     {
-        var service = CreateService();
+        ThemeService service = CreateService();
 
         Assert.Equal(ThemeForge.Theme.AccentTints.All.Count, service.AvailableAccentTints.Count);
         Assert.Contains(service.AvailableAccentTints, tint => tint.Name == "Default");
@@ -53,8 +53,8 @@ public class ThemeServiceTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            var service = CreateService();
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            ThemeService service = CreateService();
 
             service.ApplyTheme(ThemeNames.Drakul);
 
@@ -67,11 +67,11 @@ public class ThemeServiceTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            var service = CreateService();
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            ThemeService service = CreateService();
 
             service.ApplyTheme(ThemeNames.Drakul);
-            var revisionAfterFirstApply = service.ThemeRevision;
+            int revisionAfterFirstApply = service.ThemeRevision;
             service.ApplyTheme(ThemeNames.Drakul);
 
             Assert.Equal(1, revisionAfterFirstApply);
@@ -84,15 +84,15 @@ public class ThemeServiceTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            var service = CreateService();
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            ThemeService service = CreateService();
 
             service.ApplyTheme(ThemeNames.Drakul);
-            var drakulRevision = service.ThemeRevision;
+            int drakulRevision = service.ThemeRevision;
             service.ApplyTheme(ThemeNames.Folio);
-            var folioRevision = service.ThemeRevision;
+            int folioRevision = service.ThemeRevision;
             service.ApplyTheme(ThemeNames.Sconce);
-            var sconceRevision = service.ThemeRevision;
+            int sconceRevision = service.ThemeRevision;
 
             Assert.True(drakulRevision < folioRevision);
             Assert.True(folioRevision < sconceRevision);
@@ -102,7 +102,7 @@ public class ThemeServiceTests
     [Fact]
     public void ApplyTheme_UnknownTheme_FallsBackToDefault()
     {
-        var service = CreateService();
+        ThemeService service = CreateService();
 
         service.ApplyTheme("NonExistent");
 
@@ -112,7 +112,7 @@ public class ThemeServiceTests
     [Fact]
     public void ApplyTheme_LegacyTheme_NormalizesToThemeForgeTheme()
     {
-        var service = CreateService();
+        ThemeService service = CreateService();
 
         service.ApplyTheme(ThemeNames.DraculaPro);
 
@@ -124,9 +124,9 @@ public class ThemeServiceTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            var service = CreateService();
-            var eventCount = 0;
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            ThemeService service = CreateService();
+            int eventCount = 0;
             string? lastTheme = null;
             service.ThemeChanged += themeName =>
             {
@@ -146,8 +146,8 @@ public class ThemeServiceTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            var service = CreateService();
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            ThemeService service = CreateService();
 
             service.ApplyTheme(ThemeNames.Drakul);
             service.ApplyAccentTint("Green");
@@ -162,7 +162,7 @@ public class ThemeServiceTests
     [Fact]
     public void ApplyPaletteBridgeResources_ThemeForgePalette_MapsToFluentResourceKeys()
     {
-        var resources = new ResourceDictionary
+        ResourceDictionary resources = new ResourceDictionary
         {
             ["BackgroundBrush"] = Brush("#282A36"),
             ["SurfaceBrush"] = Brush("#282A36"),
@@ -195,7 +195,7 @@ public class ThemeServiceTests
     [Fact]
     public void ClearPaletteBridgeResources_RemovesOnlyBridgeTargets()
     {
-        var resources = new ResourceDictionary
+        ResourceDictionary resources = new ResourceDictionary
         {
             ["BackgroundBrush"] = Brush("#282A36"),
             ["ApplicationBackgroundBrush"] = Brush("#282A36"),
@@ -214,8 +214,8 @@ public class ThemeServiceTests
     [Fact]
     public void ReapplyHighContrastIfEnabled_WhenEnabled_InvokesHighContrastAction()
     {
-        var applyCount = 0;
-        var service = CreateService(() => applyCount++);
+        int applyCount = 0;
+        ThemeService service = CreateService(() => applyCount++);
 
         service.ReapplyHighContrastIfEnabled(isHighContrastEnabled: true);
 
@@ -225,8 +225,8 @@ public class ThemeServiceTests
     [Fact]
     public void ReapplyHighContrastIfEnabled_WhenDisabled_DoesNotInvokeHighContrastAction()
     {
-        var applyCount = 0;
-        var service = CreateService(() => applyCount++);
+        int applyCount = 0;
+        ThemeService service = CreateService(() => applyCount++);
 
         service.ReapplyHighContrastIfEnabled(isHighContrastEnabled: false);
 
@@ -238,10 +238,10 @@ public class ThemeServiceTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
             scope.AddHighContrastDictionaryMarker();
-            var applyCount = 0;
-            var service = CreateService(() => applyCount++);
+            int applyCount = 0;
+            ThemeService service = CreateService(() => applyCount++);
 
             service.ApplyTheme(ThemeNames.Drakul);
 
@@ -256,12 +256,12 @@ public class ThemeServiceTests
     {
         WpfApplicationScope.RunOnStaThread(() =>
         {
-            using var scope = WpfApplicationScope.Create();
-            var applyCount = 0;
-            var service = CreateService(() => applyCount++);
+            using WpfApplicationScope scope = WpfApplicationScope.Create();
+            int applyCount = 0;
+            ThemeService service = CreateService(() => applyCount++);
 
             service.ApplyTheme(ThemeNames.Drakul);
-            var revisionAfterInitialApply = service.ThemeRevision;
+            int revisionAfterInitialApply = service.ThemeRevision;
             scope.AddHighContrastDictionaryMarker();
             service.ApplyTheme(ThemeNames.Drakul);
 
@@ -293,7 +293,7 @@ public class ThemeServiceTests
 
     private static void AssertBrush(string expectedColor, object? actual)
     {
-        var brush = Assert.IsType<SolidColorBrush>(actual);
+        SolidColorBrush brush = Assert.IsType<SolidColorBrush>(actual);
         Assert.Equal(Color(expectedColor), brush.Color);
     }
 }

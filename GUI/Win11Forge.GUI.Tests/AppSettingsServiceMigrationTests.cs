@@ -47,7 +47,7 @@ public class AppSettingsServiceMigrationTests
     [Fact]
     public void LoadSettings_AfterMigration_DoesNotReMigrate()
     {
-        var settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        string settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
         File.WriteAllText(
             settingsPath,
             """
@@ -56,14 +56,14 @@ public class AppSettingsServiceMigrationTests
 
         try
         {
-            var settings = new AppSettingsService(settingsPath).LoadSettings();
-            var reloaded = new AppSettingsService(settingsPath).LoadSettings();
+            AppSettings settings = new AppSettingsService(settingsPath).LoadSettings();
+            AppSettings reloaded = new AppSettingsService(settingsPath).LoadSettings();
 
             Assert.Equal(ThemeNames.Folio, settings.ThemeName);
             Assert.Equal(ThemeNames.Folio, reloaded.ThemeName);
 
-            using var document = JsonDocument.Parse(File.ReadAllText(settingsPath));
-            Assert.True(document.RootElement.TryGetProperty("themeName", out var themeName));
+            using JsonDocument document = JsonDocument.Parse(File.ReadAllText(settingsPath));
+            Assert.True(document.RootElement.TryGetProperty("themeName", out JsonElement themeName));
             Assert.Equal(ThemeNames.Folio, themeName.GetString());
         }
         finally
@@ -78,12 +78,12 @@ public class AppSettingsServiceMigrationTests
     [Fact]
     public void SaveAndLoadSettings_WindowPlacement_RoundTrips()
     {
-        var settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        string settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
 
         try
         {
-            var service = new AppSettingsService(settingsPath);
-            var settings = new AppSettings
+            AppSettingsService service = new AppSettingsService(settingsPath);
+            AppSettings settings = new AppSettings
             {
                 ThemeName = ThemeNames.Folio,
                 MainWindowPlacement = new WindowPlacementSettings
@@ -98,7 +98,7 @@ public class AppSettingsServiceMigrationTests
 
             Assert.True(service.SaveSettings(settings));
 
-            var reloaded = new AppSettingsService(settingsPath).LoadSettings();
+            AppSettings reloaded = new AppSettingsService(settingsPath).LoadSettings();
 
             Assert.NotNull(reloaded.MainWindowPlacement);
             Assert.Equal(-1200, reloaded.MainWindowPlacement.Left);
@@ -107,9 +107,9 @@ public class AppSettingsServiceMigrationTests
             Assert.Equal(900, reloaded.MainWindowPlacement.Height);
             Assert.Equal("Maximized", reloaded.MainWindowPlacement.WindowState);
 
-            using var document = JsonDocument.Parse(File.ReadAllText(settingsPath));
-            Assert.True(document.RootElement.TryGetProperty("mainWindowPlacement", out var placement));
-            Assert.True(placement.TryGetProperty("windowState", out var windowState));
+            using JsonDocument document = JsonDocument.Parse(File.ReadAllText(settingsPath));
+            Assert.True(document.RootElement.TryGetProperty("mainWindowPlacement", out JsonElement placement));
+            Assert.True(placement.TryGetProperty("windowState", out JsonElement windowState));
             Assert.Equal("Maximized", windowState.GetString());
         }
         finally
@@ -129,7 +129,7 @@ public class AppSettingsServiceMigrationTests
     [InlineData("UnknownTheme", ThemeNames.Drakul)]
     public void LoadSettings_LegacyThemeName_MigratesToThemeForgeTheme(string legacyTheme, string expectedTheme)
     {
-        var settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        string settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
         File.WriteAllText(
             settingsPath,
             $$"""
@@ -138,10 +138,10 @@ public class AppSettingsServiceMigrationTests
 
         try
         {
-            var settings = new AppSettingsService(settingsPath).LoadSettings();
+            AppSettings settings = new AppSettingsService(settingsPath).LoadSettings();
 
             Assert.Equal(expectedTheme, settings.ThemeName);
-            using var document = JsonDocument.Parse(File.ReadAllText(settingsPath));
+            using JsonDocument document = JsonDocument.Parse(File.ReadAllText(settingsPath));
             Assert.Equal(expectedTheme, document.RootElement.GetProperty("themeName").GetString());
             Assert.Equal(ThemeNames.DefaultAccentTint, document.RootElement.GetProperty("accentTintName").GetString());
         }
@@ -157,7 +157,7 @@ public class AppSettingsServiceMigrationTests
     [Fact]
     public void LoadSettings_InvalidAccentTint_MigratesToDefaultAccentTint()
     {
-        var settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        string settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
         File.WriteAllText(
             settingsPath,
             """
@@ -166,7 +166,7 @@ public class AppSettingsServiceMigrationTests
 
         try
         {
-            var settings = new AppSettingsService(settingsPath).LoadSettings();
+            AppSettings settings = new AppSettingsService(settingsPath).LoadSettings();
 
             Assert.Equal(ThemeNames.Drakul, settings.ThemeName);
             Assert.Equal(ThemeNames.DefaultAccentTint, settings.AccentTintName);
@@ -185,7 +185,7 @@ public class AppSettingsServiceMigrationTests
         string expectedThemeName,
         string legacyPropertyName = "isDarkTheme")
     {
-        var settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        string settingsPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
         File.WriteAllText(
             settingsPath,
             $$"""
@@ -194,13 +194,13 @@ public class AppSettingsServiceMigrationTests
 
         try
         {
-            var service = new AppSettingsService(settingsPath);
+            AppSettingsService service = new AppSettingsService(settingsPath);
 
-            var settings = service.LoadSettings();
+            AppSettings settings = service.LoadSettings();
 
             Assert.Equal(expectedThemeName, settings.ThemeName);
-            using var document = JsonDocument.Parse(File.ReadAllText(settingsPath));
-            Assert.True(document.RootElement.TryGetProperty("themeName", out var themeName));
+            using JsonDocument document = JsonDocument.Parse(File.ReadAllText(settingsPath));
+            Assert.True(document.RootElement.TryGetProperty("themeName", out JsonElement themeName));
             Assert.Equal(expectedThemeName, themeName.GetString());
         }
         finally

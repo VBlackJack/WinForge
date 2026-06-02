@@ -32,7 +32,7 @@ internal static class JsonHelper
     /// <returns>The string value or null if not found or not a string.</returns>
     public static string? GetJsonString(JsonElement element, string propertyName)
     {
-        if (element.TryGetProperty(propertyName, out var prop) &&
+        if (element.TryGetProperty(propertyName, out JsonElement prop) &&
             prop.ValueKind == JsonValueKind.String)
         {
             return prop.GetString();
@@ -48,7 +48,7 @@ internal static class JsonHelper
     /// <returns>True if the property exists and is true, false otherwise.</returns>
     public static bool GetJsonBool(JsonElement root, string propertyName)
     {
-        return root.TryGetProperty(propertyName, out var prop) && prop.ValueKind == JsonValueKind.True;
+        return root.TryGetProperty(propertyName, out JsonElement prop) && prop.ValueKind == JsonValueKind.True;
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ internal static class JsonHelper
     /// <returns>The integer value or the default value if not found or not a number.</returns>
     public static int GetJsonInt(JsonElement element, string propertyName, int defaultValue = 0)
     {
-        if (element.TryGetProperty(propertyName, out var prop) &&
+        if (element.TryGetProperty(propertyName, out JsonElement prop) &&
             prop.ValueKind == JsonValueKind.Number)
         {
             return prop.GetInt32();

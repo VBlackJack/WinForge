@@ -16,10 +16,10 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using Win11Forge.GUI.Exceptions;
 using Win11Forge.GUI.Helpers;
@@ -269,7 +269,7 @@ public partial class DashboardViewModel : ViewModelBase
         get
         {
             if (!LastScanTime.HasValue) return string.Empty;
-            var elapsed = DateTime.Now - LastScanTime.Value;
+            TimeSpan elapsed = DateTime.Now - LastScanTime.Value;
             if (elapsed.TotalSeconds < 60)
                 return Resources.Resources.Dashboard_LastCheck_JustNow;
             if (elapsed.TotalMinutes < 60)
@@ -346,14 +346,14 @@ public partial class DashboardViewModel : ViewModelBase
             await LoadSystemInfoAsync();
 
             // Load stats
-            var profiles = await _powerShellBridge.GetAvailableProfilesAsync();
+            List<string> profiles = await _powerShellBridge.GetAvailableProfilesAsync();
             ProfileCount = profiles.Count;
 
-            var apps = await _powerShellBridge.GetAllApplicationsAsync();
+            List<ApplicationModel> apps = await _powerShellBridge.GetAllApplicationsAsync();
             AppCount = apps.Count;
 
             // Load recent deployments
-            var history = await _historyService.GetRecentHistoryAsync(MaxRecentHistory);
+            List<DeploymentHistoryEntry> history = await _historyService.GetRecentHistoryAsync(MaxRecentHistory);
             RecentDeployments = new ObservableCollection<DeploymentHistoryEntry>(history);
             OnPropertyChanged(nameof(HasRecentDeployments));
 
@@ -414,7 +414,7 @@ public partial class DashboardViewModel : ViewModelBase
     {
         try
         {
-            var systemInfo = await _powerShellBridge.GetSystemInfoAsync();
+            SystemInfoModel systemInfo = await _powerShellBridge.GetSystemInfoAsync();
             if (systemInfo != null)
             {
                 Hostname = !string.IsNullOrEmpty(systemInfo.Hostname) ? systemInfo.Hostname : Environment.MachineName;
@@ -450,7 +450,7 @@ public partial class DashboardViewModel : ViewModelBase
     {
         try
         {
-            var prereqStatus = await _powerShellBridge.CheckPrerequisitesAsync();
+            PrerequisitesStatus prereqStatus = await _powerShellBridge.CheckPrerequisitesAsync();
             if (prereqStatus != null)
             {
                 PowerShellInstalled = prereqStatus.PowerShell7Installed;
@@ -500,7 +500,7 @@ public partial class DashboardViewModel : ViewModelBase
         ScanProgress = 0;
         ScanTotal = 0;
 
-        var tcs = new TaskCompletionSource<int>();
+        TaskCompletionSource<int> tcs = new TaskCompletionSource<int>();
 
         WeakReferenceMessenger.Default.Send(new TriggerScanMessage(
             progressCallback: (current, total) =>
@@ -516,8 +516,8 @@ public partial class DashboardViewModel : ViewModelBase
 
         try
         {
-            var timeoutMinutes = _settingsService.LoadSettings()?.UpdateScanTimeoutMinutes ?? 5;
-            var resultCount = await tcs.Task.WaitAsync(TimeSpan.FromMinutes(timeoutMinutes));
+            int timeoutMinutes = _settingsService.LoadSettings()?.UpdateScanTimeoutMinutes ?? 5;
+            int resultCount = await tcs.Task.WaitAsync(TimeSpan.FromMinutes(timeoutMinutes));
             UpdateCount = resultCount;
             LastScanTime = DateTime.Now;
             OnPropertyChanged(nameof(LastScanDisplay));

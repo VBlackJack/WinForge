@@ -67,13 +67,13 @@ public partial class PackageSearchService : IPackageSearchService
             throw new InvalidOperationException("Winget is not available.");
         }
 
-        var safeQuery = NormalizeQuery(query);
+        string safeQuery = NormalizeQuery(query);
         if (string.IsNullOrWhiteSpace(safeQuery))
         {
             return Array.Empty<PackageSearchResult>();
         }
 
-        var (exitCode, output, errorOutput) = await RunProcessAsync(
+        (int exitCode, string? output, string? errorOutput) = await RunProcessAsync(
             "winget",
             new[] { "search", safeQuery, "--source", "winget", "--accept-source-agreements" },
             cancellationToken);
@@ -83,7 +83,7 @@ public partial class PackageSearchService : IPackageSearchService
             throw new InvalidOperationException(string.IsNullOrWhiteSpace(errorOutput) ? output : errorOutput);
         }
 
-        var results = ParseWingetOutput(output, PackageSource.Winget, "winget");
+        IReadOnlyList<PackageSearchResult> results = ParseWingetOutput(output, PackageSource.Winget, "winget");
         return results.Take(NormalizeMaxResults(maxResults)).ToList();
     }
 
@@ -98,13 +98,13 @@ public partial class PackageSearchService : IPackageSearchService
             throw new InvalidOperationException("Chocolatey is not available.");
         }
 
-        var safeQuery = NormalizeQuery(query);
+        string safeQuery = NormalizeQuery(query);
         if (string.IsNullOrWhiteSpace(safeQuery))
         {
             return Array.Empty<PackageSearchResult>();
         }
 
-        var (exitCode, output, errorOutput) = await RunProcessAsync(
+        (int exitCode, string? output, string? errorOutput) = await RunProcessAsync(
             "choco",
             new[] { "search", safeQuery, "--limit-output" },
             cancellationToken);
@@ -114,7 +114,7 @@ public partial class PackageSearchService : IPackageSearchService
             throw new InvalidOperationException(string.IsNullOrWhiteSpace(errorOutput) ? output : errorOutput);
         }
 
-        var results = ParseChocolateyOutput(output);
+        IReadOnlyList<PackageSearchResult> results = ParseChocolateyOutput(output);
         return results.Take(NormalizeMaxResults(maxResults)).ToList();
     }
 
@@ -129,13 +129,13 @@ public partial class PackageSearchService : IPackageSearchService
             throw new InvalidOperationException("Winget is not available.");
         }
 
-        var safeQuery = NormalizeQuery(query);
+        string safeQuery = NormalizeQuery(query);
         if (string.IsNullOrWhiteSpace(safeQuery))
         {
             return Array.Empty<PackageSearchResult>();
         }
 
-        var (exitCode, output, errorOutput) = await RunProcessAsync(
+        (int exitCode, string? output, string? errorOutput) = await RunProcessAsync(
             "winget",
             new[] { "search", safeQuery, "--source", "msstore", "--accept-source-agreements" },
             cancellationToken);
@@ -145,7 +145,7 @@ public partial class PackageSearchService : IPackageSearchService
             throw new InvalidOperationException(string.IsNullOrWhiteSpace(errorOutput) ? output : errorOutput);
         }
 
-        var results = ParseWingetOutput(output, PackageSource.Store, "msstore");
+        IReadOnlyList<PackageSearchResult> results = ParseWingetOutput(output, PackageSource.Store, "msstore");
         return results.Take(NormalizeMaxResults(maxResults)).ToList();
     }
 
@@ -162,7 +162,7 @@ public partial class PackageSearchService : IPackageSearchService
             return string.Empty;
         }
 
-        var trimmed = query.Trim();
+        string trimmed = query.Trim();
         if (trimmed.Length > 120)
         {
             trimmed = trimmed[..120];
@@ -175,7 +175,7 @@ public partial class PackageSearchService : IPackageSearchService
 
     private static bool ContainsNoResultMarker(string output, string errorOutput)
     {
-        var combined = $"{output}\n{errorOutput}";
+        string combined = $"{output}\n{errorOutput}";
         return combined.Contains("No package found", StringComparison.OrdinalIgnoreCase) ||
                combined.Contains("0 packages found", StringComparison.OrdinalIgnoreCase);
     }
@@ -187,13 +187,13 @@ public partial class PackageSearchService : IPackageSearchService
             return Array.Empty<PackageSearchResult>();
         }
 
-        var uniqueIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var results = new List<PackageSearchResult>();
-        var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        HashSet<string> uniqueIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        List<PackageSearchResult> results = new List<PackageSearchResult>();
+        string[] lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
-        foreach (var line in lines)
+        foreach (string line in lines)
         {
-            var text = StripAnsi(line).Trim();
+            string text = StripAnsi(line).Trim();
             if (string.IsNullOrWhiteSpace(text))
             {
                 continue;
@@ -206,20 +206,20 @@ public partial class PackageSearchService : IPackageSearchService
                 continue;
             }
 
-            var separatorIndex = text.IndexOf('|');
+            int separatorIndex = text.IndexOf('|');
             if (separatorIndex <= 0)
             {
                 continue;
             }
 
-            var packageId = text[..separatorIndex].Trim();
+            string packageId = text[..separatorIndex].Trim();
             if (string.IsNullOrWhiteSpace(packageId) || !uniqueIds.Add(packageId))
             {
                 continue;
             }
 
-            var versionRaw = text[(separatorIndex + 1)..].Trim();
-            var version = string.IsNullOrWhiteSpace(versionRaw) ? null : versionRaw;
+            string versionRaw = text[(separatorIndex + 1)..].Trim();
+            string? version = string.IsNullOrWhiteSpace(versionRaw) ? null : versionRaw;
 
             results.Add(new PackageSearchResult(
                 packageId,
@@ -241,7 +241,7 @@ public partial class PackageSearchService : IPackageSearchService
             return Array.Empty<PackageSearchResult>();
         }
 
-        var lines = output
+        List<string> lines = output
             .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
             .Select(l => StripAnsi(l).TrimEnd())
             .Where(l => !string.IsNullOrWhiteSpace(l))
@@ -252,10 +252,10 @@ public partial class PackageSearchService : IPackageSearchService
             return Array.Empty<PackageSearchResult>();
         }
 
-        var startIndex = 0;
-        for (var i = 0; i < lines.Count; i++)
+        int startIndex = 0;
+        for (int i = 0; i < lines.Count; i++)
         {
-            var current = lines[i].Trim();
+            string current = lines[i].Trim();
             if (LooksLikeWingetHeader(current))
             {
                 startIndex = i + 1;
@@ -267,18 +267,18 @@ public partial class PackageSearchService : IPackageSearchService
             }
         }
 
-        var results = new List<PackageSearchResult>();
-        var uniqueIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        List<PackageSearchResult> results = new List<PackageSearchResult>();
+        HashSet<string> uniqueIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        for (var i = startIndex; i < lines.Count; i++)
+        for (int i = startIndex; i < lines.Count; i++)
         {
-            var line = lines[i].Trim();
+            string line = lines[i].Trim();
             if (string.IsNullOrWhiteSpace(line) || IsSeparatorLine(line) || IsWingetNoiseLine(line))
             {
                 continue;
             }
 
-            var columns = ColumnSplitRegex()
+            string[] columns = ColumnSplitRegex()
                 .Split(line)
                 .Where(c => !string.IsNullOrWhiteSpace(c))
                 .ToArray();
@@ -288,10 +288,10 @@ public partial class PackageSearchService : IPackageSearchService
                 continue;
             }
 
-            var packageName = columns[0].Trim();
-            var packageId = columns[1].Trim();
-            var version = NormalizeVersion(columns[2].Trim());
-            var sourceToken = columns.Length >= 4 ? columns[3].Trim() : expectedSourceToken;
+            string packageName = columns[0].Trim();
+            string packageId = columns[1].Trim();
+            string? version = NormalizeVersion(columns[2].Trim());
+            string sourceToken = columns.Length >= 4 ? columns[3].Trim() : expectedSourceToken;
 
             if (string.IsNullOrWhiteSpace(packageId) ||
                 string.IsNullOrWhiteSpace(packageName) ||
@@ -335,7 +335,7 @@ public partial class PackageSearchService : IPackageSearchService
             return false;
         }
 
-        var columns = ColumnSplitRegex()
+        string[] columns = ColumnSplitRegex()
             .Split(line.Trim())
             .Where(c => !string.IsNullOrWhiteSpace(c))
             .ToArray();
@@ -345,8 +345,8 @@ public partial class PackageSearchService : IPackageSearchService
             return false;
         }
 
-        var hasIdColumn = columns.Any(c => c.Equals("Id", StringComparison.OrdinalIgnoreCase));
-        var hasVersionColumn = columns.Any(c => c.Equals("Version", StringComparison.OrdinalIgnoreCase));
+        bool hasIdColumn = columns.Any(c => c.Equals("Id", StringComparison.OrdinalIgnoreCase));
+        bool hasVersionColumn = columns.Any(c => c.Equals("Version", StringComparison.OrdinalIgnoreCase));
         return hasIdColumn && hasVersionColumn;
     }
 
@@ -370,7 +370,7 @@ public partial class PackageSearchService : IPackageSearchService
     {
         try
         {
-            var (exitCode, _, _) = RunProcessSync("winget", "--version");
+            (int exitCode, string _, string _) = RunProcessSync("winget", "--version");
             return exitCode == 0;
         }
         catch
@@ -383,7 +383,7 @@ public partial class PackageSearchService : IPackageSearchService
     {
         try
         {
-            var (exitCode, _, _) = RunProcessSync("choco", "--version");
+            (int exitCode, string _, string _) = RunProcessSync("choco", "--version");
             return exitCode == 0;
         }
         catch
@@ -394,7 +394,7 @@ public partial class PackageSearchService : IPackageSearchService
 
     private static (int ExitCode, string Output, string ErrorOutput) RunProcessSync(string fileName, string arguments)
     {
-        using var process = new Process
+        using Process process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
@@ -408,8 +408,8 @@ public partial class PackageSearchService : IPackageSearchService
         };
 
         process.Start();
-        var output = process.StandardOutput.ReadToEnd();
-        var errorOutput = process.StandardError.ReadToEnd();
+        string output = process.StandardOutput.ReadToEnd();
+        string errorOutput = process.StandardError.ReadToEnd();
         process.WaitForExit(5000);
 
         return (process.ExitCode, output, errorOutput);
@@ -420,7 +420,7 @@ public partial class PackageSearchService : IPackageSearchService
         IEnumerable<string> arguments,
         CancellationToken cancellationToken)
     {
-        using var process = new Process
+        using Process process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
@@ -432,17 +432,17 @@ public partial class PackageSearchService : IPackageSearchService
             }
         };
 
-        foreach (var argument in arguments)
+        foreach (string argument in arguments)
         {
             process.StartInfo.ArgumentList.Add(argument);
         }
 
         process.Start();
 
-        var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+        Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        Task<string> errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
 
-        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        using CancellationTokenSource timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutCts.CancelAfter(TimeoutDefaults.PackageOperation);
 
         try

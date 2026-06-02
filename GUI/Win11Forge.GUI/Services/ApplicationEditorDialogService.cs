@@ -65,7 +65,7 @@ public sealed class ApplicationEditorDialogService : IApplicationEditorDialogSer
     /// <inheritdoc/>
     public Task<EditableApplicationModel?> ShowAddDialogAsync(EditableApplicationModel? initialApplication = null)
     {
-        var owner = GetOwner();
+        object owner = GetOwner();
         return _showAddDialogAsync(owner, initialApplication);
     }
 
@@ -74,7 +74,7 @@ public sealed class ApplicationEditorDialogService : IApplicationEditorDialogSer
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        var owner = GetOwner();
+        object owner = GetOwner();
         return _showEditDialogAsync(owner, application);
     }
 

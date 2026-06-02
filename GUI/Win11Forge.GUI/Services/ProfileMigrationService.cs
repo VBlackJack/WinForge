@@ -71,8 +71,8 @@ public sealed class ProfileMigrationService : IProfileMigrationService
     /// <inheritdoc/>
     public ProfileMigrationResult EnsureProfilesMigrated()
     {
-        var userProfilesDirectory = _pathService.UserProfilesDirectory;
-        var sentinelPath = Path.Combine(
+        string userProfilesDirectory = _pathService.UserProfilesDirectory;
+        string sentinelPath = Path.Combine(
             userProfilesDirectory,
             Win11ForgePathNames.ProfileMigrationSentinelFileName);
 
@@ -81,16 +81,16 @@ public sealed class ProfileMigrationService : IProfileMigrationService
             return new ProfileMigrationResult(false, false, false, sentinelPath);
         }
 
-        var userProfilesAlreadyExisted = Directory.Exists(userProfilesDirectory);
+        bool userProfilesAlreadyExisted = Directory.Exists(userProfilesDirectory);
         Directory.CreateDirectory(userProfilesDirectory);
 
-        var sourceDefaults = false;
+        bool sourceDefaults = false;
         if (!userProfilesAlreadyExisted)
         {
             sourceDefaults = CopyDefaultProfiles(userProfilesDirectory);
         }
 
-        var sourceLegacy = MigrateLegacyProfiles(userProfilesDirectory);
+        bool sourceLegacy = MigrateLegacyProfiles(userProfilesDirectory);
         WriteSentinel(sentinelPath, sourceLegacy, sourceDefaults);
 
         return new ProfileMigrationResult(true, sourceLegacy, sourceDefaults, sentinelPath);
@@ -98,18 +98,18 @@ public sealed class ProfileMigrationService : IProfileMigrationService
 
     private bool CopyDefaultProfiles(string userProfilesDirectory)
     {
-        var defaultProfilesDirectory = _pathService.DefaultProfilesDirectory;
+        string defaultProfilesDirectory = _pathService.DefaultProfilesDirectory;
         if (!Directory.Exists(defaultProfilesDirectory))
         {
             return false;
         }
 
-        var copied = false;
-        foreach (var sourceFile in Directory.GetFiles(defaultProfilesDirectory, "*", SearchOption.AllDirectories))
+        bool copied = false;
+        foreach (string sourceFile in Directory.GetFiles(defaultProfilesDirectory, "*", SearchOption.AllDirectories))
         {
-            var relativePath = Path.GetRelativePath(defaultProfilesDirectory, sourceFile);
-            var targetFile = Path.Combine(userProfilesDirectory, relativePath);
-            var targetDirectory = Path.GetDirectoryName(targetFile);
+            string relativePath = Path.GetRelativePath(defaultProfilesDirectory, sourceFile);
+            string targetFile = Path.Combine(userProfilesDirectory, relativePath);
+            string? targetDirectory = Path.GetDirectoryName(targetFile);
             if (!string.IsNullOrEmpty(targetDirectory))
             {
                 Directory.CreateDirectory(targetDirectory);
@@ -130,21 +130,21 @@ public sealed class ProfileMigrationService : IProfileMigrationService
     // TODO: add resumption-after-failure coverage.
     private bool MigrateLegacyProfiles(string userProfilesDirectory)
     {
-        var legacyProfilesDirectory = _pathService.LegacyInstallProfilesDirectory;
+        string legacyProfilesDirectory = _pathService.LegacyInstallProfilesDirectory;
         if (!Directory.Exists(legacyProfilesDirectory))
         {
             return false;
         }
 
-        var defaultProfileFiles = GetDefaultProfileFiles();
-        var defaultProfilesDirectory = _pathService.DefaultProfilesDirectory;
-        var legacyAndDefaultsAreSameDirectory = string.Equals(
+        Dictionary<string, string> defaultProfileFiles = GetDefaultProfileFiles();
+        string defaultProfilesDirectory = _pathService.DefaultProfilesDirectory;
+        bool legacyAndDefaultsAreSameDirectory = string.Equals(
             Path.GetFullPath(legacyProfilesDirectory).TrimEnd(Path.DirectorySeparatorChar),
             Path.GetFullPath(defaultProfilesDirectory).TrimEnd(Path.DirectorySeparatorChar),
             StringComparison.OrdinalIgnoreCase);
 
-        var migrated = false;
-        foreach (var legacyFile in Directory.GetFiles(
+        bool migrated = false;
+        foreach (string legacyFile in Directory.GetFiles(
             legacyProfilesDirectory,
             $"*{Win11ForgePathNames.JsonFileExtension}",
             SearchOption.TopDirectoryOnly))
@@ -154,14 +154,14 @@ public sealed class ProfileMigrationService : IProfileMigrationService
                 continue;
             }
 
-            var fileName = Path.GetFileName(legacyFile);
-            var isDefaultProfile = defaultProfileFiles.TryGetValue(fileName, out var defaultFile);
+            string fileName = Path.GetFileName(legacyFile);
+            bool isDefaultProfile = defaultProfileFiles.TryGetValue(fileName, out string? defaultFile);
             if (isDefaultProfile && defaultFile != null && FilesHaveSameContent(legacyFile, defaultFile))
             {
                 continue;
             }
 
-            var targetFile = GetLegacyProfileTargetPath(userProfilesDirectory, legacyFile);
+            string? targetFile = GetLegacyProfileTargetPath(userProfilesDirectory, legacyFile);
             if (targetFile == null)
             {
                 continue;
@@ -176,7 +176,7 @@ public sealed class ProfileMigrationService : IProfileMigrationService
 
     private Dictionary<string, string> GetDefaultProfileFiles()
     {
-        var defaultProfilesDirectory = _pathService.DefaultProfilesDirectory;
+        string defaultProfilesDirectory = _pathService.DefaultProfilesDirectory;
         if (!Directory.Exists(defaultProfilesDirectory))
         {
             return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -191,8 +191,8 @@ public sealed class ProfileMigrationService : IProfileMigrationService
 
     private static string? GetLegacyProfileTargetPath(string userProfilesDirectory, string legacyFile)
     {
-        var fileName = Path.GetFileName(legacyFile);
-        var targetFile = Path.Combine(userProfilesDirectory, fileName);
+        string fileName = Path.GetFileName(legacyFile);
+        string targetFile = Path.Combine(userProfilesDirectory, fileName);
 
         if (!File.Exists(targetFile))
         {
@@ -204,13 +204,13 @@ public sealed class ProfileMigrationService : IProfileMigrationService
             return null;
         }
 
-        var baseName = Path.GetFileNameWithoutExtension(fileName);
-        for (var index = 1; index < 1000; index++)
+        string baseName = Path.GetFileNameWithoutExtension(fileName);
+        for (int index = 1; index < 1000; index++)
         {
-            var suffix = index == 1
+            string suffix = index == 1
                 ? Win11ForgePathNames.LegacyProfileConflictSuffix
                 : $"{Win11ForgePathNames.LegacyProfileConflictSuffix}-{index}";
-            var candidate = Path.Combine(
+            string candidate = Path.Combine(
                 userProfilesDirectory,
                 $"{baseName}{suffix}{Win11ForgePathNames.JsonFileExtension}");
 
@@ -230,8 +230,8 @@ public sealed class ProfileMigrationService : IProfileMigrationService
 
     private static bool FilesHaveSameContent(string firstPath, string secondPath)
     {
-        var first = new FileInfo(firstPath);
-        var second = new FileInfo(secondPath);
+        FileInfo first = new FileInfo(firstPath);
+        FileInfo second = new FileInfo(secondPath);
         if (!first.Exists || !second.Exists || first.Length != second.Length)
         {
             return false;
@@ -242,13 +242,13 @@ public sealed class ProfileMigrationService : IProfileMigrationService
 
     private static void WriteSentinel(string sentinelPath, bool sourceLegacy, bool sourceDefaults)
     {
-        var payload = new ProfileMigrationSentinel(
+        ProfileMigrationSentinel payload = new ProfileMigrationSentinel(
             Win11ForgePathNames.ProfileMigrationVersion,
             DateTimeOffset.UtcNow,
             sourceLegacy,
             sourceDefaults);
 
-        var json = JsonSerializer.Serialize(payload, SentinelJsonOptions);
+        string json = JsonSerializer.Serialize(payload, SentinelJsonOptions);
         File.WriteAllText(sentinelPath, json);
     }
 

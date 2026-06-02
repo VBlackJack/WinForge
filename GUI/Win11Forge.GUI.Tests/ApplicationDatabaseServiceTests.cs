@@ -38,7 +38,7 @@ public class ApplicationDatabaseServiceTests
     public async Task LoadApplicationsAsync_ShouldParseCamelCaseSourceProperties()
     {
         // Arrange
-        var repoRoot = CreateTempRepository();
+        string repoRoot = CreateTempRepository();
         try
         {
             WriteDatabase(repoRoot, """
@@ -72,14 +72,14 @@ public class ApplicationDatabaseServiceTests
             }
             """);
 
-            var bridge = CreateBridge(repoRoot);
-            var service = new ApplicationDatabaseService(bridge.Object);
+            Mock<IPowerShellBridge> bridge = CreateBridge(repoRoot);
+            ApplicationDatabaseService service = new ApplicationDatabaseService(bridge.Object);
 
             // Act
-            var applications = (await service.LoadApplicationsAsync()).ToList();
+            List<EditableApplicationModel> applications = (await service.LoadApplicationsAsync()).ToList();
 
             // Assert
-            var app = Assert.Single(applications);
+            EditableApplicationModel app = Assert.Single(applications);
             Assert.Equal("TestApp", app.AppId);
             Assert.Equal("Google.Chrome", app.Sources.Winget);
             Assert.Equal("googlechrome", app.Sources.Chocolatey);
@@ -105,7 +105,7 @@ public class ApplicationDatabaseServiceTests
     public async Task SaveApplicationAsync_ShouldSerializePascalCaseSourceKeys()
     {
         // Arrange
-        var repoRoot = CreateTempRepository();
+        string repoRoot = CreateTempRepository();
         try
         {
             WriteDatabase(repoRoot, """
@@ -116,15 +116,15 @@ public class ApplicationDatabaseServiceTests
             """);
 
             string? capturedScript = null;
-            var bridge = CreateBridge(repoRoot);
+            Mock<IPowerShellBridge> bridge = CreateBridge(repoRoot);
             bridge
                 .Setup(x => x.ExecuteCommandAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Callback<string, CancellationToken>((script, _) => capturedScript = script)
                 .ReturnsAsync("""{"Success":true}""");
 
-            var service = new ApplicationDatabaseService(bridge.Object);
+            ApplicationDatabaseService service = new ApplicationDatabaseService(bridge.Object);
 
-            var app = new EditableApplicationModel
+            EditableApplicationModel app = new EditableApplicationModel
             {
                 AppId = "MyTestApp",
                 Name = "My Test App",
@@ -168,7 +168,7 @@ public class ApplicationDatabaseServiceTests
             };
 
             // Act
-            var result = await service.SaveApplicationAsync(app, isNew: true);
+            ApplicationSaveResult result = await service.SaveApplicationAsync(app, isNew: true);
 
             // Assert
             Assert.True(result.Success);
@@ -415,7 +415,7 @@ public class ApplicationDatabaseServiceTests
 
     private static Mock<IPowerShellBridge> CreateBridge(string repositoryRoot)
     {
-        var bridge = new Mock<IPowerShellBridge>(MockBehavior.Strict);
+        Mock<IPowerShellBridge> bridge = new Mock<IPowerShellBridge>(MockBehavior.Strict);
         bridge.SetupGet(x => x.RepositoryRoot).Returns(repositoryRoot);
         bridge
             .Setup(x => x.ExecuteCommandAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -426,7 +426,7 @@ public class ApplicationDatabaseServiceTests
 
     private static string CreateTempRepository()
     {
-        var root = Path.Combine(
+        string root = Path.Combine(
             Path.GetTempPath(),
             "Win11Forge.Gui.Tests",
             Guid.NewGuid().ToString("N"));
@@ -437,7 +437,7 @@ public class ApplicationDatabaseServiceTests
 
     private static void WriteDatabase(string repoRoot, string json)
     {
-        var path = Path.Combine(repoRoot, "Apps", "Database", "applications.json");
+        string path = Path.Combine(repoRoot, "Apps", "Database", "applications.json");
         File.WriteAllText(path, json, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
     }
 

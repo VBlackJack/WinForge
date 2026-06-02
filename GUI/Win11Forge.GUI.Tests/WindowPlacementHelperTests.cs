@@ -25,7 +25,7 @@ public sealed class WindowPlacementHelperTests
     [Fact]
     public void CalculatePlacement_NoSavedPlacement_UsesErgonomicDefaultWhenItFits()
     {
-        var decision = WindowPlacementHelper.CalculatePlacement(
+        WindowPlacementDecision decision = WindowPlacementHelper.CalculatePlacement(
             savedPlacement: null,
             workAreas: [new Rect(0, 0, 1920, 1032)],
             defaultSize: new Size(1680, 960),
@@ -41,9 +41,9 @@ public sealed class WindowPlacementHelperTests
     [Fact]
     public void CalculatePlacement_NoSavedPlacement_ClampsToSmallScreenWorkArea()
     {
-        var workArea = new Rect(0, 0, 1366, 720);
+        Rect workArea = new Rect(0, 0, 1366, 720);
 
-        var decision = WindowPlacementHelper.CalculatePlacement(
+        WindowPlacementDecision decision = WindowPlacementHelper.CalculatePlacement(
             savedPlacement: null,
             workAreas: [workArea],
             defaultSize: new Size(1680, 960),
@@ -58,7 +58,7 @@ public sealed class WindowPlacementHelperTests
     [Fact]
     public void CalculatePlacement_NegativeLeftOnConnectedSecondary_IsPreserved()
     {
-        var placement = new WindowPlacementSettings
+        WindowPlacementSettings placement = new WindowPlacementSettings
         {
             Left = -1500,
             Top = 100,
@@ -67,7 +67,7 @@ public sealed class WindowPlacementHelperTests
             WindowState = "Normal"
         };
 
-        var decision = WindowPlacementHelper.CalculatePlacement(
+        WindowPlacementDecision decision = WindowPlacementHelper.CalculatePlacement(
             placement,
             [
                 new Rect(0, 0, 1920, 1032),
@@ -86,7 +86,7 @@ public sealed class WindowPlacementHelperTests
     [Fact]
     public void CalculatePlacement_OffscreenSavedBounds_FallsBackVisibleAndPreservesMaximized()
     {
-        var placement = new WindowPlacementSettings
+        WindowPlacementSettings placement = new WindowPlacementSettings
         {
             Left = 5000,
             Top = 120,
@@ -95,7 +95,7 @@ public sealed class WindowPlacementHelperTests
             WindowState = "Maximized"
         };
 
-        var decision = WindowPlacementHelper.CalculatePlacement(
+        WindowPlacementDecision decision = WindowPlacementHelper.CalculatePlacement(
             placement,
             [new Rect(0, 0, 1920, 1032)],
             defaultSize: new Size(1680, 960),
@@ -111,8 +111,8 @@ public sealed class WindowPlacementHelperTests
     [Fact]
     public void CalculatePlacement_OversizedSavedBounds_ClampsToCurrentWorkArea()
     {
-        var workArea = new Rect(0, 0, 1366, 720);
-        var placement = new WindowPlacementSettings
+        Rect workArea = new Rect(0, 0, 1366, 720);
+        WindowPlacementSettings placement = new WindowPlacementSettings
         {
             Left = 0,
             Top = 0,
@@ -121,7 +121,7 @@ public sealed class WindowPlacementHelperTests
             WindowState = "Normal"
         };
 
-        var decision = WindowPlacementHelper.CalculatePlacement(
+        WindowPlacementDecision decision = WindowPlacementHelper.CalculatePlacement(
             placement,
             [workArea],
             defaultSize: new Size(1680, 960),

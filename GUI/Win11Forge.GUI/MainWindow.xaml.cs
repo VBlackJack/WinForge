@@ -22,13 +22,13 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Wpf.Ui.Controls;
 using Win11Forge.GUI.Controls;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Messages;
 using Win11Forge.GUI.Services;
 using Win11Forge.GUI.ViewModels;
 using Win11Forge.GUI.Views;
+using Wpf.Ui.Controls;
 using Loc = Win11Forge.GUI.Resources.Resources;
 
 namespace Win11Forge.GUI;
@@ -136,7 +136,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         // Initialize view-owned commands
         NavigateToCommand = new RelayCommand<string>(index =>
         {
-            if (int.TryParse(index, out var viewIndex))
+            if (int.TryParse(index, out int viewIndex))
             {
                 NavigateTo(viewIndex);
             }
@@ -211,7 +211,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     /// </summary>
     private FrameworkElement GetOrCreateView(ViewIndex index)
     {
-        if (_viewCache.TryGetValue(index, out var cached))
+        if (_viewCache.TryGetValue(index, out FrameworkElement? cached))
             return cached;
 
         FrameworkElement view = index switch
@@ -286,7 +286,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     {
         try
         {
-            var settings = _settingsService?.LoadSettings();
+            AppSettings? settings = _settingsService?.LoadSettings();
             WindowPlacementHelper.ApplyStartupPlacement(this, settings?.MainWindowPlacement);
         }
         catch (Exception ex)
@@ -304,7 +304,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
         try
         {
-            var settings = _settingsService.LoadSettings();
+            AppSettings settings = _settingsService.LoadSettings();
             settings.MainWindowPlacement = WindowPlacementHelper.CapturePlacement(this);
             if (!_settingsService.SaveSettings(settings))
             {
@@ -337,7 +337,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     {
         if (BreadcrumbControl == null) return;
 
-        var labels = new[]
+        string[] labels = new[]
         {
             Loc.Nav_Dashboard,
             Loc.Nav_Prerequisites,
@@ -362,11 +362,11 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             if (_initializationFailed || _viewModel == null) return;
 
             // Initialize toast service with WPF UI snackbar (created programmatically)
-            var snackbar = new Snackbar(RootSnackbarPresenter) { Timeout = TimeSpan.FromSeconds(3) };
+            Snackbar snackbar = new Snackbar(RootSnackbarPresenter) { Timeout = TimeSpan.FromSeconds(3) };
             _toastService?.SetSnackbarControl(snackbar);
 
             // Initialize dialog service with ContentDialog host
-            var dialogService = App.GetService<IDialogService>();
+            IDialogService dialogService = App.GetService<IDialogService>();
             if (dialogService is DialogService ds)
             {
                 ds.SetDialogHost(RootContentDialog);
@@ -378,7 +378,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             await _viewModel.PromptBatchResumeIfPendingAsync(dialogService);
 
             // Check for first run and show onboarding
-            var settings = _settingsService?.LoadSettings();
+            AppSettings? settings = _settingsService?.LoadSettings();
             if (settings?.IsFirstRun == true)
             {
                 await ShowOnboardingAsync();
@@ -425,7 +425,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         {
             System.Diagnostics.Debug.WriteLine("Starting detection cache pre-warming...");
             await facade.WarmDetectionCacheAsync();
-            var stats = facade.GetDetectionCacheStatistics();
+            CacheStatistics stats = facade.GetDetectionCacheStatistics();
             System.Diagnostics.Debug.WriteLine($"Cache warmed: {stats.PackageCount} packages in {stats.AverageDetectionTime.TotalMilliseconds:F0}ms");
         }
     }
@@ -446,10 +446,10 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         if (!IsLoaded || _isNavigating) return;
 
         // Try SelectedItem first
-        var selectedItem = RootNavigation.SelectedItem;
+        INavigationViewItem? selectedItem = RootNavigation.SelectedItem;
         if (selectedItem != null)
         {
-            var idx = RootNavigation.MenuItems.IndexOf(selectedItem);
+            int idx = RootNavigation.MenuItems.IndexOf(selectedItem);
             if (idx >= 0)
             {
                 SelectNavigationItem(idx);
@@ -458,7 +458,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         }
 
         // Fallback: find the active item
-        for (var i = 0; i < RootNavigation.MenuItems.Count; i++)
+        for (int i = 0; i < RootNavigation.MenuItems.Count; i++)
         {
             if (RootNavigation.MenuItems[i] is NavigationViewItem item && item.IsActive)
             {
@@ -479,15 +479,15 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
         if (sender is NavigationViewItem item)
         {
-            var tag = item.Tag;
-            if (tag is string tagStr && int.TryParse(tagStr, out var index))
+            object tag = item.Tag;
+            if (tag is string tagStr && int.TryParse(tagStr, out int index))
             {
                 SelectNavigationItem(index);
             }
             else
             {
                 // Tag might be int if XAML parsed it differently
-                var idx = RootNavigation.MenuItems.IndexOf(item);
+                int idx = RootNavigation.MenuItems.IndexOf(item);
                 if (idx >= 0)
                     SelectNavigationItem(idx);
             }
@@ -518,7 +518,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     /// </summary>
     private void SetActiveItem(int index)
     {
-        for (var i = 0; i < RootNavigation.MenuItems.Count; i++)
+        for (int i = 0; i < RootNavigation.MenuItems.Count; i++)
         {
             if (RootNavigation.MenuItems[i] is NavigationViewItem item)
             {
@@ -546,8 +546,8 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
         try
         {
-            var viewIndex = (ViewIndex)selectedIndex;
-            var view = GetOrCreateView(viewIndex);
+            ViewIndex viewIndex = (ViewIndex)selectedIndex;
+            FrameworkElement view = GetOrCreateView(viewIndex);
             RootNavigation.ReplaceContent(view, null);
 
             // Only update the index AFTER content was successfully replaced
@@ -606,7 +606,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
     private async Task InitializeDashboardAsync()
     {
-        var dashboardViewModel = _viewModel?.DashboardViewModel;
+        DashboardViewModel? dashboardViewModel = _viewModel?.DashboardViewModel;
         if (_dashboardInitialized || dashboardViewModel == null) return;
 
         await dashboardViewModel.InitializeAsync();
@@ -615,7 +615,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
     private async Task InitializeDeploymentAsync()
     {
-        var deploymentViewModel = _viewModel?.DeploymentViewModel;
+        DeploymentViewModel? deploymentViewModel = _viewModel?.DeploymentViewModel;
         if (_deploymentInitialized || deploymentViewModel == null) return;
 
         await deploymentViewModel.InitializeAsync();
@@ -624,7 +624,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
     private async Task InitializeAppsAsync()
     {
-        var appsViewModel = _viewModel?.AppsViewModel;
+        AppsViewModel? appsViewModel = _viewModel?.AppsViewModel;
         if (_appsInitialized || appsViewModel == null) return;
 
         await appsViewModel.InitializeAsync();
@@ -633,7 +633,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
     private async Task InitializeSettingsAsync()
     {
-        var settingsViewModel = _viewModel?.SettingsViewModel;
+        SettingsViewModel? settingsViewModel = _viewModel?.SettingsViewModel;
         if (_settingsInitialized || settingsViewModel == null) return;
 
         await settingsViewModel.InitializeAsync();
@@ -642,7 +642,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
     private async Task InitializePrerequisitesAsync()
     {
-        var prerequisitesViewModel = _viewModel?.PrerequisitesViewModel;
+        PrerequisitesViewModel? prerequisitesViewModel = _viewModel?.PrerequisitesViewModel;
         if (_prerequisitesInitialized || prerequisitesViewModel == null) return;
 
         await prerequisitesViewModel.InitializeAsync();
@@ -651,7 +651,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
     private async Task InitializeAppCatalogAsync()
     {
-        var appCatalogViewModel = _viewModel?.AppCatalogViewModel;
+        AppCatalogViewModel? appCatalogViewModel = _viewModel?.AppCatalogViewModel;
         if (_appCatalogInitialized || appCatalogViewModel == null) return;
 
         await appCatalogViewModel.LoadApplicationsCommand.ExecuteAsync(null);
@@ -678,7 +678,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             try
             {
                 if (_settingsService == null) return;
-                var settings = _settingsService.LoadSettings();
+                AppSettings settings = _settingsService.LoadSettings();
                 settings.LastNavigationIndex = viewIndex;
                 if (!_settingsService.SaveSettings(settings))
                 {
@@ -700,12 +700,12 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     {
         try
         {
-            var onboardingControl = new OnboardingDialog();
+            OnboardingDialog onboardingControl = new OnboardingDialog();
             onboardingControl.Completed += (_, dontShowAgain) =>
             {
                 if (dontShowAgain && _settingsService != null)
                 {
-                    var settings = _settingsService.LoadSettings();
+                    AppSettings settings = _settingsService.LoadSettings();
                     settings.IsFirstRun = false;
                     if (!_settingsService.SaveSettings(settings))
                     {
@@ -714,7 +714,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
                 }
             };
 
-            var dialog = new Wpf.Ui.Controls.ContentDialog(RootContentDialog)
+            ContentDialog dialog = new Wpf.Ui.Controls.ContentDialog(RootContentDialog)
             {
                 Title = Loc.Onboarding_Welcome ?? "Welcome",
                 Content = onboardingControl,
@@ -725,7 +725,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             // Mark first run complete after dialog closes
             if (_settingsService != null)
             {
-                var currentSettings = _settingsService.LoadSettings();
+                AppSettings currentSettings = _settingsService.LoadSettings();
                 currentSettings.IsFirstRun = false;
                 if (!_settingsService.SaveSettings(currentSettings))
                 {

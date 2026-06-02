@@ -49,7 +49,7 @@ public partial class DeploymentView : UserControl
     {
         if (DataContext is DeploymentViewModel vm && vm.LogViewerApplication != null)
         {
-            var logs = vm.LogViewerApplication.LogOutput;
+            string logs = vm.LogViewerApplication.LogOutput;
             if (!string.IsNullOrEmpty(logs))
             {
                 Clipboard.SetText(logs);

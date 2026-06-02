@@ -67,7 +67,7 @@ public class ApplicationCacheService : IApplicationCacheService, IDisposable
             // Double-check inside lock - also check for expiration
             if (_applicationsCache != null && !IsCacheExpired) return;
 
-            var dbPath = _pathService.GetPath("Apps", "Database", "applications.json");
+            string dbPath = _pathService.GetPath("Apps", "Database", "applications.json");
 
             if (!File.Exists(dbPath))
             {
@@ -76,15 +76,15 @@ public class ApplicationCacheService : IApplicationCacheService, IDisposable
                 return;
             }
 
-            var jsonContent = await File.ReadAllTextAsync(dbPath);
+            string jsonContent = await File.ReadAllTextAsync(dbPath);
 
-            using var document = JsonDocument.Parse(jsonContent);
+            using JsonDocument document = JsonDocument.Parse(jsonContent);
 
-            var newCache = new Dictionary<string, JsonElement>();
+            Dictionary<string, JsonElement> newCache = new Dictionary<string, JsonElement>();
 
-            if (document.RootElement.TryGetProperty("Applications", out var apps))
+            if (document.RootElement.TryGetProperty("Applications", out JsonElement apps))
             {
-                foreach (var app in apps.EnumerateObject())
+                foreach (JsonProperty app in apps.EnumerateObject())
                 {
                     newCache[app.Name] = app.Value.Clone();
                 }

@@ -168,21 +168,21 @@ public class LocalizationAuditTests
     public void AllXamlFiles_ShouldNotContainHardcodedStrings()
     {
         // Arrange
-        var viewsDirectory = GetViewsDirectory();
-        var xamlFiles = Directory.GetFiles(viewsDirectory, "*.xaml", SearchOption.AllDirectories);
-        var violations = new List<string>();
+        string viewsDirectory = GetViewsDirectory();
+        string[] xamlFiles = Directory.GetFiles(viewsDirectory, "*.xaml", SearchOption.AllDirectories);
+        List<string> violations = new List<string>();
 
         // Act - Scan each XAML file
-        foreach (var xamlFile in xamlFiles)
+        foreach (string xamlFile in xamlFiles)
         {
-            var fileViolations = ScanXamlFile(xamlFile);
+            List<string> fileViolations = ScanXamlFile(xamlFile);
             violations.AddRange(fileViolations);
         }
 
         // Assert
         if (violations.Count > 0)
         {
-            var message = $"Found {violations.Count} hardcoded string violation(s):\n" +
+            string message = $"Found {violations.Count} hardcoded string violation(s):\n" +
                           string.Join("\n", violations.Take(20)); // Limit output
 
             if (violations.Count > 20)
@@ -201,24 +201,24 @@ public class LocalizationAuditTests
     /// <returns>List of violation messages</returns>
     private static List<string> ScanXamlFile(string filePath)
     {
-        var violations = new List<string>();
-        var fileName = Path.GetFileName(filePath);
-        var lines = File.ReadAllLines(filePath);
+        List<string> violations = new List<string>();
+        string fileName = Path.GetFileName(filePath);
+        string[] lines = File.ReadAllLines(filePath);
 
-        for (var lineNumber = 0; lineNumber < lines.Length; lineNumber++)
+        for (int lineNumber = 0; lineNumber < lines.Length; lineNumber++)
         {
-            var line = lines[lineNumber];
+            string line = lines[lineNumber];
 
-            foreach (var attribute in LocalizableAttributes)
+            foreach (string attribute in LocalizableAttributes)
             {
                 // Pattern: Attribute="value" where value doesn't start with {
                 // Use word boundary \b to avoid matching HelpText when looking for Text
-                var pattern = $@"\b{attribute}=""([^""]+)""";
-                var matches = Regex.Matches(line, pattern);
+                string pattern = $@"\b{attribute}=""([^""]+)""";
+                MatchCollection matches = Regex.Matches(line, pattern);
 
                 foreach (Match match in matches)
                 {
-                    var value = match.Groups[1].Value;
+                    string value = match.Groups[1].Value;
 
                     // Skip if the value is an allowed pattern (binding, localization, etc.)
                     if (AllowedPatterns.Any(p => value.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
@@ -268,7 +268,7 @@ public class LocalizationAuditTests
     public void ViewsDirectory_ShouldExist()
     {
         // Act
-        var viewsDirectory = GetViewsDirectory();
+        string viewsDirectory = GetViewsDirectory();
 
         // Assert
         Assert.True(Directory.Exists(viewsDirectory),
@@ -282,10 +282,10 @@ public class LocalizationAuditTests
     public void ViewsDirectory_ShouldContainXamlFiles()
     {
         // Arrange
-        var viewsDirectory = GetViewsDirectory();
+        string viewsDirectory = GetViewsDirectory();
 
         // Act
-        var xamlFiles = Directory.GetFiles(viewsDirectory, "*.xaml", SearchOption.AllDirectories);
+        string[] xamlFiles = Directory.GetFiles(viewsDirectory, "*.xaml", SearchOption.AllDirectories);
 
         // Assert
         Assert.NotEmpty(xamlFiles);
@@ -300,23 +300,23 @@ public class LocalizationAuditTests
     public void FrenchResources_ShouldNotContainUnaccentedFrenchStems()
     {
         // Arrange
-        var resourcesDirectory = GetResourcesDirectory();
-        var resourcePath = Path.Combine(resourcesDirectory, "Resources.fr.resx");
-        var document = XDocument.Load(resourcePath);
-        var violations = new List<string>();
+        string resourcesDirectory = GetResourcesDirectory();
+        string resourcePath = Path.Combine(resourcesDirectory, "Resources.fr.resx");
+        XDocument document = XDocument.Load(resourcePath);
+        List<string> violations = new List<string>();
 
         // Act
-        foreach (var data in document.Root?.Elements("data") ?? Enumerable.Empty<XElement>())
+        foreach (XElement data in document.Root?.Elements("data") ?? Enumerable.Empty<XElement>())
         {
-            var key = data.Attribute("name")?.Value ?? "<unknown>";
-            var value = data.Element("value")?.Value;
+            string key = data.Attribute("name")?.Value ?? "<unknown>";
+            string? value = data.Element("value")?.Value;
 
             if (string.IsNullOrWhiteSpace(value))
             {
                 continue;
             }
 
-            foreach (var stem in FrenchDiacriticsStems)
+            foreach ((string Stem, Regex Pattern) stem in FrenchDiacriticsStems)
             {
                 if (stem.Pattern.IsMatch(value))
                 {
@@ -328,7 +328,7 @@ public class LocalizationAuditTests
         // Assert
         if (violations.Count > 0)
         {
-            var message = $"Found {violations.Count} French diacritics issue(s):\n" +
+            string message = $"Found {violations.Count} French diacritics issue(s):\n" +
                           string.Join("\n", violations.Take(20));
 
             if (violations.Count > 20)

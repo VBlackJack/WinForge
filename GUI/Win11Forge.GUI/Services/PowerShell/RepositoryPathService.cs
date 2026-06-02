@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-using System.IO;
 using System.Diagnostics;
+using System.IO;
 using Win11Forge.GUI.Configuration;
 
 namespace Win11Forge.GUI.Services.PowerShell;
@@ -78,7 +78,7 @@ public class RepositoryPathService : IRepositoryPathService
     {
         get
         {
-            var defaultsPath = GetPath(
+            string defaultsPath = GetPath(
                 Win11ForgePathNames.ProfilesDirectoryName,
                 Win11ForgePathNames.DefaultProfilesDirectoryName);
 
@@ -111,7 +111,7 @@ public class RepositoryPathService : IRepositoryPathService
     /// <inheritdoc/>
     public string GetPath(params string[] relativePath)
     {
-        var paths = new string[relativePath.Length + 1];
+        string[] paths = new string[relativePath.Length + 1];
         paths[0] = GetSafeRepositoryRoot();
         Array.Copy(relativePath, 0, paths, 1, relativePath.Length);
         return Path.Combine(paths);
@@ -126,7 +126,7 @@ public class RepositoryPathService : IRepositoryPathService
     /// <inheritdoc/>
     public string GetUserDataPath(params string[] relativePath)
     {
-        var paths = new string[relativePath.Length + 1];
+        string[] paths = new string[relativePath.Length + 1];
         paths[0] = UserDataRoot;
         Array.Copy(relativePath, 0, paths, 1, relativePath.Length);
         return Path.Combine(paths);
@@ -139,7 +139,7 @@ public class RepositoryPathService : IRepositoryPathService
     {
         try
         {
-            var result = ResolveRepositoryRoot();
+            string result = ResolveRepositoryRoot();
             if (!string.IsNullOrEmpty(result))
             {
                 return result;
@@ -151,23 +151,23 @@ public class RepositoryPathService : IRepositoryPathService
         }
 
         // Fallback chain - try each option until we get a non-null value
-        var processPath = Environment.ProcessPath;
+        string? processPath = Environment.ProcessPath;
         if (!string.IsNullOrEmpty(processPath))
         {
-            var dir = Path.GetDirectoryName(processPath);
+            string? dir = Path.GetDirectoryName(processPath);
             if (!string.IsNullOrEmpty(dir))
             {
                 return dir;
             }
         }
 
-        var currentDir = Environment.CurrentDirectory;
+        string currentDir = Environment.CurrentDirectory;
         if (!string.IsNullOrEmpty(currentDir))
         {
             return currentDir;
         }
 
-        var baseDir = AppContext.BaseDirectory;
+        string baseDir = AppContext.BaseDirectory;
         if (!string.IsNullOrEmpty(baseDir))
         {
             return baseDir;
@@ -184,13 +184,13 @@ public class RepositoryPathService : IRepositoryPathService
     private static string ResolveRepositoryRoot()
     {
         // Build list of candidate paths, filtering out nulls
-        var candidatePaths = new List<string>();
+        List<string> candidatePaths = new List<string>();
 
         // Priority 1: ProcessPath directory (best for single-file apps)
-        var processPath = Environment.ProcessPath;
+        string? processPath = Environment.ProcessPath;
         if (!string.IsNullOrEmpty(processPath))
         {
-            var dir = Path.GetDirectoryName(processPath);
+            string? dir = Path.GetDirectoryName(processPath);
             if (!string.IsNullOrEmpty(dir))
             {
                 candidatePaths.Add(dir);
@@ -198,22 +198,22 @@ public class RepositoryPathService : IRepositoryPathService
         }
 
         // Priority 2: BaseDirectory
-        var baseDir = AppContext.BaseDirectory;
+        string baseDir = AppContext.BaseDirectory;
         if (!string.IsNullOrEmpty(baseDir))
         {
             candidatePaths.Add(baseDir);
         }
 
         // Priority 3: CurrentDirectory
-        var currentDir = Environment.CurrentDirectory;
+        string currentDir = Environment.CurrentDirectory;
         if (!string.IsNullOrEmpty(currentDir))
         {
             candidatePaths.Add(currentDir);
         }
 
-        foreach (var basePath in candidatePaths)
+        foreach (string basePath in candidatePaths)
         {
-            var result = TryFindRepositoryRoot(basePath);
+            string? result = TryFindRepositoryRoot(basePath);
             if (!string.IsNullOrEmpty(result))
             {
                 return result;
@@ -229,12 +229,12 @@ public class RepositoryPathService : IRepositoryPathService
     /// </summary>
     private static string? TryFindRepositoryRoot(string basePath)
     {
-        var currentDir = new DirectoryInfo(basePath);
+        DirectoryInfo? currentDir = new DirectoryInfo(basePath);
 
         while (currentDir != null)
         {
             // Check for Config/version.json
-            var versionFile = Path.Combine(
+            string versionFile = Path.Combine(
                 currentDir.FullName,
                 Win11ForgePathNames.ConfigDirectoryName,
                 Win11ForgePathNames.VersionFileName);
@@ -244,10 +244,10 @@ public class RepositoryPathService : IRepositoryPathService
             }
 
             // Check for Modules/InstallationEngine.psm1
-            var modulesDir = Path.Combine(currentDir.FullName, Win11ForgePathNames.ModulesDirectoryName);
+            string modulesDir = Path.Combine(currentDir.FullName, Win11ForgePathNames.ModulesDirectoryName);
             if (Directory.Exists(modulesDir))
             {
-                var coreModule = Path.Combine(modulesDir, Win11ForgePathNames.InstallationEngineModuleFileName);
+                string coreModule = Path.Combine(modulesDir, Win11ForgePathNames.InstallationEngineModuleFileName);
                 if (File.Exists(coreModule))
                 {
                     return currentDir.FullName;
@@ -283,12 +283,12 @@ public class RepositoryPathService : IRepositoryPathService
 
     private static UserDataResolution ResolveUserDataRootSafe(IEnumerable<string?> userDataBasePathCandidates)
     {
-        var errors = new List<string>();
-        var index = 0;
+        List<string> errors = new List<string>();
+        int index = 0;
 
-        foreach (var candidate in userDataBasePathCandidates)
+        foreach (string? candidate in userDataBasePathCandidates)
         {
-            var isFallbackCandidate = index > 0;
+            bool isFallbackCandidate = index > 0;
             index++;
 
             if (string.IsNullOrWhiteSpace(candidate))
@@ -308,7 +308,7 @@ public class RepositoryPathService : IRepositoryPathService
                 continue;
             }
 
-            if (TryEnsureWritableDirectory(userDataPath, out var error))
+            if (TryEnsureWritableDirectory(userDataPath, out string? error))
             {
                 return new UserDataResolution(
                     Path.GetFullPath(userDataPath),
@@ -329,7 +329,7 @@ public class RepositoryPathService : IRepositoryPathService
         {
             Directory.CreateDirectory(directoryPath);
 
-            var probePath = Path.Combine(
+            string probePath = Path.Combine(
                 directoryPath,
                 $"{Win11ForgePathNames.WriteProbeFilePrefix}{Guid.NewGuid():N}");
 

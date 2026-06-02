@@ -58,26 +58,26 @@ public class PowerShellExecutionService : IPowerShellExecutionService
         if (_powerShellPath != null) return _powerShellPath;
 
         // Try PowerShell 7+ in multiple locations
-        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
         // Check Program Files for PowerShell 7.x installations
         if (!string.IsNullOrEmpty(programFiles))
         {
-            var psBaseDir = Path.Combine(programFiles, "PowerShell");
+            string psBaseDir = Path.Combine(programFiles, "PowerShell");
             if (Directory.Exists(psBaseDir))
             {
                 // Look for any version 7+ directory (7, 7.0, 7.4.0, etc.)
                 try
                 {
-                    var versionDirs = Directory.GetDirectories(psBaseDir)
+                    List<string> versionDirs = Directory.GetDirectories(psBaseDir)
                         .Where(d => Path.GetFileName(d).StartsWith("7"))
                         .OrderByDescending(d => d)
                         .ToList();
 
-                    foreach (var versionDir in versionDirs)
+                    foreach (string? versionDir in versionDirs)
                     {
-                        var pwshPath = Path.Combine(versionDir, "pwsh.exe");
+                        string pwshPath = Path.Combine(versionDir, "pwsh.exe");
                         if (File.Exists(pwshPath))
                         {
                             _powerShellPath = pwshPath;
@@ -92,7 +92,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
                 }
 
                 // Direct path fallback
-                var directPath = Path.Combine(psBaseDir, "7", "pwsh.exe");
+                string directPath = Path.Combine(psBaseDir, "7", "pwsh.exe");
                 if (File.Exists(directPath))
                 {
                     _powerShellPath = directPath;
@@ -104,7 +104,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
         // Try Microsoft Store installation via WindowsApps
         if (!string.IsNullOrEmpty(localAppData))
         {
-            var storeAppPath = Path.Combine(localAppData, "Microsoft", "WindowsApps", "pwsh.exe");
+            string storeAppPath = Path.Combine(localAppData, "Microsoft", "WindowsApps", "pwsh.exe");
             if (File.Exists(storeAppPath))
             {
                 _powerShellPath = storeAppPath;
@@ -115,7 +115,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
         // Try pwsh in PATH (covers winget, scoop, chocolatey installations)
         try
         {
-            var pwshInPath = FindExecutableInPath("pwsh.exe");
+            string? pwshInPath = FindExecutableInPath("pwsh.exe");
             if (!string.IsNullOrEmpty(pwshInPath) && File.Exists(pwshInPath))
             {
                 _powerShellPath = pwshInPath;
@@ -129,10 +129,10 @@ public class PowerShellExecutionService : IPowerShellExecutionService
         }
 
         // Try Windows PowerShell as last resort
-        var systemPath = Environment.GetFolderPath(Environment.SpecialFolder.System);
+        string systemPath = Environment.GetFolderPath(Environment.SpecialFolder.System);
         if (!string.IsNullOrEmpty(systemPath))
         {
-            var winPsPath = Path.Combine(systemPath, "WindowsPowerShell", "v1.0", "powershell.exe");
+            string winPsPath = Path.Combine(systemPath, "WindowsPowerShell", "v1.0", "powershell.exe");
             if (File.Exists(winPsPath))
             {
                 _powerShellPath = winPsPath;
@@ -142,11 +142,11 @@ public class PowerShellExecutionService : IPowerShellExecutionService
 
         // Final fallback with validation warning
         // Try 'powershell' first (more commonly available), then 'pwsh'
-        foreach (var candidate in new[] { "powershell", "pwsh" })
+        foreach (string? candidate in new[] { "powershell", "pwsh" })
         {
             try
             {
-                var foundPath = FindExecutableInPath($"{candidate}.exe");
+                string? foundPath = FindExecutableInPath($"{candidate}.exe");
                 if (!string.IsNullOrEmpty(foundPath))
                 {
                     _powerShellPath = foundPath;
@@ -172,15 +172,15 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     /// </summary>
     private string? FindExecutableInPath(string executableName)
     {
-        var pathEnv = Environment.GetEnvironmentVariable("PATH");
+        string? pathEnv = Environment.GetEnvironmentVariable("PATH");
         if (string.IsNullOrEmpty(pathEnv)) return null;
 
-        var paths = pathEnv.Split(Path.PathSeparator);
-        foreach (var path in paths)
+        string[] paths = pathEnv.Split(Path.PathSeparator);
+        foreach (string path in paths)
         {
             try
             {
-                var fullPath = Path.Combine(path.Trim(), executableName);
+                string fullPath = Path.Combine(path.Trim(), executableName);
                 if (File.Exists(fullPath))
                 {
                     return fullPath;
@@ -210,13 +210,13 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var psPath = GetPowerShellPath();
-        var repoRoot = _pathService.GetSafeRepositoryRoot();
+        string psPath = GetPowerShellPath();
+        string repoRoot = _pathService.GetSafeRepositoryRoot();
 
         // Escape script for command line
-        var encodedScript = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(script));
+        string encodedScript = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(script));
 
-        var startInfo = new ProcessStartInfo
+        ProcessStartInfo startInfo = new ProcessStartInfo
         {
             FileName = psPath,
             Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -EncodedCommand {encodedScript}",
@@ -229,18 +229,18 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             CreateNoWindow = true
         };
 
-        var process = new Process { StartInfo = startInfo };
+        Process process = new Process { StartInfo = startInfo };
         try
         {
             process.Start();
 
             // Read stdout and stderr concurrently with size limits to prevent DoS
-            var outputTask = ReadStreamWithLimitAsync(process.StandardOutput, MaxOutputSizeBytes);
-            var errorTask = ReadStreamWithLimitAsync(process.StandardError, MaxOutputSizeBytes);
+            Task<string> outputTask = ReadStreamWithLimitAsync(process.StandardOutput, MaxOutputSizeBytes);
+            Task<string> errorTask = ReadStreamWithLimitAsync(process.StandardError, MaxOutputSizeBytes);
 
             // Wait for both streams AND the process to complete with timeout
-            using var timeoutCts = new CancellationTokenSource(DefaultQueryTimeoutMs);
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, cancellationToken);
+            using CancellationTokenSource timeoutCts = new CancellationTokenSource(DefaultQueryTimeoutMs);
+            using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, cancellationToken);
             try
             {
                 await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(linkedCts.Token));
@@ -257,8 +257,8 @@ public class PowerShellExecutionService : IPowerShellExecutionService
                 throw new TimeoutException($"PowerShell script execution timed out after {DefaultQueryTimeoutMs / 1000} seconds");
             }
 
-            var output = await outputTask;
-            var error = await errorTask;
+            string output = await outputTask;
+            string error = await errorTask;
 
             if (process.ExitCode != 0 && !string.IsNullOrEmpty(error))
             {
@@ -292,12 +292,12 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var psPath = GetPowerShellPath();
-        var repoRoot = _pathService.GetSafeRepositoryRoot();
+        string psPath = GetPowerShellPath();
+        string repoRoot = _pathService.GetSafeRepositoryRoot();
 
-        var encodedScript = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(script));
+        string encodedScript = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(script));
 
-        var startInfo = new ProcessStartInfo
+        ProcessStartInfo startInfo = new ProcessStartInfo
         {
             FileName = psPath,
             Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -EncodedCommand {encodedScript}",
@@ -310,9 +310,9 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             CreateNoWindow = true
         };
 
-        var process = new Process { StartInfo = startInfo };
-        var success = false;
-        var errorMessage = string.Empty;
+        Process process = new Process { StartInfo = startInfo };
+        bool success = false;
+        string errorMessage = string.Empty;
 
         try
         {
@@ -321,7 +321,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             {
                 if (e.Data != null)
                 {
-                    var line = e.Data.Trim();
+                    string line = e.Data.Trim();
 
                     if (line == "___SUCCESS___")
                     {
@@ -334,7 +334,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
                     else if (!string.IsNullOrWhiteSpace(line))
                     {
                         // Filter out CLIXML serialized data and extract readable messages
-                        var cleanLine = ExtractReadableMessage(line);
+                        string cleanLine = ExtractReadableMessage(line);
                         if (!string.IsNullOrWhiteSpace(cleanLine))
                         {
                             outputCallback?.Invoke(cleanLine);
@@ -348,7 +348,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             {
                 if (!string.IsNullOrWhiteSpace(e.Data))
                 {
-                    var data = e.Data.Trim();
+                    string data = e.Data.Trim();
 
                     // Skip CLIXML header and serialized data
                     if (data.StartsWith("#< CLIXML") ||
@@ -380,7 +380,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
                         data.Contains("S=\"warning\""))
                     {
                         // Skip CLIXML noise, but try to extract readable content if present
-                        var cleanLine = ExtractReadableMessage(data);
+                        string cleanLine = ExtractReadableMessage(data);
                         if (!string.IsNullOrWhiteSpace(cleanLine))
                         {
                             outputCallback?.Invoke(cleanLine);
@@ -398,8 +398,8 @@ public class PowerShellExecutionService : IPowerShellExecutionService
             process.BeginErrorReadLine();
 
             // Wait with installation timeout, linked with external cancellation
-            using var prereqTimeoutCts = new CancellationTokenSource(InstallationTimeoutMs);
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(prereqTimeoutCts.Token, cancellationToken);
+            using CancellationTokenSource prereqTimeoutCts = new CancellationTokenSource(InstallationTimeoutMs);
+            using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(prereqTimeoutCts.Token, cancellationToken);
             try
             {
                 await process.WaitForExitAsync(linkedCts.Token);
@@ -461,17 +461,17 @@ public class PowerShellExecutionService : IPowerShellExecutionService
         // If the line contains CLIXML, extract all ToString messages
         if (line.Contains("<Objs") || line.Contains("<ToString>"))
         {
-            var messages = new List<string>();
+            List<string> messages = new List<string>();
 
             // Extract all ToString content (these contain the actual messages)
-            var toStringPattern = new Regex(
+            Regex toStringPattern = new Regex(
                 @"<ToString>([^<]*)</ToString>",
                 RegexOptions.Compiled);
 
-            var matches = toStringPattern.Matches(line);
+            MatchCollection matches = toStringPattern.Matches(line);
             foreach (Match match in matches)
             {
-                var message = match.Groups[1].Value;
+                string message = match.Groups[1].Value;
                 if (!string.IsNullOrWhiteSpace(message))
                 {
                     // Decode XML entities and newline markers
@@ -511,24 +511,24 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     /// <returns>The content read from the stream, potentially truncated.</returns>
     private static async Task<string> ReadStreamWithLimitAsync(StreamReader reader, int maxBytes)
     {
-        var buffer = new char[8192];
-        var result = new System.Text.StringBuilder();
-        var totalBytesRead = 0;
-        var truncated = false;
+        char[] buffer = new char[8192];
+        StringBuilder result = new System.Text.StringBuilder();
+        int totalBytesRead = 0;
+        bool truncated = false;
 
         while (true)
         {
-            var charsRead = await reader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+            int charsRead = await reader.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
             if (charsRead == 0) break;
 
             // Estimate byte count (UTF-16 chars can be 2-4 bytes in UTF-8)
-            var estimatedBytes = charsRead * 2;
+            int estimatedBytes = charsRead * 2;
 
             if (totalBytesRead + estimatedBytes > maxBytes)
             {
                 // Calculate how many chars we can still accept
-                var remainingBytes = maxBytes - totalBytesRead;
-                var charsToTake = Math.Max(0, remainingBytes / 2);
+                int remainingBytes = maxBytes - totalBytesRead;
+                int charsToTake = Math.Max(0, remainingBytes / 2);
 
                 if (charsToTake > 0)
                 {

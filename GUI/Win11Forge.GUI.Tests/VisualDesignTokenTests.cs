@@ -41,8 +41,8 @@ public class VisualDesignTokenTests
     [Fact]
     public void AppXaml_DefinesPageTypographyTokens()
     {
-        var appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
-        var styles = appXaml.Descendants()
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
 
@@ -56,10 +56,10 @@ public class VisualDesignTokenTests
     [Fact]
     public void PageAutomationTitles_UsePageTitleStyleWithoutInlineTypography()
     {
-        foreach (var viewFileName in PrimaryPageViews)
+        foreach (string viewFileName in PrimaryPageViews)
         {
-            var viewXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", viewFileName));
-            var pageTitleTextBlocks = viewXaml.Descendants()
+            XDocument viewXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", viewFileName));
+            List<XElement> pageTitleTextBlocks = viewXaml.Descendants()
                 .Where(element =>
                     element.Name.LocalName == "TextBlock"
                     && element.Attributes().Any(attribute =>
@@ -69,7 +69,7 @@ public class VisualDesignTokenTests
 
             Assert.NotEmpty(pageTitleTextBlocks);
 
-            foreach (var textBlock in pageTitleTextBlocks)
+            foreach (XElement? textBlock in pageTitleTextBlocks)
             {
                 Assert.Equal("{StaticResource PageTitleTextStyle}", textBlock.Attribute("Style")?.Value);
                 Assert.Null(textBlock.Attribute("FontSize"));
@@ -81,22 +81,22 @@ public class VisualDesignTokenTests
     [Fact]
     public void SourceBadges_UseSharedStylesInAppsAndCatalog()
     {
-        var appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
-        var styleKeys = appXaml.Descendants()
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        HashSet<string?> styleKeys = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .Select(element => element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value)
             .Where(key => key is not null)
             .ToHashSet(StringComparer.Ordinal);
 
-        foreach (var expectedStyle in SourceBadgeStyles())
+        foreach (string expectedStyle in SourceBadgeStyles())
         {
             Assert.Contains(expectedStyle, styleKeys);
         }
 
-        var appsXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
-        var catalogXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml"));
+        string appsXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        string catalogXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml"));
 
-        foreach (var expectedStyle in SourceBadgeStyles().Where(style => style != "SourceBadgeStyle" && style != "SourceBadgeTextStyle"))
+        foreach (string? expectedStyle in SourceBadgeStyles().Where(style => style != "SourceBadgeStyle" && style != "SourceBadgeTextStyle"))
         {
             Assert.Contains(expectedStyle, appsXaml, StringComparison.Ordinal);
             Assert.Contains(expectedStyle, catalogXaml, StringComparison.Ordinal);
@@ -109,8 +109,8 @@ public class VisualDesignTokenTests
     [Fact]
     public void DataGridStyles_UseSubtleHorizontalGridlines()
     {
-        var appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
-        var styles = appXaml.Descendants()
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
 
@@ -125,7 +125,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void SourceStringToVisibilityConverter_MatchesCommaSeparatedTokens()
     {
-        var converter = new SourceStringToVisibilityConverter();
+        SourceStringToVisibilityConverter converter = new SourceStringToVisibilityConverter();
 
         Assert.Equal(Visibility.Visible, converter.Convert("Winget, Chocolatey", typeof(Visibility), "Winget", CultureInfo.InvariantCulture));
         Assert.Equal(Visibility.Visible, converter.Convert("Winget, Chocolatey", typeof(Visibility), "Chocolatey", CultureInfo.InvariantCulture));
@@ -146,11 +146,11 @@ public class VisualDesignTokenTests
     [InlineData("Views/SettingsView.xaml")]
     public void CardBorders_UseCardPaddingToken_AcrossAuditedViews(string relativePath)
     {
-        var viewPath = FindRepoFile("GUI", "Win11Forge.GUI", relativePath);
-        var viewXaml = File.ReadAllText(viewPath);
-        var viewDoc = XDocument.Load(viewPath);
+        string viewPath = FindRepoFile("GUI", "Win11Forge.GUI", relativePath);
+        string viewXaml = File.ReadAllText(viewPath);
+        XDocument viewDoc = XDocument.Load(viewPath);
 
-        var literalCardPaddings = viewDoc.Descendants()
+        List<string?> literalCardPaddings = viewDoc.Descendants()
             .Where(element =>
                 element.Name.LocalName == "Border"
                 && element.Attribute("Padding")?.Value is "16" or "20")
@@ -168,8 +168,8 @@ public class VisualDesignTokenTests
     [Fact]
     public void ButtonTaxonomy_DefinesStandardAndCompactVariants()
     {
-        var appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
-        var styles = appXaml.Descendants()
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
 
@@ -186,10 +186,10 @@ public class VisualDesignTokenTests
     [Fact]
     public void DashboardQuickNavigation_UsesWpfUiButtonsToAvoidNativeHoverChrome()
     {
-        var dashboardPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "DashboardView.xaml");
-        var dashboardDoc = XDocument.Load(dashboardPath);
+        string dashboardPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "DashboardView.xaml");
+        XDocument dashboardDoc = XDocument.Load(dashboardPath);
 
-        var quickActionButtons = dashboardDoc.Descendants()
+        List<XElement> quickActionButtons = dashboardDoc.Descendants()
             .Where(element =>
                 element.Name.LocalName == "Button"
                 && string.Equals(element.Attribute("Style")?.Value, "{StaticResource QuickActionButton}", StringComparison.Ordinal))
@@ -204,7 +204,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void AppCatalogToolbar_UsesCompactActionStyles()
     {
-        var catalogXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml"));
+        string catalogXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml"));
 
         Assert.Contains("Style=\"{StaticResource CompactPrimaryButton}\"", catalogXaml, StringComparison.Ordinal);
         Assert.Contains("Style=\"{StaticResource CompactSecondaryButton}\"", catalogXaml, StringComparison.Ordinal);
@@ -215,18 +215,18 @@ public class VisualDesignTokenTests
     [Fact]
     public void WpfUiButtons_UseNamedStylesInsteadOfInlineAppearance()
     {
-        var xamlFiles = Directory.EnumerateFiles(
+        List<string> xamlFiles = Directory.EnumerateFiles(
             Path.GetDirectoryName(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"))!,
             "*.xaml",
             SearchOption.AllDirectories)
             .Where(path => !path.EndsWith("App.xaml", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        var offenders = new List<string>();
-        foreach (var path in xamlFiles)
+        List<string> offenders = new List<string>();
+        foreach (string? path in xamlFiles)
         {
-            var doc = XDocument.Load(path);
-            var wpfUiButtonsWithInlineAppearance = doc.Descendants()
+            XDocument doc = XDocument.Load(path);
+            List<string> wpfUiButtonsWithInlineAppearance = doc.Descendants()
                 .Where(element =>
                     element.Name.LocalName == "Button"
                     && string.Equals(
@@ -247,9 +247,9 @@ public class VisualDesignTokenTests
     [Fact]
     public void MainWindow_TitleBarUsesAppNameAndRuntimeTitleUpdate()
     {
-        var mainWindowPath = FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml");
-        var mainWindowXaml = File.ReadAllText(mainWindowPath);
-        var mainWindowCode = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml.cs"));
+        string mainWindowPath = FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml");
+        string mainWindowXaml = File.ReadAllText(mainWindowPath);
+        string mainWindowCode = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml.cs"));
 
         Assert.Contains("Title=\"{loc:Loc App_Name}\"", mainWindowXaml, StringComparison.Ordinal);
         Assert.DoesNotContain("Title=\"{loc:Loc App_Title}\"", mainWindowXaml, StringComparison.Ordinal);
@@ -259,10 +259,10 @@ public class VisualDesignTokenTests
     [Fact]
     public void SettingsView_SectionHeadersDoNotRepeatTabIcons()
     {
-        var settingsPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "SettingsView.xaml");
-        var settingsXaml = File.ReadAllText(settingsPath);
-        var settingsDoc = XDocument.Load(settingsPath);
-        var removedSectionIcons = new HashSet<string>(StringComparer.Ordinal)
+        string settingsPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "SettingsView.xaml");
+        string settingsXaml = File.ReadAllText(settingsPath);
+        XDocument settingsDoc = XDocument.Load(settingsPath);
+        HashSet<string> removedSectionIcons = new HashSet<string>(StringComparer.Ordinal)
         {
             "Color24",
             "Translate24",
@@ -271,7 +271,7 @@ public class VisualDesignTokenTests
             "CalendarAdd24",
             "CalendarMultiple24"
         };
-        var repeatedSectionIcons = settingsDoc.Descendants()
+        List<string?> repeatedSectionIcons = settingsDoc.Descendants()
             .Where(element =>
                 element.Name.LocalName == "SymbolIcon"
                 && removedSectionIcons.Contains(element.Attribute("Symbol")?.Value ?? string.Empty)
@@ -309,10 +309,10 @@ public class VisualDesignTokenTests
         string property,
         string expectedValue)
     {
-        var style = styles.Single(element =>
+        XElement style = styles.Single(element =>
             string.Equals(element.Attribute("TargetType")?.Value, targetType, StringComparison.Ordinal)
             && element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml")) is null);
-        var setter = style.Elements()
+        XElement? setter = style.Elements()
             .SingleOrDefault(element =>
                 element.Name.LocalName == "Setter"
                 && string.Equals(element.Attribute("Property")?.Value, property, StringComparison.Ordinal));
@@ -327,12 +327,12 @@ public class VisualDesignTokenTests
         string property,
         string expectedValue)
     {
-        var style = styles.Single(element =>
+        XElement style = styles.Single(element =>
             string.Equals(
                 element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value,
                 styleKey,
                 StringComparison.Ordinal));
-        var setter = style.Elements()
+        XElement? setter = style.Elements()
             .SingleOrDefault(element =>
                 element.Name.LocalName == "Setter"
                 && string.Equals(element.Attribute("Property")?.Value, property, StringComparison.Ordinal));
@@ -343,11 +343,11 @@ public class VisualDesignTokenTests
 
     private static string FindRepoFile(params string[] relativeParts)
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
 
         while (directory is not null)
         {
-            var candidate = Path.Combine([directory.FullName, .. relativeParts]);
+            string candidate = Path.Combine([directory.FullName, .. relativeParts]);
             if (File.Exists(candidate))
             {
                 return candidate;

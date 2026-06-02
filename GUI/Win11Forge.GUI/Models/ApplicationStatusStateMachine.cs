@@ -136,7 +136,7 @@ public sealed class ApplicationStatusStateMachine
         if (newStatus == _currentStatus)
             return false;
 
-        return ValidTransitions.TryGetValue(_currentStatus, out var validTargets)
+        return ValidTransitions.TryGetValue(_currentStatus, out HashSet<ApplicationStatus>? validTargets)
                && validTargets.Contains(newStatus);
     }
 
@@ -146,7 +146,7 @@ public sealed class ApplicationStatusStateMachine
     /// <returns>Collection of valid target states.</returns>
     public IReadOnlyCollection<ApplicationStatus> GetValidTransitions()
     {
-        return ValidTransitions.TryGetValue(_currentStatus, out var validTargets)
+        return ValidTransitions.TryGetValue(_currentStatus, out HashSet<ApplicationStatus>? validTargets)
             ? validTargets.ToList().AsReadOnly()
             : Array.Empty<ApplicationStatus>();
     }
@@ -166,7 +166,7 @@ public sealed class ApplicationStatusStateMachine
             return false;
         }
 
-        var previousStatus = _currentStatus;
+        ApplicationStatus previousStatus = _currentStatus;
 
         // Raise pre-transition event
         TransitioningFrom?.Invoke(this, new StateTransitionEventArgs(previousStatus, newStatus, reason));
@@ -202,7 +202,7 @@ public sealed class ApplicationStatusStateMachine
     /// <param name="status">The status to reset to (defaults to Pending).</param>
     public void Reset(ApplicationStatus status = ApplicationStatus.Pending)
     {
-        var previousStatus = _currentStatus;
+        ApplicationStatus previousStatus = _currentStatus;
         _currentStatus = status;
         TransitionedTo?.Invoke(this, new StateTransitionEventArgs(previousStatus, status, "Reset"));
     }
@@ -211,7 +211,7 @@ public sealed class ApplicationStatusStateMachine
     /// Checks if the current state is a terminal state (no valid transitions).
     /// </summary>
     public bool IsTerminalState =>
-        !ValidTransitions.TryGetValue(_currentStatus, out var transitions) || transitions.Count == 0;
+        !ValidTransitions.TryGetValue(_currentStatus, out HashSet<ApplicationStatus>? transitions) || transitions.Count == 0;
 
     /// <summary>
     /// Checks if the current state indicates success.

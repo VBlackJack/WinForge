@@ -18,6 +18,7 @@
 
 using System.Security.Principal;
 using System.Text.Json;
+using Microsoft.Win32;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Localization;
 using Win11Forge.GUI.Models;
@@ -60,7 +61,7 @@ public class PrerequisitesServiceImpl : IPrerequisitesService
         // Refresh environment variables to pick up any changes from installations
         RefreshEnvironmentVariables();
 
-        var script = @"
+        string script = @"
 $result = @{}
 
 # Check PowerShell 7
@@ -182,16 +183,16 @@ $result | ConvertTo-Json -Compress
 
         try
         {
-            var output = await _executionService.ExecutePowerShellScriptAsync(script);
-            var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            string output = await _executionService.ExecutePowerShellScriptAsync(script);
+            string[] lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var line in lines.Reverse())
+            foreach (string? line in lines.Reverse())
             {
-                var trimmed = line.Trim();
+                string trimmed = line.Trim();
                 if (trimmed.StartsWith("{") && trimmed.EndsWith("}"))
                 {
-                    using var doc = JsonDocument.Parse(trimmed);
-                    var root = doc.RootElement;
+                    using JsonDocument doc = JsonDocument.Parse(trimmed);
+                    JsonElement root = doc.RootElement;
 
                     return new PrerequisitesStatus
                     {
@@ -228,11 +229,11 @@ $result | ConvertTo-Json -Compress
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var prerequisitesModule = _pathService.GetPathForPowerShell("Modules", "Prerequisites.psm1");
-        var corePath = _pathService.GetPathForPowerShell("Core", "Core.psm1");
-        var localizationPath = _pathService.GetPathForPowerShell("Core", "Localization.psm1");
-        var moduleLoaderPath = _pathService.GetPathForPowerShell("Core", "ModuleLoader.psm1");
-        var powerShellLocale = ResolvePowerShellLocaleCode(GetConfiguredLanguageCode());
+        string prerequisitesModule = _pathService.GetPathForPowerShell("Modules", "Prerequisites.psm1");
+        string corePath = _pathService.GetPathForPowerShell("Core", "Core.psm1");
+        string localizationPath = _pathService.GetPathForPowerShell("Core", "Localization.psm1");
+        string moduleLoaderPath = _pathService.GetPathForPowerShell("Core", "ModuleLoader.psm1");
+        string powerShellLocale = ResolvePowerShellLocaleCode(GetConfiguredLanguageCode());
 
         progressCallback?.Invoke(Loc.Prerequisites_Starting);
 
@@ -240,7 +241,7 @@ $result | ConvertTo-Json -Compress
         {
             progressCallback?.Invoke(Loc.Prerequisites_LoadingModules);
 
-            var script = $@"
+            string script = $@"
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
 $ErrorActionPreference = 'Continue'
 $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
@@ -268,7 +269,7 @@ try {{
 
             progressCallback?.Invoke(Loc.Prerequisites_Installing);
 
-            var result = await _executionService.ExecutePowerShellWithStreamingAsync(script, progressCallback, cancellationToken);
+            (bool Success, string ErrorMessage) result = await _executionService.ExecutePowerShellWithStreamingAsync(script, progressCallback, cancellationToken);
 
             if (result.Success)
             {
@@ -297,7 +298,7 @@ try {{
         CancellationToken cancellationToken = default)
     {
         // Validate prerequisite name
-        var validPrerequisites = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        HashSet<string> validPrerequisites = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "PowerShell7",
             "Chocolatey",
@@ -316,7 +317,7 @@ try {{
         progressCallback?.Invoke($"Installing {prerequisiteName}...");
 
         // For now, delegate to full prerequisites installation
-        var result = await InstallPrerequisitesAsync(progressCallback, cancellationToken);
+        bool result = await InstallPrerequisitesAsync(progressCallback, cancellationToken);
         return result;
     }
 
@@ -335,7 +336,7 @@ try {{
     /// <inheritdoc/>
     public async Task<bool> IsPowerShell7AvailableAsync()
     {
-        var prereqs = await CheckPrerequisitesAsync();
+        PrerequisitesStatus prereqs = await CheckPrerequisitesAsync();
         return prereqs.PowerShell7Installed;
     }
 
@@ -347,8 +348,8 @@ try {{
             return false;
         }
 
-        using var identity = WindowsIdentity.GetCurrent();
-        var principal = new WindowsPrincipal(identity);
+        using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+        WindowsPrincipal principal = new WindowsPrincipal(identity);
         return principal.IsInRole(WindowsBuiltInRole.Administrator);
     }
 
@@ -375,14 +376,14 @@ try {{
     {
         try
         {
-            using var machineKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+            using RegistryKey? machineKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
                 @"SYSTEM\CurrentControlSet\Control\Session Manager\Environment");
-            using var userKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Environment");
+            using RegistryKey? userKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Environment");
 
-            var machinePath = machineKey?.GetValue("Path", "", Microsoft.Win32.RegistryValueOptions.DoNotExpandEnvironmentNames) as string ?? "";
-            var userPath = userKey?.GetValue("Path", "", Microsoft.Win32.RegistryValueOptions.DoNotExpandEnvironmentNames) as string ?? "";
+            string machinePath = machineKey?.GetValue("Path", "", Microsoft.Win32.RegistryValueOptions.DoNotExpandEnvironmentNames) as string ?? "";
+            string userPath = userKey?.GetValue("Path", "", Microsoft.Win32.RegistryValueOptions.DoNotExpandEnvironmentNames) as string ?? "";
 
-            var combinedPath = $"{machinePath};{userPath}";
+            string combinedPath = $"{machinePath};{userPath}";
             combinedPath = Environment.ExpandEnvironmentVariables(combinedPath);
             while (combinedPath.Contains(";;"))
             {
@@ -391,12 +392,12 @@ try {{
 
             Environment.SetEnvironmentVariable("Path", combinedPath, EnvironmentVariableTarget.Process);
 
-            var commonVars = new[] { "JAVA_HOME", "ChocolateyInstall", "DOTNET_ROOT" };
-            foreach (var varName in commonVars)
+            string[] commonVars = new[] { "JAVA_HOME", "ChocolateyInstall", "DOTNET_ROOT" };
+            foreach (string? varName in commonVars)
             {
-                var machineValue = machineKey?.GetValue(varName) as string;
-                var userValue = userKey?.GetValue(varName) as string;
-                var value = userValue ?? machineValue;
+                string? machineValue = machineKey?.GetValue(varName) as string;
+                string? userValue = userKey?.GetValue(varName) as string;
+                string? value = userValue ?? machineValue;
                 if (!string.IsNullOrEmpty(value))
                 {
                     Environment.SetEnvironmentVariable(varName, value, EnvironmentVariableTarget.Process);

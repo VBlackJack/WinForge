@@ -27,10 +27,10 @@ public class AppUpdateCoordinatorTests
     [Fact]
     public async Task ScanForUpdatesAsync_WithEmptyList_ShouldReturnEmptyResult()
     {
-        var bridge = CreateBridge();
-        var coordinator = CreateCoordinator(bridge.Object);
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        AppUpdateCoordinator coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.ScanForUpdatesAsync([]);
+        AppUpdateScanResult result = await coordinator.ScanForUpdatesAsync([]);
 
         Assert.Equal(0, result.Total);
         Assert.Equal(0, result.UpdatesAvailableCount);
@@ -41,17 +41,17 @@ public class AppUpdateCoordinatorTests
     [Fact]
     public async Task ScanForUpdatesAsync_WithAvailableUpdates_ShouldAggregateUpdateCount()
     {
-        var apps = CreateApps("App1", "App2", "App3");
-        var bridge = CreateBridge();
+        List<ApplicationModel> apps = CreateApps("App1", "App2", "App3");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
         bridge
             .Setup(x => x.CheckApplicationUpdateAsync(It.IsAny<ApplicationModel>()))
             .ReturnsAsync((ApplicationModel app) =>
                 app.AppId == "App2"
                     ? UpdateCheckResult.UpdateAvailable("1.0", "2.0")
                     : UpdateCheckResult.UpToDate("1.0"));
-        var coordinator = CreateCoordinator(bridge.Object);
+        AppUpdateCoordinator coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.ScanForUpdatesAsync(apps);
+        AppUpdateScanResult result = await coordinator.ScanForUpdatesAsync(apps);
 
         Assert.Equal(3, result.Total);
         Assert.Equal(1, result.UpdatesAvailableCount);
@@ -64,15 +64,15 @@ public class AppUpdateCoordinatorTests
     [Fact]
     public async Task ScanForUpdatesAsync_ShouldRespectMaxParallelScans()
     {
-        var apps = CreateApps("App1", "App2", "App3", "App4", "App5");
-        var bridge = CreateBridge();
-        var activeCalls = 0;
-        var maxActiveCalls = 0;
+        List<ApplicationModel> apps = CreateApps("App1", "App2", "App3", "App4", "App5");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        int activeCalls = 0;
+        int maxActiveCalls = 0;
         bridge
             .Setup(x => x.CheckApplicationUpdateAsync(It.IsAny<ApplicationModel>()))
             .Returns(async () =>
             {
-                var active = Interlocked.Increment(ref activeCalls);
+                int active = Interlocked.Increment(ref activeCalls);
                 UpdateMax(ref maxActiveCalls, active);
 
                 await Task.Delay(50);
@@ -80,7 +80,7 @@ public class AppUpdateCoordinatorTests
                 Interlocked.Decrement(ref activeCalls);
                 return UpdateCheckResult.UpToDate("1.0");
             });
-        var coordinator = CreateCoordinator(bridge.Object, maxParallelScans: 2);
+        AppUpdateCoordinator coordinator = CreateCoordinator(bridge.Object, maxParallelScans: 2);
 
         await coordinator.ScanForUpdatesAsync(apps);
 
@@ -90,18 +90,18 @@ public class AppUpdateCoordinatorTests
     [Fact]
     public async Task UpdateAsync_ShouldCallBridgeInInputOrderWithoutOverlap()
     {
-        var apps = CreateApps("App1", "App2", "App3");
-        var bridge = CreateBridge();
-        var callOrder = new List<string>();
-        var activeCalls = 0;
-        var maxActiveCalls = 0;
+        List<ApplicationModel> apps = CreateApps("App1", "App2", "App3");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        List<string> callOrder = new List<string>();
+        int activeCalls = 0;
+        int maxActiveCalls = 0;
         bridge
             .Setup(x => x.UpdateApplicationAsync(
                 It.IsAny<ApplicationModel>(),
                 It.IsAny<Action<string>?>()))
             .Returns(async (ApplicationModel app, Action<string>? progressCallback) =>
             {
-                var active = Interlocked.Increment(ref activeCalls);
+                int active = Interlocked.Increment(ref activeCalls);
                 UpdateMax(ref maxActiveCalls, active);
                 callOrder.Add(app.AppId);
 
@@ -110,9 +110,9 @@ public class AppUpdateCoordinatorTests
                 Interlocked.Decrement(ref activeCalls);
                 return InstallResult.Successful("Updated", "log");
             });
-        var coordinator = CreateCoordinator(bridge.Object);
+        AppUpdateCoordinator coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.UpdateAsync(apps);
+        AppUpdateResult result = await coordinator.UpdateAsync(apps);
 
         Assert.Equal(["App1", "App2", "App3"], callOrder);
         Assert.Equal(1, maxActiveCalls);
@@ -122,8 +122,8 @@ public class AppUpdateCoordinatorTests
     [Fact]
     public async Task UpdateAsync_WithMixedResults_ShouldAggregateSuccessAndFailure()
     {
-        var apps = CreateApps("Updated", "Failed");
-        var bridge = CreateBridge();
+        List<ApplicationModel> apps = CreateApps("Updated", "Failed");
+        Mock<IPowerShellBridge> bridge = CreateBridge();
         bridge
             .Setup(x => x.UpdateApplicationAsync(
                 It.IsAny<ApplicationModel>(),
@@ -132,9 +132,9 @@ public class AppUpdateCoordinatorTests
                 app.AppId == "Failed"
                     ? InstallResult.Failed("Update failed", "failed-log")
                     : InstallResult.Successful("Updated", "updated-log"));
-        var coordinator = CreateCoordinator(bridge.Object);
+        AppUpdateCoordinator coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.UpdateAsync(apps);
+        AppUpdateResult result = await coordinator.UpdateAsync(apps);
 
         Assert.Equal(2, result.Total);
         Assert.Equal(1, result.UpdatedCount);
@@ -148,9 +148,9 @@ public class AppUpdateCoordinatorTests
     [Fact]
     public async Task UpdateAsync_WhenCancelledBetweenItems_ShouldReturnCancelledResult()
     {
-        var apps = CreateApps("App1", "App2", "App3");
-        using var cts = new CancellationTokenSource();
-        var bridge = CreateBridge();
+        List<ApplicationModel> apps = CreateApps("App1", "App2", "App3");
+        using CancellationTokenSource cts = new CancellationTokenSource();
+        Mock<IPowerShellBridge> bridge = CreateBridge();
         bridge
             .Setup(x => x.UpdateApplicationAsync(
                 It.IsAny<ApplicationModel>(),
@@ -160,9 +160,9 @@ public class AppUpdateCoordinatorTests
                 cts.Cancel();
                 return InstallResult.Successful("Updated", "log");
             });
-        var coordinator = CreateCoordinator(bridge.Object);
+        AppUpdateCoordinator coordinator = CreateCoordinator(bridge.Object);
 
-        var result = await coordinator.UpdateAsync(apps, cancellationToken: cts.Token);
+        AppUpdateResult result = await coordinator.UpdateAsync(apps, cancellationToken: cts.Token);
 
         Assert.True(result.WasCancelled);
         Assert.Equal(1, result.UpdatedCount);
@@ -183,7 +183,7 @@ public class AppUpdateCoordinatorTests
 
     private static Mock<IPowerShellBridge> CreateBridge()
     {
-        var bridge = new Mock<IPowerShellBridge>();
+        Mock<IPowerShellBridge> bridge = new Mock<IPowerShellBridge>();
         bridge
             .Setup(x => x.CheckApplicationUpdateAsync(It.IsAny<ApplicationModel>()))
             .ReturnsAsync(UpdateCheckResult.UpToDate("1.0"));
@@ -200,7 +200,7 @@ public class AppUpdateCoordinatorTests
         int maxParallelScans = 2,
         IBatchResumeService? resumeService = null)
     {
-        var settings = new MockAppSettingsService
+        MockAppSettingsService settings = new MockAppSettingsService
         {
             SettingsToReturn = new AppSettings { MaxParallelScans = maxParallelScans }
         };
@@ -213,7 +213,7 @@ public class AppUpdateCoordinatorTests
 
     private static Mock<IBatchResumeService> CreateResumeServiceMock()
     {
-        var mock = new Mock<IBatchResumeService>();
+        Mock<IBatchResumeService> mock = new Mock<IBatchResumeService>();
         mock.Setup(x => x.BeginBatchAsync(
                 It.IsAny<BatchOperationKind>(),
                 It.IsAny<IReadOnlyList<string>>(),
@@ -236,9 +236,9 @@ public class AppUpdateCoordinatorTests
     [Fact]
     public async Task UpdateAsync_ShouldBeginBatchWithUpdateKindAndAppIds()
     {
-        var apps = CreateApps("Foo", "Bar");
-        var resume = CreateResumeServiceMock();
-        var coordinator = CreateCoordinator(resumeService: resume.Object);
+        List<ApplicationModel> apps = CreateApps("Foo", "Bar");
+        Mock<IBatchResumeService> resume = CreateResumeServiceMock();
+        AppUpdateCoordinator coordinator = CreateCoordinator(resumeService: resume.Object);
 
         await coordinator.UpdateAsync(apps);
 
@@ -254,9 +254,9 @@ public class AppUpdateCoordinatorTests
     [Fact]
     public async Task UpdateAsync_ShouldAppendUpdatedOutcomeForSuccess()
     {
-        var apps = CreateApps("App1");
-        var resume = CreateResumeServiceMock();
-        var coordinator = CreateCoordinator(resumeService: resume.Object);
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IBatchResumeService> resume = CreateResumeServiceMock();
+        AppUpdateCoordinator coordinator = CreateCoordinator(resumeService: resume.Object);
 
         await coordinator.UpdateAsync(apps);
 
@@ -272,9 +272,9 @@ public class AppUpdateCoordinatorTests
     [Fact]
     public async Task UpdateAsync_OnSuccess_ShouldMarkBatchCompleted()
     {
-        var apps = CreateApps("App1");
-        var resume = CreateResumeServiceMock();
-        var coordinator = CreateCoordinator(resumeService: resume.Object);
+        List<ApplicationModel> apps = CreateApps("App1");
+        Mock<IBatchResumeService> resume = CreateResumeServiceMock();
+        AppUpdateCoordinator coordinator = CreateCoordinator(resumeService: resume.Object);
 
         await coordinator.UpdateAsync(apps);
 

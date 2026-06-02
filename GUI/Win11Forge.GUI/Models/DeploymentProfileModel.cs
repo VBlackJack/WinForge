@@ -69,7 +69,7 @@ public class DeploymentProfileModel : IValidatableObject
         }
 
         // Check for duplicate parent profiles
-        var distinctParents = InheritedFrom.Distinct().ToList();
+        List<string> distinctParents = InheritedFrom.Distinct().ToList();
         if (distinctParents.Count != InheritedFrom.Count)
         {
             yield return new ValidationResult(
@@ -78,8 +78,8 @@ public class DeploymentProfileModel : IValidatableObject
         }
 
         // Check for duplicate application IDs
-        var appIds = Applications.Select(a => a.AppId).ToList();
-        var distinctAppIds = appIds.Distinct().ToList();
+        List<string> appIds = Applications.Select(a => a.AppId).ToList();
+        List<string> distinctAppIds = appIds.Distinct().ToList();
         if (distinctAppIds.Count != appIds.Count)
         {
             yield return new ValidationResult(

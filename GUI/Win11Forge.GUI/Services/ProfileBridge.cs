@@ -94,7 +94,7 @@ public class ProfileBridge : IProfileBridge
     {
         ValidateProfileName(profileName);
 
-        var profilePath = GetWritableProfilePath(profileName);
+        string profilePath = GetWritableProfilePath(profileName);
         if (!File.Exists(profilePath))
         {
             return false;
@@ -128,7 +128,7 @@ public class ProfileBridge : IProfileBridge
 
         try
         {
-            var rawProfile = await GetRawProfileAsync(profileName);
+            DeploymentProfileModel rawProfile = await GetRawProfileAsync(profileName);
             return rawProfile.InheritedFrom?.AsReadOnly() ?? (IReadOnlyList<string>)Array.Empty<string>();
         }
         catch
@@ -142,7 +142,7 @@ public class ProfileBridge : IProfileBridge
     {
         ValidateProfileName(profileName);
 
-        var profilePath = TryGetExistingProfilePath(profileName);
+        string? profilePath = TryGetExistingProfilePath(profileName);
         if (profilePath == null)
         {
             throw new FileNotFoundException(
@@ -150,12 +150,12 @@ public class ProfileBridge : IProfileBridge
                 profileName);
         }
 
-        var rawProfile = await GetRawProfileAsync(profileName);
+        DeploymentProfileModel rawProfile = await GetRawProfileAsync(profileName);
 
         int totalAppCount = rawProfile.Applications?.Count ?? 0;
         try
         {
-            var resolvedProfile = await LoadProfileAsync(profileName);
+            DeploymentProfileModel resolvedProfile = await LoadProfileAsync(profileName);
             totalAppCount = resolvedProfile.Applications?.Count ?? 0;
         }
         catch
@@ -181,8 +181,8 @@ public class ProfileBridge : IProfileBridge
     /// </summary>
     private string GetWritableProfilePath(string profileName)
     {
-        var profilesDirectory = _pathService.UserProfilesDirectory;
-        var profilePath = Path.Combine(
+        string profilesDirectory = _pathService.UserProfilesDirectory;
+        string profilePath = Path.Combine(
             profilesDirectory,
             $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
 
@@ -192,9 +192,9 @@ public class ProfileBridge : IProfileBridge
 
     private string? TryGetExistingProfilePath(string profileName)
     {
-        foreach (var profilesDirectory in GetProfileReadDirectories())
+        foreach (string profilesDirectory in GetProfileReadDirectories())
         {
-            var profilePath = Path.Combine(
+            string profilePath = Path.Combine(
                 profilesDirectory,
                 $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
             profilePath = ValidatePathWithinDirectory(profilePath, profilesDirectory);
@@ -225,8 +225,8 @@ public class ProfileBridge : IProfileBridge
     /// </summary>
     private static string ValidatePathWithinDirectory(string filePath, string expectedBaseDir)
     {
-        var fullPath = Path.GetFullPath(filePath);
-        var fullBaseDir = Path.GetFullPath(expectedBaseDir);
+        string fullPath = Path.GetFullPath(filePath);
+        string fullBaseDir = Path.GetFullPath(expectedBaseDir);
 
         // Ensure the base directory ends with a separator for proper prefix checking
         if (!fullBaseDir.EndsWith(Path.DirectorySeparatorChar.ToString()))
@@ -277,7 +277,7 @@ public class ProfileBridge : IProfileBridge
         }
 
         // Check for invalid filename characters
-        var invalidChars = Path.GetInvalidFileNameChars();
+        char[] invalidChars = Path.GetInvalidFileNameChars();
         if (profileName.Any(c => invalidChars.Contains(c)))
         {
             throw new ArgumentException(

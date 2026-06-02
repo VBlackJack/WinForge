@@ -55,16 +55,16 @@ internal sealed class AppOperationRunner
             return [];
         }
 
-        using var semaphore = new SemaphoreSlim(_maxParallelism);
-        var results = new TResult[items.Count];
-        var completed = 0;
+        using SemaphoreSlim semaphore = new SemaphoreSlim(_maxParallelism);
+        TResult[] results = new TResult[items.Count];
+        int completed = 0;
 
-        var tasks = items.Select(async (item, index) =>
+        IEnumerable<Task> tasks = items.Select(async (item, index) =>
         {
             await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             TResult? result = default;
-            var operationCompleted = false;
+            bool operationCompleted = false;
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -74,7 +74,7 @@ internal sealed class AppOperationRunner
             }
             finally
             {
-                var currentCompleted = Interlocked.Increment(ref completed);
+                int currentCompleted = Interlocked.Increment(ref completed);
 
                 // Per-item completion hook. Kept generic: the runner has no resume-specific
                 // logic beyond invoking the callback and isolating its failures so that a

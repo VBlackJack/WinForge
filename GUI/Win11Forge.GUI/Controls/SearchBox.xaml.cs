@@ -197,7 +197,7 @@ public partial class SearchBox : UserControl
         }
 
         // Click anywhere in a row to confirm the currently selected suggestion.
-        var container = ItemsControl.ContainerFromElement(SuggestionsList, source) as ListBoxItem;
+        ListBoxItem? container = ItemsControl.ContainerFromElement(SuggestionsList, source) as ListBoxItem;
         if (container?.DataContext is SearchSuggestion suggestion && !string.IsNullOrEmpty(suggestion.Text))
         {
             SelectSuggestion(suggestion);
@@ -227,7 +227,7 @@ public partial class SearchBox : UserControl
     {
         _suggestions.Clear();
 
-        var searchText = SearchTextBox.Text?.ToLowerInvariant() ?? string.Empty;
+        string searchText = SearchTextBox.Text?.ToLowerInvariant() ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(searchText))
         {
@@ -248,7 +248,7 @@ public partial class SearchBox : UserControl
             return;
         }
 
-        var matches = SuggestionsSource
+        IEnumerable<SearchSuggestion> matches = SuggestionsSource
             .Where(s => s.ToLowerInvariant().Contains(searchText))
             .Take(MaxSuggestions)
             .Select(s => new SearchSuggestion
@@ -257,7 +257,7 @@ public partial class SearchBox : UserControl
                 Icon = SymbolRegular.Apps24
             });
 
-        foreach (var match in matches)
+        foreach (SearchSuggestion? match in matches)
         {
             _suggestions.Add(match);
         }
@@ -270,7 +270,7 @@ public partial class SearchBox : UserControl
     {
         _suggestions.Clear();
 
-        foreach (var recent in _recentSearches.Take(MaxRecentSearches))
+        foreach (string? recent in _recentSearches.Take(MaxRecentSearches))
         {
             _suggestions.Add(new SearchSuggestion
             {

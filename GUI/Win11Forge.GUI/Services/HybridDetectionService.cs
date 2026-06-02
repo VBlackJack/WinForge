@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Management.Automation;
 using Win11Forge.GUI.Models;
@@ -195,14 +196,14 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     /// </summary>
     private async Task<BatchDetectionResult> RefreshCacheInternalAsync(bool manual)
     {
-        var stopwatch = Stopwatch.StartNew();
-        var allPackages = new Dictionary<string, InstalledPackageInfo>(StringComparer.OrdinalIgnoreCase);
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        Dictionary<string, InstalledPackageInfo> allPackages = new Dictionary<string, InstalledPackageInfo>(StringComparer.OrdinalIgnoreCase);
 
         // Step 1: Registry scan (fastest, ~20ms)
         try
         {
-            var registryPackages = await _registryService.ScanInstalledApplicationsAsync();
-            foreach (var kvp in registryPackages)
+            Dictionary<string, InstalledPackageInfo> registryPackages = await _registryService.ScanInstalledApplicationsAsync();
+            foreach (KeyValuePair<string, InstalledPackageInfo> kvp in registryPackages)
             {
                 allPackages[kvp.Key] = kvp.Value;
             }
@@ -218,11 +219,11 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
         {
             try
             {
-                var wingetPackages = await GetWinGetPackagesAsync();
-                foreach (var pkg in wingetPackages)
+                List<InstalledPackageInfo> wingetPackages = await GetWinGetPackagesAsync();
+                foreach (InstalledPackageInfo pkg in wingetPackages)
                 {
                     // WinGet provides better ID matching, merge with registry data
-                    if (allPackages.TryGetValue(pkg.Id, out var existing))
+                    if (allPackages.TryGetValue(pkg.Id, out InstalledPackageInfo? existing))
                     {
                         // Update with WinGet's available version info
                         allPackages[pkg.Id] = new InstalledPackageInfo
@@ -255,8 +256,8 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
         // Step 3: AppX packages (Store apps, ~100ms)
         try
         {
-            var appxPackages = await GetAppXPackagesAsync();
-            foreach (var pkg in appxPackages)
+            List<InstalledPackageInfo> appxPackages = await GetAppXPackagesAsync();
+            foreach (InstalledPackageInfo pkg in appxPackages)
             {
                 if (!allPackages.ContainsKey(pkg.Id))
                 {
@@ -274,8 +275,8 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
         // This catches .NET runtimes, Java, VC++ Redist, etc. that have special detection methods
         try
         {
-            var jsonPackages = await _jsonDetectionService.DetectAllAsync();
-            foreach (var kvp in jsonPackages)
+            Dictionary<string, InstalledPackageInfo> jsonPackages = await _jsonDetectionService.DetectAllAsync();
+            foreach (KeyValuePair<string, InstalledPackageInfo> kvp in jsonPackages)
             {
                 // JSON detection has priority for its defined apps (especially runtimes)
                 // because it uses the correct detection method from applications.json
@@ -290,7 +291,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
 
         stopwatch.Stop();
 
-        var result = new BatchDetectionResult
+        BatchDetectionResult result = new BatchDetectionResult
         {
             Packages = allPackages,
             DetectionTime = stopwatch.Elapsed,
@@ -324,14 +325,14 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     /// <inheritdoc/>
     public async Task<InstalledPackageInfo?> GetPackageInfoAsync(string appId)
     {
-        var result = await GetInstalledPackagesAsync();
+        BatchDetectionResult result = await GetInstalledPackagesAsync();
         return result.GetPackage(appId);
     }
 
     /// <inheritdoc/>
     public async Task<string?> GetInstalledVersionAsync(string appId)
     {
-        var info = await GetPackageInfoAsync(appId);
+        InstalledPackageInfo? info = await GetPackageInfoAsync(appId);
         return info?.InstalledVersion;
     }
 
@@ -347,7 +348,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             }
         }
 
-        var updates = new List<UpdateInfo>();
+        List<UpdateInfo> updates = new List<UpdateInfo>();
 
         if (await IsWinGetModuleAvailableAsync())
         {
@@ -375,7 +376,7 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     public async Task WarmCacheAsync()
     {
         _logger.LogInfo("Starting cache pre-warming...");
-        var stopwatch = Stopwatch.StartNew();
+        Stopwatch stopwatch = Stopwatch.StartNew();
 
         // Warm main detection cache
         await GetInstalledPackagesAsync(forceRefresh: true);
@@ -442,16 +443,16 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
                 return _winGetModuleAvailable.Value;
         }
 
-        var isAvailable = await Task.Run(() =>
+        bool isAvailable = await Task.Run(() =>
         {
             try
             {
-                using var ps = PS.Create();
+                using PS ps = PS.Create();
                 ps.AddCommand("Get-Module")
                   .AddParameter("ListAvailable")
                   .AddParameter("Name", "Microsoft.WinGet.Client");
 
-                var result = ps.Invoke();
+                Collection<System.Management.Automation.PSObject> result = ps.Invoke();
                 return result.Count > 0;
             }
             catch
@@ -477,11 +478,11 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     {
         return await Task.Run(() =>
         {
-            var packages = new List<InstalledPackageInfo>();
+            List<InstalledPackageInfo> packages = new List<InstalledPackageInfo>();
 
             try
             {
-                using var ps = PS.Create();
+                using PS ps = PS.Create();
 
                 // Import module and get packages
                 ps.AddScript(@"
@@ -489,14 +490,14 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
                     Get-WinGetPackage -ErrorAction SilentlyContinue | Select-Object Id, Name, InstalledVersion, IsUpdateAvailable, Source
                 ");
 
-                var results = ps.Invoke();
+                Collection<System.Management.Automation.PSObject> results = ps.Invoke();
 
-                foreach (var result in results)
+                foreach (System.Management.Automation.PSObject? result in results)
                 {
                     if (result?.BaseObject == null) continue;
 
-                    var id = result.Properties["Id"]?.Value?.ToString();
-                    var name = result.Properties["Name"]?.Value?.ToString();
+                    string? id = result.Properties["Id"]?.Value?.ToString();
+                    string? name = result.Properties["Name"]?.Value?.ToString();
 
                     if (string.IsNullOrEmpty(id)) continue;
 
@@ -527,11 +528,11 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     {
         return await Task.Run(() =>
         {
-            var updates = new List<UpdateInfo>();
+            List<UpdateInfo> updates = new List<UpdateInfo>();
 
             try
             {
-                using var ps = PS.Create();
+                using PS ps = PS.Create();
 
                 // Get packages with updates available
                 ps.AddScript(@"
@@ -541,13 +542,13 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
                         Select-Object Id, Name, InstalledVersion, @{N='AvailableVersion';E={$_.AvailableVersions[0]}}, Source
                 ");
 
-                var results = ps.Invoke();
+                Collection<System.Management.Automation.PSObject> results = ps.Invoke();
 
-                foreach (var result in results)
+                foreach (System.Management.Automation.PSObject? result in results)
                 {
                     if (result?.BaseObject == null) continue;
 
-                    var id = result.Properties["Id"]?.Value?.ToString();
+                    string? id = result.Properties["Id"]?.Value?.ToString();
                     if (string.IsNullOrEmpty(id)) continue;
 
                     updates.Add(new UpdateInfo
@@ -576,25 +577,25 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     {
         return await Task.Run(() =>
         {
-            var packages = new List<InstalledPackageInfo>();
+            List<InstalledPackageInfo> packages = new List<InstalledPackageInfo>();
 
             try
             {
-                using var ps = PS.Create();
+                using PS ps = PS.Create();
                 ps.AddCommand("Get-AppxPackage")
                   .AddParameter("ErrorAction", "SilentlyContinue");
 
-                var results = ps.Invoke();
+                Collection<System.Management.Automation.PSObject> results = ps.Invoke();
 
-                foreach (var result in results)
+                foreach (System.Management.Automation.PSObject? result in results)
                 {
                     if (result?.BaseObject == null) continue;
 
-                    var name = result.Properties["Name"]?.Value?.ToString();
-                    var packageFullName = result.Properties["PackageFullName"]?.Value?.ToString();
-                    var version = result.Properties["Version"]?.Value?.ToString();
-                    var publisher = result.Properties["Publisher"]?.Value?.ToString();
-                    var installLocation = result.Properties["InstallLocation"]?.Value?.ToString();
+                    string? name = result.Properties["Name"]?.Value?.ToString();
+                    string? packageFullName = result.Properties["PackageFullName"]?.Value?.ToString();
+                    string? version = result.Properties["Version"]?.Value?.ToString();
+                    string? publisher = result.Properties["Publisher"]?.Value?.ToString();
+                    string? installLocation = result.Properties["InstallLocation"]?.Value?.ToString();
 
                     if (string.IsNullOrEmpty(name)) continue;
 
