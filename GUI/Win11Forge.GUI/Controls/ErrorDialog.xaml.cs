@@ -34,6 +34,7 @@ public partial class ErrorDialog : UserControl
     private string? _helpUrl;
     private string? _errorCode;
     private System.Windows.Threading.DispatcherTimer? _copyFeedbackTimer;
+    private static ILoggingService Logger => App.GetService<ILoggingService>();
 
     public event EventHandler<DialogAction>? ActionSelected;
 
@@ -217,7 +218,7 @@ public partial class ErrorDialog : UserControl
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to open help URL: {ex.Message}");
+                Logger.LogWarning($"Failed to open help URL: {ex.Message}");
             }
         }
         ActionSelected?.Invoke(this, DialogAction.Help);
@@ -276,7 +277,7 @@ public partial class ErrorDialog : UserControl
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to copy error details: {ex.Message}");
+            Logger.LogWarning($"Failed to copy error details: {ex.Message}");
         }
     }
 
@@ -308,7 +309,7 @@ public partial class ErrorDialog : UserControl
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to open report issue URL: {ex.Message}");
+            Logger.LogWarning($"Failed to open report issue URL: {ex.Message}");
             // Fallback to just opening issues page
             try
             {
@@ -320,7 +321,7 @@ public partial class ErrorDialog : UserControl
             }
             catch (Exception fallbackEx)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to open issues page: {fallbackEx.Message}");
+                Logger.LogWarning($"Failed to open issues page: {fallbackEx.Message}");
             }
         }
     }

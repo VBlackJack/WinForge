@@ -54,7 +54,7 @@ public partial class AppCatalogView : UserControl
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"AppCatalogView load failed: {ex}");
+            App.GetService<ILoggingService>().LogError("AppCatalogView load failed", ex);
             IDialogService dialogService = App.GetService<IDialogService>();
             await dialogService.ShowErrorAsync(
                 Loc.Common_Error,

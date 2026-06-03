@@ -161,7 +161,7 @@ public partial class App : Application
             catch (Exception ex)
             {
                 // Version display is non-critical, but log for diagnostics
-                System.Diagnostics.Debug.WriteLine($"Failed to get version for splash screen: {ex.Message}");
+                LogWarning($"Failed to get version for splash screen: {ex.Message}");
             }
 
             // Step 3: Apply language/culture BEFORE UI initialization
@@ -247,7 +247,7 @@ public partial class App : Application
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[App] PruneStaleAsync failed: {ex.Message}");
+                        LogError("PruneStaleAsync", ex);
                     }
                 });
             }
@@ -269,7 +269,7 @@ public partial class App : Application
             }
             catch (Exception closeEx)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to close splash screen: {closeEx.Message}");
+                LogError("Closing splash screen", closeEx);
             }
 
             base.OnStartup(e);

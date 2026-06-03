@@ -49,6 +49,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     private readonly IProfileExportService? _profileExportService;
     private readonly ToastService? _toastService;
     private readonly INavigationService? _navigationService;
+    private readonly ILoggingService _logger;
 
     // Event handlers stored for cleanup
     private EventHandler? _navigationChangedHandler;
@@ -146,6 +147,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         try
         {
             // Get services from DI container
+            _logger = App.GetService<ILoggingService>();
             _viewModel = App.GetService<MainWindowViewModel>();
             _powerShellBridge = App.GetService<IPowerShellBridge>();
             _historyService = App.GetService<IDeploymentHistoryService>();
@@ -191,6 +193,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         }
         catch (Exception ex)
         {
+            _logger = new LoggerFactory().CreateLogger<MainWindow>();
             _initializationFailed = true;
 
             // Show error dialog and allow graceful exit
@@ -291,7 +294,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to restore window placement: {ex.Message}");
+            _logger.LogWarning($"Failed to restore window placement: {ex.Message}");
         }
     }
 
@@ -308,12 +311,12 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             settings.MainWindowPlacement = WindowPlacementHelper.CapturePlacement(this);
             if (!_settingsService.SaveSettings(settings))
             {
-                System.Diagnostics.Debug.WriteLine("Failed to save window placement: settings persistence returned false");
+                _logger.LogWarning("Failed to save window placement: settings persistence returned false");
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to save window placement: {ex.Message}");
+            _logger.LogWarning($"Failed to save window placement: {ex.Message}");
         }
     }
 
@@ -401,11 +404,11 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             // Start cache pre-warming AFTER the initial view has loaded
             // to avoid resource contention with the first view's initialization
             WarmCacheAsync().SafeFireAndForget(
-                onException: ex => System.Diagnostics.Debug.WriteLine($"Cache pre-warming failed (non-critical): {ex.Message}"));
+                onException: ex => _logger.LogWarning($"Cache pre-warming failed (non-critical): {ex.Message}"));
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"MainWindow_Loaded failed: {ex}");
+            _logger.LogError("MainWindow_Loaded failed", ex);
             _toastService?.ShowError(string.Format(Loc.Init_ErrorMessage, ex.Message));
         }
     }
@@ -538,7 +541,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"UpdateBreadcrumb failed: {ex.Message}");
+            _logger.LogWarning($"UpdateBreadcrumb failed: {ex.Message}");
         }
 
         try
@@ -579,7 +582,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"LoadViewContent failed for index {selectedIndex}: {ex}");
+            _logger.LogError($"LoadViewContent failed for index {selectedIndex}", ex);
             _toastService?.ShowError(string.Format(Loc.Error_LoadViewFailed, ex.Message));
         }
     }
@@ -596,7 +599,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to initialize {viewName} view: {ex.Message}");
+            _logger.LogError($"Failed to initialize {viewName} view", ex);
             _toastService?.ShowError(string.Format(Loc.Error_LoadViewFailed, ex.Message));
         }
     }
@@ -679,13 +682,13 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
                 settings.LastNavigationIndex = viewIndex;
                 if (!_settingsService.SaveSettings(settings))
                 {
-                    System.Diagnostics.Debug.WriteLine("Failed to save navigation state: settings persistence returned false");
+                    _logger.LogWarning("Failed to save navigation state: settings persistence returned false");
                 }
             }
             catch (Exception ex)
             {
                 // State saving is non-critical, but log for diagnostics
-                System.Diagnostics.Debug.WriteLine($"Failed to save navigation state: {ex.Message}");
+                _logger.LogWarning($"Failed to save navigation state: {ex.Message}");
             }
         }
     }
@@ -706,7 +709,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
                     settings.IsFirstRun = false;
                     if (!_settingsService.SaveSettings(settings))
                     {
-                        System.Diagnostics.Debug.WriteLine("Failed to persist onboarding flag: settings persistence returned false");
+                        _logger.LogWarning("Failed to persist onboarding flag: settings persistence returned false");
                     }
                 }
             };
@@ -726,14 +729,14 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
                 currentSettings.IsFirstRun = false;
                 if (!_settingsService.SaveSettings(currentSettings))
                 {
-                    System.Diagnostics.Debug.WriteLine("Failed to persist first-run flag: settings persistence returned false");
+                    _logger.LogWarning("Failed to persist first-run flag: settings persistence returned false");
                 }
             }
         }
         catch (Exception ex)
         {
             // Onboarding is non-critical, but log for diagnostics
-            System.Diagnostics.Debug.WriteLine($"Failed to show onboarding dialog: {ex.Message}");
+            _logger.LogWarning($"Failed to show onboarding dialog: {ex.Message}");
         }
     }
 
