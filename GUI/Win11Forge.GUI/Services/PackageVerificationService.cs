@@ -51,6 +51,8 @@ public partial class PackageVerificationService : IPackageVerificationService
 
     private static readonly string UserAgentValue = $"Win11Forge/{AppVersion}";
 
+    private const string StoreDetailUrlFormat = "https://apps.microsoft.com/detail/{0}";
+
     private static readonly HttpClient SharedHttpClient = new()
     {
         Timeout = TimeoutDefaults.HttpClient
@@ -213,7 +215,7 @@ public partial class PackageVerificationService : IPackageVerificationService
         try
         {
             // Try to access the Microsoft Store product page
-            string url = $"https://apps.microsoft.com/detail/{storeId}";
+            string url = string.Format(StoreDetailUrlFormat, storeId);
 
             using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, url);
             request.Headers.Add("User-Agent", UserAgentValue);
