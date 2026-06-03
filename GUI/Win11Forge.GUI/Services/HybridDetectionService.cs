@@ -74,12 +74,16 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     /// </summary>
     public event EventHandler<CacheInvalidatedEventArgs>? CacheInvalidated;
 
-    public HybridDetectionService(ILoggerFactory loggerFactory, IRepositoryPathService pathService)
+    public HybridDetectionService(
+        ILoggerFactory loggerFactory,
+        IRepositoryPathService pathService,
+        IDetectionProbe? detectionProbe = null)
     {
         _registryService = new RegistryDetectionService(loggerFactory);
         _jsonDetectionService = new JsonApplicationDetectionService(
             pathService ?? throw new ArgumentNullException(nameof(pathService)),
-            loggerFactory);
+            loggerFactory,
+            detectionProbe);
         _logger = loggerFactory?.CreateLogger<HybridDetectionService>() ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 

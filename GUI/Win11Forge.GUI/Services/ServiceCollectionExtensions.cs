@@ -45,6 +45,7 @@ public static class ServiceCollectionExtensions
             serviceProvider.GetRequiredService<IFileLogWriter>()));
 
         // Register detection service (used by application management)
+        services.AddSingleton<IDetectionProbe, DetectionProbe>();
         services.AddSingleton<IApplicationDetectionService, HybridDetectionService>();
         services.AddSingleton<CacheWarmingService>();
 
