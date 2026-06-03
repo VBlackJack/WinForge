@@ -23,6 +23,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
+using Win11Forge.GUI.Models;
 using Wpf.Ui.Controls;
 using Loc = Win11Forge.GUI.Resources.Resources;
 
@@ -43,7 +44,7 @@ public partial class DetectionEditor : UserControl
             nameof(Method),
             typeof(string),
             typeof(DetectionEditor),
-            new FrameworkPropertyMetadata("Registry", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnMethodChanged));
+            new FrameworkPropertyMetadata(nameof(DetectionMethod.Registry), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnMethodChanged));
 
     /// <summary>
     /// Gets or sets the detection method.
@@ -287,11 +288,13 @@ public partial class DetectionEditor : UserControl
     /// </summary>
     private void UpdatePanelVisibility()
     {
-        RegistryPanel.Visibility = Method == "Registry" ? Visibility.Visible : Visibility.Collapsed;
-        FilePanel.Visibility = Method == "File" ? Visibility.Visible : Visibility.Collapsed;
-        CommandPanel.Visibility = Method == "Command" ? Visibility.Visible : Visibility.Collapsed;
-        WindowsFeaturePanel.Visibility = Method == "WindowsFeature" ? Visibility.Visible : Visibility.Collapsed;
-        StoreAppPanel.Visibility = Method == "StoreApp" ? Visibility.Visible : Visibility.Collapsed;
+        DetectionMethod method = Method.ToDetectionMethod();
+
+        RegistryPanel.Visibility = method == DetectionMethod.Registry ? Visibility.Visible : Visibility.Collapsed;
+        FilePanel.Visibility = method == DetectionMethod.File ? Visibility.Visible : Visibility.Collapsed;
+        CommandPanel.Visibility = method == DetectionMethod.Command ? Visibility.Visible : Visibility.Collapsed;
+        WindowsFeaturePanel.Visibility = method == DetectionMethod.WindowsFeature ? Visibility.Visible : Visibility.Collapsed;
+        StoreAppPanel.Visibility = method == DetectionMethod.StoreApp ? Visibility.Visible : Visibility.Collapsed;
     }
 
     /// <summary>
@@ -341,21 +344,21 @@ public partial class DetectionEditor : UserControl
         {
             await Task.Run(() =>
             {
-                switch (Method)
+                switch (Method.ToDetectionMethod())
                 {
-                    case "Registry":
+                    case DetectionMethod.Registry:
                         TestRegistryDetection();
                         break;
-                    case "File":
+                    case DetectionMethod.File:
                         TestFileDetection();
                         break;
-                    case "Command":
+                    case DetectionMethod.Command:
                         TestCommandDetection();
                         break;
-                    case "WindowsFeature":
+                    case DetectionMethod.WindowsFeature:
                         TestWindowsFeatureDetection();
                         break;
-                    case "StoreApp":
+                    case DetectionMethod.StoreApp:
                         TestStoreAppDetection();
                         break;
                     default:
