@@ -16,7 +16,6 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -40,6 +39,7 @@ public partial class DashboardViewModel : ViewModelBase
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly IDeploymentHistoryService _historyService;
     private readonly IAppSettingsService _settingsService;
+    private readonly ILoggingService _logger;
 
     #region Hero Section Properties
 
@@ -301,11 +301,13 @@ public partial class DashboardViewModel : ViewModelBase
     public DashboardViewModel(
         IPowerShellBridge powerShellBridge,
         IDeploymentHistoryService historyService,
-        IAppSettingsService settingsService)
+        IAppSettingsService settingsService,
+        ILoggerFactory? loggerFactory = null)
     {
         _powerShellBridge = powerShellBridge;
         _historyService = historyService;
         _settingsService = settingsService;
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<DashboardViewModel>();
     }
 
     /// <summary>
@@ -387,19 +389,19 @@ public partial class DashboardViewModel : ViewModelBase
         {
             ErrorMessage = $"PowerShell error: {ex.Message}";
             CurrentState = DashboardState.Ready;
-            Debug.WriteLine($"PowerShellBridgeException in InitializeAsync: {ex}");
+            _logger.LogError("PowerShellBridgeException in InitializeAsync", ex);
         }
         catch (DetectionException ex)
         {
             ErrorMessage = $"Detection error: {ex.Message}";
             CurrentState = DashboardState.Ready;
-            Debug.WriteLine($"DetectionException in InitializeAsync: {ex}");
+            _logger.LogError("DetectionException in InitializeAsync", ex);
         }
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
             CurrentState = DashboardState.Ready;
-            Debug.WriteLine($"Unexpected exception in InitializeAsync: {ex}");
+            _logger.LogError("Unexpected exception in InitializeAsync", ex);
         }
         finally
         {
@@ -526,11 +528,11 @@ public partial class DashboardViewModel : ViewModelBase
         }
         catch (TimeoutException)
         {
-            Debug.WriteLine("Background scan timed out");
+            _logger.LogWarning("Background scan timed out");
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Background scan failed: {ex.Message}");
+            _logger.LogWarning($"Background scan failed: {ex.Message}");
         }
         finally
         {

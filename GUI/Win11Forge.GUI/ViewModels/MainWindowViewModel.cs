@@ -40,6 +40,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly IDialogService _dialogService;
     private readonly IToastService _toastService;
     private readonly EventHandler _undoStateChangedHandler;
+    private readonly ILoggingService _logger;
     private bool _disposed;
     private bool _batchResumePromptHandled;
 
@@ -60,7 +61,8 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         IBatchResumeService batchResumeService,
         IPowerShellBridge powerShellBridge,
         IDialogService dialogService,
-        IToastService toastService)
+        IToastService toastService,
+        ILoggerFactory? loggerFactory = null)
     {
         _undoService = undoService ?? throw new ArgumentNullException(nameof(undoService));
         DashboardViewModel = dashboardViewModel ?? throw new ArgumentNullException(nameof(dashboardViewModel));
@@ -73,6 +75,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         _powerShellBridge = powerShellBridge ?? throw new ArgumentNullException(nameof(powerShellBridge));
         _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
         _toastService = toastService ?? throw new ArgumentNullException(nameof(toastService));
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<MainWindowViewModel>();
 
         ShowKeyboardShortcutsCommand = new AsyncRelayCommand(ShowKeyboardShortcutsAsync);
         UndoCommand = new AsyncRelayCommand(UndoAsync, () => CanUndo);
@@ -150,7 +153,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             // Fallback to static title if version retrieval fails.
-            System.Diagnostics.Debug.WriteLine($"Failed to retrieve version for title: {ex.Message}");
+            _logger.LogWarning($"Failed to retrieve version for title: {ex.Message}");
             WindowTitle = string.Format(Loc.App_Title, "?");
         }
     }
@@ -187,7 +190,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] ListPendingAsync failed: {ex.Message}");
+            _logger.LogError("ListPendingAsync failed", ex);
             return;
         }
 
@@ -200,8 +203,8 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         BatchCheckpoint latest = ordered[0];
         for (int i = 1; i < ordered.Length; i++)
         {
-            System.Diagnostics.Debug.WriteLine(
-                $"[MainWindow] Ignoring older pending checkpoint {ordered[i].BatchId} " +
+            _logger.LogDebug(
+                $"Ignoring older pending checkpoint {ordered[i].BatchId} " +
                 $"(LastCheckpointAt={ordered[i].LastCheckpointAt:o}); will be re-offered or pruned later.");
         }
 
@@ -232,7 +235,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[MainWindow] Resume dialog failed: {ex.Message}");
+            _logger.LogError("Resume dialog failed", ex);
             return;
         }
 
@@ -250,7 +253,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[MainWindow] Failed to delete old checkpoint: {ex.Message}");
+                    _logger.LogWarning($"Failed to delete old checkpoint: {ex.Message}");
                 }
 
                 _ = Task.Run(async () =>
@@ -261,7 +264,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[MainWindow] ResumeBatchAsync failed: {ex.Message}");
+                        _logger.LogError("ResumeBatchAsync failed", ex);
                     }
                 });
                 break;
@@ -274,7 +277,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[MainWindow] Discard failed: {ex.Message}");
+                    _logger.LogWarning($"Discard failed: {ex.Message}");
                 }
                 break;
 
@@ -324,7 +327,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             // Dialog display is non-critical, but log for diagnostics.
-            System.Diagnostics.Debug.WriteLine($"Failed to show keyboard shortcuts dialog: {ex.Message}");
+            _logger.LogWarning($"Failed to show keyboard shortcuts dialog: {ex.Message}");
         }
     }
 

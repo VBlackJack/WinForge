@@ -50,6 +50,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private readonly IDialogService _dialogService;
     private readonly IRepositoryPathService _pathService;
     private readonly IScheduledDeploymentService _scheduledDeploymentService;
+    private readonly ILoggingService _logger;
     private string _initialLanguageCode = string.Empty;
     private bool _isLoadingSettings;
     private bool _settingsLoaded;
@@ -367,7 +368,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         IFileDialogService? fileDialogService = null,
         IDialogService? dialogService = null,
         IRepositoryPathService? pathService = null,
-        IScheduledDeploymentService? scheduledDeploymentService = null)
+        IScheduledDeploymentService? scheduledDeploymentService = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _settingsService = settingsService;
         _themeService = themeService ?? new ThemeService(settingsService);
@@ -382,6 +384,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         _dialogService = dialogService ?? new DialogService();
         _pathService = pathService ?? new RepositoryPathService();
         _scheduledDeploymentService = scheduledDeploymentService ?? new ScheduledDeploymentService(powerShellBridge);
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<SettingsViewModel>();
 
         // Subscribe to error history changes
         if (_errorHistoryService != null)
@@ -627,7 +630,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to restart application: {ex.Message}");
+            _logger.LogError("Failed to restart application", ex);
         }
     }
 
@@ -724,7 +727,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to open GitHub: {ex.Message}");
+            _logger.LogWarning($"Failed to open GitHub: {ex.Message}");
         }
     }
 

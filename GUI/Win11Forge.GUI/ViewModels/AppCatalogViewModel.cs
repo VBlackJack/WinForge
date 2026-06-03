@@ -18,7 +18,6 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -43,6 +42,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     private readonly IDialogService _dialogService;
     private readonly IFileDialogService _fileDialogService;
     private readonly ICollectionView _applicationsView;
+    private readonly ILoggingService _logger;
     private CancellationTokenSource? _searchDebounceTokenSource;
     private CancellationTokenSource? _verificationCts;
     private const int SearchDebounceMs = 300;
@@ -205,7 +205,8 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         IPackageVerificationService verificationService,
         IApplicationEditorDialogService? applicationEditorDialogService = null,
         IDialogService? dialogService = null,
-        IFileDialogService? fileDialogService = null)
+        IFileDialogService? fileDialogService = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _databaseService = databaseService ?? throw new ArgumentNullException(nameof(databaseService));
         _undoService = undoService ?? throw new ArgumentNullException(nameof(undoService));
@@ -213,6 +214,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         _applicationEditorDialogService = applicationEditorDialogService ?? new ApplicationEditorDialogService();
         _dialogService = dialogService ?? new DialogService();
         _fileDialogService = fileDialogService ?? new FileDialogService();
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<AppCatalogViewModel>();
 
         // Setup collection view for filtering
         _applicationsView = CollectionViewSource.GetDefaultView(Applications);
@@ -273,12 +275,12 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         catch (ApplicationDatabaseException ex)
         {
             SetLoadError(ex);
-            Debug.WriteLine($"ApplicationDatabaseException in LoadApplicationsAsync: {ex}");
+            _logger.LogError("ApplicationDatabaseException in LoadApplicationsAsync", ex);
         }
         catch (Exception ex)
         {
             SetLoadError(ex);
-            Debug.WriteLine($"Unexpected exception in LoadApplicationsAsync: {ex}");
+            _logger.LogError("Unexpected exception in LoadApplicationsAsync", ex);
         }
         finally
         {
@@ -340,12 +342,12 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         catch (ApplicationDatabaseException ex)
         {
             StatusMessage = string.Format(Loc.AppCatalog_DeleteError, ex.Message);
-            Debug.WriteLine($"ApplicationDatabaseException in DeleteSelectedApplicationAsync: {ex}");
+            _logger.LogError("ApplicationDatabaseException in DeleteSelectedApplicationAsync", ex);
         }
         catch (Exception ex)
         {
             StatusMessage = string.Format(Loc.AppCatalog_DeleteError, ex.Message);
-            Debug.WriteLine($"Unexpected exception in DeleteSelectedApplicationAsync: {ex}");
+            _logger.LogError("Unexpected exception in DeleteSelectedApplicationAsync", ex);
         }
         finally
         {
@@ -465,7 +467,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         {
             string message = string.Format(Loc.AppCatalog_EditorOpenError, ex.Message, ex.StackTrace);
             StatusMessage = message;
-            Debug.WriteLine($"Application editor add failed: {ex}");
+            _logger.LogError("Application editor add failed", ex);
             await _dialogService.ShowErrorAsync(Loc.Common_Error, message);
         }
     }
@@ -490,7 +492,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         {
             string message = string.Format(Loc.AppCatalog_EditorOpenError, ex.Message, ex.StackTrace);
             StatusMessage = message;
-            Debug.WriteLine($"Application editor edit failed: {ex}");
+            _logger.LogError("Application editor edit failed", ex);
             await _dialogService.ShowErrorAsync(Loc.Common_Error, message);
         }
     }
@@ -541,7 +543,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             StatusMessage = string.Format(Loc.AppCatalog_ImportError, ex.Message);
-            Debug.WriteLine($"Import failed: {ex}");
+            _logger.LogError("Import failed", ex);
             await _dialogService.ShowErrorAsync(Loc.Common_Error, StatusMessage);
         }
     }
@@ -571,7 +573,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             StatusMessage = string.Format(Loc.AppCatalog_ExportError, ex.Message);
-            Debug.WriteLine($"Export failed: {ex}");
+            _logger.LogError("Export failed", ex);
             await _dialogService.ShowErrorAsync(Loc.Common_Error, StatusMessage);
         }
     }
