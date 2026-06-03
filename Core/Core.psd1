@@ -21,7 +21,7 @@
     RootModule = 'Core.psm1'
 
     # Version number of this module
-    ModuleVersion = '1.0.0510.2'
+    ModuleVersion = '1.0.0603.1'
 
     # ID used to uniquely identify this module
     GUID = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d'
@@ -73,7 +73,7 @@
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
 
             # Release notes
-            ReleaseNotes = 'Win11Forge v2026051002'
+            ReleaseNotes = 'Win11Forge v2026060301'
         }
     }
 }

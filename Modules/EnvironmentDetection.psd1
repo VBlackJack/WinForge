@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'EnvironmentDetection.psm1'
-    ModuleVersion = '1.0.0510.2'
+    ModuleVersion = '1.0.0603.1'
     GUID = '84278f40-33e4-41b3-a5ad-ea4f1d7692d4'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Environment', 'Detection', 'System')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v2026051002'
+            ReleaseNotes = 'Win11Forge v2026060301'
         }
     }
 }
