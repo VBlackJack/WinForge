@@ -202,7 +202,7 @@ public class PowerShellExecutionService : IPowerShellExecutionService
     /// <returns>A PowerShellProcessWrapper instance.</returns>
     internal PowerShellProcessWrapper CreatePowerShellInstance()
     {
-        return new PowerShellProcessWrapper(GetPowerShellPath(), _pathService.GetSafeRepositoryRoot());
+        return new PowerShellProcessWrapper(GetPowerShellPath(), _pathService.GetSafeRepositoryRoot(), _logger);
     }
 
     /// <inheritdoc/>

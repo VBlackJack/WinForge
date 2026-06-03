@@ -16,6 +16,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Win11Forge.GUI.Services;
 
 namespace Win11Forge.GUI.Services.PowerShell;
 
@@ -29,6 +30,7 @@ internal class PowerShellProcessWrapper : IDisposable
     private readonly string _workingDir;
     private readonly List<string> _scripts = new();
     private readonly List<string> _errors = new();
+    private readonly ILoggingService? _logger;
     private bool _hadErrors;
 
     /// <summary>
@@ -36,10 +38,11 @@ internal class PowerShellProcessWrapper : IDisposable
     /// </summary>
     private const int ProcessTimeoutMs = 300000;
 
-    public PowerShellProcessWrapper(string psPath, string workingDir)
+    public PowerShellProcessWrapper(string psPath, string workingDir, ILoggingService? logger = null)
     {
         _psPath = psPath;
         _workingDir = workingDir;
+        _logger = logger;
     }
 
     public bool HadErrors => _hadErrors;
@@ -108,7 +111,14 @@ internal class PowerShellProcessWrapper : IDisposable
             // Wait with timeout (5 minutes for script execution)
             if (!process.WaitForExit(ProcessTimeoutMs))
             {
-                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogWarning($"Process kill failed (best effort): {ex.Message}");
+                }
                 throw new TimeoutException($"Script execution timed out after {ProcessTimeoutMs / 1000} seconds");
             }
 
