@@ -690,6 +690,7 @@ public class Resources
     public static string Validation_AtLeastOneSource => ResourceManager.GetString("Validation_AtLeastOneSource", resourceCulture);
     public static string Validation_DuplicateAppId => ResourceManager.GetString("Validation_DuplicateAppId", resourceCulture);
     public static string Nav_AppCatalog => ResourceManager.GetString("Nav_AppCatalog", resourceCulture);
+    public static string Nav_Logs => ResourceManager.GetString("Nav_Logs", resourceCulture);
     public static string AppCatalog_Title => ResourceManager.GetString("AppCatalog_Title", resourceCulture);
     public static string AppCatalog_Subtitle => ResourceManager.GetString("AppCatalog_Subtitle", resourceCulture);
     public static string AppCatalog_Add => ResourceManager.GetString("AppCatalog_Add", resourceCulture);

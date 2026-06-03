@@ -26,6 +26,7 @@
         <KeyBinding Modifiers="Ctrl" Key="D4" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="3"/>
         <KeyBinding Modifiers="Ctrl" Key="D5" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="4"/>
         <KeyBinding Modifiers="Ctrl" Key="D6" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="5"/>
+        <KeyBinding Modifiers="Ctrl" Key="D7" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="6"/>
         <KeyBinding Modifiers="Ctrl" Key="OemComma" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="4"/>
         <KeyBinding Modifiers="Ctrl" Key="Z" Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
         <KeyBinding Modifiers="Ctrl" Key="Y" Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
@@ -119,6 +120,13 @@
                                        AutomationProperties.AutomationId="NavSettings"
                                        AutomationProperties.Name="{loc:Loc Nav_Settings}"
                                        AutomationProperties.HelpText="{loc:Loc A11y_Main_NavSettings}"/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Logs}"
+                                       Tag="6"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon DocumentBulletList24}"
+                                       AutomationProperties.AutomationId="NavLogs"
+                                       AutomationProperties.Name="{loc:Loc Nav_Logs}"
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavLogs}"/>
             </ui:NavigationView.MenuItems>
 
 

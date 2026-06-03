@@ -225,6 +225,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             ViewIndex.Deployment => new DeploymentView { DataContext = _viewModel?.DeploymentViewModel },
             ViewIndex.Settings => new SettingsView { DataContext = _viewModel?.SettingsViewModel },
             ViewIndex.AppCatalog => new AppCatalogView { DataContext = _viewModel?.AppCatalogViewModel },
+            ViewIndex.Logs => new LogsView { DataContext = _viewModel?.LogsViewModel },
             _ => throw new ArgumentOutOfRangeException(nameof(index))
         };
 
@@ -347,7 +348,8 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
             Loc.Nav_Apps,
             Loc.Nav_Deployment,
             Loc.Nav_Settings,
-            Loc.Nav_AppCatalog
+            Loc.Nav_AppCatalog,
+            Loc.Nav_Logs
         };
 
         // Current view is always the last item, previous views are clickable
@@ -447,6 +449,13 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
         // Try SelectedItem first
         INavigationViewItem? selectedItem = RootNavigation.SelectedItem;
+        if (selectedItem is NavigationViewItem selectedNavigationItem
+            && TryGetNavigationIndex(selectedNavigationItem, out int selectedIndex))
+        {
+            SelectNavigationItem(selectedIndex);
+            return;
+        }
+
         if (selectedItem != null)
         {
             int idx = RootNavigation.MenuItems.IndexOf(selectedItem);
@@ -460,7 +469,15 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         // Fallback: find the active item
         for (int i = 0; i < RootNavigation.MenuItems.Count; i++)
         {
-            if (RootNavigation.MenuItems[i] is NavigationViewItem item && item.IsActive)
+            if (RootNavigation.MenuItems[i] is NavigationViewItem item
+                && item.IsActive
+                && TryGetNavigationIndex(item, out int activeIndex))
+            {
+                SelectNavigationItem(activeIndex);
+                return;
+            }
+
+            if (RootNavigation.MenuItems[i] is NavigationViewItem { IsActive: true })
             {
                 SelectNavigationItem(i);
                 return;
@@ -479,8 +496,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
 
         if (sender is NavigationViewItem item)
         {
-            object tag = item.Tag;
-            if (tag is string tagStr && int.TryParse(tagStr, out int index))
+            if (TryGetNavigationIndex(item, out int index))
             {
                 SelectNavigationItem(index);
             }
@@ -522,9 +538,28 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         {
             if (RootNavigation.MenuItems[i] is NavigationViewItem item)
             {
-                item.IsActive = i == index;
+                item.IsActive = TryGetNavigationIndex(item, out int itemIndex)
+                    ? itemIndex == index
+                    : i == index;
             }
         }
+    }
+
+    private static bool TryGetNavigationIndex(NavigationViewItem item, out int index)
+    {
+        if (item.Tag is string tagString && int.TryParse(tagString, out index))
+        {
+            return true;
+        }
+
+        if (item.Tag is int tagIndex)
+        {
+            index = tagIndex;
+            return true;
+        }
+
+        index = -1;
+        return false;
     }
 
     /// <summary>

@@ -1816,6 +1816,9 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Nav_AppCatalog" xml:space="preserve">
     <value>Catalogue</value>
   </data>
+  <data name="Nav_Logs" xml:space="preserve">
+    <value>Journaux</value>
+  </data>
   <data name="AppCatalog_Title" xml:space="preserve">
     <value>Catalogue des applications</value>
   </data>
@@ -2549,6 +2552,9 @@ Cette action est irréversible.</value>
   </data>
   <data name="A11y_Main_NavAppDatabase" xml:space="preserve">
     <value>Aller à la base d'applications, Ctrl+6</value>
+  </data>
+  <data name="A11y_Main_NavLogs" xml:space="preserve">
+    <value>Aller aux journaux, Ctrl+7</value>
   </data>
   <data name="A11y_Dialog_Confirm" xml:space="preserve">
     <value>Boite de dialogue de confirmation</value>

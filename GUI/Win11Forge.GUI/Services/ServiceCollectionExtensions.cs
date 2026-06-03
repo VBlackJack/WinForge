@@ -104,6 +104,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<DeploymentViewModel>();
         services.AddTransient<AppsViewModel>();
         services.AddTransient<AppCatalogViewModel>();
+        services.AddTransient<LogsViewModel>();
         services.AddTransient<ApplicationEditorViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<PrerequisitesViewModel>();

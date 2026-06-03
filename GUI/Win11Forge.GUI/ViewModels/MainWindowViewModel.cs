@@ -58,6 +58,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         SettingsViewModel settingsViewModel,
         PrerequisitesViewModel prerequisitesViewModel,
         AppCatalogViewModel appCatalogViewModel,
+        LogsViewModel logsViewModel,
         IBatchResumeService batchResumeService,
         IPowerShellBridge powerShellBridge,
         IDialogService dialogService,
@@ -71,6 +72,7 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
         SettingsViewModel = settingsViewModel ?? throw new ArgumentNullException(nameof(settingsViewModel));
         PrerequisitesViewModel = prerequisitesViewModel ?? throw new ArgumentNullException(nameof(prerequisitesViewModel));
         AppCatalogViewModel = appCatalogViewModel ?? throw new ArgumentNullException(nameof(appCatalogViewModel));
+        LogsViewModel = logsViewModel ?? throw new ArgumentNullException(nameof(logsViewModel));
         _batchResumeService = batchResumeService ?? throw new ArgumentNullException(nameof(batchResumeService));
         _powerShellBridge = powerShellBridge ?? throw new ArgumentNullException(nameof(powerShellBridge));
         _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
@@ -114,6 +116,11 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     /// Gets the application catalog view model.
     /// </summary>
     public AppCatalogViewModel AppCatalogViewModel { get; }
+
+    /// <summary>
+    /// Gets the logs view model.
+    /// </summary>
+    public LogsViewModel LogsViewModel { get; }
 
     /// <summary>
     /// Gets the command to show the keyboard shortcuts dialog.

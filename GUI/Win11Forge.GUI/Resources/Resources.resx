@@ -2738,6 +2738,10 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>App Catalog</value>
     <comment>Navigation item for application catalog management</comment>
   </data>
+  <data name="Nav_Logs" xml:space="preserve">
+    <value>Logs</value>
+    <comment>Navigation item for application logs management</comment>
+  </data>
   <data name="AppCatalog_Title" xml:space="preserve">
     <value>App Catalog</value>
     <comment>Title of the application catalog view</comment>
@@ -4024,6 +4028,10 @@ This action cannot be undone.</value>
   <data name="A11y_Main_NavAppDatabase" xml:space="preserve">
     <value>Navigate to Application Database view, Ctrl+6</value>
     <comment>Accessibility help text for app database navigation item</comment>
+  </data>
+  <data name="A11y_Main_NavLogs" xml:space="preserve">
+    <value>Navigate to Logs view, Ctrl+7</value>
+    <comment>Accessibility help text for logs navigation item</comment>
   </data>
   <data name="A11y_Dialog_Confirm" xml:space="preserve">
     <value>Confirmation dialog</value>
