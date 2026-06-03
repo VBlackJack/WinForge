@@ -49,6 +49,17 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore GUI/Win11Forge.slnx --locked-mode
 
+      - name: Scan for vulnerable dependencies
+        shell: pwsh
+        run: |
+          $output = dotnet list GUI/Win11Forge.slnx package --vulnerable --include-transitive 2>&1 | Out-String
+          Write-Host $output
+          if ($output -match 'has the following vulnerable packages') {
+            Write-Host "::error::Vulnerable NuGet packages detected"
+            exit 1
+          }
+          Write-Host "No vulnerable packages found"
+
       - name: Build for CodeQL Analysis
         run: dotnet build GUI/Win11Forge.slnx --configuration Release --no-restore
 
