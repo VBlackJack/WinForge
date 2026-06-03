@@ -65,7 +65,6 @@ public partial class RegistryDetectionService
     /// <returns>Dictionary of installed packages indexed by various identifiers.</returns>
     public async Task<Dictionary<string, InstalledPackageInfo>> ScanInstalledApplicationsAsync()
     {
-        Stopwatch stopwatch = Stopwatch.StartNew();
         Dictionary<string, InstalledPackageInfo> results = new Dictionary<string, InstalledPackageInfo>(StringComparer.OrdinalIgnoreCase);
 
         await Task.Run(() =>
@@ -121,9 +120,6 @@ public partial class RegistryDetectionService
                 }
             }
         });
-
-        stopwatch.Stop();
-        Debug.WriteLine($"Registry scan completed: {results.Count} packages in {stopwatch.ElapsedMilliseconds}ms");
 
         return results;
     }

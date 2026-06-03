@@ -67,8 +67,6 @@ public class JsonApplicationDetectionService
             Win11ForgePathNames.AppsDirectoryName,
             Win11ForgePathNames.DatabaseDirectoryName,
             Win11ForgePathNames.ApplicationsDatabaseFileName);
-
-        Debug.WriteLine($"JsonApplicationDetectionService: Using database path: {_databasePath}");
     }
 
     /// <summary>
@@ -107,7 +105,6 @@ public class JsonApplicationDetectionService
 
                 // Build reverse lookup: WinGet ID -> JSON key
                 _wingetIdToJsonKey = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                int appsWithDetection = 0;
                 foreach (KeyValuePair<string, ApplicationJsonEntry> kvp in _applicationDatabase)
                 {
                     string? wingetId = kvp.Value.Sources?.Winget;
@@ -121,13 +118,7 @@ public class JsonApplicationDetectionService
                     {
                         _wingetIdToJsonKey[chocoId] = kvp.Key;
                     }
-                    if (kvp.Value.Detection != null)
-                    {
-                        appsWithDetection++;
-                    }
                 }
-
-                Debug.WriteLine($"Loaded {_applicationDatabase.Count} applications from database ({appsWithDetection} with detection methods)");
             }
             catch (Exception ex)
             {
@@ -244,12 +235,9 @@ public class JsonApplicationDetectionService
                 {
                     results[primaryId] = info;
                 }
-
-                Debug.WriteLine($"JSON detection: {jsonKey}/{primaryId} = INSTALLED (v{info.InstalledVersion}, source: {info.Source})");
             }
         }
 
-        Debug.WriteLine($"JSON detection complete: {results.Count} installed out of {detectionResults.Length} checked");
         return results;
     }
 
@@ -810,7 +798,6 @@ public class JsonApplicationDetectionService
             {
                 if (!string.IsNullOrEmpty(path) && File.Exists(path))
                 {
-                    Debug.WriteLine($"Resolved '{executable}' to '{path}'");
                     return path;
                 }
             }
@@ -836,7 +823,6 @@ public class JsonApplicationDetectionService
                 string candidate = Path.Combine(directory.Trim(), executable + extension);
                 if (File.Exists(candidate))
                 {
-                    Debug.WriteLine($"Resolved '{executable}' to '{candidate}' from PATH");
                     return candidate;
                 }
             }

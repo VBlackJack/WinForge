@@ -423,10 +423,7 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
     {
         if (_powerShellBridge is PowerShellBridgeFacade facade)
         {
-            System.Diagnostics.Debug.WriteLine("Starting detection cache pre-warming...");
             await facade.WarmDetectionCacheAsync();
-            CacheStatistics stats = facade.GetDetectionCacheStatistics();
-            System.Diagnostics.Debug.WriteLine($"Cache warmed: {stats.PackageCount} packages in {stats.AverageDetectionTime.TotalMilliseconds:F0}ms");
         }
     }
 
