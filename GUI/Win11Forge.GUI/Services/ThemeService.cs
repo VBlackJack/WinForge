@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media;
 using Win11Forge.GUI.Helpers;
@@ -221,6 +220,7 @@ public sealed class ThemeService : IThemeService
 
     private readonly IAppSettingsService _settingsService;
     private readonly Action _applyHighContrastMode;
+    private readonly ILoggingService _logger;
     private ThemeForgeIThemeService? _themeEngine;
     private string _currentTheme = ThemeNames.Default;
     private string _currentAccentTint = ThemeNames.DefaultAccentTint;
@@ -230,15 +230,19 @@ public sealed class ThemeService : IThemeService
     /// Initializes a new instance of the <see cref="ThemeService"/> class.
     /// </summary>
     /// <param name="settingsService">Settings service used to persist canonical fallbacks.</param>
-    public ThemeService(IAppSettingsService settingsService)
-        : this(settingsService, () => App.ApplyHighContrastMode(true))
+    public ThemeService(IAppSettingsService settingsService, ILoggerFactory? loggerFactory = null)
+        : this(settingsService, () => App.ApplyHighContrastMode(true), loggerFactory)
     {
     }
 
-    internal ThemeService(IAppSettingsService settingsService, Action applyHighContrastMode)
+    internal ThemeService(
+        IAppSettingsService settingsService,
+        Action applyHighContrastMode,
+        ILoggerFactory? loggerFactory = null)
     {
         _settingsService = settingsService;
         _applyHighContrastMode = applyHighContrastMode;
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<ThemeService>();
     }
 
     /// <inheritdoc/>
@@ -291,7 +295,7 @@ public sealed class ThemeService : IThemeService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Failed to apply theme '{canonicalTheme}': {ex.Message}");
+            _logger.LogError($"Failed to apply theme '{canonicalTheme}'", ex);
         }
     }
 
@@ -330,7 +334,7 @@ public sealed class ThemeService : IThemeService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Failed to apply accent tint '{canonicalTint}': {ex.Message}");
+            _logger.LogError($"Failed to apply accent tint '{canonicalTint}'", ex);
         }
     }
 
@@ -693,7 +697,7 @@ public sealed class ThemeService : IThemeService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Failed to re-apply high contrast resources after theme change: {ex.Message}");
+            _logger.LogError("Failed to re-apply high contrast resources after theme change", ex);
         }
     }
 
@@ -784,7 +788,7 @@ public sealed class ThemeService : IThemeService
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to persist canonical {settingName} '{canonicalValue}': {ex.Message}");
+                _logger.LogError($"Failed to persist canonical {settingName} '{canonicalValue}'", ex);
             }
         }).SafeFireAndForget();
     }

@@ -32,6 +32,7 @@ public class AppSettingsService : IAppSettingsService
     private static readonly JsonSerializerOptions JsonOptions;
     private readonly string _settingsFilePath;
     private readonly object _cacheLock = new();
+    private readonly ILoggingService _logger;
     private AppSettings? _cachedSettings;
 
     static AppSettingsService()
@@ -46,8 +47,8 @@ public class AppSettingsService : IAppSettingsService
     /// <summary>
     /// Initializes a new instance of the <see cref="AppSettingsService"/> class.
     /// </summary>
-    public AppSettingsService()
-        : this(new RepositoryPathService())
+    public AppSettingsService(ILoggerFactory? loggerFactory = null)
+        : this(new RepositoryPathService(), loggerFactory)
     {
     }
 
@@ -55,8 +56,8 @@ public class AppSettingsService : IAppSettingsService
     /// Initializes a new instance of the <see cref="AppSettingsService"/> class.
     /// </summary>
     /// <param name="pathService">Centralized path service.</param>
-    public AppSettingsService(IRepositoryPathService pathService)
-        : this((pathService ?? throw new ArgumentNullException(nameof(pathService))).SettingsFilePath)
+    public AppSettingsService(IRepositoryPathService pathService, ILoggerFactory? loggerFactory = null)
+        : this((pathService ?? throw new ArgumentNullException(nameof(pathService))).SettingsFilePath, loggerFactory)
     {
     }
 
@@ -64,11 +65,12 @@ public class AppSettingsService : IAppSettingsService
     /// Initializes a new instance of the <see cref="AppSettingsService"/> class with a custom settings path.
     /// </summary>
     /// <param name="settingsFilePath">Settings file path. Used by tests to isolate migration scenarios.</param>
-    public AppSettingsService(string settingsFilePath)
+    public AppSettingsService(string settingsFilePath, ILoggerFactory? loggerFactory = null)
     {
         _settingsFilePath = string.IsNullOrWhiteSpace(settingsFilePath)
             ? new RepositoryPathService().SettingsFilePath
             : settingsFilePath;
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<AppSettingsService>();
     }
 
     /// <inheritdoc/>
@@ -105,7 +107,7 @@ public class AppSettingsService : IAppSettingsService
             catch (Exception ex)
             {
                 // If file is corrupted, return defaults
-                System.Diagnostics.Debug.WriteLine($"Failed to load settings (using defaults): {ex.Message}");
+                _logger.LogError("Failed to load settings (using defaults)", ex);
             }
 
             // Return default settings
@@ -135,7 +137,7 @@ public class AppSettingsService : IAppSettingsService
             catch (Exception ex)
             {
                 // Settings persistence is non-critical, but log for diagnostics
-                System.Diagnostics.Debug.WriteLine($"Failed to save settings: {ex.Message}");
+                _logger.LogError("Failed to save settings", ex);
                 return false;
             }
         }
@@ -186,7 +188,7 @@ public class AppSettingsService : IAppSettingsService
         catch (Exception ex)
         {
             // If file is corrupted, return defaults
-            System.Diagnostics.Debug.WriteLine($"Failed to load settings async (using defaults): {ex.Message}");
+            _logger.LogError("Failed to load settings async (using defaults)", ex);
         }
 
         // Return and cache default settings
@@ -225,7 +227,7 @@ public class AppSettingsService : IAppSettingsService
         catch (Exception ex)
         {
             // Settings persistence is non-critical, but log for diagnostics
-            System.Diagnostics.Debug.WriteLine($"Failed to save settings async: {ex.Message}");
+            _logger.LogError("Failed to save settings async", ex);
             return false;
         }
     }
@@ -244,7 +246,7 @@ public class AppSettingsService : IAppSettingsService
         catch (Exception ex)
         {
             // High contrast application is non-critical, but log for diagnostics
-            System.Diagnostics.Debug.WriteLine($"Failed to apply high contrast mode: {ex.Message}");
+            _logger.LogError("Failed to apply high contrast mode", ex);
         }
 
         // Apply reduced motion override
@@ -255,7 +257,7 @@ public class AppSettingsService : IAppSettingsService
         catch (Exception ex)
         {
             // Reduced motion application is non-critical, but log for diagnostics
-            System.Diagnostics.Debug.WriteLine($"Failed to apply reduced motion setting: {ex.Message}");
+            _logger.LogError("Failed to apply reduced motion setting", ex);
         }
 
         // Apply language/culture
@@ -274,7 +276,7 @@ public class AppSettingsService : IAppSettingsService
         catch (Exception ex)
         {
             // Language application is non-critical, but log for diagnostics
-            System.Diagnostics.Debug.WriteLine($"Failed to apply language setting: {ex.Message}");
+            _logger.LogError("Failed to apply language setting", ex);
         }
     }
 
@@ -403,7 +405,7 @@ public class AppSettingsService : IAppSettingsService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to persist migrated settings: {ex.Message}");
+            _logger.LogError("Failed to persist migrated settings", ex);
         }
     }
 }

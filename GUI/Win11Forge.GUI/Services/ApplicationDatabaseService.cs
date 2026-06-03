@@ -37,6 +37,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     private readonly IPowerShellBridge _powerShellBridge;
     private readonly string _databasePath;
     private readonly string _repositoryRoot;
+    private readonly ILoggingService _logger;
     private readonly SemaphoreSlim _operationLock = new(1, 1);
 
     /// <summary>
@@ -75,11 +76,12 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
     /// Initializes a new instance of ApplicationDatabaseService.
     /// </summary>
     /// <param name="powerShellBridge">PowerShell bridge for script execution.</param>
-    public ApplicationDatabaseService(IPowerShellBridge powerShellBridge)
+    public ApplicationDatabaseService(IPowerShellBridge powerShellBridge, ILoggerFactory? loggerFactory = null)
     {
         _powerShellBridge = powerShellBridge ?? throw new ArgumentNullException(nameof(powerShellBridge));
         _repositoryRoot = powerShellBridge.RepositoryRoot;
         _databasePath = Path.Combine(_repositoryRoot, "Apps", "Database", "applications.json");
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<ApplicationDatabaseService>();
     }
 
     /// <inheritdoc/>
@@ -101,7 +103,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             FileInfo fileInfo = new FileInfo(_databasePath);
             if (fileInfo.Length > MaxDatabaseFileSizeBytes)
             {
-                System.Diagnostics.Debug.WriteLine($"Database file too large: {fileInfo.Length} bytes (max: {MaxDatabaseFileSizeBytes})");
+                _logger.LogWarning($"Database file too large: {fileInfo.Length} bytes (max: {MaxDatabaseFileSizeBytes})");
                 return Enumerable.Empty<EditableApplicationModel>();
             }
 
@@ -127,7 +129,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         }
         catch (Exception ex) when (ex is JsonException or IOException)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to load applications: {ex.Message}");
+            _logger.LogError("Failed to load applications", ex);
             // Return empty list on error
         }
 
@@ -156,7 +158,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
             FileInfo fileInfo = new FileInfo(_databasePath);
             if (fileInfo.Length > MaxDatabaseFileSizeBytes)
             {
-                System.Diagnostics.Debug.WriteLine($"Database file too large: {fileInfo.Length} bytes");
+                _logger.LogWarning($"Database file too large: {fileInfo.Length} bytes");
                 return null;
             }
 
@@ -544,7 +546,7 @@ public class ApplicationDatabaseService : IApplicationDatabaseService, IDisposab
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"PowerShell execution error: {ex.Message}");
+            _logger.LogError("PowerShell execution error", ex);
             return string.Empty;
         }
     }

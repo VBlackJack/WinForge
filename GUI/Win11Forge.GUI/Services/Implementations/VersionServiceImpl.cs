@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Services.PowerShell;
 
 namespace Win11Forge.GUI.Services.Implementations;
@@ -29,6 +30,7 @@ public partial class VersionServiceImpl : IVersionService
 {
     private readonly IRepositoryPathService _pathService;
     private readonly IPowerShellExecutionService _executionService;
+    private readonly ILoggingService _logger;
 
     /// <summary>
     /// Compiled regex for extracting version strings from winget output.
@@ -48,12 +50,15 @@ public partial class VersionServiceImpl : IVersionService
     /// </summary>
     /// <param name="pathService">The repository path service.</param>
     /// <param name="executionService">The PowerShell execution service.</param>
+    /// <param name="loggerFactory">Optional logger factory.</param>
     public VersionServiceImpl(
         IRepositoryPathService pathService,
-        IPowerShellExecutionService executionService)
+        IPowerShellExecutionService executionService,
+        ILoggerFactory? loggerFactory = null)
     {
         _pathService = pathService ?? throw new ArgumentNullException(nameof(pathService));
         _executionService = executionService ?? throw new ArgumentNullException(nameof(executionService));
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<VersionServiceImpl>();
     }
 
     /// <inheritdoc/>
@@ -115,7 +120,14 @@ public partial class VersionServiceImpl : IVersionService
             }
             catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
-                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"Process kill failed (best effort): {ex.Message}");
+                }
                 return string.Empty;
             }
 
@@ -162,7 +174,14 @@ public partial class VersionServiceImpl : IVersionService
             }
             catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
-                try { process.Kill(entireProcessTree: true); } catch (Exception ex) { Debug.WriteLine($"Process kill failed (best effort): {ex.Message}"); }
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"Process kill failed (best effort): {ex.Message}");
+                }
                 return string.Empty;
             }
 

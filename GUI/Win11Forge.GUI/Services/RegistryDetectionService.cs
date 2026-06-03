@@ -15,7 +15,6 @@
  */
 
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using Win11Forge.GUI.Models;
@@ -41,6 +40,13 @@ public partial class RegistryDetectionService
         Registry.LocalMachine,
         Registry.CurrentUser
     };
+
+    private readonly ILoggingService _logger;
+
+    public RegistryDetectionService(ILoggerFactory? loggerFactory = null)
+    {
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<RegistryDetectionService>();
+    }
 
     /// <summary>
     /// Compiled regex patterns for normalizing application names.
@@ -101,7 +107,7 @@ public partial class RegistryDetectionService
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Registry scan error for {scanTask.path}: {ex.Message}");
+                    _logger.LogWarning($"Registry scan error for {scanTask.path}: {ex.Message}");
                 }
             });
 
@@ -127,7 +133,7 @@ public partial class RegistryDetectionService
     /// <summary>
     /// Scans a specific registry path for installed applications.
     /// </summary>
-    private static void ScanRegistryPath(
+    private void ScanRegistryPath(
         RegistryKey root,
         string path,
         bool isUserScope,
@@ -168,7 +174,7 @@ public partial class RegistryDetectionService
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error reading registry key {subKeyName}: {ex.Message}");
+                _logger.LogWarning($"Error reading registry key {subKeyName}: {ex.Message}");
             }
         }
     }
