@@ -42,6 +42,7 @@ public partial class LogsViewModel : ObservableObject
     private readonly string _jsonLogsPath;
     private readonly IFileDialogService _fileDialogService;
     private readonly IDialogService _dialogService;
+    private readonly ILoggingService _logger;
 
     [ObservableProperty]
     private ObservableCollection<LogFileEntry> _logFiles = new();
@@ -83,13 +84,15 @@ public partial class LogsViewModel : ObservableObject
     public LogsViewModel(
         IFileDialogService? fileDialogService = null,
         IDialogService? dialogService = null,
-        IRepositoryPathService? pathService = null)
+        IRepositoryPathService? pathService = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _fileDialogService = fileDialogService ?? new FileDialogService();
         _dialogService = dialogService ?? new DialogService();
         IRepositoryPathService resolvedPathService = pathService ?? new RepositoryPathService();
         _logsPath = resolvedPathService.LogsDirectory;
         _jsonLogsPath = Path.Combine(_logsPath, Win11ForgePathNames.JsonLogsDirectoryName);
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<LogsViewModel>();
 
         RefreshAsync().SafeFireAndForget();
     }
@@ -298,7 +301,7 @@ public partial class LogsViewModel : ObservableObject
                             string safeFileName = Path.GetFileName(logFile.FileName);
                             if (string.IsNullOrWhiteSpace(safeFileName) || safeFileName.Contains(".."))
                             {
-                                System.Diagnostics.Debug.WriteLine($"Skipping unsafe filename: {logFile.FileName}");
+                                _logger.LogWarning($"Skipping unsafe filename: {logFile.FileName}");
                                 continue;
                             }
 
@@ -308,7 +311,7 @@ public partial class LogsViewModel : ObservableObject
                             string destFullPath = Path.GetFullPath(destPath);
                             if (!destFullPath.StartsWith(tempDirFullPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
                             {
-                                System.Diagnostics.Debug.WriteLine($"Path traversal attempt blocked: {destPath}");
+                                _logger.LogWarning($"Path traversal attempt blocked: {destPath}");
                                 continue;
                             }
 
@@ -318,17 +321,17 @@ public partial class LogsViewModel : ObservableObject
                         catch (FileNotFoundException)
                         {
                             // File was deleted between enumeration and copy - skip silently
-                            System.Diagnostics.Debug.WriteLine($"Log file not found (deleted): {logFile.FullPath}");
+                            _logger.LogWarning($"Log file not found (deleted): {logFile.FullPath}");
                         }
                         catch (UnauthorizedAccessException ex)
                         {
                             // Could be symlink attack or permission issue - log and skip
-                            System.Diagnostics.Debug.WriteLine($"Access denied copying log (possible symlink): {logFile.FullPath} - {ex.Message}");
+                            _logger.LogWarning($"Access denied copying log (possible symlink): {logFile.FullPath} - {ex.Message}");
                         }
                         catch (IOException ex)
                         {
                             // File locked or other IO issue - log and skip
-                            System.Diagnostics.Debug.WriteLine($"IO error copying log: {logFile.FullPath} - {ex.Message}");
+                            _logger.LogWarning($"IO error copying log: {logFile.FullPath} - {ex.Message}");
                         }
                     }
 
@@ -354,7 +357,7 @@ public partial class LogsViewModel : ObservableObject
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Failed to cleanup temp directory: {ex.Message}");
+                        _logger.LogWarning($"Failed to cleanup temp directory: {ex.Message}");
                     }
                 }
             }
