@@ -16,7 +16,6 @@
 
 #nullable enable
 
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -24,6 +23,7 @@ using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Services;
 using Wpf.Ui.Controls;
 using Loc = Win11Forge.GUI.Resources.Resources;
 
@@ -228,12 +228,22 @@ public partial class DetectionEditor : UserControl
 
     #endregion
 
+    private readonly IDetectionProbe _probe;
+
     /// <summary>
     /// Initializes a new instance of DetectionEditor.
     /// </summary>
     public DetectionEditor()
     {
         InitializeComponent();
+        try
+        {
+            _probe = App.GetService<IDetectionProbe>();
+        }
+        catch
+        {
+            _probe = new DetectionProbe();
+        }
 
         // Set default commands
         if (TestCommand == null)
@@ -342,39 +352,22 @@ public partial class DetectionEditor : UserControl
 
         try
         {
-            await Task.Run(() =>
+            DetectionMethod method = Method.ToDetectionMethod();
+            if (method == DetectionMethod.StoreApp)
             {
-                switch (Method.ToDetectionMethod())
-                {
-                    case DetectionMethod.Registry:
-                        TestRegistryDetection();
-                        break;
-                    case DetectionMethod.File:
-                        TestFileDetection();
-                        break;
-                    case DetectionMethod.Command:
-                        TestCommandDetection();
-                        break;
-                    case DetectionMethod.WindowsFeature:
-                        TestWindowsFeatureDetection();
-                        break;
-                    case DetectionMethod.StoreApp:
-                        TestStoreAppDetection();
-                        break;
-                    default:
-                        Dispatcher.Invoke(() =>
-                        {
-                            TestSuccess = false;
-                            TestResult = Loc.Detection_UnknownMethod;
-                        });
-                        break;
-                }
-            });
+                TestSuccess = null;
+                TestResult = Loc.Detection_StoreAppCheckNotSupported;
+                return;
+            }
+
+            DetectionConfiguration config = BuildConfiguration(method);
+            DetectionProbeResult result = await _probe.ProbeAsync(config, PathValidationPolicy.AdHoc);
+            ApplyResult(method, result);
         }
         catch (Exception ex)
         {
             TestSuccess = false;
-            TestResult = ex.Message;
+            TestResult = string.Format(Loc.Detection_Error, ex.Message);
         }
         finally
         {
@@ -383,289 +376,63 @@ public partial class DetectionEditor : UserControl
     }
 
     /// <summary>
-    /// Tests registry detection.
+    /// Builds a detection configuration from the editor fields.
     /// </summary>
-    private void TestRegistryDetection()
+    private DetectionConfiguration BuildConfiguration(DetectionMethod method)
     {
-        try
+        DetectionConfiguration config = new DetectionConfiguration { Method = method.ToString() };
+
+        switch (method)
         {
-            string path = Path;
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    TestSuccess = false;
-                    TestResult = Loc.Detection_PathRequired;
-                });
-                return;
-            }
-
-            // Parse registry path
-            RegistryKey? baseKey = null;
-            string subKeyPath;
-
-            if (path.StartsWith("HKLM\\") || path.StartsWith("HKEY_LOCAL_MACHINE\\"))
-            {
-                baseKey = Microsoft.Win32.Registry.LocalMachine;
-                subKeyPath = path.Replace("HKLM\\", "").Replace("HKEY_LOCAL_MACHINE\\", "");
-            }
-            else if (path.StartsWith("HKCU\\") || path.StartsWith("HKEY_CURRENT_USER\\"))
-            {
-                baseKey = Microsoft.Win32.Registry.CurrentUser;
-                subKeyPath = path.Replace("HKCU\\", "").Replace("HKEY_CURRENT_USER\\", "");
-            }
-            else
-            {
-                // Default to HKLM
-                baseKey = Microsoft.Win32.Registry.LocalMachine;
-                subKeyPath = path;
-            }
-
-            using RegistryKey? key = baseKey.OpenSubKey(subKeyPath);
-            if (key != null)
-            {
-                string? version = null;
-                string versionKey = VersionKey;
-                if (!string.IsNullOrWhiteSpace(versionKey))
-                {
-                    version = key.GetValue(versionKey)?.ToString();
-                }
-                else
-                {
-                    // Try common version value names
-                    version = key.GetValue("DisplayVersion")?.ToString()
-                           ?? key.GetValue("Version")?.ToString()
-                           ?? key.GetValue("CurrentVersion")?.ToString();
-                }
-
-                Dispatcher.Invoke(() =>
-                {
-                    TestSuccess = true;
-                    TestResult = Loc.Detection_Found;
-                    DetectedVersion = version != null ? string.Format(Loc.Detection_Version, version) : null;
-                });
-            }
-            else
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    TestSuccess = false;
-                    TestResult = Loc.Detection_NotFound;
-                });
-            }
+            case DetectionMethod.Registry:
+                config.Path = Path;
+                config.VersionKey = VersionKey;
+                break;
+            case DetectionMethod.File:
+                config.Path = Path;
+                break;
+            case DetectionMethod.Command:
+                config.Command = Path;
+                break;
+            case DetectionMethod.WindowsFeature:
+                config.FeatureName = Path;
+                break;
         }
-        catch (Exception ex)
+
+        return config;
+    }
+
+    /// <summary>
+    /// Applies a probe result to the editor test result properties.
+    /// </summary>
+    private void ApplyResult(DetectionMethod method, DetectionProbeResult result)
+    {
+        switch (result.Outcome)
         {
-            Dispatcher.Invoke(() =>
-            {
+            case DetectionOutcome.Found:
+                TestSuccess = true;
+                TestResult = Loc.Detection_Found;
+                DetectedVersion = result.Version != null ? string.Format(Loc.Detection_Version, result.Version) : null;
+                break;
+            case DetectionOutcome.NotFound:
                 TestSuccess = false;
-                TestResult = string.Format(Loc.Detection_Error, ex.Message);
-            });
-        }
-    }
-
-    /// <summary>
-    /// Tests file detection.
-    /// </summary>
-    private void TestFileDetection()
-    {
-        try
-        {
-            string expandedPath = Environment.ExpandEnvironmentVariables(Path);
-
-            // Security: Validate expanded path doesn't contain dangerous patterns
-            if (!IsValidExpandedPath(expandedPath))
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    TestSuccess = false;
-                    TestResult = Loc.Detection_InvalidExpandedPath;
-                });
-                return;
-            }
-
-            if (System.IO.File.Exists(expandedPath))
-            {
-                string? version = null;
-                try
-                {
-                    FileVersionInfo versionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(expandedPath);
-                    version = versionInfo.FileVersion ?? versionInfo.ProductVersion;
-                }
-                catch { /* Version info not available */ }
-
-                Dispatcher.Invoke(() =>
-                {
-                    TestSuccess = true;
-                    TestResult = Loc.Detection_Found;
-                    DetectedVersion = version != null ? string.Format(Loc.Detection_Version, version) : null;
-                });
-            }
-            else
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    TestSuccess = false;
-                    TestResult = Loc.Detection_NotFound;
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            Dispatcher.Invoke(() =>
-            {
+                TestResult = Loc.Detection_NotFound;
+                break;
+            case DetectionOutcome.InvalidInput:
                 TestSuccess = false;
-                TestResult = string.Format(Loc.Detection_Error, ex.Message);
-            });
-        }
-    }
-
-    /// <summary>
-    /// Validates an expanded file path for security.
-    /// Blocks paths with dangerous patterns that could result from malicious environment variables.
-    /// </summary>
-    private static bool IsValidExpandedPath(string path)
-    {
-        if (string.IsNullOrWhiteSpace(path)) return false;
-
-        // Block null bytes
-        if (path.Contains('\0')) return false;
-
-        // Block unexpanded environment variables (indicates potential attack or misconfiguration)
-        if (path.Contains('%')) return false;
-
-        // Block command injection characters
-        char[] dangerousChars = new[] { ';', '&', '|', '`', '$', '(', ')', '<', '>', '"', '\'' };
-        if (path.IndexOfAny(dangerousChars) >= 0) return false;
-
-        // Validate it's a plausible file path (contains drive letter or UNC path)
-        if (!System.IO.Path.IsPathRooted(path)) return false;
-
-        return true;
-    }
-
-    /// <summary>
-    /// Tests command detection.
-    /// </summary>
-    private void TestCommandDetection()
-    {
-        try
-        {
-            // Security: Validate command path to prevent command injection
-            // Only allow alphanumeric, spaces, dots, hyphens, underscores, colons, slashes, and backslashes
-            if (string.IsNullOrWhiteSpace(Path) || !IsValidCommandPath(Path))
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    TestSuccess = false;
-                    TestResult = Loc.Detection_InvalidCommandPath;
-                });
-                return;
-            }
-
-            ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "cmd.exe",
-                // Security: Quote the entire path to prevent argument injection
-                Arguments = $"/c \"{Path}\"",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using Process? process = System.Diagnostics.Process.Start(startInfo);
-            if (process != null)
-            {
-                // Wait with timeout and kill if necessary
-                if (!process.WaitForExit(5000))
-                {
-                    try { process.Kill(entireProcessTree: true); } catch { /* Best effort cleanup */ }
-                    Dispatcher.Invoke(() =>
-                    {
-                        TestSuccess = false;
-                        TestResult = Loc.Detection_CommandTimeout;
-                    });
-                    return;
-                }
-
-                string output = process.StandardOutput.ReadToEnd().Trim();
-
-                Dispatcher.Invoke(() =>
-                {
-                    if (process.ExitCode == 0)
-                    {
-                        TestSuccess = true;
-                        TestResult = Loc.Detection_Found;
-                        DetectedVersion = !string.IsNullOrWhiteSpace(output) ? output : null;
-                    }
-                    else
-                    {
-                        TestSuccess = false;
-                        TestResult = Loc.Detection_NotFound;
-                    }
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            Dispatcher.Invoke(() =>
-            {
+                TestResult = method == DetectionMethod.Command
+                    ? Loc.Detection_InvalidCommandPath
+                    : Loc.Detection_InvalidExpandedPath;
+                break;
+            case DetectionOutcome.Error:
                 TestSuccess = false;
-                TestResult = string.Format(Loc.Detection_Error, ex.Message);
-            });
+                TestResult = string.Format(Loc.Detection_Error, result.Detail ?? string.Empty);
+                break;
+            default:
+                TestSuccess = null;
+                TestResult = Loc.Detection_UnknownMethod;
+                break;
         }
-    }
-
-    /// <summary>
-    /// Validates a command path to prevent command injection attacks.
-    /// Only allows safe characters: alphanumeric, spaces, dots, hyphens, underscores, colons, slashes.
-    /// Blocks: semicolons, ampersands, pipes, backticks, $, parentheses, quotes, redirects.
-    /// </summary>
-    private static bool IsValidCommandPath(string path)
-    {
-        if (string.IsNullOrWhiteSpace(path)) return false;
-
-        // Block dangerous command injection characters
-        char[] dangerousChars = new[] { ';', '&', '|', '`', '$', '(', ')', '<', '>', '"', '\'', '\n', '\r' };
-        if (path.IndexOfAny(dangerousChars) >= 0) return false;
-
-        // Block common injection patterns
-        if (path.Contains("&&") || path.Contains("||") || path.Contains(">>") || path.Contains("<<"))
-            return false;
-
-        // Ensure path doesn't contain null bytes
-        if (path.Contains('\0')) return false;
-
-        return true;
-    }
-
-    /// <summary>
-    /// Tests Windows feature detection.
-    /// </summary>
-    private void TestWindowsFeatureDetection()
-    {
-        // Windows feature detection requires elevated permissions
-        // This is a simplified check
-        Dispatcher.Invoke(() =>
-        {
-            TestSuccess = null;
-            TestResult = Loc.Detection_FeatureCheckNotSupported;
-        });
-    }
-
-    /// <summary>
-    /// Tests Store app detection.
-    /// </summary>
-    private void TestStoreAppDetection()
-    {
-        // Store app detection requires Package APIs
-        // This is a simplified check
-        Dispatcher.Invoke(() =>
-        {
-            TestSuccess = null;
-            TestResult = Loc.Detection_StoreAppCheckNotSupported;
-        });
     }
 
     /// <summary>
