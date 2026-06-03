@@ -283,6 +283,7 @@
                                Margin="0,16,0,0"/>
                 </StackPanel>
 
+                <!-- UI virtualization (parity with AppsView grid; Recycling reduces container churn on scroll) -->
                 <!-- Applications DataGrid -->
                 <DataGrid ItemsSource="{Binding AppCatalogView}"
                           SelectedItem="{Binding SelectedApplication}"
@@ -292,6 +293,12 @@
                           IsReadOnly="True"
                           SelectionMode="Single"
                           SelectionUnit="FullRow"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling"
+                          VirtualizingPanel.ScrollUnit="Item"
+                          EnableRowVirtualization="True"
+                          EnableColumnVirtualization="False"
+                          ScrollViewer.IsDeferredScrollingEnabled="False"
                           GridLinesVisibility="Horizontal"
                           HeadersVisibility="Column"
                           VerticalScrollBarVisibility="Auto"
