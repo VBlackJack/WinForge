@@ -88,6 +88,9 @@ obj/
 *.dll
 *.pdb
 
+# Publish output
+publish_output/
+
 # Backups
 Backups/
 
