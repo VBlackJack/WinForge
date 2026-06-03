@@ -384,6 +384,32 @@ public class UndoServiceTests
     }
 
     /// <summary>
+    /// Verifies that failed undo writes through the file-backed logger factory.
+    /// </summary>
+    [Fact]
+    public async Task Undo_WhenFails_ShouldWriteErrorThroughFileLoggerFactory()
+    {
+        // Arrange
+        SpyFileLogWriter writer = new SpyFileLogWriter();
+        LoggerFactory loggerFactory = new LoggerFactory(writer);
+        using UndoService service = new UndoService(loggerFactory);
+        service.RecordAction(new UndoableAction
+        {
+            Description = "Failing action",
+            UndoAction = () => throw new InvalidOperationException("Test failure")
+        });
+
+        // Act
+        bool result = await service.UndoAsync();
+
+        // Assert
+        Assert.False(result);
+        Assert.Contains(writer.Entries, entry =>
+            entry.Contains("[ERROR]", StringComparison.Ordinal) &&
+            entry.Contains("Undo failed", StringComparison.Ordinal));
+    }
+
+    /// <summary>
     /// Verifies that failed redo puts action back on stack.
     /// </summary>
     [Fact]
@@ -463,5 +489,19 @@ public class UndoServiceTests
         // Act & Assert - Valid
         service.MaxHistorySize = 100;
         Assert.Equal(100, service.MaxHistorySize);
+    }
+
+    private sealed class SpyFileLogWriter : IFileLogWriter
+    {
+        private readonly List<string> _entries = new List<string>();
+
+        public IReadOnlyList<string> Entries => _entries;
+
+        public bool IsEnabled => true;
+
+        public void Write(string line)
+        {
+            _entries.Add(line);
+        }
     }
 }

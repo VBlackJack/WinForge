@@ -145,8 +145,21 @@ public class UndoService : IUndoService
     private readonly ConcurrentStack<UndoableAction> _undoStack = new();
     private readonly ConcurrentStack<UndoableAction> _redoStack = new();
     private readonly object _lock = new();
+    private readonly ILoggingService _logger;
     private int _maxHistorySize = 50;
     private bool _disposed;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="UndoService"/>.
+    /// </summary>
+    /// <param name="loggerFactory">
+    /// Optional logger factory. DI supplies the file-backed factory; null falls back
+    /// to a Debug-only logger (tests).
+    /// </param>
+    public UndoService(ILoggerFactory? loggerFactory = null)
+    {
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<UndoService>();
+    }
 
     /// <inheritdoc/>
     public bool CanUndo => !_undoStack.IsEmpty;
@@ -256,7 +269,7 @@ public class UndoService : IUndoService
         catch (Exception ex)
         {
             // If undo fails, put action back and log for debugging
-            System.Diagnostics.Debug.WriteLine($"[UndoService] Undo failed: {ex.Message}");
+            _logger.LogError("Undo failed", ex);
             lock (_lock)
             {
                 _undoStack.Push(action);
@@ -304,7 +317,7 @@ public class UndoService : IUndoService
         catch (Exception ex)
         {
             // If redo fails, put action back and log for debugging
-            System.Diagnostics.Debug.WriteLine($"[UndoService] Redo failed: {ex.Message}");
+            _logger.LogError("Redo failed", ex);
             lock (_lock)
             {
                 _redoStack.Push(action);
@@ -372,7 +385,7 @@ public class UndoService : IUndoService
         }
     }
 
-    private static string GetLocalizedDescription(string key)
+    private string GetLocalizedDescription(string key)
     {
         try
         {
@@ -384,7 +397,7 @@ public class UndoService : IUndoService
         catch (Exception ex)
         {
             // Resource lookup failed - fall back to key
-            System.Diagnostics.Debug.WriteLine($"[UndoService] Resource lookup failed for '{key}': {ex.Message}");
+            _logger.LogWarning($"Resource lookup failed for '{key}': {ex.Message}");
             return key;
         }
     }
