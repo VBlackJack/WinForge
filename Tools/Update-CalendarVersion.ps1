@@ -245,8 +245,8 @@ $updatedVersionJson = [ordered]@{
     ReleaseDate = $versionInfo.ReleaseDate
 }
 
-$json = $updatedVersionJson | ConvertTo-Json -Depth 5
-Write-Utf8NoBom -Path $versionPath -Value ($json + [Environment]::NewLine)
+$json = ($updatedVersionJson | ConvertTo-Json -Depth 5) -replace "`r`n", "`n"
+Write-Utf8NoBom -Path $versionPath -Value ($json + "`n")
 Update-GuiProjectVersion -Path $guiProjectPath -VersionInfo $versionInfo
 
 if ($PassThru) {
