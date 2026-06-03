@@ -15,7 +15,6 @@
  */
 
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -456,7 +455,7 @@ public partial class AppsViewModel
                 "Failed to load profile '{0}': {1}",
                 ex.ProfileName ?? string.Empty,
                 ex.Message);
-            Debug.WriteLine($"ProfileException in OnSelectedProfileChanged: {ex}");
+            _logger.LogError("ProfileException in OnSelectedProfileChanged", ex);
         }
         catch (PowerShellBridgeException ex)
         {
@@ -464,7 +463,7 @@ public partial class AppsViewModel
                 "Apps_Error_ProfileLoadPowerShellFailed",
                 "Failed to load profile (PowerShell error): {0}",
                 ex.Message);
-            Debug.WriteLine($"PowerShellBridgeException in OnSelectedProfileChanged: {ex}");
+            _logger.LogError("PowerShellBridgeException in OnSelectedProfileChanged", ex);
         }
         catch (Exception ex)
         {
@@ -472,7 +471,7 @@ public partial class AppsViewModel
                 "Apps_Error_ProfileLoadGeneric",
                 "Failed to load profile: {0}",
                 ex.Message);
-            Debug.WriteLine($"Unexpected exception in OnSelectedProfileChanged: {ex}");
+            _logger.LogError("Unexpected exception in OnSelectedProfileChanged", ex);
         }
     }
 

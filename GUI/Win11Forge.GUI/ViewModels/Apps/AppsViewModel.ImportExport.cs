@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
@@ -67,7 +66,7 @@ public partial class AppsViewModel
                     "Apps_Error_SelectionExportFailed",
                     "Failed to export selection: {0}",
                     ex.Message);
-                Debug.WriteLine($"Failed to export selection: {ex}");
+                _logger.LogError("Failed to export selection", ex);
             }
         }
     }
@@ -97,7 +96,7 @@ public partial class AppsViewModel
                     "Apps_Error_SelectionImportFailed",
                     "Failed to import selection: {0}",
                     ex.Message);
-                Debug.WriteLine($"Failed to import selection: {ex}");
+                _logger.LogError("Failed to import selection", ex);
             }
         }
     }
@@ -137,7 +136,7 @@ public partial class AppsViewModel
                     "Apps_Error_FavoritesExportFailed",
                     "Failed to export favorites: {0}",
                     ex.Message);
-                Debug.WriteLine($"Failed to export favorites: {ex}");
+                _logger.LogError("Failed to export favorites", ex);
             }
         }
     }
@@ -167,7 +166,7 @@ public partial class AppsViewModel
                     "Apps_Error_FavoritesImportFailed",
                     "Failed to import favorites: {0}",
                     ex.Message);
-                Debug.WriteLine($"Failed to import favorites: {ex}");
+                _logger.LogError("Failed to import favorites", ex);
             }
         }
     }

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using System.Diagnostics;
 using System.Windows.Input;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
@@ -98,19 +97,19 @@ public partial class AppsViewModel
         {
             app.Status = ApplicationStatus.Failed;
             app.StatusMessage = FormatLocalized("Apps_Error_DetectionFailed", "Detection failed: {0}", ex.Message);
-            Debug.WriteLine($"DetectionException in ScanAppAsync for {ex.ApplicationId}: {ex}");
+            _logger.LogError($"DetectionException in ScanAppAsync for {ex.ApplicationId}", ex);
         }
         catch (PowerShellBridgeException ex)
         {
             app.Status = ApplicationStatus.Failed;
             app.StatusMessage = FormatLocalized("Apps_Error_PowerShell", "PowerShell error: {0}", ex.Message);
-            Debug.WriteLine($"PowerShellBridgeException in ScanAppAsync: {ex}");
+            _logger.LogError("PowerShellBridgeException in ScanAppAsync", ex);
         }
         catch (Exception ex)
         {
             app.Status = ApplicationStatus.Failed;
             app.StatusMessage = ex.Message;
-            Debug.WriteLine($"Unexpected exception in ScanAppAsync: {ex}");
+            _logger.LogError("Unexpected exception in ScanAppAsync", ex);
         }
     }
     [RelayCommand]

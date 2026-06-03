@@ -67,7 +67,7 @@ public partial class AppsViewModel
                 Resources.Resources.Apps_Toast_OpenWebsiteFailed,
                 app.Name,
                 ex.Message));
-            Debug.WriteLine($"Failed to open website: {ex.Message}");
+            _logger.LogWarning($"Failed to open website: {ex.Message}");
         }
     }
 

@@ -15,7 +15,6 @@
  */
 
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
@@ -60,6 +59,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private readonly IDialogService _dialogService;
     private readonly IRepositoryPathService _pathService;
     private readonly IToastService? _toastService;
+    private readonly ILoggingService _logger;
     private readonly ProgressEstimator _progressEstimator = new();
     private List<ApplicationModel> _allApplications = [];
     private CancellationTokenSource? _scanCancellationTokenSource;
@@ -327,7 +327,8 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         IDialogService? dialogService = null,
         IFileDialogService? fileDialogService = null,
         IToastService? toastService = null,
-        IRepositoryPathService? pathService = null)
+        IRepositoryPathService? pathService = null,
+        ILoggerFactory? loggerFactory = null)
     {
         _powerShellBridge = powerShellBridge;
         _settingsService = settingsService;
@@ -341,6 +342,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         _fileDialogService = fileDialogService ?? new FileDialogService();
         _toastService = toastService;
         _pathService = pathService ?? new RepositoryPathService();
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<AppsViewModel>();
 
         // Subscribe to pause/resume/cancel requests from the monitoring view
         _deploymentStateService.PauseRequested += OnPauseRequested;
@@ -500,17 +502,17 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         catch (PowerShellBridgeException ex)
         {
             ErrorMessage = FormatLocalized("Apps_Error_PowerShell", "PowerShell error: {0}", ex.Message);
-            Debug.WriteLine($"PowerShellBridgeException in InitializeAsync: {ex}");
+            _logger.LogError("PowerShellBridgeException in InitializeAsync", ex);
         }
         catch (ApplicationDatabaseException ex)
         {
             ErrorMessage = FormatLocalized("Apps_Error_Database", "Database error: {0}", ex.Message);
-            Debug.WriteLine($"ApplicationDatabaseException in InitializeAsync: {ex}");
+            _logger.LogError("ApplicationDatabaseException in InitializeAsync", ex);
         }
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
-            Debug.WriteLine($"Unexpected exception in InitializeAsync: {ex}");
+            _logger.LogError("Unexpected exception in InitializeAsync", ex);
         }
         finally
         {

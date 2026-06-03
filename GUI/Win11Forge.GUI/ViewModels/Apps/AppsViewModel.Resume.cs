@@ -60,8 +60,7 @@ public partial class AppsViewModel
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine(
-                    $"[AppsViewModel] Resume skipping unknown app id '{id}' (not in catalog).");
+                _logger.LogDebug($"Resume skipping unknown app id '{id}' (not in catalog).");
             }
         }
 

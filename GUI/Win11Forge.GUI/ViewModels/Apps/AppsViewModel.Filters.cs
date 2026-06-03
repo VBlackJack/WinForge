@@ -16,7 +16,6 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -242,12 +241,12 @@ public partial class AppsViewModel
             settings.AppsShowLogsColumn = ShowLogsColumn;
             if (!_settingsService.SaveSettings(settings))
             {
-                Debug.WriteLine("Failed to save filter state: settings persistence returned false");
+                _logger.LogWarning("Failed to save filter state: settings persistence returned false");
             }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Failed to save filter state: {ex.Message}");
+            _logger.LogWarning($"Failed to save filter state: {ex.Message}");
         }
     }
 
