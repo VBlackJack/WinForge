@@ -323,6 +323,7 @@ internal static class WindowPlacementHelper
         }
         catch (Exception ex)
         {
+            // Intentional Debug.WriteLine: static helper with no DI/logger reachable; best-effort monitor enumeration.
             System.Diagnostics.Debug.WriteLine($"Failed to enumerate monitor work areas: {ex.Message}");
         }
 

@@ -61,6 +61,7 @@ public sealed class FileLogWriter : IFileLogWriter, IDisposable
         }
         catch (Exception ex)
         {
+            // Intentional Debug.WriteLine: last-resort trace for file-writer failures (cannot self-log).
             Debug.WriteLine($"[FileLogWriter] {ex.Message}");
         }
     }

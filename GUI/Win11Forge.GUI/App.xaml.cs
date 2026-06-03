@@ -336,7 +336,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            // File logging failed - use debug output as fallback
+            // Intentional Debug.WriteLine: fallback when the startup file log write fails.
             System.Diagnostics.Debug.WriteLine($"[Win11Forge] {message} (file log failed: {ex.Message})");
         }
     }
@@ -357,7 +357,7 @@ public partial class App : Application
         }
         catch (Exception logEx)
         {
-            // File logging failed - use debug output as fallback
+            // Intentional Debug.WriteLine: fallback when the startup error-log write fails.
             System.Diagnostics.Debug.WriteLine($"[Win11Forge ERROR] {context}: {ex?.Message} (file log failed: {logEx.Message})");
         }
     }

@@ -124,7 +124,7 @@ public static class TaskExtensions
             return;
         }
 
-        // Always log to debug output for diagnostics first (guaranteed to not throw)
+        // Intentional Debug.WriteLine: SafeFireAndForget diagnostic, guaranteed not to throw (runs before any logger is assured).
         System.Diagnostics.Debug.WriteLine($"[SafeFireAndForget] Unhandled exception: {ex}");
 
         // Invoke callback if provided - wrap in try-catch to prevent callback exceptions
@@ -137,6 +137,7 @@ public static class TaskExtensions
             }
             catch (Exception callbackEx)
             {
+                // Intentional Debug.WriteLine: last-resort trace inside the exception handler itself (must not throw).
                 System.Diagnostics.Debug.WriteLine($"[SafeFireAndForget] Exception in callback: {callbackEx}");
             }
         }

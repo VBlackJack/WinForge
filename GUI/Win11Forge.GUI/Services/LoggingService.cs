@@ -137,6 +137,7 @@ public class LoggingService : ILoggingService
 
         lock (_lock)
         {
+            // Intentional Debug.WriteLine: this IS the logging service's Debug sink (cannot route through ILoggingService).
             Debug.WriteLine(logMessage);
         }
 
@@ -146,6 +147,7 @@ public class LoggingService : ILoggingService
         }
         catch (Exception ex)
         {
+            // Intentional Debug.WriteLine: last-resort trace when the file sink itself throws (cannot self-log).
             Debug.WriteLine($"[LoggingService] {ex.Message}");
         }
     }
