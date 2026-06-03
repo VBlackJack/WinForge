@@ -40,6 +40,7 @@ public class JsonApplicationDetectionService
     private Dictionary<string, string>? _wingetIdToJsonKey;
     private readonly object _loadLock = new();
     private readonly string _databasePath;
+    private readonly ILoggingService _logger;
 
     private const int CommandTimeoutMs = 5000;
 
@@ -59,9 +60,10 @@ public class JsonApplicationDetectionService
     /// </summary>
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(500);
 
-    public JsonApplicationDetectionService(IRepositoryPathService pathService)
+    public JsonApplicationDetectionService(IRepositoryPathService pathService, ILoggerFactory? loggerFactory = null)
     {
         ArgumentNullException.ThrowIfNull(pathService);
+        _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<JsonApplicationDetectionService>();
 
         _databasePath = pathService.GetPath(
             Win11ForgePathNames.AppsDirectoryName,
@@ -84,7 +86,7 @@ public class JsonApplicationDetectionService
             {
                 if (!File.Exists(_databasePath))
                 {
-                    Debug.WriteLine($"Applications database not found at: {_databasePath}");
+                    _logger.LogWarning($"Applications database not found at: {_databasePath}");
                     _applicationDatabase = new Dictionary<string, ApplicationJsonEntry>();
                     _wingetIdToJsonKey = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                     return;
@@ -122,7 +124,7 @@ public class JsonApplicationDetectionService
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading applications database: {ex.Message}");
+                _logger.LogError("Error loading applications database", ex);
                 _applicationDatabase = new Dictionary<string, ApplicationJsonEntry>();
                 _wingetIdToJsonKey = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             }
@@ -259,7 +261,7 @@ public class JsonApplicationDetectionService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Detection error for {appId}: {ex.Message}");
+            _logger.LogError($"Detection error for {appId}", ex);
             return null;
         }
     }
@@ -303,7 +305,7 @@ public class JsonApplicationDetectionService
                         }
                         catch (RegexMatchTimeoutException)
                         {
-                            Debug.WriteLine($"Version regex timed out for {appId} - possible ReDoS pattern");
+                            _logger.LogWarning($"Version regex timed out for {appId} - possible ReDoS pattern");
                         }
                     }
                 }
@@ -340,7 +342,7 @@ public class JsonApplicationDetectionService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Registry detection failed for {appId}: {ex.Message}");
+            _logger.LogError($"Registry detection failed for {appId}", ex);
             return null;
         }
     }
@@ -412,7 +414,7 @@ public class JsonApplicationDetectionService
             catch (System.ComponentModel.Win32Exception ex)
             {
                 // Command not found = not installed
-                Debug.WriteLine($"Command detection: '{executable}' not found for {appId}: {ex.Message}");
+                _logger.LogWarning($"Command detection: '{executable}' not found for {appId}: {ex.Message}");
                 return null;
             }
 
@@ -428,7 +430,7 @@ public class JsonApplicationDetectionService
                 try { process.Kill(); }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Process kill failed (non-critical): {ex.Message}");
+                    _logger.LogWarning($"Process kill failed (non-critical): {ex.Message}");
                 }
                 return null;
             }
@@ -471,7 +473,7 @@ public class JsonApplicationDetectionService
                 }
                 catch (RegexMatchTimeoutException)
                 {
-                    Debug.WriteLine($"Version regex timed out for {appId} - possible ReDoS pattern");
+                    _logger.LogWarning($"Version regex timed out for {appId} - possible ReDoS pattern");
                 }
             }
 
@@ -485,7 +487,7 @@ public class JsonApplicationDetectionService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Command detection failed for {appId}: {ex.Message}");
+            _logger.LogError($"Command detection failed for {appId}", ex);
             return null;
         }
     }
@@ -505,7 +507,7 @@ public class JsonApplicationDetectionService
             // Security: Validate expanded path for safety
             if (!IsValidExpandedPath(expandedPath))
             {
-                Debug.WriteLine($"Security: Invalid expanded path for {appId}: {expandedPath}");
+                _logger.LogWarning($"Security: Invalid expanded path for {appId}: {expandedPath}");
                 return null;
             }
 
@@ -540,7 +542,7 @@ public class JsonApplicationDetectionService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"File detection failed for {appId}: {ex.Message}");
+            _logger.LogError($"File detection failed for {appId}", ex);
             return null;
         }
     }
@@ -549,7 +551,7 @@ public class JsonApplicationDetectionService
     /// Validates an expanded file path for security.
     /// Blocks paths with dangerous patterns that could result from malicious environment variables.
     /// </summary>
-    private static bool IsValidExpandedPath(string path)
+    private bool IsValidExpandedPath(string path)
     {
         if (string.IsNullOrWhiteSpace(path)) return false;
 
@@ -562,7 +564,7 @@ public class JsonApplicationDetectionService
         // Security: Block path traversal sequences before and after normalization
         if (path.Contains(".."))
         {
-            Debug.WriteLine($"Security: Path traversal blocked in pre-normalized path");
+            _logger.LogWarning("Security: Path traversal blocked in pre-normalized path");
             return false;
         }
 
@@ -581,7 +583,7 @@ public class JsonApplicationDetectionService
             // After normalization, ensure no path traversal remains
             if (normalizedPath.Contains(".."))
             {
-                Debug.WriteLine($"Security: Path traversal blocked in normalized path");
+                _logger.LogWarning("Security: Path traversal blocked in normalized path");
                 return false;
             }
 
@@ -608,13 +610,13 @@ public class JsonApplicationDetectionService
 
             if (!isAllowed)
             {
-                Debug.WriteLine($"Security: Path outside allowed roots blocked: {normalizedPath}");
+                _logger.LogWarning($"Security: Path outside allowed roots blocked: {normalizedPath}");
                 return false;
             }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Security: Path normalization failed: {ex.Message}");
+            _logger.LogWarning($"Security: Path normalization failed: {ex.Message}");
             return false;
         }
 
@@ -632,7 +634,7 @@ public class JsonApplicationDetectionService
         // Windows feature names only contain alphanumeric characters, hyphens, and underscores
         if (!ValidFeatureNamePattern.IsMatch(config.FeatureName))
         {
-            Debug.WriteLine($"Invalid Windows feature name rejected for security: {appId}");
+            _logger.LogWarning($"Invalid Windows feature name rejected for security: {appId}");
             return null;
         }
 
@@ -669,13 +671,13 @@ public class JsonApplicationDetectionService
 
             if (!completedInTime)
             {
-                Debug.WriteLine($"Windows feature detection timed out for {appId}");
+                _logger.LogWarning($"Windows feature detection timed out for {appId}");
                 return null;
             }
 
             if (!string.IsNullOrEmpty(error))
             {
-                Debug.WriteLine($"Windows feature detection stderr for {appId}: {error}");
+                _logger.LogWarning($"Windows feature detection stderr for {appId}: {error}");
             }
 
             if (output.Trim().Equals("Enabled", StringComparison.OrdinalIgnoreCase))
@@ -693,7 +695,7 @@ public class JsonApplicationDetectionService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Windows feature detection failed for {appId}: {ex.Message}");
+            _logger.LogError($"Windows feature detection failed for {appId}", ex);
             return null;
         }
     }

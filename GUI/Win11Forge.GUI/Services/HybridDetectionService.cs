@@ -77,7 +77,9 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
     public HybridDetectionService(ILoggerFactory loggerFactory, IRepositoryPathService pathService)
     {
         _registryService = new RegistryDetectionService(loggerFactory);
-        _jsonDetectionService = new JsonApplicationDetectionService(pathService ?? throw new ArgumentNullException(nameof(pathService)));
+        _jsonDetectionService = new JsonApplicationDetectionService(
+            pathService ?? throw new ArgumentNullException(nameof(pathService)),
+            loggerFactory);
         _logger = loggerFactory?.CreateLogger<HybridDetectionService>() ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 
