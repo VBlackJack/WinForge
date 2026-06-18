@@ -3981,6 +3981,9 @@ This action cannot be undone.</value>
     <value>Invalid Windows feature name: contains disallowed characters</value>
     <comment>Error when Windows feature name contains disallowed characters</comment>
   </data>
+  <data name="Detection_InvalidRegistryPath" xml:space="preserve">
+    <value>Invalid registry path</value>
+  </data>
   <data name="Detection_CommandTimeout" xml:space="preserve">
     <value>Command timed out after 5 seconds</value>
     <comment>Error when detection command times out</comment>

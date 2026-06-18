@@ -2517,6 +2517,9 @@ Cette action est irréversible.</value>
   <data name="Detection_InvalidFeatureName" xml:space="preserve">
     <value>Nom de fonctionnalité Windows invalide : contient des caractères non autorisés</value>
   </data>
+  <data name="Detection_InvalidRegistryPath" xml:space="preserve">
+    <value>Chemin de registre invalide</value>
+  </data>
   <data name="Detection_CommandTimeout" xml:space="preserve">
     <value>La commande a expiré apres 5 secondes</value>
   </data>

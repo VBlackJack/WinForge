@@ -441,6 +441,7 @@ public partial class DetectionEditor : UserControl
                 {
                     DetectionMethod.Command => Loc.Detection_InvalidCommandPath,
                     DetectionMethod.WindowsFeature => Loc.Detection_InvalidFeatureName,
+                    DetectionMethod.Registry => Loc.Detection_InvalidRegistryPath,
                     _ => Loc.Detection_InvalidExpandedPath
                 };
                 break;
