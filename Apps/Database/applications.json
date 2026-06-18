@@ -1,8 +1,8 @@
 ﻿{
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "DatabaseVersion": "3.7.3",
-  "LastUpdated": "2026-05-29",
-  "TotalApplications": 189,
+  "DatabaseVersion": "3.7.4",
+  "LastUpdated": "2026-06-07",
+  "TotalApplications": 195,
   "PriorityRanges": {
     "Description": "Priority ranges for application installation order",
     "Ranges": {
@@ -4738,6 +4738,179 @@
       "Verified": true,
       "Homepage": "https://dotnet.microsoft.com/download/dotnet-framework"
     },
+    "WindowsAppSDK21": {
+      "Name": "Windows App SDK Runtime 2.1",
+      "Category": "System",
+      "Description": "Microsoft Windows App SDK 2.1 runtime (WinUI 3) - required by modern WinUI 3 desktop applications",
+      "Sources": {
+        "Winget": "Microsoft.WindowsAppRuntime.2.1",
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": "https://aka.ms/windowsappsdk/2.1/2.1.3/windowsappruntimeinstall-x64.exe",
+        "ExpectedPublisher": "Microsoft Corporation"
+      },
+      "Detection": {
+        "Method": "StoreApp",
+        "PackageName": "Microsoft.WindowsAppRuntime.2.1"
+      },
+      "DefaultPriority": 37,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "system",
+        "runtime",
+        "microsoft",
+        "winui",
+        "prerequisite"
+      ],
+      "LastVerified": "2026-06-07",
+      "Verified": true,
+      "Homepage": "https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads",
+      "KnownIssues": "Winget currently exposes Windows App Runtime up to 2.0 on this machine; installation falls back to the signed Microsoft DirectUrl (stable x64 2.1.3) until the 2.1 winget package is published."
+    },
+    "BleachBit": {
+      "Name": "BleachBit",
+      "Category": "Utility",
+      "Description": "Open source disk cleaner and privacy tool that frees space and shreds files",
+      "Sources": {
+        "Winget": "BleachBit.BleachBit",
+        "Chocolatey": "bleachbit",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%ProgramFiles%\\BleachBit\\bleachbit.exe"
+      },
+      "DefaultPriority": 75,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "utility",
+        "cleaner",
+        "privacy",
+        "open-source"
+      ],
+      "LastVerified": "2026-06-07",
+      "Verified": true,
+      "Homepage": "https://www.bleachbit.org/"
+    },
+    "FluentCleaner": {
+      "Name": "FluentCleaner",
+      "Category": "Utility",
+      "Description": "Open source WinUI 3 PC cleaner for Windows 11, a native CCleaner alternative using the winapp2.ini database",
+      "Sources": {
+        "Winget": null,
+        "Chocolatey": null,
+        "Store": null,
+        "DirectUrl": "https://github.com/builtbybel/FluentCleaner/releases/latest/download/FluentCleaner-win-x64.zip"
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%ProgramFiles%\\FluentCleaner-win-x64\\FCleaner.exe"
+      },
+      "DefaultPriority": 76,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "utility",
+        "cleaner",
+        "winui",
+        "open-source"
+      ],
+      "Dependencies": [
+        {
+          "AppId": "WindowsAppSDK21",
+          "Type": "required",
+          "Reason": "FluentCleaner is a WinUI 3 application and requires the Windows App SDK 2.1 runtime"
+        }
+      ],
+      "LastVerified": "2026-06-07",
+      "Verified": true,
+      "Homepage": "https://github.com/builtbybel/FluentCleaner",
+      "KnownIssues": "Portable ZIP from GitHub (unsigned, no Winget/Chocolatey). DirectUrl uses the 'latest' release asset."
+    },
+    "MicrosoftPCManager": {
+      "Name": "Microsoft PC Manager",
+      "Category": "Utility",
+      "Description": "Microsoft's official one-click PC optimization, storage cleanup and health tool",
+      "Sources": {
+        "Winget": null,
+        "Chocolatey": null,
+        "Store": "9PM860492SZD",
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "StoreApp",
+        "PackageName": "Microsoft.MicrosoftPCManager"
+      },
+      "DefaultPriority": 74,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "utility",
+        "cleaner",
+        "microsoft",
+        "optimization"
+      ],
+      "LastVerified": "2026-06-07",
+      "Verified": true,
+      "Homepage": "https://pcmanager.microsoft.com/"
+    },
+    "Textify": {
+      "Name": "Textify",
+      "Category": "Utility",
+      "Description": "Copies text from dialogs and UI controls that normally do not allow text selection",
+      "Sources": {
+        "Winget": "rammichael.Textify",
+        "Chocolatey": "textify",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%APPDATA%\\Textify\\Textify.exe"
+      },
+      "DefaultPriority": 77,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "utility",
+        "text",
+        "accessibility"
+      ],
+      "LastVerified": "2026-06-07",
+      "Verified": true,
+      "Homepage": "https://ramensoftware.com/textify",
+      "KnownIssues": "Per-user Nullsoft install; detection uses the AppData Roaming install location used by the official and Chocolatey installers."
+    },
+    "Capture2Text": {
+      "Name": "Capture2Text",
+      "Category": "Utility",
+      "Description": "Fast offline OCR tool that captures on-screen text to the clipboard via a keyboard shortcut",
+      "Sources": {
+        "Winget": "cb4960.Capture2Text",
+        "Chocolatey": "capture2text",
+        "Store": null,
+        "DirectUrl": null
+      },
+      "Detection": {
+        "Method": "File",
+        "Path": "%ProgramFiles%\\Capture2Text\\Capture2Text.exe"
+      },
+      "DefaultPriority": 78,
+      "DefaultRequired": false,
+      "EnvironmentRestrictions": [],
+      "Tags": [
+        "utility",
+        "ocr",
+        "text"
+      ],
+      "LastVerified": "2026-06-07",
+      "Verified": true,
+      "Homepage": "https://capture2text.sourceforge.net/",
+      "KnownIssues": "Winget and Chocolatey install portable ZIP packages; detection path may differ for portable package-manager installs."
+    },
     "FullEventLogView": {
       "Name": "FullEventLogView",
       "Category": "Diagnostic",
@@ -5268,7 +5441,7 @@
     "System": {
       "Description": "System utilities and tools",
       "DisplayName": "âš¡ SystÃ¨me",
-      "Count": 7
+      "Count": 8
     },
     "Browser": {
       "Description": "Web browsers",
@@ -5283,7 +5456,7 @@
     "Utility": {
       "Description": "General utilities and tools",
       "DisplayName": "ðŸ› ï¸ Utilitaires",
-      "Count": 31
+      "Count": 36
     },
     "Support": {
       "Description": "Support and system tools",
@@ -5383,6 +5556,7 @@
     "cli": "Command-line interface tools",
     "coding": "AI-assisted coding tools",
     "codeium": "Codeium and Windsurf applications",
+    "cleaner": "Disk cleanup and system cleaning tools",
     "communication": "Communication and collaboration tools",
     "compression": "File compression utilities",
     "configuration": "System configuration tools",
@@ -5458,6 +5632,7 @@
     "system": "System utilities and tools",
     "tags": "Tag and metadata editing",
     "terminal": "Terminal emulators",
+    "text": "Text capture and text-processing utilities",
     "tv": "TV show management",
     "user-added": "User-contributed applications",
     "utility": "General utility tools",
@@ -5491,6 +5666,7 @@
     "notes": "Note-taking applications",
     "optimization": "System optimization tools",
     "organization": "Organization and planning tools",
+    "ocr": "Optical character recognition tools",
     "painting": "Digital painting applications",
     "player": "Media player applications",
     "printer": "Printer drivers and utilities",
@@ -5541,6 +5717,7 @@
     "testing": "Testing tools",
     "usb": "USB tools and utilities",
     "wallpaper": "Wallpaper customization",
+    "winui": "WinUI-based Windows applications",
     "widgets": "Desktop widgets"
   }
 }

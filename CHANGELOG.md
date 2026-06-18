@@ -4,6 +4,33 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+### Application catalog utilities refresh — June 2026
+
+#### Added
+- **Added six utility/runtime catalog entries.** `WindowsAppSDK21`, `BleachBit`,
+  `FluentCleaner`, `MicrosoftPCManager`, `Textify`, and `Capture2Text` are now
+  present in `Apps/Database/applications.json`. `WizTree` was already present,
+  so it was not duplicated.
+- **Declared FluentCleaner's Windows App SDK runtime dependency.**
+  FluentCleaner installs from the GitHub portable ZIP and now depends on the
+  Windows App SDK 2.1 runtime entry, with Microsoft's signed 2.1.3 runtime
+  installer as the direct fallback.
+
+#### Changed
+- **Direct ZIP portable deployment now allows executable archive contents,
+  expands detection-path environment variables, and flattens single-root
+  archives.** This keeps DirectUrl ZIP apps such as FluentCleaner installable
+  and deployed to the same folder their file detection checks.
+
+#### Fixed
+- **DirectUrl installs now load shell-folder path helpers before creating temp
+  download folders.** `InstallationMethods.psm1` imports
+  `DirectoryConstants.psm1` so `Install-ViaDirectDownload` can reliably resolve
+  the temp directory.
+- **Dependency satisfaction handles single required dependencies under
+  StrictMode.** `Test-DependenciesSatisfied` now normalizes dependency output to
+  an array before counting missing prerequisites.
+
 ### Direct-download publisher gate activation — June 2026
 
 #### Security
