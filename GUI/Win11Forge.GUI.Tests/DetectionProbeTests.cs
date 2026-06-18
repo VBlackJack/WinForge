@@ -16,6 +16,7 @@
 
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Services;
@@ -58,6 +59,62 @@ public class DetectionProbeTests
 
         Assert.Equal(DetectionOutcome.Found, result.Outcome);
         Assert.Equal(DetectionSource.File, result.Source);
+    }
+
+    [Fact]
+    public async Task ProbeAsync_RegistryVersionKeyExists_ReturnsFoundWithVersion()
+    {
+        string subKey = $@"Software\Win11Forge\Tests\DetectionProbe\{Guid.NewGuid():N}";
+        using RegistryKey key = Registry.CurrentUser.CreateSubKey(subKey);
+        key.SetValue("ProductName", "Windows Test", RegistryValueKind.String);
+
+        try
+        {
+            DetectionProbe probe = new DetectionProbe();
+            DetectionConfiguration configuration = new DetectionConfiguration
+            {
+                Method = DetectionMethodStrings.Registry,
+                Path = $@"HKCU:\{subKey}",
+                VersionKey = "ProductName"
+            };
+
+            DetectionProbeResult result = await probe.ProbeAsync(configuration, PathValidationPolicy.AdHoc);
+
+            Assert.Equal(DetectionOutcome.Found, result.Outcome);
+            Assert.Equal(DetectionSource.Registry, result.Source);
+            Assert.Equal("Windows Test", result.Version);
+        }
+        finally
+        {
+            Registry.CurrentUser.DeleteSubKeyTree(subKey, throwOnMissingSubKey: false);
+        }
+    }
+
+    [Fact]
+    public async Task ProbeAsync_RegistryVersionKeyMissing_ReturnsNotFound()
+    {
+        string subKey = $@"Software\Win11Forge\Tests\DetectionProbe\{Guid.NewGuid():N}";
+        using RegistryKey key = Registry.CurrentUser.CreateSubKey(subKey);
+        key.SetValue("ProductName", "Windows Test", RegistryValueKind.String);
+
+        try
+        {
+            DetectionProbe probe = new DetectionProbe();
+            DetectionConfiguration configuration = new DetectionConfiguration
+            {
+                Method = DetectionMethodStrings.Registry,
+                Path = $@"HKCU:\{subKey}",
+                VersionKey = "ZZZ_DoesNotExist"
+            };
+
+            DetectionProbeResult result = await probe.ProbeAsync(configuration, PathValidationPolicy.AdHoc);
+
+            Assert.Equal(DetectionOutcome.NotFound, result.Outcome);
+        }
+        finally
+        {
+            Registry.CurrentUser.DeleteSubKeyTree(subKey, throwOnMissingSubKey: false);
+        }
     }
 
     [Fact]

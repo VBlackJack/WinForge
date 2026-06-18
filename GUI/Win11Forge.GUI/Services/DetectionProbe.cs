@@ -119,24 +119,26 @@ public sealed class DetectionProbe : IDetectionProbe
             if (!string.IsNullOrEmpty(config.VersionKey))
             {
                 object? versionValue = key.GetValue(config.VersionKey);
-                if (versionValue != null)
+                if (versionValue == null)
                 {
-                    version = versionValue.ToString();
+                    return DetectionProbeResult.NotFound();
+                }
 
-                    if (!string.IsNullOrEmpty(config.VersionRegex) && version != null)
+                version = versionValue.ToString();
+
+                if (!string.IsNullOrEmpty(config.VersionRegex) && version != null)
+                {
+                    try
                     {
-                        try
+                        Match match = Regex.Match(version, config.VersionRegex, RegexOptions.None, RegexTimeout);
+                        if (match.Success && match.Groups.Count > 1)
                         {
-                            Match match = Regex.Match(version, config.VersionRegex, RegexOptions.None, RegexTimeout);
-                            if (match.Success && match.Groups.Count > 1)
-                            {
-                                version = match.Groups[1].Value;
-                            }
+                            version = match.Groups[1].Value;
                         }
-                        catch (RegexMatchTimeoutException)
-                        {
-                            _logger.LogWarning("Version regex timed out during registry detection - possible ReDoS pattern");
-                        }
+                    }
+                    catch (RegexMatchTimeoutException)
+                    {
+                        _logger.LogWarning("Version regex timed out during registry detection - possible ReDoS pattern");
                     }
                 }
             }
