@@ -972,6 +972,7 @@ public class Resources
     public static string Error_LoadViewFailed => ResourceManager.GetString("Error_LoadViewFailed", resourceCulture);
     public static string Detection_InvalidExpandedPath => ResourceManager.GetString("Detection_InvalidExpandedPath", resourceCulture);
     public static string Detection_InvalidCommandPath => ResourceManager.GetString("Detection_InvalidCommandPath", resourceCulture);
+    public static string Detection_InvalidFeatureName => ResourceManager.GetString("Detection_InvalidFeatureName", resourceCulture);
     public static string Detection_CommandTimeout => ResourceManager.GetString("Detection_CommandTimeout", resourceCulture);
 
     // Audit Round 2 - Missing accessors

@@ -437,9 +437,12 @@ public partial class DetectionEditor : UserControl
                 break;
             case DetectionOutcome.InvalidInput:
                 TestSuccess = false;
-                TestResult = method == DetectionMethod.Command
-                    ? Loc.Detection_InvalidCommandPath
-                    : Loc.Detection_InvalidExpandedPath;
+                TestResult = method switch
+                {
+                    DetectionMethod.Command => Loc.Detection_InvalidCommandPath,
+                    DetectionMethod.WindowsFeature => Loc.Detection_InvalidFeatureName,
+                    _ => Loc.Detection_InvalidExpandedPath
+                };
                 break;
             case DetectionOutcome.Error:
                 TestSuccess = false;
