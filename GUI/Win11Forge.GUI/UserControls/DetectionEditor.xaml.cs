@@ -257,6 +257,7 @@ public partial class DetectionEditor : UserControl
 
         // Initialize panel visibility
         UpdatePanelVisibility();
+        RefreshTestCommandState();
     }
 
     /// <summary>
@@ -268,6 +269,7 @@ public partial class DetectionEditor : UserControl
         {
             editor.UpdatePanelVisibility();
             editor.ClearTestResult();
+            editor.RefreshTestCommandState();
         }
     }
 
@@ -279,6 +281,7 @@ public partial class DetectionEditor : UserControl
         if (d is DetectionEditor editor)
         {
             editor.ClearTestResult();
+            editor.RefreshTestCommandState();
         }
     }
 
@@ -332,6 +335,20 @@ public partial class DetectionEditor : UserControl
             TestResultIcon.Symbol = SymbolRegular.ErrorCircle24;
             TestResultIcon.Foreground = Application.Current?.TryFindResource("StatusFailedBrush") as Brush ?? new SolidColorBrush(Colors.Red);
         }
+        else
+        {
+            // Neutral/informational state (e.g. StoreApp check not supported): reset stale success/error icon.
+            TestResultIcon.Symbol = SymbolRegular.Info24;
+            TestResultIcon.Foreground = Application.Current?.TryFindResource("TextFillColorSecondaryBrush") as Brush ?? new SolidColorBrush(Colors.Gray);
+        }
+    }
+
+    /// <summary>
+    /// Re-evaluates whether the test command can execute.
+    /// </summary>
+    private void RefreshTestCommandState()
+    {
+        (TestCommand as IRelayCommand)?.NotifyCanExecuteChanged();
     }
 
     /// <summary>
