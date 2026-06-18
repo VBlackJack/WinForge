@@ -45,6 +45,7 @@ $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
 $script:EnvironmentDetectionPath = Join-Path $script:ModuleRoot 'EnvironmentDetection.psm1'
 $script:FeatureFlagsPath = Join-Path $script:RepositoryRoot 'Core\FeatureFlags.psm1'
+$script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
 
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:CoreModulePath) {
@@ -70,6 +71,13 @@ if (-not (Get-Command -Name Test-IsWindowsSandbox -ErrorAction SilentlyContinue)
 if (-not (Get-Command -Name Test-FeatureEnabled -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:FeatureFlagsPath) {
         Import-Module -Name $script:FeatureFlagsPath -Force
+    }
+}
+
+# Import DirectoryConstants for known shell folder paths
+if (-not (Get-Command -Name Get-ShellFolder -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DirectoryConstantsPath) {
+        Import-Module -Name $script:DirectoryConstantsPath -Force
     }
 }
 
@@ -1405,7 +1413,7 @@ function Install-ZipPackage {
     $extractPath = Join-Path $TempDir "extracted"
 
     # Use safe extraction with path traversal validation
-    $extractResult = Expand-ArchiveSafe -Path $InstallerPath -DestinationPath $extractPath
+    $extractResult = Expand-ArchiveSafe -Path $InstallerPath -DestinationPath $extractPath -AllowDangerousExtensions
     if (-not $extractResult) {
         Write-Status -Message (Get-LocalizedString -Key 'install.method.zip_security_failed') -Level 'Error'
         return $false
@@ -1433,7 +1441,8 @@ function Install-ZipPackage {
 
     $destinationPath = $null
     if ($DetectionPath) {
-        $destinationPath = Split-Path $DetectionPath -Parent
+        $expandedDetectionPath = [Environment]::ExpandEnvironmentVariables($DetectionPath)
+        $destinationPath = Split-Path $expandedDetectionPath -Parent
         Write-Status -Message (t 'install.method.debug.direct_path_verbose' -Parameters @{ Path = $DetectionPath }) -Level 'Verbose'
     }
 
@@ -1447,7 +1456,16 @@ function Install-ZipPackage {
         New-Item -Path $destinationPath -ItemType Directory -Force | Out-Null
     }
 
-    Copy-Item -Path "$extractPath\*" -Destination $destinationPath -Recurse -Force
+    $copySourcePath = $extractPath
+    $topLevelItems = @(Get-ChildItem -Path $extractPath -Force)
+    $topLevelDirectories = @($topLevelItems | Where-Object { $_.PSIsContainer })
+    $topLevelFiles = @($topLevelItems | Where-Object { -not $_.PSIsContainer })
+
+    if ($topLevelDirectories.Count -eq 1 -and $topLevelFiles.Count -eq 0) {
+        $copySourcePath = $topLevelDirectories[0].FullName
+    }
+
+    Copy-Item -Path (Join-Path $copySourcePath '*') -Destination $destinationPath -Recurse -Force
     Write-Status -Message (Get-LocalizedString -Key 'install.method.zip_deployed_success') -Level 'Success'
     return $true
 }

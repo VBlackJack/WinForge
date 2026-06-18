@@ -589,6 +589,44 @@ Describe 'InstallationMethods Mock-Based Tests' {
         }
     }
 
+    Context 'Install-ZipPackage - Portable Deployment' {
+        It 'Should expand DetectionPath environment variables and flatten a single root folder' {
+            Mock Write-Status { } -ModuleName InstallationMethods
+            Mock Get-LocalizedString { return $Key } -ModuleName InstallationMethods
+
+            $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) "Win11Forge-ZipInstall-$([System.Guid]::NewGuid())"
+            $sourceRoot = Join-Path $testRoot 'source\PortableRoot'
+            $archivePath = Join-Path $testRoot 'portable.zip'
+            $workPath = Join-Path $testRoot 'work'
+            $destinationRoot = Join-Path $testRoot 'dest'
+            $oldDestination = $env:WIN11FORGE_ZIP_TEST_DEST
+
+            try {
+                New-Item -Path $sourceRoot -ItemType Directory -Force | Out-Null
+                Set-Content -Path (Join-Path $sourceRoot 'App.exe') -Value 'test' -Encoding UTF8
+                Compress-Archive -Path $sourceRoot -DestinationPath $archivePath
+
+                $env:WIN11FORGE_ZIP_TEST_DEST = $destinationRoot
+                $result = Install-ZipPackage `
+                    -InstallerPath $archivePath `
+                    -TempDir $workPath `
+                    -DetectionPath '%WIN11FORGE_ZIP_TEST_DEST%\PortableRoot\App.exe'
+
+                $result | Should -BeTrue
+                Test-Path -Path (Join-Path $destinationRoot 'PortableRoot\App.exe') | Should -BeTrue
+                Test-Path -Path (Join-Path $destinationRoot 'PortableRoot\PortableRoot\App.exe') | Should -BeFalse
+            } finally {
+                if ($null -eq $oldDestination) {
+                    Remove-Item -Path Env:\WIN11FORGE_ZIP_TEST_DEST -ErrorAction SilentlyContinue
+                } else {
+                    $env:WIN11FORGE_ZIP_TEST_DEST = $oldDestination
+                }
+
+                Remove-Item -Path $testRoot -Recurse -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+
     Context 'Test-ValidDownloadUrl - Mocked Domain Validation' {
         BeforeEach {
             Mock Get-LocalizedString { return $Key } -ModuleName InstallationMethods

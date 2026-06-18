@@ -804,7 +804,7 @@ function Test-DependenciesSatisfied {
         [string[]]$InstalledAppIds
     )
 
-    $deps = Get-ApplicationDependencies -AppId $AppId -DependencyType 'Required'
+    $deps = @(Get-ApplicationDependencies -AppId $AppId -DependencyType 'Required')
 
     $missing = @($deps | Where-Object { $_.AppId -notin $InstalledAppIds })
 
@@ -1758,5 +1758,4 @@ Export-ModuleMember -Function @(
     'Disable-DatabaseFileWatcher',
     'Clear-DatabaseCache'
 )
-
 
