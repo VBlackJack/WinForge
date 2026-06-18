@@ -32,6 +32,21 @@ namespace Win11Forge.GUI.Services;
 public sealed class DetectionProbe : IDetectionProbe
 {
     private const int CommandTimeoutMs = 5000;
+    private const string WindowsFeatureElevationRequiredDetail =
+        "Administrator privileges are required to query Windows features.";
+
+    private static readonly string[] WindowsFeatureElevationErrorMarkers =
+    [
+        "requires elevation",
+        "elevated",
+        "administrator",
+        "administrateur",
+        "access is denied",
+        "denied",
+        "refus",
+        "privilege",
+        "privil"
+    ];
 
     /// <summary>
     /// Regex pattern for validating Windows feature names.
@@ -486,18 +501,14 @@ public sealed class DetectionProbe : IDetectionProbe
 
             string output = await outputTask;
             string error = await errorTask;
+            int exitCode = process.ExitCode;
 
             if (!string.IsNullOrEmpty(error))
             {
                 _logger.LogWarning($"Windows feature detection stderr: {error}");
             }
 
-            if (output.Trim().Equals("Enabled", StringComparison.OrdinalIgnoreCase))
-            {
-                return DetectionProbeResult.Found(DetectionSource.WindowsFeature, "enabled");
-            }
-
-            return DetectionProbeResult.NotFound();
+            return ClassifyWindowsFeatureResult(exitCode, output, error);
         }
         catch (OperationCanceledException)
         {
@@ -508,6 +519,41 @@ public sealed class DetectionProbe : IDetectionProbe
             _logger.LogError("Windows feature detection failed", ex);
             return DetectionProbeResult.Error(ex.Message);
         }
+    }
+
+    internal static DetectionProbeResult ClassifyWindowsFeatureResult(
+        int exitCode,
+        string output,
+        string error)
+    {
+        if (output.Trim().Equals("Enabled", StringComparison.OrdinalIgnoreCase))
+        {
+            return DetectionProbeResult.Found(DetectionSource.WindowsFeature, "enabled");
+        }
+
+        if (exitCode == 0)
+        {
+            return DetectionProbeResult.NotFound();
+        }
+
+        string trimmedError = error.Trim();
+        if (IsWindowsFeatureElevationError(trimmedError))
+        {
+            return DetectionProbeResult.Error(WindowsFeatureElevationRequiredDetail);
+        }
+
+        if (!string.IsNullOrEmpty(trimmedError))
+        {
+            return DetectionProbeResult.Error(trimmedError);
+        }
+
+        return DetectionProbeResult.Error($"Windows feature detection failed with exit code {exitCode}.");
+    }
+
+    private static bool IsWindowsFeatureElevationError(string error)
+    {
+        return WindowsFeatureElevationErrorMarkers.Any(marker =>
+            error.Contains(marker, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>

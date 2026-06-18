@@ -147,6 +147,43 @@ public class DetectionProbeTests
     }
 
     [Fact]
+    public void ClassifyWindowsFeatureResult_ElevationFailure_ReturnsError()
+    {
+        DetectionProbeResult result = DetectionProbe.ClassifyWindowsFeatureResult(
+            1,
+            string.Empty,
+            "Get-WindowsOptionalFeature : The requested operation requires elevation.");
+
+        Assert.Equal(DetectionOutcome.Error, result.Outcome);
+        Assert.NotNull(result.Detail);
+        Assert.Contains("Administrator privileges", result.Detail, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ClassifyWindowsFeatureResult_DisabledFeature_ReturnsNotFound()
+    {
+        DetectionProbeResult result = DetectionProbe.ClassifyWindowsFeatureResult(
+            0,
+            "Disabled",
+            string.Empty);
+
+        Assert.Equal(DetectionOutcome.NotFound, result.Outcome);
+    }
+
+    [Fact]
+    public void ClassifyWindowsFeatureResult_EnabledFeature_ReturnsFound()
+    {
+        DetectionProbeResult result = DetectionProbe.ClassifyWindowsFeatureResult(
+            0,
+            "Enabled",
+            string.Empty);
+
+        Assert.Equal(DetectionOutcome.Found, result.Outcome);
+        Assert.Equal(DetectionSource.WindowsFeature, result.Source);
+        Assert.Equal("enabled", result.Version);
+    }
+
+    [Fact]
     public void AddWin11ForgeServices_ShouldRegisterDetectionProbeSingleton()
     {
         ServiceCollection services = new ServiceCollection();
