@@ -194,6 +194,16 @@
             { "type": "null" }
           ],
           "description": "Expected Authenticode certificate subject substring for direct-download installers"
+        },
+        "ExpectedSHA256": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^([A-Fa-f0-9]{64}|SKIP_VALIDATION)$"
+            },
+            { "type": "null" }
+          ],
+          "description": "Expected SHA256 checksum for direct-download installers, or SKIP_VALIDATION to explicitly opt out of integrity validation"
         }
       }
     },

@@ -999,6 +999,9 @@
       "publisher_mismatch": "Publisher mismatch - expected '{Expected}', got '{Got}'",
       "error": "Signature check error: {Error}"
     },
+    "validation": {
+      "required": "Installation refused: this download has no integrity control (publisher signature or SHA256 checksum) and no explicit validation opt-out."
+    },
     "method": {
       "invoke_webrequest": "Attempting download via Invoke-WebRequest...",
       "invoke_webrequest_redirects": "Attempting download via Invoke-WebRequest (handles redirects)...",

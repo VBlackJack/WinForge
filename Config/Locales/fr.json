@@ -999,6 +999,9 @@
       "publisher_mismatch": "Éditeur inattendu - attendu « {Expected} », obtenu « {Got} »",
       "error": "Erreur de vérification de signature : {Error}"
     },
+    "validation": {
+      "required": "Installation refusée : ce téléchargement n'a aucun contrôle d'intégrité (signature d'éditeur ou somme de contrôle SHA256) ni dérogation explicite de validation."
+    },
     "method": {
       "invoke_webrequest": "Tentative de téléchargement via Invoke-WebRequest...",
       "invoke_webrequest_redirects": "Tentative de téléchargement via Invoke-WebRequest (gestion des redirections)...",

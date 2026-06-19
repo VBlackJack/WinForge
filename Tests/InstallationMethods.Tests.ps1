@@ -498,12 +498,43 @@ Describe 'InstallationMethods Mock-Based Tests' {
         }
 
         It 'Should return false when download fails' {
-            $result = Install-ViaDirectDownload -Url 'https://github.com/test/release/file.exe'
+            $result = Install-ViaDirectDownload -Url 'https://github.com/test/release/file.exe' -ExpectedSHA256 'SKIP_VALIDATION'
             $result | Should -BeFalse
         }
 
         It 'Should invoke Invoke-FileDownloadWithProgress' {
-            Install-ViaDirectDownload -Url 'https://github.com/test/release/file.exe'
+            Install-ViaDirectDownload -Url 'https://github.com/test/release/file.exe' -ExpectedSHA256 'SKIP_VALIDATION'
+            Should -Invoke -CommandName Invoke-FileDownloadWithProgress -ModuleName InstallationMethods -Times 1
+        }
+    }
+
+    Context 'Install-ViaDirectDownload - Validation Gate (fail-closed)' {
+        BeforeEach {
+            Mock Get-LocalizedString { return $Key } -ModuleName InstallationMethods
+            Mock Write-Status { } -ModuleName InstallationMethods
+            Mock Write-Output { } -ModuleName InstallationMethods
+            Mock Test-ValidDownloadUrl { return $true } -ModuleName InstallationMethods
+            # Download mocked to fail so the call returns right after the gate decision,
+            # without performing a real install.
+            Mock Invoke-FileDownloadWithProgress { return $false } -ModuleName InstallationMethods
+            Mock New-Item { return [PSCustomObject]@{ FullName = 'C:\Temp\Win11Forge_test' } } -ModuleName InstallationMethods -ParameterFilter { $ItemType -eq 'Directory' }
+            Mock Test-Path { return $false } -ModuleName InstallationMethods -ParameterFilter { $Path -and $Path -like '*Win11Forge_*' }
+            Mock Remove-Item { } -ModuleName InstallationMethods
+        }
+
+        It 'Should refuse and not download when no integrity control is configured' {
+            $result = Install-ViaDirectDownload -Url 'https://github.com/test/release/file.exe'
+            $result | Should -BeFalse
+            Should -Invoke -CommandName Invoke-FileDownloadWithProgress -ModuleName InstallationMethods -Times 0
+        }
+
+        It 'Should proceed to download when validation is explicitly skipped' {
+            Install-ViaDirectDownload -Url 'https://github.com/test/release/file.exe' -ExpectedSHA256 'SKIP_VALIDATION'
+            Should -Invoke -CommandName Invoke-FileDownloadWithProgress -ModuleName InstallationMethods -Times 1
+        }
+
+        It 'Should proceed to download when an expected publisher is set' {
+            Install-ViaDirectDownload -Url 'https://github.com/test/release/file.exe' -ExpectedPublisher 'CN=Test Publisher'
             Should -Invoke -CommandName Invoke-FileDownloadWithProgress -ModuleName InstallationMethods -Times 1
         }
     }
