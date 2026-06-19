@@ -56,4 +56,21 @@ Describe 'DetectionRegistryGuard - Test-RegistryPathAllowed' {
             Test-RegistryPathAllowed -Path $longPath | Should -BeFalse
         }
     }
+
+    Context 'Fail-closed behavior' {
+        It 'Denies all paths when the policy file is missing (empty allowlist, never fail-open)' {
+            InModuleScope DetectionRegistryGuard {
+                $originalPath = $script:RegistryPolicyPath
+                try {
+                    $script:RegistryPolicyPath = Join-Path ([System.IO.Path]::GetTempPath()) 'win11forge-no-such-registry-policy.json'
+                    $script:RegistryPolicyLoaded = $false
+                    # A normally-allowed path must be denied: empty allowedPatterns -> deny-all.
+                    Test-RegistryPathAllowed -Path 'HKLM:\SOFTWARE\Vendor\App' | Should -BeFalse
+                } finally {
+                    $script:RegistryPolicyPath = $originalPath
+                    $script:RegistryPolicyLoaded = $false
+                }
+            }
+        }
+    }
 }

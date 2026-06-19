@@ -16,25 +16,62 @@
 
 Set-StrictMode -Version Latest
 
-# Security: Whitelist of allowed registry path patterns
-# Only registry paths matching these patterns are allowed for detection
-$script:AllowedRegistryPatterns = @(
-    '^HK(LM|CU):\\SOFTWARE(\\|$)',                        # Standard software keys (with or without trailing path)
-    '^HK(LM|CU):\\SOFTWARE\\WOW6432Node(\\|$)',           # 32-bit software keys
-    '^HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall(\\|$)',  # Uninstall keys
-    '^HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall(\\|$)',
-    '^HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall(\\|$)'
-)
+# Registry-path validation policy, loaded from the shared Config file so the GUI
+# probe (C#) and this module read the same single source. Resolved self-relative
+# (module dir -> repo root -> Config) for runspace robustness.
+$script:ModuleRoot = Split-Path -Parent $PSCommandPath
+$script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
+$script:RegistryPolicyPath = Join-Path $script:RepositoryRoot 'Config\detection-registry-policy.json'
+$script:RegistryPolicyLoaded = $false
+$script:AllowedRegistryPatterns = @()
+$script:BlockedRegistryPatterns = @()
 
-# Security: Blocked registry paths (sensitive hives)
-$script:BlockedRegistryPatterns = @(
-    '\\SAM\\',           # Security Account Manager
-    '\\SECURITY\\',      # Security settings
-    '\\SYSTEM\\',        # System configuration (except specific subkeys)
-    '\\\.DEFAULT\\',     # Default user profile
-    'RunOnce',           # Startup entries (potential persistence)
-    'Run$'               # Startup entries
-)
+function Write-RegistryPolicyFailure {
+    param([Parameter(Mandatory)][string]$Message)
+
+    # A missing or corrupt policy fails closed (empty allowlist -> deny every path).
+    # Surface it loudly so it is diagnosable, mirroring the allowlist loader.
+    if (Get-Command -Name Write-Status -ErrorAction SilentlyContinue) {
+        Write-Status -Message $Message -Level 'Error'
+    } else {
+        Write-Warning $Message
+    }
+}
+
+function Initialize-RegistryPolicy {
+    if ($script:RegistryPolicyLoaded) {
+        return
+    }
+
+    # Fail closed on the ALLOWLIST: any load failure yields an empty allowedPatterns,
+    # so no path matches and every registry path is denied. Never fail open on an
+    # empty blocklist.
+    $allowed = @()
+    $blocked = @()
+    try {
+        if (-not (Test-Path -Path $script:RegistryPolicyPath)) {
+            Write-RegistryPolicyFailure "Detection registry policy not found at '$script:RegistryPolicyPath'; registry detection is disabled (fail-closed)."
+        } else {
+            $data = Get-Content -Path $script:RegistryPolicyPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($data.PSObject.Properties['allowedPatterns'] -and $data.allowedPatterns) {
+                $allowed = @($data.allowedPatterns | Where-Object { $_ })
+            } else {
+                Write-RegistryPolicyFailure "Detection registry policy '$script:RegistryPolicyPath' has no 'allowedPatterns'; registry detection is disabled (fail-closed)."
+            }
+            if ($data.PSObject.Properties['blockedPatterns'] -and $data.blockedPatterns) {
+                $blocked = @($data.blockedPatterns | Where-Object { $_ })
+            }
+        }
+    } catch {
+        Write-RegistryPolicyFailure "Failed to load detection registry policy from '$script:RegistryPolicyPath': $($_.Exception.Message); registry detection is disabled (fail-closed)."
+        $allowed = @()
+        $blocked = @()
+    }
+
+    $script:AllowedRegistryPatterns = $allowed
+    $script:BlockedRegistryPatterns = $blocked
+    $script:RegistryPolicyLoaded = $true
+}
 
 function Test-RegistryPathAllowed {
     <#
@@ -59,6 +96,8 @@ function Test-RegistryPathAllowed {
         [Parameter(Mandatory)]
         [string]$Path
     )
+
+    Initialize-RegistryPolicy
 
     # Normalize path separators
     $normalizedPath = $Path -replace '/', '\'
