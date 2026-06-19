@@ -331,9 +331,9 @@ function Test-WindowsCapabilityDetection {
     param([PSCustomObject]$Detection)
 
     try {
-        $capability = Get-WindowsCapability -Online | Where-Object {
-            $_.Name -like "*$($Detection.Capability)*"
-        } -ErrorAction SilentlyContinue
+        # I6: filter and suppress errors on Get-WindowsCapability itself (the -Name
+        # wildcard), not on a downstream Where-Object where -ErrorAction is a no-op.
+        $capability = Get-WindowsCapability -Online -Name "*$($Detection.Capability)*" -ErrorAction SilentlyContinue
         return $capability -and $capability.State -eq 'Installed'
     } catch {
         return $false
