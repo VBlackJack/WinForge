@@ -1106,6 +1106,12 @@ function Test-AppInstalledParallel {
             Import-Module $localizationModulePath -Force -WarningAction SilentlyContinue
         }
 
+        # Shared fail-closed validation resolver (same source as the sequential path)
+        $downloadValidationPath = Join-Path $repRoot 'Modules\DownloadValidation.psm1'
+        if (Test-Path $downloadValidationPath) {
+            Import-Module $downloadValidationPath -Force -WarningAction SilentlyContinue
+        }
+
         $result = @{
             ApplicationName = $app.Name
             Success = $false
@@ -1385,14 +1391,15 @@ function Test-AppInstalledParallel {
                     } elseif ($sources.PSObject.Properties['SHA256'] -and $sources.SHA256) {
                         $parallelChecksum = $sources.SHA256
                     }
-                    $parallelValidationSkipped = $parallelChecksum -eq 'SKIP_VALIDATION'
-                    $parallelHasChecksum = $parallelChecksum -and -not $parallelValidationSkipped
-                    $parallelHasPublisher = $sources.PSObject.Properties['ExpectedPublisher'] -and $sources.ExpectedPublisher
-                    if (-not $parallelHasChecksum -and -not $parallelHasPublisher -and -not $parallelValidationSkipped) {
+                    $parallelPublisher = if ($sources.PSObject.Properties['ExpectedPublisher']) { $sources.ExpectedPublisher } else { $null }
+                    $parallelValidationMode = Resolve-DirectDownloadValidationMode -ExpectedSHA256 $parallelChecksum -ExpectedPublisher $parallelPublisher
+                    if ($parallelValidationMode -eq 'None') {
                         Write-ParallelLog "Validation required but not configured for $($sources.DirectUrl)" 'Error'
                         $result.Message = (Get-LocalizedString -Key 'download.validation.required')
                         return $result
                     }
+                    # Post-download mechanic: enforce a real checksum when present.
+                    $parallelHasChecksum = $parallelChecksum -and ($parallelChecksum -ne 'SKIP_VALIDATION')
 
                     # Parallel runspace - intentional direct env usage
                     $tempDir = Join-Path $env:TEMP "Win11Forge_$([guid]::NewGuid().ToString('N'))"

@@ -81,6 +81,14 @@ if (-not (Get-Command -Name Get-ShellFolder -ErrorAction SilentlyContinue)) {
     }
 }
 
+# Import DownloadValidation for the shared fail-closed validation policy resolver
+$script:DownloadValidationPath = Join-Path $script:ModuleRoot 'DownloadValidation.psm1'
+if (-not (Get-Command -Name Resolve-DirectDownloadValidationMode -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DownloadValidationPath) {
+        Import-Module -Name $script:DownloadValidationPath -Force
+    }
+}
+
 # Import ApplicationDetection for version detection
 $script:ApplicationDetectionPath = Join-Path $script:ModuleRoot 'ApplicationDetection.psm1'
 if (-not (Get-Command -Name Get-InstalledAppVersion -ErrorAction SilentlyContinue)) {
@@ -1504,17 +1512,18 @@ function Install-ViaDirectDownload {
             return $false
         }
 
-        # Security: fail closed before downloading. A DirectUrl install must carry an
-        # integrity control (publisher signature or SHA256 checksum) or an explicit
-        # opt-out. The decision depends only on metadata, so refuse here rather than
-        # fetch a binary we could not validate.
-        $isValidationSkipped = $ExpectedSHA256 -eq 'SKIP_VALIDATION'
-        $hasChecksum = $ExpectedSHA256 -and -not $isValidationSkipped
-        $hasPublisher = -not [string]::IsNullOrWhiteSpace($ExpectedPublisher)
-        if (-not $hasChecksum -and -not $hasPublisher -and -not $isValidationSkipped) {
+        # Security: fail closed before downloading. The shared resolver owns the
+        # decision (block / skip / validate); refuse here when no control and no
+        # opt-out are present, rather than fetch a binary we could not validate.
+        $validationMode = Resolve-DirectDownloadValidationMode -ExpectedSHA256 $ExpectedSHA256 -ExpectedPublisher $ExpectedPublisher
+        if ($validationMode -eq 'None') {
             Write-Status -Message (t 'download.validation.required') -Level 'Error'
             return $false
         }
+
+        # Post-download mechanic: enforce a real checksum when present. SKIP_VALIDATION
+        # is never forwarded to the hash compare.
+        $hasChecksum = $ExpectedSHA256 -and ($ExpectedSHA256 -ne 'SKIP_VALIDATION')
 
         Write-Status -Message (t 'install.method.direct_downloading' -Parameters @{ Url = $Url }) -Level 'Info'
 
