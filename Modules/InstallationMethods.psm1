@@ -1504,6 +1504,18 @@ function Install-ViaDirectDownload {
             return $false
         }
 
+        # Security: fail closed before downloading. A DirectUrl install must carry an
+        # integrity control (publisher signature or SHA256 checksum) or an explicit
+        # opt-out. The decision depends only on metadata, so refuse here rather than
+        # fetch a binary we could not validate.
+        $isValidationSkipped = $ExpectedSHA256 -eq 'SKIP_VALIDATION'
+        $hasChecksum = $ExpectedSHA256 -and -not $isValidationSkipped
+        $hasPublisher = -not [string]::IsNullOrWhiteSpace($ExpectedPublisher)
+        if (-not $hasChecksum -and -not $hasPublisher -and -not $isValidationSkipped) {
+            Write-Status -Message (t 'download.validation.required') -Level 'Error'
+            return $false
+        }
+
         Write-Status -Message (t 'install.method.direct_downloading' -Parameters @{ Url = $Url }) -Level 'Info'
 
         $tempDir = Join-Path -Path (Get-ShellFolder -FolderType 'Temp') -ChildPath "Win11Forge_$([guid]::NewGuid().ToString('N'))"
@@ -1566,7 +1578,8 @@ function Install-ViaDirectDownload {
             OutputPath = $installerPath
         }
 
-        if ($ExpectedSHA256) {
+        # SKIP_VALIDATION is an explicit opt-out: never forward it to the hash compare.
+        if ($hasChecksum) {
             $downloadParams['ExpectedSHA256'] = $ExpectedSHA256
             Write-Verbose (t 'install.method.direct_checksum_enabled')
             Write-Status -Message (t 'install.method.direct_checksum_enabled') -Level 'Info'

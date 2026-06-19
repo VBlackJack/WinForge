@@ -4803,7 +4803,8 @@
         "Winget": null,
         "Chocolatey": null,
         "Store": null,
-        "DirectUrl": "https://github.com/builtbybel/FluentCleaner/releases/latest/download/FluentCleaner-win-x64.zip"
+        "DirectUrl": "https://github.com/builtbybel/FluentCleaner/releases/latest/download/FluentCleaner-win-x64.zip",
+        "ExpectedSHA256": "SKIP_VALIDATION"
       },
       "Detection": {
         "Method": "File",
@@ -4828,7 +4829,7 @@
       "LastVerified": "2026-06-07",
       "Verified": true,
       "Homepage": "https://github.com/builtbybel/FluentCleaner",
-      "KnownIssues": "Portable ZIP from GitHub (unsigned, no Winget/Chocolatey). DirectUrl uses the 'latest' release asset."
+      "KnownIssues": "Portable ZIP from GitHub (unsigned, no Winget/Chocolatey). DirectUrl uses the 'latest' release asset, so the SHA256 rolls per release and Authenticode does not apply to a ZIP archive; integrity validation is therefore opted out via ExpectedSHA256 SKIP_VALIDATION."
     },
     "MicrosoftPCManager": {
       "Name": "Microsoft PC Manager",

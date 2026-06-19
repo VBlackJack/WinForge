@@ -483,8 +483,17 @@ function Invoke-InstallationMethodSequence {
                     $installParams['DetectionPath'] = $Application.Detection.Path
                 }
 
-                if ($sources.PSObject.Properties['SHA256'] -and $sources.SHA256) {
-                    $installParams['ExpectedSHA256'] = $sources.SHA256
+                # Unified checksum accessor: canonical ExpectedSHA256, with SHA256 as
+                # a backward-compatible fallback. SKIP_VALIDATION flows through so the
+                # fail-closed gate in Install-ViaDirectDownload can honor the opt-out.
+                $expectedChecksum = $null
+                if ($sources.PSObject.Properties['ExpectedSHA256'] -and $sources.ExpectedSHA256) {
+                    $expectedChecksum = $sources.ExpectedSHA256
+                } elseif ($sources.PSObject.Properties['SHA256'] -and $sources.SHA256) {
+                    $expectedChecksum = $sources.SHA256
+                }
+                if ($expectedChecksum) {
+                    $installParams['ExpectedSHA256'] = $expectedChecksum
                 }
 
                 if ($sources.PSObject.Properties['ExpectedPublisher'] -and $sources.ExpectedPublisher) {
@@ -1367,6 +1376,24 @@ function Test-AppInstalledParallel {
                     }
                     Write-ParallelLog "Installer filename: $filename" 'Info'
 
+                    # Security: fail closed before creating any temp file or downloading.
+                    # The decision depends only on metadata, so refuse here rather than
+                    # fetch a binary we could not validate. Mirrors Install-ViaDirectDownload.
+                    $parallelChecksum = $null
+                    if ($sources.PSObject.Properties['ExpectedSHA256'] -and $sources.ExpectedSHA256) {
+                        $parallelChecksum = $sources.ExpectedSHA256
+                    } elseif ($sources.PSObject.Properties['SHA256'] -and $sources.SHA256) {
+                        $parallelChecksum = $sources.SHA256
+                    }
+                    $parallelValidationSkipped = $parallelChecksum -eq 'SKIP_VALIDATION'
+                    $parallelHasChecksum = $parallelChecksum -and -not $parallelValidationSkipped
+                    $parallelHasPublisher = $sources.PSObject.Properties['ExpectedPublisher'] -and $sources.ExpectedPublisher
+                    if (-not $parallelHasChecksum -and -not $parallelHasPublisher -and -not $parallelValidationSkipped) {
+                        Write-ParallelLog "Validation required but not configured for $($sources.DirectUrl)" 'Error'
+                        $result.Message = (Get-LocalizedString -Key 'download.validation.required')
+                        return $result
+                    }
+
                     # Parallel runspace - intentional direct env usage
                     $tempDir = Join-Path $env:TEMP "Win11Forge_$([guid]::NewGuid().ToString('N'))"
                     New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
@@ -1407,12 +1434,12 @@ function Test-AppInstalledParallel {
                     }
                     Write-ParallelLog "Download completed" 'Info'
 
-                    # SHA256 checksum validation
-                    if ($sources.SHA256) {
+                    # SHA256 checksum validation (skipped on explicit opt-out)
+                    if ($parallelHasChecksum) {
                         Write-ParallelLog "Validating SHA256 checksum..." 'Info'
                         $fileHash = (Get-FileHash -Path $tempFile -Algorithm SHA256).Hash
-                        if ($fileHash -ne $sources.SHA256) {
-                            Write-ParallelLog "Checksum FAILED! Expected: $($sources.SHA256), Got: $fileHash" 'Error'
+                        if ($fileHash -ne $parallelChecksum) {
+                            Write-ParallelLog "Checksum FAILED! Expected: $parallelChecksum, Got: $fileHash" 'Error'
                             Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
                             $result.Message = (Get-LocalizedString -Key 'orchestrator.result.checksum_failed')
                             return $result
