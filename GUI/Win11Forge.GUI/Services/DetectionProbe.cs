@@ -20,9 +20,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
+using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Services.PowerShell;
 
 namespace Win11Forge.GUI.Services;
 
@@ -64,14 +67,85 @@ public sealed class DetectionProbe : IDetectionProbe
     /// </summary>
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(500);
 
+    /// <summary>
+    /// Name of the JSON array property holding the Command detection allowlist.
+    /// </summary>
+    private const string AllowedExecutablesPropertyName = "allowedExecutables";
+
     private readonly ILoggingService _logger;
+
+    /// <summary>
+    /// Base names of executables permitted for the Command detection method.
+    /// Loaded fail-closed: any load failure yields an empty set, which denies
+    /// every Command detection rather than allowing all.
+    /// </summary>
+    private readonly HashSet<string> _allowedDetectionExecutables;
 
     /// <summary>
     /// Initializes a new instance of the detection probe.
     /// </summary>
-    public DetectionProbe(ILoggerFactory? loggerFactory = null)
+    public DetectionProbe(
+        ILoggerFactory? loggerFactory = null,
+        IRepositoryPathService? repositoryPathService = null)
     {
         _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<DetectionProbe>();
+        _allowedDetectionExecutables = LoadAllowedDetectionExecutables(repositoryPathService);
+    }
+
+    /// <summary>
+    /// Loads the Command detection allowlist from the shared configuration file.
+    /// This is a security control: it is loaded once and cached for the probe's
+    /// lifetime. It fails closed - a missing, unreadable, or malformed file
+    /// produces an empty allowlist, disabling Command detection entirely rather
+    /// than permitting arbitrary executables.
+    /// </summary>
+    private HashSet<string> LoadAllowedDetectionExecutables(IRepositoryPathService? repositoryPathService)
+    {
+        HashSet<string> allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        if (repositoryPathService is null)
+        {
+            _logger.LogWarning(
+                "Detection allowlist unavailable (no repository path service); Command detection is disabled.");
+            return allowed;
+        }
+
+        string allowlistPath = repositoryPathService.GetPath(
+            Win11ForgePathNames.ConfigDirectoryName,
+            Win11ForgePathNames.DetectionAllowlistFileName);
+
+        if (!File.Exists(allowlistPath))
+        {
+            _logger.LogError(
+                $"Detection allowlist file not found at '{allowlistPath}'; Command detection is disabled.");
+            return allowed;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(allowlistPath);
+            using JsonDocument document = JsonDocument.Parse(json);
+
+            if (document.RootElement.TryGetProperty(AllowedExecutablesPropertyName, out JsonElement executables) &&
+                executables.ValueKind == JsonValueKind.Array)
+            {
+                foreach (JsonElement entry in executables.EnumerateArray())
+                {
+                    string? value = entry.GetString();
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        allowed.Add(value);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to load detection allowlist; Command detection is disabled.", ex);
+            return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        return allowed;
     }
 
     /// <inheritdoc/>
@@ -229,6 +303,18 @@ public sealed class DetectionProbe : IDetectionProbe
         {
             string[] parts = config.Command.Split(' ', 2);
             string executable = ResolveExecutablePath(parts[0]);
+
+            // Security: only allowlisted executables may be launched for Command detection.
+            // Mirrors the PowerShell modules' allowlist gate and closes the arbitrary command
+            // execution path that an imported catalog could otherwise reach.
+            string executableName = Path.GetFileName(executable);
+            if (!_allowedDetectionExecutables.Contains(executableName))
+            {
+                _logger.LogWarning(
+                    $"Command detection blocked: '{executable}' is not in the detection allowlist.");
+                return DetectionProbeResult.NotFound("Executable is not allowed for command detection.");
+            }
+
             string arguments = parts.Length > 1 ? parts[1] : string.Empty;
 
             ProcessStartInfo processStartInfo = new ProcessStartInfo
