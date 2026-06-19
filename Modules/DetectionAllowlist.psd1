@@ -1,5 +1,5 @@
 #
-# Module manifest for ApplicationDetection
+# Module manifest for DetectionAllowlist
 #
 # Copyright 2026 Julien Bombled
 #
@@ -18,13 +18,13 @@
 
 @{
     # Script module or binary module file associated with this manifest
-    RootModule = 'ApplicationDetection.psm1'
+    RootModule = 'DetectionAllowlist.psm1'
 
     # Version number of this module
-    ModuleVersion = '1.0.0603.1'
+    ModuleVersion = '1.0.0'
 
     # ID used to uniquely identify this module
-    GUID = 'c1e5f8a2-4b3d-4e9f-8a1c-2d3e4f5a6b7c'
+    GUID = 'ba65ebf7-4ff0-4c03-9e87-cff491276264'
 
     # Author of this module
     Author = 'Julien Bombled'
@@ -36,7 +36,7 @@
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description = 'Application detection and installation verification functions for Win11Forge. Includes detection methods for Registry, File, Command, WindowsFeature, WindowsCapability, and StoreApp applications.'
+    Description = 'Shared command-detection allowlist resolver. Single source of truth loaded from Config/detection-allowlist.json, read by every PowerShell detection path and aligned with the GUI detection probe.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -46,15 +46,7 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
-        'Test-RegistryKey',
-        'Expand-DetectionPath',
-        'Get-InstalledAppVersion',
-        'Wait-ForOfficeInstallation',
-        'Test-ApplicationByName',
-        'Test-ApplicationInstalled',
-        'Get-InstalledApplicationsCache',
-        'Test-ApplicationInstalledFast',
-        'Get-ApplicationsInstallationStatus'
+        'Get-DetectionAllowlist'
     )
 
     # Cmdlets to export from this module
@@ -70,16 +62,16 @@
     PrivateData = @{
         PSData = @{
             # Tags applied to this module
-            Tags = @('Win11Forge', 'Detection', 'Application', 'Winget', 'Chocolatey')
+            Tags = @('Win11Forge', 'Security', 'Detection', 'Allowlist')
 
             # A URL to the license for this module
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
 
             # A URL to the main website for this project
-            ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
+            ProjectUri = 'https://github.com/VBlackJack/WinForge'
 
             # Release notes
-            ReleaseNotes = 'Extracted from InstallationEngine.psm1 for modularity (v3.1.4)'
+            ReleaseNotes = 'Single source for the command-detection allowlist, replacing four drifting in-module copies.'
         }
     }
 }

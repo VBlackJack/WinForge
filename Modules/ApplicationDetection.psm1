@@ -81,30 +81,13 @@ if (-not (Get-Command -Name Get-CachedWingetList -ErrorAction SilentlyContinue))
 
 # === CONFIGURATION ===
 
-# Security: Whitelist of allowed executables for Command detection method
-# Only these executables can be run from applications.json Detection.Command
-$script:AllowedDetectionExecutables = @(
-    'java', 'java.exe',           # Java detection (java -version)
-    'javac', 'javac.exe',         # JDK detection
-    'dotnet', 'dotnet.exe',       # .NET detection
-    'python', 'python.exe',       # Python detection (python --version)
-    'python3', 'python3.exe',
-    'node', 'node.exe',           # Node.js detection (node --version)
-    'npm', 'npm.cmd',             # npm detection
-    'git', 'git.exe',             # Git detection (git --version)
-    'codex', 'codex.exe', 'codex.cmd', 'codex.ps1',     # OpenAI Codex CLI detection
-    'claude', 'claude.exe', 'claude.cmd', 'claude.ps1',  # Claude Code detection
-    'agy', 'agy.exe', 'agy.cmd', 'agy.ps1',              # Google Antigravity CLI detection
-    'ollama', 'ollama.exe',       # Ollama detection
-    'aish', 'aish.exe',           # Microsoft AI Shell detection
-    'docker', 'docker.exe',       # Docker detection
-    'rustc', 'rustc.exe',         # Rust detection
-    'cargo', 'cargo.exe',
-    'go', 'go.exe',               # Go detection
-    'ruby', 'ruby.exe',           # Ruby detection
-    'php', 'php.exe',             # PHP detection
-    'perl', 'perl.exe'            # Perl detection
-)
+# Import DetectionAllowlist: the shared command-detection allowlist (single source).
+$script:DetectionAllowlistModulePath = Join-Path $script:ModuleRoot 'DetectionAllowlist.psm1'
+if (-not (Get-Command -Name Get-DetectionAllowlist -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DetectionAllowlistModulePath) {
+        Import-Module -Name $script:DetectionAllowlistModulePath -Force
+    }
+}
 
 # === REGISTRY-FIRST OPTIMIZATION ===
 
@@ -670,7 +653,7 @@ function Test-ApplicationInstalled {
 
                     # Security: Only allow whitelisted executables for command detection
                     $exeBaseName = [System.IO.Path]::GetFileName($executable).ToLower()
-                    if ($exeBaseName -notin $script:AllowedDetectionExecutables) {
+                    if ($exeBaseName -notin (Get-DetectionAllowlist)) {
                         Write-Status -Message (Get-LocalizedString -Key 'detect.security.command_not_allowed' -Parameters @{ Executable = $executable }) -Level 'Verbose'
                         $detected = $false
                     }
@@ -1045,7 +1028,7 @@ function Test-ApplicationInstalledFast {
 
                     # Security: Only allow whitelisted executables for command detection
                     $exeBaseName = [System.IO.Path]::GetFileName($executable).ToLower()
-                    if ($exeBaseName -notin $script:AllowedDetectionExecutables) {
+                    if ($exeBaseName -notin (Get-DetectionAllowlist)) {
                         $detected = $false
                     } else {
                         # Check if this command output is cached
@@ -1217,9 +1200,4 @@ Export-ModuleMember -Function @(
     'Get-InstalledApplicationsCache',
     'Test-ApplicationInstalledFast',
     'Get-ApplicationsInstallationStatus'
-)
-
-# Export script variable for parallel detection
-Export-ModuleMember -Variable @(
-    'AllowedDetectionExecutables'
 )
