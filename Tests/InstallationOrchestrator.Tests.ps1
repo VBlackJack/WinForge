@@ -639,4 +639,26 @@ Describe 'Module Export Completeness' {
             Get-Command -Name $FunctionName -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         }
     }
+
+    Context 'Parallel detection via the hardened ParallelDetection module (A3.4 swap)' {
+        It 'Enforces I4/I5/I6 end-to-end in a parallel runspace through Import-Module' {
+            # Mirrors the orchestrator runspace after the swap: it imports ParallelDetection
+            # by path and calls Test-AppInstalledParallel (the former here-string copy is gone).
+            $pdPath = (Resolve-Path (Join-Path $PSScriptRoot '..\Modules\ParallelDetection.psm1')).Path
+            $out = @(1) | ForEach-Object -Parallel {
+                Import-Module $using:pdPath -Force
+                [PSCustomObject]@{
+                    # I5: a sensitive hive outside the allowlist is rejected
+                    RegistryBlocked = Test-AppInstalledParallel -App ([PSCustomObject]@{ Name = 'Z'; Detection = [PSCustomObject]@{ Method = 'Registry'; Path = 'HKLM:\SYSTEM\Foo' } })
+                    # I4: dangerous arguments on an allowlisted exe are blocked before execution
+                    CommandInjection = Test-AppInstalledParallel -App ([PSCustomObject]@{ Name = 'I'; Detection = [PSCustomObject]@{ Method = 'Command'; Command = 'git ; calc' } })
+                    # The allowlist JSON resolves transitively: an allowlisted, installed CLI is detected
+                    CommandAllowlistedInstalled = Test-AppInstalledParallel -App ([PSCustomObject]@{ Name = 'D'; Detection = [PSCustomObject]@{ Method = 'Command'; Command = 'dotnet --version' } })
+                }
+            }
+            $out.RegistryBlocked | Should -BeFalse
+            $out.CommandInjection | Should -BeFalse
+            $out.CommandAllowlistedInstalled | Should -BeTrue
+        }
+    }
 }

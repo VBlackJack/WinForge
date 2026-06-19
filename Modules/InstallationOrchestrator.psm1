@@ -844,138 +844,6 @@ function Install-ApplicationsParallel {
     $validateSignatureFunction = ${function:Test-InstallerSignature}.ToString()
 
     # Self-contained detection function for parallel scope
-    $detectAppFunction = @'
-function Test-AppInstalledParallel {
-    param([PSCustomObject]$App)
-
-    $appName = $App.Name
-
-    # Special case: PowerToys
-    if ($appName -eq 'Microsoft PowerToys') {
-        $paths = @("${env:ProgramFiles}\PowerToys\PowerToys.exe", "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe", "${env:ProgramFiles(x86)}\PowerToys\PowerToys.exe")
-        foreach ($p in $paths) { if (Test-Path $p -ErrorAction SilentlyContinue) { return $true } }
-        if (Get-Process -Name "PowerToys" -ErrorAction SilentlyContinue) { return $true }
-    }
-
-    # Special case: Quick Assist
-    if ($appName -eq 'Microsoft Quick Assist') {
-        try {
-            $pkg = Get-AppxPackage -Name "MicrosoftCorporationII.QuickAssist" -ErrorAction SilentlyContinue
-            if ($pkg) { return $true }
-        } catch {
-            Write-Verbose "Quick Assist detection failed: $($_.Exception.Message)"
-        }
-    }
-
-    if (-not $App.Detection) {
-        if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
-            $list = Get-CachedWingetList
-            if ($list -match [regex]::Escape($appName)) { return $true }
-        }
-        return $false
-    }
-
-    switch ($App.Detection.Method) {
-        'Registry' {
-            if ($App.Detection.PSObject.Properties['Path'] -and $App.Detection.Path) {
-                $regPath = $App.Detection.Path
-                if ($regPath -match '\.\.') { return $false }
-                return Test-Path -Path $regPath -ErrorAction SilentlyContinue
-            }
-            return $false
-        }
-        'File' {
-            if (-not ($App.Detection.PSObject.Properties['Path'] -and $App.Detection.Path)) { return $false }
-            $rawPath = $App.Detection.Path
-            if ($rawPath -match '\.\.' -or $rawPath -match '[\\/]\.\.[\\/]?' -or $rawPath -match '^\.\.') { return $false }
-            $expandedPath = [Environment]::ExpandEnvironmentVariables($rawPath)
-            if ($expandedPath -match '\.\.' -or $expandedPath -match '[\\/]\.\.[\\/]?' -or $expandedPath -match '^\.\.') { return $false }
-            if ($expandedPath -notmatch '^[A-Za-z]:[\\/]') { return $false }
-
-            # Security: Normalize path and validate against allowed root directories
-            try {
-                $normalizedPath = [System.IO.Path]::GetFullPath($expandedPath)
-                # Ensure no traversal remains after normalization
-                if ($normalizedPath -match '\.\.') { return $false }
-
-                # Validate against allowed roots (Program Files, AppData, User profile, System drive)
-                $allowedRoots = @(
-                    $env:ProgramFiles,
-                    ${env:ProgramFiles(x86)},
-                    $env:LOCALAPPDATA,
-                    $env:APPDATA,
-                    $env:USERPROFILE,
-                    $env:SystemDrive + '\'
-                ) | Where-Object { $_ }
-
-                $isAllowed = $false
-                foreach ($root in $allowedRoots) {
-                    if ($normalizedPath.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
-                        $isAllowed = $true
-                        break
-                    }
-                }
-                if (-not $isAllowed) {
-                    Write-Verbose "Security: Path outside allowed roots blocked in parallel detection"
-                    return $false
-                }
-            } catch {
-                return $false
-            }
-
-            if ($expandedPath -match '\*') {
-                return (Get-ChildItem -Path $expandedPath -ErrorAction SilentlyContinue).Count -gt 0
-            }
-            return Test-Path -Path $expandedPath -PathType Leaf -ErrorAction SilentlyContinue
-        }
-        'Command' {
-            try {
-                $parts = $App.Detection.Command -split '\s+', 2
-                $exe = $parts[0]; $cmdArgs = if ($parts.Count -gt 1) { $parts[1] } else { $null }
-                $exeBaseName = [System.IO.Path]::GetFileName($exe).ToLower()
-                if ($exeBaseName -notin (Get-DetectionAllowlist)) { return $false }
-                if (-not (Get-Command -Name $exe -ErrorAction SilentlyContinue)) { return $false }
-                $expectedPattern = if ($App.Detection.PSObject.Properties['Arguments']) { $App.Detection.Arguments } else { $null }
-                if ($expectedPattern) {
-                    $output = if ($cmdArgs) { & $exe $cmdArgs 2>&1 | Out-String } else { & $exe 2>&1 | Out-String }
-                    return $output -match [regex]::Escape($expectedPattern)
-                } else {
-                    $proc = if ($cmdArgs) { Start-Process -FilePath $exe -ArgumentList $cmdArgs -Wait -NoNewWindow -PassThru -ErrorAction Stop }
-                            else { Start-Process -FilePath $exe -Wait -NoNewWindow -PassThru -ErrorAction Stop }
-                    return $proc.ExitCode -eq 0
-                }
-            } catch { return $false }
-        }
-        'WindowsFeature' {
-            $f = Get-WindowsOptionalFeature -Online -FeatureName $App.Detection.Feature -ErrorAction SilentlyContinue
-            return $f -and $f.State -eq 'Enabled'
-        }
-        'WindowsCapability' {
-            $c = Get-WindowsCapability -Online | Where-Object { $_.Name -like "*$($App.Detection.Capability)*" } -ErrorAction SilentlyContinue
-            return $c -and $c.State -eq 'Installed'
-        }
-        'StoreApp' {
-            if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
-                try {
-                    $list = Get-CachedWingetList
-                    if ($App.Sources.Store -and $list -match [regex]::Escape($App.Sources.Store) -and $list -notmatch "No installed package") { return $true }
-                    if ($App.Detection.PackageName -and $list -match [regex]::Escape($App.Detection.PackageName)) { return $true }
-                } catch {
-                    Write-Verbose "StoreApp detection failed for $appName : $($_.Exception.Message)"
-                }
-            }
-            return $false
-        }
-        default {
-            if (Get-Command -Name 'winget' -ErrorAction SilentlyContinue) {
-                $list = Get-CachedWingetList
-                if ($list -match [regex]::Escape($appName)) { return $true }
-            }
-            return $false
-        }
-    }
-}
-'@
 
     $currentEnvironment = Get-SystemEnvironmentType
 
@@ -1053,14 +921,12 @@ function Test-AppInstalledParallel {
         $ts = $using:timestamp
         $validateUrl = $using:validateUrlFunction
         $validateSignature = $using:validateSignatureFunction
-        $detectAppFunc = $using:detectAppFunction
         $installTimeoutMs = $using:parallelTimeoutMs
         $fwVersion = $using:frameworkVersion
         $forceOnHashMismatch = $using:wingetForceOnHashMismatch
 
         ${function:Test-ValidDownloadUrl} = [ScriptBlock]::Create($validateUrl)
         ${function:Test-InstallerSignature} = [ScriptBlock]::Create($validateSignature)
-        . ([ScriptBlock]::Create($detectAppFunc))
 
         $appLogFile = Join-Path $parallelLogDir "parallel_${ts}_$($app.Name -replace '[^\w\-]', '_').log"
 
@@ -1111,10 +977,12 @@ function Test-AppInstalledParallel {
             Import-Module $downloadValidationPath -Force -WarningAction SilentlyContinue
         }
 
-        # Shared command-detection allowlist (single source, same file the GUI reads)
-        $detectionAllowlistPath = Join-Path $repRoot 'Modules\DetectionAllowlist.psm1'
-        if (Test-Path $detectionAllowlistPath) {
-            Import-Module $detectionAllowlistPath -Force -WarningAction SilentlyContinue
+        # Hardened parallel detection module. Importing it brings the detection guards
+        # (allowlist, argument sanitizer, registry validation) transitively, and replaces
+        # the former in-runspace here-string copy of Test-AppInstalledParallel.
+        $parallelDetectionPath = Join-Path $repRoot 'Modules\ParallelDetection.psm1'
+        if (Test-Path $parallelDetectionPath) {
+            Import-Module $parallelDetectionPath -Force -WarningAction SilentlyContinue
         }
 
         $result = @{
