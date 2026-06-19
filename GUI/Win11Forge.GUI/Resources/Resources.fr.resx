@@ -2785,7 +2785,7 @@ Cette action est irréversible.</value>
     <value>Exécutez Win11Forge en tant qu'administrateur</value>
   </data>
   <data name="Recovery_TryAgainLater" xml:space="preserve">
-    <value>Le serveur est peut-être temporairement indisponible — réessayez plus tard</value>
+    <value>Le serveur est peut-être temporairement indisponible : réessayez plus tard</value>
   </data>
   <data name="Recovery_UpdatePowerShell" xml:space="preserve">
     <value>Mettez à jour PowerShell vers la dernière version</value>
@@ -2812,7 +2812,7 @@ Cette action est irréversible.</value>
     <value>Échec de l'importation des paramètres</value>
   </data>
   <data name="Settings_ImportSuccess" xml:space="preserve">
-    <value>Paramètres importés avec succès — redémarrage requis</value>
+    <value>Paramètres importés avec succès : redémarrage requis</value>
   </data>
   <data name="Settings_ReducedMotion" xml:space="preserve">
     <value>Réduire les animations</value>
