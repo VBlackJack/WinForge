@@ -27,6 +27,7 @@ internal static class Win11ForgePathNames
     public const string ApplicationsDatabaseFileName = "applications.json";
     public const string ConfigDirectoryName = "Config";
     public const string DetectionAllowlistFileName = "detection-allowlist.json";
+    public const string DetectionRegistryPolicyFileName = "detection-registry-policy.json";
     public const string VersionFileName = "version.json";
     public const string ModulesDirectoryName = "Modules";
     public const string InstallationEngineModuleFileName = "InstallationEngine.psm1";

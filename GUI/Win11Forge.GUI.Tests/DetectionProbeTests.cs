@@ -64,13 +64,15 @@ public class DetectionProbeTests
     [Fact]
     public async Task ProbeAsync_RegistryVersionKeyExists_ReturnsFoundWithVersion()
     {
+        using TestWorkspace workspace = new TestWorkspace();
+        WriteRegistryPolicy(workspace);
         string subKey = $@"Software\Win11Forge\Tests\DetectionProbe\{Guid.NewGuid():N}";
         using RegistryKey key = Registry.CurrentUser.CreateSubKey(subKey);
         key.SetValue("ProductName", "Windows Test", RegistryValueKind.String);
 
         try
         {
-            DetectionProbe probe = new DetectionProbe();
+            DetectionProbe probe = CreateProbeWithRegistryPolicy(workspace);
             DetectionConfiguration configuration = new DetectionConfiguration
             {
                 Method = DetectionMethodStrings.Registry,
@@ -93,13 +95,15 @@ public class DetectionProbeTests
     [Fact]
     public async Task ProbeAsync_RegistryVersionKeyMissing_ReturnsNotFound()
     {
+        using TestWorkspace workspace = new TestWorkspace();
+        WriteRegistryPolicy(workspace);
         string subKey = $@"Software\Win11Forge\Tests\DetectionProbe\{Guid.NewGuid():N}";
         using RegistryKey key = Registry.CurrentUser.CreateSubKey(subKey);
         key.SetValue("ProductName", "Windows Test", RegistryValueKind.String);
 
         try
         {
-            DetectionProbe probe = new DetectionProbe();
+            DetectionProbe probe = CreateProbeWithRegistryPolicy(workspace);
             DetectionConfiguration configuration = new DetectionConfiguration
             {
                 Method = DetectionMethodStrings.Registry,
@@ -115,6 +119,24 @@ public class DetectionProbeTests
         {
             Registry.CurrentUser.DeleteSubKeyTree(subKey, throwOnMissingSubKey: false);
         }
+    }
+
+    [Fact]
+    public async Task ProbeAsync_RegistryBlockedHive_ReturnsNotFound()
+    {
+        using TestWorkspace workspace = new TestWorkspace();
+        WriteRegistryPolicy(workspace);
+        DetectionProbe probe = CreateProbeWithRegistryPolicy(workspace);
+        DetectionConfiguration configuration = new DetectionConfiguration
+        {
+            Method = DetectionMethodStrings.Registry,
+            Path = @"HKLM:\SYSTEM\CurrentControlSet\Services"
+        };
+
+        DetectionProbeResult result = await probe.ProbeAsync(configuration, PathValidationPolicy.AdHoc);
+
+        Assert.Equal(DetectionOutcome.NotFound, result.Outcome);
+        Assert.Equal("Registry path is not allowed for detection.", result.Detail);
     }
 
     [Fact]
@@ -322,6 +344,27 @@ public class DetectionProbeTests
         File.WriteAllText(
             allowlistPath,
             $$"""{ "allowedExecutables": [ {{string.Join(", ", quoted)}} ] }""");
+    }
+
+    private static DetectionProbe CreateProbeWithRegistryPolicy(TestWorkspace workspace)
+    {
+        RepositoryPathService pathService = new RepositoryPathService(
+            workspace.RepositoryRoot, [workspace.UserDataBasePath]);
+        return new DetectionProbe(null, pathService);
+    }
+
+    private static void WriteRegistryPolicy(TestWorkspace workspace)
+    {
+        string configDirectory = Path.Combine(
+            workspace.RepositoryRoot, Win11ForgePathNames.ConfigDirectoryName);
+        Directory.CreateDirectory(configDirectory);
+        string policyPath = Path.Combine(
+            configDirectory, Win11ForgePathNames.DetectionRegistryPolicyFileName);
+
+        // Raw literal: \\\\ written verbatim -> JSON \\\\ -> parsed "\\" -> regex one backslash.
+        File.WriteAllText(policyPath, """
+            { "allowedPatterns": [ "^HK(LM|CU):\\\\SOFTWARE(\\\\|$)" ], "blockedPatterns": [ "\\\\SYSTEM\\\\", "\\\\SAM\\\\" ] }
+            """);
     }
 
     private sealed class StaticDetectionProbe : IDetectionProbe

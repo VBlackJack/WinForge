@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "$schema": "Win11Forge-DetectionRegistryPolicy-v1.0",
+    "description": "Registry-path validation policy for application detection. Shared single source read by the GUI detection probe (C#) and the PowerShell DetectionRegistryGuard. A path is allowed only if it matches an allowedPattern and no blockedPattern.",
+    "version": "1.0.0",
+    "author": "Julien Bombled",
+    "lastUpdated": "2026-06-19"
+  },
+  "allowedPatterns": [
+    "^HK(LM|CU):\\\\SOFTWARE(\\\\|$)",
+    "^HK(LM|CU):\\\\SOFTWARE\\\\WOW6432Node(\\\\|$)",
+    "^HKLM:\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall(\\\\|$)",
+    "^HKCU:\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall(\\\\|$)",
+    "^HKLM:\\\\SOFTWARE\\\\WOW6432Node\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall(\\\\|$)"
+  ],
+  "blockedPatterns": [
+    "\\\\SAM\\\\",
+    "\\\\SECURITY\\\\",
+    "\\\\SYSTEM\\\\",
+    "\\\\\\.DEFAULT\\\\",
+    "RunOnce",
+    "Run$"
+  ]
+}

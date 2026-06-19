@@ -72,6 +72,17 @@ public sealed class DetectionProbe : IDetectionProbe
     /// </summary>
     private const string AllowedExecutablesPropertyName = "allowedExecutables";
 
+    /// <summary>
+    /// Names of the JSON array properties holding the registry-path validation policy.
+    /// </summary>
+    private const string AllowedRegistryPatternsPropertyName = "allowedPatterns";
+    private const string BlockedRegistryPatternsPropertyName = "blockedPatterns";
+
+    /// <summary>
+    /// Maximum registry path length accepted (guards against DoS via very deep paths).
+    /// </summary>
+    private const int MaxRegistryPathLength = 512;
+
     private readonly ILoggingService _logger;
 
     /// <summary>
@@ -82,6 +93,15 @@ public sealed class DetectionProbe : IDetectionProbe
     private readonly HashSet<string> _allowedDetectionExecutables;
 
     /// <summary>
+    /// Registry-path validation patterns, read from the same Config file as the
+    /// PowerShell stack so the two cannot drift. Loaded fail-closed: any load failure
+    /// yields an empty allow-list, which denies every Registry detection rather than
+    /// allowing all (never fails open on an empty block-list).
+    /// </summary>
+    private readonly IReadOnlyList<Regex> _allowedRegistryPatterns;
+    private readonly IReadOnlyList<Regex> _blockedRegistryPatterns;
+
+    /// <summary>
     /// Initializes a new instance of the detection probe.
     /// </summary>
     public DetectionProbe(
@@ -90,6 +110,7 @@ public sealed class DetectionProbe : IDetectionProbe
     {
         _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<DetectionProbe>();
         _allowedDetectionExecutables = LoadAllowedDetectionExecutables(repositoryPathService);
+        (_allowedRegistryPatterns, _blockedRegistryPatterns) = LoadRegistryPolicy(repositoryPathService);
     }
 
     /// <summary>
@@ -148,6 +169,126 @@ public sealed class DetectionProbe : IDetectionProbe
         return allowed;
     }
 
+    /// <summary>
+    /// Loads the registry-path validation policy from the shared configuration file.
+    /// Fails closed: a missing, unreadable, or malformed file (or one with no usable
+    /// allowed patterns) produces an empty allow-list, denying every Registry
+    /// detection rather than permitting arbitrary registry reads.
+    /// </summary>
+    private (IReadOnlyList<Regex> Allowed, IReadOnlyList<Regex> Blocked) LoadRegistryPolicy(
+        IRepositoryPathService? repositoryPathService)
+    {
+        List<Regex> allowed = new List<Regex>();
+        List<Regex> blocked = new List<Regex>();
+
+        if (repositoryPathService is null)
+        {
+            _logger.LogWarning(
+                "Registry detection policy unavailable (no repository path service); Registry detection is disabled.");
+            return (allowed, blocked);
+        }
+
+        string policyPath = repositoryPathService.GetPath(
+            Win11ForgePathNames.ConfigDirectoryName,
+            Win11ForgePathNames.DetectionRegistryPolicyFileName);
+
+        if (!File.Exists(policyPath))
+        {
+            _logger.LogError(
+                $"Registry detection policy not found at '{policyPath}'; Registry detection is disabled.");
+            return (allowed, blocked);
+        }
+
+        try
+        {
+            string json = File.ReadAllText(policyPath);
+            using JsonDocument document = JsonDocument.Parse(json);
+            allowed = CompileRegistryPatterns(document.RootElement, AllowedRegistryPatternsPropertyName);
+            blocked = CompileRegistryPatterns(document.RootElement, BlockedRegistryPatternsPropertyName);
+
+            if (allowed.Count == 0)
+            {
+                _logger.LogError(
+                    $"Registry detection policy '{policyPath}' has no usable allowed patterns; Registry detection is disabled.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Failed to load registry detection policy; Registry detection is disabled.", ex);
+            return (new List<Regex>(), new List<Regex>());
+        }
+
+        return (allowed, blocked);
+    }
+
+    /// <summary>
+    /// Compiles the regex patterns from a named JSON array property. Patterns are
+    /// matched case-insensitively, mirroring the PowerShell -match operator.
+    /// </summary>
+    private static List<Regex> CompileRegistryPatterns(JsonElement root, string propertyName)
+    {
+        List<Regex> patterns = new List<Regex>();
+
+        if (root.TryGetProperty(propertyName, out JsonElement array) &&
+            array.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement entry in array.EnumerateArray())
+            {
+                string? value = entry.GetString();
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    patterns.Add(new Regex(
+                        value,
+                        RegexOptions.IgnoreCase | RegexOptions.Compiled,
+                        RegexTimeout));
+                }
+            }
+        }
+
+        return patterns;
+    }
+
+    /// <summary>
+    /// Validates a registry path against the shared allow/block policy. A path is
+    /// allowed only when it matches an allowed pattern and no blocked pattern. With
+    /// an empty allow-list (fail-closed load) every path is denied.
+    /// </summary>
+    private bool IsRegistryPathAllowed(string path)
+    {
+        string normalizedPath = path.Replace('/', '\\');
+
+        try
+        {
+            foreach (Regex blocked in _blockedRegistryPatterns)
+            {
+                if (blocked.IsMatch(normalizedPath))
+                {
+                    return false;
+                }
+            }
+
+            if (normalizedPath.Length > MaxRegistryPathLength)
+            {
+                return false;
+            }
+
+            foreach (Regex allowed in _allowedRegistryPatterns)
+            {
+                if (allowed.IsMatch(normalizedPath))
+                {
+                    return true;
+                }
+            }
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            // Fail closed on a pathological path that times out a pattern match.
+            return false;
+        }
+
+        return false;
+    }
+
     /// <inheritdoc/>
     public async Task<DetectionProbeResult> ProbeAsync(
         DetectionConfiguration config,
@@ -191,6 +332,15 @@ public sealed class DetectionProbe : IDetectionProbe
 
         try
         {
+            // Security: validate the path against the shared registry policy before
+            // opening any key (mirrors the PowerShell DetectionRegistryGuard, same file).
+            if (!IsRegistryPathAllowed(config.Path))
+            {
+                _logger.LogWarning(
+                    $"Registry detection blocked: '{config.Path}' is not allowed by the registry policy.");
+                return DetectionProbeResult.NotFound("Registry path is not allowed for detection.");
+            }
+
             (RegistryKey? hive, string? subKey) = ParseRegistryPath(config.Path);
             if (hive == null || subKey == null)
             {
@@ -262,7 +412,8 @@ public sealed class DetectionProbe : IDetectionProbe
     /// </summary>
     private static (RegistryKey? Hive, string? SubKey) ParseRegistryPath(string path)
     {
-        string normalizedPath = path.Replace("\\", "\\").TrimEnd('\\');
+        // XM1: real separator normalization (the previous Replace("\\","\\") was a no-op).
+        string normalizedPath = path.Replace('/', '\\').TrimEnd('\\');
 
         RegistryKey? hive = null;
         string? subKey = null;
