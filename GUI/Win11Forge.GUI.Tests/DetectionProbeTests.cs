@@ -240,6 +240,90 @@ public class DetectionProbeTests
         Assert.Equal(DetectionMethodStrings.File, probe.CapturedConfig.Method);
     }
 
+    [Fact]
+    public async Task ProbeAsync_CommandExecutableNotInAllowlist_ReturnsNotFound()
+    {
+        using TestWorkspace workspace = new TestWorkspace();
+        WriteDetectionAllowlist(workspace, "java", "java.exe");
+        DetectionProbe probe = CreateProbeWithAllowlist(workspace);
+        DetectionConfiguration configuration = new DetectionConfiguration
+        {
+            Method = DetectionMethodStrings.Command,
+            Command = "cmd /c echo WINFORGEPROBE",
+            Arguments = "WINFORGEPROBE"
+        };
+
+        DetectionProbeResult result = await probe.ProbeAsync(configuration, PathValidationPolicy.AdHoc);
+
+        Assert.Equal(DetectionOutcome.NotFound, result.Outcome);
+        Assert.Equal("Executable is not allowed for command detection.", result.Detail);
+    }
+
+    [Fact]
+    public async Task ProbeAsync_CommandWithMissingAllowlistFile_DeniesAll()
+    {
+        using TestWorkspace workspace = new TestWorkspace();
+        // No allowlist file is written: the probe must fail closed and deny even an
+        // otherwise-legitimate command rather than allowing everything.
+        DetectionProbe probe = CreateProbeWithAllowlist(workspace);
+        DetectionConfiguration configuration = new DetectionConfiguration
+        {
+            Method = DetectionMethodStrings.Command,
+            Command = "cmd /c echo WINFORGEPROBE",
+            Arguments = "WINFORGEPROBE"
+        };
+
+        DetectionProbeResult result = await probe.ProbeAsync(configuration, PathValidationPolicy.AdHoc);
+
+        Assert.Equal(DetectionOutcome.NotFound, result.Outcome);
+        Assert.Equal("Executable is not allowed for command detection.", result.Detail);
+    }
+
+    [Fact]
+    public async Task ProbeAsync_CommandExecutableInAllowlist_ReturnsFound()
+    {
+        using TestWorkspace workspace = new TestWorkspace();
+        WriteDetectionAllowlist(workspace, "cmd", "cmd.exe");
+        DetectionProbe probe = CreateProbeWithAllowlist(workspace);
+        DetectionConfiguration configuration = new DetectionConfiguration
+        {
+            Method = DetectionMethodStrings.Command,
+            Command = "cmd /c echo WINFORGEPROBE",
+            Arguments = "WINFORGEPROBE"
+        };
+
+        DetectionProbeResult result = await probe.ProbeAsync(configuration, PathValidationPolicy.AdHoc);
+
+        Assert.Equal(DetectionOutcome.Found, result.Outcome);
+        Assert.Equal(DetectionSource.Command, result.Source);
+    }
+
+    private static DetectionProbe CreateProbeWithAllowlist(TestWorkspace workspace)
+    {
+        RepositoryPathService pathService = new RepositoryPathService(
+            workspace.RepositoryRoot, [workspace.UserDataBasePath]);
+        return new DetectionProbe(null, pathService);
+    }
+
+    private static void WriteDetectionAllowlist(TestWorkspace workspace, params string[] executables)
+    {
+        string configDirectory = Path.Combine(
+            workspace.RepositoryRoot, Win11ForgePathNames.ConfigDirectoryName);
+        Directory.CreateDirectory(configDirectory);
+        string allowlistPath = Path.Combine(
+            configDirectory, Win11ForgePathNames.DetectionAllowlistFileName);
+
+        string[] quoted = new string[executables.Length];
+        for (int index = 0; index < executables.Length; index++)
+        {
+            quoted[index] = $"\"{executables[index]}\"";
+        }
+
+        File.WriteAllText(
+            allowlistPath,
+            $$"""{ "allowedExecutables": [ {{string.Join(", ", quoted)}} ] }""");
+    }
+
     private sealed class StaticDetectionProbe : IDetectionProbe
     {
         private readonly DetectionProbeResult _result;
