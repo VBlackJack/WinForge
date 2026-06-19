@@ -1,6 +1,6 @@
 # Win11Forge - Git Ignore
 
-# Claude Code (local settings)
+# Local tool settings
 .claude/
 
 # Distribution builds
@@ -106,5 +106,5 @@ Reports/
 # Audit process snapshots
 Tools/AuditReports/
 
-# Claude Code project instructions
+# Local project instructions
 CLAUDE.md

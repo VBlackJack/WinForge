@@ -1,7 +1,7 @@
-# Win11Forge — UI flat-text consolidation + WPF-UI 4.3 disabled-state fix
+# Win11Forge: UI flat-text consolidation + WPF-UI 4.3 disabled-state fix
 
 **Status:** §2.6 (flat-text consolidation) **REVERSED** on 2026-05-10 after visual review of
-the v2026051001 release — see §7. All other sections (Apps view fixes, hover contrast,
+the v2026051001 release: see §7. All other sections (Apps view fixes, hover contrast,
 WPF-UI 4.3 disabled-state fork, ThemeService bridge) remain in effect.
 **Author:** Julien Bombled.
 **Date:** 2026-05-10 (initial), 2026-05-10 (§7 follow-up).
@@ -51,7 +51,7 @@ root cause.
 
 - WPF-UI 4.3's `DropDownButton.Flyout` property is typed `ContextMenu`, not an
   arbitrary content host. The previous code on `main` placed a `ui:Flyout`
-  inside `<ui:DropDownButton.Flyout>` — XAML accepts the markup at parse time
+  inside `<ui:DropDownButton.Flyout>`: XAML accepts the markup at parse time
   but the runtime silently ignores it, so the button never opened anything.
 - A subsequent attempt switched to `ui:Button` + `ContextMenu` + `Click`
   handler. The `ContextMenu` lives in its own NameScope, so the
@@ -73,11 +73,11 @@ NameScope binding gymnastics are needed. The custom `MenuItem` template in
 additional work.
 
 **Files.**
-- `Views/AppsView.xaml` (lines around 466 — `ui:Button` + `ContextMenu` removed,
+- `Views/AppsView.xaml` (lines around 466: `ui:Button` + `ContextMenu` removed,
   replaced with `ui:DropDownButton` + flyout `ContextMenu`)
 - `Views/AppsView.xaml.cs` (`ColumnVisibilityButton_Click` handler removed)
 - `ViewModels/Apps/AppsViewModel.Filters.cs`
-  (`_isColumnVisibilityPopupOpen` `[ObservableProperty]` removed — never read
+  (`_isColumnVisibilityPopupOpen` `[ObservableProperty]` removed: never read
   anywhere)
 
 ### 2.2 Hover background failed WCAG AA contrast on Secondary / Transparent
@@ -89,14 +89,14 @@ luminance of the foreground text (purple-on-mid-gray). Estimated contrast ratio
 
 **Root cause.** Our App.xaml `Style.Triggers` mapped `MouseOverBackground` to
 `HighlightBrush` for both `Secondary` and `Transparent`. Dracula's `HighlightBrush`
-is `#4A4E66` — a medium gray-purple. Combined with the foreground brushes
+is `#4A4E66`: a medium gray-purple. Combined with the foreground brushes
 `ThemeAdaptiveAccentBrush` (`#C4A5FF`, Secondary text) or
 `TextFillColorPrimaryBrush` (`#F7F7F3`, Transparent text), the text/background
 luminance gap was insufficient.
 
 **Resolution.** Re-target both `Secondary` and `Transparent`
 `MouseOverBackground` and `PressedBackground` setters to `SurfaceBrush`
-(Dracula `#1B1C25` — very dark, near-black). Resulting contrast ratios:
+(Dracula `#1B1C25`: very dark, near-black). Resulting contrast ratios:
 ~5.6:1 against the purple Secondary text and ~6:1 against the light Transparent
 text, both clearing AA.
 
@@ -140,7 +140,7 @@ of any disabled `ui:Button` returned the Light Fluent value, and a probe
 brush set to `#FF0000` at `<UserControl.Resources>` did not turn the button
 red. The conclusion is that this specific `DynamicResource` lookup, originating
 from a `TargetName=`-targeted setter inside a `ControlTemplate.Triggers`, takes
-a path that bypasses the visual/logical tree — at least for our combination of
+a path that bypasses the visual/logical tree: at least for our combination of
 WPF-UI 4.3 + .NET 10 + the theme dictionaries our `ApplicationThemeManager.Apply`
 chain produces.
 
@@ -163,20 +163,20 @@ Background then stays at the Button's `TemplateBinding Background` (which our
 `Appearance` setters drive correctly), and the visible button greys out cleanly
 without the Light Fluent block.
 
-The Codex review pass caught two issues with our first draft of the fork (a
+A second review pass caught two issues with our first draft of the fork (a
 minimal template that broke `Icon`-only buttons in `MainWindow.xaml`'s
-`NavigationView` and dropped `RecognizesAccessKey`) — the verbatim fork
+`NavigationView` and dropped `RecognizesAccessKey`): the verbatim fork
 corrected both.
 
 **Files.**
-- `App.xaml` (implicit `ui:Button` style — full template fork; the only
+- `App.xaml` (implicit `ui:Button` style: full template fork; the only
   semantic change is the `IsEnabled=False` trigger)
 
 ### 2.4 `_selectedCount` did not invalidate `UninstallSelectedCommand`
 
 **Symptom.** Selecting an item in the Apps `DataGrid` correctly enabled the
 Install Selected button (its background flipped to themed purple), but the
-Uninstall Selected button kept rendering in its disabled state — even though
+Uninstall Selected button kept rendering in its disabled state: even though
 `CanUninstallSelected => SelectedCount > 0 && !IsInstalling && !IsUninstalling`
 should have returned `true`.
 
@@ -204,7 +204,7 @@ private int _selectedCount;
 ```
 
 This is the kind of bug only reproducible by clicking through state, easy to
-miss in a code review. Codex's diagnostic ("source `ButtonBase` shows
+miss in a code review. The review diagnostic ("source `ButtonBase` shows
 `IsEnabledCore = base.IsEnabledCore && CanExecute`, so `IsEnabled="True"`
 inline cannot win against a stale `CanExecute=false`") was the lead that
 sent us looking at the VM rather than the XAML.
@@ -236,7 +236,7 @@ now sit at row center within ~3 px.
 
 **Symptom.** Pages mixed `Primary` (filled accent), `Secondary` (subtle filled),
 and `Transparent` (flat text) appearances inconsistently. The user wanted a
-single flat-text presentation everywhere — destructive intent communicated by
+single flat-text presentation everywhere: destructive intent communicated by
 icons + confirm dialogs rather than colored chrome.
 
 **Resolution.** Convert every `Appearance="Primary|Secondary|Danger"` and
@@ -274,8 +274,8 @@ brushes:
 `PaletteColorResourceMap` gained `Palette*Color` entries
 (`PaletteRedColor`, `PaletteGreenColor`, `PaletteOrangeColor`,
 `PaletteLightBlueColor`) so the upstream `Appearance="Danger|Success|Caution|`
-`Info"` triggers — which wrap these `Color`s inside a `SolidColorBrush`
-constructor at template eval time — pick up Dracula values rather than
+`Info"` triggers: which wrap these `Color`s inside a `SolidColorBrush`
+constructor at template eval time: pick up Dracula values rather than
 WPF-UI's Fluent palette. This is dead code in current usage (no instance still
 uses those appearances after §2.6), but the mappings remain for forward
 compatibility if the appearances are ever reintroduced.
@@ -288,18 +288,17 @@ compatibility if the appearances are ever reintroduced.
   WPF-UI 4.3, this is the deliberate Strategy 1 decision recorded in
   `THEME-PORT.md`).
 - It is not a re-theming of Dracula colors (the seven Dracula palettes are
-  unchanged — only mappings to WPF-UI consumed brushes are extended).
+  unchanged: only mappings to WPF-UI consumed brushes are extended).
 - It does not change the public XAML namespace or break any external
   consumer of the `PrimaryButton` / `SecondaryButton` /
-  `DestructiveSolidButton` keyed styles — they still resolve, they're just
+  `DestructiveSolidButton` keyed styles: they still resolve, they're just
   no longer referenced from our own views.
 
 ---
 
 ## 5. Verification
 
-Manual test matrix exercised on `claude/zealous-bardeen-d31c33` with the
-DraculaPro theme active:
+Manual test matrix exercised with the DraculaPro theme active:
 
 | Case | Expected | Observed |
 |---|---|---|
@@ -334,15 +333,15 @@ Pixel sampling on disabled action buttons returns Card-bg or near-Card values
   https://github.com/lepoco/wpfui/blob/4.3.0/src/Wpf.Ui/Controls/Button/Button.xaml
 - WPF DependencyProperty value precedence:
   https://learn.microsoft.com/en-us/dotnet/desktop/wpf/advanced/dependency-property-value-precedence
-- `THEME-PORT.md` — palette + service ADR this work extends.
-- `Win11Forge-UX-Audit-2026-05.md` — orthogonal UX audit (none of its
+- `THEME-PORT.md`: palette + service ADR this work extends.
+- `Win11Forge-UX-Audit-2026-05.md`: orthogonal UX audit (none of its
   findings drove this work).
 
 ---
 
-## 7. 2026-05-10 follow-up: §2.6 reversed — visual hierarchy restored
+## 7. 2026-05-10 follow-up: §2.6 reversed: visual hierarchy restored
 
-**Status:** done in commit `27b898d` on branch `claude/restore-button-appearances`.
+**Status:** done in commit `27b898d`.
 
 ### 7.1 Why the reversal
 
@@ -350,7 +349,7 @@ Pixel sampling on disabled action buttons returns Card-bg or near-Card values
 everywhere. After §2.6 landed via PR #94 and a release `v2026051001` was built
 and visually inspected on the actual Dracula dark theme, the result did not
 match the user's actual aesthetic preference. The reported feedback after seeing
-the result in-app was simply "all buttons became ugly again" — the lack of
+the result in-app was simply "all buttons became ugly again": the lack of
 hierarchy made every action toolbar look like a row of plain text labels with
 no clear primary CTA, no visual cue distinguishing constructive from destructive,
 and the hero CTAs on Dashboard and Prerequisites lost their dominance over
@@ -359,8 +358,7 @@ surrounding navigation.
 The reversal restores the pre-PR #94 `Appearance` values verbatim. It does
 **not** restore the pre-PR #94 inline `Background` / `Foreground` /
 `Padding` / `Height` / `FontSize` overrides on the Dashboard hero CTAs (those
-hardcoded an orange `AccentOrangeTextBrush` over white at WCAG 1.73:1 —
-documented in the consolidated audit as a separate finding C2-bis). The Hero
+hardcoded an orange `AccentOrangeTextBrush` over white at WCAG 1.73:1: documented in the consolidated audit as a separate finding C2-bis). The Hero
 CTAs in the restored state use `Appearance="Primary"` only, picking up the
 theme accent via the App.xaml implicit `ui:Button` `Style.Triggers`.
 
@@ -387,7 +385,7 @@ Full file list: `Controls/ConfirmDialog`, `Controls/EmptyStateControl`,
 
 ### 7.3 What was kept from PR #94
 
-All architecture-side improvements remain in place — the reversal is strictly
+All architecture-side improvements remain in place: the reversal is strictly
 a view-side `Appearance` attribute restoration:
 
 - §2.1 Apps view Column Visibility menu (`ui:DropDownButton` + `ContextMenu` flyout pattern).
@@ -399,14 +397,14 @@ a view-side `Appearance` attribute restoration:
 - §2.4 `_selectedCount` `[NotifyCanExecuteChangedFor(nameof(UninstallSelectedCommand))]`.
 - §2.5 DataGrid app-name column vertical centering (`StackPanel VerticalAlignment="Center"`).
 - §3 ThemeService `PaletteBrushResourceMap` extensions (~22 button/checkbox state keys)
-  and `Palette*Color` entries — `Danger` / `Success` / `Caution` / `Info` triggers
+  and `Palette*Color` entries: `Danger` / `Success` / `Caution` / `Info` triggers
   again pick up Dracula values now that those appearances are in active use again.
 
 The keyed styles in App.xaml (`HeroPrimaryButton` / `WarningPrimaryButton` /
 `PrimaryButton` / `SecondaryButton` / `OutlinedButton` / `DestructiveButton` /
 `DestructiveSolidButton` / `IconButton` / `StatsCardButton` / `QuickActionButton` /
 `FavoriteIconButton`) remain defined but are still **not referenced** from
-instance `Style="..."` bindings — the views use `Appearance="..."` directly,
+instance `Style="..."` bindings: the views use `Appearance="..."` directly,
 which lets the implicit `ui:Button` `Style.Triggers` in App.xaml drive the
 theme-adaptive Background / BorderBrush / Foreground from
 `ThemeAdaptiveAccentBrush` / `BadgeTextBrush` / etc. These keyed styles are
@@ -423,7 +421,7 @@ Runtime test on `v2026051002` build with the active Dracula theme:
 |---|---|---|
 | Apps view, 0 selected | Install Selected disabled (opacity 0.45), Uninstall outlined | ✓ |
 | Apps view, 1 installable selected | Install Selected accent fill, Uninstall outlined | ✓ |
-| Apps view, Save Profile | Outlined accent (border + text) — matches user reference screenshot | ✓ |
+| Apps view, Save Profile | Outlined accent (border + text): matches user reference screenshot | ✓ |
 | Apps view, hover Select All | Dark surface hover, light text readable | ✓ (kept from §2.2) |
 | Apps view, Column Visibility menu | Menu opens below button, 6 toggle items + reset | ✓ (kept from §2.1) |
 | Apps view, DataGrid row | Title + description vertically centered | ✓ (kept from §2.5) |
@@ -441,7 +439,7 @@ Runtime test on `v2026051002` build with the active Dracula theme:
 | Disabled state, any theme | `ContentBorder.Opacity=0.45` (no white Fluent block) | ✓ (kept from §2.3) |
 
 Pixel sampling on disabled action buttons returns the active button background
-at 0.45 opacity over the card — no `#F4F4F4` Light Fluent leakage.
+at 0.45 opacity over the card: no `#F4F4F4` Light Fluent leakage.
 
 ### 7.5 Lessons learned
 
@@ -450,5 +448,5 @@ verification step. The reversal cycle ate roughly two extra sessions
 (audit-then-revert) that a 30-second runtime sanity check on a release build
 before merging PR #94 would have prevented. For future visual changes that
 touch the entire app surface, run `Build-Release.ps1` and hand-test a release
-ZIP before merging the PR — even when the code change is mechanical and the
+ZIP before merging the PR: even when the code change is mechanical and the
 intent is documented in an ADR.
