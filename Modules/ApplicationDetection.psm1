@@ -676,7 +676,7 @@ function Test-ApplicationInstalled {
                         $expectedPattern = if ($Application.Detection.PSObject.Properties['Arguments']) { $Application.Detection.Arguments } else { $null }
 
                         # Security: Split arguments into array for safe execution (prevents shell interpretation)
-                        $argArray = if ($arguments) { @($arguments -split '\s+' | Where-Object { $_ -ne '' }) } else { @() }
+                        $argArray = @(ConvertTo-DetectionArgumentArray -Arguments $arguments)
 
                         if ($expectedPattern) {
                             # Run command and capture output for pattern matching

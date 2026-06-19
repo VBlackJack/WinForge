@@ -46,7 +46,8 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
-        'Test-DetectionArgumentDangerous'
+        'Test-DetectionArgumentDangerous',
+        'ConvertTo-DetectionArgumentArray'
     )
 
     # Cmdlets to export from this module
