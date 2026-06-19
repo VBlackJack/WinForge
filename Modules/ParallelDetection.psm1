@@ -40,6 +40,14 @@ if (-not (Get-Command -Name Get-DetectionAllowlist -ErrorAction SilentlyContinue
     }
 }
 
+# Import DetectionArgumentGuard: the shared command-detection argument sanitizer (single source).
+$script:DetectionArgumentGuardPath = Join-Path $script:ModuleRoot 'DetectionArgumentGuard.psm1'
+if (-not (Get-Command -Name Test-DetectionArgumentDangerous -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DetectionArgumentGuardPath) {
+        Import-Module -Name $script:DetectionArgumentGuardPath -Force
+    }
+}
+
 # === DETECTION FUNCTIONS ===
 
 function Test-AppInstalledParallel {
@@ -236,6 +244,12 @@ function Test-CommandDetection {
         # Security: Validate executable is whitelisted
         $exeBaseName = [System.IO.Path]::GetFileName($exe).ToLower()
         if ($exeBaseName -notin (Get-DetectionAllowlist)) {
+            return $false
+        }
+
+        # Security: block dangerous argument patterns (command injection), via the
+        # same shared guard the sequential gold path uses.
+        if (Test-DetectionArgumentDangerous -Arguments $cmdArgs) {
             return $false
         }
 
