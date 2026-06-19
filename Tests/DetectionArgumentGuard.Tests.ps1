@@ -54,4 +54,30 @@ Describe 'DetectionArgumentGuard - Test-DetectionArgumentDangerous' {
             Test-DetectionArgumentDangerous -Arguments "a`tb".Replace("`t", [char]1) | Should -BeTrue
         }
     }
+
+    Context 'ConvertTo-DetectionArgumentArray' {
+        It 'Returns an empty array for empty input' {
+            @(ConvertTo-DetectionArgumentArray -Arguments '').Count | Should -Be 0
+        }
+
+        It 'Returns a single element for one argument' {
+            $result = @(ConvertTo-DetectionArgumentArray -Arguments '--version')
+            $result.Count | Should -Be 1
+            $result[0] | Should -Be '--version'
+        }
+
+        It 'Splits multiple arguments into distinct elements (safe execution)' {
+            $result = @(ConvertTo-DetectionArgumentArray -Arguments 'rev-parse HEAD')
+            $result.Count | Should -Be 2
+            $result[0] | Should -Be 'rev-parse'
+            $result[1] | Should -Be 'HEAD'
+        }
+
+        It 'Collapses repeated whitespace and trims empties' {
+            $result = @(ConvertTo-DetectionArgumentArray -Arguments '  a   b  ')
+            $result.Count | Should -Be 2
+            $result[0] | Should -Be 'a'
+            $result[1] | Should -Be 'b'
+        }
+    }
 }

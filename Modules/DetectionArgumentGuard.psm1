@@ -48,4 +48,35 @@ function Test-DetectionArgumentDangerous {
     return [bool]($Arguments -match '[;&|`$\(\)\r\n]|>>|<<|[\x00-\x1f]')
 }
 
-Export-ModuleMember -Function Test-DetectionArgumentDangerous
+function ConvertTo-DetectionArgumentArray {
+    <#
+    .SYNOPSIS
+        Splits a command-detection argument string into an argument array.
+
+    .DESCRIPTION
+        Single source of the argument-splitting rule used by every Command detection
+        path. Returning an array lets callers splat with @args / -ArgumentList so the
+        shell never re-interprets the arguments (each token is a distinct argument).
+
+    .PARAMETER Arguments
+        The argument string parsed from a Detection.Command entry.
+
+    .OUTPUTS
+        [string[]] The arguments split on whitespace, or an empty array for empty input.
+    #>
+    [CmdletBinding()]
+    [OutputType([string[]])]
+    param(
+        [string]$Arguments
+    )
+
+    # Callers wrap the result in @(...) so a single argument is treated as a one-element
+    # array (PowerShell unwraps single-element arrays returned from a function).
+    if ([string]::IsNullOrEmpty($Arguments)) {
+        return @()
+    }
+
+    return @($Arguments -split '\s+' | Where-Object { $_ -ne '' })
+}
+
+Export-ModuleMember -Function Test-DetectionArgumentDangerous, ConvertTo-DetectionArgumentArray

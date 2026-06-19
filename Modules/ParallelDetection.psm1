@@ -261,16 +261,20 @@ function Test-CommandDetection {
         # Check with expected pattern if provided
         $expectedPattern = if ($Detection.PSObject.Properties['Arguments']) { $Detection.Arguments } else { $null }
 
+        # Security: split arguments into an array for safe execution (no shell
+        # re-interpretation), matching the sequential gold path.
+        $argArray = @(ConvertTo-DetectionArgumentArray -Arguments $cmdArgs)
+
         if ($expectedPattern) {
-            $output = if ($cmdArgs) {
-                & $exe $cmdArgs 2>&1 | Out-String
+            $output = if ($argArray.Count -gt 0) {
+                & $exe @argArray 2>&1 | Out-String
             } else {
                 & $exe 2>&1 | Out-String
             }
             return $output -match [regex]::Escape($expectedPattern)
         } else {
-            $proc = if ($cmdArgs) {
-                Start-Process -FilePath $exe -ArgumentList $cmdArgs -Wait -NoNewWindow -PassThru -ErrorAction Stop
+            $proc = if ($argArray.Count -gt 0) {
+                Start-Process -FilePath $exe -ArgumentList $argArray -Wait -NoNewWindow -PassThru -ErrorAction Stop
             } else {
                 Start-Process -FilePath $exe -Wait -NoNewWindow -PassThru -ErrorAction Stop
             }
