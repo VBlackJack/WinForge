@@ -242,6 +242,16 @@ Describe 'ParallelDetection Module' {
             $result = Test-CommandDetection -Detection $detection
             $result | Should -BeOfType [bool]
         }
+
+        It 'Should return false for a whitelisted command with dangerous arguments (I4)' {
+            $detection = [PSCustomObject]@{
+                Method = 'Command'
+                Command = 'git ; calc'
+            }
+            # git is whitelisted, but the injected ';' must be blocked before execution.
+            $result = Test-CommandDetection -Detection $detection
+            $result | Should -BeFalse
+        }
     }
 
     Context 'Test-WindowsFeatureDetection' {

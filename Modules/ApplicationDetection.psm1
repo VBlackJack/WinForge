@@ -89,6 +89,14 @@ if (-not (Get-Command -Name Get-DetectionAllowlist -ErrorAction SilentlyContinue
     }
 }
 
+# Import DetectionArgumentGuard: the shared command-detection argument sanitizer (single source).
+$script:DetectionArgumentGuardPath = Join-Path $script:ModuleRoot 'DetectionArgumentGuard.psm1'
+if (-not (Get-Command -Name Test-DetectionArgumentDangerous -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DetectionArgumentGuardPath) {
+        Import-Module -Name $script:DetectionArgumentGuardPath -Force
+    }
+}
+
 # === REGISTRY-FIRST OPTIMIZATION ===
 
 # Script-level cache for registry apps (populated once per session)
@@ -658,7 +666,7 @@ function Test-ApplicationInstalled {
                         $detected = $false
                     }
                     # Security: Sanitize arguments - block dangerous patterns including newlines (command injection)
-                    elseif ($arguments -and ($arguments -match '[;&|`$\(\)\r\n]|>>|<<|[\x00-\x1f]')) {
+                    elseif (Test-DetectionArgumentDangerous -Arguments $arguments) {
                         Write-Status -Message (Get-LocalizedString -Key 'detect.security.dangerous_arguments' -Parameters @{ Executable = $executable }) -Level 'Warning'
                         $detected = $false
                     }
