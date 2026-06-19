@@ -97,6 +97,14 @@ if (-not (Get-Command -Name Test-DetectionArgumentDangerous -ErrorAction Silentl
     }
 }
 
+# Import DetectionRegistryGuard: the shared registry-path validation (single source).
+$script:DetectionRegistryGuardPath = Join-Path $script:ModuleRoot 'DetectionRegistryGuard.psm1'
+if (-not (Get-Command -Name Test-RegistryPathAllowed -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DetectionRegistryGuardPath) {
+        Import-Module -Name $script:DetectionRegistryGuardPath -Force
+    }
+}
+
 # === REGISTRY-FIRST OPTIMIZATION ===
 
 # Script-level cache for registry apps (populated once per session)
@@ -246,73 +254,6 @@ function Clear-RegistryAppsCache {
 }
 
 # === HELPER FUNCTIONS ===
-
-# Security: Whitelist of allowed registry path patterns
-# Only registry paths matching these patterns are allowed for detection
-$script:AllowedRegistryPatterns = @(
-    '^HK(LM|CU):\\SOFTWARE(\\|$)',                        # Standard software keys (with or without trailing path)
-    '^HK(LM|CU):\\SOFTWARE\\WOW6432Node(\\|$)',           # 32-bit software keys
-    '^HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall(\\|$)',  # Uninstall keys
-    '^HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall(\\|$)',
-    '^HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall(\\|$)'
-)
-
-# Security: Blocked registry paths (sensitive hives)
-$script:BlockedRegistryPatterns = @(
-    '\\SAM\\',           # Security Account Manager
-    '\\SECURITY\\',      # Security settings
-    '\\SYSTEM\\',        # System configuration (except specific subkeys)
-    '\\\.DEFAULT\\',     # Default user profile
-    'RunOnce',           # Startup entries (potential persistence)
-    'Run$'               # Startup entries
-)
-
-function Test-RegistryPathAllowed {
-    <#
-    .SYNOPSIS
-        Validates that a registry path is allowed for detection.
-    .DESCRIPTION
-        Checks registry path against whitelist and blocklist patterns.
-        Returns $false for sensitive or disallowed paths.
-    .PARAMETER Path
-        The registry path to validate.
-    .OUTPUTS
-        Boolean indicating if the path is allowed.
-    #>
-    [CmdletBinding()]
-    [OutputType([bool])]
-    param(
-        [Parameter(Mandatory)]
-        [string]$Path
-    )
-
-    # Normalize path separators
-    $normalizedPath = $Path -replace '/', '\'
-
-    # Check against blocked patterns first
-    foreach ($blocked in $script:BlockedRegistryPatterns) {
-        if ($normalizedPath -match $blocked) {
-            Write-Verbose "Registry path blocked (sensitive): $Path"
-            return $false
-        }
-    }
-
-    # Check path length (prevent DoS via deep paths)
-    if ($normalizedPath.Length -gt 512) {
-        Write-Verbose "Registry path too long: $($normalizedPath.Length) chars"
-        return $false
-    }
-
-    # Check against allowed patterns
-    foreach ($allowed in $script:AllowedRegistryPatterns) {
-        if ($normalizedPath -match $allowed) {
-            return $true
-        }
-    }
-
-    Write-Verbose "Registry path not in whitelist: $Path"
-    return $false
-}
 
 function Test-RegistryKey {
     <#
