@@ -79,8 +79,10 @@ public class DetectionConfiguration
 
     /// <summary>
     /// For WindowsFeature: The feature name to check.
+    /// Serialized as "Feature" to match the catalog and schema; the C# name
+    /// stays FeatureName so the detection probe consumes it unchanged.
     /// </summary>
-    [JsonPropertyName("FeatureName")]
+    [JsonPropertyName("Feature")]
     public string? FeatureName { get; set; }
 }
 
