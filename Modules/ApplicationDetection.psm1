@@ -905,7 +905,9 @@ function Test-ApplicationInstalledFast {
                     if ($detected) {
                         try {
                             $regEntry = Get-ItemProperty -Path $Application.Detection.Path -ErrorAction SilentlyContinue
-                            # Use VersionKey from app config if specified, otherwise fall back to common keys
+                            # STRICT: read only the explicitly configured VersionKey. No lenient
+                            # fallback to DisplayVersion/Version/CurrentVersion, which could read an
+                            # unrelated product's value from a shared registry key (I1).
                             $versionKey = if ($Application.Detection.PSObject.Properties['VersionKey']) {
                                 $Application.Detection.VersionKey
                             } else {
@@ -913,12 +915,6 @@ function Test-ApplicationInstalledFast {
                             }
                             if ($versionKey -and $regEntry.PSObject.Properties[$versionKey]) {
                                 $version = $regEntry.$versionKey
-                            } elseif ($regEntry.DisplayVersion) {
-                                $version = $regEntry.DisplayVersion
-                            } elseif ($regEntry.Version) {
-                                $version = $regEntry.Version
-                            } elseif ($regEntry.CurrentVersion) {
-                                $version = $regEntry.CurrentVersion
                             }
                         } catch {
                             Write-Verbose "Failed to get registry version for $($Application.Name): $($_.Exception.Message)"

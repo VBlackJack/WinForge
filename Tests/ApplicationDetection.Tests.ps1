@@ -439,3 +439,39 @@ Describe 'ApplicationDetection Integration' {
         }
     }
 }
+
+Describe 'ApplicationDetection - STRICT VersionKey (I1)' {
+    BeforeAll {
+        $script:I1Key = "HKCU:\Software\Win11Forge\Tests\I1Strict\$([guid]::NewGuid().ToString('N'))"
+        New-Item -Path $script:I1Key -Force | Out-Null
+        # DisplayVersion is the lenient-fallback trap: STRICT must never read it.
+        New-ItemProperty -Path $script:I1Key -Name 'DisplayVersion' -Value '9.9.9-fallback' -PropertyType String -Force | Out-Null
+        New-ItemProperty -Path $script:I1Key -Name 'ProductVersion' -Value '1.2.3' -PropertyType String -Force | Out-Null
+        $script:I1Cache = [PSCustomObject]@{ RegistryApps = @{}; WingetList = ''; AppxPackages = @{}; CommandOutputs = @{} }
+    }
+
+    AfterAll {
+        Remove-Item -Path $script:I1Key -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'Reads the version when the explicit VersionKey is present' {
+        $app = [PSCustomObject]@{ Name = 'I1App'; Sources = $null; Detection = [PSCustomObject]@{ Method = 'Registry'; Path = $script:I1Key; VersionKey = 'ProductVersion' } }
+        $r = Test-ApplicationInstalledFast -Application $app -Cache $script:I1Cache
+        $r.IsInstalled | Should -BeTrue
+        $r.Version | Should -Be '1.2.3'
+    }
+
+    It 'Does not fall back to DisplayVersion when the configured VersionKey is absent (STRICT)' {
+        $app = [PSCustomObject]@{ Name = 'I1App'; Sources = $null; Detection = [PSCustomObject]@{ Method = 'Registry'; Path = $script:I1Key; VersionKey = 'NoSuchKey' } }
+        $r = Test-ApplicationInstalledFast -Application $app -Cache $script:I1Cache
+        $r.IsInstalled | Should -BeTrue
+        $r.Version | Should -BeNullOrEmpty
+    }
+
+    It 'Does not extract a version when no VersionKey is configured (STRICT)' {
+        $app = [PSCustomObject]@{ Name = 'I1App'; Sources = $null; Detection = [PSCustomObject]@{ Method = 'Registry'; Path = $script:I1Key } }
+        $r = Test-ApplicationInstalledFast -Application $app -Cache $script:I1Cache
+        $r.IsInstalled | Should -BeTrue
+        $r.Version | Should -BeNullOrEmpty
+    }
+}
