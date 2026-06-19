@@ -736,6 +736,14 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
         try
         {
             OnboardingDialog onboardingControl = new OnboardingDialog();
+
+            ContentDialog dialog = new Wpf.Ui.Controls.ContentDialog(RootContentDialog)
+            {
+                Title = Loc.Onboarding_Welcome ?? "Welcome",
+                Content = onboardingControl,
+                CloseButtonText = Loc.Common_OK ?? "OK"
+            };
+
             onboardingControl.Completed += (_, dontShowAgain) =>
             {
                 if (dontShowAgain && _settingsService != null)
@@ -747,14 +755,13 @@ public partial class MainWindow : FluentWindow, INotifyPropertyChanged, IDisposa
                         _logger.LogWarning("Failed to persist onboarding flag: settings persistence returned false");
                     }
                 }
+
+                // The hosted control has no reference to its ContentDialog, so the primary
+                // "Get Started" action must close the dialog here. Without this, the only
+                // keyboard-reachable action would leave the dialog open.
+                dialog.Hide();
             };
 
-            ContentDialog dialog = new Wpf.Ui.Controls.ContentDialog(RootContentDialog)
-            {
-                Title = Loc.Onboarding_Welcome ?? "Welcome",
-                Content = onboardingControl,
-                CloseButtonText = Loc.Common_OK ?? "OK"
-            };
             await dialog.ShowAsync();
 
             // Mark first run complete after dialog closes

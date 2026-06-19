@@ -3,9 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
-             xmlns:helpers="clr-namespace:Win11Forge.GUI.Helpers"
-             MinWidth="500" MaxWidth="700"
-             helpers:FocusTrapBehavior.IsEnabled="True">
+             MinWidth="500" MaxWidth="700">
     <Border Padding="32">
         <Grid>
             <Grid.RowDefinitions>
