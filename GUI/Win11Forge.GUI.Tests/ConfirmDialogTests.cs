@@ -227,7 +227,7 @@ public class ConfirmDialogTests
         DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory != null)
         {
-            if (File.Exists(Path.Combine(directory.FullName, "TODO.md")) &&
+            if (File.Exists(Path.Combine(directory.FullName, "GUI", "Win11Forge.slnx")) &&
                 Directory.Exists(Path.Combine(directory.FullName, "GUI", "Win11Forge.GUI")))
             {
                 return directory.FullName;
