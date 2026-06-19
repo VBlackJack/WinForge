@@ -302,6 +302,18 @@ Describe 'ParallelDetection Module' {
             $result = Test-WindowsCapabilityDetection -Detection $detection
             $result | Should -BeFalse
         }
+
+        It 'Should detect an installed capability via the -Name filter (I6)' {
+            Mock Get-WindowsCapability {
+                [PSCustomObject]@{ Name = 'OpenSSH.Client~~~~0.0.1.0'; State = 'Installed' }
+            } -ModuleName ParallelDetection
+            $detection = [PSCustomObject]@{
+                Method = 'WindowsCapability'
+                Capability = 'OpenSSH.Client'
+            }
+            Test-WindowsCapabilityDetection -Detection $detection | Should -BeTrue
+            Should -Invoke -CommandName Get-WindowsCapability -ModuleName ParallelDetection -Times 1
+        }
     }
 
     Context 'Test-StoreAppDetection' {
