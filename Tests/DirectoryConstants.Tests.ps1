@@ -220,7 +220,7 @@ Describe 'DirectoryConstants Module' {
         It 'Should return a valid path' {
             $result = Get-RepositoryRoot
             $result | Should -BeOfType [string]
-            $result | Should -BeLike "*Win11Forge*"
+            # Validate it is a real path, not the repository name (which the rename changed).
             Test-Path $result | Should -Be $true
         }
 

@@ -233,11 +233,9 @@ Describe 'InstallationEngine Parallel Edge Cases' {
             $moduleContent | Should -Match 'Test-AppInstalledParallel'
         }
 
-        It 'Should handle special apps in parallel detection (PowerToys)' {
-            # Parallel detection now in InstallationOrchestrator.psm1
-            $moduleContent = Get-Content (Join-Path $PSScriptRoot '../Modules/InstallationOrchestrator.psm1') -Raw
-            $moduleContent | Should -Match 'PowerToys'
-        }
+        # PowerToys/Quick Assist special-case handling is covered behaviorally in
+        # ParallelDetection.Tests.ps1 (Context 'Special App Detection'); the former
+        # brittle source-grep test was removed when the here-string moved to that module.
     }
 
     Context 'Parallel Log Management' {
