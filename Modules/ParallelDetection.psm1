@@ -48,6 +48,14 @@ if (-not (Get-Command -Name Test-DetectionArgumentDangerous -ErrorAction Silentl
     }
 }
 
+# Import DetectionRegistryGuard: the shared registry-path validation (single source).
+$script:DetectionRegistryGuardPath = Join-Path $script:ModuleRoot 'DetectionRegistryGuard.psm1'
+if (-not (Get-Command -Name Test-RegistryPathAllowed -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DetectionRegistryGuardPath) {
+        Import-Module -Name $script:DetectionRegistryGuardPath -Force
+    }
+}
+
 # === DETECTION FUNCTIONS ===
 
 function Test-AppInstalledParallel {
@@ -175,6 +183,11 @@ function Test-RegistryDetection {
 
     # Security: Block path traversal
     if ($regPath -match '\.\.') { return $false }
+
+    # Security: enforce the shared registry hive allowlist/blocklist (I5, same rule as the gold path)
+    if (-not (Test-RegistryPathAllowed -Path $regPath)) {
+        return $false
+    }
 
     return Test-Path -Path $regPath -ErrorAction SilentlyContinue
 }

@@ -146,6 +146,16 @@ Describe 'ParallelDetection Module' {
             $result | Should -BeFalse
         }
 
+        It 'Should return false for a sensitive hive outside the allowlist (I5)' {
+            $detection = [PSCustomObject]@{
+                Method = 'Registry'
+                Path = 'HKLM:\SYSTEM\CurrentControlSet\Services'
+            }
+            # Blocked by the shared registry guard before any existence check.
+            $result = Test-RegistryDetection -Detection $detection
+            $result | Should -BeFalse
+        }
+
         It 'Should block path traversal attempts' {
             $detection = [PSCustomObject]@{
                 Method = 'Registry'
