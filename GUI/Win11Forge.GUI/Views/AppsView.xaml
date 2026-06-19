@@ -422,7 +422,7 @@
                                AutomationProperties.Name="{loc:Loc Btn_Cancel}"/>
 
                     <!-- Scan Updates Button (moved from row 1).
-                         Always visible — disabled state via Opacity trigger on ui:Button (App.xaml). -->
+                         Always visible - disabled state via Opacity trigger on ui:Button (App.xaml). -->
                     <ui:Button Grid.Column="5"
                                Command="{Binding ScanUpdatesCommand}"
                                Style="{StaticResource SecondaryButton}"
@@ -693,7 +693,7 @@
 
                 <!-- Selection Action Bar -->
                 <!-- Batch actions group (Uninstall + Install).
-                     Always visible — buttons go to disabled visual via ui:Button IsEnabled=False
+                     Always visible - buttons go to disabled visual via ui:Button IsEnabled=False
                      Opacity trigger (App.xaml). User explicitly preferred greyed-out vs hidden. -->
                 <StackPanel Grid.Column="9" Orientation="Horizontal">
                     <StackPanel.Style>

@@ -10,7 +10,7 @@ name: Catalog Freshness Check
 #   The cache key embeds the ISO week, so every Monday the schedule run forces
 #   a full re-probe. Within the same week, a workflow_dispatch run reuses the
 #   cache (TTL = 168h) unless the operator ticks `bypass_cache` below. A bypass
-#   run only refreshes the local cache file for that job — the cache key already
+#   run only refreshes the local cache file for that job - the cache key already
 #   exists, so actions/cache@v4 will NOT overwrite the weekly cache. This means
 #   a mid-week manual bypass cannot corrupt the canonical weekly snapshot.
 
@@ -82,7 +82,7 @@ jobs:
       - name: Run catalog freshness check
         shell: pwsh
         env:
-          # Inputs are empty strings on schedule events — the script falls back
+          # Inputs are empty strings on schedule events - the script falls back
           # to its defaults (full catalog, TTL 168h) in that case.
           APP_IDS_INPUT: ${{ github.event.inputs.app_ids }}
           BYPASS_CACHE_INPUT: ${{ github.event.inputs.bypass_cache }}
@@ -106,7 +106,7 @@ jobs:
 
           if ($env:BYPASS_CACHE_INPUT -eq 'true') {
             $scriptArgs.CacheTtlHours = 0
-            Write-Host '::warning::Cache bypass enabled — every probe is re-run; weekly cache snapshot is NOT modified.'
+            Write-Host '::warning::Cache bypass enabled - every probe is re-run; weekly cache snapshot is NOT modified.'
           }
 
           ./Tools/Test-CatalogFreshness.ps1 @scriptArgs
@@ -120,5 +120,5 @@ jobs:
           retention-days: 30
 
 # TODO (v2): When summary.Broken > 0, open or update a tracking issue
-# (deduplicated by title "[Catalog Freshness] Weekly report — YYYY-MM-DD")
+# (deduplicated by title "[Catalog Freshness] Weekly report - YYYY-MM-DD")
 # using actions/github-script. Requires permissions: issues: write above.

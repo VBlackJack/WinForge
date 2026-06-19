@@ -1,19 +1,19 @@
 <#
 .SYNOPSIS
-    Catalog freshness check — detects broken external sources in applications.json.
+    Catalog freshness check - detects broken external sources in applications.json.
 
 .DESCRIPTION
     Runs scheduled freshness checks against the centralized application database.
     For each application, probes the declared sources (Winget, Chocolatey, DirectUrl)
     and reports broken or suspect entries. Designed to be invoked locally by
     maintainers or from a scheduled GitHub Actions workflow. Does NOT modify the
-    database — output only.
+    database - output only.
 
-    Status semantics (no separate "Healthy" status — Ok is the healthy state):
-      Ok      — source verified healthy (winget/choco package found, HTTP reachable)
-      Broken  — source clearly broken (package not found, HTTP 404/410)
-      Suspect — indeterminate; needs review (HTTP 4xx CDN-protected, exit non-zero, network errors)
-      Skipped — not probed in v1 (Microsoft Store, Windows Features, missing CLI on runner)
+    Status semantics (no separate "Healthy" status - Ok is the healthy state):
+      Ok      - source verified healthy (winget/choco package found, HTTP reachable)
+      Broken  - source clearly broken (package not found, HTTP 404/410)
+      Suspect - indeterminate; needs review (HTTP 4xx CDN-protected, exit non-zero, network errors)
+      Skipped - not probed in v1 (Microsoft Store, Windows Features, missing CLI on runner)
 
     Microsoft Store IDs are always reported as Skipped in v1 (no clean public API).
     Apps relying on Windows Features (no external sources) are also Skipped.
@@ -58,7 +58,7 @@
     .\Tools\Test-CatalogFreshness.ps1 -CI -CachePath .\Tools\.cache\freshness-cache.json
 
 .EXAMPLE
-    # Controlled smoke test — exercise real probes for one well-known app:
+    # Controlled smoke test - exercise real probes for one well-known app:
     .\Tools\Test-CatalogFreshness.ps1 -AppIdFilter GoogleChrome -Checks Winget,Chocolatey,DirectUrl -ThrottleMs 0
 #>
 
@@ -111,7 +111,7 @@ $Script:HttpUserAgent = 'Win11Forge-FreshnessCheck/1.0'
 $Script:HttpTimeoutSeconds = 15
 
 # winget return code APPINSTALLER_CLI_ERROR_NO_APPLICATIONS_FOUND (0x8A150014).
-# Emitted when --exact matches nothing — distinct from transient failures.
+# Emitted when --exact matches nothing - distinct from transient failures.
 $Script:WingetExitNoMatch = -1978335212
 
 # --- Helpers -----------------------------------------------------------------
@@ -206,7 +206,7 @@ function Get-FreshnessCheckPlan {
             })
         }
         if ($store) {
-            # Store always reported as Skipped in v1 — no clean public API.
+            # Store always reported as Skipped in v1 - no clean public API.
             [void]$plan.Add([PSCustomObject]@{
                 AppId      = $app.AppId
                 Source     = $Script:SourceStore
@@ -358,7 +358,7 @@ function Test-WingetIdentifier {
             }
         }
 
-        # Other non-zero codes = transient failures (network, source errors, etc.) — needs review.
+        # Other non-zero codes = transient failures (network, source errors, etc.) - needs review.
         return [PSCustomObject]@{
             Status = $Script:StatusSuspect
             Reason = 'exit-non-zero'
@@ -624,7 +624,7 @@ function Get-CoverageGap {
     <#
     .SYNOPSIS
         Identifies probes silently disabled by missing CLIs on the runner.
-        Returns a list of { Source, SkippedCount, Reason } entries — empty if no gap.
+        Returns a list of { Source, SkippedCount, Reason } entries - empty if no gap.
         The leading-comma idiom on return prevents PowerShell from unwrapping
         an empty/single-element array to $null, so callers can rely on .Count.
     #>
@@ -714,13 +714,13 @@ function Write-StepSummaryMarkdown {
     if ($gapArr.Count -gt 0) {
         [void]$sb.AppendLine('')
         [void]$sb.AppendLine('> [!WARNING]')
-        [void]$sb.AppendLine('> **Coverage gap detected — this run did not actually verify all configured sources.**')
+        [void]$sb.AppendLine('> **Coverage gap detected - this run did not actually verify all configured sources.**')
         [void]$sb.AppendLine('>')
         foreach ($gap in $gapArr) {
             [void]$sb.AppendLine("> - $($gap.Source): $($gap.SkippedCount) probe(s) skipped because of `"$($gap.Reason)`"")
         }
         [void]$sb.AppendLine('>')
-        [void]$sb.AppendLine('> A green job here does **not** mean the catalog is healthy — it means the runner was incomplete.')
+        [void]$sb.AppendLine('> A green job here does **not** mean the catalog is healthy - it means the runner was incomplete.')
         [void]$sb.AppendLine('')
     }
 
@@ -771,7 +771,7 @@ function Write-ConsoleReport {
     param([Parameter(Mandatory)] [PSCustomObject] $Report)
 
     # PowerShell sometimes unwraps single-element arrays through PSCustomObject
-    # property access — wrap in @() so .Count works under StrictMode.
+    # property access - wrap in @() so .Count works under StrictMode.
     $filterArr = @($Report.AppIdFilter)
     $gapArr    = @($Report.CoverageGap)
 
@@ -797,7 +797,7 @@ function Write-ConsoleReport {
     if ($gapArr.Count -gt 0) {
         Write-Host ''
         Write-Host '############################################################' -ForegroundColor Yellow
-        Write-Host '#  COVERAGE GAP — this run did NOT verify all sources    #' -ForegroundColor Yellow
+        Write-Host '#  COVERAGE GAP - this run did NOT verify all sources    #' -ForegroundColor Yellow
         Write-Host '############################################################' -ForegroundColor Yellow
         foreach ($gap in $gapArr) {
             Write-Host "   - $($gap.Source): $($gap.SkippedCount) probe(s) silently skipped ($($gap.Reason))" -ForegroundColor Yellow
@@ -810,7 +810,7 @@ function Write-ConsoleReport {
         Write-Host ''
         Write-Host '❌ Broken:' -ForegroundColor Red
         foreach ($r in $broken) {
-            Write-Host "   - $($r.AppId) [$($r.Source)] $($r.Identifier) — $($r.Reason)" -ForegroundColor Red
+            Write-Host "   - $($r.AppId) [$($r.Source)] $($r.Identifier) - $($r.Reason)" -ForegroundColor Red
         }
     }
 
@@ -819,7 +819,7 @@ function Write-ConsoleReport {
         Write-Host ''
         Write-Host '⚠️  Suspect:' -ForegroundColor Yellow
         foreach ($r in $suspect) {
-            Write-Host "   - $($r.AppId) [$($r.Source)] $($r.Identifier) — $($r.Reason)" -ForegroundColor Yellow
+            Write-Host "   - $($r.AppId) [$($r.Source)] $($r.Identifier) - $($r.Reason)" -ForegroundColor Yellow
         }
     }
 
@@ -1025,14 +1025,14 @@ function Invoke-CatalogFreshness {
             $DatabasePath.Substring($repoRoot.Length).TrimStart('\','/').Replace('\','/')
         } else { 'Apps/Database/applications.json' }
 
-        # Top-level coverage-gap warning — emitted FIRST so it cannot be missed
+        # Top-level coverage-gap warning - emitted FIRST so it cannot be missed
         # when a "green" run happened only because winget/choco were absent.
         $gapArr = @($report.CoverageGap)
         if ($gapArr.Count -gt 0) {
             $gapSummary = ($gapArr | ForEach-Object {
                 "$($_.Source) ($($_.SkippedCount) probes silently skipped: $($_.Reason))"
             }) -join '; '
-            Write-Host "::warning title=Catalog Freshness coverage gap::Run did not verify all sources — $gapSummary"
+            Write-Host "::warning title=Catalog Freshness coverage gap::Run did not verify all sources - $gapSummary"
         }
 
         foreach ($r in $report.Results) {

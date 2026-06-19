@@ -28,7 +28,7 @@ public partial class AppsViewModel
     /// <remarks>
     /// The catalog is loaded if it has not been initialised yet. Apps that no longer
     /// exist in the catalog (because the user edited <c>applications.json</c> between
-    /// the crash and the resume) are silently skipped — the resumed batch only
+    /// the crash and the resume) are silently skipped - the resumed batch only
     /// replays items that are still resolvable.
     ///
     /// The new batch creates its own checkpoint via the coordinator; the caller is

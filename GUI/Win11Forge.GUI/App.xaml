@@ -64,7 +64,7 @@
             <!-- Forked WPF-UI 4.3 DefaultUiButtonStyle template, verbatim except for the
                  IsEnabled=False trigger. Upstream forces ContentBorder.Background to
                  ButtonBackgroundDisabled via DynamicResource that doesn't honor any user-scope
-                 override (App.Resources direct, UserControl/Button/StackPanel.Resources — all
+                 override (App.Resources direct, UserControl/Button/StackPanel.Resources - all
                  tested fail to propagate). Our IsEnabled=False trigger only lowers
                  ContentBorder.Opacity, so the theme-aware Background TemplateBinding stays
                  visible (Transparent for Transparent appearance, accent for Primary, etc.) and
@@ -72,7 +72,7 @@
                  The full template preserves Icon DP support (ControlIcon ContentPresenter),
                  RecognizesAccessKey, PressedForeground, the inset border for fidelity, and all
                  upstream Appearance triggers (Info / Success / Caution / Dark / Light) for
-                 forward compatibility — our Dracula Style.Triggers below override Primary /
+                 forward compatibility - our Dracula Style.Triggers below override Primary /
                  Secondary / Danger / Transparent, which are the appearances actually used in
                  this app.
                  Source: https://github.com/lepoco/wpfui/blob/4.3.0/src/Wpf.Ui/Controls/Button/Button.xaml -->
@@ -294,7 +294,7 @@
                                     <Setter TargetName="ControlIcon" Property="Margin" Value="0"/>
                                     <Setter TargetName="ControlIcon" Property="Visibility" Value="Collapsed"/>
                                 </Trigger>
-                                <!-- ONLY DEVIATION FROM UPSTREAM: target ContentBorder.Opacity per Codex review,
+                                <!-- ONLY DEVIATION FROM UPSTREAM: target ContentBorder.Opacity (intentional),
                                      don't repaint ContentBorder.Background to a brush that fails our user-scope override. -->
                                 <Trigger Property="IsEnabled" Value="False">
                                     <Setter TargetName="ContentBorder" Property="Opacity" Value="0.45"/>

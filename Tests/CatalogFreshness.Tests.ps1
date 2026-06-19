@@ -4,7 +4,7 @@
 
 .DESCRIPTION
     Unit tests for the catalog freshness checker. External CLI calls
-    (winget/choco) and HTTP requests are mocked — these tests do not hit
+    (winget/choco) and HTTP requests are mocked - these tests do not hit
     the network.
 
 .NOTES
@@ -32,7 +32,7 @@ BeforeAll {
     $script:ScriptPath  = Join-Path $PSScriptRoot '..\Tools\Test-CatalogFreshness.ps1'
     $script:FixturePath = Join-Path $PSScriptRoot 'Fixtures\freshness-sample.json'
 
-    # Dot-source the script — the entry-point guard skips the main run on dot-source.
+    # Dot-source the script - the entry-point guard skips the main run on dot-source.
     . $script:ScriptPath
 
     function script:Get-FixtureApplications {
