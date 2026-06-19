@@ -4,7 +4,7 @@
 
 **Status:** In review via PR #52; migration executed in commit `38dce7e355e115c2bcfa0490b5184673bf1350fc`, merge pending.
 **Last updated:** 2026-05-07.
-**Sister ADRs:** [`REFACTOR-MVVM.md`](REFACTOR-MVVM.md), [`THEME-PORT.md`](THEME-PORT.md), [`COWORK-RESUME-PROMPT.md`](COWORK-RESUME-PROMPT.md).
+**Sister ADRs:** [`REFACTOR-MVVM.md`](REFACTOR-MVVM.md), [`THEME-PORT.md`](THEME-PORT.md).
 **Source:** TODO.md "Migration .NET 8 → .NET 10 — aligner sur Heimdall.Next" entry, post-resume request.
 
 ## 1. Goal
@@ -19,10 +19,10 @@ Migrate Win11Forge GUI + Tests + UITests from `net8.0-windows` (.NET 8 LTS, supp
 | Q2 — xunit | Stay on 2.9.x | xunit v3 is a separate breaking refactor; deferred. |
 | Q3 — C# 14 | No new features in this PR | Migration = TargetFramework bump only; C# 14 adoption deferred. |
 | Q4 — UI tolerance | Zero | Smoke test required before merge, mirroring theme port + a11y hardening protocol. |
-| Q5 — Timing | Immediately after PR #51 | All P0 audit findings are closed; strategic upgrade window opened per COWORK-RESUME-PROMPT priority rules. |
+| Q5 — Timing | Immediately after PR #51 | All P0 audit findings are closed; strategic upgrade window opened per the documented priority rules. |
 | Q6 — Heimdall align | Match exact `net10.0-windows` | Verified by reading Heimdall csproj: generic moniker, no Windows version pin. |
 | Q7 — TODO.md | Untouched in this PR | TODO closure flip belongs to a separate `chore(todo):` PR. |
-| Q8 — Approval | Direct draft after Q1..Q7 confirmation | Standard Cowork → Codex flow. |
+| Q8 — Approval | Direct draft after Q1..Q7 confirmation | Standard draft-then-review flow. |
 | Q9 — Final GO | GO | Compat path verified for all coupled dependencies. |
 
 ## 3. Compat Matrix
@@ -129,14 +129,14 @@ The migration is scope-isolated to framework/dependency/build changes plus one a
 - System.Management.Automation NuGet: https://www.nuget.org/packages/system.management.automation/
 - SMA 7.5+ .NET 9 requirement: https://github.com/PowerShell/PowerShell/issues/24891
 - Microsoft.Extensions.DependencyInjection NuGet: https://www.nuget.org/packages/microsoft.extensions.dependencyinjection
-- COWORK-RESUME-PROMPT.md priority sequencing rules.
+- Documented priority sequencing rules.
 
 ## 11. Status History
 
 | Date | Status | By | Note |
 |---|---|---|---|
-| 2026-05-07 | Phase Étude / CONDITIONAL GO | Cowork-Claude | Initial study; Q1..Q8 awaiting answers. |
-| 2026-05-07 | GO | Cowork-Claude + user | Q1..Q9 locked all-recommended; Heimdall config verified. |
-| 2026-05-07 | In review via PR #52 | Codex executor | Migration commit executed, automated build/tests/UIA smoke green; manual state-changing smoke pending. |
-| 2026-05-07 | Manual smoke fixes | Cowork-Claude + user | Prerequisite log locale/encoding and native WPF dropdown/context-menu theming regressions fixed; Release suite green after patch. |
-| 2026-05-07 | Manual smoke sign-off | User + Codex | ADR §6 smoke passed after selected-row contrast fix; PR #52 ready to exit draft after CI green. |
+| 2026-05-07 | Phase Étude / CONDITIONAL GO | Architect | Initial study; Q1..Q8 awaiting answers. |
+| 2026-05-07 | GO | Architect + user | Q1..Q9 locked all-recommended; Heimdall config verified. |
+| 2026-05-07 | In review via PR #52 | Implementer | Migration commit executed, automated build/tests/UIA smoke green; manual state-changing smoke pending. |
+| 2026-05-07 | Manual smoke fixes | Architect + user | Prerequisite log locale/encoding and native WPF dropdown/context-menu theming regressions fixed; Release suite green after patch. |
+| 2026-05-07 | Manual smoke sign-off | User + implementer | ADR §6 smoke passed after selected-row contrast fix; PR #52 ready to exit draft after CI green. |
