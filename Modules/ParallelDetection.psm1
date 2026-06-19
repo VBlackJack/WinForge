@@ -31,25 +31,14 @@ Set-StrictMode -Version Latest
 
 # === CONFIGURATION ===
 
-# Security: Whitelist of allowed executables for Command detection
-$script:AllowedDetectionExecutables = @(
-    'java', 'java.exe', 'javac', 'javac.exe',
-    'dotnet', 'dotnet.exe',
-    'python', 'python.exe', 'python3', 'python3.exe',
-    'node', 'node.exe', 'npm', 'npm.cmd',
-    'git', 'git.exe',
-    'codex', 'codex.exe', 'codex.cmd', 'codex.ps1',
-    'claude', 'claude.exe', 'claude.cmd', 'claude.ps1',
-    'agy', 'agy.exe', 'agy.cmd', 'agy.ps1',
-    'ollama', 'ollama.exe',
-    'aish', 'aish.exe',
-    'docker', 'docker.exe',
-    'rustc', 'rustc.exe', 'cargo', 'cargo.exe',
-    'go', 'go.exe',
-    'ruby', 'ruby.exe',
-    'php', 'php.exe',
-    'perl', 'perl.exe'
-)
+# Import DetectionAllowlist: the shared command-detection allowlist (single source).
+$script:ModuleRoot = Split-Path -Parent $PSCommandPath
+$script:DetectionAllowlistModulePath = Join-Path $script:ModuleRoot 'DetectionAllowlist.psm1'
+if (-not (Get-Command -Name Get-DetectionAllowlist -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DetectionAllowlistModulePath) {
+        Import-Module -Name $script:DetectionAllowlistModulePath -Force
+    }
+}
 
 # === DETECTION FUNCTIONS ===
 
@@ -246,7 +235,7 @@ function Test-CommandDetection {
 
         # Security: Validate executable is whitelisted
         $exeBaseName = [System.IO.Path]::GetFileName($exe).ToLower()
-        if ($exeBaseName -notin $script:AllowedDetectionExecutables) {
+        if ($exeBaseName -notin (Get-DetectionAllowlist)) {
             return $false
         }
 

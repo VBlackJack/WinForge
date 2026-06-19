@@ -191,21 +191,6 @@ Describe 'DirectoryConstants Module' {
         }
     }
 
-    Context 'Get-AllowedDetectionExecutables' {
-        It 'Should return an array of strings' {
-            $result = Get-AllowedDetectionExecutables
-            $result | Should -BeOfType [string]
-            $result.Count | Should -BeGreaterOrEqual 10
-        }
-
-        It 'Should include common executables' {
-            $result = Get-AllowedDetectionExecutables
-            $result | Should -Contain 'git'
-            $result | Should -Contain 'python'
-            $result | Should -Contain 'node'
-        }
-    }
-
     Context 'Get-ShellFolder' {
         It 'Should return Desktop folder path' {
             $result = Get-ShellFolder -FolderType 'Desktop'
@@ -257,7 +242,6 @@ Describe 'DirectoryConstants Module' {
                 'Get-Timeout',
                 'Get-ParallelLimit',
                 'Get-NetworkDefault',
-                'Get-AllowedDetectionExecutables',
                 'Get-ShellFolder',
                 'Get-RepositoryRoot'
             )

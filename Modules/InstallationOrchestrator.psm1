@@ -932,9 +932,8 @@ function Test-AppInstalledParallel {
             try {
                 $parts = $App.Detection.Command -split '\s+', 2
                 $exe = $parts[0]; $cmdArgs = if ($parts.Count -gt 1) { $parts[1] } else { $null }
-                $allowedExes = @('java','java.exe','javac','javac.exe','dotnet','dotnet.exe','python','python.exe','python3','python3.exe','node','node.exe','npm','npm.cmd','git','git.exe','docker','docker.exe','rustc','rustc.exe','cargo','cargo.exe','go','go.exe','ruby','ruby.exe','php','php.exe','perl','perl.exe')
                 $exeBaseName = [System.IO.Path]::GetFileName($exe).ToLower()
-                if ($exeBaseName -notin $allowedExes) { return $false }
+                if ($exeBaseName -notin (Get-DetectionAllowlist)) { return $false }
                 if (-not (Get-Command -Name $exe -ErrorAction SilentlyContinue)) { return $false }
                 $expectedPattern = if ($App.Detection.PSObject.Properties['Arguments']) { $App.Detection.Arguments } else { $null }
                 if ($expectedPattern) {
@@ -1110,6 +1109,12 @@ function Test-AppInstalledParallel {
         $downloadValidationPath = Join-Path $repRoot 'Modules\DownloadValidation.psm1'
         if (Test-Path $downloadValidationPath) {
             Import-Module $downloadValidationPath -Force -WarningAction SilentlyContinue
+        }
+
+        # Shared command-detection allowlist (single source, same file the GUI reads)
+        $detectionAllowlistPath = Join-Path $repRoot 'Modules\DetectionAllowlist.psm1'
+        if (Test-Path $detectionAllowlistPath) {
+            Import-Module $detectionAllowlistPath -Force -WarningAction SilentlyContinue
         }
 
         $result = @{

@@ -209,25 +209,6 @@ $script:ExitCodes = @{
     }
 }
 
-# === ALLOWED EXECUTABLES FOR DETECTION ===
-$script:AllowedDetectionExecutables = @(
-    'java', 'java.exe',
-    'javac', 'javac.exe',
-    'dotnet', 'dotnet.exe',
-    'python', 'python.exe',
-    'python3', 'python3.exe',
-    'node', 'node.exe',
-    'npm', 'npm.cmd',
-    'git', 'git.exe',
-    'docker', 'docker.exe',
-    'rustc', 'rustc.exe',
-    'cargo', 'cargo.exe',
-    'go', 'go.exe',
-    'ruby', 'ruby.exe',
-    'php', 'php.exe',
-    'perl', 'perl.exe'
-)
-
 # === PUBLIC FUNCTIONS ===
 
 function Get-Win11ForgeDirectory {
@@ -426,21 +407,6 @@ function Get-NetworkDefault {
     throw [System.ArgumentException]::new("Unknown network default key: $SettingKey")
 }
 
-function Get-AllowedDetectionExecutables {
-    <#
-    .SYNOPSIS
-        Returns the list of allowed executables for detection.
-    .DESCRIPTION
-        Returns the whitelist of executable names that the application detection system is permitted
-        to probe via command-based detection, limiting exposure to known development tools and runtimes.
-    #>
-    [CmdletBinding()]
-    [OutputType([string[]])]
-    param()
-
-    return $script:AllowedDetectionExecutables
-}
-
 function Get-ShellFolder {
     <#
     .SYNOPSIS
@@ -530,7 +496,6 @@ Export-ModuleMember -Function @(
     'Get-Timeout',
     'Get-ParallelLimit',
     'Get-NetworkDefault',
-    'Get-AllowedDetectionExecutables',
     'Get-ShellFolder',
     'Get-ExitCodes',
     'Get-RepositoryRoot'
