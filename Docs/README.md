@@ -14,12 +14,7 @@ Current framework display version: `2026060301`.
 
 ## Architecture Records
 
-- [`architecture/REFACTOR-MVVM.md`](architecture/REFACTOR-MVVM.md): MVVM refactor decisions and closure record.
 - [`architecture/THEME-PORT.md`](architecture/THEME-PORT.md): current theme architecture and historical port context.
-
-## Audit Records
-
-- [`audit/Win11Forge-UX-Audit-2026-05.md`](audit/Win11Forge-UX-Audit-2026-05.md): consolidated May 2026 UX audit, now fully remediated.
 
 ## Archive
 
