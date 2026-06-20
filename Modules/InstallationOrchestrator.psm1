@@ -483,14 +483,13 @@ function Invoke-InstallationMethodSequence {
                     $installParams['DetectionPath'] = $Application.Detection.Path
                 }
 
-                # Unified checksum accessor: canonical ExpectedSHA256, with SHA256 as
-                # a backward-compatible fallback. SKIP_VALIDATION flows through so the
-                # fail-closed gate in Install-ViaDirectDownload can honor the opt-out.
+                # Canonical checksum accessor: ExpectedSHA256 is the only field the
+                # Sources schema permits (additionalProperties: false). SKIP_VALIDATION
+                # flows through so the fail-closed gate in Install-ViaDirectDownload can
+                # honor the opt-out.
                 $expectedChecksum = $null
                 if ($sources.PSObject.Properties['ExpectedSHA256'] -and $sources.ExpectedSHA256) {
                     $expectedChecksum = $sources.ExpectedSHA256
-                } elseif ($sources.PSObject.Properties['SHA256'] -and $sources.SHA256) {
-                    $expectedChecksum = $sources.SHA256
                 }
                 if ($expectedChecksum) {
                     $installParams['ExpectedSHA256'] = $expectedChecksum
