@@ -901,19 +901,21 @@ function Invoke-FileDownloadWithProgress {
 
     Write-Status -Message (Get-LocalizedString -Key 'download.method.completed_size' -Parameters @{ Size = $fileSize }) -Level 'Verbose'
 
-    # SHA256 checksum validation
+    # SHA256 checksum validation via the shared enforcement helper
+    # (DownloadValidation\Assert-FileChecksum), so the comparison rule cannot drift
+    # between the sequential and parallel installation paths.
     if ($ExpectedSHA256) {
         Write-Status -Message (Get-LocalizedString -Key 'download.validating_checksum') -Level 'Verbose'
-        $fileHash = (Get-FileHash -Path $OutputPath -Algorithm SHA256).Hash
 
-        if ($fileHash -ne $ExpectedSHA256) {
+        if (-not (Assert-FileChecksum -Path $OutputPath -ExpectedSHA256 $ExpectedSHA256)) {
+            $fileHash = (Get-FileHash -Path $OutputPath -Algorithm SHA256).Hash
             Write-Status -Message (Get-LocalizedString -Key 'download.checksum_failed' -Parameters @{ Expected = $ExpectedSHA256; Got = $fileHash }) -Level 'Error'
             Write-Status -Message (Get-LocalizedString -Key 'download.removing_corrupted') -Level 'Warning'
             Remove-Item -Path $OutputPath -Force -ErrorAction SilentlyContinue
             return $false
         }
 
-        Write-Status -Message (Get-LocalizedString -Key 'download.checksum_passed' -Parameters @{ Hash = $fileHash }) -Level 'Success'
+        Write-Status -Message (Get-LocalizedString -Key 'download.checksum_passed' -Parameters @{ Hash = $ExpectedSHA256 }) -Level 'Success'
     }
 
     return $true

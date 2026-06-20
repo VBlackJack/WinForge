@@ -73,4 +73,75 @@ function Resolve-DirectDownloadValidationMode {
     return 'None'
 }
 
-Export-ModuleMember -Function Resolve-DirectDownloadValidationMode
+function Get-ExpectedChecksum {
+    <#
+    .SYNOPSIS
+        Returns the canonical expected SHA256 checksum from a Sources object.
+
+    .DESCRIPTION
+        Single source of the checksum accessor shared by the sequential and parallel
+        installation paths. Only the canonical ExpectedSHA256 field is honoured: the
+        Sources schema is additionalProperties:false and defines no other checksum
+        field, so there is no legacy fallback to read.
+
+    .PARAMETER Sources
+        The application Sources object.
+
+    .OUTPUTS
+        [string] The ExpectedSHA256 value (which may be the SKIP_VALIDATION token), or
+        $null when no checksum field is present.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [PSCustomObject]$Sources
+    )
+
+    if ($null -ne $Sources -and $Sources.PSObject.Properties['ExpectedSHA256'] -and $Sources.ExpectedSHA256) {
+        return $Sources.ExpectedSHA256
+    }
+    return $null
+}
+
+function Assert-FileChecksum {
+    <#
+    .SYNOPSIS
+        Verifies that a file satisfies an expected SHA256 checksum requirement.
+
+    .DESCRIPTION
+        Single source of the post-download checksum enforcement shared by the sequential
+        and parallel installation paths. The comparison is case-insensitive (Get-FileHash
+        returns upper-case hex while catalogue checksums may be either case), matching the
+        former inline '-ne' compares so the move is behaviour-preserving.
+
+        Returns $true when there is nothing to enforce (an empty value or the
+        SKIP_VALIDATION opt-out token) so callers can gate unconditionally; otherwise
+        returns whether the file's SHA256 matches the expected value.
+
+    .PARAMETER Path
+        Path to the downloaded file.
+
+    .PARAMETER ExpectedSHA256
+        The expected checksum, the SKIP_VALIDATION token, or empty.
+
+    .OUTPUTS
+        [bool] $true if the requirement is satisfied; $false on a real mismatch.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+
+        [string]$ExpectedSHA256
+    )
+
+    if ([string]::IsNullOrWhiteSpace($ExpectedSHA256) -or $ExpectedSHA256 -eq $script:SkipValidationToken) {
+        return $true
+    }
+
+    $actual = (Get-FileHash -Path $Path -Algorithm SHA256).Hash
+    return $actual -eq $ExpectedSHA256
+}
+
+Export-ModuleMember -Function Resolve-DirectDownloadValidationMode, Get-ExpectedChecksum, Assert-FileChecksum

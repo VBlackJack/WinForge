@@ -85,6 +85,15 @@ if (-not (Get-Command -Name Install-ViaWinget -ErrorAction SilentlyContinue)) {
     }
 }
 
+# DownloadValidation provides the shared checksum accessor/enforcement leaves used by
+# the sequential path here (nested imports do not re-export, so import it explicitly).
+$script:DownloadValidationPath = Join-Path $script:ModuleRoot 'DownloadValidation.psm1'
+if (-not (Get-Command -Name Get-ExpectedChecksum -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DownloadValidationPath) {
+        Import-Module -Name $script:DownloadValidationPath -Force
+    }
+}
+
 $script:WingetCachePath = Join-Path $script:ModuleRoot 'WingetCache.psm1'
 if (-not (Get-Command -Name Get-CachedWingetList -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:WingetCachePath) {
@@ -483,14 +492,10 @@ function Invoke-InstallationMethodSequence {
                     $installParams['DetectionPath'] = $Application.Detection.Path
                 }
 
-                # Canonical checksum accessor: ExpectedSHA256 is the only field the
-                # Sources schema permits (additionalProperties: false). SKIP_VALIDATION
-                # flows through so the fail-closed gate in Install-ViaDirectDownload can
-                # honor the opt-out.
-                $expectedChecksum = $null
-                if ($sources.PSObject.Properties['ExpectedSHA256'] -and $sources.ExpectedSHA256) {
-                    $expectedChecksum = $sources.ExpectedSHA256
-                }
+                # Canonical checksum accessor (shared: DownloadValidation\Get-ExpectedChecksum).
+                # SKIP_VALIDATION flows through so the fail-closed gate in
+                # Install-ViaDirectDownload can honor the opt-out.
+                $expectedChecksum = Get-ExpectedChecksum -Sources $sources
                 if ($expectedChecksum) {
                     $installParams['ExpectedSHA256'] = $expectedChecksum
                 }
@@ -1257,12 +1262,8 @@ function Install-ApplicationsParallel {
                     # Security: fail closed before creating any temp file or downloading.
                     # The decision depends only on metadata, so refuse here rather than
                     # fetch a binary we could not validate. Mirrors Install-ViaDirectDownload.
-                    $parallelChecksum = $null
-                    if ($sources.PSObject.Properties['ExpectedSHA256'] -and $sources.ExpectedSHA256) {
-                        $parallelChecksum = $sources.ExpectedSHA256
-                    } elseif ($sources.PSObject.Properties['SHA256'] -and $sources.SHA256) {
-                        $parallelChecksum = $sources.SHA256
-                    }
+                    # Canonical checksum accessor (shared with the sequential path).
+                    $parallelChecksum = Get-ExpectedChecksum -Sources $sources
                     $parallelPublisher = if ($sources.PSObject.Properties['ExpectedPublisher']) { $sources.ExpectedPublisher } else { $null }
                     $parallelValidationMode = Resolve-DirectDownloadValidationMode -ExpectedSHA256 $parallelChecksum -ExpectedPublisher $parallelPublisher
                     if ($parallelValidationMode -eq 'None') {
@@ -1313,11 +1314,13 @@ function Install-ApplicationsParallel {
                     }
                     Write-ParallelLog "Download completed" 'Info'
 
-                    # SHA256 checksum validation (skipped on explicit opt-out)
+                    # SHA256 checksum validation via the shared enforcement helper
+                    # (DownloadValidation\Assert-FileChecksum), so the comparison rule
+                    # stays identical to the sequential path.
                     if ($parallelHasChecksum) {
                         Write-ParallelLog "Validating SHA256 checksum..." 'Info'
-                        $fileHash = (Get-FileHash -Path $tempFile -Algorithm SHA256).Hash
-                        if ($fileHash -ne $parallelChecksum) {
+                        if (-not (Assert-FileChecksum -Path $tempFile -ExpectedSHA256 $parallelChecksum)) {
+                            $fileHash = (Get-FileHash -Path $tempFile -Algorithm SHA256).Hash
                             Write-ParallelLog "Checksum FAILED! Expected: $parallelChecksum, Got: $fileHash" 'Error'
                             Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
                             $result.Message = (Get-LocalizedString -Key 'orchestrator.result.checksum_failed')
