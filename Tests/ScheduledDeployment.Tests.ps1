@@ -68,6 +68,16 @@ BeforeAll {
 }
 
 Describe 'ScheduledDeployment Module' {
+    BeforeEach {
+        # Hermeticity: redirect persistence to a temp file so the suite never mutates the
+        # tracked Config\scheduled-deployments.json. Re-applied before every test because a
+        # -Force re-import re-runs the module body and resets the module-scope path.
+        InModuleScope ScheduledDeployment -Parameters @{ TempPath = (Join-Path $TestDrive 'scheduled-deployments.json') } {
+            param($TempPath)
+            $script:ScheduledDeploymentsPath = $TempPath
+        }
+    }
+
     Context 'Module Loading' {
         It 'Should load without errors' {
             { Import-Module $script:ScheduledDeploymentPath -Force } | Should -Not -Throw
@@ -195,6 +205,14 @@ Describe 'ScheduledDeployment Integration Tests' -Skip:(-not $script:IsAdmin) {
     BeforeAll {
         $script:TestProfilesDir = Join-Path $PSScriptRoot '..\Profiles'
         $script:TestDeploymentId = $null
+    }
+
+    BeforeEach {
+        # Same hermeticity guard as the unit Describe: keep persistence off the tracked file.
+        InModuleScope ScheduledDeployment -Parameters @{ TempPath = (Join-Path $TestDrive 'scheduled-deployments.json') } {
+            param($TempPath)
+            $script:ScheduledDeploymentsPath = $TempPath
+        }
     }
 
     AfterAll {
