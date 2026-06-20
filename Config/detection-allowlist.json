@@ -26,6 +26,10 @@
     "go", "go.exe",
     "ruby", "ruby.exe",
     "php", "php.exe",
-    "perl", "perl.exe"
+    "perl", "perl.exe",
+    "pwsh", "pwsh.exe",
+    "choco", "choco.exe",
+    "az", "az.cmd",
+    "code", "code.cmd"
   ]
 }

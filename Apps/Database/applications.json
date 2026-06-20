@@ -480,9 +480,8 @@
         "DirectUrl": null
       },
       "Detection": {
-        "Method": "Command",
-        "Command": "wt.exe --version",
-        "VersionRegex": "(\\d+\\.\\d+[\\.\\d]*)"
+        "Method": "StoreApp",
+        "PackageName": "Microsoft.WindowsTerminal"
       },
       "DefaultPriority": 14,
       "DefaultRequired": true,
