@@ -260,8 +260,8 @@
       },
       "Detection": {
         "Method": "Registry",
-        "Path": "HKLM:\\SOFTWARE\\7-Zip",
-        "VersionKey": "Path64"
+        "Path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\7-Zip",
+        "VersionKey": "DisplayVersion"
       },
       "DefaultPriority": 8,
       "DefaultRequired": true,
@@ -1007,8 +1007,8 @@
       },
       "Detection": {
         "Method": "Registry",
-        "Path": "HKLM:\\SOFTWARE\\Valve\\Steam",
-        "VersionKey": "InstallPath"
+        "Path": "HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Steam",
+        "VersionKey": "DisplayVersion"
       },
       "DefaultPriority": 24,
       "DefaultRequired": true,
