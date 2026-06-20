@@ -52,3 +52,57 @@ Describe 'DownloadValidation - Resolve-DirectDownloadValidationMode' {
         }
     }
 }
+
+Describe 'DownloadValidation - Get-ExpectedChecksum' {
+    It 'Returns the canonical ExpectedSHA256 value' {
+        $sources = [PSCustomObject]@{ ExpectedSHA256 = ('a' * 64) }
+        Get-ExpectedChecksum -Sources $sources | Should -Be ('a' * 64)
+    }
+
+    It 'Returns the SKIP_VALIDATION token when that is the configured value' {
+        $sources = [PSCustomObject]@{ ExpectedSHA256 = 'SKIP_VALIDATION' }
+        Get-ExpectedChecksum -Sources $sources | Should -Be 'SKIP_VALIDATION'
+    }
+
+    It 'Ignores a legacy bare SHA256 field (no fallback)' {
+        $sources = [PSCustomObject]@{ SHA256 = ('b' * 64) }
+        Get-ExpectedChecksum -Sources $sources | Should -BeNullOrEmpty
+    }
+
+    It 'Returns null when no checksum field is present' {
+        $sources = [PSCustomObject]@{ Winget = 'Some.App' }
+        Get-ExpectedChecksum -Sources $sources | Should -BeNullOrEmpty
+    }
+
+    It 'Returns null for a null Sources object' {
+        Get-ExpectedChecksum -Sources $null | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'DownloadValidation - Assert-FileChecksum' {
+    BeforeAll {
+        $script:ChecksumFile = Join-Path $TestDrive 'payload.bin'
+        Set-Content -Path $script:ChecksumFile -Value 'Win11Forge checksum fixture' -NoNewline -Encoding UTF8
+        $script:RealHash = (Get-FileHash -Path $script:ChecksumFile -Algorithm SHA256).Hash
+    }
+
+    It 'Returns true when the file hash matches the expected checksum' {
+        Assert-FileChecksum -Path $script:ChecksumFile -ExpectedSHA256 $script:RealHash | Should -BeTrue
+    }
+
+    It 'Returns true regardless of expected-hash casing (case-insensitive compare)' {
+        Assert-FileChecksum -Path $script:ChecksumFile -ExpectedSHA256 $script:RealHash.ToLower() | Should -BeTrue
+    }
+
+    It 'Returns false on a checksum mismatch (fail-closed)' {
+        Assert-FileChecksum -Path $script:ChecksumFile -ExpectedSHA256 ('f' * 64) | Should -BeFalse
+    }
+
+    It 'Returns true for the SKIP_VALIDATION opt-out token (nothing to enforce)' {
+        Assert-FileChecksum -Path $script:ChecksumFile -ExpectedSHA256 'SKIP_VALIDATION' | Should -BeTrue
+    }
+
+    It 'Returns true for an empty expected checksum (nothing to enforce)' {
+        Assert-FileChecksum -Path $script:ChecksumFile -ExpectedSHA256 '' | Should -BeTrue
+    }
+}
