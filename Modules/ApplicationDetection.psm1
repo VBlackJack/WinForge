@@ -900,7 +900,11 @@ function Test-ApplicationInstalledFast {
             'Registry' {
                 # Check if registry path exists (with null-safe property check)
                 if ($Application.Detection.PSObject.Properties['Path'] -and $Application.Detection.Path) {
-                    $detected = Test-Path -Path $Application.Detection.Path -ErrorAction SilentlyContinue
+                    # Gate the path through the shared registry policy (I5 parity with the
+                    # sequential gold path and the parallel runspace). Test-RegistryKey
+                    # validates via Test-RegistryPathAllowed before testing existence, so a
+                    # sensitive or non-allowlisted hive is never probed.
+                    $detected = Test-RegistryKey -Path $Application.Detection.Path
                     # Try to get version from registry using VersionKey if specified
                     if ($detected) {
                         try {
@@ -963,6 +967,7 @@ function Test-ApplicationInstalledFast {
                     $fullCommand = $Application.Detection.Command
                     $commandParts = $fullCommand -split '\s+', 2
                     $executable = $commandParts[0]
+                    $arguments = if ($commandParts.Count -gt 1) { $commandParts[1] } else { $null }
                     $expectedPattern = if ($Application.Detection.PSObject.Properties['Arguments']) { $Application.Detection.Arguments } else { $null }
                     # Get custom VersionRegex from app config or use default
                     $versionRegex = if ($Application.Detection.PSObject.Properties['VersionRegex']) {
@@ -974,6 +979,13 @@ function Test-ApplicationInstalledFast {
                     # Security: Only allow whitelisted executables for command detection
                     $exeBaseName = [System.IO.Path]::GetFileName($executable).ToLower()
                     if ($exeBaseName -notin (Get-DetectionAllowlist)) {
+                        $detected = $false
+                    } elseif (Test-DetectionArgumentDangerous -Arguments $arguments) {
+                        # Block shell-injection patterns before any path (cache or live
+                        # exec), so a dangerous detection config is declined outright -
+                        # parity with the sequential gold path (I4). The shared guard also
+                        # rejects newlines and control chars the former inline regex missed.
+                        Write-Status -Message (Get-LocalizedString -Key 'detect.security.dangerous_arguments' -Parameters @{ Executable = $executable }) -Level 'Warning'
                         $detected = $false
                     } else {
                         # Check if this command output is cached
@@ -997,24 +1009,18 @@ function Test-ApplicationInstalledFast {
                                 }
                             }
                         } elseif (Get-Command -Name $executable -ErrorAction SilentlyContinue) {
-                            # Fallback: execute command if not cached
-                            $arguments = if ($commandParts.Count -gt 1) { $commandParts[1] } else { $null }
-
-                            # Security: Sanitize arguments - block dangerous patterns
-                            if ($arguments -and ($arguments -match '[;&|`$\(\)]|>>|<<')) {
-                                Write-Status -Message (Get-LocalizedString -Key 'detect.security.dangerous_arguments' -Parameters @{ Executable = $executable }) -Level 'Warning'
-                                $detected = $false
+                            # Fallback: execute command if not cached. Split arguments into
+                            # an array and splat so the shell never re-interprets them (I4).
+                            $argArray = @(ConvertTo-DetectionArgumentArray -Arguments $arguments)
+                            $output = if ($argArray.Count -gt 0) {
+                                & $executable @argArray 2>&1 | Out-String
                             } else {
-                                $output = if ($arguments) {
-                                    & $executable $arguments 2>&1 | Out-String
-                                } else {
-                                    & $executable 2>&1 | Out-String
-                                }
-                                if ($expectedPattern) {
-                                    $detected = $output -match [regex]::Escape($expectedPattern)
-                                } else {
-                                    $detected = $true
-                                }
+                                & $executable 2>&1 | Out-String
+                            }
+                            if ($expectedPattern) {
+                                $detected = $output -match [regex]::Escape($expectedPattern)
+                            } else {
+                                $detected = $true
                             }
                             # Extract version using custom regex
                             if ($detected -and $output -match $versionRegex) {

@@ -475,3 +475,47 @@ Describe 'ApplicationDetection - STRICT VersionKey (I1)' {
         $r.Version | Should -BeNullOrEmpty
     }
 }
+
+Describe 'ApplicationDetection - Fast detection guard parity (I4/I5)' {
+    BeforeAll {
+        # Sources=$null plus an empty cache leave the Detection method as the only
+        # possible detection signal, so a declined guard yields IsInstalled=$false
+        # without interference from the winget or registry-name fallbacks.
+        $script:ParityCache = [PSCustomObject]@{
+            RegistryApps   = @{}
+            WingetOutput   = ''
+            AppxPackages   = @{}
+            CommandOutputs = @{}
+        }
+    }
+
+    Context 'I5 - registry path policy' {
+        It 'Declines a blocked sensitive hive even when the key exists' {
+            # HKLM:\SYSTEM\CurrentControlSet exists on every Windows host, so the former
+            # raw Test-Path reported it installed. The shared policy blocks the SYSTEM
+            # hive, so Fast must now decline - parity with the sequential gold path.
+            $app = [PSCustomObject]@{
+                Name      = 'BlockedHiveApp'
+                Sources   = $null
+                Detection = [PSCustomObject]@{ Method = 'Registry'; Path = 'HKLM:\SYSTEM\CurrentControlSet' }
+            }
+            $r = Test-ApplicationInstalledFast -Application $app -Cache $script:ParityCache
+            $r.IsInstalled | Should -BeFalse
+        }
+    }
+
+    Context 'I4 - command argument sanitization' {
+        It 'Declines a Command whose arguments carry control characters the inline regex missed' {
+            # git is allowlisted; the argument token embeds a CR+LF that the former inline
+            # regex ignored but the shared guard rejects. The gate runs before the cache
+            # lookup, so a dangerous detection config is declined outright.
+            $app = [PSCustomObject]@{
+                Name      = 'DangerousArgsApp'
+                Sources   = $null
+                Detection = [PSCustomObject]@{ Method = 'Command'; Command = "git --ver`r`nsion" }
+            }
+            $r = Test-ApplicationInstalledFast -Application $app -Cache $script:ParityCache
+            $r.IsInstalled | Should -BeFalse
+        }
+    }
+}
