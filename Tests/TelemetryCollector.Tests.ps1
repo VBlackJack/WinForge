@@ -311,8 +311,21 @@ Describe 'TelemetryCollector Module' {
         }
 
         It 'Should export report to default location' {
-            $path = Export-TelemetryReport
-            $path | Should -Not -BeNullOrEmpty
+            # Hermeticity: redirect the module's repository root to TestDrive for this single
+            # test so the default-path export never mutates the tracked telemetry-data.json.
+            # Restored in finally so the override never leaks to sibling tests.
+            InModuleScope TelemetryCollector -Parameters @{ TempRoot = "$TestDrive" } {
+                param($TempRoot)
+                $originalRoot = $script:RepositoryRoot
+                try {
+                    $script:RepositoryRoot = $TempRoot
+                    $path = Export-TelemetryReport
+                    $path | Should -Not -BeNullOrEmpty
+                }
+                finally {
+                    $script:RepositoryRoot = $originalRoot
+                }
+            }
         }
 
         It 'Should export report to custom location' {
