@@ -777,3 +777,31 @@ Describe 'ApplicationDatabase Extended Coverage' {
         }
     }
 }
+
+Describe 'ApplicationDatabase - Command detection allowlist coverage' {
+    BeforeAll {
+        $catalogPath   = Join-Path $PSScriptRoot '..\Apps\Database\applications.json'
+        $allowlistPath = Join-Path $PSScriptRoot '..\Config\detection-allowlist.json'
+        $catalog   = Get-Content -Path $catalogPath   -Raw -Encoding UTF8 | ConvertFrom-Json
+        $allowlist = (Get-Content -Path $allowlistPath -Raw -Encoding UTF8 | ConvertFrom-Json).allowedExecutables
+        $script:AllowedExecutables = @($allowlist | ForEach-Object { $_.ToLower() })
+
+        # Collect the leading executable base name of every Command-method detection.
+        $script:CommandExecutables = foreach ($prop in $catalog.Applications.PSObject.Properties) {
+            $detection = $prop.Value.Detection
+            if ($detection -and $detection.Method -eq 'Command' -and $detection.Command) {
+                $exe = [System.IO.Path]::GetFileName(($detection.Command -split '\s+')[0]).ToLower()
+                [PSCustomObject]@{ Id = $prop.Name; Executable = $exe }
+            }
+        }
+    }
+
+    It 'Every Command detection executable is present in the detection allowlist' {
+        # A Command detection whose executable is not allowlisted fails closed at runtime
+        # (Get-DetectionAllowlist denies it), so the detection is silently dead. This guard
+        # turns that latent debt into a build failure at commit time.
+        $violations = @($script:CommandExecutables | Where-Object { $_.Executable -notin $script:AllowedExecutables })
+        $report = ($violations | ForEach-Object { "$($_.Id) -> '$($_.Executable)'" }) -join '; '
+        $violations | Should -BeNullOrEmpty -Because "these Command detections reference non-allowlisted executables and would never detect: $report"
+    }
+}
