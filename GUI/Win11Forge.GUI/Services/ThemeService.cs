@@ -673,7 +673,7 @@ public sealed class ThemeService : IThemeService
 
     private static void SetBrush(ResourceDictionary resources, string key, SolidColorBrush brush)
     {
-        resources[key] = CloneBrush(brush);
+        resources[key] = CloneBrush(brush, brush.Opacity);
     }
 
     private static void SetColor(ResourceDictionary resources, string key, Color color)
