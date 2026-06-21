@@ -180,9 +180,17 @@ public sealed class ThemeService : IThemeService
         "StatusPendingBrush",
         "StatusInstallingBrush",
         "StatusInstalledBrush",
+        "StatusAlreadyInstalledBrush",
+        "StatusUninstallingBrush",
+        "StatusUninstalledBrush",
         "StatusFailedBrush",
         "StatusSkippedBrush",
         "StatusSuccessBrush",
+        "RowInstalledBackground",
+        "RowFailedBackground",
+        "RowInstallingBackground",
+        "RowUninstalledBackground",
+        "RowUpdateAvailableBackground",
         "ErrorBackgroundBrush",
         "ErrorBorderBrush",
         "ErrorTextBrush",
@@ -198,6 +206,17 @@ public sealed class ThemeService : IThemeService
         "SuccessIconBrush",
         "ManualInstallBadgeBrush",
         "RequiredBrush",
+        "FavoriteActiveBrush",
+        "FavoriteTextBrush",
+        "FavoriteInactiveBrush",
+        "AccentGreenTextBrush",
+        "AccentOrangeTextBrush",
+        "IconSecondaryBrush",
+        "IconHintBrush",
+        "IconDisabledBrush",
+        "OptionalBrush",
+        "SubtleDataGridLineBrush",
+        "ValidationSuccessBorderBrush",
         "BadgePrimaryForegroundBrush",
         "BadgeSecondaryForegroundBrush",
         "PrimaryHueLightForegroundBrush",
@@ -495,6 +514,26 @@ public sealed class ThemeService : IThemeService
         SetBrush(resources, "StatusFailedBrush", error);
         SetBrush(resources, "StatusSkippedBrush", warning);
         SetBrush(resources, "StatusSuccessBrush", success);
+        // Extended semantic bridge (was Material-hardcoded).
+        SetBrush(resources, "StatusAlreadyInstalledBrush", CloneBrush(success, 0.75));
+        SetBrush(resources, "StatusUninstallingBrush", accent);
+        SetBrush(resources, "StatusUninstalledBrush", textDisabled);
+        SetBrush(resources, "RowInstalledBackground", CloneBrush(success, 0.12));
+        SetBrush(resources, "RowFailedBackground", CloneBrush(error, 0.12));
+        SetBrush(resources, "RowInstallingBackground", CloneBrush(info, 0.12));
+        SetBrush(resources, "RowUninstalledBackground", CloneBrush(textDisabled, 0.12));
+        SetBrush(resources, "RowUpdateAvailableBackground", CloneBrush(warning, 0.16));
+        SetBrush(resources, "FavoriteActiveBrush", warning);
+        SetBrush(resources, "FavoriteTextBrush", warning);
+        SetBrush(resources, "FavoriteInactiveBrush", textDisabled);
+        SetBrush(resources, "AccentGreenTextBrush", success);
+        SetBrush(resources, "AccentOrangeTextBrush", warning);
+        SetBrush(resources, "IconSecondaryBrush", textSecondary);
+        SetBrush(resources, "IconHintBrush", textDisabled);
+        SetBrush(resources, "IconDisabledBrush", textDisabled);
+        SetBrush(resources, "OptionalBrush", textDisabled);
+        SetBrush(resources, "SubtleDataGridLineBrush", CloneBrush(border, 0.35));
+        SetBrush(resources, "ValidationSuccessBorderBrush", success);
         SetBrush(resources, "ErrorBackgroundBrush", error);
         SetBrush(resources, "ErrorBorderBrush", error);
         SetBrush(resources, "ErrorTextBrush", error);
