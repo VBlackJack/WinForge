@@ -990,17 +990,8 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Dialog_Error_Details" xml:space="preserve">
     <value>Details techniques</value>
   </data>
-  <data name="Dialog_OK" xml:space="preserve">
-    <value>OK</value>
-  </data>
   <data name="Dialog_Cancel" xml:space="preserve">
     <value>Annuler</value>
-  </data>
-  <data name="Dialog_Retry" xml:space="preserve">
-    <value>Réessayer</value>
-  </data>
-  <data name="Dialog_Help" xml:space="preserve">
-    <value>Aide</value>
   </data>
   <data name="Dialog_Close" xml:space="preserve">
     <value>Fermer</value>
@@ -1010,9 +1001,6 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <data name="Dialog_Copied" xml:space="preserve">
     <value>Copie !</value>
-  </data>
-  <data name="Dialog_Confirm" xml:space="preserve">
-    <value>Confirmer</value>
   </data>
   <!-- Keyboard Shortcuts Help -->
   <data name="Help_KeyboardShortcuts" xml:space="preserve">
@@ -2561,12 +2549,6 @@ Cette action est irréversible.</value>
   </data>
   <data name="A11y_Main_NavLogs" xml:space="preserve">
     <value>Aller aux journaux, Ctrl+7</value>
-  </data>
-  <data name="A11y_Dialog_Confirm" xml:space="preserve">
-    <value>Boite de dialogue de confirmation</value>
-  </data>
-  <data name="A11y_Dialog_Error" xml:space="preserve">
-    <value>Boite de dialogue d'erreur</value>
   </data>
   <data name="A11y_Deployment_AppList" xml:space="preserve">
     <value>Liste des applications en déploiement</value>

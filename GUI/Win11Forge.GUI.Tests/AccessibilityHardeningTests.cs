@@ -44,9 +44,7 @@ public class AccessibilityHardeningTests
             }
         ],
         ["Views/PrerequisitesView.xaml", new[] { "Prerequisites_Check" }],
-        ["Views/SettingsView.xaml", new[] { "Settings_AccentTint_Desc", "Settings_ReducedMotion_Desc", "Settings_HighContrast_Desc" }],
-        ["Controls/ConfirmDialog.xaml", new[] { "Dialog_Cancel", "Dialog_Confirm" }],
-        ["Controls/ErrorDialog.xaml", new[] { "Dialog_Help", "Dialog_Retry", "Dialog_OK" }]
+        ["Views/SettingsView.xaml", new[] { "Settings_AccentTint_Desc", "Settings_ReducedMotion_Desc", "Settings_HighContrast_Desc" }]
     ];
 
     [Fact]
@@ -301,6 +299,31 @@ public class AccessibilityHardeningTests
         Assert.DoesNotContain("AppCatalog_DeleteMultipleTitle", frResx, StringComparison.Ordinal);
         Assert.DoesNotContain("?? \"Clear Old Logs\"", logsViewModel, StringComparison.Ordinal);
         Assert.DoesNotContain("Delete log files older than 7 days?", logsViewModel, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DeadResourceCleanup_RemovesDeadDialogKeys()
+    {
+        string enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
+        string frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
+        string designer = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.Designer.cs"));
+
+        string[] removedKeys =
+        [
+            "A11y_Dialog_" + "Confirm",
+            "A11y_Dialog_" + "Error",
+            "Dialog_" + "Confirm",
+            "Dialog_" + "Help",
+            "Dialog_" + "Retry",
+            "Dialog_" + "OK"
+        ];
+
+        foreach (string key in removedKeys)
+        {
+            Assert.DoesNotContain($"name=\"{key}\"", enResx, StringComparison.Ordinal);
+            Assert.DoesNotContain($"name=\"{key}\"", frResx, StringComparison.Ordinal);
+            Assert.DoesNotContain($"GetString(\"{key}\"", designer, StringComparison.Ordinal);
+        }
     }
 
     [Fact]
