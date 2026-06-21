@@ -455,6 +455,9 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Settings_ThemeName_Slate" xml:space="preserve">
     <value>Slate</value>
   </data>
+  <data name="Settings_ThemeName_Magellan" xml:space="preserve">
+    <value>Magellan</value>
+  </data>
   <data name="Settings_ThemeName_Voivode" xml:space="preserve">
     <value>Voivode</value>
   </data>

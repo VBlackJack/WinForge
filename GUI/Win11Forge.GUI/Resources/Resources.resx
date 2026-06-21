@@ -629,6 +629,10 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Slate</value>
     <comment>Theme display name for ThemeForge Slate</comment>
   </data>
+  <data name="Settings_ThemeName_Magellan" xml:space="preserve">
+    <value>Magellan</value>
+    <comment>Theme display name for ThemeForge Magellan</comment>
+  </data>
   <data name="Settings_ThemeName_Voivode" xml:space="preserve">
     <value>Voivode</value>
     <comment>Theme display name for ThemeForge Voivode</comment>
