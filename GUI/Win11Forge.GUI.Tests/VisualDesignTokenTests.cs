@@ -46,11 +46,23 @@ public class VisualDesignTokenTests
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
 
-        AssertNamedStyleSetter(styles, "PageTitleTextStyle", "FontSize", "28");
+        AssertResourceValue(appXaml, "FontSizeMicro", "11");
+        AssertResourceValue(appXaml, "FontSizeCaption", "12");
+        AssertResourceValue(appXaml, "FontSizeBody", "14");
+        AssertResourceValue(appXaml, "FontSizeBodyLarge", "16");
+        AssertResourceValue(appXaml, "FontSizeLarge", "18");
+        AssertResourceValue(appXaml, "FontSizeSubtitle", "20");
+        AssertResourceValue(appXaml, "FontSizeTitle", "24");
+        AssertResourceValue(appXaml, "FontSizeHeader", "28");
+        AssertResourceValue(appXaml, "FontSizeDisplay", "32");
+        AssertResourceValue(appXaml, "FontSizeHero", "48");
+
+        AssertNamedStyleSetter(styles, "PageTitleTextStyle", "FontSize", "{StaticResource FontSizeHeader}");
         AssertNamedStyleSetter(styles, "PageTitleTextStyle", "FontWeight", "SemiBold");
         AssertNamedStyleSetter(styles, "PageTitleTextStyle", "Foreground", "{DynamicResource TextFillColorPrimaryBrush}");
-        AssertNamedStyleSetter(styles, "PageSubtitleTextStyle", "FontSize", "14");
+        AssertNamedStyleSetter(styles, "PageSubtitleTextStyle", "FontSize", "{StaticResource FontSizeBody}");
         AssertNamedStyleSetter(styles, "PageSubtitleTextStyle", "Foreground", "{DynamicResource TextFillColorSecondaryBrush}");
+        AssertNamedStyleSetter(styles, "SourceBadgeTextStyle", "FontSize", "{StaticResource FontSizeMicro}");
     }
 
     [Fact]
@@ -339,6 +351,19 @@ public class VisualDesignTokenTests
 
         Assert.NotNull(setter);
         Assert.Equal(expectedValue, setter.Attribute("Value")?.Value);
+    }
+
+    private static void AssertResourceValue(XDocument appXaml, string key, string expectedValue)
+    {
+        XElement? resource = appXaml.Descendants()
+            .SingleOrDefault(element =>
+                string.Equals(
+                    element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value,
+                    key,
+                    StringComparison.Ordinal));
+
+        Assert.NotNull(resource);
+        Assert.Equal(expectedValue, resource.Value);
     }
 
     private static string FindRepoFile(params string[] relativeParts)

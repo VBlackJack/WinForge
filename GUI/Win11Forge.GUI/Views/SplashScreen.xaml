@@ -37,7 +37,7 @@
                            Symbol="Settings24"
                            Width="64"
                            Height="64"
-                           FontSize="48"
+                           FontSize="{StaticResource FontSizeHero}"
                            HorizontalAlignment="Center"
                            Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
                            RenderTransformOrigin="0.5,0.5">
@@ -49,12 +49,12 @@
             <!-- Application Name -->
             <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="Win11Forge"
-                           FontSize="32"
+                           FontSize="{StaticResource FontSizeDisplay}"
                            FontWeight="Bold"
                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                            HorizontalAlignment="Center"/>
                 <TextBlock x:Name="VersionText"
-                           FontSize="14"
+                           FontSize="{StaticResource FontSizeBody}"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            HorizontalAlignment="Center"
                            Margin="0,4,0,0"/>
@@ -69,7 +69,7 @@
             <!-- Status Message -->
             <TextBlock x:Name="StatusText"
                        Grid.Row="3"
-                       FontSize="12"
+                       FontSize="{StaticResource FontSizeCaption}"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        HorizontalAlignment="Center"
                        Margin="0,12,0,0"/>

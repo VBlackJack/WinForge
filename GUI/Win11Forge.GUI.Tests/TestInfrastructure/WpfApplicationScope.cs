@@ -43,7 +43,7 @@ internal sealed class WpfApplicationScope : IDisposable
     {
         _application = application;
         _originalResources = application.Resources;
-        _application.Resources = new ResourceDictionary();
+        _application.Resources = CreateTestResources();
     }
 
     /// <summary>
@@ -152,6 +152,23 @@ internal sealed class WpfApplicationScope : IDisposable
     {
         _application.Resources = _originalResources;
         _application.Shutdown();
+    }
+
+    private static ResourceDictionary CreateTestResources()
+    {
+        return new ResourceDictionary
+        {
+            ["FontSizeMicro"] = 11.0,
+            ["FontSizeCaption"] = 12.0,
+            ["FontSizeBody"] = 14.0,
+            ["FontSizeBodyLarge"] = 16.0,
+            ["FontSizeLarge"] = 18.0,
+            ["FontSizeSubtitle"] = 20.0,
+            ["FontSizeTitle"] = 24.0,
+            ["FontSizeHeader"] = 28.0,
+            ["FontSizeDisplay"] = 32.0,
+            ["FontSizeHero"] = 48.0
+        };
     }
 
     private static void ShutdownApplicationFromOwningDispatcher(Application app)

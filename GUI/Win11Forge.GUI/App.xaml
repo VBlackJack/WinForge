@@ -421,6 +421,18 @@
             <Thickness x:Key="ButtonPaddingHero">32,0</Thickness>
             <Thickness x:Key="ButtonPaddingIcon">10</Thickness>
 
+            <!-- Canonical typographic scale. No view should set a numeric FontSize inline. -->
+            <sys:Double x:Key="FontSizeMicro">11</sys:Double>
+            <sys:Double x:Key="FontSizeCaption">12</sys:Double>
+            <sys:Double x:Key="FontSizeBody">14</sys:Double>
+            <sys:Double x:Key="FontSizeBodyLarge">16</sys:Double>
+            <sys:Double x:Key="FontSizeLarge">18</sys:Double>
+            <sys:Double x:Key="FontSizeSubtitle">20</sys:Double>
+            <sys:Double x:Key="FontSizeTitle">24</sys:Double>
+            <sys:Double x:Key="FontSizeHeader">28</sys:Double>
+            <sys:Double x:Key="FontSizeDisplay">32</sys:Double>
+            <sys:Double x:Key="FontSizeHero">48</sys:Double>
+
             <sys:Double x:Key="ButtonFontSizeStandard">14</sys:Double>
             <sys:Double x:Key="ButtonFontSizeHero">16</sys:Double>
             <FontWeight x:Key="ButtonFontWeightStandard">SemiBold</FontWeight>
@@ -448,13 +460,13 @@
 
             <!-- Page header typography tokens -->
             <Style x:Key="PageTitleTextStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="28"/>
+                <Setter Property="FontSize" Value="{StaticResource FontSizeHeader}"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
             </Style>
 
             <Style x:Key="PageSubtitleTextStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
                 <Setter Property="Margin" Value="0,8,0,0"/>
             </Style>
@@ -575,7 +587,7 @@
             </Style>
 
             <Style x:Key="SourceBadgeTextStyle" TargetType="TextBlock">
-                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="FontSize" Value="{StaticResource FontSizeMicro}"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>

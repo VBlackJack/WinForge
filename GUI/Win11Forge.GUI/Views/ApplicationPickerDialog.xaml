@@ -28,7 +28,7 @@
                                VerticalAlignment="Center"
                                Margin="0,0,12,0"/>
                 <TextBlock Text="{loc:Loc Dialog_SelectApp_Title}"
-                           FontSize="20" FontWeight="SemiBold"
+                           FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                            VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
@@ -97,7 +97,7 @@
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            HorizontalAlignment="Center"/>
             <TextBlock Text="{loc:Loc Dialog_NoAppsAvailable}"
-                       FontSize="12"
+                       FontSize="{StaticResource FontSizeCaption}"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        HorizontalAlignment="Center"
                        Margin="0,8,0,0"/>

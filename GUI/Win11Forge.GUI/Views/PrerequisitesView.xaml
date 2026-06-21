@@ -47,7 +47,7 @@
                                              Width="16" Height="16"
                                              Margin="0,0,8,0"
                                              Visibility="{Binding IsChecking, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="18" VerticalAlignment="Center" Margin="0,0,4,0"
+                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="{StaticResource FontSizeLarge}" VerticalAlignment="Center" Margin="0,0,4,0"
                                            Visibility="{Binding IsChecking, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                             <TextBlock Text="{loc:Loc Prerequisites_Check}" VerticalAlignment="Center"/>
                         </StackPanel>
@@ -67,19 +67,19 @@
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="{Binding Status.AllInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                       FontSize="32"
+                                       FontSize="{StaticResource FontSizeDisplay}"
                                        Foreground="{Binding Status.AllInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
                                        VerticalAlignment="Center"
                                        Margin="0,0,16,0"/>
                         <StackPanel>
-                            <TextBlock FontSize="20" FontWeight="SemiBold">
+                            <TextBlock FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold">
                                 <Run Text="{Binding Status.InstalledCount, Mode=OneWay}"/>
                                 <Run Text="/"/>
                                 <Run Text="{Binding Status.TotalCount, Mode=OneWay}"/>
                                 <Run Text=" "/>
                                 <Run Text="{loc:Loc Prerequisites_ComponentsInstalled}"/>
                             </TextBlock>
-                            <TextBlock FontSize="12"
+                            <TextBlock FontSize="{StaticResource FontSizeCaption}"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        Visibility="{Binding Status.AllInstalled, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                                 <Run Text="{Binding Status.TotalMissingCount, Mode=OneWay}"/>
@@ -99,7 +99,7 @@
                                              Width="16" Height="16"
                                              Margin="0,0,8,0"
                                              Visibility="{Binding IsInstalling, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                            <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="18" VerticalAlignment="Center" Margin="0,0,4,0"
+                            <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="{StaticResource FontSizeLarge}" VerticalAlignment="Center" Margin="0,0,4,0"
                                            Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                             <TextBlock Text="{loc:Loc Prerequisites_InstallAll}" VerticalAlignment="Center"/>
                         </StackPanel>
@@ -120,11 +120,11 @@
                     <!-- Section Header -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
                         <ui:SymbolIcon Symbol="Box24"
-                                       FontSize="24"
+                                       FontSize="{StaticResource FontSizeTitle}"
                                        VerticalAlignment="Center"
                                        Margin="0,0,8,0"/>
                         <TextBlock Text="{loc:Loc Prerequisites_CategoryPackageManagers}"
-                                   FontSize="20" FontWeight="SemiBold"
+                                   FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                    VerticalAlignment="Center"/>
                         <Border Background="{DynamicResource SystemAccentColorPrimaryBrush}"
                                 CornerRadius="4"
@@ -132,7 +132,7 @@
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center">
                             <TextBlock Text="{loc:Loc Prerequisites_Required}"
-                                       FontSize="12"
+                                       FontSize="{StaticResource FontSizeCaption}"
                                        Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
                         </Border>
                     </StackPanel>
@@ -151,16 +151,16 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:SymbolIcon Grid.Column="0"
                                                Symbol="{Binding Status.PowerShell7Installed, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                               FontSize="24"
+                                               FontSize="{StaticResource FontSizeTitle}"
                                                Foreground="{Binding Status.PowerShell7Installed, Converter={StaticResource BoolToInstalledColorConverter}}"
                                                VerticalAlignment="Center"
                                                Margin="0,0,12,0"/>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="{loc:Loc Prerequisites_PowerShell7}"
-                                               FontSize="14"
+                                               FontSize="{StaticResource FontSizeBody}"
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.PowerShellVersion}"
-                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -177,16 +177,16 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:SymbolIcon Grid.Column="0"
                                                Symbol="{Binding Status.WingetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                               FontSize="24"
+                                               FontSize="{StaticResource FontSizeTitle}"
                                                Foreground="{Binding Status.WingetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
                                                VerticalAlignment="Center"
                                                Margin="0,0,12,0"/>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="{loc:Loc Prerequisites_Winget}"
-                                               FontSize="14"
+                                               FontSize="{StaticResource FontSizeBody}"
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.WingetVersion}"
-                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -199,16 +199,16 @@
                             </Grid.ColumnDefinitions>
                             <ui:SymbolIcon Grid.Column="0"
                                            Symbol="{Binding Status.ChocolateyInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                           FontSize="24"
+                                           FontSize="{StaticResource FontSizeTitle}"
                                            Foreground="{Binding Status.ChocolateyInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
                                            VerticalAlignment="Center"
                                            Margin="0,0,12,0"/>
                             <StackPanel Grid.Column="1">
                                 <TextBlock Text="{loc:Loc Prerequisites_Chocolatey}"
-                                           FontSize="14"
+                                           FontSize="{StaticResource FontSizeBody}"
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{Binding Status.ChocolateyVersion}"
-                                           FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                           FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                         </Grid>
                     </UniformGrid>
@@ -228,11 +228,11 @@
                     <!-- Section Header -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
                         <ui:SymbolIcon Symbol="Code24"
-                                       FontSize="24"
+                                       FontSize="{StaticResource FontSizeTitle}"
                                        VerticalAlignment="Center"
                                        Margin="0,0,8,0"/>
                         <TextBlock Text="{loc:Loc Prerequisites_CategoryRuntimes}"
-                                   FontSize="20" FontWeight="SemiBold"
+                                   FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                    VerticalAlignment="Center"/>
                         <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
                                 CornerRadius="4"
@@ -240,7 +240,7 @@
                                 Margin="12,0,0,0"
                                 VerticalAlignment="Center">
                             <TextBlock Text="{loc:Loc Prerequisites_Optional}"
-                                       FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                       FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </Border>
                     </StackPanel>
 
@@ -258,16 +258,16 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:SymbolIcon Grid.Column="0"
                                                Symbol="{Binding Status.DotNetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                               FontSize="24"
+                                               FontSize="{StaticResource FontSizeTitle}"
                                                Foreground="{Binding Status.DotNetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
                                                VerticalAlignment="Center"
                                                Margin="0,0,12,0"/>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="{loc:Loc Prerequisites_DotNet}"
-                                               FontSize="14"
+                                               FontSize="{StaticResource FontSizeBody}"
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.DotNetVersion}"
-                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Grid>
@@ -285,16 +285,16 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:SymbolIcon Grid.Column="0"
                                                Symbol="{Binding Status.DotNetFrameworkInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                               FontSize="24"
+                                               FontSize="{StaticResource FontSizeTitle}"
                                                Foreground="{Binding Status.DotNetFrameworkInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
                                                VerticalAlignment="Center"
                                                Margin="0,0,12,0"/>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="{loc:Loc Prerequisites_DotNetFramework}"
-                                               FontSize="14"
+                                               FontSize="{StaticResource FontSizeBody}"
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.DotNetFrameworkVersion}"
-                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -311,16 +311,16 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:SymbolIcon Grid.Column="0"
                                                Symbol="{Binding Status.VCRedistInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                               FontSize="24"
+                                               FontSize="{StaticResource FontSizeTitle}"
                                                Foreground="{Binding Status.VCRedistInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
                                                VerticalAlignment="Center"
                                                Margin="0,0,12,0"/>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="{loc:Loc Prerequisites_VCRedist}"
-                                               FontSize="14"
+                                               FontSize="{StaticResource FontSizeBody}"
                                                FontWeight="Medium"/>
                                     <TextBlock Text="{Binding Status.VCRedistVersion}"
-                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -333,16 +333,16 @@
                             </Grid.ColumnDefinitions>
                             <ui:SymbolIcon Grid.Column="0"
                                            Symbol="{Binding Status.JavaInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
-                                           FontSize="24"
+                                           FontSize="{StaticResource FontSizeTitle}"
                                            Foreground="{Binding Status.JavaInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
                                            VerticalAlignment="Center"
                                            Margin="0,0,12,0"/>
                             <StackPanel Grid.Column="1">
                                 <TextBlock Text="{loc:Loc Prerequisites_Java}"
-                                           FontSize="14"
+                                           FontSize="{StaticResource FontSizeBody}"
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{Binding Status.JavaVersion}"
-                                           FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Grid>
@@ -369,11 +369,11 @@
 
                         <StackPanel Grid.Column="0" Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="WindowConsole20"
-                                           FontSize="24"
+                                           FontSize="{StaticResource FontSizeTitle}"
                                            VerticalAlignment="Center"
                                            Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Prerequisites_LogTitle}"
-                                       FontSize="20" FontWeight="SemiBold"
+                                       FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
                             <ui:ProgressRing IsIndeterminate="True"
                                              Width="16" Height="16"
@@ -386,7 +386,7 @@
                                 Style="{StaticResource SecondaryButton}"
                                 Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
-                                <ui:SymbolIcon Symbol="Delete24" FontSize="18" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <ui:SymbolIcon Symbol="Delete24" FontSize="{StaticResource FontSizeLarge}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                                 <TextBlock Text="{loc:Loc Prerequisites_ClearLog}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ui:Button>
@@ -406,7 +406,7 @@
                                      IsReadOnly="True"
                                      TextWrapping="NoWrap"
                                      FontFamily="Consolas"
-                                     FontSize="11"
+                                     FontSize="{StaticResource FontSizeMicro}"
                                      BorderThickness="0"
                                      Padding="12"
                                      Background="Transparent"

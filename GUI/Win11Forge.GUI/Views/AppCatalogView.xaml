@@ -277,7 +277,7 @@
                                      HorizontalAlignment="Center"
                                      Width="48" Height="48"/>
                     <TextBlock Text="{loc:Loc Loading_Database}"
-                               FontSize="12"
+                               FontSize="{StaticResource FontSizeCaption}"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                HorizontalAlignment="Center"
                                Margin="0,16,0,0"/>
@@ -456,7 +456,7 @@
                                    Margin="0,0,0,16"
                                    AutomationProperties.Name="{loc:Loc A11y_NoDatabaseIcon}"/>
                     <TextBlock Text="{Binding EmptyStateMessage}"
-                               FontSize="20" FontWeight="SemiBold"
+                               FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                HorizontalAlignment="Center"
                                TextAlignment="Center"/>
@@ -472,7 +472,7 @@
                                    HorizontalAlignment="Center"
                                    Margin="0,0,0,16"/>
                     <TextBlock Text="{Binding LoadErrorMessage}"
-                               FontSize="16" FontWeight="SemiBold"
+                               FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                HorizontalAlignment="Center"
                                TextAlignment="Center"
@@ -498,7 +498,7 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Text="{Binding StatusMessage}"
-                           FontSize="12"
+                           FontSize="{StaticResource FontSizeCaption}"
                            VerticalAlignment="Center"/>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">

@@ -32,7 +32,7 @@
         <!-- Title -->
         <TextBlock x:Name="TitleText"
                    Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                   FontSize="20" FontWeight="SemiBold"
+                   FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                    HorizontalAlignment="Center"
                    TextAlignment="Center"
@@ -42,7 +42,7 @@
         <!-- Subtitle -->
         <TextBlock x:Name="SubtitleText"
                    Text="{Binding Subtitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                   FontSize="12"
+                   FontSize="{StaticResource FontSizeCaption}"
                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                    HorizontalAlignment="Center"
                    TextAlignment="Center"

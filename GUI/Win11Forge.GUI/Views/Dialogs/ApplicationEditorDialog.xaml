@@ -18,7 +18,7 @@
         Background="{DynamicResource ApplicationBackgroundBrush}"
         TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
         TextElement.FontWeight="Medium"
-        TextElement.FontSize="14">
+        TextElement.FontSize="{StaticResource FontSizeBody}">
 
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding CancelCommand}"/>
@@ -55,7 +55,7 @@
                     </ui:SymbolIcon.Style>
                 </ui:SymbolIcon>
                 <TextBlock Text="{Binding DialogTitle}"
-                           FontSize="24" FontWeight="SemiBold"
+                           FontSize="{StaticResource FontSizeTitle}" FontWeight="SemiBold"
                            Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
@@ -142,7 +142,7 @@
                                 Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock Text="{loc:Loc AppEditor_SourceSearchTitle}"
-                                           FontSize="16"
+                                           FontSize="{StaticResource FontSizeBodyLarge}"
                                            FontWeight="SemiBold"/>
                                 <TextBlock Text="{loc:Loc AppEditor_SourceSearchDescription}"
                                            Margin="0,4,0,0"

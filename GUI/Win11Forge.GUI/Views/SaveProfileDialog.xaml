@@ -30,7 +30,7 @@
                                Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                                Margin="0,0,12,0"/>
                 <TextBlock Text="{loc:Loc Dialog_SaveProfile_Title}"
-                           FontSize="20" FontWeight="SemiBold"
+                           FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                            Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
@@ -84,7 +84,7 @@
 
                 <!-- Profile Name -->
                 <TextBlock Text="{loc:Loc Editor_Lbl_Name}"
-                           FontSize="12"
+                           FontSize="{StaticResource FontSizeCaption}"
                            Margin="0,0,0,8"/>
                 <ui:TextBox Text="{Binding NewProfileName, UpdateSourceTrigger=PropertyChanged}"
                             PlaceholderText="{loc:Loc Editor_Hint_ProfileName}"
@@ -93,7 +93,7 @@
 
                 <!-- Parent Profile -->
                 <TextBlock Text="{loc:Loc Editor_Lbl_Parent}"
-                           FontSize="12"
+                           FontSize="{StaticResource FontSizeCaption}"
                            Margin="0,0,0,8"/>
                 <ComboBox ItemsSource="{Binding AvailableParents}"
                           SelectedItem="{Binding SelectedParent}"
@@ -102,7 +102,7 @@
 
                 <!-- Description -->
                 <TextBlock Text="{loc:Loc Editor_Lbl_Description}"
-                           FontSize="12"
+                           FontSize="{StaticResource FontSizeCaption}"
                            Margin="0,0,0,8"/>
                 <ui:TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
                             PlaceholderText="{loc:Loc Editor_Hint_Description}"

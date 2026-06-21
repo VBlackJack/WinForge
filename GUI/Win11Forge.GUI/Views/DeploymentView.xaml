@@ -60,11 +60,11 @@
                                        Margin="0,0,12,0"/>
                         <StackPanel>
                             <TextBlock Text="{Binding DeploymentStatusMessage}"
-                                       FontSize="20" FontWeight="SemiBold"
+                                       FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                        TextTrimming="CharacterEllipsis"
                                        MaxWidth="400"/>
                             <TextBlock Text="{Binding CurrentAppName}"
-                                       FontSize="12"
+                                       FontSize="{StaticResource FontSizeCaption}"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        TextTrimming="CharacterEllipsis"
                                        MaxWidth="400"
@@ -80,7 +80,7 @@
                             Padding="16,8">
                         <TextBlock Foreground="{DynamicResource PrimaryHueLightForegroundBrush}"
                                    FontWeight="Bold"
-                                   FontSize="16">
+                                   FontSize="{StaticResource FontSizeBodyLarge}">
                             <Run Text="{Binding CompletedCount, Mode=OneWay}"/>
                             <Run Text="/"/>
                             <Run Text="{Binding TotalToInstall, Mode=OneWay}"/>
@@ -106,7 +106,7 @@
                                    VerticalAlignment="Center"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    Margin="0,0,6,0"/>
-                    <TextBlock FontSize="12"
+                    <TextBlock FontSize="{StaticResource FontSizeCaption}"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center">
                         <Run Text="{Binding ElapsedTime, Mode=OneWay}"/>
@@ -114,10 +114,10 @@
                         <Run Text="{Binding EstimatedTimeRemaining, Mode=OneWay}"/>
                     </TextBlock>
                     <TextBlock Text=" - "
-                               FontSize="12"
+                               FontSize="{StaticResource FontSizeCaption}"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="8,0"/>
-                    <TextBlock FontSize="12"
+                    <TextBlock FontSize="{StaticResource FontSizeCaption}"
                                FontWeight="Bold">
                         <Run Text="{Binding ProgressPercentage, Mode=OneWay, StringFormat={}{0:F0}}"/>
                         <Run Text="%"/>
@@ -179,11 +179,11 @@
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                AutomationProperties.Name="{loc:Loc A11y_NoDeploymentIcon}"/>
                 <TextBlock Text="{loc:Loc Monitoring_NoDeployment}"
-                           FontSize="20" FontWeight="SemiBold"
+                           FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                            HorizontalAlignment="Center"
                            Margin="0,16,0,8"/>
                 <TextBlock Text="{loc:Loc Monitoring_NoDeploymentHint}"
-                           FontSize="12"
+                           FontSize="{StaticResource FontSizeCaption}"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            HorizontalAlignment="Center"/>
             </StackPanel>
@@ -269,7 +269,7 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-                    <TextBlock FontSize="12"
+                    <TextBlock FontSize="{StaticResource FontSizeCaption}"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,4,0,0">
                         <Run Text="{Binding SuccessCount, Mode=OneWay}"/>
@@ -282,7 +282,7 @@
                 </StackPanel>
                 <!-- Elapsed Time -->
                 <TextBlock Grid.Column="2"
-                           FontSize="12"
+                           FontSize="{StaticResource FontSizeCaption}"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center">
                     <Run Text="{Binding ElapsedTime, Mode=OneWay}"/>
@@ -349,7 +349,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                 <TextBlock Text="{Binding Name}"
-                                           FontSize="14"
+                                           FontSize="{StaticResource FontSizeBody}"
                                            VerticalAlignment="Center"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -363,7 +363,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type models:ApplicationModel}">
                                 <TextBlock Text="{Binding StatusMessage}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            TextTrimming="CharacterEllipsis"
                                            ToolTip="{Binding StatusMessage}"/>
                             </DataTemplate>
@@ -395,7 +395,7 @@
         <TextBlock Grid.Row="2"
                    Text="{Binding ErrorMessage}"
                    Foreground="{DynamicResource SystemFillColorCriticalBrush}"
-                   FontSize="14"
+                   FontSize="{StaticResource FontSizeBody}"
                    Visibility="{Binding ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Top"
@@ -428,9 +428,9 @@
                 <!-- Dialog Header -->
                 <StackPanel Grid.Row="0" Margin="0,0,0,16">
                     <TextBlock Text="{loc:Loc LogViewer_Title}"
-                               FontSize="20" FontWeight="SemiBold"/>
+                               FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"/>
                     <TextBlock Text="{Binding LogViewerApplication.Name}"
-                               FontSize="14"
+                               FontSize="{StaticResource FontSizeBody}"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,4,0,0"/>
                     <!-- Error message if present -->
@@ -467,7 +467,7 @@
                                  IsReadOnly="True"
                                  TextWrapping="NoWrap"
                                  FontFamily="Consolas"
-                                 FontSize="12"
+                                 FontSize="{StaticResource FontSizeCaption}"
                                  BorderThickness="0"
                                  Padding="12"
                                  Background="Transparent"
@@ -479,7 +479,7 @@
                 <!-- No logs message -->
                 <TextBlock Grid.Row="1"
                            Text="{loc:Loc LogViewer_NoLogs}"
-                           FontSize="12"
+                           FontSize="{StaticResource FontSizeCaption}"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"

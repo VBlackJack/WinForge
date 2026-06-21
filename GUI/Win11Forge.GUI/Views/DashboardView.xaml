@@ -148,9 +148,9 @@
                             VerticalAlignment="Top">
                         <StackPanel>
                             <TextBlock Text="Win11Forge"
-                                       FontSize="14" FontWeight="Medium"
+                                       FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock FontSize="20" FontWeight="SemiBold">
+                            <TextBlock FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold">
                                 <Run Text="v"/>
                                 <Run Text="{Binding AppVersion, Mode=OneWay}"/>
                             </TextBlock>
@@ -175,10 +175,10 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="{Binding ProfileCount}"
-                                       FontSize="34" FontWeight="SemiBold"
+                                       FontSize="{StaticResource FontSizeDisplay}" FontWeight="SemiBold"
                                        Foreground="{DynamicResource PrimaryHueMidBrush}"/>
                             <TextBlock Text="{loc:Loc Dashboard_Stats_Profiles}"
-                                       FontSize="12"
+                                       FontSize="{StaticResource FontSizeCaption}"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1"
@@ -203,10 +203,10 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="{Binding AppCount}"
-                                       FontSize="34" FontWeight="SemiBold"
+                                       FontSize="{StaticResource FontSizeDisplay}" FontWeight="SemiBold"
                                        Foreground="{DynamicResource SecondaryHueMidBrush}"/>
                             <TextBlock Text="{loc:Loc Dashboard_Stats_Apps}"
-                                       FontSize="12"
+                                       FontSize="{StaticResource FontSizeCaption}"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1"
@@ -246,7 +246,7 @@
                                 </TextBlock.Style>
                             </TextBlock>
                             <TextBlock Text="{loc:Loc Dashboard_Stats_Updates}"
-                                       FontSize="12"
+                                       FontSize="{StaticResource FontSizeCaption}"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1"
@@ -283,7 +283,7 @@
                                            Foreground="{DynamicResource PrimaryHueMidBrush}"
                                            Margin="0,0,12,0"/>
                             <TextBlock Text="{loc:Loc Dashboard_SystemInfo_Title}"
-                                       FontSize="20" FontWeight="SemiBold"/>
+                                       FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"/>
                         </StackPanel>
 
                         <!-- System Info Grid -->
@@ -302,34 +302,34 @@
                             <!-- Hostname -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,16,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Hostname}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Text="{Binding Hostname}"
-                                           FontSize="14"/>
+                                           FontSize="{StaticResource FontSizeBody}"/>
                             </StackPanel>
 
                             <!-- OS -->
                             <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_OS}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Text="{Binding OSName}"
-                                           FontSize="14"/>
+                                           FontSize="{StaticResource FontSizeBody}"/>
                             </StackPanel>
 
                             <!-- Build -->
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,16,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Build}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Text="{Binding OSBuild}"
-                                           FontSize="14"/>
+                                           FontSize="{StaticResource FontSizeBody}"/>
                             </StackPanel>
 
                             <!-- Admin -->
                             <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Admin}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="{Binding IsAdmin, Converter={StaticResource BoolToInstalledIconConverter}}"
@@ -338,14 +338,14 @@
                                                    VerticalAlignment="Center"
                                                    Margin="0,0,6,0"/>
                                     <TextBlock Text="{Binding AdminStatus}"
-                                               FontSize="14"/>
+                                               FontSize="{StaticResource FontSizeBody}"/>
                                 </StackPanel>
                             </StackPanel>
 
                             <!-- Winget -->
                             <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,16,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Winget}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="{Binding WingetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
@@ -354,14 +354,14 @@
                                                    VerticalAlignment="Center"
                                                    Margin="0,0,6,0"/>
                                     <TextBlock Text="{Binding WingetVersion}"
-                                               FontSize="14"/>
+                                               FontSize="{StaticResource FontSizeBody}"/>
                                 </StackPanel>
                             </StackPanel>
 
                             <!-- Chocolatey -->
                             <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,16">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Chocolatey}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="{Binding ChocolateyInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
@@ -370,14 +370,14 @@
                                                    VerticalAlignment="Center"
                                                    Margin="0,0,6,0"/>
                                     <TextBlock Text="{Binding ChocolateyVersion}"
-                                               FontSize="14"/>
+                                               FontSize="{StaticResource FontSizeBody}"/>
                                 </StackPanel>
                             </StackPanel>
 
                             <!-- PowerShell -->
                             <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,16,0">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_PowerShell}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="{Binding PowerShellInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
@@ -386,7 +386,7 @@
                                                    VerticalAlignment="Center"
                                                    Margin="0,0,6,0"/>
                                     <TextBlock Text="{Binding PowerShellVersion}"
-                                               FontSize="14"/>
+                                               FontSize="{StaticResource FontSizeBody}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
@@ -408,7 +408,7 @@
                                                Foreground="{DynamicResource AccentGreenTextBrush}"
                                                Margin="0,0,12,0"/>
                                 <TextBlock Text="{loc:Loc Dashboard_Updates_Title}"
-                                           FontSize="20" FontWeight="SemiBold"/>
+                                           FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"/>
                             </StackPanel>
 
                             <!-- Scan Button -->
@@ -433,7 +433,7 @@
 
                             <!-- Last Scan Time -->
                             <TextBlock Text="{Binding LastScanDisplay}"
-                                       FontSize="12"
+                                       FontSize="{StaticResource FontSizeCaption}"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        HorizontalAlignment="Center"
                                        Margin="0,8,0,0"/>
@@ -445,7 +445,7 @@
                             Style="{StaticResource CardBorderStyle}">
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Dashboard_QuickNav_Title}"
-                                       FontSize="16" FontWeight="Medium"
+                                       FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"
                                        Margin="0,0,0,16"/>
 
                             <!-- Prerequisites Button -->
@@ -524,7 +524,7 @@
                                        Foreground="{DynamicResource PrimaryHueMidBrush}"
                                        Margin="0,0,12,0"/>
                         <TextBlock Text="{loc:Loc Dashboard_History_Title}"
-                                   FontSize="20" FontWeight="SemiBold"/>
+                                   FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"/>
                     </StackPanel>
 
                     <!-- History List -->
@@ -562,8 +562,8 @@
                                         <!-- Profile Info -->
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding ProfileName}"
-                                                       FontSize="14"/>
-                                            <TextBlock FontSize="12"
+                                                       FontSize="{StaticResource FontSizeBody}"/>
+                                            <TextBlock FontSize="{StaticResource FontSizeCaption}"
                                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}">
                                                 <Run Text="{Binding Summary, Mode=OneWay}"/>
                                                 <Run Text=" - "/>
@@ -574,7 +574,7 @@
                                         <!-- Date -->
                                         <TextBlock Grid.Column="2"
                                                    Text="{Binding FormattedDate}"
-                                                   FontSize="12"
+                                                   FontSize="{StaticResource FontSizeCaption}"
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                    VerticalAlignment="Center"
                                                    Margin="16,0"/>
@@ -587,7 +587,7 @@
                                                 VerticalAlignment="Center"
                                                 Visibility="{Binding IsDryRun, Converter={StaticResource BooleanToVisibilityConverter}}">
                                             <TextBlock Text="{loc:Loc Lbl_DryRun}"
-                                                       FontSize="12"
+                                                       FontSize="{StaticResource FontSizeCaption}"
                                                        Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
                                         </Border>
                                     </Grid>
@@ -609,7 +609,7 @@
                                        Margin="0,0,0,12"
                                        AutomationProperties.Name="{loc:Loc A11y_NoHistoryIcon}"/>
                         <TextBlock Text="{loc:Loc Dashboard_History_Empty}"
-                                   FontSize="14"
+                                   FontSize="{StaticResource FontSizeBody}"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    HorizontalAlignment="Center"/>
                     </StackPanel>
@@ -620,7 +620,7 @@
             <TextBlock Grid.Row="4"
                        HorizontalAlignment="Center"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                       FontSize="12">
+                       FontSize="{StaticResource FontSizeCaption}">
                 <Run Text="Win11Forge v"/>
                 <Run Text="{Binding AppVersion, Mode=OneWay}"/>
             </TextBlock>
