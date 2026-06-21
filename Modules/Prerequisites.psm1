@@ -74,6 +74,14 @@ if (-not (Get-Command -Name Get-RegistryPath -ErrorAction SilentlyContinue)) {
     }
 }
 
+# Import DownloadValidation for shared direct-download checksum enforcement
+$script:DownloadValidationPath = Join-Path $script:ModuleRoot 'DownloadValidation.psm1'
+if (-not (Get-Command -Name Assert-FileChecksum -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:DownloadValidationPath) {
+        Import-Module -Name $script:DownloadValidationPath -Force
+    }
+}
+
 # === CONFIGURATION PATHS ===
 $script:DownloadSourcesPath = Join-Path $script:RepositoryRoot 'Config\download-sources.json'
 
@@ -443,12 +451,14 @@ function Install-PowerShell7 {
         # SHA256 checksum validation
         if ($expectedHash -and $expectedHash -ne 'SKIP_VALIDATION') {
             Write-Status -Message (Get-LocalizedString -Key 'download.validating_checksum') -Level 'Info'
-            $actualHash = (Get-FileHash -Path $tempPath -Algorithm SHA256).Hash
-            if ($actualHash -ne $expectedHash) {
+            if (-not (Assert-FileChecksum -Path $tempPath -ExpectedSHA256 $expectedHash)) {
+                $actualHash = (Get-FileHash -Path $tempPath -Algorithm SHA256).Hash
                 Write-Status -Message (Get-LocalizedString -Key 'download.checksum_failed' -Parameters @{ Expected = $expectedHash; Got = $actualHash }) -Level 'Error'
                 Remove-Item -Path $tempPath -Force -ErrorAction SilentlyContinue
                 throw (New-InstallationException -Message (Get-LocalizedString -Key 'download.checksum_failed' -Parameters @{ Expected = $expectedHash; Got = $actualHash }))
             }
+
+            $actualHash = (Get-FileHash -Path $tempPath -Algorithm SHA256).Hash
             Write-Status -Message (Get-LocalizedString -Key 'download.checksum_passed' -Parameters @{ Hash = $actualHash }) -Level 'Success'
         }
 
@@ -896,4 +906,3 @@ Export-ModuleMember -Function @(
     'Update-EnvironmentPath',
     'Invoke-EnvironmentRefresh'
 )
-

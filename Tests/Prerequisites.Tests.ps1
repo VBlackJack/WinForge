@@ -215,6 +215,38 @@ Describe 'Prerequisites Module' {
                 $result | Should -BeTrue
             }
         }
+
+        It 'Should not invoke msiexec when direct download checksum mismatches' {
+            $tempRoot = Join-Path -Path $TestDrive -ChildPath 'PrerequisitesChecksum'
+            New-Item -Path $tempRoot -ItemType Directory -Force | Out-Null
+
+            Mock Write-Status { } -ModuleName Prerequisites
+            Mock Get-LocalizedString { return $Key } -ModuleName Prerequisites
+            Mock Test-CommandAvailable { return $false } -ModuleName Prerequisites
+            Mock Get-ShellFolder { return $tempRoot } -ModuleName Prerequisites -ParameterFilter { $FolderType -eq 'Temp' }
+            Mock Get-DownloadSources {
+                return [pscustomobject]@{
+                    prerequisites = [pscustomobject]@{
+                        powershell7 = [pscustomobject]@{
+                            downloadUrl = 'https://example.test/PowerShell-7.4.0-win-x64.msi'
+                            sha256      = '0' * 64
+                        }
+                    }
+                }
+            } -ModuleName Prerequisites
+            Mock Invoke-WebRequest {
+                [System.IO.File]::WriteAllText($OutFile, 'payload-with-wrong-hash')
+            } -ModuleName Prerequisites
+            Mock Invoke-ExternalProcess { return $true } -ModuleName Prerequisites
+
+            $result = Install-PowerShell7 -Force
+
+            $result | Should -BeFalse
+            Should -Invoke -CommandName Invoke-ExternalProcess -ModuleName Prerequisites -Times 0 -ParameterFilter {
+                $FilePath -eq 'msiexec.exe'
+            }
+            Test-Path -Path (Join-Path -Path $tempRoot -ChildPath 'PowerShell-7.4.0-win-x64.msi') | Should -BeFalse
+        }
     }
 
     Context 'Install-DotNetRuntime' {
