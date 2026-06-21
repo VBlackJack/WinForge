@@ -9,6 +9,7 @@
     "chocolatey": {
       "description": "Chocolatey package manager",
       "downloadUrl": "https://community.chocolatey.org/api/v2/package/chocolatey",
+      "expectedPublisher": "Chocolatey Software",
       "homepage": "https://chocolatey.org/",
       "verifyUrl": "https://community.chocolatey.org/",
       "notes": "Downloaded as .nupkg, extracted and installed via chocolateyInstall.ps1"
@@ -185,4 +186,3 @@
     }
   }
 }
-

@@ -13,6 +13,44 @@
     "prerequisites": {
       "type": "object",
       "description": "Prerequisite software required by the framework",
+      "properties": {
+        "chocolatey": {
+          "type": "object",
+          "description": "Chocolatey bootstrap package definition",
+          "required": ["description", "downloadUrl", "expectedPublisher"],
+          "properties": {
+            "description": {
+              "type": "string",
+              "description": "Human-readable description of the prerequisite",
+              "minLength": 1
+            },
+            "downloadUrl": {
+              "type": "string",
+              "description": "URL to download the prerequisite",
+              "format": "uri"
+            },
+            "expectedPublisher": {
+              "type": "string",
+              "description": "Expected Authenticode publisher substring for the bootstrap script",
+              "minLength": 1
+            },
+            "homepage": {
+              "type": "string",
+              "description": "Homepage URL of the prerequisite",
+              "format": "uri"
+            },
+            "verifyUrl": {
+              "type": "string",
+              "description": "URL to verify the prerequisite source",
+              "format": "uri"
+            },
+            "notes": {
+              "type": "string",
+              "description": "Additional notes about the prerequisite"
+            }
+          }
+        }
+      },
       "additionalProperties": {
         "$ref": "#/$defs/Prerequisite"
       }
@@ -145,6 +183,11 @@
           "type": "string",
           "description": "SHA256 checksum of the download",
           "pattern": "^[A-Fa-f0-9]{64}$"
+        },
+        "expectedPublisher": {
+          "type": "string",
+          "description": "Expected Authenticode publisher substring",
+          "minLength": 1
         },
         "wingetId": {
           "type": "string",

@@ -42,6 +42,13 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
+$script:ExceptionsModulePath = Join-Path $script:RepositoryRoot 'Core\Win11ForgeExceptions.psm1'
+
+if (-not (Get-Command -Name New-InstallationException -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:ExceptionsModulePath) {
+        Import-Module -Name $script:ExceptionsModulePath -Force
+    }
+}
 
 # Use centralized module loader for core dependencies
 $script:ModuleLoaderPath = Join-Path $script:RepositoryRoot 'Core\ModuleLoader.psm1'
@@ -55,7 +62,7 @@ if (Test-Path -Path $script:ModuleLoaderPath) {
         if (Test-Path -Path $script:CoreModulePath) {
             Import-Module -Name $script:CoreModulePath -Force
         } else {
-            throw (New-InstallationException -Message 'Core module is required before loading Prerequisites.psm1')
+            throw (New-InstallationException -Message 'Core module is required before loading Prerequisites.psm1' -AppName 'Prerequisites')
         }
     }
 }
@@ -79,6 +86,14 @@ $script:DownloadValidationPath = Join-Path $script:ModuleRoot 'DownloadValidatio
 if (-not (Get-Command -Name Assert-FileChecksum -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:DownloadValidationPath) {
         Import-Module -Name $script:DownloadValidationPath -Force
+    }
+}
+
+# Import InstallationMethods for shared Authenticode signature validation
+$script:InstallationMethodsPath = Join-Path $script:ModuleRoot 'InstallationMethods.psm1'
+if (-not (Get-Command -Name Test-InstallerSignature -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:InstallationMethodsPath) {
+        Import-Module -Name $script:InstallationMethodsPath -Force
     }
 }
 
@@ -324,7 +339,12 @@ function Install-Chocolatey {
             # Find and run chocolateyInstall.ps1
             $installScript = Join-Path $chocoExtractPath 'tools\chocolateyInstall.ps1'
             if (-not (Test-Path $installScript)) {
-                throw (New-InstallationException -Message "chocolateyInstall.ps1 not found in package")
+                throw (New-InstallationException -Message "chocolateyInstall.ps1 not found in package" -AppName 'Chocolatey')
+            }
+
+            $expectedPublisher = $sources.prerequisites.chocolatey.expectedPublisher
+            if ([string]::IsNullOrWhiteSpace($expectedPublisher) -or -not (Test-InstallerSignature -FilePath $installScript -ExpectedPublisher $expectedPublisher)) {
+                throw (New-InstallationException -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.signature_failed' -Parameters @{ Path = $installScript; ExpectedPublisher = $expectedPublisher }) -AppName 'Chocolatey')
             }
 
             # Set environment variable for Chocolatey install path
@@ -369,7 +389,7 @@ function Install-Chocolatey {
 
     } catch {
         Write-Status -Message (Get-LocalizedString -Key 'prerequisites.chocolatey.install_failed' -Parameters @{ Error = $_.Exception.Message }) -Level 'Error'
-        throw (New-InstallationException -Message "Chocolatey installation failed: $($_.Exception.Message)")
+        throw (New-InstallationException -Message "Chocolatey installation failed: $($_.Exception.Message)" -AppName 'Chocolatey')
     }
 
     if (Test-CommandAvailable -Name 'choco') {
@@ -455,7 +475,7 @@ function Install-PowerShell7 {
                 $actualHash = (Get-FileHash -Path $tempPath -Algorithm SHA256).Hash
                 Write-Status -Message (Get-LocalizedString -Key 'download.checksum_failed' -Parameters @{ Expected = $expectedHash; Got = $actualHash }) -Level 'Error'
                 Remove-Item -Path $tempPath -Force -ErrorAction SilentlyContinue
-                throw (New-InstallationException -Message (Get-LocalizedString -Key 'download.checksum_failed' -Parameters @{ Expected = $expectedHash; Got = $actualHash }))
+                throw (New-InstallationException -Message (Get-LocalizedString -Key 'download.checksum_failed' -Parameters @{ Expected = $expectedHash; Got = $actualHash }) -AppName 'PowerShell 7')
             }
 
             $actualHash = (Get-FileHash -Path $tempPath -Algorithm SHA256).Hash

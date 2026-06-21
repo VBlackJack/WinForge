@@ -201,6 +201,74 @@ Describe 'Prerequisites Module' {
                 $result | Should -BeTrue
             }
         }
+
+        It 'Should fail closed before running Chocolatey bootstrap when install script signature is invalid' {
+            $previousChocolateyInstall = $env:ChocolateyInstall
+            $env:ChocolateyInstall = Join-Path -Path $TestDrive -ChildPath 'ChocolateyInstall'
+            $tempRoot = Join-Path -Path $TestDrive -ChildPath 'ChocolateyTemp'
+            $script:ChocolateyBootstrapMarker = Join-Path -Path $TestDrive -ChildPath 'chocolatey-bootstrap-ran.txt'
+
+            try {
+                New-Item -Path $tempRoot -ItemType Directory -Force | Out-Null
+
+                Mock Write-Status { } -ModuleName Prerequisites
+                Mock Get-LocalizedString { return $Key } -ModuleName Prerequisites
+                Mock Set-ExecutionPolicy { } -ModuleName Prerequisites
+                Mock Test-CommandAvailable { return $false } -ModuleName Prerequisites -ParameterFilter { $Name -eq 'choco' }
+                Mock Get-ShellFolder { return $tempRoot } -ModuleName Prerequisites -ParameterFilter { $FolderType -eq 'Temp' }
+                Mock Get-DownloadSources {
+                    return [pscustomobject]@{
+                        prerequisites = [pscustomobject]@{
+                            chocolatey = [pscustomobject]@{
+                                downloadUrl       = 'https://community.chocolatey.org/api/v2/package/chocolatey'
+                                expectedPublisher = 'Chocolatey Software'
+                            }
+                        }
+                    }
+                } -ModuleName Prerequisites
+                Mock Invoke-WebRequest {
+                    $packageRoot = Join-Path -Path $TestDrive -ChildPath "ChocoPackage_$([guid]::NewGuid().ToString('N'))"
+                    $toolsRoot = Join-Path -Path $packageRoot -ChildPath 'tools'
+                    New-Item -Path $toolsRoot -ItemType Directory -Force | Out-Null
+
+                    $markerPath = $script:ChocolateyBootstrapMarker.Replace("'", "''")
+                    Set-Content -Path (Join-Path -Path $toolsRoot -ChildPath 'chocolateyInstall.ps1') `
+                        -Value "Set-Content -LiteralPath '$markerPath' -Value 'executed' -NoNewline" `
+                        -NoNewline `
+                        -Encoding UTF8
+
+                    $zipPath = [System.IO.Path]::ChangeExtension($OutFile, '.zip')
+                    Compress-Archive -Path (Join-Path -Path $packageRoot -ChildPath '*') -DestinationPath $zipPath -Force
+                    Move-Item -Path $zipPath -Destination $OutFile -Force
+                } -ModuleName Prerequisites
+                Mock Test-InstallerSignature { return $false } -ModuleName Prerequisites -ParameterFilter {
+                    $FilePath -like '*chocolateyInstall.ps1' -and $ExpectedPublisher -eq 'Chocolatey Software'
+                }
+                Mock Copy-Item { } -ModuleName Prerequisites
+                Mock Invoke-EnvironmentRefresh { } -ModuleName Prerequisites
+
+                $thrown = $null
+                try {
+                    Install-Chocolatey -Force
+                } catch {
+                    $thrown = $_.Exception
+                }
+
+                $thrown | Should -Not -BeNullOrEmpty
+                $thrown.GetType().Name | Should -Be 'InstallationException'
+                $thrown.Message | Should -Match 'Chocolatey installation failed'
+                Test-Path -Path $script:ChocolateyBootstrapMarker | Should -BeFalse
+                Should -Invoke -CommandName Test-InstallerSignature -ModuleName Prerequisites -Times 1
+                Should -Invoke -CommandName Copy-Item -ModuleName Prerequisites -Times 0
+                Should -Invoke -CommandName Invoke-EnvironmentRefresh -ModuleName Prerequisites -Times 0
+            } finally {
+                if ($null -eq $previousChocolateyInstall) {
+                    Remove-Item -Path Env:\ChocolateyInstall -ErrorAction SilentlyContinue
+                } else {
+                    $env:ChocolateyInstall = $previousChocolateyInstall
+                }
+            }
+        }
     }
 
     Context 'Install-PowerShell7' {
