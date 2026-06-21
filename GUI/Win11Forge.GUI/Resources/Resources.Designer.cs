@@ -340,12 +340,8 @@ public class Resources
     // Dialog System
     public static string Dialog_Error_Title => ResourceManager.GetString("Dialog_Error_Title", resourceCulture);
     public static string Dialog_Error_Details => ResourceManager.GetString("Dialog_Error_Details", resourceCulture);
-    public static string Dialog_OK => ResourceManager.GetString("Dialog_OK", resourceCulture);
     public static string Dialog_Cancel => ResourceManager.GetString("Dialog_Cancel", resourceCulture);
-    public static string Dialog_Retry => ResourceManager.GetString("Dialog_Retry", resourceCulture);
-    public static string Dialog_Help => ResourceManager.GetString("Dialog_Help", resourceCulture);
     public static string Dialog_Close => ResourceManager.GetString("Dialog_Close", resourceCulture);
-    public static string Dialog_Confirm => ResourceManager.GetString("Dialog_Confirm", resourceCulture);
 
     // Keyboard Shortcuts Help
     public static string Help_KeyboardShortcuts => ResourceManager.GetString("Help_KeyboardShortcuts", resourceCulture);

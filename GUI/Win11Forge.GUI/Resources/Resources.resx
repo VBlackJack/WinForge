@@ -1307,29 +1307,13 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Technical Details</value>
     <comment>Error details expander header</comment>
   </data>
-  <data name="Dialog_OK" xml:space="preserve">
-    <value>OK</value>
-    <comment>OK button text</comment>
-  </data>
   <data name="Dialog_Cancel" xml:space="preserve">
     <value>Cancel</value>
     <comment>Cancel button text</comment>
   </data>
-  <data name="Dialog_Retry" xml:space="preserve">
-    <value>Retry</value>
-    <comment>Retry button text</comment>
-  </data>
-  <data name="Dialog_Help" xml:space="preserve">
-    <value>Help</value>
-    <comment>Help button text</comment>
-  </data>
   <data name="Dialog_Close" xml:space="preserve">
     <value>Close</value>
     <comment>Close button text</comment>
-  </data>
-  <data name="Dialog_Confirm" xml:space="preserve">
-    <value>Confirm</value>
-    <comment>Confirm button text</comment>
   </data>
   <data name="Dialog_CopyDetails" xml:space="preserve">
     <value>Copy Details</value>
@@ -4039,14 +4023,6 @@ This action cannot be undone.</value>
   <data name="A11y_Main_NavLogs" xml:space="preserve">
     <value>Navigate to Logs view, Ctrl+7</value>
     <comment>Accessibility help text for logs navigation item</comment>
-  </data>
-  <data name="A11y_Dialog_Confirm" xml:space="preserve">
-    <value>Confirmation dialog</value>
-    <comment>Accessibility name for confirmation dialog</comment>
-  </data>
-  <data name="A11y_Dialog_Error" xml:space="preserve">
-    <value>Error dialog</value>
-    <comment>Accessibility name for error dialog</comment>
   </data>
   <data name="A11y_Deployment_AppList" xml:space="preserve">
     <value>Deployment applications list</value>
