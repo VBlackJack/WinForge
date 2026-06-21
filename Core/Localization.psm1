@@ -21,7 +21,7 @@
     Get-LocalizedString -Key 'install.starting' -Parameters @{ AppName = 'Firefox' }
 
 .LINK
-    https://github.com/VBlackJack/Win11Forge
+    https://github.com/VBlackJack/WinForge
 #>
 
 #

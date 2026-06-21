@@ -21,7 +21,7 @@
     RootModule = 'WingetCache.psm1'
 
     # Version number of this module
-    ModuleVersion = '1.0.0603.1'
+    ModuleVersion = '1.0.0621.1'
 
     # ID used to uniquely identify this module
     GUID = 'f4b8c1d5-7e6a-4f2b-9d3c-5e6f7a8b9c0d'

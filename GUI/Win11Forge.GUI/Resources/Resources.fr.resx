@@ -881,7 +881,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Apache License 2.0</value>
   </data>
   <data name="About_RepoUrl" xml:space="preserve">
-    <value>github.com/VBlackJack/Win11Forge</value>
+    <value>github.com/VBlackJack/WinForge</value>
   </data>
   <data name="App_Name" xml:space="preserve">
     <value>Win11Forge</value>

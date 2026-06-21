@@ -16,7 +16,7 @@ limitations under the License.
 
 # Win11Forge User Guide
 
-Current framework display version: `2026060301`.
+Current framework display version: `2026062101`.
 
 ## Quick Start
 1. Extract the release archive.

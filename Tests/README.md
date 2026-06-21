@@ -6,7 +6,7 @@ This folder contains the PowerShell/Pester test suite for the framework modules.
 
 Current baseline after the May 2026 backlog closure:
 
-- Framework display version: `2026060301` (`Config/version.json`)
+- Framework display version: `2026062101` (`Config/version.json`)
 - Pester runner: `Tests/Invoke-Tests.ps1`
 - Latest full Pester validation: `1842` tests total, `1836` passed, `0` failed, `6` skipped
 - Normal output artifacts: `Tests/Results/`
