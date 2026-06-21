@@ -132,10 +132,7 @@ public partial class AppsViewModel
         _pauseGate.Resume();
         _batchCancellationTokenSource = new CancellationTokenSource();
 
-        BatchProgressCurrent = 0;
-        BatchProgressTotal = appsWithUpdates.Count;
-        BatchProgressPercent = 0;
-        CurrentBatchAppName = null;
+        ResetBatchProgress(appsWithUpdates.Count);
         SuccessCount = 0;
         FailedCount = 0;
         SkippedCount = 0;
@@ -151,7 +148,7 @@ public partial class AppsViewModel
                 new Progress<AppOperationProgress>(ApplyBatchProgress),
                 _batchCancellationTokenSource.Token);
 
-            ApplyBatchProgress(new AppOperationProgress(result.Total, result.Total, Current: null));
+            CompleteBatchProgress(new AppOperationProgress(result.Total, result.Total, Current: null));
 
             if (result.UpdatedCount > 0)
             {

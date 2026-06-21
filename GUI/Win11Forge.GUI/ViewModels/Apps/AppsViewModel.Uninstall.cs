@@ -102,10 +102,7 @@ public partial class AppsViewModel
         _pauseGate.Resume();
         _batchCancellationTokenSource = new CancellationTokenSource();
 
-        BatchProgressCurrent = 0;
-        BatchProgressTotal = selectedApps.Count;
-        BatchProgressPercent = 0;
-        CurrentBatchAppName = null;
+        ResetBatchProgress(selectedApps.Count);
         SuccessCount = 0;
         FailedCount = 0;
         SkippedCount = 0;
@@ -120,7 +117,7 @@ public partial class AppsViewModel
                 new Progress<AppOperationProgress>(ApplyUninstallProgress),
                 _batchCancellationTokenSource.Token);
 
-            ApplyUninstallProgress(new AppOperationProgress(result.Total, result.Total, Current: null));
+            CompleteUninstallProgress(new AppOperationProgress(result.Total, result.Total, Current: null));
             InstalledCount = Math.Max(0, InstalledCount - result.UninstalledCount);
             SuccessCount = result.UninstalledCount;
             FailedCount = result.FailedCount;
@@ -157,14 +154,11 @@ public partial class AppsViewModel
 
     private void ApplyUninstallProgress(AppOperationProgress progress)
     {
-        BatchProgressTotal = progress.Total;
-        BatchProgressCurrent = progress.Completed;
-        BatchProgressPercent = progress.Total > 0
-            ? (double)progress.Completed / progress.Total * 100
-            : 0;
-        CurrentBatchAppName = progress.Current?.Name;
+        if (ShouldIgnoreBatchProgress(progress))
+        {
+            return;
+        }
 
-        _progressEstimator.UpdateProgress(progress.Completed);
-        EstimatedTimeRemaining = _progressEstimator.GetFormattedTimeRemaining();
+        ApplyBatchProgressCore(progress, updateDeploymentState: false);
     }
 }

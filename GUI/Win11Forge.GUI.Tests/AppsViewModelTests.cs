@@ -756,6 +756,57 @@ public class AppsViewModelTests
     }
 
     [Fact]
+    public async Task UpdateSelected_ShouldIgnoreQueuedProgressReportsAfterFinalProgress()
+    {
+        // Arrange
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator
+        {
+            UpdateResult = new AppUpdateResult(0, 2, 0, 0, WasCancelled: false)
+        };
+        AppsViewModel viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
+        foreach (ApplicationModel app in apps)
+        {
+            app.Status = ApplicationStatus.UpdateAvailable;
+            app.IsSelected = true;
+        }
+
+        viewModel.UpdatesAvailableCount = 2;
+        QueuedSynchronizationContext progressContext = new QueuedSynchronizationContext();
+        SynchronizationContext? previousContext = SynchronizationContext.Current;
+
+        // Act
+        Task updateTask;
+        SynchronizationContext.SetSynchronizationContext(progressContext);
+        try
+        {
+            updateTask = viewModel.UpdateSelectedCommand.ExecuteAsync(null);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previousContext);
+        }
+
+        await updateTask;
+
+        // Assert
+        Assert.Equal(100, viewModel.BatchProgressPercent);
+        Assert.Equal(2, viewModel.BatchProgressCurrent);
+        Assert.Equal(2, progressContext.PendingCount);
+
+        progressContext.RunOne();
+
+        Assert.Equal(100, viewModel.BatchProgressPercent);
+        Assert.Equal(2, viewModel.BatchProgressCurrent);
+
+        progressContext.RunAll();
+
+        Assert.Equal(100, viewModel.BatchProgressPercent);
+        Assert.Equal(2, viewModel.BatchProgressCurrent);
+    }
+
+    [Fact]
     public async Task UpdateSelected_WhileRunning_ShouldHidePauseResumeControls()
     {
         // Arrange
@@ -1055,6 +1106,62 @@ public class AppsViewModelTests
         Assert.Equal(DeploymentResult.PartialSuccess, viewModel.LastDeploymentResult);
         Assert.True(viewModel.IsSummaryDialogOpen);
         Assert.False(viewModel.IsUninstalling);
+    }
+
+    [Fact]
+    public async Task UninstallSelected_ShouldIgnoreQueuedProgressReportsAfterFinalProgress()
+    {
+        // Arrange
+        TestDialogService dialogService = new TestDialogService();
+        dialogService.QueueConfirmResult(true);
+        TestAppUninstallCoordinator uninstallCoordinator = new TestAppUninstallCoordinator
+        {
+            Result = new AppUninstallResult(0, 2, 0, 0, WasCancelled: false)
+        };
+        AppsViewModel viewModel = CreateViewModel(
+            uninstallCoordinator: uninstallCoordinator,
+            dialogService: dialogService);
+        await viewModel.InitializeAsync();
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications).Take(2).ToList();
+        foreach (ApplicationModel app in apps)
+        {
+            app.Status = ApplicationStatus.Installed;
+            app.IsSelected = true;
+        }
+
+        viewModel.InstalledCount = 2;
+        viewModel.UpdateSelectedCount();
+        QueuedSynchronizationContext progressContext = new QueuedSynchronizationContext();
+        SynchronizationContext? previousContext = SynchronizationContext.Current;
+
+        // Act
+        Task uninstallTask;
+        SynchronizationContext.SetSynchronizationContext(progressContext);
+        try
+        {
+            uninstallTask = viewModel.UninstallSelectedCommand.ExecuteAsync(null);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previousContext);
+        }
+
+        await uninstallTask;
+
+        // Assert
+        Assert.Equal(100, viewModel.BatchProgressPercent);
+        Assert.Equal(2, viewModel.BatchProgressCurrent);
+        Assert.Equal(2, progressContext.PendingCount);
+
+        progressContext.RunOne();
+
+        Assert.Equal(100, viewModel.BatchProgressPercent);
+        Assert.Equal(2, viewModel.BatchProgressCurrent);
+
+        progressContext.RunAll();
+
+        Assert.Equal(100, viewModel.BatchProgressPercent);
+        Assert.Equal(2, viewModel.BatchProgressCurrent);
     }
 
     [Fact]
@@ -2134,6 +2241,41 @@ internal class MockDeploymentStateService : IDeploymentStateService
     private void SuppressWarnings()
     {
         StateChanged?.Invoke(this, EventArgs.Empty);
+    }
+}
+
+internal sealed class QueuedSynchronizationContext : SynchronizationContext
+{
+    private readonly Queue<(SendOrPostCallback Callback, object? State)> _callbacks = [];
+
+    public int PendingCount => _callbacks.Count;
+
+    public override void Post(SendOrPostCallback d, object? state)
+    {
+        _callbacks.Enqueue((d, state));
+    }
+
+    public void RunOne()
+    {
+        (SendOrPostCallback callback, object? state) = _callbacks.Dequeue();
+        SynchronizationContext? previousContext = Current;
+        SetSynchronizationContext(this);
+        try
+        {
+            callback(state);
+        }
+        finally
+        {
+            SetSynchronizationContext(previousContext);
+        }
+    }
+
+    public void RunAll()
+    {
+        while (_callbacks.Count > 0)
+        {
+            RunOne();
+        }
     }
 }
 
