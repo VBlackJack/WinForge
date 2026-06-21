@@ -81,10 +81,7 @@ public partial class AppsViewModel
         _pauseGate.Resume();
         _batchCancellationTokenSource = new CancellationTokenSource();
 
-        BatchProgressCurrent = 0;
-        BatchProgressTotal = selectedApps.Count;
-        BatchProgressPercent = 0;
-        CurrentBatchAppName = null;
+        ResetBatchProgress(selectedApps.Count);
         SuccessCount = 0;
         FailedCount = 0;
         SkippedCount = 0;
@@ -104,7 +101,7 @@ public partial class AppsViewModel
                 new Progress<AppOperationProgress>(ApplyBatchProgress),
                 _batchCancellationTokenSource.Token);
 
-            ApplyBatchProgress(new AppOperationProgress(result.Total, result.Total, Current: null));
+            CompleteBatchProgress(new AppOperationProgress(result.Total, result.Total, Current: null));
             InstalledCount += result.InstalledCount;
             SuccessCount = result.InstalledCount + result.AlreadyInstalledCount;
             FailedCount = result.FailedCount;
@@ -145,6 +142,17 @@ public partial class AppsViewModel
 
     private void ApplyBatchProgress(AppOperationProgress progress)
     {
+        if (ShouldIgnoreBatchProgress(progress))
+        {
+            return;
+        }
+
+        ApplyBatchProgressCore(progress, updateDeploymentState: true);
+    }
+
+    private void ApplyBatchProgressCore(AppOperationProgress progress, bool updateDeploymentState)
+    {
+        _lastAppliedBatchProgressCompleted = progress.Completed;
         BatchProgressTotal = progress.Total;
         BatchProgressCurrent = progress.Completed;
         BatchProgressPercent = progress.Total > 0
@@ -156,14 +164,45 @@ public partial class AppsViewModel
         _progressEstimator.UpdateProgress(progress.Completed);
         EstimatedTimeRemaining = _progressEstimator.GetFormattedTimeRemaining();
 
-        // Update shared deployment state with progress and time
-        _deploymentStateService.UpdateProgress(
-            progress.Current?.Name,
-            progress.Completed,
-            progress.Total,
-            Resources.Resources.Progress_Deploying);
-        _deploymentStateService.UpdateTime(
-            _progressEstimator.GetFormattedElapsedTime(),
-            EstimatedTimeRemaining);
+        if (updateDeploymentState)
+        {
+            // Update shared deployment state with progress and time
+            _deploymentStateService.UpdateProgress(
+                progress.Current?.Name,
+                progress.Completed,
+                progress.Total,
+                Resources.Resources.Progress_Deploying);
+            _deploymentStateService.UpdateTime(
+                _progressEstimator.GetFormattedElapsedTime(),
+                EstimatedTimeRemaining);
+        }
+    }
+
+    private void ResetBatchProgress(int total)
+    {
+        _batchProgressFinalized = false;
+        _lastAppliedBatchProgressCompleted = 0;
+        BatchProgressCurrent = 0;
+        BatchProgressTotal = total;
+        BatchProgressPercent = 0;
+        CurrentBatchAppName = null;
+    }
+
+    private bool ShouldIgnoreBatchProgress(AppOperationProgress progress)
+    {
+        return _batchProgressFinalized ||
+            progress.Completed < _lastAppliedBatchProgressCompleted;
+    }
+
+    private void CompleteBatchProgress(AppOperationProgress progress)
+    {
+        _batchProgressFinalized = true;
+        ApplyBatchProgressCore(progress, updateDeploymentState: true);
+    }
+
+    private void CompleteUninstallProgress(AppOperationProgress progress)
+    {
+        _batchProgressFinalized = true;
+        ApplyBatchProgressCore(progress, updateDeploymentState: false);
     }
 }

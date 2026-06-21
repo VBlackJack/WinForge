@@ -64,6 +64,8 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private List<ApplicationModel> _allApplications = [];
     private CancellationTokenSource? _scanCancellationTokenSource;
     private CancellationTokenSource? _batchCancellationTokenSource;
+    private bool _batchProgressFinalized;
+    private int _lastAppliedBatchProgressCompleted;
     private bool _disposed;
 
     // External callbacks for Dashboard scan integration
