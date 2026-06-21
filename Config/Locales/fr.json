@@ -302,6 +302,7 @@
       "extracting": "Extraction du paquet Chocolatey...",
       "setup_dirs": "Configuration des répertoires Chocolatey...",
       "running_setup": "Exécution de l'installation Chocolatey...",
+      "signature_failed": "Échec de la validation de signature du bootstrap Chocolatey pour {Path}. Éditeur attendu : {ExpectedPublisher}",
       "installed_success": "Chocolatey installé avec succès",
       "install_failed": "Échec de l'installation de Chocolatey : {Error}",
       "install_failed_unknown": "Échec de l'installation de Chocolatey : Erreur inconnue"
