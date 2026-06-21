@@ -44,14 +44,14 @@
                                           Foreground="{DynamicResource SystemAccentColorPrimaryBrush}"
                                           Visibility="{Binding ShowIcon, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                 <TextBlock Text="{Binding Title, ElementName=Root}"
-                           FontSize="14" FontWeight="Medium"
+                           FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
                            VerticalAlignment="Center"/>
             </StackPanel>
 
             <!-- Description -->
             <TextBlock Grid.Row="1"
                        Text="{Binding Description, ElementName=Root}"
-                       FontSize="12"
+                       FontSize="{StaticResource FontSizeCaption}"
                        TextWrapping="Wrap"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
 
@@ -66,7 +66,7 @@
                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                               Margin="0,0,6,0"/>
                     <TextBlock Text="{Binding Shortcut, ElementName=Root}"
-                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                FontFamily="Consolas"
                                VerticalAlignment="Center"
                                />

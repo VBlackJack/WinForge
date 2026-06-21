@@ -28,7 +28,7 @@
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
             <!-- Severity Icon -->
             <ui:SymbolIcon x:Name="SeverityIcon"
-                           FontSize="20"
+                           FontSize="{StaticResource FontSizeSubtitle}"
                            VerticalAlignment="Center"
                            Margin="0,0,8,0"/>
             <!-- Content (message) -->

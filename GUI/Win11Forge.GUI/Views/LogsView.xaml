@@ -163,9 +163,9 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0"
                                    Text="{loc:Loc Logs_Files}"
-                                   FontSize="16" FontWeight="Medium"/>
+                                   FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"/>
                         <TextBlock Grid.Column="1"
-                                   FontSize="12"
+                                   FontSize="{StaticResource FontSizeCaption}"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}">
                             <Run Text="{Binding FilteredLogFiles.Count, Mode=OneWay}"/>
                             <Run Text="{loc:Loc Logs_FilesCount}"/>
@@ -255,16 +255,16 @@
                             Visibility="{Binding HasNoLogs, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <ui:SymbolIcon Symbol="DocumentError24"
                                    Width="64" Height="64"
-                                   FontSize="48"
+                                   FontSize="{StaticResource FontSizeHero}"
                                    HorizontalAlignment="Center"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     <TextBlock Text="{loc:Loc Logs_NoLogs}"
-                               FontSize="20" FontWeight="SemiBold"
+                               FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                HorizontalAlignment="Center"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,16,0,0"/>
                     <TextBlock Text="{loc:Loc Logs_NoLogs_Hint}"
-                               FontSize="12"
+                               FontSize="{StaticResource FontSizeCaption}"
                                HorizontalAlignment="Center"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,8,0,0"/>
@@ -286,12 +286,12 @@
 
                 <TextBlock Grid.Column="0"
                            Text="{Binding StatusMessage}"
-                           FontSize="12"
+                           FontSize="{StaticResource FontSizeCaption}"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center"/>
 
                 <TextBlock Grid.Column="1"
-                           FontSize="12"
+                           FontSize="{StaticResource FontSizeCaption}"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            VerticalAlignment="Center">
                     <Run Text="{loc:Loc Logs_TotalSize}"/>

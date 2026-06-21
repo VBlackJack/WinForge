@@ -32,7 +32,7 @@
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Color24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <TextBlock Text="{loc:Loc Settings_Tab_Appearance}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_Appearance}" FontSize="{StaticResource FontSizeBody}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
@@ -41,7 +41,7 @@
                         <Border Style="{StaticResource SectionCardStyle}">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                    <TextBlock Text="{loc:Loc Settings_Section_Appearance}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{loc:Loc Settings_Section_Appearance}" FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
 
                                 <!-- Theme Selector -->
@@ -52,8 +52,8 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="{loc:Loc Settings_Theme}" FontSize="14" FontWeight="Medium"/>
-                                        <TextBlock Text="{loc:Loc Settings_Theme_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{loc:Loc Settings_Theme}" FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_Theme_Desc}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -79,8 +79,8 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="{loc:Loc Settings_AccentTint}" FontSize="14" FontWeight="Medium"/>
-                                        <TextBlock Text="{loc:Loc Settings_AccentTint_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{loc:Loc Settings_AccentTint}" FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_AccentTint_Desc}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -106,8 +106,8 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="{loc:Loc Settings_ReducedMotion}" FontSize="14" FontWeight="Medium"/>
-                                        <TextBlock Text="{loc:Loc Settings_ReducedMotion_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{loc:Loc Settings_ReducedMotion}" FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_ReducedMotion_Desc}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
 
                                     <ui:ToggleSwitch Grid.Column="1"
@@ -124,8 +124,8 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="{loc:Loc Settings_HighContrast}" FontSize="14" FontWeight="Medium"/>
-                                        <TextBlock Text="{loc:Loc Settings_HighContrast_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{loc:Loc Settings_HighContrast}" FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_HighContrast_Desc}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
 
                                     <ui:ToggleSwitch Grid.Column="1"
@@ -140,7 +140,7 @@
                         <Border Style="{StaticResource SectionCardStyle}">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                    <TextBlock Text="{loc:Loc Settings_Section_Language}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{loc:Loc Settings_Section_Language}" FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
 
                                 <!-- Language Selector -->
@@ -151,8 +151,8 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="{loc:Loc Settings_Language}" FontSize="14" FontWeight="Medium"/>
-                                        <TextBlock Text="{loc:Loc Settings_Language_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{loc:Loc Settings_Language}" FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"/>
+                                        <TextBlock Text="{loc:Loc Settings_Language_Desc}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -179,7 +179,7 @@
                                         <StackPanel Grid.Column="0" Orientation="Horizontal">
                                             <ui:SymbolIcon Symbol="ErrorCircle24" Width="20" Height="20" VerticalAlignment="Center"
                                                                       Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,0,8,0"/>
-                                            <TextBlock Text="{loc:Loc Settings_RestartRequired}" FontSize="12" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{loc:Loc Settings_RestartRequired}" FontSize="{StaticResource FontSizeCaption}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <ui:Button Grid.Column="1"
                                                 Command="{Binding RestartApplicationCommand}"
@@ -204,14 +204,14 @@
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Gauge24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <TextBlock Text="{loc:Loc Settings_Tab_Performance}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_Performance}" FontSize="{StaticResource FontSizeBody}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <Border Style="{StaticResource CardBorderStyle}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <TextBlock Text="{loc:Loc Settings_Section_Performance}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <TextBlock Text="{loc:Loc Settings_Section_Performance}" FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 <ui:SymbolIcon Symbol="QuestionCircle24" Width="18" Height="18" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                           VerticalAlignment="Center" Margin="8,0,0,0" ToolTip="{loc:Loc Help_Performance}"/>
                             </StackPanel>
@@ -224,8 +224,8 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="{loc:Loc Settings_ParallelInstalls}" FontSize="14" FontWeight="Medium"/>
-                                    <TextBlock Text="{loc:Loc Settings_ParallelInstalls_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{loc:Loc Settings_ParallelInstalls}" FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"/>
+                                    <TextBlock Text="{loc:Loc Settings_ParallelInstalls_Desc}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
 
                                 <ComboBox Grid.Column="1"
@@ -243,8 +243,8 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="{loc:Loc Settings_ParallelScans}" FontSize="14" FontWeight="Medium"/>
-                                    <TextBlock Text="{loc:Loc Settings_ParallelScans_Desc}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{loc:Loc Settings_ParallelScans}" FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"/>
+                                    <TextBlock Text="{loc:Loc Settings_ParallelScans_Desc}" FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
 
                                 <ComboBox Grid.Column="1"
@@ -263,7 +263,7 @@
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Database24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <TextBlock Text="{loc:Loc Settings_Tab_Data}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_Data}" FontSize="{StaticResource FontSizeBody}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
@@ -273,7 +273,7 @@
                         <!-- Section Header -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                             <TextBlock Text="{loc:Loc Settings_Section_Data}"
-                                       FontSize="20" FontWeight="SemiBold"
+                                       FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
 
@@ -286,10 +286,10 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="{loc:Loc Settings_ExportImport}"
-                                           FontSize="14"
+                                           FontSize="{StaticResource FontSizeBody}"
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{loc:Loc Settings_ExportImport_Desc}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
@@ -321,10 +321,10 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="{loc:Loc Settings_ResetDefaults}"
-                                           FontSize="14"
+                                           FontSize="{StaticResource FontSizeBody}"
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{loc:Loc Settings_ResetDefaults_Desc}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
@@ -347,10 +347,10 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="{loc:Loc Settings_ClearHistory}"
-                                           FontSize="14"
+                                           FontSize="{StaticResource FontSizeBody}"
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{loc:Loc Settings_ClearHistory_Desc}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
@@ -369,10 +369,10 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="{loc:Loc Settings_Btn_OpenLogs}"
-                                           FontSize="14"
+                                           FontSize="{StaticResource FontSizeBody}"
                                            FontWeight="Medium"/>
                                 <TextBlock Text="{loc:Loc Settings_OpenLogs_Desc}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
@@ -398,7 +398,7 @@
                                                               VerticalAlignment="Center"
                                                               Margin="0,0,12,0"/>
                                     <TextBlock Text="{loc:Loc Settings_ErrorHistory}"
-                                               FontSize="20" FontWeight="SemiBold"
+                                               FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                                VerticalAlignment="Center"/>
                                     <Border Background="{DynamicResource ErrorBorderBrush}"
                                             CornerRadius="12"
@@ -408,7 +408,7 @@
                                         <TextBlock Text="{Binding ErrorCount}"
                                                    Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
                                                    FontWeight="Bold"
-                                                   FontSize="12"/>
+                                                   FontSize="{StaticResource FontSizeCaption}"/>
                                     </Border>
                                 </StackPanel>
                             </Expander.Header>
@@ -452,10 +452,10 @@
 
                                                     <StackPanel Grid.Column="1">
                                                         <TextBlock Text="{Binding Message}"
-                                                                   FontSize="12"
+                                                                   FontSize="{StaticResource FontSizeCaption}"
                                                                    TextWrapping="Wrap"/>
                                                         <TextBlock Text="{Binding Source}"
-                                                                   FontSize="12"
+                                                                   FontSize="{StaticResource FontSizeCaption}"
                                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                                    Visibility="{Binding Source, Converter={StaticResource NullableToVisibilityConverter}}"
                                                                    Margin="0,4,0,0"/>
@@ -463,7 +463,7 @@
 
                                                     <TextBlock Grid.Column="2"
                                                                Text="{Binding FormattedTimestamp}"
-                                                               FontSize="12"
+                                                               FontSize="{StaticResource FontSizeCaption}"
                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                                VerticalAlignment="Top"
                                                                Margin="12,2,0,0"/>
@@ -475,7 +475,7 @@
 
                                 <!-- Empty State -->
                                 <TextBlock Text="{loc:Loc Settings_NoErrors}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            HorizontalAlignment="Center"
                                            Margin="0,16"
@@ -492,7 +492,7 @@
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="CalendarClock24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <TextBlock Text="{loc:Loc Settings_Tab_Scheduled}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_Scheduled}" FontSize="{StaticResource FontSizeBody}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
@@ -505,7 +505,7 @@
                                                           Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                                           VerticalAlignment="Center" Margin="0,0,12,0"/>
                                 <TextBlock Text="{loc:Loc ScheduledDeployment_AdminRequired}"
-                                           FontSize="14"
+                                           FontSize="{StaticResource FontSizeBody}"
                                            VerticalAlignment="Center"
                                            TextWrapping="Wrap"/>
                             </StackPanel>
@@ -517,7 +517,7 @@
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                                     <TextBlock Text="{loc:Loc ScheduledDeployment_CreateNew}"
-                                               FontSize="20" FontWeight="SemiBold"
+                                               FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                                VerticalAlignment="Center"/>
                                 </StackPanel>
 
@@ -529,7 +529,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Text="{loc:Loc ScheduledDeployment_Profile}"
-                                               FontSize="14"
+                                               FontSize="{StaticResource FontSizeBody}"
                                                VerticalAlignment="Center"/>
                                     <ComboBox Grid.Column="1"
                                               ItemsSource="{Binding AvailableProfiles}"
@@ -545,7 +545,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Text="{loc:Loc ScheduledDeployment_TriggerType}"
-                                               FontSize="14"
+                                               FontSize="{StaticResource FontSizeBody}"
                                                VerticalAlignment="Center"/>
                                     <ComboBox Grid.Column="1"
                                               ItemsSource="{Binding AvailableTriggerTypes}"
@@ -562,7 +562,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Text="{loc:Loc ScheduledDeployment_DateTime}"
-                                               FontSize="14"
+                                               FontSize="{StaticResource FontSizeBody}"
                                                VerticalAlignment="Center"/>
                                     <DatePicker Grid.Column="1"
                                                 SelectedDate="{Binding NewScheduledTime}"
@@ -599,7 +599,7 @@
 
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{loc:Loc ScheduledDeployment_List}"
-                                                   FontSize="20" FontWeight="SemiBold"
+                                                   FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
 
@@ -619,7 +619,7 @@
 
                                 <!-- Empty State -->
                                 <TextBlock Text="{loc:Loc ScheduledDeployment_Empty}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            HorizontalAlignment="Center"
                                            Margin="0,16"
@@ -685,7 +685,7 @@
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Info24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <TextBlock Text="{loc:Loc Settings_Tab_About}" FontSize="13" VerticalAlignment="Center"/>
+                        <TextBlock Text="{loc:Loc Settings_Tab_About}" FontSize="{StaticResource FontSizeBody}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
@@ -700,7 +700,7 @@
                                 <!-- App Info (Left) -->
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                     <TextBlock Text="{loc:Loc App_Name}"
-                                               FontSize="24" FontWeight="SemiBold"
+                                               FontSize="{StaticResource FontSizeTitle}" FontWeight="SemiBold"
                                                Margin="0,0,0,16"/>
 
                                     <Grid>
@@ -718,40 +718,40 @@
                                         <!-- Version -->
                                         <TextBlock Grid.Row="0" Grid.Column="0"
                                                    Text="{loc:Loc About_Version}"
-                                                   FontSize="14"
+                                                   FontSize="{StaticResource FontSizeBody}"
                                                    FontWeight="Medium"
                                                    Margin="0,0,24,8"/>
                                         <TextBlock Grid.Row="0" Grid.Column="1"
                                                    Text="{Binding AppVersion}"
-                                                   FontSize="14"
+                                                   FontSize="{StaticResource FontSizeBody}"
                                                    Margin="0,0,0,8"/>
 
                                         <!-- Author -->
                                         <TextBlock Grid.Row="1" Grid.Column="0"
                                                    Text="{loc:Loc About_Author}"
-                                                   FontSize="14"
+                                                   FontSize="{StaticResource FontSizeBody}"
                                                    FontWeight="Medium"
                                                    Margin="0,0,24,8"/>
                                         <TextBlock Grid.Row="1" Grid.Column="1"
                                                    Text="{loc:Loc About_AuthorName}"
-                                                   FontSize="14"
+                                                   FontSize="{StaticResource FontSizeBody}"
                                                    Margin="0,0,0,8"/>
 
                                         <!-- License -->
                                         <TextBlock Grid.Row="2" Grid.Column="0"
                                                    Text="{loc:Loc About_License}"
-                                                   FontSize="14"
+                                                   FontSize="{StaticResource FontSizeBody}"
                                                    FontWeight="Medium"
                                                    Margin="0,0,24,8"/>
                                         <TextBlock Grid.Row="2" Grid.Column="1"
                                                    Text="{loc:Loc About_LicenseValue}"
-                                                   FontSize="14"
+                                                   FontSize="{StaticResource FontSizeBody}"
                                                    Margin="0,0,0,8"/>
 
                                         <!-- GitHub -->
                                         <TextBlock Grid.Row="3" Grid.Column="0"
                                                    Text="{loc:Loc About_Repository}"
-                                                   FontSize="14"
+                                                   FontSize="{StaticResource FontSizeBody}"
                                                    FontWeight="Medium"
                                                    Margin="0,0,24,0"/>
                                         <ui:Button Grid.Row="3" Grid.Column="1"
@@ -785,7 +785,7 @@
                                                           Foreground="{DynamicResource SystemFillColorSuccessBrush}"
                                                           Margin="0,0,8,0"/>
                                 <TextBlock Text="{Binding StatusMessage}"
-                                           FontSize="12"
+                                           FontSize="{StaticResource FontSizeCaption}"
                                            VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>

@@ -50,7 +50,7 @@
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Clock24" Width="16" Height="16" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Search_RecentSearches}"
-                                       FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                       FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         </StackPanel>
                     </Border>
 
@@ -79,15 +79,15 @@
 
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Text}"
-                                                   FontSize="12"/>
+                                                   FontSize="{StaticResource FontSizeCaption}"/>
                                         <TextBlock Text="{Binding Category}"
-                                                   FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                   FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                    Visibility="{Binding Category, Converter={StaticResource NullableToVisibilityConverter}}"/>
                                     </StackPanel>
 
                                     <TextBlock Grid.Column="2"
                                                Text="{Binding Shortcut}"
-                                               FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                VerticalAlignment="Center"
                                                Visibility="{Binding Shortcut, Converter={StaticResource NullableToVisibilityConverter}}"/>
                                 </Grid>

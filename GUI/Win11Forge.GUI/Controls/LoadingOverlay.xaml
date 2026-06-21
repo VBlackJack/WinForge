@@ -37,7 +37,7 @@
 
                 <!-- Loading Message -->
                 <TextBlock x:Name="MessageText"
-                           FontSize="16" FontWeight="Medium"
+                           FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"
                            HorizontalAlignment="Center"
                            TextAlignment="Center"
                            TextWrapping="Wrap"
@@ -46,7 +46,7 @@
 
                 <!-- Sub-message (e.g., "This may take a moment") -->
                 <TextBlock x:Name="SubMessageText"
-                           FontSize="12"
+                           FontSize="{StaticResource FontSizeCaption}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
@@ -55,7 +55,7 @@
 
                 <!-- Progress Text (e.g., "3 of 10") -->
                 <TextBlock x:Name="ProgressText"
-                           FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center"
                            Margin="0,8,0,0"

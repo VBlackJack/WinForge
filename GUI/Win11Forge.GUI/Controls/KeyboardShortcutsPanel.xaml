@@ -19,7 +19,7 @@
                                VerticalAlignment="Center"
                                Margin="0,0,12,0"/>
                 <TextBlock Text="{loc:Loc Help_KeyboardShortcuts}"
-                           FontSize="20" FontWeight="SemiBold"
+                           FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                            VerticalAlignment="Center"/>
             </StackPanel>
 
@@ -28,7 +28,7 @@
                 <StackPanel>
                     <!-- General Section -->
                     <TextBlock Text="{loc:Loc Help_Section_General}"
-                               FontSize="14" FontWeight="Medium"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,0,0,8"/>
 
@@ -51,7 +51,7 @@
                                     </Border>
                                     <TextBlock Grid.Column="1"
                                                Text="{Binding Description}"
-                                               FontSize="12"
+                                               FontSize="{StaticResource FontSizeCaption}"
                                                VerticalAlignment="Center"
                                                Margin="12,0,0,0"/>
                                 </Grid>
@@ -61,7 +61,7 @@
 
                     <!-- Applications Section -->
                     <TextBlock Text="{loc:Loc Help_Section_AppManager}"
-                               FontSize="14" FontWeight="Medium"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,16,0,8"/>
 
@@ -84,7 +84,7 @@
                                     </Border>
                                     <TextBlock Grid.Column="1"
                                                Text="{Binding Description}"
-                                               FontSize="12"
+                                               FontSize="{StaticResource FontSizeCaption}"
                                                VerticalAlignment="Center"
                                                Margin="12,0,0,0"/>
                                 </Grid>
@@ -94,7 +94,7 @@
 
                     <!-- Navigation Section -->
                     <TextBlock Text="{loc:Loc Help_Section_Navigation}"
-                               FontSize="14" FontWeight="Medium"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,16,0,8"/>
 
@@ -117,7 +117,7 @@
                                     </Border>
                                     <TextBlock Grid.Column="1"
                                                Text="{Binding Description}"
-                                               FontSize="12"
+                                               FontSize="{StaticResource FontSizeCaption}"
                                                VerticalAlignment="Center"
                                                Margin="12,0,0,0"/>
                                 </Grid>
@@ -127,7 +127,7 @@
 
                     <!-- Data Grid Section -->
                     <TextBlock Text="{loc:Loc Help_Section_DataGrid}"
-                               FontSize="14" FontWeight="Medium"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,16,0,8"/>
 
@@ -150,7 +150,7 @@
                                     </Border>
                                     <TextBlock Grid.Column="1"
                                                Text="{Binding Description}"
-                                               FontSize="12"
+                                               FontSize="{StaticResource FontSizeCaption}"
                                                VerticalAlignment="Center"
                                                Margin="12,0,0,0"/>
                                 </Grid>
@@ -170,7 +170,7 @@
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Help_Shortcut_DataGrid}"
-                                       FontSize="12"
+                                       FontSize="{StaticResource FontSizeCaption}"
                                        TextWrapping="Wrap"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>

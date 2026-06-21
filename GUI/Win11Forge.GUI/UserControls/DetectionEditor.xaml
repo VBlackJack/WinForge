@@ -11,7 +11,7 @@
     <StackPanel>
         <!-- Description -->
         <TextBlock Text="{loc:Loc AppEditor_DetectionDescription}"
-                   FontSize="12"
+                   FontSize="{StaticResource FontSizeCaption}"
                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                    TextWrapping="Wrap"
                    Margin="0,0,0,16"/>
@@ -43,7 +43,7 @@
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"/>
                     <TextBlock Text="{loc:Loc Detection_Registry_Title}"
-                               FontSize="14" FontWeight="Medium"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
@@ -80,7 +80,7 @@
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"/>
                     <TextBlock Text="{loc:Loc Detection_File_Title}"
-                               FontSize="14" FontWeight="Medium"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
@@ -126,7 +126,7 @@
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"/>
                     <TextBlock Text="{loc:Loc Detection_Command_Title}"
-                               FontSize="14" FontWeight="Medium"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
@@ -136,7 +136,7 @@
                          AutomationProperties.Name="{loc:Loc Detection_Command_Path}"/>
 
                 <TextBlock Text="{loc:Loc Detection_Command_Hint}"
-                           FontSize="12"
+                           FontSize="{StaticResource FontSizeCaption}"
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                            Margin="0,4,0,0"/>
             </StackPanel>
@@ -156,7 +156,7 @@
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"/>
                     <TextBlock Text="{loc:Loc Detection_WindowsFeature_Title}"
-                               FontSize="14" FontWeight="Medium"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
@@ -181,7 +181,7 @@
                                    VerticalAlignment="Center"
                                    Margin="0,0,8,0"/>
                     <TextBlock Text="{loc:Loc Detection_StoreApp_Title}"
-                               FontSize="14" FontWeight="Medium"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
                                VerticalAlignment="Center"/>
                 </StackPanel>
 
@@ -247,7 +247,7 @@
                                    FontWeight="Medium"
                                    VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding DetectedVersion, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                   FontSize="12"
+                                   FontSize="{StaticResource FontSizeCaption}"
                                    Visibility="{Binding DetectedVersion, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullableToVisibilityConverter}}"/>
                     </StackPanel>
                 </StackPanel>
