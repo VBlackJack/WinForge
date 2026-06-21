@@ -106,3 +106,51 @@ Describe 'DownloadValidation - Assert-FileChecksum' {
         Assert-FileChecksum -Path $script:ChecksumFile -ExpectedSHA256 '' | Should -BeTrue
     }
 }
+
+Describe 'DownloadValidation - Test-DirectDownloadChecksumGate' {
+    BeforeAll {
+        $script:GateChecksumFile = Join-Path $TestDrive 'gate-payload.bin'
+        Set-Content -Path $script:GateChecksumFile -Value 'Win11Forge checksum gate fixture' -NoNewline -Encoding UTF8
+        $script:GateRealHash = (Get-FileHash -Path $script:GateChecksumFile -Algorithm SHA256).Hash
+    }
+
+    Context 'Module loading' {
+        It 'Should export Test-DirectDownloadChecksumGate' {
+            Get-Command Test-DirectDownloadChecksumGate -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        }
+    }
+
+    Context 'Checksum verdict matrix' {
+        It 'Returns a stop verdict and actual hash on checksum mismatch' {
+            $verdict = Test-DirectDownloadChecksumGate -Path $script:GateChecksumFile -ExpectedSHA256 ('f' * 64)
+
+            $verdict.Enforced | Should -BeTrue
+            $verdict.Proceed | Should -BeFalse
+            $verdict.ActualHash | Should -Be $script:GateRealHash
+        }
+
+        It 'Returns a proceed verdict and actual hash on checksum match' {
+            $verdict = Test-DirectDownloadChecksumGate -Path $script:GateChecksumFile -ExpectedSHA256 $script:GateRealHash
+
+            $verdict.Enforced | Should -BeTrue
+            $verdict.Proceed | Should -BeTrue
+            $verdict.ActualHash | Should -Be $script:GateRealHash
+        }
+
+        It 'Returns a non-enforced proceed verdict for an empty checksum' {
+            $verdict = Test-DirectDownloadChecksumGate -Path $script:GateChecksumFile -ExpectedSHA256 ''
+
+            $verdict.Enforced | Should -BeFalse
+            $verdict.Proceed | Should -BeTrue
+            $verdict.ActualHash | Should -BeNullOrEmpty
+        }
+
+        It 'Returns a non-enforced proceed verdict for the SKIP_VALIDATION token' {
+            $verdict = Test-DirectDownloadChecksumGate -Path $script:GateChecksumFile -ExpectedSHA256 'SKIP_VALIDATION'
+
+            $verdict.Enforced | Should -BeFalse
+            $verdict.Proceed | Should -BeTrue
+            $verdict.ActualHash | Should -BeNullOrEmpty
+        }
+    }
+}

@@ -144,4 +144,54 @@ function Assert-FileChecksum {
     return $actual -eq $ExpectedSHA256
 }
 
-Export-ModuleMember -Function Resolve-DirectDownloadValidationMode, Get-ExpectedChecksum, Assert-FileChecksum
+function Test-DirectDownloadChecksumGate {
+    <#
+    .SYNOPSIS
+        Returns the post-download checksum gate verdict for a direct-download installer.
+
+    .DESCRIPTION
+        Wraps Assert-FileChecksum with the metadata the parallel installer needs to
+        preserve fail-closed cleanup and logging without duplicating the checksum policy.
+
+        Empty checksums and the SKIP_VALIDATION opt-out token are not enforced and return
+        Proceed = $true. Real checksums are enforced through Assert-FileChecksum, with the
+        actual hash included for caller diagnostics.
+
+    .PARAMETER Path
+        Path to the downloaded file.
+
+    .PARAMETER ExpectedSHA256
+        The expected checksum, the SKIP_VALIDATION token, or empty.
+
+    .OUTPUTS
+        [PSCustomObject] with Enforced, Proceed, and ActualHash properties.
+    #>
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+
+        [string]$ExpectedSHA256
+    )
+
+    $isEnforced = -not [string]::IsNullOrWhiteSpace($ExpectedSHA256) -and $ExpectedSHA256 -ne $script:SkipValidationToken
+    if (-not $isEnforced) {
+        return [PSCustomObject]@{
+            Enforced   = $false
+            Proceed    = $true
+            ActualHash = $null
+        }
+    }
+
+    $proceed = Assert-FileChecksum -Path $Path -ExpectedSHA256 $ExpectedSHA256
+    $actual = (Get-FileHash -Path $Path -Algorithm SHA256).Hash
+
+    return [PSCustomObject]@{
+        Enforced   = $true
+        Proceed    = $proceed
+        ActualHash = $actual
+    }
+}
+
+Export-ModuleMember -Function Resolve-DirectDownloadValidationMode, Get-ExpectedChecksum, Assert-FileChecksum, Test-DirectDownloadChecksumGate

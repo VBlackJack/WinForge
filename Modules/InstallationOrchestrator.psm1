@@ -85,10 +85,10 @@ if (-not (Get-Command -Name Install-ViaWinget -ErrorAction SilentlyContinue)) {
     }
 }
 
-# DownloadValidation provides the shared checksum accessor/enforcement leaves used by
-# the sequential path here (nested imports do not re-export, so import it explicitly).
+# DownloadValidation provides the shared direct-download validation leaves used by
+# the sequential and parallel paths here (nested imports do not re-export).
 $script:DownloadValidationPath = Join-Path $script:ModuleRoot 'DownloadValidation.psm1'
-if (-not (Get-Command -Name Get-ExpectedChecksum -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Test-DirectDownloadChecksumGate -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:DownloadValidationPath) {
         Import-Module -Name $script:DownloadValidationPath -Force
     }
@@ -1271,9 +1271,6 @@ function Install-ApplicationsParallel {
                         $result.Message = (Get-LocalizedString -Key 'download.validation.required')
                         return $result
                     }
-                    # Post-download mechanic: enforce a real checksum when present.
-                    $parallelHasChecksum = $parallelChecksum -and ($parallelChecksum -ne 'SKIP_VALIDATION')
-
                     # Parallel runspace - intentional direct env usage
                     $tempDir = Join-Path $env:TEMP "Win11Forge_$([guid]::NewGuid().ToString('N'))"
                     New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
@@ -1314,14 +1311,13 @@ function Install-ApplicationsParallel {
                     }
                     Write-ParallelLog "Download completed" 'Info'
 
-                    # SHA256 checksum validation via the shared enforcement helper
-                    # (DownloadValidation\Assert-FileChecksum), so the comparison rule
-                    # stays identical to the sequential path.
-                    if ($parallelHasChecksum) {
+                    # SHA256 checksum validation via the shared gate verdict, so
+                    # enforcement and diagnostics cannot drift from the sequential path.
+                    $parallelChecksumVerdict = Test-DirectDownloadChecksumGate -Path $tempFile -ExpectedSHA256 $parallelChecksum
+                    if ($parallelChecksumVerdict.Enforced) {
                         Write-ParallelLog "Validating SHA256 checksum..." 'Info'
-                        if (-not (Assert-FileChecksum -Path $tempFile -ExpectedSHA256 $parallelChecksum)) {
-                            $fileHash = (Get-FileHash -Path $tempFile -Algorithm SHA256).Hash
-                            Write-ParallelLog "Checksum FAILED! Expected: $parallelChecksum, Got: $fileHash" 'Error'
+                        if (-not $parallelChecksumVerdict.Proceed) {
+                            Write-ParallelLog "Checksum FAILED! Expected: $parallelChecksum, Got: $($parallelChecksumVerdict.ActualHash)" 'Error'
                             Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
                             $result.Message = (Get-LocalizedString -Key 'orchestrator.result.checksum_failed')
                             return $result
