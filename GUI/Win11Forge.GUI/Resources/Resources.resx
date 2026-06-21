@@ -1194,7 +1194,7 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <comment>License name value</comment>
   </data>
   <data name="About_RepoUrl" xml:space="preserve">
-    <value>github.com/VBlackJack/Win11Forge</value>
+    <value>github.com/VBlackJack/WinForge</value>
     <comment>Repository URL display text</comment>
   </data>
   <!-- Favorites -->

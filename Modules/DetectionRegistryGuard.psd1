@@ -21,7 +21,7 @@
     RootModule = 'DetectionRegistryGuard.psm1'
 
     # Version number of this module
-    ModuleVersion = '1.0.0603.1'
+    ModuleVersion = '1.0.0621.1'
 
     # ID used to uniquely identify this module
     GUID = 'dd20152c-eb86-4788-9ceb-002d1564bf2d'

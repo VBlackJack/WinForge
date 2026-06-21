@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'Prerequisites.psm1'
-    ModuleVersion = '1.0.0603.1'
+    ModuleVersion = '1.0.0621.1'
     GUID = 'aa479331-d931-4d0d-8c6e-606d1d63ae7c'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Prerequisites', 'Dependencies')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
-            ReleaseNotes = 'Win11Forge v2026060301'
+            ReleaseNotes = 'Win11Forge v2026062101'
         }
     }
 }

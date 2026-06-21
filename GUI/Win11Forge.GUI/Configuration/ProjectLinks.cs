@@ -26,7 +26,7 @@ namespace Win11Forge.GUI.Configuration;
 /// </summary>
 internal static class ProjectLinks
 {
-    public const string Repository = "https://github.com/VBlackJack/Win11Forge";
+    public const string Repository = "https://github.com/VBlackJack/WinForge";
 
     public const string Issues = $"{Repository}/issues";
 
