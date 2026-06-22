@@ -322,6 +322,19 @@ public class VisualDesignTokenTests
     }
 
     [Fact]
+    public void AppThemeFallback_UsesThemeForgeBridgeInsteadOfHardcodedPalette()
+    {
+        string appSource = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "App.xaml.cs"));
+
+        Assert.Contains("ThemeService.ClearPaletteBridgeResources(app.Resources)", appSource, StringComparison.Ordinal);
+        Assert.Contains("ThemeService.ApplyPaletteBridgeResources(app.Resources)", appSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("RestoreDarkThemeDefaults", appSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("ApplyLightThemeEnhancements", appSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Color.FromRgb", appSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Color.FromArgb", appSource, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DashboardQuickNavigation_UsesWpfUiButtonsToAvoidNativeHoverChrome()
     {
         string dashboardPath = FindRepoFile("GUI", "WinForge.GUI", "Views", "DashboardView.xaml");
