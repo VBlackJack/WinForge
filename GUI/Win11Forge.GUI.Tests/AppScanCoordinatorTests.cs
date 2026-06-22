@@ -120,6 +120,42 @@ public class AppScanCoordinatorTests
     }
 
     [Fact]
+    public async Task ScanAsync_WithBatchUpdates_ShouldMatchWingetIdAndVersionedName()
+    {
+        List<ApplicationModel> apps = CreateApps("7Zip");
+        apps[0].Name = "7-Zip";
+        Mock<IPowerShellBridge> bridge = CreateBridge();
+        bridge
+            .Setup(x => x.GetBatchApplicationStatusAsync(It.IsAny<IReadOnlyList<ApplicationModel>>()))
+            .ReturnsAsync(new Dictionary<string, BatchAppStatus>
+            {
+                ["7Zip"] = new(ApplicationStatus.Installed, "25.01")
+            });
+        Mock<IApplicationDetectionService> detection = CreateDetectionService();
+        detection
+            .Setup(x => x.GetAvailableUpdatesAsync())
+            .ReturnsAsync(
+            [
+                new UpdateInfo
+                {
+                    Id = "7zip.7zip",
+                    Name = "7-Zip 25.01 (x64)",
+                    CurrentVersion = "25.01",
+                    NewVersion = "26.01",
+                    Source = "winget"
+                }
+            ]);
+        AppScanCoordinator coordinator = CreateCoordinator(bridge.Object, detection.Object);
+
+        AppScanResult result = await coordinator.ScanAsync(apps);
+
+        Assert.Equal(1, result.UpdatesAvailableCount);
+        Assert.Equal(ApplicationStatus.UpdateAvailable, apps[0].Status);
+        Assert.Equal("25.01", apps[0].CurrentVersion);
+        Assert.Equal("26.01", apps[0].AvailableVersion);
+    }
+
+    [Fact]
     public async Task ScanAsync_WhenCancelled_ShouldReturnCancelledResult()
     {
         List<ApplicationModel> apps = CreateApps("App1", "App2");

@@ -36,6 +36,8 @@ namespace Win11Forge.GUI.Services;
 /// </summary>
 public class HybridDetectionService : IApplicationDetectionService, IDisposable
 {
+    private static readonly TimeSpan WingetCliQueryTimeout = TimeSpan.FromMinutes(5);
+
     private readonly RegistryDetectionService _registryService;
     private readonly JsonApplicationDetectionService _jsonDetectionService;
     private readonly ILoggingService _logger;
@@ -368,6 +370,18 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             }
         }
 
+        if (updates.Count == 0)
+        {
+            try
+            {
+                updates = await GetWingetCliUpdatesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning($"WinGet CLI update check failed: {ex.Message}");
+            }
+        }
+
         // Update cache
         lock (_cacheLock)
         {
@@ -575,6 +589,176 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
             return updates;
         }).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Gets available updates using the winget CLI when the WinGet PowerShell module is unavailable.
+    /// </summary>
+    private async Task<List<UpdateInfo>> GetWingetCliUpdatesAsync()
+    {
+        ProcessStartInfo startInfo = new ProcessStartInfo
+        {
+            FileName = "winget",
+            Arguments = "upgrade --include-unknown --accept-source-agreements --disable-interactivity",
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+
+        using Process process = new Process { StartInfo = startInfo };
+        process.Start();
+
+        Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
+        Task<string> errorTask = process.StandardError.ReadToEndAsync();
+
+        using CancellationTokenSource timeoutCts = new CancellationTokenSource(WingetCliQueryTimeout);
+        try
+        {
+            await process.WaitForExitAsync(timeoutCts.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+        {
+            try { process.Kill(entireProcessTree: true); } catch { }
+            _logger.LogWarning("WinGet CLI update check timed out.");
+            return [];
+        }
+
+        string output = await outputTask.ConfigureAwait(false);
+        string error = await errorTask.ConfigureAwait(false);
+        string combinedOutput = string.IsNullOrWhiteSpace(error)
+            ? output
+            : string.Concat(output, Environment.NewLine, error);
+
+        return ParseWingetUpgradeOutput(combinedOutput);
+    }
+
+    private static List<UpdateInfo> ParseWingetUpgradeOutput(string output)
+    {
+        List<UpdateInfo> updates = new List<UpdateInfo>();
+
+        if (string.IsNullOrWhiteSpace(output))
+        {
+            return updates;
+        }
+
+        WingetUpgradeColumnLayout? layout = null;
+        foreach (string line in SplitWingetOutputLines(output))
+        {
+            if (TryGetWingetUpgradeColumnLayout(line, out WingetUpgradeColumnLayout currentLayout))
+            {
+                layout = currentLayout;
+                continue;
+            }
+
+            if (layout is null || IsWingetUpgradeNoiseLine(line))
+            {
+                continue;
+            }
+
+            WingetUpgradeColumnLayout columns = layout.Value;
+            string name = GetColumnValue(line, columns.NameStart, columns.IdStart);
+            string id = GetColumnValue(line, columns.IdStart, columns.VersionStart);
+            string currentVersion = GetColumnValue(line, columns.VersionStart, columns.AvailableStart);
+            string availableVersion = GetColumnValue(line, columns.AvailableStart, columns.SourceStart);
+            string source = GetColumnValue(line, columns.SourceStart, line.Length);
+
+            if (string.IsNullOrWhiteSpace(name) ||
+                string.IsNullOrWhiteSpace(id) ||
+                string.IsNullOrWhiteSpace(availableVersion))
+            {
+                continue;
+            }
+
+            updates.Add(new UpdateInfo
+            {
+                Id = id,
+                Name = name,
+                CurrentVersion = currentVersion,
+                NewVersion = availableVersion,
+                Source = string.IsNullOrWhiteSpace(source) ? "winget" : source
+            });
+        }
+
+        return updates;
+    }
+
+    private static IEnumerable<string> SplitWingetOutputLines(string output)
+    {
+        foreach (string rawLine in output.Split('\n'))
+        {
+            foreach (string segment in rawLine.Split('\r'))
+            {
+                string line = segment.TrimEnd();
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    yield return line;
+                }
+            }
+        }
+    }
+
+    private static bool TryGetWingetUpgradeColumnLayout(string line, out WingetUpgradeColumnLayout layout)
+    {
+        int idStart = line.IndexOf("ID", StringComparison.OrdinalIgnoreCase);
+        int versionStart = line.IndexOf("Version", StringComparison.OrdinalIgnoreCase);
+        int availableStart = line.IndexOf("Available", StringComparison.OrdinalIgnoreCase);
+        if (availableStart < 0)
+        {
+            availableStart = line.IndexOf("Disponible", StringComparison.OrdinalIgnoreCase);
+        }
+
+        int sourceStart = line.IndexOf("Source", StringComparison.OrdinalIgnoreCase);
+        if (sourceStart < 0)
+        {
+            sourceStart = line.IndexOf("Quelle", StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (idStart > 0 &&
+            versionStart > idStart &&
+            availableStart > versionStart &&
+            sourceStart > availableStart)
+        {
+            layout = new WingetUpgradeColumnLayout(0, idStart, versionStart, availableStart, sourceStart);
+            return true;
+        }
+
+        layout = default;
+        return false;
+    }
+
+    private static bool IsWingetUpgradeNoiseLine(string line)
+    {
+        string trimmed = line.Trim();
+        return trimmed.Length == 0 ||
+               trimmed.All(ch => ch == '-' || ch == ' ') ||
+               trimmed is "-" or "\\" or "|" or "/" ||
+               trimmed.Contains("upgrades available", StringComparison.OrdinalIgnoreCase) ||
+               (trimmed.Contains("mises", StringComparison.OrdinalIgnoreCase) &&
+                trimmed.Contains("disponibles", StringComparison.OrdinalIgnoreCase)) ||
+               trimmed.StartsWith("The following packages", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.StartsWith("Les packages suivants", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.StartsWith("No installed package", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.StartsWith("No available upgrade", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.StartsWith("Aucun package", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetColumnValue(string line, int start, int end)
+    {
+        if (start < 0 || start >= line.Length || end <= start)
+        {
+            return string.Empty;
+        }
+
+        int safeEnd = Math.Min(end, line.Length);
+        return line.Substring(start, safeEnd - start).Trim();
+    }
+
+    private readonly record struct WingetUpgradeColumnLayout(
+        int NameStart,
+        int IdStart,
+        int VersionStart,
+        int AvailableStart,
+        int SourceStart);
 
     /// <summary>
     /// Gets installed AppX/MSIX packages (Microsoft Store apps).

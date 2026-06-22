@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+using System.Text;
 using Win11Forge.GUI.Models;
 using Win11Forge.GUI.Resources;
 using Win11Forge.GUI.Services.Coordinators.Internal;
@@ -202,10 +203,7 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
                 continue;
             }
 
-            UpdateInfo? matchingUpdate = batchUpdates.FirstOrDefault(u =>
-                u.Name.Equals(app.Name, StringComparison.OrdinalIgnoreCase) ||
-                u.Id.Contains(app.Name, StringComparison.OrdinalIgnoreCase) ||
-                app.Name.Contains(u.Name, StringComparison.OrdinalIgnoreCase));
+            UpdateInfo? matchingUpdate = batchUpdates.FirstOrDefault(u => IsUpdateMatch(app, u));
 
             if (matchingUpdate != null && ApplyUpdateInfo(app, matchingUpdate))
             {
@@ -214,6 +212,58 @@ public sealed class AppScanCoordinator : IAppScanCoordinator
         }
 
         return matchedUpdates;
+    }
+
+    private static bool IsUpdateMatch(ApplicationModel app, UpdateInfo update)
+    {
+        if (string.Equals(update.Name, app.Name, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(update.Id, app.AppId, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        string normalizedAppId = NormalizePackageLookupKey(app.AppId);
+        string normalizedAppName = NormalizePackageLookupKey(app.Name);
+
+        foreach (string? candidate in new[] { update.Id, update.Name }.Where(static c => !string.IsNullOrWhiteSpace(c)))
+        {
+            string normalizedCandidate = NormalizePackageLookupKey(candidate);
+
+            if (IsContainedPackageKey(normalizedAppId, normalizedCandidate) ||
+                IsContainedPackageKey(normalizedAppName, normalizedCandidate))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsContainedPackageKey(string appKey, string candidateKey)
+    {
+        return appKey.Length >= 4 &&
+               candidateKey.Length >= 4 &&
+               (candidateKey.Contains(appKey, StringComparison.OrdinalIgnoreCase) ||
+                appKey.Contains(candidateKey, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string NormalizePackageLookupKey(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        StringBuilder builder = new StringBuilder(value.Length);
+        foreach (char ch in value)
+        {
+            if (char.IsLetterOrDigit(ch))
+            {
+                builder.Append(char.ToLowerInvariant(ch));
+            }
+        }
+
+        return builder.ToString();
     }
 
     private static bool ApplyUpdateInfo(ApplicationModel app, UpdateInfo updateInfo)
