@@ -204,9 +204,13 @@ public class VisualDesignTokenTests
         AssertNamedStyleSetter(styles, "PrimaryButton", "MinHeight", "{StaticResource ButtonMinHeightStandard}");
         AssertNamedStyleSetter(styles, "SecondaryButton", "MinHeight", "{StaticResource ButtonMinHeightStandard}");
         AssertNamedStyleSetter(styles, "DestructiveSolidButton", "MinHeight", "{StaticResource ButtonMinHeightStandard}");
+        AssertNamedStyleSetter(styles, "CompactPrimaryButton", "VerticalAlignment", "Center");
+        AssertNamedStyleSetter(styles, "CompactSecondaryButton", "VerticalAlignment", "Center");
         AssertNamedStyleSetter(styles, "CompactSecondaryButton", "Padding", "{StaticResource ButtonPaddingCompact}");
         AssertNamedStyleSetter(styles, "CompactTransparentButton", "Appearance", "Transparent");
+        AssertNamedStyleSetter(styles, "CompactTransparentButton", "VerticalAlignment", "Center");
         AssertNamedStyleSetter(styles, "CompactSecondaryDropDownButton", "Appearance", "Secondary");
+        AssertNamedStyleSetter(styles, "CompactSecondaryDropDownButton", "VerticalAlignment", "Center");
         AssertNamedStyleSetter(styles, "CompactSecondaryDropDownButton", "CornerRadius", "{StaticResource ButtonCornerRadius}");
         AssertNamedStyleSetter(styles, "QuickActionButton", "HorizontalContentAlignment", "Left");
         AssertNamedStyleSetter(styles, "IconButton", "MinWidth", "{StaticResource ButtonMinHeightTouch}");

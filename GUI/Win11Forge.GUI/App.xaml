@@ -656,11 +656,13 @@
 
             <!-- Compact action buttons for dense toolbars and selection helpers. -->
             <Style x:Key="CompactPrimaryButton" TargetType="ui:Button" BasedOn="{StaticResource PrimaryButton}">
+                <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightCompact}"/>
                 <Setter Property="Padding" Value="{StaticResource ButtonPaddingCompact}"/>
             </Style>
 
             <Style x:Key="CompactSecondaryButton" TargetType="ui:Button" BasedOn="{StaticResource SecondaryButton}">
+                <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightCompact}"/>
                 <Setter Property="Padding" Value="{StaticResource ButtonPaddingCompact}"/>
             </Style>
@@ -668,6 +670,7 @@
             <Style x:Key="CompactTransparentButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Appearance" Value="Transparent"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightCompact}"/>
                 <Setter Property="Padding" Value="{StaticResource ButtonPaddingCompact}"/>
                 <Setter Property="FontSize" Value="{StaticResource ButtonFontSizeStandard}"/>
@@ -677,6 +680,7 @@
             <Style x:Key="CompactSecondaryDropDownButton" TargetType="ui:DropDownButton" BasedOn="{StaticResource {x:Type ui:DropDownButton}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Appearance" Value="Secondary"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightCompact}"/>
                 <Setter Property="Padding" Value="{StaticResource ButtonPaddingCompact}"/>
                 <Setter Property="FontSize" Value="{StaticResource ButtonFontSizeStandard}"/>
