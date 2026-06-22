@@ -57,7 +57,7 @@ echo ============================================================
 echo.
 echo   Select monitoring mode:
 echo.
-echo   1. Win11Forge Deployment (auto-stop on completion)
+echo   1. WinForge Deployment (auto-stop on completion)
 echo   2. Monitor Process by Name
 echo   3. Monitor Process by PID
 echo   4. Monitor Log File
@@ -73,7 +73,7 @@ echo.
 
 set /p choice="Enter your choice (0-8): "
 
-if "%choice%"=="1" goto :Win11ForgeMode
+if "%choice%"=="1" goto :WinForgeMode
 if "%choice%"=="2" goto :ProcessNameMode
 if "%choice%"=="3" goto :ProcessIdMode
 if "%choice%"=="4" goto :LogFileMode
@@ -88,13 +88,13 @@ timeout /t 2 >nul
 goto :Menu
 
 REM ============================================================
-REM   Mode 1: Win11Forge Deployment
+REM   Mode 1: WinForge Deployment
 REM ============================================================
-:Win11ForgeMode
+:WinForgeMode
 cls
 echo.
 echo ============================================================
-echo   Win11Forge Deployment Monitoring
+echo   WinForge Deployment Monitoring
 echo ============================================================
 echo.
 echo This will monitor the Logs directory and auto-stop when
@@ -104,7 +104,7 @@ echo Report will be generated automatically.
 echo.
 pause
 
-powershell.exe -NoExit -ExecutionPolicy Bypass -File "%SCRIPT_DIR%System-Audit.ps1" -MonitorLogPath "%SCRIPT_DIR%..\Logs" -LogCompletionMarkers "Deployment completed|Summary" -GenerateReport -AuditName "Win11ForgeDeployment"
+powershell.exe -NoExit -ExecutionPolicy Bypass -File "%SCRIPT_DIR%System-Audit.ps1" -MonitorLogPath "%SCRIPT_DIR%..\Logs" -LogCompletionMarkers "Deployment completed|Summary" -GenerateReport -AuditName "WinForgeDeployment"
 goto :End
 
 REM ============================================================

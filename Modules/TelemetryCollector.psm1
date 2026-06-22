@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - Telemetry Collector v3.7.2
+    WinForge - Telemetry Collector v3.7.2
 
 .DESCRIPTION
-    Collects and manages local deployment telemetry for Win11Forge:
+    Collects and manages local deployment telemetry for WinForge:
     - Deployment success/failure tracking
     - Installation method statistics
     - Application popularity metrics
@@ -40,7 +40,7 @@ $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 # Import DirectoryConstants for path management
 $script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
-if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-WinForgeDirectory -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:DirectoryConstantsPath) {
         Import-Module -Name $script:DirectoryConstantsPath -Force
     }

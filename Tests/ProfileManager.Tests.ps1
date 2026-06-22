@@ -3,7 +3,7 @@
     Pester tests for ProfileManager module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge ProfileManager v2.5.0
+    Comprehensive unit tests for WinForge ProfileManager v2.5.0
     Tests profile loading, inheritance resolution, merging, and validation
 
 .NOTES

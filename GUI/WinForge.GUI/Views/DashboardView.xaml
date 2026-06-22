@@ -1,0 +1,629 @@
+<UserControl x:Class="WinForge.GUI.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:loc="clr-namespace:WinForge.GUI.Resources"
+             xmlns:viewModels="clr-namespace:WinForge.GUI.ViewModels"
+             xmlns:models="clr-namespace:WinForge.GUI.Models"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewModels:DashboardViewModel}"
+             d:DesignHeight="800" d:DesignWidth="1000">
+
+    <!-- Button styles resolve from App.xaml: StatsCardButton, QuickActionButton, HeroPrimaryButton, SecondaryButton, WarningPrimaryButton -->
+
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Style="{StaticResource PageRootGridStyle}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>   <!-- Hero Section -->
+                <RowDefinition Height="Auto"/>   <!-- Stats Row -->
+                <RowDefinition Height="Auto"/>   <!-- Main Content -->
+                <RowDefinition Height="Auto"/>   <!-- History -->
+                <RowDefinition Height="Auto"/>   <!-- Footer -->
+            </Grid.RowDefinitions>
+
+            <!-- HERO SECTION -->
+            <Border Grid.Row="0"
+                    Style="{StaticResource CardBorderStyle}"
+                    Margin="{StaticResource SectionGap}"
+                    Padding="{StaticResource HeroPadding}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Hero Content -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <!-- State: Checking -->
+                        <StackPanel Visibility="{Binding IsChecking, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <ui:ProgressRing IsIndeterminate="True"
+                                                 Width="32" Height="32"
+                                                 Margin="0,0,16,0"/>
+                                <TextBlock Text="{Binding HeroTitle}"
+                                           Style="{StaticResource PageTitleTextStyle}"
+                                           VerticalAlignment="Center"
+                                           AutomationProperties.AutomationId="PageDashboard"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding HeroSubtitle}"
+                                       Style="{StaticResource PageSubtitleTextStyle}"
+                                       Margin="0"/>
+                        </StackPanel>
+
+                        <!-- State: NeedPrereqs -->
+                        <StackPanel Visibility="{Binding NeedsPrerequisites, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <ui:SymbolIcon Symbol="ErrorCircle24"
+                                               Width="32" Height="32"
+                                               Foreground="{DynamicResource AccentOrangeTextBrush}"
+                                               Margin="0,0,16,0"
+                                               VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding HeroTitle}"
+                                           Style="{StaticResource PageTitleTextStyle}"
+                                           VerticalAlignment="Center"
+                                           AutomationProperties.AutomationId="PageDashboard"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding HeroSubtitle}"
+                                       Style="{StaticResource PageSubtitleTextStyle}"
+                                       Margin="{StaticResource BlockGap}"/>
+                                 <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
+                                        Style="{StaticResource PrimaryButton}"
+                                        HorizontalAlignment="Left"
+                                        AutomationProperties.Name="{loc:Loc A11y_Dashboard_FixPrereqs}">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Wrench24"
+                                                   Width="20" Height="20"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,8,0"/>
+                                    <TextBlock Text="{loc:Loc Dashboard_Btn_FixPrereqs}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </ui:Button>
+                        </StackPanel>
+
+                        <!-- State: Ready -->
+                        <StackPanel Visibility="{Binding IsReady, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <ui:SymbolIcon Symbol="CheckmarkCircle24"
+                                               Width="32" Height="32"
+                                               Foreground="{DynamicResource AccentGreenTextBrush}"
+                                               Margin="0,0,16,0"
+                                               VerticalAlignment="Center"
+                                               Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                <ui:SymbolIcon Symbol="Info24"
+                                               Width="32" Height="32"
+                                               Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                               Margin="0,0,16,0"
+                                               VerticalAlignment="Center"
+                                               Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <TextBlock Text="{Binding HeroTitle}"
+                                           Style="{StaticResource PageTitleTextStyle}"
+                                           VerticalAlignment="Center"
+                                           AutomationProperties.AutomationId="PageDashboard"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding HeroSubtitle}"
+                                       Style="{StaticResource PageSubtitleTextStyle}"
+                                       Margin="{StaticResource BlockGap}"/>
+                            <StackPanel Orientation="Horizontal">
+                                 <ui:Button Command="{Binding StartDeploymentCommand}"
+                                           Style="{StaticResource HeroPrimaryButton}"
+                                           ToolTip="{loc:Loc Dashboard_StartDeployment_Hint}"
+                                           Margin="0,0,12,0"
+                                           AutomationProperties.Name="{loc:Loc A11y_Dashboard_StartDeployment}">
+                                     <StackPanel Orientation="Horizontal">
+                                         <ui:SymbolIcon Symbol="Rocket24"
+                                                       Width="{StaticResource ButtonIconSizeLarge}" Height="{StaticResource ButtonIconSizeLarge}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="{StaticResource ButtonIconMarginStandard}"/>
+                                         <TextBlock Text="{loc:Loc Dashboard_Btn_StartDeployment}" VerticalAlignment="Center"/>
+                                     </StackPanel>
+                                 </ui:Button>
+                                 <ui:Button Command="{Binding ViewUpdatesCommand}"
+                                           Style="{StaticResource SecondaryButton}"
+                                           MinHeight="{StaticResource ButtonMinHeightHero}"
+                                           ToolTip="{loc:Loc Dashboard_ViewUpdates_Hint}"
+                                           Visibility="{Binding HasUpdatesAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                           AutomationProperties.Name="{loc:Loc A11y_Dashboard_ViewUpdates}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="ArrowDownload24"
+                                                       Width="20" Height="20"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0"/>
+                                        <TextBlock Text="{loc:Loc Dashboard_Btn_ViewUpdates}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </ui:Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Version Badge -->
+                    <Border Grid.Column="1"
+                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource RadiusMedium}"
+                            Padding="16,12"
+                            VerticalAlignment="Top">
+                        <StackPanel>
+                            <TextBlock Text="WinForge"
+                                       FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold">
+                                <Run Text="v"/>
+                                <Run Text="{Binding AppVersion, Mode=OneWay}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- STATS ROW -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="{StaticResource SectionGap}">
+                <!-- Profiles Stat (Clickable) -->
+                <Button Command="{Binding NavigateToProfilesCommand}"
+                        Style="{StaticResource StatsCardButton}"
+                        ToolTip="{loc:Loc Dashboard_Stats_ProfilesHint}"
+                        MinWidth="160"
+                        AutomationProperties.Name="{loc:Loc Dashboard_Stats_Profiles}"
+                        AutomationProperties.HelpText="{loc:Loc A11y_Dashboard_ProfilesCard}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding ProfileCount}"
+                                       FontSize="{StaticResource FontSizeDisplay}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                            <TextBlock Text="{loc:Loc Dashboard_Stats_Profiles}"
+                                       FontSize="{StaticResource FontSizeCaption}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ui:SymbolIcon Grid.Column="1"
+                                       Symbol="ChevronRight24"
+                                       Width="24" Height="24"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+
+                <!-- Apps Stat (Clickable) -->
+                <Button Command="{Binding NavigateToAppsCommand}"
+                        Style="{StaticResource StatsCardButton}"
+                        ToolTip="{loc:Loc Dashboard_Stats_AppsHint}"
+                        MinWidth="160"
+                        AutomationProperties.Name="{loc:Loc Dashboard_Stats_Apps}"
+                        AutomationProperties.HelpText="{loc:Loc A11y_Dashboard_AppsCard}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding AppCount}"
+                                       FontSize="{StaticResource FontSizeDisplay}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource SecondaryHueMidBrush}"/>
+                            <TextBlock Text="{loc:Loc Dashboard_Stats_Apps}"
+                                       FontSize="{StaticResource FontSizeCaption}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ui:SymbolIcon Grid.Column="1"
+                                       Symbol="ChevronRight24"
+                                       Width="24" Height="24"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+
+                <!-- Updates Stat (Clickable) -->
+                <Button Command="{Binding ViewUpdatesCommand}"
+                        Style="{StaticResource StatsCardButton}"
+                        ToolTip="{loc:Loc Dashboard_Stats_UpdatesHint}"
+                        MinWidth="160"
+                        Margin="0"
+                        AutomationProperties.Name="{loc:Loc Dashboard_Stats_Updates}"
+                        AutomationProperties.HelpText="{loc:Loc A11y_Dashboard_UpdatesCard}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding UpdateCount}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontSize" Value="34"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding UpdateCount, Converter={StaticResource NonZeroToBoolConverter}}" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource AccentGreenTextBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Text="{loc:Loc Dashboard_Stats_Updates}"
+                                       FontSize="{StaticResource FontSizeCaption}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                        <ui:SymbolIcon Grid.Column="1"
+                                       Symbol="ChevronRight24"
+                                       Width="24" Height="24"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+            </StackPanel>
+
+            <!-- MAIN CONTENT -->
+            <Grid Grid.Row="2" Margin="{StaticResource SectionGap}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="*" MinWidth="240" MaxWidth="360"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- LEFT: System Info -->
+                     <Border Grid.Column="0"
+                        Style="{StaticResource CardBorderStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- System Info Header -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+                            <ui:SymbolIcon Symbol="Desktop24"
+                                           Width="24" Height="24"
+                                           VerticalAlignment="Center"
+                                           Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                           Margin="0,0,12,0"/>
+                            <TextBlock Text="{loc:Loc Dashboard_SystemInfo_Title}"
+                                       FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"/>
+                        </StackPanel>
+
+                        <!-- System Info Grid -->
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Hostname -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,16,16">
+                                <TextBlock Text="{loc:Loc Dashboard_Sys_Hostname}"
+                                           FontSize="{StaticResource FontSizeCaption}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{Binding Hostname}"
+                                           FontSize="{StaticResource FontSizeBody}"/>
+                            </StackPanel>
+
+                            <!-- OS -->
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="{StaticResource BlockGap}">
+                                <TextBlock Text="{loc:Loc Dashboard_Sys_OS}"
+                                           FontSize="{StaticResource FontSizeCaption}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{Binding OSName}"
+                                           FontSize="{StaticResource FontSizeBody}"/>
+                            </StackPanel>
+
+                            <!-- Build -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,16,16">
+                                <TextBlock Text="{loc:Loc Dashboard_Sys_Build}"
+                                           FontSize="{StaticResource FontSizeCaption}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{Binding OSBuild}"
+                                           FontSize="{StaticResource FontSizeBody}"/>
+                            </StackPanel>
+
+                            <!-- Admin -->
+                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="{StaticResource BlockGap}">
+                                <TextBlock Text="{loc:Loc Dashboard_Sys_Admin}"
+                                           FontSize="{StaticResource FontSizeCaption}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="{Binding IsAdmin, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                   Width="16" Height="16"
+                                                   Foreground="{Binding IsAdmin, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,6,0"/>
+                                    <TextBlock Text="{Binding AdminStatus}"
+                                               FontSize="{StaticResource FontSizeBody}"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Winget -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,16,16">
+                                <TextBlock Text="{loc:Loc Dashboard_Sys_Winget}"
+                                           FontSize="{StaticResource FontSizeCaption}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="{Binding WingetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                   Width="16" Height="16"
+                                                   Foreground="{Binding WingetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,6,0"/>
+                                    <TextBlock Text="{Binding WingetVersion}"
+                                               FontSize="{StaticResource FontSizeBody}"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Chocolatey -->
+                            <StackPanel Grid.Row="2" Grid.Column="1" Margin="{StaticResource BlockGap}">
+                                <TextBlock Text="{loc:Loc Dashboard_Sys_Chocolatey}"
+                                           FontSize="{StaticResource FontSizeCaption}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="{Binding ChocolateyInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                   Width="16" Height="16"
+                                                   Foreground="{Binding ChocolateyInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,6,0"/>
+                                    <TextBlock Text="{Binding ChocolateyVersion}"
+                                               FontSize="{StaticResource FontSizeBody}"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- PowerShell -->
+                            <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,16,0">
+                                <TextBlock Text="{loc:Loc Dashboard_Sys_PowerShell}"
+                                           FontSize="{StaticResource FontSizeCaption}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="{Binding PowerShellInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                                   Width="16" Height="16"
+                                                   Foreground="{Binding PowerShellInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,6,0"/>
+                                    <TextBlock Text="{Binding PowerShellVersion}"
+                                               FontSize="{StaticResource FontSizeBody}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- RIGHT: Quick Actions -->
+                <StackPanel Grid.Column="2">
+                    <!-- Updates Status Card -->
+                     <Border Padding="{StaticResource CardPadding}"
+                            Style="{StaticResource CardBorderStyle}"
+                             Margin="{StaticResource BlockGap}"
+                            >
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="{StaticResource BlockGap}">
+                                <ui:SymbolIcon Symbol="ArrowSync24"
+                                               Width="24" Height="24"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource AccentGreenTextBrush}"
+                                               Margin="0,0,12,0"/>
+                                <TextBlock Text="{loc:Loc Dashboard_Updates_Title}"
+                                           FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"/>
+                            </StackPanel>
+
+                            <!-- Scan Button -->
+                             <ui:Button Command="{Binding ScanUpdatesCommand}"
+                                       Style="{StaticResource PrimaryButton}"
+                                       ToolTip="{loc:Loc Dashboard_ScanBtn_Hint}"
+                                       HorizontalAlignment="Stretch"
+                                       IsEnabled="{Binding IsNotScanning}">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Search24"
+                                                   Width="18" Height="18"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,8,0"
+                                                   Visibility="{Binding IsNotScanning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    <ui:ProgressRing IsIndeterminate="True"
+                                                     Width="18" Height="18"
+                                                     Margin="0,0,8,0"
+                                                     Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    <TextBlock Text="{Binding ScanButtonText}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </ui:Button>
+
+                            <!-- Last Scan Time -->
+                            <TextBlock Text="{Binding LastScanDisplay}"
+                                       FontSize="{StaticResource FontSizeCaption}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,8,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Quick Navigation -->
+                     <Border Padding="{StaticResource CardPadding}"
+                            Style="{StaticResource CardBorderStyle}">
+                        <StackPanel>
+                            <TextBlock Text="{loc:Loc Dashboard_QuickNav_Title}"
+                                       FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"
+                                       Margin="{StaticResource BlockGap}"/>
+
+                            <!-- Prerequisites Button -->
+                            <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
+                                       Style="{StaticResource QuickActionButton}"
+                                       ToolTip="{loc:Loc Dashboard_Nav_PrereqsHint}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ui:SymbolIcon Grid.Column="0"
+                                                   Symbol="CheckmarkCircle24"
+                                                   Width="24" Height="24"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,12,0"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{loc:Loc Nav_Prerequisites}"
+                                               VerticalAlignment="Center"/>
+                                    <ui:SymbolIcon Grid.Column="2"
+                                                   Symbol="ChevronRight24"
+                                                   Width="20" Height="20"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   VerticalAlignment="Center"/>
+                                </Grid>
+                            </ui:Button>
+
+                            <!-- Applications Button -->
+                            <ui:Button Command="{Binding NavigateToAppsCommand}"
+                                       Style="{StaticResource QuickActionButton}"
+                                       ToolTip="{loc:Loc Dashboard_Nav_AppsHint}"
+                                       Margin="0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ui:SymbolIcon Grid.Column="0"
+                                                   Symbol="Apps24"
+                                                   Width="24" Height="24"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,12,0"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{loc:Loc Nav_Apps}"
+                                               VerticalAlignment="Center"/>
+                                    <ui:SymbolIcon Grid.Column="2"
+                                                   Symbol="ChevronRight24"
+                                                   Width="20" Height="20"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   VerticalAlignment="Center"/>
+                                </Grid>
+                            </ui:Button>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- HISTORY SECTION -->
+             <Border Grid.Row="3"
+                    Style="{StaticResource CardBorderStyle}"
+                    Margin="{StaticResource SectionGap}"
+                    >
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="{StaticResource BlockGap}">
+                        <ui:SymbolIcon Symbol="History24"
+                                       Width="24" Height="24"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                       Margin="0,0,12,0"/>
+                        <TextBlock Text="{loc:Loc Dashboard_History_Title}"
+                                   FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"/>
+                    </StackPanel>
+
+                    <!-- History List -->
+                    <ItemsControl Grid.Row="1"
+                                   ItemsSource="{Binding RecentDeployments}"
+                                   VirtualizingPanel.IsVirtualizing="True"
+                                   VirtualizingPanel.VirtualizationMode="Recycling"
+                                   Visibility="{Binding HasRecentDeployments, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:DeploymentHistoryEntry}">
+                                <Border BorderBrush="{DynamicResource ControlElevationBorderBrush}"
+                                        BorderThickness="0,0,0,1"
+                                        Padding="0,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Status Icon -->
+                                        <ui:SymbolIcon Grid.Column="0"
+                                                       Symbol="{Binding Result, Converter={StaticResource StatusToIconConverter}}"
+                                                       Width="24" Height="24"
+                                                       Foreground="{Binding Result, Converter={StaticResource StatusToColorConverter}}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,16,0"/>
+
+                                        <!-- Profile Info -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding ProfileName}"
+                                                       FontSize="{StaticResource FontSizeBody}"/>
+                                            <TextBlock FontSize="{StaticResource FontSizeCaption}"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                <Run Text="{Binding Summary, Mode=OneWay}"/>
+                                                <Run Text=" - "/>
+                                                <Run Text="{Binding FormattedDuration, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+
+                                        <!-- Date -->
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding FormattedDate}"
+                                                   FontSize="{StaticResource FontSizeCaption}"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="16,0"/>
+
+                                        <!-- Dry Run Badge -->
+                                        <Border Grid.Column="3"
+                                                Background="{DynamicResource SecondaryHueMidBrush}"
+                                                CornerRadius="{StaticResource RadiusSmall}"
+                                                Padding="8,4"
+                                                VerticalAlignment="Center"
+                                                Visibility="{Binding IsDryRun, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <TextBlock Text="{loc:Loc Lbl_DryRun}"
+                                                       FontSize="{StaticResource FontSizeCaption}"
+                                                       Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Empty State -->
+                    <StackPanel Grid.Row="1"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Margin="0,24"
+                                Visibility="{Binding HasRecentDeployments, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <ui:SymbolIcon Symbol="Clock24"
+                                       Width="48" Height="48"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,12"
+                                       AutomationProperties.Name="{loc:Loc A11y_NoHistoryIcon}"/>
+                        <TextBlock Text="{loc:Loc Dashboard_History_Empty}"
+                                   FontSize="{StaticResource FontSizeBody}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- FOOTER -->
+            <TextBlock Grid.Row="4"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       FontSize="{StaticResource FontSizeCaption}">
+                <Run Text="WinForge v"/>
+                <Run Text="{Binding AppVersion, Mode=OneWay}"/>
+            </TextBlock>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

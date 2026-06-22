@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "$id": "https://win11forge.local/schemas/system-settings.schema.json",
-  "title": "Win11Forge System Settings",
-  "description": "Schema for Windows system registry paths, registry values, power plans, GUIDs, services, and timeouts used by Win11Forge",
+  "$id": "https://winforge.local/schemas/system-settings.schema.json",
+  "title": "WinForge System Settings",
+  "description": "Schema for Windows system registry paths, registry values, power plans, GUIDs, services, and timeouts used by WinForge",
   "type": "object",
   "required": ["RegistryPaths", "RegistryValues", "PowerPlans", "Services"],
   "additionalProperties": true,

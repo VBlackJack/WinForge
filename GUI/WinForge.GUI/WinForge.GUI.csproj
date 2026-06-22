@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>WinForge.GUI</RootNamespace>
+    <AssemblyName>WinForge.GUI</AssemblyName>
+    <AssemblyVersion>1.0.0622.1</AssemblyVersion>
+    <FileVersion>1.0.0622.1</FileVersion>
+    <Version>1.0.0622.1</Version>
+    <InformationalVersion>2026062201</InformationalVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>WinForge.ico</ApplicationIcon>
+    <RequiresThemeForgeProject>true</RequiresThemeForgeProject>
+  </PropertyGroup>
+
+  <!-- Self-contained deployment is configured via Build-Release.ps1 command line,
+       NOT in this file, to avoid breaking dotnet restore/build in CI. -->
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+    <PackageReference Include="System.Management.Automation" Version="7.6.0" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(ThemeForgeProjectPath)"
+                      Condition="'$(ThemeForgeProjectPath)' != ''"
+                      SetConfiguration="Configuration=$(Configuration)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="WinForge.ico" />
+    <Resource Include="icon_cropped.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>

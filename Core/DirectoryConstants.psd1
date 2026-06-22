@@ -21,9 +21,9 @@
     ModuleVersion = '1.0.0622.1'
     GUID = 'ee5b82ab-0a2a-479d-9216-52b82c6a2fbc'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
-    Description = 'Directory path constants for Win11Forge framework'
+    Description = 'Directory path constants for WinForge framework'
     PowerShellVersion = '5.1'
     RequiredModules = @()
     FunctionsToExport = '*'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'Core', 'Constants', 'Paths')
+            Tags = @('WinForge', 'Core', 'Constants', 'Paths')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

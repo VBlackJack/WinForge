@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "$id": "https://win11forge.local/schemas/download-sources.schema.json",
-  "title": "Win11Forge Download Sources",
-  "description": "Schema for Win11Forge external download sources and trusted domains configuration (Config/download-sources.json)",
+  "$id": "https://winforge.local/schemas/download-sources.schema.json",
+  "title": "WinForge Download Sources",
+  "description": "Schema for WinForge external download sources and trusted domains configuration (Config/download-sources.json)",
   "type": "object",
   "required": ["prerequisites", "trustedDomains", "directDownloads", "packageManagers"],
   "additionalProperties": false,

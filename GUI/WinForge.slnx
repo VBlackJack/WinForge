@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="WinForge.GUI.Tests/WinForge.GUI.Tests.csproj" />
+  <Project Path="WinForge.GUI.UITests/WinForge.GUI.UITests.csproj" />
+  <Project Path="WinForge.GUI/WinForge.GUI.csproj" />
+</Solution>

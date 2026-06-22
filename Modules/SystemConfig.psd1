@@ -21,7 +21,7 @@
     ModuleVersion = '1.0.0622.1'
     GUID = '92947f6b-3f59-43bc-b252-69313e504de9'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
     Description = 'Windows system configuration and optimization'
     PowerShellVersion = '5.1'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'System', 'Configuration', 'Windows11')
+            Tags = @('WinForge', 'System', 'Configuration', 'Windows11')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

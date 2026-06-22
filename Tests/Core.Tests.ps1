@@ -3,7 +3,7 @@
     Pester tests for Core module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge Core v2.5.0
+    Comprehensive unit tests for WinForge Core v2.5.0
     Tests logging, error handling, validation, and utility functions
 
 .NOTES
@@ -358,7 +358,7 @@ Describe 'Core Module' {
             try {
                 Initialize-Logging -LogPath $logPath
                 $content = Get-Content $logPath -Raw
-                $content | Should -Match 'Win11Forge'
+                $content | Should -Match 'WinForge'
             }
             finally {
                 Remove-Item $logPath -Force -ErrorAction SilentlyContinue

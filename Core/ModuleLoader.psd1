@@ -21,9 +21,9 @@
     ModuleVersion = '1.0.0622.1'
     GUID = 'edcec501-c8ef-4d87-abc0-ef82e4143f09'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
-    Description = 'Dynamic module loading utilities for Win11Forge'
+    Description = 'Dynamic module loading utilities for WinForge'
     PowerShellVersion = '5.1'
     RequiredModules = @()
     FunctionsToExport = '*'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'Core', 'ModuleLoader', 'Utility')
+            Tags = @('WinForge', 'Core', 'ModuleLoader', 'Utility')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

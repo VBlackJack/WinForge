@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Builds Win11Forge GUI for release distribution.
+    Builds WinForge GUI for release distribution.
 
 .DESCRIPTION
-    This script compiles the Win11Forge WPF application as a self-contained
+    This script compiles the WinForge WPF application as a self-contained
     single-file executable and creates a complete release package.
 
     Steps:
@@ -92,9 +92,9 @@ function Get-Text {
 
 # Paths
 $ScriptRoot = $PSScriptRoot
-$GuiProjectPath = Join-Path $ScriptRoot "GUI\Win11Forge.GUI\Win11Forge.GUI.csproj"
-$TestProjectPath = Join-Path $ScriptRoot "GUI\Win11Forge.GUI.Tests\Win11Forge.GUI.Tests.csproj"
-$PublishPath = Join-Path $ScriptRoot "GUI\Win11Forge.GUI\bin\publish"
+$GuiProjectPath = Join-Path $ScriptRoot "GUI\WinForge.GUI\WinForge.GUI.csproj"
+$TestProjectPath = Join-Path $ScriptRoot "GUI\WinForge.GUI.Tests\WinForge.GUI.Tests.csproj"
+$PublishPath = Join-Path $ScriptRoot "GUI\WinForge.GUI\bin\publish"
 $DistRoot = Join-Path $ScriptRoot "Dist"
 
 # Resolve and persist the release version before build/publish/package steps.
@@ -119,14 +119,14 @@ if (Test-Path $manifestScript) {
     & $manifestScript -RootPath $ScriptRoot
 }
 
-$ReleaseName = "Win11Forge_v$Version"
+$ReleaseName = "WinForge_v$Version"
 $ReleasePath = Join-Path $DistRoot $ReleaseName
 $ZipPath = Join-Path $DistRoot "$ReleaseName.zip"
 
 # Header
 Write-Host ""
 Write-Host "======================================================" -ForegroundColor Cyan
-Write-Host "  $(Get-Text -Key 'build.banner_title' -Parameters @{ Version = $Version } -Default "Win11Forge v$Version - Release Builder")" -ForegroundColor Cyan
+Write-Host "  $(Get-Text -Key 'build.banner_title' -Parameters @{ Version = $Version } -Default "WinForge v$Version - Release Builder")" -ForegroundColor Cyan
 Write-Host "======================================================" -ForegroundColor Cyan
 Write-Host "  $(Get-Text -Key 'build.configuration' -Parameters @{ Config = $Configuration } -Default "Configuration: $Configuration")" -ForegroundColor Gray
 Write-Host "  $(Get-Text -Key 'build.output_path' -Parameters @{ Path = $ReleasePath } -Default "Output: $ReleasePath")" -ForegroundColor Gray
@@ -194,7 +194,7 @@ if ($LASTEXITCODE -ne 0) {
 # Step 3: Publish the GUI project
 # ============================================
 $currentStep++
-Write-Host "[$currentStep/$stepCount] $(Get-Text -Key 'build.step_publishing' -Default 'Publishing Win11Forge.GUI (self-contained, single-file)...')" -ForegroundColor Yellow
+Write-Host "[$currentStep/$stepCount] $(Get-Text -Key 'build.step_publishing' -Default 'Publishing WinForge.GUI (self-contained, single-file)...')" -ForegroundColor Yellow
 
 # NuGetLockFilePath redirects the publish-time restore to a transient lock file in
 # the project's obj/ folder (gitignored). NuGet still performs RID-aware resolution
@@ -250,7 +250,7 @@ New-Item -ItemType Directory -Path $ReleasePath -Force | Out-Null
 $guiDestPath = Join-Path $ReleasePath "GUI"
 New-Item -ItemType Directory -Path $guiDestPath -Force | Out-Null
 
-$exePath = Join-Path $PublishPath "Win11Forge.GUI.exe"
+$exePath = Join-Path $PublishPath "WinForge.GUI.exe"
 if (Test-Path $exePath) {
     # Copy all files from publish folder to GUI subfolder
     Copy-Item "$PublishPath\*" -Destination $guiDestPath -Recurse
@@ -258,7 +258,7 @@ if (Test-Path $exePath) {
     $totalSize = [math]::Round((Get-ChildItem $PublishPath -Recurse -File | Measure-Object -Property Length -Sum).Sum / 1MB, 2)
     Write-Host "  $(Get-Text -Key 'build.copied_gui' -Parameters @{ Count = $fileCount; Size = $totalSize } -Default "Copied: GUI/ ($fileCount files, $totalSize MB)")" -ForegroundColor Gray
 } else {
-    Write-Host (Get-Text -Key 'build.exe_not_found' -Parameters @{ Path = $exePath } -Default "ERROR: Win11Forge.GUI.exe not found at $exePath") -ForegroundColor Red
+    Write-Host (Get-Text -Key 'build.exe_not_found' -Parameters @{ Path = $exePath } -Default "ERROR: WinForge.GUI.exe not found at $exePath") -ForegroundColor Red
     exit 1
 }
 
@@ -300,15 +300,15 @@ foreach ($file in $rootFiles) {
 # Create launcher script (simple .cmd)
 $launcherContent = @'
 @echo off
-:: Win11Forge GUI Launcher
-:: This script launches the Win11Forge GUI application
+:: WinForge GUI Launcher
+:: This script launches the WinForge GUI application
 cd /d "%~dp0GUI"
-start "" "Win11Forge.GUI.exe"
+start "" "WinForge.GUI.exe"
 '@
 
-$launcherPath = Join-Path $ReleasePath "Win11Forge.cmd"
+$launcherPath = Join-Path $ReleasePath "WinForge.cmd"
 Set-Content -Path $launcherPath -Value $launcherContent -Encoding ASCII
-Write-Host "  $(Get-Text -Key 'build.created_launcher' -Parameters @{ File = 'Win11Forge.cmd' } -Default 'Created: Win11Forge.cmd')" -ForegroundColor Gray
+Write-Host "  $(Get-Text -Key 'build.created_launcher' -Parameters @{ File = 'WinForge.cmd' } -Default 'Created: WinForge.cmd')" -ForegroundColor Gray
 
 # ============================================
 # Step 6: Clean unnecessary files
@@ -404,5 +404,5 @@ Get-ChildItem $ReleasePath -Directory | ForEach-Object {
 Write-Host ""
 Write-Host (Get-Text -Key 'build.test_hint' -Default 'To test the release:') -ForegroundColor Yellow
 Write-Host "  cd `"$ReleasePath`"" -ForegroundColor Cyan
-Write-Host "  .\Win11Forge.cmd" -ForegroundColor Cyan
+Write-Host "  .\WinForge.cmd" -ForegroundColor Cyan
 Write-Host ""

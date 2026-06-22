@@ -3,7 +3,7 @@
     Pester tests for Prerequisites module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge Prerequisites v2.5.0
+    Comprehensive unit tests for WinForge Prerequisites v2.5.0
     Tests prerequisite detection, environment refresh, and installation helpers
 
 .NOTES

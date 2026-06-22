@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Main Deployment Script v3.7.2
+    WinForge - Main Deployment Script v3.7.2
 
 .DESCRIPTION
     Orchestrates complete Windows 11 environment deployment with:
@@ -124,7 +124,7 @@ $script:DeploymentStats = @{
 
 # === LOGGING SETUP ===
 
-$LogDirectory = Join-Path -Path (Join-Path -Path ([Environment]::GetFolderPath('LocalApplicationData')) -ChildPath 'Win11Forge') -ChildPath 'Logs'
+$LogDirectory = Join-Path -Path (Join-Path -Path ([Environment]::GetFolderPath('LocalApplicationData')) -ChildPath 'WinForge') -ChildPath 'Logs'
 if (-not (Test-Path -Path $LogDirectory)) {
     New-Item -Path $LogDirectory -ItemType Directory -Force | Out-Null
 }

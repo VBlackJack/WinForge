@@ -44,7 +44,7 @@ Aucune installation requise ! Le script est standalone.
 
 **Emplacement** :
 ```
-Win11Forge\Tools\System-Audit.ps1
+WinForge\Tools\System-Audit.ps1
 ```
 
 ---
@@ -119,7 +119,7 @@ Surveille un fichier log spécifique et détecte sa complétion.
 Surveille un répertoire, détecte le dernier log créé et surveille sa complétion.
 
 ```powershell
-# Surveiller les logs Win11Forge
+# Surveiller les logs WinForge
 .\Tools\System-Audit.ps1 -MonitorLogPath ".\Logs" `
     -LogCompletionMarkers "Deployment completed|Summary" `
     -GenerateReport
@@ -134,7 +134,7 @@ Surveille un répertoire, détecte le dernier log créé et surveille sa complé
 **Quand utiliser** :
 - Le script/processus crée un nouveau log à chaque exécution
 - Vous ne connaissez pas le nom exact du log à l'avance
-- Surveillance de déploiements automatisés (Win11Forge, etc.)
+- Surveillance de déploiements automatisés (WinForge, etc.)
 
 **Comportement** :
 1. Attend qu'un nouveau log soit créé dans le répertoire
@@ -164,7 +164,7 @@ Audit pendant une durée fixe sans surveillance de processus/log.
 
 ## 💡 Exemples d'Utilisation
 
-### Exemple 1 : Surveiller un Déploiement Win11Forge
+### Exemple 1 : Surveiller un Déploiement WinForge
 
 ```powershell
 # Lancer l'audit AVANT le déploiement
@@ -172,7 +172,7 @@ Start-Process powershell -ArgumentList "-NoExit", "-File", ".\Tools\System-Audit
     "-MonitorLogPath", ".\Logs", `
     "-LogCompletionMarkers", "Deployment completed|Summary", `
     "-GenerateReport", `
-    "-AuditName", "Win11ForgeDeployment"
+    "-AuditName", "WinForgeDeployment"
 
 # Puis lancer le déploiement
 .\Deploy-Win11Environment.ps1 -ProfileName Personnel
@@ -182,7 +182,7 @@ Start-Process powershell -ArgumentList "-NoExit", "-File", ".\Tools\System-Audit
 - L'audit détecte automatiquement le nouveau log
 - Surveille en temps réel
 - S'arrête quand "Deployment completed" apparaît
-- Génère `Win11ForgeDeployment_20251002_220530.json` et `.html`
+- Génère `WinForgeDeployment_20251002_220530.json` et `.html`
 
 ---
 
@@ -403,7 +403,7 @@ Surveillance clés critiques :
 
 **Style** :
 - Moderne, responsive
-- Couleurs Win11Forge (gradient violet-bleu)
+- Couleurs WinForge (gradient violet-bleu)
 - Tableaux triables
 - Badges colorés pour statuts
 
@@ -412,10 +412,10 @@ Surveillance clés critiques :
 ### Emplacement des Rapports
 
 ```
-Win11Forge\
+WinForge\
 └── AuditReports\
-    ├── Win11ForgeDeployment_20251002_220530.json
-    ├── Win11ForgeDeployment_20251002_220530.html
+    ├── WinForgeDeployment_20251002_220530.json
+    ├── WinForgeDeployment_20251002_220530.html
     ├── MonScript_20251002_183015.json
     ├── MonScript_20251002_183015.html
     └── ...
@@ -592,9 +592,9 @@ Get-Content "C:\Logs\monlog.log" -Tail 20 | Select-String "completed|finished"
 
 ### Documentation
 
-- **README principal** : `Win11Forge\Tools\README.md`
-- **Ce fichier** : `Win11Forge\Tools\System-Audit-README.md`
-- **Code source** : `Win11Forge\Tools\System-Audit.ps1`
+- **README principal** : `WinForge\Tools\README.md`
+- **Ce fichier** : `WinForge\Tools\System-Audit-README.md`
+- **Code source** : `WinForge\Tools\System-Audit.ps1`
 
 ### Aide Inline
 
@@ -605,8 +605,8 @@ Get-Help .\Tools\System-Audit.ps1 -Examples
 
 ### Support
 
-- **Issues** : Win11Forge GitHub Issues
-- **Documentation** : Win11Forge Wiki
+- **Issues** : WinForge GitHub Issues
+- **Documentation** : WinForge Wiki
 
 ---
 
@@ -625,13 +625,13 @@ Get-Help .\Tools\System-Audit.ps1 -Examples
 - ✅ Rapports nommés `{AuditName}_{timestamp}`
 
 ### v1.1.0 (2025-10-02)
-- ✅ Arrêt automatique pour Win11Forge
+- ✅ Arrêt automatique pour WinForge
 - ✅ Event Viewer enhanced
 - ✅ Détection événements MSI Installer
 
 ### v1.0.0 (2025-10-01)
 - 🎉 Release initiale
-- Monitoring Win11Forge uniquement
+- Monitoring WinForge uniquement
 
 ---
 
@@ -647,8 +647,8 @@ Get-Help .\Tools\System-Audit.ps1 -Examples
 
 **✅ Bon** :
 ```powershell
-.\Tools\System-Audit.ps1 -AuditName "Win11Forge_Personnel_VM01" -GenerateReport
-# Rapport: Win11Forge_Personnel_VM01_20251002_220530.html
+.\Tools\System-Audit.ps1 -AuditName "WinForge_Personnel_VM01" -GenerateReport
+# Rapport: WinForge_Personnel_VM01_20251002_220530.html
 ```
 
 ---
@@ -777,7 +777,7 @@ Start-Process powershell -ArgumentList `
 ## 📧 Contact & Contribution
 
 **Auteur** : Julien Bombled
-**Projet** : Win11Forge
+**Projet** : WinForge
 **Version** : 2.4.0
 **Date** : 2025-10-06
 

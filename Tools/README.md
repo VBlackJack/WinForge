@@ -1,6 +1,6 @@
-# Win11Forge - Outils et Utilitaires
+# WinForge - Outils et Utilitaires
 
-Ce dossier contient les scripts utilitaires et outils pour configurer, valider et maintenir le framework Win11Forge.
+Ce dossier contient les scripts utilitaires et outils pour configurer, valider et maintenir le framework WinForge.
 
 ## 🚀 Outils Principaux
 
@@ -41,7 +41,7 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 5. Computer Management (TrustedInstaller)
 6. Windows Explorer (TrustedInstaller)
 7. Custom executable path
-8. Win11Forge GUI (TrustedInstaller)
+8. WinForge GUI (TrustedInstaller)
 
 **Fonctionnalités** :
 - Exécution avec privilèges NT AUTHORITY\SYSTEM
@@ -152,8 +152,8 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 ```
 
 **Vérifications** :
-- Build du serveur MCP WinSight et de la GUI Win11Forge si nécessaire
-- Lancement de `Win11Forge.GUI.dll`
+- Build du serveur MCP WinSight et de la GUI WinForge si nécessaire
+- Lancement de `WinForge.GUI.dll`
 - Inspection `list_windows` / `inspect_ui_tree`
 - Navigation Dashboard → Settings → App Catalog
 - Captures sous `TestResults\winsight`
@@ -196,7 +196,7 @@ WinSight reste un repo frère local, configurable par `-WinsightRoot` ou `$env:W
 ```
 
 **Menu interactif avec 8 modes** :
-1. Win11Forge Deployment (auto-stop à la fin)
+1. WinForge Deployment (auto-stop à la fin)
 2. Monitor Process by Name
 3. Monitor Process by PID
 4. Monitor Log File
@@ -217,7 +217,7 @@ WinSight reste un repo frère local, configurable par `-WinsightRoot` ou `$env:W
 **Outil d'audit système universel - Fonctionne avec N'IMPORTE QUEL script ou processus**
 
 ```powershell
-# ═══ Win11Forge Deployment ═══
+# ═══ WinForge Deployment ═══
 .\Tools\System-Audit.ps1 -MonitorLogPath ".\Logs" -LogCompletionMarkers "Deployment completed|Summary" -GenerateReport
 
 # ═══ Surveiller un processus spécifique (par nom) ═══
@@ -289,7 +289,7 @@ $proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThr
 ```
 
 **Utilité** :
-- Surveiller les déploiements Win11Forge en parallèle
+- Surveiller les déploiements WinForge en parallèle
 - Diagnostiquer les problèmes d'installation
 - Analyser l'impact performance des applications
 - Détecter les anomalies système
@@ -346,7 +346,7 @@ $proc = Start-Process powershell -ArgumentList "-File", "MonScript.ps1" -PassThr
 **Launch-SystemAudit.bat** :
 - Lancement rapide de System-Audit avec menu guidé
 - Mode débutant sans ligne de commande
-- Tous les modes pré-configurés (Win11Forge, Process, Log, etc.)
+- Tous les modes pré-configurés (WinForge, Process, Log, etc.)
 
 **System-Audit.ps1** (v2.4.0 - UNIVERSEL) :
 - Surveiller N'IMPORTE QUEL script, processus ou déploiement

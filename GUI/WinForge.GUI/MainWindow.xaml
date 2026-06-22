@@ -1,0 +1,162 @@
+<ui:FluentWindow x:Class="WinForge.GUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:loc="clr-namespace:WinForge.GUI.Resources"
+    xmlns:controls="clr-namespace:WinForge.GUI.Controls"
+    mc:Ignorable="d"
+    Title="{loc:Loc App_Name}"
+    Height="960" Width="1680"
+    MinHeight="640" MinWidth="900"
+    WindowStartupLocation="CenterScreen"
+    WindowBackdropType="Mica"
+    ExtendsContentIntoTitleBar="True"
+    Background="{DynamicResource ApplicationBackgroundBrush}"
+    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+    Icon="WinForge.ico">
+
+    <ui:FluentWindow.InputBindings>
+        <KeyBinding Key="F1" Command="{Binding ShowKeyboardShortcutsCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
+        <KeyBinding Modifiers="Ctrl" Key="D1" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="0"/>
+        <KeyBinding Modifiers="Ctrl" Key="D2" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="1"/>
+        <KeyBinding Modifiers="Ctrl" Key="D3" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="2"/>
+        <KeyBinding Modifiers="Ctrl" Key="D4" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="3"/>
+        <KeyBinding Modifiers="Ctrl" Key="D5" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="4"/>
+        <KeyBinding Modifiers="Ctrl" Key="D6" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="5"/>
+        <KeyBinding Modifiers="Ctrl" Key="D7" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="6"/>
+        <KeyBinding Modifiers="Ctrl" Key="OemComma" Command="{Binding NavigateToCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}" CommandParameter="4"/>
+        <KeyBinding Modifiers="Ctrl" Key="Z" Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
+        <KeyBinding Modifiers="Ctrl" Key="Y" Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
+        <KeyBinding Modifiers="Ctrl+Shift" Key="Z" Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
+    </ui:FluentWindow.InputBindings>
+
+    <Grid Background="{DynamicResource ApplicationBackgroundBrush}"
+          TextElement.Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+        <ui:NavigationView x:Name="RootNavigation"
+                           PaneDisplayMode="Left"
+                           IsBackButtonVisible="Auto"
+                           OpenPaneLength="220"
+                           Background="{DynamicResource ApplicationBackgroundBrush}"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                           AutomationProperties.AutomationId="RootNavigation"
+                           BackRequested="RootNavigation_BackRequested"
+                           SelectionChanged="RootNavigation_SelectionChanged">
+            <ui:NavigationView.Header>
+                <!-- Breadcrumb and Undo/Redo bar -->
+                <Border Padding="16,8"
+                        Visibility="{Binding ShowBreadcrumb, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <controls:Breadcrumb x:Name="BreadcrumbControl"
+                                             Grid.Column="0"
+                                             AutomationProperties.Name="{loc:Loc A11y_Main_Breadcrumb}"/>
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    Visibility="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <ui:Button Style="{StaticResource IconButton}"
+                                       Icon="{ui:SymbolIcon ArrowUndo24}"
+                                       Command="{Binding UndoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"
+                                       ToolTip="{loc:Loc Undo_Title}"
+                                       AutomationProperties.Name="{loc:Loc A11y_Main_Undo}"
+                                       IsEnabled="{Binding CanUndo, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
+                            <ui:Button Style="{StaticResource IconButton}"
+                                       Icon="{ui:SymbolIcon ArrowRedo24}"
+                                       Command="{Binding RedoCommand, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"
+                                       ToolTip="{loc:Loc Undo_Redo}"
+                                       AutomationProperties.Name="{loc:Loc A11y_Main_Redo}"
+                                       IsEnabled="{Binding CanRedo, RelativeSource={RelativeSource AncestorType=ui:FluentWindow}}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </ui:NavigationView.Header>
+
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Dashboard}"
+                                       Tag="0"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon Board24}"
+                                       AutomationProperties.AutomationId="NavDashboard"
+                                       AutomationProperties.Name="{loc:Loc Nav_Dashboard}"
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavDashboard}"/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Prerequisites}"
+                                       Tag="1"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon CheckmarkCircle24}"
+                                       AutomationProperties.AutomationId="NavPrerequisites"
+                                       AutomationProperties.Name="{loc:Loc Nav_Prerequisites}"
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavPrerequisites}"/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Apps}"
+                                       Tag="2"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon Apps24}"
+                                       AutomationProperties.AutomationId="NavApplications"
+                                       AutomationProperties.Name="{loc:Loc Nav_Apps}"
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavApps}"/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Deployment}"
+                                       Tag="3"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon Rocket24}"
+                                       AutomationProperties.AutomationId="NavDeployment"
+                                       AutomationProperties.Name="{loc:Loc Nav_Deployment}"
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavDeployment}"/>
+                <ui:NavigationViewItemSeparator/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_AppCatalog}"
+                                       Tag="5"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon Database24}"
+                                       AutomationProperties.AutomationId="NavAppCatalog"
+                                       AutomationProperties.Name="{loc:Loc Nav_AppCatalog}"
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavAppDatabase}"/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Settings}"
+                                       Tag="4"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon Settings24}"
+                                       AutomationProperties.AutomationId="NavSettings"
+                                       AutomationProperties.Name="{loc:Loc Nav_Settings}"
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavSettings}"/>
+                <ui:NavigationViewItem Content="{loc:Loc Nav_Logs}"
+                                       Tag="6"
+                                       Click="NavigationViewItem_Click"
+                                       Icon="{ui:SymbolIcon DocumentBulletList24}"
+                                       AutomationProperties.AutomationId="NavLogs"
+                                       AutomationProperties.Name="{loc:Loc Nav_Logs}"
+                                       AutomationProperties.HelpText="{loc:Loc A11y_Main_NavLogs}"/>
+            </ui:NavigationView.MenuItems>
+
+
+
+        </ui:NavigationView>
+
+        <!-- Content Dialog Host -->
+        <ui:ContentDialogHost x:Name="RootContentDialog"/>
+
+        <!-- Snackbar Presenter (Snackbar is created in code-behind) -->
+        <ui:SnackbarPresenter x:Name="RootSnackbarPresenter"
+                              VerticalAlignment="Bottom"
+                              Margin="16"/>
+
+        <!-- Screen Reader Live Region (invisible but announced) -->
+        <TextBlock x:Name="ScreenReaderLiveRegion"
+                   Width="0"
+                   Height="0"
+                   Opacity="0"
+                   IsHitTestVisible="False"
+                   Focusable="False"
+                   AutomationProperties.LiveSetting="Polite"
+                   AutomationProperties.Name="{loc:Loc Accessibility_LiveRegion}"/>
+
+        <!-- Title Bar for window dragging (required with ExtendsContentIntoTitleBar) -->
+        <ui:TitleBar x:Name="TitleBar"
+                     Title="{loc:Loc App_Name}"
+                     Icon="WinForge.ico"
+                     Background="{DynamicResource ApplicationBackgroundBrush}"
+                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                     VerticalAlignment="Top"/>
+    </Grid>
+</ui:FluentWindow>

@@ -52,7 +52,7 @@ Describe 'DetectionAllowlist - Get-DetectionAllowlist' {
             InModuleScope DetectionAllowlist {
                 $originalPath = $script:DetectionAllowlistPath
                 try {
-                    $script:DetectionAllowlistPath = Join-Path ([System.IO.Path]::GetTempPath()) 'win11forge-no-such-allowlist.json'
+                    $script:DetectionAllowlistPath = Join-Path ([System.IO.Path]::GetTempPath()) 'winforge-no-such-allowlist.json'
                     $script:DetectionAllowlistLoaded = $false
                     @(Get-DetectionAllowlist -Force).Count | Should -Be 0
                 } finally {

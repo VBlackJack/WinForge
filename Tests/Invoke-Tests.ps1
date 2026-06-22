@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Test runner for Win11Forge
+    Test runner for WinForge
 
 .DESCRIPTION
     Executes all Pester tests and generates coverage report
@@ -80,7 +80,7 @@ if ($userModulesPath -and (Test-Path $userModulesPath) -and $env:PSModulePath -n
 
 # === PREREQUISITES CHECK ===
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  Win11Forge v$frameworkVersion - Test Runner" -ForegroundColor Cyan
+Write-Host "  WinForge v$frameworkVersion - Test Runner" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 

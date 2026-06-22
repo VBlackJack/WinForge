@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "$id": "https://win11forge.local/schemas/global-optimizations.schema.json",
-  "title": "Win11Forge Global Optimizations",
+  "$id": "https://winforge.local/schemas/global-optimizations.schema.json",
+  "title": "WinForge Global Optimizations",
   "description": "Schema for global system optimizations applied to all deployment profiles",
   "type": "object",
   "required": ["SystemConfig"],

@@ -30,13 +30,13 @@
     Author = 'Julien Bombled'
 
     # Company or vendor of this module
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
 
     # Copyright statement for this module
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description = 'Core installation engine orchestration for Win11Forge. Coordinates application installation via multiple sources (Winget, Chocolatey, Microsoft Store, Direct Download), manages rollback and deployment state, and supports parallel installation.'
+    Description = 'Core installation engine orchestration for WinForge. Coordinates application installation via multiple sources (Winget, Chocolatey, Microsoft Store, Direct Download), manages rollback and deployment state, and supports parallel installation.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -115,7 +115,7 @@
     PrivateData = @{
         PSData = @{
             # Tags applied to this module
-            Tags = @('Win11Forge', 'Installation', 'Deployment', 'Orchestration', 'Winget', 'Chocolatey')
+            Tags = @('WinForge', 'Installation', 'Deployment', 'Orchestration', 'Winget', 'Chocolatey')
 
             # A URL to the license for this module
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'

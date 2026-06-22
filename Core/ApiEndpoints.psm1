@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - API Endpoints Module
+    WinForge - API Endpoints Module
 
 .DESCRIPTION
-    Defines REST API endpoint handlers for Win11Forge:
+    Defines REST API endpoint handlers for WinForge:
     - Version information
     - Profile management
     - Application database
@@ -253,7 +253,7 @@ function Get-VersionHandler {
     )
 
     $versionInfo = @{
-        framework = 'Win11Forge'
+        framework = 'WinForge'
         version = $script:FrameworkVersion
         apiVersion = '1.0'
         timestamp = (Get-Date).ToString('o')
@@ -763,7 +763,7 @@ function Register-DefaultEndpoints {
         Registers all default API endpoints.
 
     .DESCRIPTION
-        Sets up the standard Win11Forge API endpoints.
+        Sets up the standard WinForge API endpoints.
 
     .EXAMPLE
         Register-DefaultEndpoints

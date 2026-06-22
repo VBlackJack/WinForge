@@ -30,13 +30,13 @@
     Author = 'Julien Bombled'
 
     # Company or vendor of this module
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
 
     # Copyright statement for this module
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description = 'Application detection and installation verification functions for Win11Forge. Includes detection methods for Registry, File, Command, WindowsFeature, WindowsCapability, and StoreApp applications.'
+    Description = 'Application detection and installation verification functions for WinForge. Includes detection methods for Registry, File, Command, WindowsFeature, WindowsCapability, and StoreApp applications.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -70,7 +70,7 @@
     PrivateData = @{
         PSData = @{
             # Tags applied to this module
-            Tags = @('Win11Forge', 'Detection', 'Application', 'Winget', 'Chocolatey')
+            Tags = @('WinForge', 'Detection', 'Application', 'Winget', 'Chocolatey')
 
             # A URL to the license for this module
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'

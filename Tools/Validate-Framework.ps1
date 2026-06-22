@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge Framework Validation Script
+    WinForge Framework Validation Script
 
 .DESCRIPTION
-    Validates the Win11Forge framework installation:
+    Validates the WinForge framework installation:
     - Checks directory structure
     - Verifies all required files
     - Tests module loading
@@ -121,13 +121,13 @@ function Test-DirectoryStructure {
 function Test-RequiredFiles {
     Write-ValidationSection "Required Files"
 
-    $launcherCandidates = @('Win11Forge.cmd', 'Deploy-Win11Forge.bat')
+    $launcherCandidates = @('WinForge.cmd')
     $launcherPath = $launcherCandidates |
         ForEach-Object { Join-Path -Path $script:ScriptRoot -ChildPath $_ } |
         Where-Object { Test-Path -Path $_ -PathType Leaf } |
         Select-Object -First 1
 
-    Write-ValidationResult -Test 'Launcher script (Win11Forge.cmd or Deploy-Win11Forge.bat)' -Passed ($null -ne $launcherPath) -Message 'Main launcher script'
+    Write-ValidationResult -Test 'Launcher script (WinForge.cmd)' -Passed ($null -ne $launcherPath) -Message 'Main launcher script'
 
     if ($launcherPath -and $Detailed) {
         $launcherItem = Get-Item -Path $launcherPath
@@ -513,7 +513,7 @@ function Test-NetworkConnectivity {
 
 Write-Host ""
 Write-Host "===============================================================" -ForegroundColor Cyan
-Write-Host "     Win11Forge Framework Validation v2.0.2                   " -ForegroundColor Cyan
+Write-Host "     WinForge Framework Validation v2.0.2                   " -ForegroundColor Cyan
 Write-Host "===============================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Framework Path: $script:ScriptRoot" -ForegroundColor Gray

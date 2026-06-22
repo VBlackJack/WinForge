@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - ApplicationDetection Module Tests v3.5.0
+    WinForge - ApplicationDetection Module Tests v3.5.0
 
 .DESCRIPTION
     Pester tests for the ApplicationDetection module.
@@ -336,7 +336,7 @@ Describe 'ApplicationDetection Module' {
 
     Context 'Detection Methods' {
         It 'Should support File detection method' {
-            $fixturePath = Join-Path ([System.IO.Path]::GetTempPath()) "Win11Forge-FileDetection-$([System.Guid]::NewGuid()).tmp"
+            $fixturePath = Join-Path ([System.IO.Path]::GetTempPath()) "WinForge-FileDetection-$([System.Guid]::NewGuid()).tmp"
             try {
                 Set-Content -Path $fixturePath -Value 'test fixture'
 
@@ -442,7 +442,7 @@ Describe 'ApplicationDetection Integration' {
 
 Describe 'ApplicationDetection - STRICT VersionKey (I1)' {
     BeforeAll {
-        $script:I1Key = "HKCU:\Software\Win11Forge\Tests\I1Strict\$([guid]::NewGuid().ToString('N'))"
+        $script:I1Key = "HKCU:\Software\WinForge\Tests\I1Strict\$([guid]::NewGuid().ToString('N'))"
         New-Item -Path $script:I1Key -Force | Out-Null
         # DisplayVersion is the lenient-fallback trap: STRICT must never read it.
         New-ItemProperty -Path $script:I1Key -Name 'DisplayVersion' -Value '9.9.9-fallback' -PropertyType String -Force | Out-Null

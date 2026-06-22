@@ -21,9 +21,9 @@
     ModuleVersion = '1.0.0622.1'
     GUID = '13574a98-f79b-4035-8abc-5bbb4f91f9d3'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
-    Description = 'REST API endpoint handlers for Win11Forge deployment server'
+    Description = 'REST API endpoint handlers for WinForge deployment server'
     PowerShellVersion = '5.1'
     RequiredModules = @()
     FunctionsToExport = '*'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'API', 'REST', 'Endpoints')
+            Tags = @('WinForge', 'API', 'REST', 'Endpoints')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

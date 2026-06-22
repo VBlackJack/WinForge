@@ -21,9 +21,9 @@
     ModuleVersion = '1.0.0622.1'
     GUID = '6b647dbb-8207-4e56-99b9-b370d6e15c09'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
-    Description = 'Internationalization (i18n) support for Win11Forge'
+    Description = 'Internationalization (i18n) support for WinForge'
     PowerShellVersion = '5.1'
     RequiredModules = @()
     FunctionsToExport = '*'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'Core', 'i18n', 'Localization')
+            Tags = @('WinForge', 'Core', 'i18n', 'Localization')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

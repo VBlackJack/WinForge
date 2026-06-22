@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - Timeout Settings v3.7.2
+    WinForge - Timeout Settings v3.7.2
 
 .DESCRIPTION
-    Provides centralized timeout configuration loading for Win11Forge:
+    Provides centralized timeout configuration loading for WinForge:
     - Loads timeout settings from Config/timeouts-settings.json
     - Provides fallback defaults if config is unavailable
     - Caches configuration for performance

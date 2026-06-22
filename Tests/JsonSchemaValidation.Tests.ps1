@@ -3,7 +3,7 @@
     Pester tests for JsonSchemaValidation module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge JsonSchemaValidation v3.5.0
+    Comprehensive unit tests for WinForge JsonSchemaValidation v3.5.0
     Tests JSON Schema validation functionality
 
 .NOTES

@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - Centralized Module Loader v1.0.0
+    WinForge - Centralized Module Loader v1.0.0
 
 .DESCRIPTION
-    Provides centralized module dependency management for Win11Forge:
+    Provides centralized module dependency management for WinForge:
     - Resolves module paths relative to repository root
     - Loads core dependencies with idempotent import checks
     - Reduces boilerplate code in feature modules
@@ -51,7 +51,7 @@ $script:CommandToModuleMap = @{
     # Core.psm1 exports
     'Write-Status'           = 'Core\Core.psm1'
     'Write-LogMessage'       = 'Core\Core.psm1'
-    'Get-Win11ForgeDirectory' = 'Core\Core.psm1'
+    'Get-WinForgeDirectory' = 'Core\Core.psm1'
     'Test-IsWindowsSandbox'  = 'Core\Core.psm1'
     'Test-CommandExists'     = 'Core\Core.psm1'
 
@@ -59,7 +59,7 @@ $script:CommandToModuleMap = @{
     'Get-LocalizedString'    = 'Core\Localization.psm1'
 
     # DirectoryConstants.psm1 exports
-    'Get-Win11ForgePath'     = 'Core\DirectoryConstants.psm1'
+    'Get-WinForgePath'     = 'Core\DirectoryConstants.psm1'
 
     # FeatureFlags.psm1 exports
     'Test-FeatureEnabled'    = 'Core\FeatureFlags.psm1'
@@ -117,17 +117,17 @@ $script:CommandToModuleMap = @{
 # Cache for already loaded modules
 $script:LoadedModules = @{}
 
-function Get-Win11ForgeRepositoryRoot {
+function Get-WinForgeRepositoryRoot {
     <#
     .SYNOPSIS
-        Gets the Win11Forge repository root path.
+        Gets the WinForge repository root path.
     .DESCRIPTION
-        Returns the absolute path to the Win11Forge repository root.
+        Returns the absolute path to the WinForge repository root.
         This is useful for modules that need to locate other resources.
     .OUTPUTS
         [string] The repository root path.
     .EXAMPLE
-        $root = Get-Win11ForgeRepositoryRoot
+        $root = Get-WinForgeRepositoryRoot
         $configPath = Join-Path $root 'Config\settings.json'
     #>
     [CmdletBinding()]
@@ -140,7 +140,7 @@ function Get-Win11ForgeRepositoryRoot {
 function Import-CoreDependency {
     <#
     .SYNOPSIS
-        Imports a Win11Forge module that provides the specified command.
+        Imports a WinForge module that provides the specified command.
     .DESCRIPTION
         Looks up the module that exports the given command and imports it
         if not already loaded. This provides idempotent module loading.
@@ -204,7 +204,7 @@ function Import-CoreDependency {
 function Import-CoreDependencies {
     <#
     .SYNOPSIS
-        Imports multiple Win11Forge core dependencies at once.
+        Imports multiple WinForge core dependencies at once.
     .DESCRIPTION
         Convenience function to import multiple core dependencies.
         Commonly used at the start of feature modules to ensure
@@ -249,10 +249,10 @@ function Import-CoreDependencies {
     return $allSuccess
 }
 
-function Initialize-Win11ForgeModule {
+function Initialize-WinForgeModule {
     <#
     .SYNOPSIS
-        Initializes a Win11Forge feature module with standard dependencies.
+        Initializes a WinForge feature module with standard dependencies.
     .DESCRIPTION
         Convenience function that imports the most commonly used core
         dependencies (Write-Status, Get-LocalizedString) and optionally
@@ -269,10 +269,10 @@ function Initialize-Win11ForgeModule {
     .OUTPUTS
         [hashtable] Contains RepositoryRoot and success status.
     .EXAMPLE
-        $init = Initialize-Win11ForgeModule
+        $init = Initialize-WinForgeModule
         $repoRoot = $init.RepositoryRoot
     .EXAMPLE
-        Initialize-Win11ForgeModule -IncludeFeatureFlags -AdditionalCommands @('Test-ApplicationInstalled')
+        Initialize-WinForgeModule -IncludeFeatureFlags -AdditionalCommands @('Test-ApplicationInstalled')
     #>
     [CmdletBinding()]
     [OutputType([hashtable])]
@@ -335,10 +335,10 @@ function Get-ModuleLoadStatus {
 
 # === MODULE EXPORTS ===
 Export-ModuleMember -Function @(
-    'Get-Win11ForgeRepositoryRoot',
+    'Get-WinForgeRepositoryRoot',
     'Import-CoreDependency',
     'Import-CoreDependencies',
-    'Initialize-Win11ForgeModule',
+    'Initialize-WinForgeModule',
     'Get-ModuleLoadStatus'
 )
 

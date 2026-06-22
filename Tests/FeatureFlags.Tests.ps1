@@ -3,7 +3,7 @@
     Pester tests for FeatureFlags module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge FeatureFlags v3.5.2
+    Comprehensive unit tests for WinForge FeatureFlags v3.5.2
     Tests feature flag loading, overrides, and conditional execution
 
 .NOTES

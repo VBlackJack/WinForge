@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - Localization v3.7.2
+    WinForge - Localization v3.7.2
 
 .DESCRIPTION
-    Provides internationalization (i18n) functionality for the Win11Forge framework:
+    Provides internationalization (i18n) functionality for the WinForge framework:
     - JSON-based translation files
     - Automatic locale detection
     - Fallback to English for missing translations

@@ -1,4 +1,4 @@
-# WinForge / Win11Forge v2026062201
+# WinForge / WinForge v2026062201
 
 **Configurez un PC Windows 10/11 avec des profils d'applications reproductibles.**
 
@@ -6,13 +6,13 @@
 [![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-Win11Forge automatise l'installation et la mise a jour d'applications Windows a partir de profils JSON. L'interface WPF permet de choisir un profil, ajuster la selection, scanner les installations existantes, lancer des installations par lot et maintenir le catalogue d'applications.
+WinForge automatise l'installation et la mise a jour d'applications Windows a partir de profils JSON. L'interface WPF permet de choisir un profil, ajuster la selection, scanner les installations existantes, lancer des installations par lot et maintenir le catalogue d'applications.
 
 ## Demarrage rapide
 
 1. Telechargez la derniere archive depuis les [releases](https://github.com/VBlackJack/WinForge/releases/latest).
 2. Decompressez l'archive dans un dossier local.
-3. Lancez `Win11Forge.cmd` ou `Win11Forge.GUI.exe`.
+3. Lancez `WinForge.cmd` ou `WinForge.GUI.exe`.
 4. Choisissez un profil, ajustez les applications si besoin, puis lancez l'installation.
 
 ## Profils inclus

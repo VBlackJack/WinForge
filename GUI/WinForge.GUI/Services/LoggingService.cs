@@ -1,0 +1,195 @@
+/*
+ * Copyright 2026 Julien Bombled
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
+
+namespace WinForge.GUI.Services;
+
+/// <summary>
+/// Log levels for the application logging system.
+/// </summary>
+public enum LogLevel
+{
+    Debug,
+    Info,
+    Warning,
+    Error
+}
+
+/// <summary>
+/// Interface for application logging service.
+/// </summary>
+public interface ILoggingService
+{
+    /// <summary>
+    /// Logs a debug message.
+    /// </summary>
+    void LogDebug(string message, [CallerMemberName] string? caller = null);
+
+    /// <summary>
+    /// Logs an informational message.
+    /// </summary>
+    void LogInfo(string message, [CallerMemberName] string? caller = null);
+
+    /// <summary>
+    /// Logs a warning message.
+    /// </summary>
+    void LogWarning(string message, [CallerMemberName] string? caller = null);
+
+    /// <summary>
+    /// Logs an error message.
+    /// </summary>
+    void LogError(string message, Exception? exception = null, [CallerMemberName] string? caller = null);
+
+    /// <summary>
+    /// Logs a message with the specified level.
+    /// </summary>
+    void Log(LogLevel level, string message, Exception? exception = null, [CallerMemberName] string? caller = null);
+}
+
+/// <summary>
+/// Default logging service implementation using Debug output.
+/// </summary>
+public class LoggingService : ILoggingService
+{
+    private readonly IFileLogWriter? _fileWriter;
+    private readonly string _categoryName;
+    private static readonly object _lock = new();
+
+    /// <summary>
+    /// Initializes a new instance of LoggingService.
+    /// </summary>
+    /// <param name="fileWriter">Optional persistent file writer for log entries.</param>
+    /// <param name="categoryName">Optional category name for log entries.</param>
+    public LoggingService(IFileLogWriter? fileWriter = null, string? categoryName = null)
+    {
+        _fileWriter = fileWriter;
+        _categoryName = categoryName ?? "WinForge";
+    }
+
+    public LoggingService(string categoryName)
+        : this(null, categoryName)
+    {
+    }
+
+    /// <inheritdoc/>
+    public void LogDebug(string message, [CallerMemberName] string? caller = null)
+    {
+        Log(LogLevel.Debug, message, null, caller);
+    }
+
+    /// <inheritdoc/>
+    public void LogInfo(string message, [CallerMemberName] string? caller = null)
+    {
+        Log(LogLevel.Info, message, null, caller);
+    }
+
+    /// <inheritdoc/>
+    public void LogWarning(string message, [CallerMemberName] string? caller = null)
+    {
+        Log(LogLevel.Warning, message, null, caller);
+    }
+
+    /// <inheritdoc/>
+    public void LogError(string message, Exception? exception = null, [CallerMemberName] string? caller = null)
+    {
+        Log(LogLevel.Error, message, exception, caller);
+    }
+
+    /// <inheritdoc/>
+    public void Log(LogLevel level, string message, Exception? exception = null, [CallerMemberName] string? caller = null)
+    {
+        string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        string levelStr = level switch
+        {
+            LogLevel.Debug => "DEBUG",
+            LogLevel.Info => "INFO",
+            LogLevel.Warning => "WARNING",
+            LogLevel.Error => "ERROR",
+            _ => "UNKNOWN"
+        };
+
+        string callerInfo = string.IsNullOrEmpty(caller) ? string.Empty : $"[{caller}] ";
+        string logMessage = $"[{timestamp}] [{levelStr}] [{_categoryName}] {callerInfo}{message}";
+
+        if (exception != null)
+        {
+            logMessage += $"\n  Exception: {exception.GetType().Name}: {exception.Message}";
+            if (exception.StackTrace != null)
+            {
+                logMessage += $"\n  StackTrace: {exception.StackTrace}";
+            }
+        }
+
+        lock (_lock)
+        {
+            // Intentional Debug.WriteLine: this IS the logging service's Debug sink (cannot route through ILoggingService).
+            Debug.WriteLine(logMessage);
+        }
+
+        try
+        {
+            _fileWriter?.Write(logMessage);
+        }
+        catch (Exception ex)
+        {
+            // Intentional Debug.WriteLine: last-resort trace when the file sink itself throws (cannot self-log).
+            Debug.WriteLine($"[LoggingService] {ex.Message}");
+        }
+    }
+}
+
+/// <summary>
+/// Factory for creating category-specific loggers.
+/// </summary>
+public interface ILoggerFactory
+{
+    /// <summary>
+    /// Creates a logger for the specified category.
+    /// </summary>
+    ILoggingService CreateLogger(string categoryName);
+
+    /// <summary>
+    /// Creates a logger for the specified type.
+    /// </summary>
+    ILoggingService CreateLogger<T>();
+}
+
+/// <summary>
+/// Default implementation of logger factory.
+/// </summary>
+public class LoggerFactory : ILoggerFactory
+{
+    private readonly IFileLogWriter? _fileWriter;
+
+    public LoggerFactory(IFileLogWriter? fileWriter = null)
+    {
+        _fileWriter = fileWriter;
+    }
+
+    /// <inheritdoc/>
+    public ILoggingService CreateLogger(string categoryName)
+    {
+        return new LoggingService(_fileWriter, categoryName);
+    }
+
+    /// <inheritdoc/>
+    public ILoggingService CreateLogger<T>()
+    {
+        return new LoggingService(_fileWriter, typeof(T).Name);
+    }
+}

@@ -3,7 +3,7 @@
     Pester tests for PluginSandbox module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge PluginSandbox v3.5.0
+    Comprehensive unit tests for WinForge PluginSandbox v3.5.0
     Tests sandboxed execution, timeout enforcement, and plugin isolation
 
 .NOTES
@@ -295,7 +295,7 @@ Describe 'PluginSandbox Module' {
         }
 
         It 'Should successfully load valid module' {
-            $testDir = Join-Path $env:TEMP 'Win11ForgePluginSandboxTests'
+            $testDir = Join-Path $env:TEMP 'WinForgePluginSandboxTests'
             $testModulePath = Join-Path $testDir 'TestPlugin.psm1'
 
             if (-not (Test-Path $testDir)) {

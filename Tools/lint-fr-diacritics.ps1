@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    [string]$Path = 'GUI\Win11Forge.GUI\Resources\Resources.fr.resx'
+    [string]$Path = 'GUI\WinForge.GUI\Resources\Resources.fr.resx'
 )
 
 Set-StrictMode -Version Latest

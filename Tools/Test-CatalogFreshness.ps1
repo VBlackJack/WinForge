@@ -107,7 +107,7 @@ $Script:SourceStore        = 'Store'
 $Script:SourceDirectUrl    = 'DirectUrl'
 $Script:SourceSchemaLint   = 'SchemaLint'
 
-$Script:HttpUserAgent = 'Win11Forge-FreshnessCheck/1.0'
+$Script:HttpUserAgent = 'WinForge-FreshnessCheck/1.0'
 $Script:HttpTimeoutSeconds = 15
 
 # winget return code APPINSTALLER_CLI_ERROR_NO_APPLICATIONS_FOUND (0x8A150014).

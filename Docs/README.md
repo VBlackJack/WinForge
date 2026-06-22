@@ -1,4 +1,4 @@
-# Win11Forge Documentation
+# WinForge Documentation
 
 Current framework display version: `2026062201`.
 
@@ -18,5 +18,5 @@ Current framework display version: `2026062201`.
 ## Maintainer References
 
 - [`../Tests/README.md`](../Tests/README.md): PowerShell/Pester test runner guide.
-- [`../GUI/Win11Forge.GUI.UITests/README.md`](../GUI/Win11Forge.GUI.UITests/README.md): opt-in UIA desktop smoke guidance.
+- [`../GUI/WinForge.GUI.UITests/README.md`](../GUI/WinForge.GUI.UITests/README.md): opt-in UIA desktop smoke guidance.
 - [`../Tools/README.md`](../Tools/README.md): validation and maintenance tools.

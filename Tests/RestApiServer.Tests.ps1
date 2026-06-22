@@ -3,7 +3,7 @@
     Pester tests for RestApiServer module
 
 .DESCRIPTION
-    Unit tests for Win11Forge RestApiServer v3.7.2
+    Unit tests for WinForge RestApiServer v3.7.2
     Tests server lifecycle, endpoint registration, configuration,
     CSRF protection, rate limiting, auth blocking, and handler security
 

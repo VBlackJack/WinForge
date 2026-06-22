@@ -1,6 +1,6 @@
-﻿{
+{
   "_meta": {
-    "description": "Timeout configuration for Win11Forge installation operations",
+    "description": "Timeout configuration for WinForge installation operations",
     "version": "3.6.8",
     "author": "Julien Bombled",
     "lastUpdated": "2026-01-19"

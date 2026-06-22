@@ -1,0 +1,4104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Application -->
+  <data name="App_Title" xml:space="preserve">
+    <value>WinForge v{0}</value>
+    <comment>Main application window title (0=version number)</comment>
+  </data>
+  <data name="App_Name" xml:space="preserve">
+    <value>WinForge</value>
+    <comment>Application name (brand name, not translated)</comment>
+  </data>
+  <!-- Splash Screen -->
+  <data name="Splash_Initializing" xml:space="preserve">
+    <value>Initializing...</value>
+    <comment>Splash screen initial status</comment>
+  </data>
+  <data name="Splash_ConfiguringServices" xml:space="preserve">
+    <value>Configuring services...</value>
+    <comment>Splash screen status during DI configuration</comment>
+  </data>
+  <data name="Splash_LoadingSettings" xml:space="preserve">
+    <value>Loading settings...</value>
+    <comment>Splash screen status during settings load</comment>
+  </data>
+  <data name="Splash_ApplyingLanguage" xml:space="preserve">
+    <value>Applying language settings...</value>
+    <comment>Splash screen status during language application</comment>
+  </data>
+  <data name="Splash_ApplyingTheme" xml:space="preserve">
+    <value>Applying theme...</value>
+    <comment>Splash screen status during theme application</comment>
+  </data>
+  <data name="Splash_LoadingInterface" xml:space="preserve">
+    <value>Loading interface...</value>
+    <comment>Splash screen status during main window creation</comment>
+  </data>
+  <!-- Main Window -->
+  <data name="MainWindow_Welcome" xml:space="preserve">
+    <value>Welcome to WinForge</value>
+    <comment>Welcome message displayed on main window</comment>
+  </data>
+  <!-- Dashboard -->
+  <data name="Dashboard_Title" xml:space="preserve">
+    <value>Dashboard</value>
+    <comment>Dashboard view title</comment>
+  </data>
+  <data name="Dashboard_Version_Prefix" xml:space="preserve">
+    <value>Version:</value>
+    <comment>Label prefix for version display</comment>
+  </data>
+  <data name="Dashboard_Repository_Prefix" xml:space="preserve">
+    <value>Repository:</value>
+    <comment>Label prefix for repository path display</comment>
+  </data>
+  <data name="Dashboard_SystemInfo_Title" xml:space="preserve">
+    <value>System Information</value>
+    <comment>System information card title</comment>
+  </data>
+  <!-- Deployment / Monitoring -->
+  <data name="Monitoring_Title" xml:space="preserve">
+    <value>Monitoring</value>
+    <comment>Monitoring view title</comment>
+  </data>
+  <data name="Monitoring_Subtitle" xml:space="preserve">
+    <value>Track the progress of your current deployment</value>
+    <comment>Monitoring view subtitle</comment>
+  </data>
+  <data name="Monitoring_NoDeployment" xml:space="preserve">
+    <value>No deployment in progress</value>
+    <comment>Empty state title when no deployment</comment>
+  </data>
+  <data name="Monitoring_NoDeploymentHint" xml:space="preserve">
+    <value>Start a deployment from the Applications section to monitor it here</value>
+    <comment>Empty state hint when no deployment</comment>
+  </data>
+  <!-- Breadcrumb Steps -->
+  <data name="Breadcrumb_SelectProfile" xml:space="preserve">
+    <value>Select Profile</value>
+    <comment>Breadcrumb step 1 - profile selection</comment>
+  </data>
+  <data name="Breadcrumb_Configure" xml:space="preserve">
+    <value>Configure</value>
+    <comment>Breadcrumb step 2 - configuration</comment>
+  </data>
+  <data name="Breadcrumb_Deploy" xml:space="preserve">
+    <value>Deploy</value>
+    <comment>Breadcrumb step 3 - deployment</comment>
+  </data>
+  <!-- Undo/Redo Actions -->
+  <data name="Undo_ActionUndone" xml:space="preserve">
+    <value>Undone: {0}</value>
+    <comment>Toast message when action is undone (0=action description)</comment>
+  </data>
+  <data name="Undo_ActionRedone" xml:space="preserve">
+    <value>Redone: {0}</value>
+    <comment>Toast message when action is redone (0=action description)</comment>
+  </data>
+  <data name="Undo_Action" xml:space="preserve">
+    <value>action</value>
+    <comment>Generic action fallback text</comment>
+  </data>
+  <data name="Undo_AddApplication" xml:space="preserve">
+    <value>Add application: {0}</value>
+    <comment>Undo description for adding application (0=app name)</comment>
+  </data>
+  <data name="Undo_EditApplication" xml:space="preserve">
+    <value>Edit application: {0}</value>
+    <comment>Undo description for editing application (0=app name)</comment>
+  </data>
+  <data name="Undo_DeleteApplication" xml:space="preserve">
+    <value>Delete application: {0}</value>
+    <comment>Undo description for deleting application (0=app name)</comment>
+  </data>
+  <data name="Deploy_SelectProfile" xml:space="preserve">
+    <value>Select Profile:</value>
+    <comment>Label for profile selection dropdown</comment>
+  </data>
+  <data name="Deploy_ProfileSummary" xml:space="preserve">
+    <value>Profile Summary</value>
+    <comment>Profile summary card title</comment>
+  </data>
+  <data name="Deploy_Applications" xml:space="preserve">
+    <value>Applications</value>
+    <comment>Applications section title</comment>
+  </data>
+  <data name="Deploy_TotalApps" xml:space="preserve">
+    <value>Total:</value>
+    <comment>Total applications label</comment>
+  </data>
+  <data name="Deploy_RequiredApps" xml:space="preserve">
+    <value>Required:</value>
+    <comment>Required applications label</comment>
+  </data>
+  <data name="Deploy_SelectAll" xml:space="preserve">
+    <value>Select All</value>
+    <comment>Select all applications button</comment>
+  </data>
+  <data name="Deploy_SelectNone" xml:space="preserve">
+    <value>Select None</value>
+    <comment>Deselect all applications button</comment>
+  </data>
+  <data name="Deploy_Selected" xml:space="preserve">
+    <value>Selected:</value>
+    <comment>Selected applications count label</comment>
+  </data>
+  <!-- Column Headers -->
+  <data name="Col_Favorites" xml:space="preserve">
+    <value>Favorites</value>
+    <comment>Favorites column header</comment>
+  </data>
+  <data name="Col_Status" xml:space="preserve">
+    <value>Status</value>
+    <comment>Status column header</comment>
+  </data>
+  <data name="Col_Application" xml:space="preserve">
+    <value>Application</value>
+    <comment>Application name column header</comment>
+  </data>
+  <data name="Col_Category" xml:space="preserve">
+    <value>Category</value>
+    <comment>Category column header</comment>
+  </data>
+  <data name="Col_Priority" xml:space="preserve">
+    <value>Priority</value>
+    <comment>Priority column header</comment>
+  </data>
+  <data name="Col_Required" xml:space="preserve">
+    <value>Required</value>
+    <comment>Required column header</comment>
+  </data>
+  <!-- Common -->
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Loading...</value>
+    <comment>Generic loading indicator text</comment>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>Error</value>
+    <comment>Generic error label</comment>
+  </data>
+  <data name="Init_ErrorTitle" xml:space="preserve">
+    <value>Initialization Error</value>
+    <comment>Title for initialization failure dialog</comment>
+  </data>
+  <data name="Init_ErrorMessage" xml:space="preserve">
+    <value>Failed to initialize WinForge:
+
+{0}
+
+Please ensure WinForge is extracted correctly with all folders (Config/, Modules/, Profiles/).</value>
+    <comment>Message for initialization failure (0=error details)</comment>
+  </data>
+  <!-- Navigation -->
+  <data name="Nav_Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+    <comment>Dashboard navigation item</comment>
+  </data>
+  <data name="Nav_Deployment" xml:space="preserve">
+    <value>Monitoring</value>
+    <comment>Monitoring navigation item</comment>
+  </data>
+  <data name="Nav_Apps" xml:space="preserve">
+    <value>Applications</value>
+    <comment>Applications navigation item</comment>
+  </data>
+  <!-- Applications -->
+  <data name="Apps_Title" xml:space="preserve">
+    <value>Applications</value>
+    <comment>Applications view title</comment>
+  </data>
+  <data name="Apps_Subtitle" xml:space="preserve">
+    <value>Install, update, and manage your applications</value>
+    <comment>Applications view subtitle</comment>
+  </data>
+  <data name="Apps_SearchHint" xml:space="preserve">
+    <value>Search applications...</value>
+    <comment>Search box placeholder text</comment>
+  </data>
+  <data name="Search_RecentSearches" xml:space="preserve">
+    <value>Recent searches</value>
+    <comment>Header for recent searches in search box</comment>
+  </data>
+  <data name="Apps_CategoryAll" xml:space="preserve">
+    <value>All Categories</value>
+    <comment>All categories filter option</comment>
+  </data>
+  <data name="Apps_ClearFilters" xml:space="preserve">
+    <value>Clear filters</value>
+    <comment>Clear filters button tooltip</comment>
+  </data>
+  <data name="Apps_Col_Sources" xml:space="preserve">
+    <value>Sources</value>
+    <comment>Sources column header</comment>
+  </data>
+  <data name="Apps_Col_Id" xml:space="preserve">
+    <value>App ID</value>
+    <comment>App ID column header</comment>
+  </data>
+  <data name="Btn_Scan" xml:space="preserve">
+    <value>Scan Installed</value>
+    <comment>Scan installed apps button</comment>
+  </data>
+  <data name="Btn_Install" xml:space="preserve">
+    <value>Install</value>
+    <comment>Install button text</comment>
+  </data>
+  <data name="Col_Actions" xml:space="preserve">
+    <value>Actions</value>
+    <comment>Actions column header</comment>
+  </data>
+  <data name="Status_Checking" xml:space="preserve">
+    <value>Checking...</value>
+    <comment>Checking installation status</comment>
+  </data>
+  <data name="Status_Missing" xml:space="preserve">
+    <value>Not Installed</value>
+    <comment>Application not installed status</comment>
+  </data>
+  <!-- Deployment Execution -->
+  <data name="Btn_Deploy" xml:space="preserve">
+    <value>Start Deployment</value>
+    <comment>Deploy button text</comment>
+  </data>
+  <data name="Btn_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Cancel button text</comment>
+  </data>
+  <data name="Btn_Pause" xml:space="preserve">
+    <value>Pause</value>
+    <comment>Pause deployment button text</comment>
+  </data>
+  <data name="Btn_Resume" xml:space="preserve">
+    <value>Resume</value>
+    <comment>Resume deployment button text</comment>
+  </data>
+  <data name="Lbl_DryRun" xml:space="preserve">
+    <value>Simulation Mode</value>
+    <comment>Dry run toggle label</comment>
+  </data>
+  <data name="Lbl_DryRun_Hint" xml:space="preserve">
+    <value>No changes will be made</value>
+    <comment>Dry run hint text</comment>
+  </data>
+  <data name="Deploy_DryRunBanner" xml:space="preserve">
+    <value>SIMULATION MODE ACTIVE: No changes will be made</value>
+    <comment>High visibility banner when dry run is enabled</comment>
+  </data>
+  <!-- Status Messages -->
+  <data name="Status_Pending" xml:space="preserve">
+    <value>Pending</value>
+    <comment>Pending installation status</comment>
+  </data>
+  <data name="Status_Installing" xml:space="preserve">
+    <value>Installing...</value>
+    <comment>Currently installing status</comment>
+  </data>
+  <data name="Status_Installed" xml:space="preserve">
+    <value>Installed</value>
+    <comment>Successfully installed status</comment>
+  </data>
+  <data name="Status_Failed" xml:space="preserve">
+    <value>Failed</value>
+    <comment>Installation failed status</comment>
+  </data>
+  <data name="Status_Skipped" xml:space="preserve">
+    <value>Skipped</value>
+    <comment>Skipped installation status</comment>
+  </data>
+  <data name="Status_AlreadyInstalled" xml:space="preserve">
+    <value>Already Installed</value>
+    <comment>Already installed status</comment>
+  </data>
+  <data name="Status_Paused" xml:space="preserve">
+    <value>Deployment paused</value>
+    <comment>Deployment paused status message</comment>
+  </data>
+  <!-- Progress -->
+  <data name="Progress_Installing" xml:space="preserve">
+    <value>Installing applications...</value>
+    <comment>Installation progress message</comment>
+  </data>
+  <data name="Progress_Complete" xml:space="preserve">
+    <value>Deployment complete</value>
+    <comment>Deployment complete message</comment>
+  </data>
+  <data name="Progress_Cancelled" xml:space="preserve">
+    <value>Deployment cancelled</value>
+    <comment>Deployment cancelled message</comment>
+  </data>
+  <data name="Progress_Deploying" xml:space="preserve">
+    <value>Deploying...</value>
+    <comment>Deployment in progress message</comment>
+  </data>
+  <!-- Profile Editor -->
+  <data name="Nav_ProfileEditor" xml:space="preserve">
+    <value>Profile Editor</value>
+    <comment>Profile Editor navigation item</comment>
+  </data>
+  <data name="Editor_Title_New" xml:space="preserve">
+    <value>New Profile</value>
+    <comment>Profile editor title when creating new</comment>
+  </data>
+  <data name="Editor_Title_Edit" xml:space="preserve">
+    <value>Edit Profile: {0}</value>
+    <comment>Profile editor title when editing (0=profile name)</comment>
+  </data>
+  <data name="Editor_Lbl_Name" xml:space="preserve">
+    <value>Profile Name</value>
+    <comment>Profile name field label</comment>
+  </data>
+  <data name="Editor_Lbl_Parent" xml:space="preserve">
+    <value>Inherits From</value>
+    <comment>Parent profile field label</comment>
+  </data>
+  <data name="Editor_Lbl_Description" xml:space="preserve">
+    <value>Description</value>
+    <comment>Description field label</comment>
+  </data>
+  <data name="Editor_Section_Inherited" xml:space="preserve">
+    <value>Inherited Applications</value>
+    <comment>Inherited applications section header</comment>
+  </data>
+  <data name="Editor_Section_Added" xml:space="preserve">
+    <value>Added Applications</value>
+    <comment>Added applications section header</comment>
+  </data>
+  <data name="Editor_NoParent" xml:space="preserve">
+    <value>(None)</value>
+    <comment>No parent profile option</comment>
+  </data>
+  <data name="Editor_Empty_NoParent" xml:space="preserve">
+    <value>No parent selected</value>
+    <comment>Empty state when no parent profile is selected</comment>
+  </data>
+  <data name="Editor_Empty_NoApps" xml:space="preserve">
+    <value>No applications added</value>
+    <comment>Empty state when no apps are added</comment>
+  </data>
+  <data name="Editor_Tooltip_Inherited" xml:space="preserve">
+    <value>Inherited from parent - read only</value>
+    <comment>Tooltip for inherited app lock icon</comment>
+  </data>
+  <data name="Editor_Tooltip_Add" xml:space="preserve">
+    <value>Add application</value>
+    <comment>Tooltip for add button</comment>
+  </data>
+  <data name="Editor_Tooltip_Remove" xml:space="preserve">
+    <value>Remove application</value>
+    <comment>Tooltip for remove button</comment>
+  </data>
+  <data name="Editor_Error_NameRequired" xml:space="preserve">
+    <value>Profile name is required</value>
+    <comment>Error when profile name is empty</comment>
+  </data>
+  <data name="Editor_Error_LoadParent" xml:space="preserve">
+    <value>Failed to load parent profile: {0}</value>
+    <comment>Error when loading parent profile fails (0=error message)</comment>
+  </data>
+  <data name="Btn_Save" xml:space="preserve">
+    <value>Save</value>
+    <comment>Save button text</comment>
+  </data>
+  <data name="Editor_Error_InvalidName" xml:space="preserve">
+    <value>Profile name contains invalid characters</value>
+    <comment>Error when profile name has invalid characters</comment>
+  </data>
+  <data name="Editor_Error_SaveFailed" xml:space="preserve">
+    <value>Failed to save profile: {0}</value>
+    <comment>Error when saving profile fails (0=error message)</comment>
+  </data>
+  <data name="Editor_Hint_ProfileName" xml:space="preserve">
+    <value>Enter a unique profile name</value>
+    <comment>Hint text for profile name field</comment>
+  </data>
+  <data name="Editor_Hint_Description" xml:space="preserve">
+    <value>Brief description of the profile</value>
+    <comment>Hint text for description field</comment>
+  </data>
+  <!-- Validation Messages -->
+  <data name="Validation_Required" xml:space="preserve">
+    <value>This field is required</value>
+    <comment>Tooltip for required field indicator</comment>
+  </data>
+  <data name="Msg_ProfileSaved" xml:space="preserve">
+    <value>Profile saved successfully</value>
+    <comment>Success message after saving profile</comment>
+  </data>
+  <!-- Application Picker Dialog -->
+  <data name="Dialog_SelectApp_Title" xml:space="preserve">
+    <value>Select Application</value>
+    <comment>Application picker dialog title</comment>
+  </data>
+  <data name="Dialog_SelectApp_Add" xml:space="preserve">
+    <value>Add Selected</value>
+    <comment>Add button in application picker</comment>
+  </data>
+  <data name="Dialog_NoAppsAvailable" xml:space="preserve">
+    <value>All applications are already added</value>
+    <comment>Message when no apps available to add</comment>
+  </data>
+  <data name="Dialog_AppsAvailable" xml:space="preserve">
+    <value>applications available</value>
+    <comment>Count suffix in application picker</comment>
+  </data>
+  <!-- Dashboard -->
+  <data name="Dashboard_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>Refresh button tooltip</comment>
+  </data>
+  <data name="Dashboard_Stat_Profiles" xml:space="preserve">
+    <value>Profiles</value>
+    <comment>Dashboard stat card label</comment>
+  </data>
+  <data name="Dashboard_Stat_Apps" xml:space="preserve">
+    <value>Applications</value>
+    <comment>Dashboard stat card label</comment>
+  </data>
+  <data name="Dashboard_Stat_Deployments" xml:space="preserve">
+    <value>Deployments</value>
+    <comment>Dashboard stat card label</comment>
+  </data>
+  <data name="Dashboard_Stat_Version" xml:space="preserve">
+    <value>Version</value>
+    <comment>Dashboard stat card label</comment>
+  </data>
+  <data name="Dashboard_Sys_Hostname" xml:space="preserve">
+    <value>Hostname:</value>
+    <comment>System info label</comment>
+  </data>
+  <data name="Dashboard_Sys_OS" xml:space="preserve">
+    <value>OS:</value>
+    <comment>System info label</comment>
+  </data>
+  <data name="Dashboard_Sys_Build" xml:space="preserve">
+    <value>Build:</value>
+    <comment>System info label</comment>
+  </data>
+  <data name="Dashboard_Sys_Admin" xml:space="preserve">
+    <value>Administrator:</value>
+    <comment>System info label</comment>
+  </data>
+  <data name="Dashboard_RecentActivity" xml:space="preserve">
+    <value>Recent Activity</value>
+    <comment>Dashboard section header</comment>
+  </data>
+  <data name="Dashboard_NoActivity" xml:space="preserve">
+    <value>No deployment history</value>
+    <comment>Empty state for recent activity</comment>
+  </data>
+  <data name="Dashboard_NoActivity_Hint" xml:space="preserve">
+    <value>Deploy a profile to see your history here</value>
+    <comment>Empty state hint for recent activity</comment>
+  </data>
+  <data name="Dashboard_Btn_StartDeploy" xml:space="preserve">
+    <value>Start New Deployment</value>
+    <comment>Call-to-action button on dashboard</comment>
+  </data>
+  <data name="Dashboard_QuickActions_Title" xml:space="preserve">
+    <value>Quick Actions</value>
+    <comment>Title for quick actions section on dashboard</comment>
+  </data>
+  <!-- Settings -->
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Settings</value>
+    <comment>Settings navigation item</comment>
+  </data>
+  <data name="Nav_Prerequisites" xml:space="preserve">
+    <value>Prerequisites</value>
+    <comment>Prerequisites navigation item</comment>
+  </data>
+  <data name="Settings_Title" xml:space="preserve">
+    <value>Settings</value>
+    <comment>Settings page title</comment>
+  </data>
+  <data name="Settings_Section_Appearance" xml:space="preserve">
+    <value>Appearance</value>
+    <comment>Settings section header</comment>
+  </data>
+  <data name="Settings_Section_Language" xml:space="preserve">
+    <value>Language</value>
+    <comment>Settings section header</comment>
+  </data>
+  <data name="Settings_Section_Data" xml:space="preserve">
+    <value>Data</value>
+    <comment>Settings section header</comment>
+  </data>
+  <data name="Settings_Theme" xml:space="preserve">
+    <value>Theme</value>
+    <comment>Theme setting label</comment>
+  </data>
+  <data name="Settings_Theme_Desc" xml:space="preserve">
+    <value>Choose the application theme</value>
+    <comment>Theme setting description</comment>
+  </data>
+  <data name="Settings_AccentTint" xml:space="preserve">
+    <value>Accent</value>
+    <comment>Accent tint setting label</comment>
+  </data>
+  <data name="Settings_AccentTint_Desc" xml:space="preserve">
+    <value>Choose the accent color used by themed controls</value>
+    <comment>Accent tint setting description</comment>
+  </data>
+  <data name="Settings_ThemeName_Dracula" xml:space="preserve">
+    <value>Dracula</value>
+    <comment>Theme display name for ThemeForge Dracula</comment>
+  </data>
+  <data name="Settings_ThemeName_Drakul" xml:space="preserve">
+    <value>Drakul</value>
+    <comment>Theme display name for ThemeForge Drakul</comment>
+  </data>
+  <data name="Settings_ThemeName_Striga" xml:space="preserve">
+    <value>Striga</value>
+    <comment>Theme display name for ThemeForge Striga</comment>
+  </data>
+  <data name="Settings_ThemeName_Cinder" xml:space="preserve">
+    <value>Cinder</value>
+    <comment>Theme display name for ThemeForge Cinder</comment>
+  </data>
+  <data name="Settings_ThemeName_Bracken" xml:space="preserve">
+    <value>Bracken</value>
+    <comment>Theme display name for ThemeForge Bracken</comment>
+  </data>
+  <data name="Settings_ThemeName_Tarn" xml:space="preserve">
+    <value>Tarn</value>
+    <comment>Theme display name for ThemeForge Tarn</comment>
+  </data>
+  <data name="Settings_ThemeName_Mortis" xml:space="preserve">
+    <value>Mortis</value>
+    <comment>Theme display name for ThemeForge Mortis</comment>
+  </data>
+  <data name="Settings_ThemeName_Slate" xml:space="preserve">
+    <value>Slate</value>
+    <comment>Theme display name for ThemeForge Slate</comment>
+  </data>
+  <data name="Settings_ThemeName_Magellan" xml:space="preserve">
+    <value>Magellan</value>
+    <comment>Theme display name for ThemeForge Magellan</comment>
+  </data>
+  <data name="Settings_ThemeName_Voivode" xml:space="preserve">
+    <value>Voivode</value>
+    <comment>Theme display name for ThemeForge Voivode</comment>
+  </data>
+  <data name="Settings_ThemeName_Carmilla" xml:space="preserve">
+    <value>Carmilla</value>
+    <comment>Theme display name for ThemeForge Carmilla</comment>
+  </data>
+  <data name="Settings_ThemeName_Whitby" xml:space="preserve">
+    <value>Whitby</value>
+    <comment>Theme display name for ThemeForge Whitby</comment>
+  </data>
+  <data name="Settings_ThemeName_Vesper" xml:space="preserve">
+    <value>Vesper</value>
+    <comment>Theme display name for ThemeForge Vesper</comment>
+  </data>
+  <data name="Settings_ThemeName_Parchment" xml:space="preserve">
+    <value>Parchment</value>
+    <comment>Theme display name for ThemeForge Parchment</comment>
+  </data>
+  <data name="Settings_ThemeName_Folio" xml:space="preserve">
+    <value>Folio</value>
+    <comment>Theme display name for ThemeForge Folio</comment>
+  </data>
+  <data name="Settings_ThemeName_Wormwood" xml:space="preserve">
+    <value>Wormwood</value>
+    <comment>Theme display name for ThemeForge Wormwood</comment>
+  </data>
+  <data name="Settings_ThemeName_Sconce" xml:space="preserve">
+    <value>Sconce</value>
+    <comment>Theme display name for ThemeForge Sconce</comment>
+  </data>
+  <data name="Settings_AccentTintName_Default" xml:space="preserve">
+    <value>Default</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Blue" xml:space="preserve">
+    <value>Blue</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Cyan" xml:space="preserve">
+    <value>Cyan</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Green" xml:space="preserve">
+    <value>Green</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Orange" xml:space="preserve">
+    <value>Orange</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Pink" xml:space="preserve">
+    <value>Pink</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Purple" xml:space="preserve">
+    <value>Purple</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Red" xml:space="preserve">
+    <value>Red</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_AccentTintName_Yellow" xml:space="preserve">
+    <value>Yellow</value>
+    <comment>ThemeForge accent tint display name</comment>
+  </data>
+  <data name="Settings_ThemeName_Light" xml:space="preserve">
+    <value>Light</value>
+    <comment>Theme display name for WPF-UI Light</comment>
+  </data>
+  <data name="Settings_ThemeName_DraculaPro" xml:space="preserve">
+    <value>Dracula Pro</value>
+    <comment>Theme display name for Dracula Pro</comment>
+  </data>
+  <data name="Settings_ThemeName_Alucard" xml:space="preserve">
+    <value>Alucard</value>
+    <comment>Theme display name for Alucard</comment>
+  </data>
+  <data name="Settings_ThemeName_Blade" xml:space="preserve">
+    <value>Blade</value>
+    <comment>Theme display name for Blade</comment>
+  </data>
+  <data name="Settings_ThemeName_Buffy" xml:space="preserve">
+    <value>Buffy</value>
+    <comment>Theme display name for Buffy</comment>
+  </data>
+  <data name="Settings_ThemeName_Lincoln" xml:space="preserve">
+    <value>Lincoln</value>
+    <comment>Theme display name for Lincoln</comment>
+  </data>
+  <data name="Settings_ThemeName_Morbius" xml:space="preserve">
+    <value>Morbius</value>
+    <comment>Theme display name for Morbius</comment>
+  </data>
+  <data name="Settings_ThemeName_VanHelsing" xml:space="preserve">
+    <value>Van Helsing</value>
+    <comment>Theme display name for Van Helsing</comment>
+  </data>
+  <data name="Settings_ThemeApplied" xml:space="preserve">
+    <value>Theme applied</value>
+    <comment>Status message after theme change</comment>
+  </data>
+  <data name="Settings_AutoSaved" xml:space="preserve">
+    <value>Settings saved</value>
+    <comment>Toast notification when settings are auto-saved</comment>
+  </data>
+  <data name="Settings_SaveFailed" xml:space="preserve">
+    <value>Failed to save settings</value>
+    <comment>Error shown when settings persistence fails</comment>
+  </data>
+  <data name="Settings_Language" xml:space="preserve">
+    <value>Language</value>
+    <comment>Language setting label</comment>
+  </data>
+  <data name="Settings_Language_Desc" xml:space="preserve">
+    <value>Select application language</value>
+    <comment>Language setting description</comment>
+  </data>
+  <data name="Settings_Apply" xml:space="preserve">
+    <value>Apply</value>
+    <comment>Apply button text</comment>
+  </data>
+  <data name="Settings_RestartRequired" xml:space="preserve">
+    <value>Restart required for language change</value>
+    <comment>Warning for language change</comment>
+  </data>
+  <data name="Settings_RestartNow" xml:space="preserve">
+    <value>Restart Now</value>
+    <comment>Button to restart the application immediately</comment>
+  </data>
+  <data name="Settings_ClearHistory" xml:space="preserve">
+    <value>Clear History</value>
+    <comment>Clear history setting label</comment>
+  </data>
+  <data name="Settings_ClearHistory_Desc" xml:space="preserve">
+    <value>Remove all deployment history entries</value>
+    <comment>Clear history setting description</comment>
+  </data>
+  <data name="Settings_ClearBtn" xml:space="preserve">
+    <value>Clear</value>
+    <comment>Clear button text</comment>
+  </data>
+  <data name="Settings_HistoryCleared" xml:space="preserve">
+    <value>History cleared</value>
+    <comment>Status message after clearing history</comment>
+  </data>
+  <!-- Error History -->
+  <data name="Settings_ErrorHistory" xml:space="preserve">
+    <value>Recent Errors</value>
+    <comment>Error history section title</comment>
+  </data>
+  <data name="Settings_ClearErrors" xml:space="preserve">
+    <value>Clear Errors</value>
+    <comment>Button to clear error history</comment>
+  </data>
+  <data name="Settings_ErrorsCleared" xml:space="preserve">
+    <value>Error history cleared</value>
+    <comment>Status message after clearing errors</comment>
+  </data>
+  <data name="Settings_NoErrors" xml:space="preserve">
+    <value>No errors recorded</value>
+    <comment>Empty state when no errors in history</comment>
+  </data>
+  <data name="Settings_CacheStatistics" xml:space="preserve">
+    <value>Cache Statistics</value>
+    <comment>Section header for cache statistics</comment>
+  </data>
+  <data name="Settings_CachePackages" xml:space="preserve">
+    <value>Cached Packages</value>
+    <comment>Label for number of cached packages</comment>
+  </data>
+  <data name="Settings_CacheHits" xml:space="preserve">
+    <value>Cache Hits</value>
+    <comment>Label for cache hit count</comment>
+  </data>
+  <data name="Settings_CacheMisses" xml:space="preserve">
+    <value>Cache Misses</value>
+    <comment>Label for cache miss count</comment>
+  </data>
+  <data name="Settings_CacheHitRate" xml:space="preserve">
+    <value>Hit Rate</value>
+    <comment>Label for cache hit rate percentage</comment>
+  </data>
+  <data name="Settings_LastRefresh" xml:space="preserve">
+    <value>Last Refresh</value>
+    <comment>Label for last cache refresh time</comment>
+  </data>
+  <data name="Settings_AvgDetectionTime" xml:space="preserve">
+    <value>Avg. Detection Time</value>
+    <comment>Label for average detection time</comment>
+  </data>
+  <data name="Settings_ClearCache" xml:space="preserve">
+    <value>Clear Cache</value>
+    <comment>Button to clear detection cache</comment>
+  </data>
+  <data name="Settings_RefreshStats" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>Button to refresh cache statistics</comment>
+  </data>
+  <data name="Settings_CacheCleared" xml:space="preserve">
+    <value>Detection cache cleared</value>
+    <comment>Status message after clearing cache</comment>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>N/A</value>
+    <comment>Displayed when data is not available</comment>
+  </data>
+  <data name="Settings_ParallelInstalls" xml:space="preserve">
+    <value>Parallel Installations</value>
+    <comment>Parallel installations setting label</comment>
+  </data>
+  <data name="Settings_ParallelInstalls_Desc" xml:space="preserve">
+    <value>Maximum number of simultaneous installations</value>
+    <comment>Parallel installations setting description</comment>
+  </data>
+  <data name="Settings_ParallelInstallsApplied" xml:space="preserve">
+    <value>Parallel installations setting applied (restart views for effect)</value>
+    <comment>Status message after changing parallel installs</comment>
+  </data>
+  <data name="Settings_ParallelScans" xml:space="preserve">
+    <value>Parallel Scans</value>
+    <comment>Parallel scans setting label</comment>
+  </data>
+  <data name="Settings_ParallelScans_Desc" xml:space="preserve">
+    <value>Maximum number of simultaneous application checks</value>
+    <comment>Parallel scans setting description</comment>
+  </data>
+  <data name="Settings_ParallelScansApplied" xml:space="preserve">
+    <value>Parallel scans setting applied (restart views for effect)</value>
+    <comment>Status message after changing parallel scans</comment>
+  </data>
+  <data name="Settings_ScanTimeoutApplied" xml:space="preserve">
+    <value>Update scan timeout applied</value>
+    <comment>Status message after changing scan timeout</comment>
+  </data>
+  <data name="Settings_ScanTimeout" xml:space="preserve">
+    <value>Update Scan Timeout</value>
+    <comment>Label for scan timeout setting</comment>
+  </data>
+  <data name="Settings_ScanTimeout_Hint" xml:space="preserve">
+    <value>Maximum time to wait for update scans (in minutes)</value>
+    <comment>Hint text for scan timeout setting</comment>
+  </data>
+  <data name="Settings_Section_Performance" xml:space="preserve">
+    <value>Performance</value>
+    <comment>Performance settings section header</comment>
+  </data>
+  <data name="Settings_Btn_OpenLogs" xml:space="preserve">
+    <value>Open Log Folder</value>
+    <comment>Button to open logs folder in explorer</comment>
+  </data>
+  <data name="Settings_OpenLogs_Desc" xml:space="preserve">
+    <value>View deployment and error logs</value>
+    <comment>Open logs button description</comment>
+  </data>
+  <data name="Settings_Section_About" xml:space="preserve">
+    <value>About</value>
+    <comment>About section header</comment>
+  </data>
+  <data name="About_Author" xml:space="preserve">
+    <value>Author:</value>
+    <comment>Author label</comment>
+  </data>
+  <data name="About_Version" xml:space="preserve">
+    <value>Version:</value>
+    <comment>Version label</comment>
+  </data>
+  <data name="About_License" xml:space="preserve">
+    <value>License:</value>
+    <comment>License label</comment>
+  </data>
+  <data name="About_Repository" xml:space="preserve">
+    <value>Repository:</value>
+    <comment>Repository label</comment>
+  </data>
+  <!-- Package Managers -->
+  <data name="Dashboard_Sys_Winget" xml:space="preserve">
+    <value>Winget:</value>
+    <comment>System info label for Winget</comment>
+  </data>
+  <data name="Dashboard_Sys_Chocolatey" xml:space="preserve">
+    <value>Chocolatey:</value>
+    <comment>System info label for Chocolatey</comment>
+  </data>
+  <!-- Apps Manager -->
+  <data name="Apps_Installed" xml:space="preserve">
+    <value>installed</value>
+    <comment>Installed count suffix</comment>
+  </data>
+  <data name="Apps_Selected" xml:space="preserve">
+    <value>selected</value>
+    <comment>Selected count suffix</comment>
+  </data>
+  <data name="Apps_InstallSelected" xml:space="preserve">
+    <value>Install Selected</value>
+    <comment>Button to install selected apps</comment>
+  </data>
+  <data name="Apps_SelectAll" xml:space="preserve">
+    <value>Select All</value>
+    <comment>Button to select all visible apps</comment>
+  </data>
+  <data name="Apps_SelectNone" xml:space="preserve">
+    <value>Clear Selection</value>
+    <comment>Button to clear all selections</comment>
+  </data>
+  <data name="Apps_SelectNotInstalled" xml:space="preserve">
+    <value>Select Not Installed</value>
+    <comment>Button to select all not installed apps</comment>
+  </data>
+  <data name="Apps_StatusAll" xml:space="preserve">
+    <value>All</value>
+    <comment>Status filter option: show all apps</comment>
+  </data>
+  <data name="Apps_StatusInstalled" xml:space="preserve">
+    <value>Installed</value>
+    <comment>Status filter option: show installed apps only</comment>
+  </data>
+  <data name="Apps_StatusNotInstalled" xml:space="preserve">
+    <value>Not Installed</value>
+    <comment>Status filter option: show not installed apps only</comment>
+  </data>
+  <data name="Apps_StatusSelected" xml:space="preserve">
+    <value>Selected</value>
+    <comment>Status filter option: show selected apps only</comment>
+  </data>
+  <data name="Apps_ManualInstall" xml:space="preserve">
+    <value>Manual</value>
+    <comment>Badge for apps requiring manual installation</comment>
+  </data>
+  <data name="Apps_ManualInstallTooltip" xml:space="preserve">
+    <value>This application requires manual installation from the official website</value>
+    <comment>Tooltip for manual install badge</comment>
+  </data>
+  <data name="Apps_OpenWebsite" xml:space="preserve">
+    <value>Open Website</value>
+    <comment>Button to open official website</comment>
+  </data>
+  <data name="Apps_EmptyFilterResults" xml:space="preserve">
+    <value>No applications match your filters</value>
+    <comment>Title when filters produce no results</comment>
+  </data>
+  <data name="Apps_EmptyFilterResultsHint" xml:space="preserve">
+    <value>Try adjusting your search or filter criteria</value>
+    <comment>Hint text when filters produce no results</comment>
+  </data>
+  <data name="Apps_ColumnVisibility" xml:space="preserve">
+    <value>Columns</value>
+    <comment>Column visibility menu title</comment>
+  </data>
+  <data name="Apps_ResetColumns" xml:space="preserve">
+    <value>Reset to defaults</value>
+    <comment>Reset column visibility to default settings</comment>
+  </data>
+  <data name="Status_ManualRequired" xml:space="preserve">
+    <value>Manual installation required</value>
+    <comment>Status message for manual install apps</comment>
+  </data>
+  <!-- Context Menu -->
+  <data name="Menu_OpenHomepage" xml:space="preserve">
+    <value>Open Homepage</value>
+    <comment>Context menu: open publisher homepage</comment>
+  </data>
+  <data name="Menu_Install" xml:space="preserve">
+    <value>Install</value>
+    <comment>Context menu: install application</comment>
+  </data>
+  <data name="Menu_ViewLogs" xml:space="preserve">
+    <value>View Logs</value>
+    <comment>Context menu: view installation logs</comment>
+  </data>
+  <data name="Menu_ToggleSelection" xml:space="preserve">
+    <value>Toggle Selection</value>
+    <comment>Context menu: toggle selection state</comment>
+  </data>
+  <data name="Menu_CopyAppId" xml:space="preserve">
+    <value>Copy App ID</value>
+    <comment>Context menu: copy application ID to clipboard</comment>
+  </data>
+  <data name="Menu_CopyWingetId" xml:space="preserve">
+    <value>Copy Winget ID</value>
+    <comment>Context menu: copy winget package ID to clipboard</comment>
+  </data>
+  <data name="Menu_Uninstall" xml:space="preserve">
+    <value>Uninstall</value>
+    <comment>Context menu: uninstall application</comment>
+  </data>
+  <!-- Status Messages - Uninstall -->
+  <data name="Status_Uninstalling" xml:space="preserve">
+    <value>Uninstalling...</value>
+    <comment>Currently uninstalling status</comment>
+  </data>
+  <data name="Status_Uninstalled" xml:space="preserve">
+    <value>Uninstalled</value>
+    <comment>Successfully uninstalled status</comment>
+  </data>
+  <!-- Error Messages -->
+  <data name="Common_ErrorFallback" xml:space="preserve">
+    <value>Error</value>
+    <comment>Generic error fallback text</comment>
+  </data>
+  <!-- Log Viewer -->
+  <data name="LogViewer_Title" xml:space="preserve">
+    <value>Installation Log</value>
+    <comment>Log viewer dialog title</comment>
+  </data>
+  <data name="LogViewer_NoLogs" xml:space="preserve">
+    <value>No logs available</value>
+    <comment>Message when no logs are recorded</comment>
+  </data>
+  <data name="LogViewer_Close" xml:space="preserve">
+    <value>Close</value>
+    <comment>Close log viewer button</comment>
+  </data>
+  <data name="LogViewer_Copy" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+    <comment>Copy logs to clipboard button</comment>
+  </data>
+  <data name="Col_Logs" xml:space="preserve">
+    <value>Logs</value>
+    <comment>Logs column header</comment>
+  </data>
+  <data name="Btn_ViewLogs" xml:space="preserve">
+    <value>View</value>
+    <comment>View logs button tooltip</comment>
+  </data>
+  <!-- Prerequisites -->
+  <data name="Prerequisites_Title" xml:space="preserve">
+    <value>Prerequisites</value>
+    <comment>Prerequisites section title</comment>
+  </data>
+  <data name="Prerequisites_AllInstalled" xml:space="preserve">
+    <value>All prerequisites are installed</value>
+    <comment>All prerequisites installed message</comment>
+  </data>
+  <data name="Prerequisites_MissingCount" xml:space="preserve">
+    <value>{0} prerequisite(s) missing</value>
+    <comment>Missing prerequisites count</comment>
+  </data>
+  <data name="Prerequisites_Install" xml:space="preserve">
+    <value>Install Prerequisites</value>
+    <comment>Install prerequisites button</comment>
+  </data>
+  <data name="Prerequisites_Check" xml:space="preserve">
+    <value>Check Status</value>
+    <comment>Check prerequisites status button</comment>
+  </data>
+  <data name="Prerequisites_Starting" xml:space="preserve">
+    <value>Starting prerequisites installation...</value>
+    <comment>Prerequisites installation starting</comment>
+  </data>
+  <data name="Prerequisites_LoadingModules" xml:space="preserve">
+    <value>Loading modules...</value>
+    <comment>Loading PowerShell modules</comment>
+  </data>
+  <data name="Prerequisites_Installing" xml:space="preserve">
+    <value>Installing prerequisites...</value>
+    <comment>Installing prerequisites in progress</comment>
+  </data>
+  <data name="Prerequisites_Complete" xml:space="preserve">
+    <value>Prerequisites installation complete</value>
+    <comment>Prerequisites installation completed</comment>
+  </data>
+  <data name="Prerequisites_RestartRequired" xml:space="preserve">
+    <value>Some prerequisites require an application restart to be detected. The PATH environment variable has been updated but will only take effect after restarting.</value>
+    <comment>Message shown when restart is required after prerequisites installation</comment>
+  </data>
+  <data name="Prerequisites_RestartApp" xml:space="preserve">
+    <value>Restart Application</value>
+    <comment>Button text to restart the application</comment>
+  </data>
+  <data name="Prerequisites_DismissRestart" xml:space="preserve">
+    <value>Later</value>
+    <comment>Button text to dismiss restart prompt</comment>
+  </data>
+  <data name="Prerequisites_PowerShell7" xml:space="preserve">
+    <value>PowerShell 7</value>
+    <comment>PowerShell 7 label</comment>
+  </data>
+  <data name="Prerequisites_Winget" xml:space="preserve">
+    <value>Winget</value>
+    <comment>Winget label</comment>
+  </data>
+  <data name="Prerequisites_Chocolatey" xml:space="preserve">
+    <value>Chocolatey</value>
+    <comment>Chocolatey label</comment>
+  </data>
+  <data name="Prerequisites_DotNet" xml:space="preserve">
+    <value>.NET Runtime</value>
+    <comment>.NET Core runtime label</comment>
+  </data>
+  <data name="Prerequisites_DotNetFramework" xml:space="preserve">
+    <value>.NET Framework</value>
+    <comment>.NET Framework label</comment>
+  </data>
+  <data name="Prerequisites_VCRedist" xml:space="preserve">
+    <value>Visual C++ Redistributable</value>
+    <comment>VC++ redistributable label</comment>
+  </data>
+  <data name="Prerequisites_Java" xml:space="preserve">
+    <value>Java Runtime</value>
+    <comment>Java runtime label</comment>
+  </data>
+  <data name="Prerequisites_PageTitle" xml:space="preserve">
+    <value>System Prerequisites</value>
+    <comment>Prerequisites page title</comment>
+  </data>
+  <data name="Prerequisites_PageDescription" xml:space="preserve">
+    <value>WinForge requires the following components to be installed for full functionality.</value>
+    <comment>Prerequisites page description</comment>
+  </data>
+  <data name="Prerequisites_CategoryPackageManagers" xml:space="preserve">
+    <value>Package Managers</value>
+    <comment>Package managers category</comment>
+  </data>
+  <data name="Prerequisites_CategoryRuntimes" xml:space="preserve">
+    <value>Runtime Environments</value>
+    <comment>Runtime environments category</comment>
+  </data>
+  <data name="Prerequisites_Required" xml:space="preserve">
+    <value>Required</value>
+    <comment>Required prerequisite tag</comment>
+  </data>
+  <data name="Prerequisites_Optional" xml:space="preserve">
+    <value>Optional</value>
+    <comment>Optional prerequisite tag</comment>
+  </data>
+  <data name="Prerequisites_StatusSummary" xml:space="preserve">
+    <value>{0} of {1} components installed</value>
+    <comment>Prerequisites status summary</comment>
+  </data>
+  <data name="Prerequisites_ClearLog" xml:space="preserve">
+    <value>Clear Log</value>
+    <comment>Clear log button</comment>
+  </data>
+  <data name="Prerequisites_InstallAll" xml:space="preserve">
+    <value>Install / Reinstall</value>
+    <comment>Install or reinstall all prerequisites button</comment>
+  </data>
+  <data name="Prerequisites_ReinstallTooltip" xml:space="preserve">
+    <value>Install missing prerequisites or reinstall existing ones</value>
+    <comment>Tooltip for install/reinstall button</comment>
+  </data>
+  <data name="Prerequisites_ComponentsInstalled" xml:space="preserve">
+    <value>components installed</value>
+    <comment>Status summary suffix for installed components</comment>
+  </data>
+  <data name="Prerequisites_Missing" xml:space="preserve">
+    <value>missing</value>
+    <comment>Status suffix for missing components</comment>
+  </data>
+  <data name="Prerequisites_LogTitle" xml:space="preserve">
+    <value>Installation Log</value>
+    <comment>Installation log section title</comment>
+  </data>
+  <data name="About_AuthorName" xml:space="preserve">
+    <value>Julien Bombled</value>
+    <comment>Author name value</comment>
+  </data>
+  <data name="About_LicenseValue" xml:space="preserve">
+    <value>Apache License 2.0</value>
+    <comment>License name value</comment>
+  </data>
+  <data name="About_RepoUrl" xml:space="preserve">
+    <value>github.com/VBlackJack/WinForge</value>
+    <comment>Repository URL display text</comment>
+  </data>
+  <!-- Favorites -->
+  <data name="Apps_StatusFavorites" xml:space="preserve">
+    <value>Favorites</value>
+    <comment>Status filter option: show favorite apps only</comment>
+  </data>
+  <data name="Menu_ToggleFavorite" xml:space="preserve">
+    <value>Toggle Favorite</value>
+    <comment>Context menu: toggle favorite status</comment>
+  </data>
+  <data name="Apps_SelectFavorites" xml:space="preserve">
+    <value>Select Favorites</value>
+    <comment>Button to select all favorite apps</comment>
+  </data>
+  <data name="Apps_Favorites" xml:space="preserve">
+    <value>favorites</value>
+    <comment>Favorites count suffix</comment>
+  </data>
+  <!-- Batch Operations -->
+  <data name="Apps_UninstallSelected" xml:space="preserve">
+    <value>Uninstall Selected</value>
+    <comment>Button to uninstall selected apps</comment>
+  </data>
+  <data name="Btn_CancelBatch" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Cancel batch operation button</comment>
+  </data>
+  <data name="Progress_BatchProgress" xml:space="preserve">
+    <value>{0} of {1}</value>
+    <comment>Batch progress indicator (0=current, 1=total)</comment>
+  </data>
+  <!-- Export/Import -->
+  <data name="Btn_ExportSelection" xml:space="preserve">
+    <value>Export Selection</value>
+    <comment>Export selection to file button</comment>
+  </data>
+  <data name="Btn_ImportSelection" xml:space="preserve">
+    <value>Import Selection</value>
+    <comment>Import selection from file button</comment>
+  </data>
+  <data name="Btn_ExportFavorites" xml:space="preserve">
+    <value>Export Favorites</value>
+    <comment>Export favorites to file button</comment>
+  </data>
+  <data name="Btn_ImportFavorites" xml:space="preserve">
+    <value>Import Favorites</value>
+    <comment>Import favorites from file button</comment>
+  </data>
+  <!-- Summary Dialog -->
+  <data name="Summary_Title" xml:space="preserve">
+    <value>Operation Summary</value>
+    <comment>Summary dialog title</comment>
+  </data>
+  <data name="Summary_Success" xml:space="preserve">
+    <value>All operations completed successfully</value>
+    <comment>All operations succeeded message</comment>
+  </data>
+  <data name="Summary_PartialSuccess" xml:space="preserve">
+    <value>Some operations failed</value>
+    <comment>Partial success message</comment>
+  </data>
+  <data name="Summary_Failed" xml:space="preserve">
+    <value>All operations failed</value>
+    <comment>All operations failed message</comment>
+  </data>
+  <data name="Summary_Cancelled" xml:space="preserve">
+    <value>Operation was cancelled</value>
+    <comment>Operation cancelled message</comment>
+  </data>
+  <data name="Summary_Successful" xml:space="preserve">
+    <value>Successful:</value>
+    <comment>Successful operations count label</comment>
+  </data>
+  <data name="Summary_FailedCount" xml:space="preserve">
+    <value>Failed:</value>
+    <comment>Failed operations count label</comment>
+  </data>
+  <data name="Summary_SkippedCount" xml:space="preserve">
+    <value>Skipped:</value>
+    <comment>Skipped operations count label</comment>
+  </data>
+  <data name="Summary_Close" xml:space="preserve">
+    <value>Close</value>
+    <comment>Close summary dialog button</comment>
+  </data>
+  <!-- Statistics -->
+  <data name="Apps_Stats_Total" xml:space="preserve">
+    <value>Total:</value>
+    <comment>Total apps statistic label</comment>
+  </data>
+  <data name="Apps_Stats_Installed" xml:space="preserve">
+    <value>Installed:</value>
+    <comment>Installed apps statistic label</comment>
+  </data>
+  <data name="Apps_Stats_Selected" xml:space="preserve">
+    <value>Selected:</value>
+    <comment>Selected apps statistic label</comment>
+  </data>
+  <data name="Apps_Stats_Favorites" xml:space="preserve">
+    <value>Favorites:</value>
+    <comment>Favorites apps statistic label</comment>
+  </data>
+  <!-- Dialog System -->
+  <data name="Dialog_Error_Title" xml:space="preserve">
+    <value>Error</value>
+    <comment>Default error dialog title</comment>
+  </data>
+  <data name="Dialog_Error_Details" xml:space="preserve">
+    <value>Technical Details</value>
+    <comment>Error details expander header</comment>
+  </data>
+  <data name="Dialog_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Cancel button text</comment>
+  </data>
+  <data name="Dialog_Close" xml:space="preserve">
+    <value>Close</value>
+    <comment>Close button text</comment>
+  </data>
+  <data name="Dialog_CopyDetails" xml:space="preserve">
+    <value>Copy Details</value>
+    <comment>Button to copy error details to clipboard</comment>
+  </data>
+  <data name="Dialog_Copied" xml:space="preserve">
+    <value>Copied!</value>
+    <comment>Feedback after copying to clipboard</comment>
+  </data>
+  <!-- Keyboard Shortcuts Help -->
+  <data name="Help_KeyboardShortcuts" xml:space="preserve">
+    <value>Keyboard Shortcuts</value>
+    <comment>Keyboard shortcuts panel title</comment>
+  </data>
+  <data name="Help_Section_General" xml:space="preserve">
+    <value>General</value>
+    <comment>General shortcuts section</comment>
+  </data>
+  <data name="Help_Section_AppManager" xml:space="preserve">
+    <value>Applications</value>
+    <comment>Applications shortcuts section</comment>
+  </data>
+  <data name="Help_Section_Navigation" xml:space="preserve">
+    <value>Navigation</value>
+    <comment>Navigation shortcuts section</comment>
+  </data>
+  <data name="Help_Shortcut_Help" xml:space="preserve">
+    <value>Show keyboard shortcuts</value>
+    <comment>F1 shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_Refresh" xml:space="preserve">
+    <value>Refresh current view</value>
+    <comment>F5 shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_Settings" xml:space="preserve">
+    <value>Open settings</value>
+    <comment>Ctrl+, shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_SelectAll" xml:space="preserve">
+    <value>Select all applications</value>
+    <comment>Ctrl+A shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_ClearSelection" xml:space="preserve">
+    <value>Clear selection</value>
+    <comment>Escape shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_ToggleFavorite" xml:space="preserve">
+    <value>Toggle favorite</value>
+    <comment>F shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_Uninstall" xml:space="preserve">
+    <value>Uninstall selected</value>
+    <comment>Delete shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_Install" xml:space="preserve">
+    <value>Install selected</value>
+    <comment>Enter shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_ToggleSelect" xml:space="preserve">
+    <value>Toggle selection</value>
+    <comment>Space shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_Dashboard" xml:space="preserve">
+    <value>Go to Dashboard</value>
+    <comment>Ctrl+1 shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_Prerequisites" xml:space="preserve">
+    <value>Go to Prerequisites</value>
+    <comment>Ctrl+2 shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_Apps" xml:space="preserve">
+    <value>Go to Applications</value>
+    <comment>Ctrl+3 shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_Deployment" xml:space="preserve">
+    <value>Go to Deployment</value>
+    <comment>Ctrl+4 shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_ProfileEditor" xml:space="preserve">
+    <value>Go to Profile Editor</value>
+    <comment>Ctrl+5 shortcut description</comment>
+  </data>
+  <!-- DataGrid Navigation Section -->
+  <data name="Help_Section_DataGrid" xml:space="preserve">
+    <value>Data Grid Navigation</value>
+    <comment>DataGrid shortcuts section</comment>
+  </data>
+  <data name="Help_Shortcut_GridNavigate" xml:space="preserve">
+    <value>Navigate between rows and columns</value>
+    <comment>Arrow keys shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_GridPage" xml:space="preserve">
+    <value>Move one page up or down</value>
+    <comment>Page Up/Down shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_GridHomeEnd" xml:space="preserve">
+    <value>Jump to first or last row</value>
+    <comment>Home/End shortcut description</comment>
+  </data>
+  <data name="Help_Shortcut_GridSelect" xml:space="preserve">
+    <value>Select current row</value>
+    <comment>Enter shortcut in grid description</comment>
+  </data>
+  <data name="Help_Shortcut_GridSelectAll" xml:space="preserve">
+    <value>Select all rows</value>
+    <comment>Ctrl+A shortcut in grid description</comment>
+  </data>
+  <!-- Deployment Summary Counts -->
+  <data name="Deployment_Summary_Installed" xml:space="preserve">
+    <value> installed, </value>
+    <comment>Result summary suffix for installed count</comment>
+  </data>
+  <data name="Deployment_Summary_Failed" xml:space="preserve">
+    <value> failed, </value>
+    <comment>Result summary suffix for failed count</comment>
+  </data>
+  <data name="Deployment_Summary_Skipped" xml:space="preserve">
+    <value> skipped</value>
+    <comment>Result summary suffix for skipped count</comment>
+  </data>
+  <!-- Onboarding -->
+  <data name="Onboarding_Welcome" xml:space="preserve">
+    <value>Welcome to WinForge</value>
+    <comment>Onboarding welcome title</comment>
+  </data>
+  <data name="Onboarding_Subtitle" xml:space="preserve">
+    <value>Your Windows 11 application deployment toolkit</value>
+    <comment>Onboarding subtitle</comment>
+  </data>
+  <data name="Onboarding_Step1_Title" xml:space="preserve">
+    <value>Check Prerequisites</value>
+    <comment>Onboarding step 1 title</comment>
+  </data>
+  <data name="Onboarding_Step1_Desc" xml:space="preserve">
+    <value>Start by ensuring all required components are installed (Winget, Chocolatey, etc.)</value>
+    <comment>Onboarding step 1 description</comment>
+  </data>
+  <data name="Onboarding_Step2_Title" xml:space="preserve">
+    <value>Browse Applications</value>
+    <comment>Onboarding step 2 title</comment>
+  </data>
+  <data name="Onboarding_Step2_Desc" xml:space="preserve">
+    <value>Explore 100+ applications, mark favorites, and select what you need</value>
+    <comment>Onboarding step 2 description</comment>
+  </data>
+  <data name="Onboarding_Step3_Title" xml:space="preserve">
+    <value>Deploy with Profiles</value>
+    <comment>Onboarding step 3 title</comment>
+  </data>
+  <data name="Onboarding_Step3_Desc" xml:space="preserve">
+    <value>Use deployment profiles for batch installations or install apps individually</value>
+    <comment>Onboarding step 3 description</comment>
+  </data>
+  <data name="Onboarding_Tip" xml:space="preserve">
+    <value>Press</value>
+    <comment>Onboarding tip prefix</comment>
+  </data>
+  <data name="Onboarding_Tip_Shortcuts" xml:space="preserve">
+    <value>anytime to view keyboard shortcuts</value>
+    <comment>Onboarding tip suffix</comment>
+  </data>
+  <data name="Onboarding_DontShowAgain" xml:space="preserve">
+    <value>Don't show this again</value>
+    <comment>Don't show again checkbox</comment>
+  </data>
+  <data name="Onboarding_GetStarted" xml:space="preserve">
+    <value>Get Started</value>
+    <comment>Get started button</comment>
+  </data>
+  <!-- Progress Time Estimates -->
+  <data name="Progress_TimeRemaining" xml:space="preserve">
+    <value>Estimated time remaining: {0}</value>
+    <comment>Time remaining estimate (0=time string)</comment>
+  </data>
+  <data name="Progress_TimeMinutes" xml:space="preserve">
+    <value>{0} min</value>
+    <comment>Minutes format (0=number)</comment>
+  </data>
+  <data name="Progress_TimeSeconds" xml:space="preserve">
+    <value>{0} sec</value>
+    <comment>Seconds format (0=number)</comment>
+  </data>
+  <data name="Progress_Calculating" xml:space="preserve">
+    <value>Calculating...</value>
+    <comment>Calculating time estimate</comment>
+  </data>
+  <!-- Toast Notifications -->
+  <data name="Toast_InstallComplete" xml:space="preserve">
+    <value>Installation complete</value>
+    <comment>Installation complete toast</comment>
+  </data>
+  <data name="Toast_ScanComplete" xml:space="preserve">
+    <value>Scan complete: {0} installed</value>
+    <comment>Scan complete toast (0=count)</comment>
+  </data>
+  <data name="Toast_ProfileSaved" xml:space="preserve">
+    <value>Profile saved successfully</value>
+    <comment>Profile saved toast</comment>
+  </data>
+  <data name="Toast_ExportComplete" xml:space="preserve">
+    <value>Export complete</value>
+    <comment>Export complete toast</comment>
+  </data>
+  <data name="Toast_ImportComplete" xml:space="preserve">
+    <value>Import complete: {0} items</value>
+    <comment>Import complete toast (0=count)</comment>
+  </data>
+  <data name="Toast_ViewDetails" xml:space="preserve">
+    <value>View Details</value>
+    <comment>View details action on toast</comment>
+  </data>
+  <!-- Form Validation -->
+  <data name="Validation_InvalidChars" xml:space="preserve">
+    <value>Contains invalid characters</value>
+    <comment>Invalid characters validation message</comment>
+  </data>
+  <data name="Validation_TooLong" xml:space="preserve">
+    <value>Maximum {0} characters allowed</value>
+    <comment>Too long validation message (0=max length)</comment>
+  </data>
+  <data name="Validation_AlreadyExists" xml:space="preserve">
+    <value>A profile with this name already exists</value>
+    <comment>Duplicate name validation message</comment>
+  </data>
+  <data name="Validation_ProfileNameRequired" xml:space="preserve">
+    <value>Profile name is required</value>
+    <comment>Profile name required validation message</comment>
+  </data>
+  <data name="Validation_ProfileNameInvalidChars" xml:space="preserve">
+    <value>Profile name contains invalid characters</value>
+    <comment>Profile name invalid characters validation message</comment>
+  </data>
+  <data name="Validation_ProfileNameTooLong" xml:space="preserve">
+    <value>Profile name must not exceed {0} characters</value>
+    <comment>Profile name too long validation message (0=max length)</comment>
+  </data>
+  <data name="Validation_ManualInstallCannotBeSuccess" xml:space="preserve">
+    <value>Manual install required cannot be marked as success</value>
+    <comment>Validation error for InstallResult semantic consistency</comment>
+  </data>
+  <data name="Validation_DryRunShouldSucceed" xml:space="preserve">
+    <value>Dry run results should always be successful</value>
+    <comment>Validation error for InstallResult dry run consistency</comment>
+  </data>
+  <data name="Validation_FailedInstallNeedsMessage" xml:space="preserve">
+    <value>Failed installation must include an error message</value>
+    <comment>Validation error for InstallResult message requirement</comment>
+  </data>
+  <!-- ApplicationModel Validation -->
+  <data name="Validation_AppId_Required" xml:space="preserve">
+    <value>Application ID is required</value>
+    <comment>Application ID required validation</comment>
+  </data>
+  <data name="Validation_AppId_Length" xml:space="preserve">
+    <value>Application ID must be between 1 and 256 characters</value>
+    <comment>Application ID length validation</comment>
+  </data>
+  <data name="Validation_AppName_Required" xml:space="preserve">
+    <value>Application name is required</value>
+    <comment>Application name required validation</comment>
+  </data>
+  <data name="Validation_AppName_Length" xml:space="preserve">
+    <value>Application name must be between 1 and 512 characters</value>
+    <comment>Application name length validation</comment>
+  </data>
+  <data name="Validation_StringTooLong" xml:space="preserve">
+    <value>{0} must not exceed {1} characters</value>
+    <comment>Generic string too long validation (0=field, 1=max)</comment>
+  </data>
+  <data name="Validation_RangeError" xml:space="preserve">
+    <value>{0} must be between {1} and {2}</value>
+    <comment>Generic range validation (0=field, 1=min, 2=max)</comment>
+  </data>
+  <data name="Validation_InvalidUrl" xml:space="preserve">
+    <value>URL must be a valid HTTP or HTTPS URL</value>
+    <comment>Invalid URL validation</comment>
+  </data>
+  <data name="Error_ProfileNotFound" xml:space="preserve">
+    <value>Profile not found</value>
+    <comment>Profile not found error message</comment>
+  </data>
+  <!-- Help System -->
+  <data name="Help_Tooltip_Scan" xml:space="preserve">
+    <value>Check which applications are installed and detect available updates</value>
+    <comment>Scan button tooltip</comment>
+  </data>
+  <data name="Help_Tooltip_Install" xml:space="preserve">
+    <value>Install the selected applications using Winget or Chocolatey</value>
+    <comment>Install button tooltip</comment>
+  </data>
+  <data name="Help_Tooltip_Deploy" xml:space="preserve">
+    <value>Start installing all applications from the selected profile</value>
+    <comment>Deploy button tooltip</comment>
+  </data>
+  <data name="Help_Tooltip_DryRun" xml:space="preserve">
+    <value>Simulation mode: Preview what would be installed without making changes</value>
+    <comment>Dry run toggle tooltip</comment>
+  </data>
+  <!-- Contextual Help -->
+  <data name="Help_SelectProfile" xml:space="preserve">
+    <value>Choose a deployment profile that defines which applications to install. Profiles can inherit from other profiles.</value>
+    <comment>Profile selection help tooltip</comment>
+  </data>
+  <data name="Help_DryRun" xml:space="preserve">
+    <value>When enabled, the deployment will show what would happen without actually installing anything. Useful for testing profiles.</value>
+    <comment>Dry run help tooltip</comment>
+  </data>
+  <data name="Help_Performance" xml:space="preserve">
+    <value>Adjust parallel operations for optimal performance based on your system resources. Higher values may speed up scans but use more CPU.</value>
+    <comment>Performance settings help tooltip</comment>
+  </data>
+  <!-- Confirmation Dialogs -->
+  <data name="Confirm_ClearHistory_Title" xml:space="preserve">
+    <value>Clear History</value>
+    <comment>Clear history confirmation title</comment>
+  </data>
+  <data name="Confirm_ClearHistory_Message" xml:space="preserve">
+    <value>Are you sure you want to clear all deployment history? This action cannot be undone.</value>
+    <comment>Clear history confirmation message</comment>
+  </data>
+  <data name="Confirm_ClearHistory_Btn" xml:space="preserve">
+    <value>Clear history</value>
+    <comment>Clear history confirmation button</comment>
+  </data>
+  <data name="Confirm_Uninstall_Title_Single" xml:space="preserve">
+    <value>Uninstall application</value>
+    <comment>Uninstall single application confirmation title</comment>
+  </data>
+  <data name="Confirm_Uninstall_Title_Multiple" xml:space="preserve">
+    <value>Uninstall {0} applications</value>
+    <comment>Uninstall multiple applications confirmation title (0=count)</comment>
+  </data>
+  <data name="Confirm_Uninstall_Message_Single" xml:space="preserve">
+    <value>Are you sure you want to uninstall this application? This action cannot be undone.</value>
+    <comment>Uninstall single application confirmation message</comment>
+  </data>
+  <data name="Confirm_Uninstall_Message_Multiple" xml:space="preserve">
+    <value>Are you sure you want to uninstall {0} applications? This action cannot be undone.</value>
+    <comment>Uninstall multiple applications confirmation message (0=count)</comment>
+  </data>
+  <data name="Confirm_Uninstall_Btn" xml:space="preserve">
+    <value>Uninstall</value>
+    <comment>Uninstall confirmation button</comment>
+  </data>
+  <data name="Confirm_Delete_Btn" xml:space="preserve">
+    <value>Delete</value>
+    <comment>Delete confirmation button</comment>
+  </data>
+  <data name="Confirm_Reset_Btn" xml:space="preserve">
+    <value>Reset</value>
+    <comment>Reset confirmation button</comment>
+  </data>
+  <data name="Confirm_ClearOldLogs_Btn" xml:space="preserve">
+    <value>Clear logs</value>
+    <comment>Clear old logs confirmation button</comment>
+  </data>
+  <data name="Confirm_DeleteProfile_Title" xml:space="preserve">
+    <value>Delete Profile</value>
+    <comment>Delete profile confirmation title</comment>
+  </data>
+  <data name="Confirm_DeleteProfile_Message" xml:space="preserve">
+    <value>Are you sure you want to delete this profile? This action cannot be undone.</value>
+    <comment>Delete profile confirmation message</comment>
+  </data>
+  <!-- Profile Export/Import -->
+  <data name="Editor_Btn_Export" xml:space="preserve">
+    <value>Export Profile</value>
+    <comment>Export profile button</comment>
+  </data>
+  <data name="Editor_Btn_Import" xml:space="preserve">
+    <value>Import Profile</value>
+    <comment>Import profile button</comment>
+  </data>
+  <data name="Export_FileFilter" xml:space="preserve">
+    <value>WinForge Profile (*.w11fp)|*.w11fp|JSON Files (*.json)|*.json</value>
+    <comment>File filter for profile export dialog</comment>
+  </data>
+  <data name="Import_FileFilter" xml:space="preserve">
+    <value>WinForge Profile (*.w11fp;*.json)|*.w11fp;*.json</value>
+    <comment>File filter for profile import dialog</comment>
+  </data>
+  <data name="Export_Success" xml:space="preserve">
+    <value>Profile exported successfully</value>
+    <comment>Success message after profile export</comment>
+  </data>
+  <data name="Import_Success" xml:space="preserve">
+    <value>Profile imported successfully</value>
+    <comment>Success message after profile import</comment>
+  </data>
+  <data name="Import_Error_Invalid" xml:space="preserve">
+    <value>Invalid profile file format</value>
+    <comment>Error when profile file is invalid</comment>
+  </data>
+  <data name="Import_Error_Validation" xml:space="preserve">
+    <value>Profile validation failed: {0}</value>
+    <comment>Error when profile validation fails (0=error message)</comment>
+  </data>
+  <!-- Application Updates -->
+  <data name="Btn_ScanUpdates" xml:space="preserve">
+    <value>Refresh Updates</value>
+    <comment>Button to re-check for available updates on installed apps</comment>
+  </data>
+  <data name="Btn_Update" xml:space="preserve">
+    <value>Update</value>
+    <comment>Button to update single application</comment>
+  </data>
+  <data name="Btn_UpdateSelected" xml:space="preserve">
+    <value>Update Selected</value>
+    <comment>Button to update selected applications</comment>
+  </data>
+  <data name="Menu_Update" xml:space="preserve">
+    <value>Update</value>
+    <comment>Context menu item to update application</comment>
+  </data>
+  <data name="Menu_Launch" xml:space="preserve">
+    <value>Launch</value>
+    <comment>Context menu item to launch application</comment>
+  </data>
+  <data name="Menu_Scan" xml:space="preserve">
+    <value>Scan</value>
+    <comment>Context menu item to scan single application</comment>
+  </data>
+  <data name="Menu_ScanSelected" xml:space="preserve">
+    <value>Scan Selected</value>
+    <comment>Context menu item to scan only selected applications</comment>
+  </data>
+  <data name="Error_LaunchFailed" xml:space="preserve">
+    <value>Could not launch {0}. The application may not be installed or the executable was not found.</value>
+    <comment>Error when application launch fails (0=app name)</comment>
+  </data>
+  <data name="Status_UpdateAvailable" xml:space="preserve">
+    <value>Update Available</value>
+    <comment>Status when update is available</comment>
+  </data>
+  <data name="Status_Updating" xml:space="preserve">
+    <value>Updating...</value>
+    <comment>Status while updating</comment>
+  </data>
+  <data name="Apps_StatusHasUpdates" xml:space="preserve">
+    <value>Has Updates</value>
+    <comment>Status filter for apps with updates</comment>
+  </data>
+  <data name="Col_AvailableVersion" xml:space="preserve">
+    <value>New Version</value>
+    <comment>Column header for available version</comment>
+  </data>
+  <data name="Col_Version" xml:space="preserve">
+    <value>Version</value>
+    <comment>Column header for current version</comment>
+  </data>
+  <data name="Toast_UpdatesFound" xml:space="preserve">
+    <value>{0} update(s) available</value>
+    <comment>Toast message when updates found (0=count)</comment>
+  </data>
+  <data name="Apps_NoUpdates" xml:space="preserve">
+    <value>All applications are up to date</value>
+    <comment>Message when no updates are available</comment>
+  </data>
+  <!-- UX Improvements - Error Recovery -->
+  <data name="Recovery_CheckInternet" xml:space="preserve">
+    <value>Check your internet connection and try again</value>
+    <comment>Recovery suggestion for network errors</comment>
+  </data>
+  <data name="Recovery_CheckFirewall" xml:space="preserve">
+    <value>Ensure firewall or antivirus is not blocking the connection</value>
+    <comment>Recovery suggestion for firewall issues</comment>
+  </data>
+  <data name="Recovery_TryAgainLater" xml:space="preserve">
+    <value>The server may be temporarily unavailable - try again later</value>
+    <comment>Recovery suggestion for server issues</comment>
+  </data>
+  <data name="Recovery_RunAsAdmin" xml:space="preserve">
+    <value>Run WinForge as Administrator</value>
+    <comment>Recovery suggestion for permission errors</comment>
+  </data>
+  <data name="Recovery_CheckPermissions" xml:space="preserve">
+    <value>Check that you have permission to access the required files or folders</value>
+    <comment>Recovery suggestion for access denied errors</comment>
+  </data>
+  <data name="Recovery_CheckPath" xml:space="preserve">
+    <value>Verify the file or folder path exists</value>
+    <comment>Recovery suggestion for path errors</comment>
+  </data>
+  <data name="Recovery_ReinstallApp" xml:space="preserve">
+    <value>Try reinstalling the application</value>
+    <comment>Recovery suggestion for corrupted installations</comment>
+  </data>
+  <data name="Recovery_CheckPrerequisites" xml:space="preserve">
+    <value>Make sure all prerequisites are installed (Winget, Chocolatey, PowerShell 7)</value>
+    <comment>Recovery suggestion for missing prerequisites</comment>
+  </data>
+  <data name="Recovery_RetryInstall" xml:space="preserve">
+    <value>Try installing the application again</value>
+    <comment>Recovery suggestion to retry installation</comment>
+  </data>
+  <data name="Recovery_ManualInstall" xml:space="preserve">
+    <value>Consider installing the application manually from its official website</value>
+    <comment>Recovery suggestion for manual installation</comment>
+  </data>
+  <data name="Recovery_CheckPowerShell" xml:space="preserve">
+    <value>Check your PowerShell execution policy (Set-ExecutionPolicy RemoteSigned)</value>
+    <comment>Recovery suggestion for PowerShell policy issues</comment>
+  </data>
+  <data name="Recovery_UpdatePowerShell" xml:space="preserve">
+    <value>Update PowerShell to the latest version</value>
+    <comment>Recovery suggestion for PowerShell update</comment>
+  </data>
+  <data name="Recovery_Generic_Retry" xml:space="preserve">
+    <value>Try the operation again</value>
+    <comment>Generic recovery suggestion to retry</comment>
+  </data>
+  <data name="Recovery_Generic_Restart" xml:space="preserve">
+    <value>Restart WinForge and try again</value>
+    <comment>Generic recovery suggestion to restart</comment>
+  </data>
+  <data name="Recovery_Generic_CheckLogs" xml:space="preserve">
+    <value>Check the logs folder for more details</value>
+    <comment>Generic recovery suggestion to check logs</comment>
+  </data>
+  <!-- UX Improvements - Error Dialog -->
+  <data name="Dialog_Error_TryThis" xml:space="preserve">
+    <value>Try this:</value>
+    <comment>Header for recovery suggestions section</comment>
+  </data>
+  <data name="Dialog_ReportIssue" xml:space="preserve">
+    <value>Report Issue</value>
+    <comment>Button to report issue on GitHub</comment>
+  </data>
+  <!-- UX Improvements - Deployment Time -->
+  <data name="Deploy_TimeElapsed" xml:space="preserve">
+    <value>Time elapsed</value>
+    <comment>Tooltip for elapsed time display</comment>
+  </data>
+  <data name="Deploy_TimeRemaining" xml:space="preserve">
+    <value>Estimated time remaining</value>
+    <comment>Tooltip for time remaining display</comment>
+  </data>
+  <!-- UX Improvements - Settings Export/Import -->
+  <data name="Settings_ExportImport" xml:space="preserve">
+    <value>Export/Import Settings</value>
+    <comment>Settings export/import section title</comment>
+  </data>
+  <data name="Settings_ExportImport_Desc" xml:space="preserve">
+    <value>Save or load your settings configuration</value>
+    <comment>Settings export/import description</comment>
+  </data>
+  <data name="Settings_Export" xml:space="preserve">
+    <value>Export</value>
+    <comment>Export settings button</comment>
+  </data>
+  <data name="Settings_Import" xml:space="preserve">
+    <value>Import</value>
+    <comment>Import settings button</comment>
+  </data>
+  <data name="Settings_ExportSuccess" xml:space="preserve">
+    <value>Settings exported successfully</value>
+    <comment>Success message after settings export</comment>
+  </data>
+  <data name="Settings_ExportFailed" xml:space="preserve">
+    <value>Failed to export settings</value>
+    <comment>Error message for settings export failure</comment>
+  </data>
+  <data name="Settings_ImportSuccess" xml:space="preserve">
+    <value>Settings imported successfully - restart required</value>
+    <comment>Success message after settings import</comment>
+  </data>
+  <data name="Settings_ImportFailed" xml:space="preserve">
+    <value>Failed to import settings</value>
+    <comment>Error message for settings import failure</comment>
+  </data>
+  <data name="Settings_ResetDefaults" xml:space="preserve">
+    <value>Reset to Defaults</value>
+    <comment>Reset settings title</comment>
+  </data>
+  <data name="Settings_ResetDefaults_Desc" xml:space="preserve">
+    <value>Reset all settings to their default values</value>
+    <comment>Reset settings description</comment>
+  </data>
+  <data name="Settings_ResetBtn" xml:space="preserve">
+    <value>Reset</value>
+    <comment>Reset button text</comment>
+  </data>
+  <data name="Settings_ResetSuccess" xml:space="preserve">
+    <value>Settings reset to defaults</value>
+    <comment>Success message after settings reset</comment>
+  </data>
+  <data name="Settings_ResetFailed" xml:space="preserve">
+    <value>Failed to reset settings</value>
+    <comment>Error message for settings reset failure</comment>
+  </data>
+  <!-- UX Improvements - Confirmation Dialogs -->
+  <data name="Confirm_ResetSettings_Title" xml:space="preserve">
+    <value>Reset Settings</value>
+    <comment>Reset settings confirmation title</comment>
+  </data>
+  <data name="Confirm_ResetSettings_Message" xml:space="preserve">
+    <value>Are you sure you want to reset all settings to their default values? This action cannot be undone.</value>
+    <comment>Reset settings confirmation message</comment>
+  </data>
+  <!-- Logs View -->
+  <data name="Logs_Title" xml:space="preserve">
+    <value>Logs</value>
+    <comment>Logs page title</comment>
+  </data>
+  <data name="Logs_Subtitle" xml:space="preserve">
+    <value>View and manage application logs</value>
+    <comment>Logs page subtitle</comment>
+  </data>
+  <data name="Logs_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>Refresh logs button</comment>
+  </data>
+  <data name="Logs_OpenFolder" xml:space="preserve">
+    <value>Open Folder</value>
+    <comment>Open logs folder button</comment>
+  </data>
+  <data name="Logs_Export" xml:space="preserve">
+    <value>Export</value>
+    <comment>Export logs button</comment>
+  </data>
+  <data name="Logs_SearchPlaceholder" xml:space="preserve">
+    <value>Search logs...</value>
+    <comment>Search logs placeholder</comment>
+  </data>
+  <data name="Logs_Level" xml:space="preserve">
+    <value>Log Type</value>
+    <comment>Log level filter label</comment>
+  </data>
+  <data name="Logs_Date" xml:space="preserve">
+    <value>Date</value>
+    <comment>Date filter label</comment>
+  </data>
+  <data name="Logs_ClearFilters" xml:space="preserve">
+    <value>Clear Filters</value>
+    <comment>Clear filters button tooltip</comment>
+  </data>
+  <data name="Logs_ClearOld" xml:space="preserve">
+    <value>Clear Old Logs</value>
+    <comment>Clear old logs button tooltip</comment>
+  </data>
+  <data name="Logs_Files" xml:space="preserve">
+    <value>Log Files</value>
+    <comment>Log files section header</comment>
+  </data>
+  <data name="Logs_FilesCount" xml:space="preserve">
+    <value>files</value>
+    <comment>Files count suffix</comment>
+  </data>
+  <data name="Logs_FileName" xml:space="preserve">
+    <value>File Name</value>
+    <comment>File name column header</comment>
+  </data>
+  <data name="Logs_Size" xml:space="preserve">
+    <value>Size</value>
+    <comment>Size column header</comment>
+  </data>
+  <data name="Logs_View" xml:space="preserve">
+    <value>View Log</value>
+    <comment>View log button tooltip</comment>
+  </data>
+  <data name="Logs_CopyPath" xml:space="preserve">
+    <value>Copy Path</value>
+    <comment>Copy path button tooltip</comment>
+  </data>
+  <data name="Logs_Delete" xml:space="preserve">
+    <value>Delete Log</value>
+    <comment>Delete log button tooltip</comment>
+  </data>
+  <data name="Logs_NoLogs" xml:space="preserve">
+    <value>No log files found</value>
+    <comment>Empty state title</comment>
+  </data>
+  <data name="Logs_NoLogs_Hint" xml:space="preserve">
+    <value>Log files will appear here after deployments</value>
+    <comment>Empty state hint</comment>
+  </data>
+  <data name="Logs_TotalSize" xml:space="preserve">
+    <value>Total size:</value>
+    <comment>Total size label</comment>
+  </data>
+  <data name="Logs_Loading" xml:space="preserve">
+    <value>Loading logs...</value>
+    <comment>Loading logs message</comment>
+  </data>
+  <data name="Logs_Filter_All" xml:space="preserve">
+    <value>All</value>
+    <comment>All log types filter option</comment>
+  </data>
+  <data name="Logs_Filter_Text" xml:space="preserve">
+    <value>Text</value>
+    <comment>Text log type filter option</comment>
+  </data>
+  <data name="Logs_Filter_Json" xml:space="preserve">
+    <value>JSON</value>
+    <comment>JSON log type filter option</comment>
+  </data>
+  <data name="Logs_Filter_Error" xml:space="preserve">
+    <value>Error</value>
+    <comment>Error log type filter option</comment>
+  </data>
+  <data name="Logs_Status_FilesFound" xml:space="preserve">
+    <value>{0} log files found</value>
+    <comment>Status message after loading log files</comment>
+  </data>
+  <data name="Logs_Error_LoadFailed" xml:space="preserve">
+    <value>Error loading logs: {0}</value>
+    <comment>Status message when loading log files fails</comment>
+  </data>
+  <data name="Logs_Error_OpenFolderFailed" xml:space="preserve">
+    <value>Error opening folder: {0}</value>
+    <comment>Status message when opening the logs folder fails</comment>
+  </data>
+  <data name="Logs_Export_Filter" xml:space="preserve">
+    <value>ZIP Archive (*.zip)|*.zip</value>
+    <comment>File dialog filter for exporting logs</comment>
+  </data>
+  <data name="Logs_Export_None" xml:space="preserve">
+    <value>No log files could be exported</value>
+    <comment>Status message when no log files were copied into the export archive</comment>
+  </data>
+  <data name="Logs_Export_Success" xml:space="preserve">
+    <value>Logs exported to {0} ({1} files)</value>
+    <comment>Status message after exporting logs; {0}=file name, {1}=count</comment>
+  </data>
+  <data name="Logs_Export_Failed" xml:space="preserve">
+    <value>Export failed: {0}</value>
+    <comment>Status message when exporting logs fails</comment>
+  </data>
+  <data name="Logs_ClearOld_Success" xml:space="preserve">
+    <value>Deleted {0} old log files</value>
+    <comment>Status message after deleting old log files</comment>
+  </data>
+  <data name="Logs_ClearOld_Failed" xml:space="preserve">
+    <value>Error clearing logs: {0}</value>
+    <comment>Status message when deleting old log files fails</comment>
+  </data>
+  <data name="Logs_Error_EmptyPath" xml:space="preserve">
+    <value>Log file path is empty</value>
+    <comment>Status message when a selected log file has no path</comment>
+  </data>
+  <data name="Logs_Error_NotFound" xml:space="preserve">
+    <value>Log file not found: {0}</value>
+    <comment>Status message when a selected log file no longer exists</comment>
+  </data>
+  <data name="Logs_Error_OpenLogFailed" xml:space="preserve">
+    <value>Error opening log: {0}</value>
+    <comment>Status message when opening a log file fails</comment>
+  </data>
+  <data name="Logs_Status_PathCopied" xml:space="preserve">
+    <value>Path copied to clipboard</value>
+    <comment>Status message after copying a log path</comment>
+  </data>
+  <data name="Logs_Delete_Success" xml:space="preserve">
+    <value>Deleted {0}</value>
+    <comment>Status message after deleting a log file</comment>
+  </data>
+  <data name="Logs_Delete_Failed" xml:space="preserve">
+    <value>Error deleting log: {0}</value>
+    <comment>Status message when deleting a log file fails</comment>
+  </data>
+  <data name="Confirm_DeleteLog_Title" xml:space="preserve">
+    <value>Delete Log File</value>
+    <comment>Delete log confirmation title</comment>
+  </data>
+  <data name="Confirm_DeleteLog_Message" xml:space="preserve">
+    <value>Delete {0}?</value>
+    <comment>Delete log confirmation message; {0}=file name</comment>
+  </data>
+  <data name="Confirm_ClearOldLogs_Title" xml:space="preserve">
+    <value>Clear Old Logs</value>
+    <comment>Clear old logs confirmation title</comment>
+  </data>
+  <data name="Confirm_ClearOldLogs_Message" xml:space="preserve">
+    <value>Delete log files older than 7 days? This action cannot be undone.</value>
+    <comment>Clear old logs confirmation message</comment>
+  </data>
+  <!-- Error Recovery Suggestions -->
+  <!-- Navigation -->
+  <data name="Nav_Back" xml:space="preserve">
+    <value>Back</value>
+    <comment>Back navigation button tooltip</comment>
+  </data>
+  <!-- Settings Tabs -->
+  <data name="Settings_Tab_Appearance" xml:space="preserve">
+    <value>Appearance</value>
+    <comment>Settings appearance tab</comment>
+  </data>
+  <data name="Settings_Tab_Performance" xml:space="preserve">
+    <value>Performance</value>
+    <comment>Settings performance tab</comment>
+  </data>
+  <data name="Settings_Tab_Data" xml:space="preserve">
+    <value>Data</value>
+    <comment>Settings data tab</comment>
+  </data>
+  <data name="Settings_Tab_About" xml:space="preserve">
+    <value>About</value>
+    <comment>Settings about tab</comment>
+  </data>
+  <!-- Accessibility -->
+  <data name="Settings_ReducedMotion" xml:space="preserve">
+    <value>Reduce Motion</value>
+    <comment>Reduce motion setting label</comment>
+  </data>
+  <data name="Settings_ReducedMotion_Desc" xml:space="preserve">
+    <value>Minimize animations for accessibility</value>
+    <comment>Reduce motion setting description</comment>
+  </data>
+  <data name="Settings_HighContrast" xml:space="preserve">
+    <value>High Contrast</value>
+    <comment>High contrast setting label</comment>
+  </data>
+  <data name="Settings_HighContrast_Desc" xml:space="preserve">
+    <value>Increase contrast for improved readability</value>
+    <comment>High contrast setting description</comment>
+  </data>
+  <data name="Settings_TimePlaceholder" xml:space="preserve">
+    <value>HH:mm</value>
+    <comment>Time input placeholder for scheduled deployment</comment>
+  </data>
+  <!-- Profile Selection -->
+  <data name="Apps_ProfileLabel" xml:space="preserve">
+    <value>Profile</value>
+    <comment>Profile selector label</comment>
+  </data>
+  <data name="Apps_SelectProfile" xml:space="preserve">
+    <value>Select a profile...</value>
+    <comment>Profile selector placeholder</comment>
+  </data>
+  <data name="Apps_CustomProfile" xml:space="preserve">
+    <value>Custom</value>
+    <comment>Profile selector entry for manual selection with no applied profile</comment>
+  </data>
+  <data name="Apps_ClearProfile" xml:space="preserve">
+    <value>Clear profile</value>
+    <comment>Clear profile button tooltip</comment>
+  </data>
+  <data name="Apps_UpdateProfile" xml:space="preserve">
+    <value>Update profile</value>
+    <comment>Button label for saving the current selection back to the selected profile</comment>
+  </data>
+  <data name="Apps_UpdateProfileTooltip" xml:space="preserve">
+    <value>Save the current checked applications back to the selected profile.</value>
+    <comment>Tooltip for updating the selected profile with the current application selection</comment>
+  </data>
+  <data name="Apps_AppsSelected" xml:space="preserve">
+    <value>applications selected</value>
+    <comment>Applications selected count suffix</comment>
+  </data>
+  <data name="Apps_ProfileHelpTooltip" xml:space="preserve">
+    <value>Select a profile to automatically select its applications. You can then modify the selection manually before installing.</value>
+    <comment>Help tooltip explaining profile selection workflow</comment>
+  </data>
+  <data name="Apps_SelectionHelpTooltip" xml:space="preserve">
+    <value>Check the boxes to select applications for installation. Use filters to find specific applications.</value>
+    <comment>Help tooltip explaining application selection</comment>
+  </data>
+  <data name="Apps_NoProfilesAvailable" xml:space="preserve">
+    <value>No profiles available</value>
+    <comment>Message when no deployment profiles exist</comment>
+  </data>
+  <data name="Apps_NoProfilesHint" xml:space="preserve">
+    <value>Select applications manually or create a profile by selecting apps and clicking Save Profile.</value>
+    <comment>Hint text when no profiles exist</comment>
+  </data>
+  <!-- Save Profile Dialog -->
+  <data name="Apps_SaveProfile" xml:space="preserve">
+    <value>Save Profile</value>
+    <comment>Save profile button tooltip</comment>
+  </data>
+  <data name="Dialog_SaveProfile_Title" xml:space="preserve">
+    <value>Save Profile</value>
+    <comment>Save profile dialog title</comment>
+  </data>
+  <data name="Dialog_SaveProfile_AppsSelected" xml:space="preserve">
+    <value>applications selected</value>
+    <comment>Number of apps selected in save dialog</comment>
+  </data>
+  <data name="Dialog_SaveProfile_Overwrite" xml:space="preserve">
+    <value>Update existing profile:</value>
+    <comment>Option to overwrite existing profile</comment>
+  </data>
+  <data name="Dialog_SaveProfile_CreateNew" xml:space="preserve">
+    <value>Create new profile</value>
+    <comment>Option to create a new profile</comment>
+  </data>
+  <data name="Dialog_SaveProfile_Success" xml:space="preserve">
+    <value>Profile saved successfully</value>
+    <comment>Success message after saving profile</comment>
+  </data>
+  <data name="Dialog_SaveProfile_Error" xml:space="preserve">
+    <value>Failed to save profile: {0}</value>
+    <comment>Error message when save fails</comment>
+  </data>
+  <data name="Dialog_SaveProfile_NoApps" xml:space="preserve">
+    <value>Please select at least one application</value>
+    <comment>Error when no apps selected</comment>
+  </data>
+  <data name="Profile_Apply_Title" xml:space="preserve">
+    <value>Apply profile?</value>
+    <comment>Title for profile apply conflict dialog</comment>
+  </data>
+  <data name="Profile_Apply_Message_HasManualSelection" xml:space="preserve">
+    <value>You have {0} manually selected applications. Replace them with the "{1}" profile or merge?</value>
+    <comment>Message for profile apply conflict dialog. {0} = count of manually selected apps. {1} = name of the profile being applied.</comment>
+  </data>
+  <data name="Profile_Apply_Replace" xml:space="preserve">
+    <value>Replace selection</value>
+    <comment>Replace current manual selection with the selected profile</comment>
+  </data>
+  <data name="Profile_Apply_Merge" xml:space="preserve">
+    <value>Merge selections</value>
+    <comment>Merge selected profile applications into the current manual selection</comment>
+  </data>
+  <data name="Profile_Update_Success" xml:space="preserve">
+    <value>Profile '{0}' updated with {1} application(s).</value>
+    <comment>Success message after updating an existing profile. {0} = profile name, {1} = selected app count.</comment>
+  </data>
+  <data name="Profile_Update_InheritedWarning" xml:space="preserve">
+    <value>Profile '{0}' updated with {1} direct application(s). {2} inherited application(s) remain selected because they come from parent profiles.</value>
+    <comment>Warning after updating an inherited profile. {0} = profile name, {1} = direct app count, {2} = inherited app count that cannot be removed from this profile.</comment>
+  </data>
+  <data name="Profile_Update_Error" xml:space="preserve">
+    <value>Failed to update profile '{0}': {1}</value>
+    <comment>Error message when updating an existing profile fails. {0} = profile name, {1} = error details.</comment>
+  </data>
+  <!-- Dashboard Hero Section -->
+  <data name="Dashboard_Hero_Checking" xml:space="preserve">
+    <value>Checking system status...</value>
+    <comment>Hero status while checking prerequisites</comment>
+  </data>
+  <data name="Dashboard_Hero_Ready" xml:space="preserve">
+    <value>Ready to deploy</value>
+    <comment>Hero status when system is ready</comment>
+  </data>
+  <data name="Dashboard_Hero_NeedPrereqs" xml:space="preserve">
+    <value>{0} prerequisite(s) missing</value>
+    <comment>Hero status when prerequisites are missing</comment>
+  </data>
+  <data name="Dashboard_Hero_HasUpdates" xml:space="preserve">
+    <value>Ready - {0} update(s) available</value>
+    <comment>Hero status when updates are available</comment>
+  </data>
+  <data name="Dashboard_Btn_StartDeployment" xml:space="preserve">
+    <value>START DEPLOYMENT</value>
+    <comment>Primary CTA button on dashboard</comment>
+  </data>
+  <data name="Dashboard_Btn_FixPrereqs" xml:space="preserve">
+    <value>Fix Prerequisites</value>
+    <comment>Button to navigate to prerequisites</comment>
+  </data>
+  <data name="Dashboard_Btn_ViewUpdates" xml:space="preserve">
+    <value>View Updates</value>
+    <comment>Button to view available updates</comment>
+  </data>
+  <data name="Dashboard_Stats_Profiles" xml:space="preserve">
+    <value>profiles</value>
+    <comment>Stat label for profiles count</comment>
+  </data>
+  <data name="Dashboard_Stats_Apps" xml:space="preserve">
+    <value>applications</value>
+    <comment>Stat label for apps count</comment>
+  </data>
+  <data name="Dashboard_Stats_Updates" xml:space="preserve">
+    <value>updates available</value>
+    <comment>Stat label for updates count</comment>
+  </data>
+  <data name="Dashboard_History_Title" xml:space="preserve">
+    <value>Recent Deployments</value>
+    <comment>Recent deployments section title</comment>
+  </data>
+  <data name="Dashboard_History_Empty" xml:space="preserve">
+    <value>No deployments yet</value>
+    <comment>Empty state for deployment history</comment>
+  </data>
+  <data name="Dashboard_History_ViewAll" xml:space="preserve">
+    <value>View all history</value>
+    <comment>Link to view full deployment history</comment>
+  </data>
+  <data name="Dashboard_Phase_LoadingInfo" xml:space="preserve">
+    <value>Loading information...</value>
+    <comment>Phase 1 of dashboard check</comment>
+  </data>
+  <data name="Dashboard_Phase_CheckingPrereqs" xml:space="preserve">
+    <value>Checking prerequisites...</value>
+    <comment>Phase 2 of dashboard check</comment>
+  </data>
+  <data name="Dashboard_Phase_ScanningUpdates" xml:space="preserve">
+    <value>Scanning for updates...</value>
+    <comment>Phase 3 of dashboard check</comment>
+  </data>
+  <data name="Dashboard_LastCheck_JustNow" xml:space="preserve">
+    <value>Checked just now</value>
+    <comment>Last check timestamp - less than 1 minute</comment>
+  </data>
+  <data name="Dashboard_LastCheck_MinutesAgo" xml:space="preserve">
+    <value>Checked {0} min ago</value>
+    <comment>Last check timestamp - minutes ago</comment>
+  </data>
+  <data name="Dashboard_LastCheck_HoursAgo" xml:space="preserve">
+    <value>Checked {0}h ago</value>
+    <comment>Last check timestamp - hours ago</comment>
+  </data>
+  <data name="Dashboard_Stats_ProfilesHint" xml:space="preserve">
+    <value>Click to select a deployment profile</value>
+    <comment>Tooltip for profiles stat card</comment>
+  </data>
+  <data name="Dashboard_Stats_AppsHint" xml:space="preserve">
+    <value>Click to manage applications</value>
+    <comment>Tooltip for apps stat card</comment>
+  </data>
+  <data name="Dashboard_Stats_UpdatesHint" xml:space="preserve">
+    <value>Click to view available updates</value>
+    <comment>Tooltip for updates stat card</comment>
+  </data>
+  <data name="Dashboard_ScanBtn_Hint" xml:space="preserve">
+    <value>Scan your installed applications for available updates</value>
+    <comment>Tooltip for scan updates button</comment>
+  </data>
+  <data name="Dashboard_Nav_PrereqsHint" xml:space="preserve">
+    <value>Verify and install required components (Winget, Chocolatey)</value>
+    <comment>Tooltip for prerequisites navigation button</comment>
+  </data>
+  <data name="Dashboard_Nav_AppsHint" xml:space="preserve">
+    <value>Browse, search, and manage application installations</value>
+    <comment>Tooltip for apps navigation button</comment>
+  </data>
+  <data name="Dashboard_StartDeployment_Hint" xml:space="preserve">
+    <value>Start deploying your selected application profile</value>
+    <comment>Tooltip for start deployment button</comment>
+  </data>
+  <data name="Dashboard_ViewUpdates_Hint" xml:space="preserve">
+    <value>View and install available application updates</value>
+    <comment>Tooltip for view updates button</comment>
+  </data>
+  <data name="Dashboard_Sys_PowerShell" xml:space="preserve">
+    <value>PowerShell</value>
+  </data>
+  <data name="Dashboard_Updates_Title" xml:space="preserve">
+    <value>Updates</value>
+    <comment>Updates card title</comment>
+  </data>
+  <data name="Dashboard_Scan_Button" xml:space="preserve">
+    <value>Scan for Updates</value>
+    <comment>Scan button text</comment>
+  </data>
+  <data name="Dashboard_Scan_Scanning" xml:space="preserve">
+    <value>Scanning...</value>
+    <comment>Scan button text while scanning</comment>
+  </data>
+  <data name="Dashboard_QuickNav_Title" xml:space="preserve">
+    <value>Quick Navigation</value>
+    <comment>Quick nav card title</comment>
+  </data>
+  <!-- Common Booleans -->
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Yes</value>
+    <comment>Boolean yes value</comment>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>No</value>
+    <comment>Boolean no value</comment>
+  </data>
+  <data name="Common_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+    <comment>Unknown status value</comment>
+  </data>
+  <data name="Common_OK" xml:space="preserve">
+    <value>OK</value>
+    <comment>OK button text</comment>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Cancel button text</comment>
+  </data>
+  <data name="Common_TryAgain" xml:space="preserve">
+    <value>Try Again</value>
+    <comment>Retry button text for error recovery</comment>
+  </data>
+  <data name="Common_Dismiss" xml:space="preserve">
+    <value>Dismiss</value>
+    <comment>Dismiss button text to close error messages</comment>
+  </data>
+  <data name="Common_Details" xml:space="preserve">
+    <value>Details</value>
+    <comment>Expandable details section header in error dialogs</comment>
+  </data>
+  <data name="Common_DryRun" xml:space="preserve">
+    <value>[DRY RUN]</value>
+    <comment>Dry run prefix for simulated installations</comment>
+  </data>
+  <!-- Dashboard Hero Section Extended -->
+  <data name="Dashboard_Scan_Progress" xml:space="preserve">
+    <value>Scanning... ({0}/{1})</value>
+    <comment>Scan progress with current/total count</comment>
+  </data>
+  <data name="Dashboard_Hero_Subtitle_Ready" xml:space="preserve">
+    <value>All systems ready for deployment</value>
+    <comment>Hero subtitle when ready state</comment>
+  </data>
+  <data name="Dashboard_Hero_Subtitle_Prereqs" xml:space="preserve">
+    <value>Install missing components to continue</value>
+    <comment>Hero subtitle when prerequisites missing</comment>
+  </data>
+  <data name="Dashboard_Hero_Subtitle_Updates" xml:space="preserve">
+    <value>Updates available for installed applications</value>
+    <comment>Hero subtitle when updates available</comment>
+  </data>
+  <data name="Dashboard_Stats_ClickToView" xml:space="preserve">
+    <value>Click to view</value>
+    <comment>Tooltip hint for clickable stats</comment>
+  </data>
+  <!-- Accessibility -->
+  <data name="Accessibility_DeploymentComplete" xml:space="preserve">
+    <value>Deployment complete. {0} successful, {1} failed, {2} skipped.</value>
+    <comment>Deployment complete announcement (0=success, 1=failed, 2=skipped)</comment>
+  </data>
+  <data name="Accessibility_InstallationStarted" xml:space="preserve">
+    <value>Installing {0}</value>
+    <comment>Announcement when app installation starts (0=app name)</comment>
+  </data>
+  <data name="Accessibility_InstallationComplete" xml:space="preserve">
+    <value>{0} installed successfully</value>
+    <comment>Announcement when app installation completes (0=app name)</comment>
+  </data>
+  <data name="Accessibility_InstallationFailed" xml:space="preserve">
+    <value>{0} installation failed</value>
+    <comment>Announcement when app installation fails (0=app name)</comment>
+  </data>
+  <data name="Accessibility_LiveRegion" xml:space="preserve">
+    <value>Status announcements</value>
+    <comment>Accessible name for screen reader live region</comment>
+  </data>
+  <data name="Accessibility_SkipToContent" xml:space="preserve">
+    <value>Skip to content</value>
+    <comment>Button text for skip-to-content accessibility link</comment>
+  </data>
+  <data name="Accessibility_SkippedToContent" xml:space="preserve">
+    <value>Skipped to main content</value>
+    <comment>Screen reader announcement after skipping navigation</comment>
+  </data>
+  <!-- Scheduled Deployments -->
+  <data name="Settings_Tab_Scheduled" xml:space="preserve">
+    <value>Schedule</value>
+    <comment>Settings scheduled deployments tab</comment>
+  </data>
+  <data name="ScheduledDeployment_AdminRequired" xml:space="preserve">
+    <value>Administrator privileges required to manage scheduled deployments. Please restart the application as administrator.</value>
+    <comment>Warning when admin rights are needed</comment>
+  </data>
+  <data name="ScheduledDeployment_CreateNew" xml:space="preserve">
+    <value>Create Scheduled Deployment</value>
+    <comment>Section header for creating new scheduled deployment</comment>
+  </data>
+  <data name="ScheduledDeployment_Profile" xml:space="preserve">
+    <value>Profile</value>
+    <comment>Profile selection label</comment>
+  </data>
+  <data name="ScheduledDeployment_TriggerType" xml:space="preserve">
+    <value>Schedule Type</value>
+    <comment>Trigger type selection label</comment>
+  </data>
+  <data name="ScheduledDeployment_DateTime" xml:space="preserve">
+    <value>Date and Time</value>
+    <comment>Date/time selection label</comment>
+  </data>
+  <data name="ScheduledDeployment_Date" xml:space="preserve">
+    <value>Deployment date</value>
+    <comment>Accessible name for the deployment date picker</comment>
+  </data>
+  <data name="ScheduledDeployment_Time" xml:space="preserve">
+    <value>Deployment time</value>
+    <comment>Accessible name for the deployment time input</comment>
+  </data>
+  <data name="ScheduledDeployment_Create" xml:space="preserve">
+    <value>Schedule</value>
+    <comment>Create scheduled deployment button</comment>
+  </data>
+  <data name="ScheduledDeployment_List" xml:space="preserve">
+    <value>Scheduled Deployments</value>
+    <comment>Section header for deployment list</comment>
+  </data>
+  <data name="ScheduledDeployment_Refresh" xml:space="preserve">
+    <value>Refresh list</value>
+    <comment>Refresh button tooltip</comment>
+  </data>
+  <data name="ScheduledDeployment_Empty" xml:space="preserve">
+    <value>No scheduled deployments</value>
+    <comment>Empty state message</comment>
+  </data>
+  <data name="ScheduledDeployment_Col_Profile" xml:space="preserve">
+    <value>Profile</value>
+    <comment>Profile column header</comment>
+  </data>
+  <data name="ScheduledDeployment_Col_Schedule" xml:space="preserve">
+    <value>Schedule</value>
+    <comment>Schedule column header</comment>
+  </data>
+  <data name="ScheduledDeployment_Col_Status" xml:space="preserve">
+    <value>Status</value>
+    <comment>Status column header</comment>
+  </data>
+  <data name="ScheduledDeployment_Col_LastRun" xml:space="preserve">
+    <value>Last Result</value>
+    <comment>Last run result column header</comment>
+  </data>
+  <data name="ScheduledDeployment_RunNow" xml:space="preserve">
+    <value>Run Now</value>
+    <comment>Run now button</comment>
+  </data>
+  <data name="ScheduledDeployment_Remove" xml:space="preserve">
+    <value>Remove</value>
+    <comment>Remove button</comment>
+  </data>
+  <data name="ScheduledDeployment_SelectProfile" xml:space="preserve">
+    <value>Please select a profile</value>
+    <comment>Error when no profile selected</comment>
+  </data>
+  <data name="ScheduledDeployment_Created" xml:space="preserve">
+    <value>Scheduled deployment created successfully</value>
+    <comment>Success message after creating deployment</comment>
+  </data>
+  <data name="ScheduledDeployment_CreateError" xml:space="preserve">
+    <value>Failed to create scheduled deployment</value>
+    <comment>Error message when creation fails</comment>
+  </data>
+  <data name="ScheduledDeployment_ConfirmRemove" xml:space="preserve">
+    <value>Are you sure you want to remove this scheduled deployment?</value>
+    <comment>Confirmation message for removal</comment>
+  </data>
+  <data name="ScheduledDeployment_ConfirmRemoveTitle" xml:space="preserve">
+    <value>Remove Scheduled Deployment</value>
+    <comment>Confirmation dialog title</comment>
+  </data>
+  <data name="ScheduledDeployment_Removed" xml:space="preserve">
+    <value>Scheduled deployment removed</value>
+    <comment>Success message after removal</comment>
+  </data>
+  <data name="ScheduledDeployment_RemoveError" xml:space="preserve">
+    <value>Failed to remove scheduled deployment</value>
+    <comment>Error message when removal fails</comment>
+  </data>
+  <data name="ScheduledDeployment_Started" xml:space="preserve">
+    <value>Scheduled deployment started</value>
+    <comment>Success message after starting deployment</comment>
+  </data>
+  <data name="ScheduledDeployment_StartError" xml:space="preserve">
+    <value>Failed to start scheduled deployment</value>
+    <comment>Error message when start fails</comment>
+  </data>
+  <data name="ScheduledDeployment_LoadError" xml:space="preserve">
+    <value>Failed to load scheduled deployments</value>
+    <comment>Error message when loading fails</comment>
+  </data>
+  <data name="ScheduledDeployment_AtStartup" xml:space="preserve">
+    <value>At Startup</value>
+    <comment>At startup trigger display</comment>
+  </data>
+  <data name="ScheduledDeployment_AtLogon" xml:space="preserve">
+    <value>At Logon</value>
+    <comment>At logon trigger display</comment>
+  </data>
+  <data name="ScheduledDeployment_Daily" xml:space="preserve">
+    <value>Daily at</value>
+    <comment>Daily trigger display prefix</comment>
+  </data>
+  <data name="ScheduledDeployment_Weekly" xml:space="preserve">
+    <value>Weekly at</value>
+    <comment>Weekly trigger display prefix</comment>
+  </data>
+  <data name="ScheduledDeployment_Status_Pending" xml:space="preserve">
+    <value>Pending</value>
+    <comment>Pending status display</comment>
+  </data>
+  <data name="ScheduledDeployment_Status_Running" xml:space="preserve">
+    <value>Running</value>
+    <comment>Running status display</comment>
+  </data>
+  <data name="ScheduledDeployment_Status_Completed" xml:space="preserve">
+    <value>Completed</value>
+    <comment>Completed status display</comment>
+  </data>
+  <data name="ScheduledDeployment_Status_Failed" xml:space="preserve">
+    <value>Failed</value>
+    <comment>Failed status display</comment>
+  </data>
+  <data name="ScheduledDeployment_Status_Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+    <comment>Cancelled status display</comment>
+  </data>
+  <data name="ScheduledDeployment_Status_Unknown" xml:space="preserve">
+    <value>Unknown</value>
+    <comment>Unknown status display</comment>
+  </data>
+  <!-- Application Database Service -->
+  <data name="Apps_ValidationFailed" xml:space="preserve">
+    <value>Validation failed</value>
+    <comment>Error message when application validation fails</comment>
+  </data>
+  <data name="Apps_SaveFailed" xml:space="preserve">
+    <value>Failed to save application</value>
+    <comment>Error message when application save fails</comment>
+  </data>
+  <data name="Apps_FileNotFound" xml:space="preserve">
+    <value>File not found</value>
+    <comment>Error message when import file not found</comment>
+  </data>
+  <data name="Apps_ImportFailed" xml:space="preserve">
+    <value>Failed to import applications</value>
+    <comment>Error message when import fails</comment>
+  </data>
+  <data name="Apps_Import_Replace" xml:space="preserve">
+    <value>Replace</value>
+    <comment>Import conflict dialog replace action</comment>
+  </data>
+  <data name="Apps_Import_Merge" xml:space="preserve">
+    <value>Merge</value>
+    <comment>Import conflict dialog merge action</comment>
+  </data>
+  <data name="Apps_ImportSelection_Title" xml:space="preserve">
+    <value>Import selection</value>
+    <comment>Selection import conflict dialog title</comment>
+  </data>
+  <data name="Apps_ImportFavorites_Title" xml:space="preserve">
+    <value>Import favorites</value>
+    <comment>Favorites import conflict dialog title</comment>
+  </data>
+  <data name="Apps_ImportSelection_Message" xml:space="preserve">
+    <value>The imported selection matches {0} application(s), with {1} missing ID(s). Current selection has {2} application(s). Replace it or merge?</value>
+    <comment>Selection import conflict dialog message (0=matched,1=missing,2=current)</comment>
+  </data>
+  <data name="Apps_ImportFavorites_Message" xml:space="preserve">
+    <value>The imported favorites match {0} application(s), with {1} missing ID(s). Current favorites contain {2} application(s). Replace them or merge?</value>
+    <comment>Favorites import conflict dialog message (0=matched,1=missing,2=current)</comment>
+  </data>
+  <data name="Apps_ImportSelection_Status" xml:space="preserve">
+    <value>Selection import complete: {0} matched, {1} missing, {2} selected</value>
+    <comment>Selection import completion status (0=matched,1=missing,2=final selected count)</comment>
+  </data>
+  <data name="Apps_ImportFavorites_Status" xml:space="preserve">
+    <value>Favorites import complete: {0} matched, {1} missing, {2} favorites</value>
+    <comment>Favorites import completion status (0=matched,1=missing,2=final favorite count)</comment>
+  </data>
+  <data name="Apps_Error_PowerShell" xml:space="preserve">
+    <value>PowerShell error: {0}</value>
+    <comment>PowerShell error in apps workflows</comment>
+  </data>
+  <data name="Apps_Error_Database" xml:space="preserve">
+    <value>Database error: {0}</value>
+    <comment>Database error in apps workflows</comment>
+  </data>
+  <data name="Apps_Error_ProfilesDirectoryNotFound" xml:space="preserve">
+    <value>Could not find Profiles directory</value>
+    <comment>Profiles directory not found error</comment>
+  </data>
+  <data name="Apps_Error_ProfileLoadFailed" xml:space="preserve">
+    <value>Failed to load profile '{0}': {1}</value>
+    <comment>Profile load error (0=profile,1=details)</comment>
+  </data>
+  <data name="Apps_Error_ProfileLoadPowerShellFailed" xml:space="preserve">
+    <value>Failed to load profile (PowerShell error): {0}</value>
+    <comment>Profile load PowerShell error (0=details)</comment>
+  </data>
+  <data name="Apps_Error_ProfileLoadGeneric" xml:space="preserve">
+    <value>Failed to load profile: {0}</value>
+    <comment>Generic profile load error (0=details)</comment>
+  </data>
+  <data name="Apps_Error_DetectionFailed" xml:space="preserve">
+    <value>Detection failed: {0}</value>
+    <comment>Detection error in apps scan (0=details)</comment>
+  </data>
+  <data name="Apps_Error_SelectionExportFailed" xml:space="preserve">
+    <value>Failed to export selection: {0}</value>
+    <comment>Selection export error (0=details)</comment>
+  </data>
+  <data name="Apps_Error_SelectionImportFailed" xml:space="preserve">
+    <value>Failed to import selection: {0}</value>
+    <comment>Selection import error (0=details)</comment>
+  </data>
+  <data name="Apps_Error_FavoritesExportFailed" xml:space="preserve">
+    <value>Failed to export favorites: {0}</value>
+    <comment>Favorites export error (0=details)</comment>
+  </data>
+  <data name="Apps_Error_FavoritesImportFailed" xml:space="preserve">
+    <value>Failed to import favorites: {0}</value>
+    <comment>Favorites import error (0=details)</comment>
+  </data>
+  <data name="Apps_Error_InstallSingleFailed" xml:space="preserve">
+    <value>Install of "{0}" failed: {1}</value>
+    <comment>{0} = application name, {1} = exception message. WF-002 single-op error banner.</comment>
+  </data>
+  <data name="Apps_Error_UninstallSingleFailed" xml:space="preserve">
+    <value>Uninstall of "{0}" failed: {1}</value>
+    <comment>{0} = application name, {1} = exception message. WF-002 single-op error banner.</comment>
+  </data>
+  <data name="Apps_Error_UpdateSingleFailed" xml:space="preserve">
+    <value>Update of "{0}" failed: {1}</value>
+    <comment>{0} = application name, {1} = exception message. WF-002 single-op error banner.</comment>
+  </data>
+  <data name="AppManagement_InvalidPackageId" xml:space="preserve">
+    <value>Package manager source rejected because its package id contains unsafe characters.</value>
+    <comment>Application management failure message for an unsafe Winget/Chocolatey package id.</comment>
+  </data>
+  <data name="AppManagement_CannotDetermineVersion" xml:space="preserve">
+    <value>Cannot determine application version.</value>
+    <comment>Application update-check failure message when version lookup is unsafe or unavailable.</comment>
+  </data>
+  <data name="Apps_Toast_OpenWebsiteFailed" xml:space="preserve">
+    <value>Could not open website for "{0}": {1}</value>
+    <comment>{0} = application name, {1} = exception message. WF-002 AppActions toast warning.</comment>
+  </data>
+  <data name="Apps_Toast_CopyAppIdFailed" xml:space="preserve">
+    <value>Could not copy to clipboard: {0}</value>
+    <comment>{0} = exception message. WF-002 AppActions toast warning.</comment>
+  </data>
+  <data name="Validation_AtLeastOneSource" xml:space="preserve">
+    <value>At least one installation source is required</value>
+    <comment>Validation error for missing sources</comment>
+  </data>
+  <data name="Validation_DuplicateAppId" xml:space="preserve">
+    <value>Application ID '{0}' already exists</value>
+    <comment>Validation error for duplicate application ID</comment>
+  </data>
+  <!-- App Catalog Management View -->
+  <data name="Nav_AppCatalog" xml:space="preserve">
+    <value>App Catalog</value>
+    <comment>Navigation item for application catalog management</comment>
+  </data>
+  <data name="Nav_Logs" xml:space="preserve">
+    <value>Logs</value>
+    <comment>Navigation item for application logs management</comment>
+  </data>
+  <data name="AppCatalog_Title" xml:space="preserve">
+    <value>App Catalog</value>
+    <comment>Title of the application catalog view</comment>
+  </data>
+  <data name="AppCatalog_Subtitle" xml:space="preserve">
+    <value>Manage application definitions and installation sources</value>
+    <comment>Subtitle of the application database view</comment>
+  </data>
+  <data name="AppCatalog_Add" xml:space="preserve">
+    <value>Add</value>
+    <comment>Add button text</comment>
+  </data>
+  <data name="AppCatalog_AddTooltip" xml:space="preserve">
+    <value>Add a new application (Ctrl+N)</value>
+    <comment>Add button tooltip</comment>
+  </data>
+  <data name="AppCatalog_Edit" xml:space="preserve">
+    <value>Edit</value>
+    <comment>Edit button text</comment>
+  </data>
+  <data name="AppCatalog_EditTooltip" xml:space="preserve">
+    <value>Edit selected application (Ctrl+E)</value>
+    <comment>Edit button tooltip</comment>
+  </data>
+  <data name="AppCatalog_Delete" xml:space="preserve">
+    <value>Delete</value>
+    <comment>Delete button text</comment>
+  </data>
+  <data name="AppCatalog_DeleteTooltip" xml:space="preserve">
+    <value>Delete selected application (Del)</value>
+    <comment>Delete button tooltip</comment>
+  </data>
+  <data name="AppCatalog_Duplicate" xml:space="preserve">
+    <value>Duplicate</value>
+    <comment>Duplicate button text</comment>
+  </data>
+  <data name="AppCatalog_DuplicateTooltip" xml:space="preserve">
+    <value>Duplicate selected application (Ctrl+D)</value>
+    <comment>Duplicate button tooltip</comment>
+  </data>
+  <data name="AppCatalog_Refresh" xml:space="preserve">
+    <value>Refresh (F5)</value>
+    <comment>Refresh button tooltip</comment>
+  </data>
+  <data name="AppCatalog_SearchHint" xml:space="preserve">
+    <value>Search by ID, name, or tags...</value>
+    <comment>Search box placeholder</comment>
+  </data>
+  <data name="AppCatalog_CategoryFilter" xml:space="preserve">
+    <value>Category</value>
+    <comment>Category filter label</comment>
+  </data>
+  <data name="AppCatalog_Col_Id" xml:space="preserve">
+    <value>ID</value>
+    <comment>Column header for app ID</comment>
+  </data>
+  <data name="AppCatalog_Col_Name" xml:space="preserve">
+    <value>Name</value>
+    <comment>Column header for app name</comment>
+  </data>
+  <data name="AppCatalog_Col_Category" xml:space="preserve">
+    <value>Category</value>
+    <comment>Column header for category</comment>
+  </data>
+  <data name="AppCatalog_Col_Sources" xml:space="preserve">
+    <value>Sources</value>
+    <comment>Column header for installation sources</comment>
+  </data>
+  <data name="AppCatalog_Col_Priority" xml:space="preserve">
+    <value>Priority</value>
+    <comment>Column header for priority</comment>
+  </data>
+  <data name="AppCatalog_Col_Verified" xml:space="preserve">
+    <value>Verified</value>
+    <comment>Column header for verified status</comment>
+  </data>
+  <data name="AppCatalog_Col_Description" xml:space="preserve">
+    <value>Description</value>
+    <comment>Column header for description</comment>
+  </data>
+  <data name="AppCatalog_Loading" xml:space="preserve">
+    <value>Loading applications...</value>
+    <comment>Loading status message</comment>
+  </data>
+  <data name="AppCatalog_LoadedCount" xml:space="preserve">
+    <value>{0} applications loaded</value>
+    <comment>Loaded count message</comment>
+  </data>
+  <data name="AppCatalog_LoadError" xml:space="preserve">
+    <value>Failed to load applications: {0}</value>
+    <comment>App Catalog load error message shown in the main content area</comment>
+  </data>
+  <data name="AppCatalog_EmptyDatabase" xml:space="preserve">
+    <value>No applications in database. Add one to get started.</value>
+    <comment>App Catalog empty state when the database contains no applications</comment>
+  </data>
+  <data name="AppCatalog_EmptyFilter" xml:space="preserve">
+    <value>No applications match the current filter. Try clearing it.</value>
+    <comment>App Catalog empty state when filters hide all loaded applications</comment>
+  </data>
+  <data name="AppCatalog_Deleting" xml:space="preserve">
+    <value>Deleting application...</value>
+    <comment>Deleting status message</comment>
+  </data>
+  <data name="AppCatalog_Deleted" xml:space="preserve">
+    <value>Application deleted successfully</value>
+    <comment>Deleted success message</comment>
+  </data>
+  <data name="AppCatalog_UndoTooltipFormat" xml:space="preserve">
+    <value>{0} (Ctrl+Z)</value>
+    <comment>Undo button tooltip format with keyboard shortcut</comment>
+  </data>
+  <data name="AppCatalog_RedoTooltipFormat" xml:space="preserve">
+    <value>{0} (Ctrl+Y)</value>
+    <comment>Redo button tooltip format with keyboard shortcut</comment>
+  </data>
+  <data name="AppCatalog_UndoTooltipDefault" xml:space="preserve">
+    <value>Undo (Ctrl+Z)</value>
+    <comment>Default undo button tooltip when no action to undo</comment>
+  </data>
+  <data name="AppCatalog_RedoTooltipDefault" xml:space="preserve">
+    <value>Redo (Ctrl+Y)</value>
+    <comment>Default redo button tooltip when no action to redo</comment>
+  </data>
+  <data name="AppCatalog_CopyIdSuffix" xml:space="preserve">
+    <value>_Copy</value>
+    <comment>Suffix appended to app ID when duplicating</comment>
+  </data>
+  <data name="AppCatalog_CopyNameSuffix" xml:space="preserve">
+    <value> (Copy)</value>
+    <comment>Suffix appended to app name when duplicating</comment>
+  </data>
+  <data name="AppCatalog_DeleteError" xml:space="preserve">
+    <value>Failed to delete application</value>
+    <comment>Delete error message</comment>
+  </data>
+  <data name="AppCatalog_Added" xml:space="preserve">
+    <value>Application added successfully</value>
+    <comment>Added success message</comment>
+  </data>
+  <data name="AppCatalog_Updated" xml:space="preserve">
+    <value>Application updated successfully</value>
+    <comment>Updated success message</comment>
+  </data>
+  <!-- Import/Export -->
+  <data name="AppCatalog_ImportSuccess" xml:space="preserve">
+    <value>Import complete: {0} added, {1} updated</value>
+    <comment>Import success message</comment>
+  </data>
+  <data name="AppCatalog_ImportError" xml:space="preserve">
+    <value>Import failed: {0}</value>
+    <comment>Import error message</comment>
+  </data>
+  <data name="AppCatalog_ExportSuccess" xml:space="preserve">
+    <value>Exported {0} applications successfully</value>
+    <comment>Export success message</comment>
+  </data>
+  <data name="AppCatalog_ExportError" xml:space="preserve">
+    <value>Failed to export applications: {0}</value>
+    <comment>Export error message (0=error details)</comment>
+  </data>
+  <data name="AppCatalog_Import" xml:space="preserve">
+    <value>Import</value>
+    <comment>Import button text</comment>
+  </data>
+  <data name="AppCatalog_Export" xml:space="preserve">
+    <value>Export</value>
+    <comment>Export button text</comment>
+  </data>
+  <data name="AppCatalog_ExportSelected" xml:space="preserve">
+    <value>Export Selected</value>
+    <comment>Export selected button text</comment>
+  </data>
+  <data name="AppCatalog_ExportAll" xml:space="preserve">
+    <value>Export All</value>
+    <comment>Export all button text</comment>
+  </data>
+  <data name="AppCatalog_ImportTooltip" xml:space="preserve">
+    <value>Import applications from JSON file</value>
+    <comment>Import button tooltip</comment>
+  </data>
+  <data name="AppCatalog_ExportTooltip" xml:space="preserve">
+    <value>Export applications to JSON file</value>
+    <comment>Export button tooltip</comment>
+  </data>
+  <data name="AppCatalog_DeleteConfirm" xml:space="preserve">
+    <value>Are you sure you want to delete '{0}' ({1})?
+
+This action cannot be undone.</value>
+    <comment>Delete confirmation message</comment>
+  </data>
+  <data name="AppCatalog_DeleteTitle" xml:space="preserve">
+    <value>Confirm Delete</value>
+    <comment>Delete confirmation dialog title</comment>
+  </data>
+  <data name="AppCatalog_AddTitle" xml:space="preserve">
+    <value>Add Application</value>
+    <comment>Add dialog title</comment>
+  </data>
+  <data name="AppCatalog_EditTitle" xml:space="preserve">
+    <value>Edit Application</value>
+    <comment>Edit dialog title</comment>
+  </data>
+  <data name="AppCatalog_Showing" xml:space="preserve">
+    <value>Showing</value>
+    <comment>Status bar showing prefix</comment>
+  </data>
+  <data name="AppCatalog_Of" xml:space="preserve">
+    <value>of</value>
+    <comment>Status bar of separator</comment>
+  </data>
+  <data name="AppCatalog_Applications" xml:space="preserve">
+    <value>applications</value>
+    <comment>Status bar applications suffix</comment>
+  </data>
+  <data name="AppCatalog_EditorOwnerNotFound" xml:space="preserve">
+    <value>Cannot open editor: Owner window not found.</value>
+    <comment>Error when editor cannot find parent window</comment>
+  </data>
+  <data name="AppCatalog_EditorOpenError" xml:space="preserve">
+    <value>Error opening application editor:
+
+{0}
+
+{1}</value>
+    <comment>Error opening editor (0=message, 1=stack trace)</comment>
+  </data>
+  <data name="AppCatalog_ImportModeConfirm" xml:space="preserve">
+    <value>Choose how to handle existing applications.</value>
+    <comment>Import mode confirmation message</comment>
+  </data>
+  <data name="AppCatalog_Import_Replace" xml:space="preserve">
+    <value>Replace existing</value>
+    <comment>Import mode button to replace existing applications</comment>
+  </data>
+  <data name="AppCatalog_Import_Skip" xml:space="preserve">
+    <value>Skip duplicates</value>
+    <comment>Import mode button to skip duplicate applications</comment>
+  </data>
+  <data name="AppCatalog_NoExportSelection" xml:space="preserve">
+    <value>No applications selected for export.</value>
+    <comment>Message when no apps selected for export</comment>
+  </data>
+  <data name="AppCatalog_Verify" xml:space="preserve">
+    <value>Verify</value>
+    <comment>Verify button text</comment>
+  </data>
+  <data name="AppCatalog_VerifySources" xml:space="preserve">
+    <value>Verify Sources</value>
+    <comment>Context menu item to verify application sources</comment>
+  </data>
+  <!-- Source Type Labels -->
+  <data name="Source_Winget" xml:space="preserve">
+    <value>Winget</value>
+    <comment>Winget source badge label</comment>
+  </data>
+  <data name="Source_Chocolatey" xml:space="preserve">
+    <value>Choco</value>
+    <comment>Chocolatey source badge label</comment>
+  </data>
+  <data name="Source_Store" xml:space="preserve">
+    <value>Store</value>
+    <comment>Microsoft Store source badge label</comment>
+  </data>
+  <data name="Source_Direct" xml:space="preserve">
+    <value>Direct</value>
+    <comment>Direct download source badge label</comment>
+  </data>
+  <!-- Application Editor Dialog -->
+  <data name="AppEditor_Tab_General" xml:space="preserve">
+    <value>General</value>
+    <comment>General tab header</comment>
+  </data>
+  <data name="AppEditor_Tab_Sources" xml:space="preserve">
+    <value>Sources</value>
+    <comment>Sources tab header</comment>
+  </data>
+  <data name="AppEditor_Tab_Detection" xml:space="preserve">
+    <value>Detection</value>
+    <comment>Detection tab header</comment>
+  </data>
+  <data name="AppEditor_AppId" xml:space="preserve">
+    <value>Application ID</value>
+    <comment>App ID field label</comment>
+  </data>
+  <data name="AppEditor_Name" xml:space="preserve">
+    <value>Name</value>
+    <comment>Name field label</comment>
+  </data>
+  <data name="AppEditor_PriorityLabel" xml:space="preserve">
+    <value>Priority: </value>
+    <comment>Priority label shown next to slider</comment>
+  </data>
+  <data name="AppEditor_Description" xml:space="preserve">
+    <value>Description</value>
+    <comment>Description field label</comment>
+  </data>
+  <data name="AppEditor_Homepage" xml:space="preserve">
+    <value>Homepage URL</value>
+    <comment>Homepage field label</comment>
+  </data>
+  <data name="AppEditor_DefaultRequired" xml:space="preserve">
+    <value>Required by default in profiles</value>
+    <comment>Default required checkbox</comment>
+  </data>
+  <data name="AppEditor_AddNewCategory" xml:space="preserve">
+    <value>+ Add new category...</value>
+    <comment>Add new category option</comment>
+  </data>
+  <data name="AppEditor_WingetPackageId" xml:space="preserve">
+    <value>Package ID (e.g., Google.Chrome)</value>
+    <comment>Winget package ID field</comment>
+  </data>
+  <data name="AppEditor_ChocoPackageName" xml:space="preserve">
+    <value>Package Name (e.g., googlechrome)</value>
+    <comment>Chocolatey package name field</comment>
+  </data>
+  <data name="AppEditor_StoreAppId" xml:space="preserve">
+    <value>Store App ID (12 characters)</value>
+    <comment>Microsoft Store app ID field</comment>
+  </data>
+  <data name="AppEditor_DirectDownload" xml:space="preserve">
+    <value>Direct Download</value>
+    <comment>Direct download section header</comment>
+  </data>
+  <data name="AppEditor_DirectUrl" xml:space="preserve">
+    <value>Download URL</value>
+    <comment>Direct download URL field</comment>
+  </data>
+  <data name="AppEditor_DetectionDescription" xml:space="preserve">
+    <value>Configure how the application is detected on the system to check if it's already installed.</value>
+    <comment>Detection tab description</comment>
+  </data>
+  <data name="AppEditor_DetectionMethod" xml:space="preserve">
+    <value>Detection Method</value>
+    <comment>Detection method field label</comment>
+  </data>
+  <data name="AppEditor_DetectionPath" xml:space="preserve">
+    <value>Path (registry key, file path, or command)</value>
+    <comment>Detection path field label</comment>
+  </data>
+  <data name="AppEditor_VersionKey" xml:space="preserve">
+    <value>Version Key (registry value name)</value>
+    <comment>Version key field label</comment>
+  </data>
+  <data name="AppEditor_MinVersion" xml:space="preserve">
+    <value>Minimum Version</value>
+    <comment>Minimum version field label</comment>
+  </data>
+  <data name="AppEditor_Save" xml:space="preserve">
+    <value>Save</value>
+    <comment>Save button text</comment>
+  </data>
+  <data name="AppEditor_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Cancel button text</comment>
+  </data>
+  <data name="AppEditor_UnsavedChanges" xml:space="preserve">
+    <value>You have unsaved changes</value>
+    <comment>Unsaved changes indicator</comment>
+  </data>
+  <data name="AppEditor_DiscardChanges" xml:space="preserve">
+    <value>You have unsaved changes. Are you sure you want to discard them?</value>
+    <comment>Discard changes confirmation message</comment>
+  </data>
+  <data name="AppEditor_DiscardTitle" xml:space="preserve">
+    <value>Discard Changes?</value>
+    <comment>Discard changes dialog title</comment>
+  </data>
+  <data name="AppEditor_NewCategoryTitle" xml:space="preserve">
+    <value>New Category</value>
+    <comment>New category dialog title</comment>
+  </data>
+  <data name="AppEditor_NewCategoryPrompt" xml:space="preserve">
+    <value>Enter the new category name:</value>
+    <comment>New category dialog prompt</comment>
+  </data>
+  <data name="AppEditor_SourceSearchTitle" xml:space="preserve">
+    <value>Discover packages from sources</value>
+    <comment>Source package discovery section title</comment>
+  </data>
+  <data name="AppEditor_SourceSearchDescription" xml:space="preserve">
+    <value>Search Winget, Chocolatey, or Microsoft Store and apply the selected package to this catalog entry.</value>
+    <comment>Source package discovery section description</comment>
+  </data>
+  <data name="AppEditor_SearchPlaceholder" xml:space="preserve">
+    <value>Search package by name or ID...</value>
+    <comment>Package search textbox placeholder</comment>
+  </data>
+  <data name="AppEditor_SearchAction" xml:space="preserve">
+    <value>Search</value>
+    <comment>Package search action button</comment>
+  </data>
+  <data name="A11y_AppEditor_SearchWinget" xml:space="preserve">
+    <value>Search Winget packages</value>
+    <comment>Accessible name for the Winget source search button</comment>
+  </data>
+  <data name="A11y_AppEditor_SearchChocolatey" xml:space="preserve">
+    <value>Search Chocolatey packages</value>
+    <comment>Accessible name for the Chocolatey source search button</comment>
+  </data>
+  <data name="A11y_AppEditor_SearchStore" xml:space="preserve">
+    <value>Search Microsoft Store packages</value>
+    <comment>Accessible name for the Microsoft Store source search button</comment>
+  </data>
+  <data name="AppEditor_SearchColumnName" xml:space="preserve">
+    <value>Name</value>
+    <comment>Package search result name column</comment>
+  </data>
+  <data name="AppEditor_SearchColumnId" xml:space="preserve">
+    <value>Package ID</value>
+    <comment>Package search result ID column</comment>
+  </data>
+  <data name="AppEditor_SearchColumnVersion" xml:space="preserve">
+    <value>Version</value>
+    <comment>Package search result version column</comment>
+  </data>
+  <data name="AppEditor_ApplySelection" xml:space="preserve">
+    <value>Apply selection</value>
+    <comment>Apply selected package result button</comment>
+  </data>
+  <data name="A11y_AppEditor_ApplyWinget" xml:space="preserve">
+    <value>Apply selected Winget package</value>
+    <comment>Accessible name for applying the selected Winget package</comment>
+  </data>
+  <data name="A11y_AppEditor_ApplyChocolatey" xml:space="preserve">
+    <value>Apply selected Chocolatey package</value>
+    <comment>Accessible name for applying the selected Chocolatey package</comment>
+  </data>
+  <data name="A11y_AppEditor_ApplyStore" xml:space="preserve">
+    <value>Apply selected Microsoft Store package</value>
+    <comment>Accessible name for applying the selected Microsoft Store package</comment>
+  </data>
+  <data name="AppEditor_Searching" xml:space="preserve">
+    <value>Searching packages...</value>
+    <comment>Package discovery in progress message</comment>
+  </data>
+  <data name="AppEditor_NoSearchResults" xml:space="preserve">
+    <value>No matching packages found</value>
+    <comment>No package search result message</comment>
+  </data>
+  <data name="AppEditor_SearchResultsCount" xml:space="preserve">
+    <value>{0} result(s) found</value>
+    <comment>Package search result count message</comment>
+  </data>
+  <data name="AppEditor_SearchApplied" xml:space="preserve">
+    <value>Applied: {0}</value>
+    <comment>Search result applied status message</comment>
+  </data>
+  <!-- Source Editor Controls -->
+  <data name="SourceEditor_EnableDisable" xml:space="preserve">
+    <value>Enable/Disable this installation source</value>
+    <comment>Tooltip for source enable toggle</comment>
+  </data>
+  <data name="SourceEditor_Version" xml:space="preserve">
+    <value>Version (optional)</value>
+    <comment>Version field hint</comment>
+  </data>
+  <data name="SourceEditor_Repository" xml:space="preserve">
+    <value>Source Repository</value>
+    <comment>Winget source repository field</comment>
+  </data>
+  <data name="SourceEditor_Test" xml:space="preserve">
+    <value>Test Package</value>
+    <comment>Test package button text</comment>
+  </data>
+  <data name="SourceEditor_TestTooltip" xml:space="preserve">
+    <value>Verify that the package exists in the repository</value>
+    <comment>Test package button tooltip</comment>
+  </data>
+  <data name="SourceEditor_StoreIdHint" xml:space="preserve">
+    <value>Format: 12 alphanumeric characters (e.g., 9NBLGGH4NNS1)</value>
+    <comment>Store ID format hint</comment>
+  </data>
+  <data name="SourceEditor_InstallerType" xml:space="preserve">
+    <value>Installer Type</value>
+    <comment>Installer type field hint</comment>
+  </data>
+  <data name="SourceEditor_SilentArgs" xml:space="preserve">
+    <value>Silent Arguments</value>
+    <comment>Silent args field hint</comment>
+  </data>
+  <data name="SourceEditor_Checksum" xml:space="preserve">
+    <value>Checksum (optional)</value>
+    <comment>Checksum field hint</comment>
+  </data>
+  <data name="SourceEditor_ChecksumHint" xml:space="preserve">
+    <value>Format: 'sha256:' followed by 64 hexadecimal characters</value>
+    <comment>Checksum format hint</comment>
+  </data>
+  <data name="SourceEditor_ExpectedPublisher" xml:space="preserve">
+    <value>Expected publisher (optional)</value>
+    <comment>Expected Authenticode publisher subject field hint</comment>
+  </data>
+  <data name="SourceEditor_TestUrl" xml:space="preserve">
+    <value>Test URL</value>
+    <comment>Test URL button text</comment>
+  </data>
+  <data name="SourceEditor_TestUrlTooltip" xml:space="preserve">
+    <value>Verify that the download URL is accessible</value>
+    <comment>Test URL button tooltip</comment>
+  </data>
+  <data name="SourceEditor_UrlTestSuccess" xml:space="preserve">
+    <value>URL accessible ({0}, {1})</value>
+    <comment>URL test success message with size and type</comment>
+  </data>
+  <data name="SourceEditor_UrlTestSuccessNoSize" xml:space="preserve">
+    <value>URL accessible ({0})</value>
+    <comment>URL test success message without size</comment>
+  </data>
+  <data name="SourceEditor_UrlTestFailed" xml:space="preserve">
+    <value>HTTP {0}: {1}</value>
+    <comment>URL test failed message with status code</comment>
+  </data>
+  <data name="SourceEditor_UrlTestError" xml:space="preserve">
+    <value>Connection error: {0}</value>
+    <comment>URL test connection error message</comment>
+  </data>
+  <data name="SourceEditor_UrlTestTimeout" xml:space="preserve">
+    <value>Request timed out</value>
+    <comment>URL test timeout message</comment>
+  </data>
+  <!-- Package Verification -->
+  <data name="Verify_PackageFound" xml:space="preserve">
+    <value>Package found: {0}</value>
+    <comment>Package verification success message</comment>
+  </data>
+  <data name="Verify_PackageNotFound" xml:space="preserve">
+    <value>Package not found</value>
+    <comment>Package not found message</comment>
+  </data>
+  <data name="Verify_Error" xml:space="preserve">
+    <value>Verification error: {0}</value>
+    <comment>Package verification error message</comment>
+  </data>
+  <data name="Verify_WingetUnavailable" xml:space="preserve">
+    <value>Winget is not available on this system</value>
+    <comment>Winget not available warning</comment>
+  </data>
+  <data name="Verify_ChocoUnavailable" xml:space="preserve">
+    <value>Chocolatey is not available on this system</value>
+    <comment>Chocolatey not available warning</comment>
+  </data>
+  <data name="Verify_AllSourcesValid" xml:space="preserve">
+    <value>All sources verified ({0}/{1})</value>
+    <comment>All sources valid message</comment>
+  </data>
+  <data name="Verify_SomeSourcesInvalid" xml:space="preserve">
+    <value>{0} of {1} sources valid</value>
+    <comment>Partial verification success message</comment>
+  </data>
+  <data name="Verify_NoValidSources" xml:space="preserve">
+    <value>No valid installation sources found</value>
+    <comment>No valid sources message</comment>
+  </data>
+  <data name="Verify_Verifying" xml:space="preserve">
+    <value>Verifying packages...</value>
+    <comment>Verification in progress message</comment>
+  </data>
+  <data name="Verify_CancelledProgress" xml:space="preserve">
+    <value>Verification cancelled ({0}/{1})</value>
+    <comment>Batch verification cancelled (0=current,1=total)</comment>
+  </data>
+  <data name="Verify_ProgressItem" xml:space="preserve">
+    <value>Verifying {0}/{1}: {2}...</value>
+    <comment>Batch verification progress (0=current,1=total,2=item)</comment>
+  </data>
+  <data name="Verify_CompleteSummary" xml:space="preserve">
+    <value>Verification complete: {0} valid, {1} invalid</value>
+    <comment>Batch verification summary (0=valid,1=invalid)</comment>
+  </data>
+  <data name="Verify_CompleteSummaryWithErrors" xml:space="preserve">
+    <value>Verification complete: {0} valid, {1} invalid, {2} errors</value>
+    <comment>Batch verification summary with errors (0=valid,1=invalid,2=errors)</comment>
+  </data>
+  <!-- Detection Editor -->
+  <data name="Detection_Method_Registry" xml:space="preserve">
+    <value>Registry</value>
+    <comment>Registry detection method</comment>
+  </data>
+  <data name="Detection_Method_File" xml:space="preserve">
+    <value>File</value>
+    <comment>File detection method</comment>
+  </data>
+  <data name="Detection_Method_Command" xml:space="preserve">
+    <value>Command</value>
+    <comment>Command detection method</comment>
+  </data>
+  <data name="Detection_Method_WindowsFeature" xml:space="preserve">
+    <value>Windows Feature</value>
+    <comment>Windows Feature detection method</comment>
+  </data>
+  <data name="Detection_Method_StoreApp" xml:space="preserve">
+    <value>Store App</value>
+    <comment>Store App detection method</comment>
+  </data>
+  <data name="Detection_Registry_Title" xml:space="preserve">
+    <value>Registry Detection</value>
+    <comment>Registry detection section title</comment>
+  </data>
+  <data name="Detection_Registry_Path" xml:space="preserve">
+    <value>Registry Path (e.g., HKLM\SOFTWARE\App)</value>
+    <comment>Registry path field hint</comment>
+  </data>
+  <data name="Detection_File_Title" xml:space="preserve">
+    <value>File Detection</value>
+    <comment>File detection section title</comment>
+  </data>
+  <data name="Detection_File_Path" xml:space="preserve">
+    <value>File Path (e.g., C:\Program Files\App\app.exe)</value>
+    <comment>File path field hint</comment>
+  </data>
+  <data name="Detection_Browse" xml:space="preserve">
+    <value>Browse...</value>
+    <comment>Browse button text</comment>
+  </data>
+  <data name="Detection_Command_Title" xml:space="preserve">
+    <value>Command Detection</value>
+    <comment>Command detection section title</comment>
+  </data>
+  <data name="Detection_Command_Path" xml:space="preserve">
+    <value>Command (e.g., app --version)</value>
+    <comment>Command field hint</comment>
+  </data>
+  <data name="Detection_Command_Hint" xml:space="preserve">
+    <value>Command should return exit code 0 if application is installed</value>
+    <comment>Command detection hint</comment>
+  </data>
+  <data name="Detection_WindowsFeature_Title" xml:space="preserve">
+    <value>Windows Feature Detection</value>
+    <comment>Windows Feature detection section title</comment>
+  </data>
+  <data name="Detection_WindowsFeature_Name" xml:space="preserve">
+    <value>Feature Name (e.g., Microsoft-Windows-Subsystem-Linux)</value>
+    <comment>Feature name field hint</comment>
+  </data>
+  <data name="Detection_StoreApp_Title" xml:space="preserve">
+    <value>Store App Detection</value>
+    <comment>Store App detection section title</comment>
+  </data>
+  <data name="Detection_StoreApp_PackageName" xml:space="preserve">
+    <value>Package Family Name</value>
+    <comment>Package family name field hint</comment>
+  </data>
+  <data name="Detection_TestButton" xml:space="preserve">
+    <value>Test Detection</value>
+    <comment>Test detection button text</comment>
+  </data>
+  <data name="Detection_TestTooltip" xml:space="preserve">
+    <value>Test if the application is detected on this system</value>
+    <comment>Test detection button tooltip</comment>
+  </data>
+  <data name="Detection_Found" xml:space="preserve">
+    <value>Detected</value>
+    <comment>Detection found result</comment>
+  </data>
+  <data name="Detection_NotFound" xml:space="preserve">
+    <value>Not detected</value>
+    <comment>Detection not found result</comment>
+  </data>
+  <data name="Detection_Version" xml:space="preserve">
+    <value>Version: {0}</value>
+    <comment>Detected version format</comment>
+  </data>
+  <data name="Detection_Error" xml:space="preserve">
+    <value>Error: {0}</value>
+    <comment>Detection error format</comment>
+  </data>
+  <data name="Detection_PathRequired" xml:space="preserve">
+    <value>Path is required</value>
+    <comment>Path required validation message</comment>
+  </data>
+  <data name="Detection_UnknownMethod" xml:space="preserve">
+    <value>Unknown detection method</value>
+    <comment>Unknown method error</comment>
+  </data>
+  <data name="Detection_SelectFile" xml:space="preserve">
+    <value>Select file to detect</value>
+    <comment>File selection dialog title</comment>
+  </data>
+  <data name="Detection_FeatureCheckNotSupported" xml:space="preserve">
+    <value>Windows Feature detection requires PowerShell</value>
+    <comment>Feature check not supported message</comment>
+  </data>
+  <data name="Detection_StoreAppCheckNotSupported" xml:space="preserve">
+    <value>Store App detection requires PowerShell</value>
+    <comment>Store app check not supported message</comment>
+  </data>
+  <!-- UX Improvements - Deployment Result Banner -->
+  <data name="Deployment_Result_Success" xml:space="preserve">
+    <value>Deployment completed successfully</value>
+    <comment>Deployment success banner message</comment>
+  </data>
+  <data name="Deployment_Result_Partial" xml:space="preserve">
+    <value>Deployment completed with {0} failures</value>
+    <comment>Deployment partial success banner (0=failure count)</comment>
+  </data>
+  <data name="Deployment_Result_Failed" xml:space="preserve">
+    <value>Deployment failed</value>
+    <comment>Deployment failed banner message</comment>
+  </data>
+  <data name="Deployment_Result_Cancelled" xml:space="preserve">
+    <value>Deployment was cancelled</value>
+    <comment>Deployment cancelled banner message</comment>
+  </data>
+  <data name="Deployment_Stats" xml:space="preserve">
+    <value>{0} installed, {1} failed, {2} skipped</value>
+    <comment>Deployment statistics (0=success, 1=failed, 2=skipped)</comment>
+  </data>
+  <!-- UX Improvements - Network Error Messages -->
+  <data name="Recovery_DnsResolution" xml:space="preserve">
+    <value>Could not resolve the server address. Check your DNS settings or try a different network.</value>
+    <comment>DNS resolution recovery suggestion</comment>
+  </data>
+  <data name="Recovery_ProxySettings" xml:space="preserve">
+    <value>If you're behind a proxy, verify your proxy settings are correctly configured.</value>
+    <comment>Proxy settings recovery suggestion</comment>
+  </data>
+  <data name="Recovery_SslCertificate" xml:space="preserve">
+    <value>There may be an SSL certificate issue. Check your system date/time and security software.</value>
+    <comment>SSL certificate recovery suggestion</comment>
+  </data>
+  <!-- UX Improvements - Empty State Accessibility -->
+  <data name="A11y_EmptyStateIcon" xml:space="preserve">
+    <value>Decorative icon</value>
+    <comment>Accessibility label for empty state icons</comment>
+  </data>
+  <data name="A11y_NoHistoryIcon" xml:space="preserve">
+    <value>No deployment history icon</value>
+    <comment>Accessibility label for no history icon</comment>
+  </data>
+  <data name="A11y_NoDatabaseIcon" xml:space="preserve">
+    <value>Empty database icon</value>
+    <comment>Accessibility label for empty database icon</comment>
+  </data>
+  <data name="A11y_NoDeploymentIcon" xml:space="preserve">
+    <value>No active deployment icon</value>
+    <comment>Accessibility label for no deployment icon</comment>
+  </data>
+  <!-- UX Improvements - Loading Progress -->
+  <data name="Loading_ItemsCount" xml:space="preserve">
+    <value>Loading {0} items...</value>
+    <comment>Loading progress with count (0=count)</comment>
+  </data>
+  <data name="Loading_Database" xml:space="preserve">
+    <value>Loading application database...</value>
+    <comment>Database loading message</comment>
+  </data>
+  <!-- UX Improvements - Copy Feedback -->
+  <data name="Toast_CopiedToClipboard" xml:space="preserve">
+    <value>Copied to clipboard</value>
+    <comment>Clipboard copy success toast</comment>
+  </data>
+  <!-- UX Improvements - Keyboard Shortcuts Help -->
+  <data name="Help_Shortcut_DataGrid" xml:space="preserve">
+    <value>In data grids, use Arrow keys to navigate, Enter to select, and Ctrl+A to select all.</value>
+    <comment>DataGrid navigation hint</comment>
+  </data>
+  <!-- UX Improvements - Cancel Feedback -->
+  <data name="Cancel_InProgress" xml:space="preserve">
+    <value>Cancelling operation...</value>
+    <comment>Cancellation in progress message</comment>
+  </data>
+  <data name="Apps_CancelBatch_Title" xml:space="preserve">
+    <value>Cancel operation</value>
+    <comment>Apps batch cancellation confirmation title</comment>
+  </data>
+  <data name="Apps_CancelBatch_Message" xml:space="preserve">
+    <value>Cancel the current operation? {0} of {1} items have completed.</value>
+    <comment>Apps batch cancellation confirmation message (0=completed,1=total)</comment>
+  </data>
+  <data name="Deployment_Cancel_Title" xml:space="preserve">
+    <value>Cancel deployment</value>
+    <comment>Deployment cancellation confirmation title</comment>
+  </data>
+  <data name="Deployment_Cancel_Message" xml:space="preserve">
+    <value>Cancel the current deployment? {0} of {1} items have completed.</value>
+    <comment>Deployment cancellation confirmation message (0=completed,1=total)</comment>
+  </data>
+  <data name="Cancel_Complete" xml:space="preserve">
+    <value>Operation cancelled</value>
+    <comment>Cancellation complete message</comment>
+  </data>
+  <!-- DeploymentProfileModel Validation -->
+  <data name="Validation_Profile_Name_Required" xml:space="preserve">
+    <value>Profile name is required</value>
+    <comment>DeploymentProfileModel Name required validation</comment>
+  </data>
+  <data name="Validation_Profile_Name_Length" xml:space="preserve">
+    <value>Profile name must be between 1 and 128 characters</value>
+    <comment>DeploymentProfileModel Name length validation</comment>
+  </data>
+  <data name="Validation_Profile_Name_Pattern" xml:space="preserve">
+    <value>Profile name can only contain letters, numbers, underscores, and hyphens</value>
+    <comment>DeploymentProfileModel Name pattern validation</comment>
+  </data>
+  <data name="Validation_Profile_Description_MaxLength" xml:space="preserve">
+    <value>Description must not exceed 2048 characters</value>
+    <comment>DeploymentProfileModel Description length validation</comment>
+  </data>
+  <data name="Validation_Profile_Version_MaxLength" xml:space="preserve">
+    <value>Version must not exceed 32 characters</value>
+    <comment>DeploymentProfileModel Version length validation</comment>
+  </data>
+  <data name="Validation_Profile_Version_Pattern" xml:space="preserve">
+    <value>Version must be in format X.Y or X.Y.Z</value>
+    <comment>DeploymentProfileModel Version pattern validation</comment>
+  </data>
+  <data name="Validation_Profile_InheritedFrom_MaxCount" xml:space="preserve">
+    <value>Cannot inherit from more than 10 profiles</value>
+    <comment>DeploymentProfileModel InheritedFrom max count validation</comment>
+  </data>
+  <data name="Validation_Profile_CircularInheritance" xml:space="preserve">
+    <value>A profile cannot inherit from itself</value>
+    <comment>DeploymentProfileModel circular inheritance validation</comment>
+  </data>
+  <data name="Validation_Profile_DuplicateParents" xml:space="preserve">
+    <value>Duplicate parent profiles detected</value>
+    <comment>DeploymentProfileModel duplicate parents validation</comment>
+  </data>
+  <data name="Validation_Profile_DuplicateApps" xml:space="preserve">
+    <value>Duplicate application IDs detected in profile</value>
+    <comment>DeploymentProfileModel duplicate app IDs validation</comment>
+  </data>
+  <!-- EditableApplicationModel Validation -->
+  <data name="Validation_EditApp_Id_Required" xml:space="preserve">
+    <value>Application ID is required</value>
+    <comment>EditableApplicationModel AppId required validation</comment>
+  </data>
+  <data name="Validation_EditApp_Id_Pattern" xml:space="preserve">
+    <value>ID must start with a letter or number and contain only letters, numbers, dots, dashes, and underscores</value>
+    <comment>EditableApplicationModel AppId pattern validation</comment>
+  </data>
+  <data name="Validation_EditApp_Id_Length" xml:space="preserve">
+    <value>ID must be between 2 and 128 characters</value>
+    <comment>EditableApplicationModel AppId length validation</comment>
+  </data>
+  <data name="Validation_EditApp_Name_Required" xml:space="preserve">
+    <value>Application name is required</value>
+    <comment>EditableApplicationModel Name required validation</comment>
+  </data>
+  <data name="Validation_EditApp_Name_Length" xml:space="preserve">
+    <value>Name must be between 1 and 256 characters</value>
+    <comment>EditableApplicationModel Name length validation</comment>
+  </data>
+  <data name="Validation_EditApp_Category_Required" xml:space="preserve">
+    <value>Category is required</value>
+    <comment>EditableApplicationModel Category required validation</comment>
+  </data>
+  <data name="Validation_EditApp_Category_Length" xml:space="preserve">
+    <value>Category must be between 1 and 64 characters</value>
+    <comment>EditableApplicationModel Category length validation</comment>
+  </data>
+  <data name="Validation_EditApp_Description_MaxLength" xml:space="preserve">
+    <value>Description must not exceed 1024 characters</value>
+    <comment>EditableApplicationModel Description length validation</comment>
+  </data>
+  <data name="Validation_EditApp_Priority_Range" xml:space="preserve">
+    <value>Priority must be between 1 and 100</value>
+    <comment>EditableApplicationModel Priority range validation</comment>
+  </data>
+  <data name="Validation_EditApp_Homepage_InvalidUrl" xml:space="preserve">
+    <value>Homepage must be a valid URL</value>
+    <comment>EditableApplicationModel Homepage URL validation</comment>
+  </data>
+  <data name="Validation_EditApp_Sources_Required" xml:space="preserve">
+    <value>At least one installation source must be configured</value>
+    <comment>EditableApplicationModel sources required validation</comment>
+  </data>
+  <!-- ApplicationSourcesModel Validation -->
+  <data name="Validation_Sources_Winget_MaxLength" xml:space="preserve">
+    <value>Winget package ID must not exceed 256 characters</value>
+    <comment>ApplicationSourcesModel Winget length validation</comment>
+  </data>
+  <data name="Validation_Sources_Chocolatey_MaxLength" xml:space="preserve">
+    <value>Chocolatey package name must not exceed 256 characters</value>
+    <comment>ApplicationSourcesModel Chocolatey length validation</comment>
+  </data>
+  <data name="Validation_Sources_Store_Pattern" xml:space="preserve">
+    <value>Store ID must be 12 alphanumeric characters</value>
+    <comment>ApplicationSourcesModel Store ID pattern validation</comment>
+  </data>
+  <data name="Validation_Sources_DirectUrl_InvalidUrl" xml:space="preserve">
+    <value>Direct URL must be a valid HTTP/HTTPS URL</value>
+    <comment>ApplicationSourcesModel DirectUrl URL validation</comment>
+  </data>
+  <!-- DirectDownloadSourceConfig Validation -->
+  <data name="Validation_DirectDownload_InstallerType_Required" xml:space="preserve">
+    <value>Installer type is required for direct download</value>
+    <comment>DirectDownloadSourceConfig InstallerType required validation</comment>
+  </data>
+  <data name="Validation_DirectDownload_Checksum_Pattern" xml:space="preserve">
+    <value>Checksum format must be 'sha256:' followed by 64 hexadecimal characters</value>
+    <comment>DirectDownloadSourceConfig Checksum pattern validation</comment>
+  </data>
+  <!-- SystemInfoModel Validation -->
+  <data name="Validation_SystemInfo_Hostname_MaxLength" xml:space="preserve">
+    <value>Hostname must not exceed 256 characters</value>
+    <comment>SystemInfoModel Hostname length validation</comment>
+  </data>
+  <data name="Validation_SystemInfo_Username_MaxLength" xml:space="preserve">
+    <value>Username must not exceed 256 characters</value>
+    <comment>SystemInfoModel Username length validation</comment>
+  </data>
+  <data name="Validation_SystemInfo_WindowsVersion_MaxLength" xml:space="preserve">
+    <value>Windows version must not exceed 128 characters</value>
+    <comment>SystemInfoModel WindowsVersion length validation</comment>
+  </data>
+  <data name="Validation_SystemInfo_WindowsBuild_MaxLength" xml:space="preserve">
+    <value>Windows build must not exceed 64 characters</value>
+    <comment>SystemInfoModel WindowsBuild length validation</comment>
+  </data>
+  <data name="Validation_SystemInfo_WingetVersion_MaxLength" xml:space="preserve">
+    <value>Winget version must not exceed 64 characters</value>
+    <comment>SystemInfoModel WingetVersion length validation</comment>
+  </data>
+  <data name="Validation_SystemInfo_ChocolateyVersion_MaxLength" xml:space="preserve">
+    <value>Chocolatey version must not exceed 64 characters</value>
+    <comment>SystemInfoModel ChocolateyVersion length validation</comment>
+  </data>
+  <data name="Validation_SystemInfo_TotalMemory_Range" xml:space="preserve">
+    <value>Total memory must be between 0 and 10000 GB</value>
+    <comment>SystemInfoModel TotalMemoryGB range validation</comment>
+  </data>
+  <data name="Validation_SystemInfo_ProcessorCount_Range" xml:space="preserve">
+    <value>Processor count must be between 1 and 1024</value>
+    <comment>SystemInfoModel ProcessorCount range validation</comment>
+  </data>
+  <!-- ScheduledDeploymentModel Validation -->
+  <data name="Validation_Scheduled_Id_Required" xml:space="preserve">
+    <value>Deployment ID is required</value>
+    <comment>ScheduledDeploymentModel Id required validation</comment>
+  </data>
+  <data name="Validation_Scheduled_Id_Length" xml:space="preserve">
+    <value>Deployment ID must be between 1 and 32 characters</value>
+    <comment>ScheduledDeploymentModel Id length validation</comment>
+  </data>
+  <data name="Validation_Scheduled_ProfileName_Required" xml:space="preserve">
+    <value>Profile name is required</value>
+    <comment>ScheduledDeploymentModel ProfileName required validation</comment>
+  </data>
+  <data name="Validation_Scheduled_ProfileName_Length" xml:space="preserve">
+    <value>Profile name must be between 1 and 256 characters</value>
+    <comment>ScheduledDeploymentModel ProfileName length validation</comment>
+  </data>
+  <data name="Validation_Scheduled_TriggerType_Required" xml:space="preserve">
+    <value>Trigger type is required</value>
+    <comment>ScheduledDeploymentModel TriggerType required validation</comment>
+  </data>
+  <data name="Validation_Scheduled_CreatedBy_MaxLength" xml:space="preserve">
+    <value>Created by must not exceed 256 characters</value>
+    <comment>ScheduledDeploymentModel CreatedBy length validation</comment>
+  </data>
+  <data name="Validation_Scheduled_LastRunResult_MaxLength" xml:space="preserve">
+    <value>Last run result must not exceed 256 characters</value>
+    <comment>ScheduledDeploymentModel LastRunResult length validation</comment>
+  </data>
+  <!-- DeploymentHistoryEntry Validation -->
+  <data name="Validation_History_ProfileName_Required" xml:space="preserve">
+    <value>Profile name is required</value>
+    <comment>DeploymentHistoryEntry ProfileName required validation</comment>
+  </data>
+  <data name="Validation_History_ProfileName_Length" xml:space="preserve">
+    <value>Profile name must be between 1 and 128 characters</value>
+    <comment>DeploymentHistoryEntry ProfileName length validation</comment>
+  </data>
+  <data name="Validation_History_TotalApps_Range" xml:space="preserve">
+    <value>Total apps must be between 0 and 10000</value>
+    <comment>DeploymentHistoryEntry TotalApps range validation</comment>
+  </data>
+  <data name="Validation_History_SuccessfulApps_Range" xml:space="preserve">
+    <value>Successful apps must be between 0 and 10000</value>
+    <comment>DeploymentHistoryEntry SuccessfulApps range validation</comment>
+  </data>
+  <data name="Validation_History_FailedApps_Range" xml:space="preserve">
+    <value>Failed apps must be between 0 and 10000</value>
+    <comment>DeploymentHistoryEntry FailedApps range validation</comment>
+  </data>
+  <data name="Validation_History_SkippedApps_Range" xml:space="preserve">
+    <value>Skipped apps must be between 0 and 10000</value>
+    <comment>DeploymentHistoryEntry SkippedApps range validation</comment>
+  </data>
+  <data name="Validation_History_Duration_Range" xml:space="preserve">
+    <value>Duration must be between 0 and 7 days</value>
+    <comment>DeploymentHistoryEntry DurationSeconds range validation</comment>
+  </data>
+  <data name="Validation_History_AppsSumExceedsTotal" xml:space="preserve">
+    <value>Sum of successful, failed, and skipped apps cannot exceed total apps</value>
+    <comment>DeploymentHistoryEntry apps sum cross-validation</comment>
+  </data>
+  <data name="Validation_History_FutureDate" xml:space="preserve">
+    <value>Deployment date cannot be in the future</value>
+    <comment>DeploymentHistoryEntry future date validation</comment>
+  </data>
+  <data name="Validation_History_SuccessWithFailedApps" xml:space="preserve">
+    <value>Success result cannot have failed apps</value>
+    <comment>DeploymentHistoryEntry result consistency validation</comment>
+  </data>
+  <data name="Validation_History_FailedAllSuccessful" xml:space="preserve">
+    <value>Failed result cannot have all apps successful</value>
+    <comment>DeploymentHistoryEntry result consistency validation</comment>
+  </data>
+  <!-- PrerequisiteItem Validation -->
+  <data name="Validation_Prereq_Name_Required" xml:space="preserve">
+    <value>Prerequisite name is required</value>
+    <comment>PrerequisiteItem Name required validation</comment>
+  </data>
+  <data name="Validation_Prereq_Name_Length" xml:space="preserve">
+    <value>Name must be between 1 and 128 characters</value>
+    <comment>PrerequisiteItem Name length validation</comment>
+  </data>
+  <data name="Validation_Prereq_Version_MaxLength" xml:space="preserve">
+    <value>Version must not exceed 64 characters</value>
+    <comment>PrerequisiteItem Version length validation</comment>
+  </data>
+  <data name="Validation_Prereq_Category_MaxLength" xml:space="preserve">
+    <value>Category must not exceed 64 characters</value>
+    <comment>PrerequisiteItem Category length validation</comment>
+  </data>
+  <data name="Validation_Prereq_Description_MaxLength" xml:space="preserve">
+    <value>Description must not exceed 512 characters</value>
+    <comment>PrerequisiteItem Description length validation</comment>
+  </data>
+  <!-- PrerequisitesStatus Validation -->
+  <data name="Validation_Prereq_PSVersion_MaxLength" xml:space="preserve">
+    <value>PowerShell version must not exceed 64 characters</value>
+    <comment>PrerequisitesStatus PowerShellVersion length validation</comment>
+  </data>
+  <data name="Validation_Prereq_PSVersion_Pattern" xml:space="preserve">
+    <value>Invalid version format</value>
+    <comment>PrerequisitesStatus PowerShellVersion pattern validation</comment>
+  </data>
+  <data name="Validation_Prereq_ChocoVersion_MaxLength" xml:space="preserve">
+    <value>Chocolatey version must not exceed 64 characters</value>
+    <comment>PrerequisitesStatus ChocolateyVersion length validation</comment>
+  </data>
+  <data name="Validation_Prereq_ChocoVersion_Pattern" xml:space="preserve">
+    <value>Invalid version format</value>
+    <comment>PrerequisitesStatus ChocolateyVersion pattern validation</comment>
+  </data>
+  <data name="Validation_Prereq_WingetVersion_MaxLength" xml:space="preserve">
+    <value>Winget version must not exceed 64 characters</value>
+    <comment>PrerequisitesStatus WingetVersion length validation</comment>
+  </data>
+  <data name="Validation_Prereq_WingetVersion_Pattern" xml:space="preserve">
+    <value>Invalid version format</value>
+    <comment>PrerequisitesStatus WingetVersion pattern validation</comment>
+  </data>
+  <data name="Validation_Prereq_DotNetVersion_MaxLength" xml:space="preserve">
+    <value>.NET version must not exceed 128 characters</value>
+    <comment>PrerequisitesStatus DotNetVersion length validation</comment>
+  </data>
+  <data name="Validation_Prereq_DotNetFrameworkVersion_MaxLength" xml:space="preserve">
+    <value>.NET Framework version must not exceed 64 characters</value>
+    <comment>PrerequisitesStatus DotNetFrameworkVersion length validation</comment>
+  </data>
+  <data name="Validation_Prereq_DotNetFrameworkVersion_Pattern" xml:space="preserve">
+    <value>Invalid version format</value>
+    <comment>PrerequisitesStatus DotNetFrameworkVersion pattern validation</comment>
+  </data>
+  <data name="Validation_Prereq_VCRedistVersion_MaxLength" xml:space="preserve">
+    <value>VC++ version must not exceed 128 characters</value>
+    <comment>PrerequisitesStatus VCRedistVersion length validation</comment>
+  </data>
+  <data name="Validation_Prereq_JavaVersion_MaxLength" xml:space="preserve">
+    <value>Java version must not exceed 128 characters</value>
+    <comment>PrerequisitesStatus JavaVersion length validation</comment>
+  </data>
+  <!-- ValidationAttributes Validation -->
+  <data name="Validation_SemanticVersion_Invalid" xml:space="preserve">
+    <value>The value must be a valid version number (e.g., 1.0.0, 2.1.3-beta).</value>
+    <comment>SemanticVersionAttribute default error message</comment>
+  </data>
+  <!-- Audit Round 3 - Accessibility AutomationProperties -->
+  <data name="A11y_Logs_ViewLog" xml:space="preserve">
+    <value>View log file</value>
+    <comment>Accessibility name for log view button</comment>
+  </data>
+  <data name="A11y_Logs_CopyPath" xml:space="preserve">
+    <value>Copy log file path</value>
+    <comment>Accessibility name for copy log path button</comment>
+  </data>
+  <data name="A11y_Logs_DeleteLog" xml:space="preserve">
+    <value>Delete log file</value>
+    <comment>Accessibility name for delete log button</comment>
+  </data>
+  <data name="A11y_Logs_Search" xml:space="preserve">
+    <value>Search logs</value>
+    <comment>Accessibility name for log search field</comment>
+  </data>
+  <data name="A11y_Logs_LevelFilter" xml:space="preserve">
+    <value>Filter by log level</value>
+    <comment>Accessibility name for log level filter</comment>
+  </data>
+  <data name="A11y_Logs_DateFilter" xml:space="preserve">
+    <value>Filter by date</value>
+    <comment>Accessibility name for date filter</comment>
+  </data>
+  <data name="A11y_Logs_ClearFilters" xml:space="preserve">
+    <value>Clear all filters</value>
+    <comment>Accessibility name for clear filters button</comment>
+  </data>
+  <data name="A11y_Logs_ClearOld" xml:space="preserve">
+    <value>Clear old log files</value>
+    <comment>Accessibility name for clear old logs button</comment>
+  </data>
+  <data name="A11y_Deployment_Pause" xml:space="preserve">
+    <value>Pause deployment</value>
+    <comment>Accessibility name for pause button</comment>
+  </data>
+  <data name="A11y_Deployment_Resume" xml:space="preserve">
+    <value>Resume deployment</value>
+    <comment>Accessibility name for resume button</comment>
+  </data>
+  <data name="A11y_Deployment_Cancel" xml:space="preserve">
+    <value>Cancel deployment</value>
+    <comment>Accessibility name for cancel deployment button</comment>
+  </data>
+  <data name="A11y_Deployment_CopyLogs" xml:space="preserve">
+    <value>Copy logs to clipboard</value>
+    <comment>Accessibility name for copy logs button</comment>
+  </data>
+  <data name="A11y_Deployment_CloseLogs" xml:space="preserve">
+    <value>Close log viewer</value>
+    <comment>Accessibility name for close log viewer button</comment>
+  </data>
+  <data name="A11y_Dashboard_StartDeployment" xml:space="preserve">
+    <value>Start deployment</value>
+    <comment>Accessibility name for start deployment button</comment>
+  </data>
+  <data name="A11y_Dashboard_ViewUpdates" xml:space="preserve">
+    <value>View available updates</value>
+    <comment>Accessibility name for view updates button</comment>
+  </data>
+  <data name="A11y_Dashboard_FixPrereqs" xml:space="preserve">
+    <value>Fix prerequisites</value>
+    <comment>Accessibility name for fix prerequisites button</comment>
+  </data>
+  <data name="A11y_Settings_ThemeToggle" xml:space="preserve">
+    <value>Toggle dark theme</value>
+    <comment>Accessibility name for theme toggle</comment>
+  </data>
+  <data name="A11y_Settings_ThemePicker" xml:space="preserve">
+    <value>Theme picker</value>
+    <comment>Accessibility name for theme picker</comment>
+  </data>
+  <data name="A11y_Settings_AccentTintPicker" xml:space="preserve">
+    <value>Accent picker</value>
+    <comment>Accessibility name for accent tint picker</comment>
+  </data>
+  <data name="A11y_Settings_ReducedMotion" xml:space="preserve">
+    <value>Toggle reduced motion</value>
+    <comment>Accessibility name for reduced motion toggle</comment>
+  </data>
+  <data name="A11y_Settings_HighContrast" xml:space="preserve">
+    <value>Toggle high contrast mode</value>
+    <comment>Accessibility name for high contrast toggle</comment>
+  </data>
+  <data name="A11y_Settings_Language" xml:space="preserve">
+    <value>Select language</value>
+    <comment>Accessibility name for language selector</comment>
+  </data>
+  <data name="A11y_Profile_Overwrite" xml:space="preserve">
+    <value>Overwrite existing profile</value>
+    <comment>Accessibility name for overwrite radio button</comment>
+  </data>
+  <data name="A11y_Profile_SaveNew" xml:space="preserve">
+    <value>Save as new profile</value>
+    <comment>Accessibility name for save as new radio button</comment>
+  </data>
+  <data name="A11y_Profile_Name" xml:space="preserve">
+    <value>Profile name</value>
+    <comment>Accessibility name for profile name field</comment>
+  </data>
+  <data name="A11y_Profile_Parent" xml:space="preserve">
+    <value>Parent profile</value>
+    <comment>Accessibility name for parent profile selector</comment>
+  </data>
+  <data name="A11y_Profile_Description" xml:space="preserve">
+    <value>Profile description</value>
+    <comment>Accessibility name for profile description field</comment>
+  </data>
+  <data name="A11y_Profile_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Accessibility name for cancel button in profile dialog</comment>
+  </data>
+  <data name="A11y_Profile_Save" xml:space="preserve">
+    <value>Save profile</value>
+    <comment>Accessibility name for save profile button</comment>
+  </data>
+  <data name="A11y_AppPicker_Search" xml:space="preserve">
+    <value>Search applications</value>
+    <comment>Accessibility name for app picker search field</comment>
+  </data>
+  <data name="A11y_AppPicker_Category" xml:space="preserve">
+    <value>Filter by category</value>
+    <comment>Accessibility name for category filter</comment>
+  </data>
+  <data name="A11y_AppPicker_AppList" xml:space="preserve">
+    <value>Application list</value>
+    <comment>Accessibility name for application list</comment>
+  </data>
+  <data name="A11y_AppPicker_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Accessibility name for cancel button in app picker</comment>
+  </data>
+  <data name="A11y_AppPicker_Add" xml:space="preserve">
+    <value>Add selected applications</value>
+    <comment>Accessibility name for add button in app picker</comment>
+  </data>
+  <data name="A11y_Onboarding_DontShow" xml:space="preserve">
+    <value>Do not show again</value>
+    <comment>Accessibility name for dont show again checkbox</comment>
+  </data>
+  <data name="A11y_Onboarding_GetStarted" xml:space="preserve">
+    <value>Get started</value>
+    <comment>Accessibility name for get started button</comment>
+  </data>
+  <data name="A11y_Shortcuts_Close" xml:space="preserve">
+    <value>Close keyboard shortcuts</value>
+    <comment>Accessibility name for close shortcuts button</comment>
+  </data>
+  <!-- Audit Round 3 - Error Messages -->
+  <data name="Error_LoadViewFailed" xml:space="preserve">
+    <value>Failed to load view: {0}</value>
+    <comment>Error message when a view fails to load (0=error message)</comment>
+  </data>
+  <data name="Detection_InvalidExpandedPath" xml:space="preserve">
+    <value>Invalid path after environment variable expansion</value>
+    <comment>Error when expanded path is invalid</comment>
+  </data>
+  <data name="Detection_InvalidCommandPath" xml:space="preserve">
+    <value>Invalid command path: contains potentially dangerous characters</value>
+    <comment>Error when command path contains dangerous characters</comment>
+  </data>
+  <data name="Detection_InvalidFeatureName" xml:space="preserve">
+    <value>Invalid Windows feature name: contains disallowed characters</value>
+    <comment>Error when Windows feature name contains disallowed characters</comment>
+  </data>
+  <data name="Detection_InvalidRegistryPath" xml:space="preserve">
+    <value>Invalid registry path</value>
+  </data>
+  <data name="Detection_CommandTimeout" xml:space="preserve">
+    <value>Command timed out after 5 seconds</value>
+    <comment>Error when detection command times out</comment>
+  </data>
+  <data name="Undo_Title" xml:space="preserve">
+    <value>Undo</value>
+    <comment>Tooltip for undo action button</comment>
+  </data>
+  <data name="Undo_Redo" xml:space="preserve">
+    <value>Redo</value>
+    <comment>Tooltip for redo action button</comment>
+  </data>
+  <data name="A11y_Search_SuggestionsHelp" xml:space="preserve">
+    <value>Type to filter applications. Use arrow keys to navigate suggestions.</value>
+    <comment>Accessibility help text for search suggestions list</comment>
+  </data>
+  <data name="A11y_Main_Breadcrumb" xml:space="preserve">
+    <value>Breadcrumb navigation</value>
+    <comment>Accessibility name for main breadcrumb</comment>
+  </data>
+  <data name="A11y_Main_Undo" xml:space="preserve">
+    <value>Undo last action</value>
+    <comment>Accessibility name for undo action</comment>
+  </data>
+  <data name="A11y_Main_Redo" xml:space="preserve">
+    <value>Redo last action</value>
+    <comment>Accessibility name for redo action</comment>
+  </data>
+  <data name="A11y_Main_NavDashboard" xml:space="preserve">
+    <value>Navigate to Dashboard view, Ctrl+1</value>
+    <comment>Accessibility help text for dashboard navigation item</comment>
+  </data>
+  <data name="A11y_Main_NavPrerequisites" xml:space="preserve">
+    <value>Navigate to Prerequisites view, Ctrl+2</value>
+    <comment>Accessibility help text for prerequisites navigation item</comment>
+  </data>
+  <data name="A11y_Main_NavApps" xml:space="preserve">
+    <value>Navigate to Applications view, Ctrl+3</value>
+    <comment>Accessibility help text for apps navigation item</comment>
+  </data>
+  <data name="A11y_Main_NavDeployment" xml:space="preserve">
+    <value>Navigate to Deployment view, Ctrl+4</value>
+    <comment>Accessibility help text for deployment navigation item</comment>
+  </data>
+  <data name="A11y_Main_NavSettings" xml:space="preserve">
+    <value>Navigate to Settings view, Ctrl+5</value>
+    <comment>Accessibility help text for settings navigation item</comment>
+  </data>
+  <data name="A11y_Main_NavAppDatabase" xml:space="preserve">
+    <value>Navigate to Application Database view, Ctrl+6</value>
+    <comment>Accessibility help text for app database navigation item</comment>
+  </data>
+  <data name="A11y_Main_NavLogs" xml:space="preserve">
+    <value>Navigate to Logs view, Ctrl+7</value>
+    <comment>Accessibility help text for logs navigation item</comment>
+  </data>
+  <data name="A11y_Deployment_AppList" xml:space="preserve">
+    <value>Deployment applications list</value>
+    <comment>Accessibility name for deployment applications grid</comment>
+  </data>
+  <data name="A11y_Applications_DbGrid" xml:space="preserve">
+    <value>Applications database grid</value>
+    <comment>Accessibility name for applications database grid</comment>
+  </data>
+  <data name="A11y_Dashboard_ProfilesCard" xml:space="preserve">
+    <value>Navigate to profiles management page</value>
+    <comment>Accessibility help text for dashboard profiles card</comment>
+  </data>
+  <data name="A11y_Dashboard_AppsCard" xml:space="preserve">
+    <value>Navigate to applications management page</value>
+    <comment>Accessibility help text for dashboard applications card</comment>
+  </data>
+  <data name="A11y_Dashboard_UpdatesCard" xml:space="preserve">
+    <value>Navigate to updates page</value>
+    <comment>Accessibility help text for dashboard updates card</comment>
+  </data>
+  <data name="A11y_Loading_ContentHelp" xml:space="preserve">
+    <value>Content is being loaded, please wait</value>
+    <comment>Accessibility help text for loading placeholders</comment>
+  </data>
+  <!-- Batch Resume -->
+  <data name="Resume_Title" xml:space="preserve">
+    <value>Resume previous batch?</value>
+    <comment>Title of the resume prompt shown at startup when an interrupted batch is detected.</comment>
+  </data>
+  <data name="Resume_Message_Install" xml:space="preserve">
+    <value>A previous installation of {0} apps was interrupted ({1} completed, {2} remaining). What would you like to do?</value>
+    <comment>Resume prompt body for an interrupted Install batch. {0}=plan size, {1}=completed count, {2}=remaining count.</comment>
+  </data>
+  <data name="Resume_Message_Update" xml:space="preserve">
+    <value>A previous update of {0} apps was interrupted ({1} completed, {2} remaining). What would you like to do?</value>
+    <comment>Resume prompt body for an interrupted Update batch. {0}=plan size, {1}=completed count, {2}=remaining count.</comment>
+  </data>
+  <data name="Resume_Message_Uninstall" xml:space="preserve">
+    <value>A previous uninstall of {0} apps was interrupted ({1} completed, {2} remaining). What would you like to do?</value>
+    <comment>Resume prompt body for an interrupted Uninstall batch. {0}=plan size, {1}=completed count, {2}=remaining count.</comment>
+  </data>
+  <data name="Resume_Action_Resume" xml:space="preserve">
+    <value>Resume</value>
+    <comment>Primary button on the resume prompt; continues the interrupted batch with the remaining apps.</comment>
+  </data>
+  <data name="Resume_Action_Discard" xml:space="preserve">
+    <value>Discard</value>
+    <comment>Secondary button on the resume prompt; deletes the interrupted batch state without resuming.</comment>
+  </data>
+  <data name="Resume_Action_KeepForLater" xml:space="preserve">
+    <value>Decide later</value>
+    <comment>Close button on the resume prompt; leaves the state file untouched so it is re-offered on the next startup until the TTL expires.</comment>
+  </data>
+</root>

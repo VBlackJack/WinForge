@@ -1,6 +1,6 @@
-﻿{
+{
   "_meta": {
-    "description": "Rollback system configuration for Win11Forge",
+    "description": "Rollback system configuration for WinForge",
     "version": "3.6.8",
     "author": "Julien Bombled",
     "lastUpdated": "2026-01-19"
@@ -38,7 +38,7 @@
   },
   "reporting": {
     "autoExportOnFailure": false,
-    "reportDirectory": "%LOCALAPPDATA%\\Win11Forge\\Reports",
+    "reportDirectory": "%LOCALAPPDATA%\\WinForge\\Reports",
     "defaultFormat": "Json"
   }
 }

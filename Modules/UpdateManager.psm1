@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - Update Manager v3.7.2
+    WinForge - Update Manager v3.7.2
 
 .DESCRIPTION
-    Provides auto-update functionality for Win11Forge:
+    Provides auto-update functionality for WinForge:
     - Check for new releases via GitHub API
     - Semantic version comparison
     - Download and apply updates
@@ -56,7 +56,7 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
 
 # Import DirectoryConstants for path management
 $script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
-if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-WinForgeDirectory -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:DirectoryConstantsPath) {
         Import-Module -Name $script:DirectoryConstantsPath -Force
     }
@@ -110,7 +110,7 @@ function Resolve-DefaultGitHubRepository {
 
     # 1. Static fallbacks
     $owner = 'VBlackJack'
-    $repo = 'Win11Forge'
+    $repo = 'WinForge'
 
     # 2. Try git remote (overrides fallbacks)
     if (Get-Command -Name git -ErrorAction SilentlyContinue) {
@@ -126,11 +126,22 @@ function Resolve-DefaultGitHubRepository {
     }
 
     # 3. Environment overrides (highest priority)
-    if (-not [string]::IsNullOrWhiteSpace($env:WIN11FORGE_GITHUB_OWNER)) {
-        $owner = $env:WIN11FORGE_GITHUB_OWNER.Trim()
+    $ownerOverride = if (-not [string]::IsNullOrWhiteSpace($env:WINFORGE_GITHUB_OWNER)) {
+        $env:WINFORGE_GITHUB_OWNER
+    } else {
+        $env:WIN11FORGE_GITHUB_OWNER
     }
-    if (-not [string]::IsNullOrWhiteSpace($env:WIN11FORGE_GITHUB_REPO)) {
-        $repo = $env:WIN11FORGE_GITHUB_REPO.Trim()
+    $repoOverride = if (-not [string]::IsNullOrWhiteSpace($env:WINFORGE_GITHUB_REPO)) {
+        $env:WINFORGE_GITHUB_REPO
+    } else {
+        $env:WIN11FORGE_GITHUB_REPO
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($ownerOverride)) {
+        $owner = $ownerOverride.Trim()
+    }
+    if (-not [string]::IsNullOrWhiteSpace($repoOverride)) {
+        $repo = $repoOverride.Trim()
     }
 
     return @{
@@ -148,9 +159,9 @@ $script:UpdateConfig = @{
     AutoCheckEnabled = $true
     CheckIntervalHours = 24
     IncludePrerelease = $false
-    BackupDirectory = Get-Win11ForgeDirectory -DirectoryType 'Backups'
-    DownloadDirectory = Join-Path (Get-Win11ForgeDirectory -DirectoryType 'Data') 'Updates'
-    LastCheckFile = Join-Path (Get-Win11ForgeDirectory -DirectoryType 'Data') 'last-update-check.json'
+    BackupDirectory = Get-WinForgeDirectory -DirectoryType 'Backups'
+    DownloadDirectory = Join-Path (Get-WinForgeDirectory -DirectoryType 'Data') 'Updates'
+    LastCheckFile = Join-Path (Get-WinForgeDirectory -DirectoryType 'Data') 'last-update-check.json'
 }
 
 # === VERSION FUNCTIONS ===
@@ -191,7 +202,7 @@ function Compare-SemanticVersions {
         Compares two semantic version strings.
 
     .DESCRIPTION
-        Compares semantic versions and Win11Forge calendar versions.
+        Compares semantic versions and WinForge calendar versions.
         Returns: -1 if Version1 < Version2, 0 if equal, 1 if Version1 > Version2
 
     .PARAMETER Version1
@@ -634,7 +645,7 @@ function Get-LatestReleaseInfo {
     try {
         $headers = @{
             'Accept' = 'application/vnd.github+json'
-            'User-Agent' = "Win11Forge-UpdateManager/$script:FrameworkVersion"
+            'User-Agent' = "WinForge-UpdateManager/$script:FrameworkVersion"
         }
 
         $response = Invoke-RestMethod -Uri $apiUrl -Headers $headers -Method GET -TimeoutSec 30
@@ -949,7 +960,7 @@ function Restore-PreviousVersion {
 
     try {
         # Extract backup to a temp directory first
-        $tempDir = Join-Path (Get-ShellFolder -FolderType 'Temp') "Win11Forge_Restore_$(Get-Date -Format 'yyyyMMddHHmmss')"
+        $tempDir = Join-Path (Get-ShellFolder -FolderType 'Temp') "WinForge_Restore_$(Get-Date -Format 'yyyyMMddHHmmss')"
         Expand-Archive -Path $BackupPath -DestinationPath $tempDir -Force
 
         # Copy files back
@@ -1020,7 +1031,7 @@ function Install-Update {
         Create a backup before updating (default: true).
 
     .EXAMPLE
-        Install-Update -UpdatePath "C:\Updates\Win11Forge-3.2.0.zip"
+        Install-Update -UpdatePath "C:\Updates\WinForge-3.2.0.zip"
     #>
     [CmdletBinding()]
     param(
@@ -1045,7 +1056,7 @@ function Install-Update {
 
     try {
         # Extract update to temp directory
-        $tempDir = Join-Path (Get-ShellFolder -FolderType 'Temp') "Win11Forge_Update_$(Get-Date -Format 'yyyyMMddHHmmss')"
+        $tempDir = Join-Path (Get-ShellFolder -FolderType 'Temp') "WinForge_Update_$(Get-Date -Format 'yyyyMMddHHmmss')"
         Expand-Archive -Path $UpdatePath -DestinationPath $tempDir -Force
 
         # Copy new files

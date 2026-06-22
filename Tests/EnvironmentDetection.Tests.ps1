@@ -3,7 +3,7 @@
     Pester tests for EnvironmentDetection module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge EnvironmentDetection v2.5.0
+    Comprehensive unit tests for WinForge EnvironmentDetection v2.5.0
     Tests environment detection, capabilities, and compatibility checks
 
 .NOTES

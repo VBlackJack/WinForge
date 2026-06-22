@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - Rollback Manager v3.7.2
+    WinForge - Rollback Manager v3.7.2
 
 .DESCRIPTION
-    Provides enhanced rollback management capabilities for Win11Forge:
+    Provides enhanced rollback management capabilities for WinForge:
     - Auto-rollback on critical failures with configurable thresholds
     - User confirmation prompts before rollback
     - Rollback summary and reporting
@@ -40,7 +40,7 @@ $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
 $script:ConfigPath = Join-Path $script:RepositoryRoot 'Config\rollback-settings.json'
 $script:FeatureFlagsPath = Join-Path $script:RepositoryRoot 'Core\FeatureFlags.psm1'
-$script:ExceptionsPath = Join-Path $script:RepositoryRoot 'Core\Win11ForgeExceptions.psm1'
+$script:ExceptionsPath = Join-Path $script:RepositoryRoot 'Core\WinForgeExceptions.psm1'
 
 # Import Core module for logging
 if (-not (Get-Command -Name Write-Status -ErrorAction SilentlyContinue)) {

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Start Menu Pinning v3.7.2
+    WinForge - Start Menu Pinning v3.7.2
 
 .DESCRIPTION
     Module for managing Windows 11 Start Menu pinned items using start2.bin/start.bin method:

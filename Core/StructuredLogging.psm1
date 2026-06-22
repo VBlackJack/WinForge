@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - Structured Logging v3.7.2
+    WinForge - Structured Logging v3.7.2
 
 .DESCRIPTION
-    Provides JSON-based structured logging for Win11Forge:
+    Provides JSON-based structured logging for WinForge:
     - Parallel JSON logs alongside text logs
     - Configurable retention and rotation
     - Session-based log grouping
@@ -40,7 +40,7 @@ $script:ConfigPath = Join-Path $script:RepositoryRoot 'Config\logging-settings.j
 $script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
 $script:LocalizationModulePath = Join-Path $script:ModuleRoot 'Localization.psm1'
 
-if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-WinForgeDirectory -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:DirectoryConstantsPath) {
         Import-Module -Name $script:DirectoryConstantsPath -Force
     } else {
@@ -76,7 +76,7 @@ $script:DefaultConfig = @{
     JsonLogging = @{
         Enabled = $true
         RetentionDays = 30
-        Directory = Get-Win11ForgeDirectory -DirectoryType 'JsonLogs'
+        Directory = Get-WinForgeDirectory -DirectoryType 'JsonLogs'
         BufferSize = 10
         PrettyPrint = $false
         MaxFileSizeMB = 10  # Rotate log when file exceeds this size

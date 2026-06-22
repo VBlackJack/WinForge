@@ -1,6 +1,6 @@
-﻿{
+{
   "_meta": {
-    "description": "System registry paths and settings constants for Win11Forge",
+    "description": "System registry paths and settings constants for WinForge",
     "version": "3.6.8",
     "author": "Julien Bombled",
     "lastUpdated": "2026-02-03"

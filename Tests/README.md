@@ -1,8 +1,8 @@
-# Win11Forge Tests
+# WinForge Tests
 
 ## Scope
 
-This folder contains the PowerShell/Pester test suite for the framework modules. GUI unit tests live under `GUI/Win11Forge.GUI.Tests`, and opt-in desktop UI smoke tests are documented in `GUI/Win11Forge.GUI.UITests/README.md`.
+This folder contains the PowerShell/Pester test suite for the framework modules. GUI unit tests live under `GUI/WinForge.GUI.Tests`, and opt-in desktop UI smoke tests are documented in `GUI/WinForge.GUI.UITests/README.md`.
 
 Current baseline after the May 2026 backlog closure:
 
@@ -65,11 +65,11 @@ Invoke-Pester -Path Tests\ApplicationDatabase.Tests.ps1
 Use these commands before merging broad framework or tooling changes:
 
 ```powershell
-dotnet build GUI\Win11Forge.slnx -c Release
-dotnet test GUI\Win11Forge.GUI.Tests\Win11Forge.GUI.Tests.csproj -c Release --no-build
+dotnet build GUI\WinForge.slnx -c Release
+dotnet test GUI\WinForge.GUI.Tests\WinForge.GUI.Tests.csproj -c Release --no-build
 pwsh -NoProfile -File Tests\Invoke-Tests.ps1 -OutputFormat NUnitXml
 pwsh -NoProfile -File Tools\Invoke-PSScriptAnalyzer.ps1
-pwsh -NoProfile -File Tools\lint-fr-diacritics.ps1 -Path GUI\Win11Forge.GUI\Resources\Resources.fr.resx
+pwsh -NoProfile -File Tools\lint-fr-diacritics.ps1 -Path GUI\WinForge.GUI\Resources\Resources.fr.resx
 pwsh -NoProfile -File Tools\Verify-VersionConsistency.ps1
 git diff --check
 ```

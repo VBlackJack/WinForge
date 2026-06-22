@@ -1,10 +1,13 @@
-# Win11Forge Framework - Changelog
+# WinForge Framework - Changelog
 
 Note: the framework version source of truth is `Config/version.json`. Launchers and GUI read this value dynamically.
 
 ## [Unreleased]
 
-No unreleased changes.
+### Changed
+- Rebranded public project identifiers, GUI assets, launchers, runtime data directory, and documentation from Win11Forge to WinForge.
+- Added startup migration from `%LOCALAPPDATA%\Win11Forge` to `%LOCALAPPDATA%\WinForge`, with graceful fallback to legacy data when migration is blocked.
+- Scheduled deployments now use WinForge task names while continuing to discover and manage legacy Win11Forge scheduled tasks.
 
 ## [2026062201] - 2026-06-22
 

@@ -3,7 +3,7 @@
     Pester tests for TelemetryCollector module
 
 .DESCRIPTION
-    Unit tests for Win11Forge TelemetryCollector v3.2.2
+    Unit tests for WinForge TelemetryCollector v3.2.2
     Tests deployment tracking, statistics, and reporting functions
     Verifies data schema compliance for local telemetry storage
 
@@ -329,7 +329,7 @@ Describe 'TelemetryCollector Module' {
         }
 
         It 'Should export report to custom location' {
-            $tempPath = Join-Path $env:TEMP "Win11ForgeTest_$(Get-Random).json"
+            $tempPath = Join-Path $env:TEMP "WinForgeTest_$(Get-Random).json"
             try {
                 $path = Export-TelemetryReport -OutputPath $tempPath
                 $path | Should -Be $tempPath
@@ -343,7 +343,7 @@ Describe 'TelemetryCollector Module' {
         }
 
         It 'Should produce valid JSON' {
-            $tempPath = Join-Path $env:TEMP "Win11ForgeTest_$(Get-Random).json"
+            $tempPath = Join-Path $env:TEMP "WinForgeTest_$(Get-Random).json"
             try {
                 Export-TelemetryReport -OutputPath $tempPath
                 $content = Get-Content $tempPath -Raw
@@ -357,7 +357,7 @@ Describe 'TelemetryCollector Module' {
         }
 
         It 'Should include chart data structure' {
-            $tempPath = Join-Path $env:TEMP "Win11ForgeTest_$(Get-Random).json"
+            $tempPath = Join-Path $env:TEMP "WinForgeTest_$(Get-Random).json"
             try {
                 Export-TelemetryReport -OutputPath $tempPath
                 $content = Get-Content $tempPath -Raw | ConvertFrom-Json
@@ -447,7 +447,7 @@ Describe 'TelemetryCollector Module' {
             Register-ApplicationInstall -AppName 'TestApp' -Method 'Winget' -Category 'Testing' -Success $true -SessionId $sessionId
             Register-DeploymentEnd -SessionId $sessionId -Success $true
 
-            $tempPath = Join-Path $env:TEMP "Win11ForgeSchemaTest_$(Get-Random).json"
+            $tempPath = Join-Path $env:TEMP "WinForgeSchemaTest_$(Get-Random).json"
             try {
                 Export-TelemetryReport -OutputPath $tempPath
                 $content = Get-Content $tempPath -Raw | ConvertFrom-Json
@@ -476,7 +476,7 @@ Describe 'TelemetryCollector Module' {
             Register-ApplicationInstall -AppName 'App2' -Method 'Chocolatey' -Success $true
             Register-DeploymentEnd -SessionId $sessionId -Success $true
 
-            $tempPath = Join-Path $env:TEMP "Win11ForgeChartTest_$(Get-Random).json"
+            $tempPath = Join-Path $env:TEMP "WinForgeChartTest_$(Get-Random).json"
             try {
                 Export-TelemetryReport -OutputPath $tempPath
                 $content = Get-Content $tempPath -Raw | ConvertFrom-Json

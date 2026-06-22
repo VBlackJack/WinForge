@@ -30,13 +30,13 @@
     Author = 'Julien Bombled'
 
     # Company or vendor of this module
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
 
     # Copyright statement for this module
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description = 'Core functions for Win11Forge including logging, status output, command existence checking, and administrator privilege validation.'
+    Description = 'Core functions for WinForge including logging, status output, command existence checking, and administrator privilege validation.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -64,7 +64,7 @@
     PrivateData = @{
         PSData = @{
             # Tags applied to this module
-            Tags = @('Win11Forge', 'Core', 'Logging', 'Utility')
+            Tags = @('WinForge', 'Core', 'Logging', 'Utility')
 
             # A URL to the license for this module
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
@@ -73,7 +73,7 @@
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
 
             # Release notes
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

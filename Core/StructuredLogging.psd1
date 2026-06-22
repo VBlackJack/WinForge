@@ -21,9 +21,9 @@
     ModuleVersion = '1.0.0622.1'
     GUID = 'bfc6d25e-9687-4bb8-a6c6-9244335d17e8'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
-    Description = 'Structured JSON logging for Win11Forge operations'
+    Description = 'Structured JSON logging for WinForge operations'
     PowerShellVersion = '5.1'
     RequiredModules = @()
     FunctionsToExport = '*'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'Core', 'Logging', 'JSON', 'Structured')
+            Tags = @('WinForge', 'Core', 'Logging', 'JSON', 'Structured')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

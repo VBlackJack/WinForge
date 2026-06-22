@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Install PSScriptAnalyzer for Win11Forge v2.5.0
+    Install PSScriptAnalyzer for WinForge v2.5.0
 
 .DESCRIPTION
     Installs PSScriptAnalyzer required for code quality analysis

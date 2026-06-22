@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - Plugin Sandbox v3.7.2
+    WinForge - Plugin Sandbox v3.7.2
 
 .DESCRIPTION
-    Provides sandboxed execution environment for Win11Forge plugins:
+    Provides sandboxed execution environment for WinForge plugins:
     - Process-level isolation for plugin execution
     - Timeout enforcement for runaway plugins
     - Resource limits and monitoring

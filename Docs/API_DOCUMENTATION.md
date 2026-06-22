@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# Win11Forge API Documentation
+# WinForge API Documentation
 
 ## Overview
-Win11Forge exposes a local REST API for GUI integration and automation.
+WinForge exposes a local REST API for GUI integration and automation.
 
 Default URL: `http://localhost:5170/`
 

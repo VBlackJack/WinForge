@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge Framework Setup Script
+    WinForge Framework Setup Script
 
 .DESCRIPTION
-    Automated setup script for Win11Forge framework:
+    Automated setup script for WinForge framework:
     - Creates directory structure
     - Downloads/copies required files
     - Validates installation
@@ -22,10 +22,10 @@
     .\Setup-Framework.ps1
 
 .EXAMPLE
-    .\Setup-Framework.ps1 -InstallPath "D:\Tools\Win11Forge"
+    .\Setup-Framework.ps1 -InstallPath "D:\Tools\WinForge"
 
 .EXAMPLE
-    .\Setup-Framework.ps1 -SourcePath "E:\Downloads\Win11Forge"
+    .\Setup-Framework.ps1 -SourcePath "E:\Downloads\WinForge"
 
 .NOTES
     Author: Julien Bombled
@@ -126,12 +126,12 @@ function Test-AdminPrivileges {
 # === SETUP BANNER ===
 
 # Load version dynamically
-$versionInfo = & "$PSScriptRoot\Tools\Get-Win11ForgeVersion.ps1"
+$versionInfo = & "$PSScriptRoot\Tools\Get-WinForgeVersion.ps1"
 $version = $versionInfo.Version
 
 Write-Host ""
 Write-Host "======================================================================" -ForegroundColor Cyan
-Write-Host "  $(Get-Text -Key 'setup.banner_title' -Parameters @{ Version = $version } -Default "Win11Forge Framework Setup v$version")" -ForegroundColor Cyan
+Write-Host "  $(Get-Text -Key 'setup.banner_title' -Parameters @{ Version = $version } -Default "WinForge Framework Setup v$version")" -ForegroundColor Cyan
 Write-Host "  $(Get-Text -Key 'setup.banner_subtitle' -Default 'Automated Installation & Configuration')" -ForegroundColor Cyan
 Write-Host "======================================================================" -ForegroundColor Cyan
 Write-Host ""
@@ -189,7 +189,7 @@ foreach ($dir in $directories) {
 
 $fileStructure = @{
     'Root' = @(
-        'Deploy-Win11Forge.bat',
+        'WinForge.cmd',
         'Deploy-Win11Environment.ps1',
         'README.md',
         'CHANGELOG.md',
@@ -326,11 +326,17 @@ $createShortcut = if ($Unattended) {
 if ($createShortcut -match '^[Yy]') {
     try {
         $shell = New-Object -ComObject WScript.Shell
-        $shortcutPath = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Win11Forge.lnk'
+        $desktopPath = [Environment]::GetFolderPath('Desktop')
+        $shortcutPath = Join-Path $desktopPath 'WinForge.lnk'
+        $legacyShortcutPath = Join-Path $desktopPath 'Win11Forge.lnk'
+        if (Test-Path -Path $legacyShortcutPath) {
+            Remove-Item -Path $legacyShortcutPath -Force -ErrorAction SilentlyContinue
+        }
+
         $shortcut = $shell.CreateShortcut($shortcutPath)
-        $shortcut.TargetPath = Join-Path $InstallPath 'Deploy-Win11Forge.bat'
+        $shortcut.TargetPath = Join-Path $InstallPath 'WinForge.cmd'
         $shortcut.WorkingDirectory = $InstallPath
-        $shortcut.Description = 'Win11Forge Framework Launcher'
+        $shortcut.Description = 'WinForge Framework Launcher'
         $shortcut.Save()
 
         Write-SetupStatus (Get-Text -Key 'setup.shortcut_created' -Default 'Desktop shortcut created') -Level Success
@@ -372,7 +378,7 @@ Write-Host ""
 Write-Host (Get-Text -Key 'setup.next_steps' -Default 'Next steps:') -ForegroundColor Cyan
 Write-Host "  $(Get-Text -Key 'setup.step_review' -Default '1. Review configuration in Profiles/*.json')"
 Write-Host "  $(Get-Text -Key 'setup.step_test' -Default "2. Run: .\Deploy-Win11Environment.ps1 -ProfileName 'Base' -TestMode")"
-Write-Host "  $(Get-Text -Key 'setup.step_deploy' -Default '3. For full deployment: .\Deploy-Win11Forge.bat')"
+Write-Host "  $(Get-Text -Key 'setup.step_deploy' -Default '3. For GUI deployment: .\WinForge.cmd')"
 Write-Host ""
 Write-Host (Get-Text -Key 'setup.documentation' -Default 'Documentation:') -ForegroundColor Cyan
 Write-Host "  $(Get-Text -Key 'setup.doc_readme' -Default 'README.md            - Complete documentation')"

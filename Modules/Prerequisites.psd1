@@ -21,7 +21,7 @@
     ModuleVersion = '1.0.0622.1'
     GUID = 'aa479331-d931-4d0d-8c6e-606d1d63ae7c'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
     Description = 'Prerequisites checking and installation'
     PowerShellVersion = '5.1'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'Prerequisites', 'Dependencies')
+            Tags = @('WinForge', 'Prerequisites', 'Dependencies')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

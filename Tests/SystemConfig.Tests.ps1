@@ -3,7 +3,7 @@
     Pester tests for SystemConfig module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge SystemConfig v2.5.0
+    Comprehensive unit tests for WinForge SystemConfig v2.5.0
     Tests system configuration functions for Explorer, Taskbar, Network, etc.
 
 .NOTES
@@ -102,7 +102,7 @@ Describe 'SystemConfig Module' {
 
         It 'Should return boolean' {
             # Test in a safe HKCU location
-            $testPath = 'HKCU:\Software\Win11ForgeTest'
+            $testPath = 'HKCU:\Software\WinForgeTest'
             try {
                 $result = Set-RegistryValue -Path $testPath -Name 'TestValue' -Value 1 -Type DWord
                 $result | Should -BeOfType [bool]
@@ -113,7 +113,7 @@ Describe 'SystemConfig Module' {
         }
 
         It 'Should create registry path if not exists' {
-            $testPath = "HKCU:\Software\Win11ForgeTest_$(Get-Random)"
+            $testPath = "HKCU:\Software\WinForgeTest_$(Get-Random)"
             try {
                 Set-RegistryValue -Path $testPath -Name 'TestValue' -Value 1 -Type DWord
                 Test-Path $testPath | Should -BeTrue
@@ -124,7 +124,7 @@ Describe 'SystemConfig Module' {
         }
 
         It 'Should set DWORD values correctly' {
-            $testPath = "HKCU:\Software\Win11ForgeTest_$(Get-Random)"
+            $testPath = "HKCU:\Software\WinForgeTest_$(Get-Random)"
             try {
                 Set-RegistryValue -Path $testPath -Name 'DWordTest' -Value 42 -Type DWord
                 $value = Get-ItemProperty -Path $testPath -Name 'DWordTest'
@@ -136,7 +136,7 @@ Describe 'SystemConfig Module' {
         }
 
         It 'Should set String values correctly' {
-            $testPath = "HKCU:\Software\Win11ForgeTest_$(Get-Random)"
+            $testPath = "HKCU:\Software\WinForgeTest_$(Get-Random)"
             try {
                 Set-RegistryValue -Path $testPath -Name 'StringTest' -Value 'TestString' -Type String
                 $value = Get-ItemProperty -Path $testPath -Name 'StringTest'
@@ -257,7 +257,7 @@ Describe 'SystemConfig Module' {
 Describe 'SystemConfig Integration Tests' {
     Context 'Registry Operations' {
         It 'Should perform multiple registry operations safely' {
-            $testPath = "HKCU:\Software\Win11ForgeMultiTest_$(Get-Random)"
+            $testPath = "HKCU:\Software\WinForgeMultiTest_$(Get-Random)"
             try {
                 Set-RegistryValue -Path $testPath -Name 'Value1' -Value 1 -Type DWord
                 Set-RegistryValue -Path $testPath -Name 'Value2' -Value 2 -Type DWord

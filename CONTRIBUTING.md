@@ -1,6 +1,6 @@
-# Contributing to Win11Forge
+# Contributing to WinForge
 
-Thank you for your interest in contributing to Win11Forge! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to WinForge! This document provides guidelines and instructions for contributing.
 
 ## Table of Contents
 
@@ -31,8 +31,8 @@ Thank you for your interest in contributing to Win11Forge! This document provide
 
 ```powershell
 # Clone the repository
-git clone https://github.com/your-org/Win11Forge.git
-cd Win11Forge
+git clone https://github.com/VBlackJack/WinForge.git
+cd WinForge
 
 # Install test dependencies
 Install-Module -Name Pester -MinimumVersion 5.0.0 -Force -Scope CurrentUser
@@ -42,13 +42,13 @@ Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
 Invoke-Pester -Path ./Tests -Output Detailed
 
 # Build GUI (optional)
-dotnet build ./GUI/Win11Forge.slnx
+dotnet build ./GUI/WinForge.slnx
 ```
 
 ### Project Structure
 
 ```
-Win11Forge/
+WinForge/
 ├── Core/                    # Core infrastructure modules
 │   ├── Core.psm1           # Logging, utilities
 │   ├── Localization.psm1   # i18n support
@@ -337,4 +337,4 @@ Examples:
 
 ---
 
-Thank you for contributing to Win11Forge!
+Thank you for contributing to WinForge!

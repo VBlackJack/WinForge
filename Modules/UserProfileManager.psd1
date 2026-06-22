@@ -21,7 +21,7 @@
     ModuleVersion = '1.0.0622.1'
     GUID = 'c3eb711c-8e86-4827-9f28-6062183f4a73'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
     Description = 'User-specific profile and settings management'
     PowerShellVersion = '5.1'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'UserProfile', 'Settings')
+            Tags = @('WinForge', 'UserProfile', 'Settings')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

@@ -21,7 +21,7 @@
     ModuleVersion = '1.0.0622.1'
     GUID = 'cfd8f357-383b-41d7-9aca-9770360e26b3'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
     Description = 'Deployment profile loading and inheritance resolution'
     PowerShellVersion = '5.1'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'Profiles', 'Inheritance')
+            Tags = @('WinForge', 'Profiles', 'Inheritance')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

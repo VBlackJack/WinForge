@@ -1,0 +1,38 @@
+# WinForge GUI UIA Tests
+
+These tests launch the real WPF application, drive it through UI Automation, and write PNG screenshots.
+
+They are skipped by default because they require an interactive Windows desktop session.
+The harness starts `WinForge.GUI.dll` through `dotnet` so the UI smoke tests can run without triggering the product executable's `requireAdministrator` UAC manifest.
+
+Run manually from the repository root:
+
+```powershell
+$env:WINFORGE_RUN_UIA = '1'
+$env:WINFORGE_UIA_ARTIFACTS = '<repo-root>\TestResults\ui-screenshots'
+dotnet test GUI\WinForge.GUI.UITests\WinForge.GUI.UITests.csproj --configuration Release
+```
+
+Screenshots are written to `WINFORGE_UIA_ARTIFACTS` when set, otherwise to a timestamped folder under `%TEMP%\WinForge\UIA`.
+
+## Winsight smoke
+
+WinSight is the preferred opt-in agent smoke harness for exploratory desktop checks.
+It runs as a sibling repository and is not required for normal CI.
+
+From the WinForge repository root:
+
+```powershell
+.\Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot <path-to-winsight>
+```
+
+The script builds the WinSight MCP server and WinForge GUI, launches `WinForge.GUI.dll` through `dotnet`, drives the app via MCP tools (`list_windows`, `inspect_ui_tree`, `click_element`, `capture_screenshot`), and writes screenshots to `TestResults\winsight`.
+
+You can also set `WINSIGHT_ROOT` and omit the parameter:
+
+```powershell
+$env:WINSIGHT_ROOT = '<path-to-winsight>'
+.\Tools\Invoke-WinsightSmoke.ps1
+```
+
+Use this in addition to the xUnit UIA tests when a change needs richer agent-side inspection or screenshot capture.

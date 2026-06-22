@@ -1,8 +1,8 @@
 {
-  "$schema": "Win11Forge-Plugin-v1.0",
+  "$schema": "WinForge-Plugin-v1.0",
   "name": "plugin-template",
   "version": "1.0.0",
-  "description": "Template plugin for Win11Forge - copy this directory to create a new plugin",
+  "description": "Template plugin for WinForge - copy this directory to create a new plugin",
   "author": "Your Name",
   "entryPoint": "Main.psm1",
   "hooks": [

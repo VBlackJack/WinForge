@@ -21,9 +21,9 @@
     ModuleVersion = '1.0.0622.1'
     GUID = '485f36a2-a161-41cd-b28e-c5bb5dec6628'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
-    Description = 'Feature flag management for Win11Forge runtime configuration'
+    Description = 'Feature flag management for WinForge runtime configuration'
     PowerShellVersion = '5.1'
     RequiredModules = @()
     FunctionsToExport = '*'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'Core', 'FeatureFlags', 'Configuration')
+            Tags = @('WinForge', 'Core', 'FeatureFlags', 'Configuration')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

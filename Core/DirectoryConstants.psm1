@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Directory and Path Constants v3.7.2
+    WinForge - Directory and Path Constants v3.7.2
 
 .DESCRIPTION
     Centralized constants for all directory paths, registry paths, and
@@ -34,15 +34,45 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 
-# === WIN11FORGE DATA DIRECTORIES ===
-$script:Win11ForgeDataDir = Join-Path $env:LOCALAPPDATA 'Win11Forge'
-$script:Win11ForgeLogsDir = Join-Path $script:Win11ForgeDataDir 'Logs'
-$script:Win11ForgeJsonLogsDir = Join-Path $script:Win11ForgeLogsDir 'json'
-$script:Win11ForgeCacheDir = Join-Path $script:Win11ForgeDataDir 'Cache'
-$script:Win11ForgeBackupsDir = Join-Path $script:Win11ForgeDataDir 'Backups'
-$script:Win11ForgeProfilesDir = Join-Path $script:Win11ForgeDataDir 'UserProfiles'
-$script:Win11ForgeTelemetryDir = Join-Path $script:Win11ForgeDataDir 'Telemetry'
-$script:Win11ForgePluginsDir = Join-Path $script:RepositoryRoot 'Plugins'
+# === WINFORGE DATA DIRECTORIES ===
+$script:WinForgeProductDirectoryName = 'WinForge'
+$script:WinForgeLegacyProductDirectoryName = 'Win11Forge'
+
+function Resolve-WinForgeDataDirectory {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param()
+
+    $basePath = $env:LOCALAPPDATA
+    if ([string]::IsNullOrWhiteSpace($basePath)) {
+        $basePath = [System.IO.Path]::GetTempPath()
+    }
+
+    $productPath = Join-Path $basePath $script:WinForgeProductDirectoryName
+    $legacyPath = Join-Path $basePath $script:WinForgeLegacyProductDirectoryName
+
+    if ((Test-Path -Path $productPath) -or -not (Test-Path -Path $legacyPath)) {
+        return $productPath
+    }
+
+    try {
+        Move-Item -Path $legacyPath -Destination $productPath -ErrorAction Stop
+        return $productPath
+    }
+    catch {
+        Write-Warning "Failed to migrate WinForge data directory from '$legacyPath' to '$productPath': $($_.Exception.Message). Using legacy directory for this session."
+        return $legacyPath
+    }
+}
+
+$script:WinForgeDataDir = Resolve-WinForgeDataDirectory
+$script:WinForgeLogsDir = Join-Path $script:WinForgeDataDir 'Logs'
+$script:WinForgeJsonLogsDir = Join-Path $script:WinForgeLogsDir 'json'
+$script:WinForgeCacheDir = Join-Path $script:WinForgeDataDir 'Cache'
+$script:WinForgeBackupsDir = Join-Path $script:WinForgeDataDir 'Backups'
+$script:WinForgeProfilesDir = Join-Path $script:WinForgeDataDir 'UserProfiles'
+$script:WinForgeTelemetryDir = Join-Path $script:WinForgeDataDir 'Telemetry'
+$script:WinForgePluginsDir = Join-Path $script:RepositoryRoot 'Plugins'
 
 # === WINDOWS SYSTEM DIRECTORIES ===
 $script:WindowsDir = $env:SystemRoot
@@ -144,15 +174,15 @@ $script:ConfigPaths = @{
 
 # === STATE FILE PATHS ===
 $script:StatePaths = @{
-    RollbackState               = Join-Path $script:Win11ForgeDataDir 'RollbackState.json'
-    DeploymentState             = Join-Path $script:Win11ForgeDataDir 'DeploymentState.json'
-    WingetCache                 = Join-Path $script:Win11ForgeDataDir 'WingetCache.json'
-    TelemetryData               = Join-Path $script:Win11ForgeTelemetryDir 'telemetry.json'
-    UserSettings                = Join-Path $script:Win11ForgeDataDir 'settings.json'
-    DeploymentHistory           = Join-Path $script:Win11ForgeDataDir 'deployment-history.json'
-    SecureStorage               = Join-Path $script:Win11ForgeDataDir 'secure-storage.dpapi'
-    ApiKeys                     = Join-Path $script:Win11ForgeDataDir 'api-keys.secure'
-    Entropy                     = Join-Path $script:Win11ForgeDataDir 'entropy.bin'
+    RollbackState               = Join-Path $script:WinForgeDataDir 'RollbackState.json'
+    DeploymentState             = Join-Path $script:WinForgeDataDir 'DeploymentState.json'
+    WingetCache                 = Join-Path $script:WinForgeDataDir 'WingetCache.json'
+    TelemetryData               = Join-Path $script:WinForgeTelemetryDir 'telemetry.json'
+    UserSettings                = Join-Path $script:WinForgeDataDir 'settings.json'
+    DeploymentHistory           = Join-Path $script:WinForgeDataDir 'deployment-history.json'
+    SecureStorage               = Join-Path $script:WinForgeDataDir 'secure-storage.dpapi'
+    ApiKeys                     = Join-Path $script:WinForgeDataDir 'api-keys.secure'
+    Entropy                     = Join-Path $script:WinForgeDataDir 'entropy.bin'
 }
 
 # === DATABASE PATHS ===
@@ -211,12 +241,12 @@ $script:ExitCodes = @{
 
 # === PUBLIC FUNCTIONS ===
 
-function Get-Win11ForgeDirectory {
+function Get-WinForgeDirectory {
     <#
     .SYNOPSIS
-        Returns Win11Forge data directory paths.
+        Returns WinForge data directory paths.
     .DESCRIPTION
-        Resolves and returns the absolute path for a specified Win11Forge data directory type
+        Resolves and returns the absolute path for a specified WinForge data directory type
         (e.g., Logs, Cache, Backups). Creates the directory automatically if it does not exist.
     .PARAMETER DirectoryType
         Type of directory to return.
@@ -230,14 +260,14 @@ function Get-Win11ForgeDirectory {
     )
 
     $path = switch ($DirectoryType) {
-        'Data'      { $script:Win11ForgeDataDir }
-        'Logs'      { $script:Win11ForgeLogsDir }
-        'JsonLogs'  { $script:Win11ForgeJsonLogsDir }
-        'Cache'     { $script:Win11ForgeCacheDir }
-        'Backups'   { $script:Win11ForgeBackupsDir }
-        'Profiles'  { $script:Win11ForgeProfilesDir }
-        'Telemetry' { $script:Win11ForgeTelemetryDir }
-        'Plugins'   { $script:Win11ForgePluginsDir }
+        'Data'      { $script:WinForgeDataDir }
+        'Logs'      { $script:WinForgeLogsDir }
+        'JsonLogs'  { $script:WinForgeJsonLogsDir }
+        'Cache'     { $script:WinForgeCacheDir }
+        'Backups'   { $script:WinForgeBackupsDir }
+        'Profiles'  { $script:WinForgeProfilesDir }
+        'Telemetry' { $script:WinForgeTelemetryDir }
+        'Plugins'   { $script:WinForgePluginsDir }
     }
 
     # Ensure directory exists
@@ -474,9 +504,9 @@ function Get-ExitCodes {
 function Get-RepositoryRoot {
     <#
     .SYNOPSIS
-        Returns the Win11Forge repository root path.
+        Returns the WinForge repository root path.
     .DESCRIPTION
-        Returns the absolute path to the Win11Forge repository root directory, computed at module
+        Returns the absolute path to the WinForge repository root directory, computed at module
         load time from the location of this module file.
     #>
     [CmdletBinding()]
@@ -488,7 +518,7 @@ function Get-RepositoryRoot {
 
 # === MODULE EXPORTS ===
 Export-ModuleMember -Function @(
-    'Get-Win11ForgeDirectory',
+    'Get-WinForgeDirectory',
     'Get-RegistryPath',
     'Get-AllRegistryPaths',
     'Get-ConfigPath',

@@ -21,7 +21,7 @@
     ModuleVersion = '1.0.0622.1'
     GUID = 'c1556951-f2bd-4785-8b11-0b541795dab1'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
     Description = 'Application database management and queries'
     PowerShellVersion = '5.1'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'Applications', 'Database')
+            Tags = @('WinForge', 'Applications', 'Database')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

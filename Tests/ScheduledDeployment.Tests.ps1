@@ -3,7 +3,7 @@
     Pester tests for ScheduledDeployment module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge ScheduledDeployment v3.5.0
+    Comprehensive unit tests for WinForge ScheduledDeployment v3.5.0
     Tests scheduled deployment creation, listing, and management
 
 .NOTES

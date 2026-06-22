@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Secure Storage v3.7.2
+    WinForge - Secure Storage v3.7.2
 
 .DESCRIPTION
     Provides secure storage capabilities using Windows DPAPI:
@@ -40,7 +40,7 @@ $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 # Import DirectoryConstants for path management
 $script:DirectoryConstantsPath = Join-Path $script:ModuleRoot 'DirectoryConstants.psm1'
-if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-WinForgeDirectory -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:DirectoryConstantsPath) {
         Import-Module -Name $script:DirectoryConstantsPath -Force
     }
@@ -58,7 +58,7 @@ if (-not (Test-Path $secureDir)) {
 # Security: Per-user entropy file path
 $script:EntropyPath = Get-StatePath -PathKey 'Entropy'
 # Mutex name for cross-process synchronization (per-user to avoid privilege issues)
-$script:EntropyMutexName = "Local\Win11Forge_Entropy_$($env:USERNAME)"
+$script:EntropyMutexName = "Local\WinForge_Entropy_$($env:USERNAME)"
 # In-memory entropy cache to ensure consistency within a session
 $script:CachedEntropy = $null
 
@@ -72,8 +72,8 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
     }
 }
 
-# Import Win11ForgeExceptions for custom exception types
-$script:ExceptionsPath = Join-Path $script:ModuleRoot 'Win11ForgeExceptions.psm1'
+# Import WinForgeExceptions for custom exception types
+$script:ExceptionsPath = Join-Path $script:ModuleRoot 'WinForgeExceptions.psm1'
 if (-not (Get-Command -Name New-SecurityException -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:ExceptionsPath) {
         Import-Module -Name $script:ExceptionsPath -Force
@@ -405,7 +405,7 @@ function Save-SecureApiKey {
 
     .DESCRIPTION
         Encrypts and stores an API key with its metadata.
-        Keys are stored in %LOCALAPPDATA%\Win11Forge\api-keys.secure
+        Keys are stored in %LOCALAPPDATA%\WinForge\api-keys.secure
 
     .PARAMETER KeyId
         Unique identifier for the key.
@@ -796,7 +796,7 @@ function Test-SecureStorageAvailable {
     param()
 
     try {
-        $testData = 'Win11Forge-DPAPI-Test'
+        $testData = 'WinForge-DPAPI-Test'
         $encrypted = Protect-Data -PlainText $testData
         $decrypted = Unprotect-Data -EncryptedData $encrypted
         return $decrypted -eq $testData

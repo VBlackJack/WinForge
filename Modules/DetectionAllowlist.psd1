@@ -30,7 +30,7 @@
     Author = 'Julien Bombled'
 
     # Company or vendor of this module
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
 
     # Copyright statement for this module
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
@@ -62,7 +62,7 @@
     PrivateData = @{
         PSData = @{
             # Tags applied to this module
-            Tags = @('Win11Forge', 'Security', 'Detection', 'Allowlist')
+            Tags = @('WinForge', 'Security', 'Detection', 'Allowlist')
 
             # A URL to the license for this module
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'

@@ -26,26 +26,26 @@ AfterAll {
 }
 
 Describe 'ModuleLoader Module' {
-    Context 'Get-Win11ForgeRepositoryRoot' {
+    Context 'Get-WinForgeRepositoryRoot' {
         It 'Should return a valid path' {
-            $result = Get-Win11ForgeRepositoryRoot
+            $result = Get-WinForgeRepositoryRoot
             $result | Should -Not -BeNullOrEmpty
             $result | Should -BeOfType [string]
         }
 
         It 'Should return an existing directory' {
-            $result = Get-Win11ForgeRepositoryRoot
+            $result = Get-WinForgeRepositoryRoot
             Test-Path $result -PathType Container | Should -Be $true
         }
 
         It 'Should return consistent results' {
-            $result1 = Get-Win11ForgeRepositoryRoot
-            $result2 = Get-Win11ForgeRepositoryRoot
+            $result1 = Get-WinForgeRepositoryRoot
+            $result2 = Get-WinForgeRepositoryRoot
             $result1 | Should -Be $result2
         }
 
         It 'Should contain Core directory' {
-            $root = Get-Win11ForgeRepositoryRoot
+            $root = Get-WinForgeRepositoryRoot
             $corePath = Join-Path $root 'Core'
             Test-Path $corePath -PathType Container | Should -Be $true
         }
@@ -95,32 +95,32 @@ Describe 'ModuleLoader Module' {
         }
     }
 
-    Context 'Initialize-Win11ForgeModule' {
+    Context 'Initialize-WinForgeModule' {
         It 'Should initialize module context' {
-            $result = Initialize-Win11ForgeModule
+            $result = Initialize-WinForgeModule
             $result | Should -Not -BeNullOrEmpty
             $result.RepositoryRoot | Should -Not -BeNullOrEmpty
         }
 
         It 'Should return hashtable with expected keys' {
-            $result = Initialize-Win11ForgeModule
+            $result = Initialize-WinForgeModule
             $result.Keys | Should -Contain 'RepositoryRoot'
             $result.Keys | Should -Contain 'Success'
             $result.Keys | Should -Contain 'LoadedCommands'
         }
 
         It 'Should accept AdditionalCommands parameter' {
-            $result = Initialize-Win11ForgeModule -AdditionalCommands @('Test-ApplicationInstalled')
+            $result = Initialize-WinForgeModule -AdditionalCommands @('Test-ApplicationInstalled')
             $result | Should -Not -BeNullOrEmpty
         }
 
         It 'Should accept IncludeFeatureFlags switch' {
-            $result = Initialize-Win11ForgeModule -IncludeFeatureFlags
+            $result = Initialize-WinForgeModule -IncludeFeatureFlags
             $result | Should -Not -BeNullOrEmpty
         }
 
         It 'Should accept IncludeTimeouts switch' {
-            $result = Initialize-Win11ForgeModule -IncludeTimeouts
+            $result = Initialize-WinForgeModule -IncludeTimeouts
             $result | Should -Not -BeNullOrEmpty
         }
     }
@@ -150,10 +150,10 @@ Describe 'ModuleLoader Module' {
     Context 'Module Integration' {
         It 'Should have all expected functions exported' {
             $expectedFunctions = @(
-                'Get-Win11ForgeRepositoryRoot',
+                'Get-WinForgeRepositoryRoot',
                 'Import-CoreDependency',
                 'Import-CoreDependencies',
-                'Initialize-Win11ForgeModule',
+                'Initialize-WinForgeModule',
                 'Get-ModuleLoadStatus'
             )
 
@@ -166,19 +166,19 @@ Describe 'ModuleLoader Module' {
 
     Context 'Repository Root Structure' {
         It 'Should find Core subdirectory' {
-            $root = Get-Win11ForgeRepositoryRoot
+            $root = Get-WinForgeRepositoryRoot
             $corePath = Join-Path $root 'Core'
             Test-Path $corePath -PathType Container | Should -Be $true
         }
 
         It 'Should find Modules subdirectory' {
-            $root = Get-Win11ForgeRepositoryRoot
+            $root = Get-WinForgeRepositoryRoot
             $modulesPath = Join-Path $root 'Modules'
             Test-Path $modulesPath -PathType Container | Should -Be $true
         }
 
-        It 'Should return a valid Win11Forge module root' {
-            $root = Get-Win11ForgeRepositoryRoot
+        It 'Should return a valid WinForge module root' {
+            $root = Get-WinForgeRepositoryRoot
             # Should contain Core.psm1
             $coreModule = Join-Path $root 'Core\Core.psm1'
             Test-Path $coreModule | Should -Be $true

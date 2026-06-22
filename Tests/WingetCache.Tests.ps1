@@ -3,7 +3,7 @@
     Pester tests for WingetCache module
 
 .DESCRIPTION
-    Unit tests for Win11Forge WingetCache v3.2.2
+    Unit tests for WinForge WingetCache v3.2.2
     Tests caching, statistics, and persistence functions
     Includes mocked tests for winget isolation
 
@@ -119,7 +119,7 @@ Describe 'WingetCache Module' {
         }
 
         It 'Should create cache file in expected location' {
-            $cacheDir = Join-Path $env:LOCALAPPDATA 'Win11Forge'
+            $cacheDir = Join-Path $env:LOCALAPPDATA 'WinForge'
             $cachePath = Join-Path $cacheDir 'WingetCache.json'
 
             # Initialize and save

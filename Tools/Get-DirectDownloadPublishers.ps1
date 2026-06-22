@@ -71,8 +71,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$Script:HttpUserAgent = 'Win11Forge-PublisherProbe/1.0'
-$Script:TempDirectoryPrefix = 'Win11ForgePublisherProbe_'
+$Script:HttpUserAgent = 'WinForge-PublisherProbe/1.0'
+$Script:TempDirectoryPrefix = 'WinForgePublisherProbe_'
 
 function Get-PropertyValueOrNull {
     param(

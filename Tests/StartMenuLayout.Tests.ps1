@@ -3,7 +3,7 @@
     Pester tests for StartMenuLayout module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge StartMenuLayout v2.5.0
+    Comprehensive unit tests for WinForge StartMenuLayout v2.5.0
     Tests Start Menu organization using LayoutModification.json
 
 .NOTES

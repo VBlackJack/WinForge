@@ -1,5 +1,5 @@
 @{
-    # PSScriptAnalyzer configuration for Win11Forge v2.6.0
+    # PSScriptAnalyzer configuration for WinForge v2.6.0
     # https://github.com/PowerShell/PSScriptAnalyzer
 
     # === SEVERITY ===
@@ -69,7 +69,7 @@
     )
 
     # === EXCLUDE RULES ===
-    # Rules we intentionally disable for Win11Forge
+    # Rules we intentionally disable for WinForge
     ExcludeRules = @(
         # We use Write-Host extensively for UI (GUI.ps1, Deploy-Win11Environment.ps1)
         'PSAvoidUsingWriteHost',

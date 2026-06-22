@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - REST API Server v3.7.2
+    WinForge - REST API Server v3.7.2
 
 .DESCRIPTION
-    Provides a local REST API server for Win11Forge:
+    Provides a local REST API server for WinForge:
     - HTTP listener on configurable port (default: 5170)
     - localhost only for security
     - JSON request/response handling
