@@ -21,7 +21,7 @@
     RootModule = 'DetectionAllowlist.psm1'
 
     # Version number of this module
-    ModuleVersion = '1.0.0621.1'
+    ModuleVersion = '1.0.0622.1'
 
     # ID used to uniquely identify this module
     GUID = 'ba65ebf7-4ff0-4c03-9e87-cff491276264'

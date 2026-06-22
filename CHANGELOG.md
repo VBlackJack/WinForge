@@ -4,6 +4,31 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+No unreleased changes.
+
+## [2026062201] - 2026-06-22
+
+### Added
+- Existing profiles can now be updated directly from the Applications grid while preserving inherited applications from parent profiles.
+- Added a shared icon dropdown button style and applied it to the Apps column visibility menu.
+- Added a public architecture overview and refreshed user-facing profile editing documentation.
+
+### Changed
+- Unified dark semantic colors through the ThemeForge runtime palette and fixed brush opacity preservation for tinted row backgrounds.
+- Tokenized GUI font sizes and corner radii through named application resources.
+- Normalized icon button styles and App Catalog toolbar button metrics.
+- DataGrid selection now renders as a clean full-row accent-tinted highlight instead of a per-cell focus rectangle.
+- Root launchers now prefer fresh release GUI binaries over stale Debug artifacts.
+
+### Fixed
+- Localized the ThemeForge 2.1.0 Magellan theme name in the theme picker.
+- Fixed application update detection when the WinGet PowerShell module is unavailable.
+- Refreshed the Applications "Has Updates" filter after scans so update rows appear immediately.
+
+### Removed
+- Removed unused Dracula theme dictionaries and dead button styles.
+- Removed internal historical audit documentation from the public documentation set.
+
 ### Profile editing and public documentation cleanup — June 2026
 
 #### Added

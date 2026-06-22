@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ScheduledDeployment.psm1'
-    ModuleVersion = '1.0.0621.1'
+    ModuleVersion = '1.0.0622.1'
     GUID = 'e14bf06d-c72f-4150-8153-f8d05a089d95'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Scheduling', 'Deployment', 'Automation')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062101'
+            ReleaseNotes = 'Win11Forge v2026062201'
         }
     }
 }

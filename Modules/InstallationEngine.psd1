@@ -21,7 +21,7 @@
     RootModule = 'InstallationEngine.psm1'
 
     # Version number of this module
-    ModuleVersion = '1.0.0621.1'
+    ModuleVersion = '1.0.0622.1'
 
     # ID used to uniquely identify this module
     GUID = 'e3a7b0c4-6d5f-4a1b-8c3e-4f5a6b7c8d9e'

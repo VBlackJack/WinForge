@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'FeatureFlags.psm1'
-    ModuleVersion = '1.0.0621.1'
+    ModuleVersion = '1.0.0622.1'
     GUID = '485f36a2-a161-41cd-b28e-c5bb5dec6628'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Core', 'FeatureFlags', 'Configuration')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062101'
+            ReleaseNotes = 'Win11Forge v2026062201'
         }
     }
 }

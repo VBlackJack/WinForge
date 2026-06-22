@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ApplicationDatabase.psm1'
-    ModuleVersion = '1.0.0621.1'
+    ModuleVersion = '1.0.0622.1'
     GUID = 'c1556951-f2bd-4785-8b11-0b541795dab1'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Applications', 'Database')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062101'
+            ReleaseNotes = 'Win11Forge v2026062201'
         }
     }
 }

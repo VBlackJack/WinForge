@@ -1,6 +1,6 @@
 # Win11Forge Documentation
 
-Current framework display version: `2026062101`.
+Current framework display version: `2026062201`.
 
 ## User Documentation
 

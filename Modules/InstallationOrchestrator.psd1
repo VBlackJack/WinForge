@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'InstallationOrchestrator.psm1'
-    ModuleVersion = '1.0.0621.1'
+    ModuleVersion = '1.0.0622.1'
     GUID = 'a205fabe-d842-42c1-8989-4b9ec5383a53'
     Author = 'Julien Bombled'
     CompanyName = 'Win11Forge'
@@ -35,7 +35,7 @@
             Tags = @('Win11Forge', 'Installation', 'Orchestrator')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062101'
+            ReleaseNotes = 'Win11Forge v2026062201'
         }
     }
 }
