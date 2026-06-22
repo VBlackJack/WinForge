@@ -186,6 +186,7 @@ public class ThemeServiceTests
         AssertBrush("#F8F8F2", resources["TextFillColorPrimaryBrush"]);
         AssertBrush("#B3BBD6", resources["TextFillColorSecondaryBrush"]);
         AssertBrush("#BD93F9", resources["SystemAccentColorPrimaryBrush"]);
+        AssertBrush("#40BD93F9", resources["DataGridSelectedRowBackgroundBrush"]);
         AssertBrush("#282A36", resources["TextOnAccentFillColorPrimaryBrush"]);
         AssertBrush("#BD93F9", resources["PrimaryHueLightBrush"]);
         AssertBrush("#282A36", resources["BadgePrimaryForegroundBrush"]);

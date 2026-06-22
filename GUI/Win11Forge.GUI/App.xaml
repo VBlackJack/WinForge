@@ -929,27 +929,34 @@
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
+                <Setter Property="BorderThickness" Value="0"/>
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                     </Trigger>
                     <Trigger Property="IsSelected" Value="True">
-                        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                        <Setter Property="Background" Value="{DynamicResource DataGridSelectedRowBackgroundBrush}"/>
                         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}"/>
+                        <Setter Property="BorderThickness" Value="4,0,0,0"/>
+                    </Trigger>
+                    <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}"/>
+                        <Setter Property="BorderThickness" Value="4,0,0,0"/>
                     </Trigger>
                     <MultiTrigger>
                         <MultiTrigger.Conditions>
                             <Condition Property="IsSelected" Value="True"/>
                             <Condition Property="IsMouseOver" Value="True"/>
                         </MultiTrigger.Conditions>
-                        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                        <Setter Property="Background" Value="{DynamicResource DataGridSelectedRowBackgroundBrush}"/>
                     </MultiTrigger>
                 </Style.Triggers>
             </Style>
 
-            <!-- DataGrid Cell Style with improved focus visibility -->
+            <!-- DataGrid Cell Style that lets row selection and focus show through -->
             <Style x:Key="EnhancedDataGridCellStyle" TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
-                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
@@ -960,10 +967,6 @@
                     <Trigger Property="IsSelected" Value="True">
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    </Trigger>
-                    <Trigger Property="IsKeyboardFocused" Value="True">
-                        <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorSecondaryBrush}"/>
-                        <Setter Property="BorderThickness" Value="2"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -978,7 +981,9 @@
                 <Setter Property="AlternatingRowBackground" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
                 <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource SubtleDataGridLineBrush}"/>
                 <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
+                <Setter Property="RowStyle" Value="{StaticResource EnhancedDataGridRowStyle}"/>
                 <Setter Property="CellStyle" Value="{StaticResource EnhancedDataGridCellStyle}"/>
+                <Setter Property="SelectionUnit" Value="FullRow"/>
             </Style>
 
             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">

@@ -25,6 +25,7 @@
     <!-- Primary/Secondary Hue Brushes (main accent colors, swapped by theme) -->
     <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#60CDFF"/>
     <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="#8BC34A"/>
+    <SolidColorBrush x:Key="DataGridSelectedRowBackgroundBrush" Color="#40BD93F9"/>
 
     <!-- Accent Colors -->
     <SolidColorBrush x:Key="FavoriteActiveBrush" Color="#FFD700"/>

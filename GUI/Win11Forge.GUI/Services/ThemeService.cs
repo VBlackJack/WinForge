@@ -108,6 +108,7 @@ public sealed class ThemeService : IThemeService
         "SystemAccentColorPrimaryBrush",
         "SystemAccentColorSecondaryBrush",
         "SystemAccentColorTertiaryBrush",
+        "DataGridSelectedRowBackgroundBrush",
         "AccentTextFillColorPrimaryBrush",
         "AccentTextFillColorSecondaryBrush",
         "AccentTextFillColorTertiaryBrush",
@@ -405,6 +406,7 @@ public sealed class ThemeService : IThemeService
         SolidColorBrush accent = ResolveBrush(resources, "#BD93F9", "AccentBrush", "PurpleBrush");
         SolidColorBrush accentHover = ResolveBrush(resources, "#D5BEFC", "AccentHoverBrush", "AccentBrush", "PurpleBrush");
         SolidColorBrush accentPressed = ResolveBrush(resources, "#A170E6", "AccentPressedBrush", "AccentBrush", "PurpleBrush");
+        SolidColorBrush selectedRow = new SolidColorBrush(Color.FromArgb(0x40, accent.Color.R, accent.Color.G, accent.Color.B));
         SolidColorBrush badgeText = ResolveReadableTextBrush(resources, background, accent, textPrimary);
         SolidColorBrush success = ResolveBrush(resources, "#50FA7B", "SuccessBrush", "GreenBrush");
         SolidColorBrush warning = ResolveBrush(resources, "#FFB86C", "WarningBrush", "OrangeBrush");
@@ -439,6 +441,7 @@ public sealed class ThemeService : IThemeService
         SetBrush(resources, "SystemAccentColorPrimaryBrush", accent);
         SetBrush(resources, "SystemAccentColorSecondaryBrush", accentHover);
         SetBrush(resources, "SystemAccentColorTertiaryBrush", accentPressed);
+        SetBrush(resources, "DataGridSelectedRowBackgroundBrush", selectedRow);
         SetBrush(resources, "AccentTextFillColorPrimaryBrush", accent);
         SetBrush(resources, "AccentTextFillColorSecondaryBrush", accentHover);
         SetBrush(resources, "AccentTextFillColorTertiaryBrush", accentPressed);
