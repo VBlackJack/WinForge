@@ -225,7 +225,7 @@ public class AccessibilityHardeningTests
                 && string.Equals(element.Attribute("Property")?.Value, "Background", StringComparison.Ordinal)
                 && string.Equals(
                     element.Attribute("Value")?.Value,
-                    "{DynamicResource ControlFillColorSecondaryBrush}",
+                    "{DynamicResource DataGridSelectedRowBackgroundBrush}",
                     StringComparison.Ordinal));
         Assert.Contains(
             selectedRowTrigger.Elements(),
@@ -241,7 +241,7 @@ public class AccessibilityHardeningTests
             element =>
                 element.Name.LocalName == "Setter"
                 && string.Equals(element.Attribute("Property")?.Value, "BorderThickness", StringComparison.Ordinal)
-                && string.Equals(element.Attribute("Value")?.Value, "3,0,0,0", StringComparison.Ordinal));
+                && string.Equals(element.Attribute("Value")?.Value, "4,0,0,0", StringComparison.Ordinal));
 
         XElement focusedRowTrigger = FindNamedStyle(styles, "EnhancedDataGridRowStyle")
             .Descendants()
@@ -264,7 +264,30 @@ public class AccessibilityHardeningTests
             element =>
                 element.Name.LocalName == "Setter"
                 && string.Equals(element.Attribute("Property")?.Value, "BorderThickness", StringComparison.Ordinal)
-                && string.Equals(element.Attribute("Value")?.Value, "3,0,0,0", StringComparison.Ordinal));
+                && string.Equals(element.Attribute("Value")?.Value, "4,0,0,0", StringComparison.Ordinal));
+
+        XElement selectedHoverRowTrigger = FindNamedStyle(styles, "EnhancedDataGridRowStyle")
+            .Descendants()
+            .Single(element =>
+                element.Name.LocalName == "MultiTrigger"
+                && element.Descendants().Any(condition =>
+                    condition.Name.LocalName == "Condition"
+                    && string.Equals(condition.Attribute("Property")?.Value, "IsSelected", StringComparison.Ordinal)
+                    && string.Equals(condition.Attribute("Value")?.Value, "True", StringComparison.Ordinal))
+                && element.Descendants().Any(condition =>
+                    condition.Name.LocalName == "Condition"
+                    && string.Equals(condition.Attribute("Property")?.Value, "IsMouseOver", StringComparison.Ordinal)
+                    && string.Equals(condition.Attribute("Value")?.Value, "True", StringComparison.Ordinal)));
+
+        Assert.Contains(
+            selectedHoverRowTrigger.Elements(),
+            element =>
+                element.Name.LocalName == "Setter"
+                && string.Equals(element.Attribute("Property")?.Value, "Background", StringComparison.Ordinal)
+                && string.Equals(
+                    element.Attribute("Value")?.Value,
+                    "{DynamicResource DataGridSelectedRowBackgroundBrush}",
+                    StringComparison.Ordinal));
 
         XElement selectedCellTrigger = FindNamedStyle(styles, "EnhancedDataGridCellStyle")
             .Descendants()

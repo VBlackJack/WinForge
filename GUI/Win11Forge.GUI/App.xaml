@@ -935,21 +935,21 @@
                         <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                     </Trigger>
                     <Trigger Property="IsSelected" Value="True">
-                        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                        <Setter Property="Background" Value="{DynamicResource DataGridSelectedRowBackgroundBrush}"/>
                         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}"/>
-                        <Setter Property="BorderThickness" Value="3,0,0,0"/>
+                        <Setter Property="BorderThickness" Value="4,0,0,0"/>
                     </Trigger>
                     <Trigger Property="IsKeyboardFocusWithin" Value="True">
                         <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorPrimaryBrush}"/>
-                        <Setter Property="BorderThickness" Value="3,0,0,0"/>
+                        <Setter Property="BorderThickness" Value="4,0,0,0"/>
                     </Trigger>
                     <MultiTrigger>
                         <MultiTrigger.Conditions>
                             <Condition Property="IsSelected" Value="True"/>
                             <Condition Property="IsMouseOver" Value="True"/>
                         </MultiTrigger.Conditions>
-                        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                        <Setter Property="Background" Value="{DynamicResource DataGridSelectedRowBackgroundBrush}"/>
                     </MultiTrigger>
                 </Style.Triggers>
             </Style>
