@@ -34,7 +34,7 @@
         PSData = @{
             Tags = @('Win11Forge', 'Core', 'Constants', 'Paths')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
-            ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
+            ProjectUri = 'https://github.com/VBlackJack/WinForge'
             ReleaseNotes = 'Win11Forge v2026062101'
         }
     }

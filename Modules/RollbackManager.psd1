@@ -75,7 +75,7 @@
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
 
             # A URL to the main website for this project
-            ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
+            ProjectUri = 'https://github.com/VBlackJack/WinForge'
 
             # Release notes
             ReleaseNotes = 'Enhanced rollback management with auto-rollback and confirmation support'

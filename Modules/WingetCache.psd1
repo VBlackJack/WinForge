@@ -74,7 +74,7 @@
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
 
             # A URL to the main website for this project
-            ProjectUri = 'https://github.com/JulienBombled/Win11Forge'
+            ProjectUri = 'https://github.com/VBlackJack/WinForge'
 
             # Release notes
             ReleaseNotes = 'TTL-based caching for winget list and search operations'
