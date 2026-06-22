@@ -93,22 +93,80 @@ function Get-FrameworkVersion {
     return [string]$versionData.Version
 }
 
-# Check for WPF GUI executable in various locations
-$wpfGuiPaths = @(
-    (Join-Path $script:ScriptRoot 'Win11Forge.GUI.exe'),
-    (Join-Path $script:ScriptRoot 'GUI\Win11Forge.GUI\bin\Debug\net10.0-windows\Win11Forge.GUI.exe'),
-    (Join-Path $script:ScriptRoot 'GUI\Win11Forge.GUI\bin\Release\net10.0-windows\Win11Forge.GUI.exe'),
-    (Join-Path $script:ScriptRoot 'GUI\Win11Forge.GUI\bin\publish\Win11Forge.GUI.exe')
-)
+function New-WpfGuiCandidate {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
 
-$wpfGuiExe = $null
-foreach ($path in $wpfGuiPaths) {
-    if (Test-Path $path) {
-        $wpfGuiExe = $path
-        break
+        [Parameter(Mandatory = $true)]
+        [string]$RelativePath,
+
+        [Parameter(Mandatory = $true)]
+        [int]$Priority
+    )
+
+    [pscustomobject]@{
+        Name = $Name
+        Path = Join-Path $script:ScriptRoot $RelativePath
+        Priority = $Priority
     }
 }
 
+function Resolve-WpfGuiExecutable {
+    $wpfGuiCandidates = @(
+        New-WpfGuiCandidate -Name 'packaged root' -RelativePath 'Win11Forge.GUI.exe' -Priority 0
+        New-WpfGuiCandidate -Name 'source Release' -RelativePath 'GUI\Win11Forge.GUI\bin\Release\net10.0-windows\Win11Forge.GUI.exe' -Priority 10
+        New-WpfGuiCandidate -Name 'source publish' -RelativePath 'GUI\Win11Forge.GUI\bin\publish\Win11Forge.GUI.exe' -Priority 20
+        New-WpfGuiCandidate -Name 'source Debug' -RelativePath 'GUI\Win11Forge.GUI\bin\Debug\net10.0-windows\Win11Forge.GUI.exe' -Priority 30
+    )
+
+    $existingCandidates = @(
+        foreach ($candidate in $wpfGuiCandidates) {
+            if (Test-Path -LiteralPath $candidate.Path -PathType Leaf) {
+                $item = Get-Item -LiteralPath $candidate.Path
+                [pscustomobject]@{
+                    Name = $candidate.Name
+                    Path = $item.FullName
+                    Priority = $candidate.Priority
+                    LastWriteTimeUtc = $item.LastWriteTimeUtc
+                }
+            }
+        }
+    )
+
+    if ($existingCandidates.Count -eq 0) {
+        return $null
+    }
+
+    return $existingCandidates |
+        Sort-Object -Property @{ Expression = 'Priority'; Ascending = $true }, @{ Expression = 'LastWriteTimeUtc'; Descending = $true } |
+        Select-Object -First 1
+}
+
+function Get-NewestGuiSourceWriteTimeUtc {
+    $guiSourceRoot = Join-Path $script:ScriptRoot 'GUI\Win11Forge.GUI'
+    if (-not (Test-Path -LiteralPath $guiSourceRoot)) {
+        return $null
+    }
+
+    $sourceExtensions = @('.cs', '.xaml', '.resx', '.csproj', '.props', '.targets', '.json', '.manifest')
+    $sourceFiles = @(
+        Get-ChildItem -LiteralPath $guiSourceRoot -Recurse -File -ErrorAction SilentlyContinue |
+            Where-Object {
+                $sourceExtensions -contains $_.Extension.ToLowerInvariant() -and
+                $_.FullName -notmatch '\\(bin|obj)\\'
+            }
+    )
+
+    if ($sourceFiles.Count -eq 0) {
+        return $null
+    }
+
+    return ($sourceFiles | Sort-Object -Property LastWriteTimeUtc -Descending | Select-Object -First 1).LastWriteTimeUtc
+}
+
+$wpfGuiCandidate = Resolve-WpfGuiExecutable
+$wpfGuiExe = if ($wpfGuiCandidate) { $wpfGuiCandidate.Path } else { $null }
 $script:GUIModule = Join-Path $script:ScriptRoot 'Modules\Win11ForgeGUI.psm1'
 
 # ============================================================================
@@ -150,6 +208,13 @@ if ($CLI) {
 if ($wpfGuiExe -and -not $Legacy) {
     Write-Host (Get-Text -Key 'launcher.launching_wpf' -Default 'Launching WPF GUI...') -ForegroundColor Green
     Write-Host "  $(Get-Text -Key 'launcher.path_label' -Parameters @{ Path = $wpfGuiExe } -Default "Path: $wpfGuiExe")" -ForegroundColor Gray
+    Write-Host "  $($wpfGuiCandidate.Name)" -ForegroundColor Gray
+
+    $newestGuiSourceWriteTimeUtc = Get-NewestGuiSourceWriteTimeUtc
+    if ($newestGuiSourceWriteTimeUtc -and $wpfGuiCandidate.LastWriteTimeUtc -lt $newestGuiSourceWriteTimeUtc) {
+        Write-Host "  WARNING: selected WPF executable is older than the newest GUI source file. Rebuild the GUI if the app looks stale." -ForegroundColor Yellow
+    }
+
     Write-Host ""
 
     # Launch the WPF application
