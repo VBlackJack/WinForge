@@ -61,11 +61,6 @@ public static class ThemeNames
     public const string DefaultAccentTint = nameof(ThemeForge.Theme.AccentTint.Default);
 
     /// <summary>
-    /// Relative resource path prefix for legacy Dracula theme dictionaries.
-    /// </summary>
-    public const string DraculaResourcePathPrefix = "Themes/Dracula/";
-
-    /// <summary>
     /// Returns whether a canonical or legacy theme should use WPF light chrome.
     /// </summary>
     public static bool IsLightTheme(string? themeName)
