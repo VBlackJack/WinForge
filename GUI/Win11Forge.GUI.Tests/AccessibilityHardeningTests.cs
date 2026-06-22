@@ -129,7 +129,6 @@ public class AccessibilityHardeningTests
         AssertNamedFocusStyle(styles, "TouchFriendlyTextBox");
         AssertNamedFocusStyle(styles, "TouchFriendlyComboBox");
         AssertNamedFocusStyle(styles, "TouchFriendlyCheckBox");
-        AssertNamedFocusStyle(styles, "HoverScaleIconButton");
         AssertNamedFocusStyle(styles, "AnimatedSelectionCheckBox");
 
         XElement focusVisualBorder = appXaml.Descendants()

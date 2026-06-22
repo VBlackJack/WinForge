@@ -530,26 +530,6 @@
             <!-- Static Card Style (no animation, for reduced motion) -->
             <Style x:Key="StaticCardStyle" TargetType="Border"/>
 
-            <!--
-                HoverScaleIconButton targets vanilla Button (legacy); IconButton targets ui:Button (canonical).
-                Kept as a separate style with the original metrics so it doesn't break vanilla-Button usages.
-                DEPRECATED: prefer IconButton (ui:Button) for new code.
-            -->
-            <Style x:Key="HoverScaleIconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
-                <Setter Property="MinWidth" Value="{StaticResource ButtonMinHeightTouch}"/>
-                <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightTouch}"/>
-                <Setter Property="Padding" Value="{StaticResource ButtonPaddingIcon}"/>
-                <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
-                <Setter Property="RenderTransform">
-                    <Setter.Value>
-                        <ScaleTransform ScaleX="1" ScaleY="1"/>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-
             <!-- Interactive Badge/Chip with Hover Effect -->
             <Style x:Key="HoverBadgeStyle" TargetType="Border">
                 <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
@@ -1014,21 +994,6 @@
             </Style>
 
             <!-- Micro-animation Styles for Enhanced UX Feedback -->
-
-            <!-- Favorite Button Style with bounce animation (vanilla Button variant) -->
-            <Style x:Key="AnimatedFavoriteButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
-                <Setter Property="Width" Value="{StaticResource ButtonMinHeightTouch}"/>
-                <Setter Property="Height" Value="{StaticResource ButtonMinHeightTouch}"/>
-                <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
-                <Setter Property="RenderTransform">
-                    <Setter.Value>
-                        <ScaleTransform ScaleX="1" ScaleY="1"/>
-                    </Setter.Value>
-                </Setter>
-            </Style>
 
             <!-- Selection Checkbox Style with scale animation -->
             <Style x:Key="AnimatedSelectionCheckBox" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">

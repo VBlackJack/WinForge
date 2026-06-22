@@ -220,7 +220,6 @@
                                         <ui:Button Command="{Binding DataContext.ViewLogCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                    CommandParameter="{Binding}"
                                                    Style="{StaticResource IconButton}"
-                                                   Width="44" Height="44"
                                                    ToolTip="{loc:Loc Logs_View}"
                                                    AutomationProperties.Name="{loc:Loc A11y_Logs_ViewLog}">
                                             <ui:SymbolIcon Symbol="Eye24" Width="18" Height="18"/>
@@ -228,7 +227,6 @@
                                         <ui:Button Command="{Binding DataContext.CopyLogPathCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                    CommandParameter="{Binding}"
                                                    Style="{StaticResource IconButton}"
-                                                   Width="44" Height="44"
                                                    ToolTip="{loc:Loc Logs_CopyPath}"
                                                    AutomationProperties.Name="{loc:Loc A11y_Logs_CopyPath}">
                                             <ui:SymbolIcon Symbol="Copy24" Width="18" Height="18"/>
@@ -236,7 +234,6 @@
                                         <ui:Button Command="{Binding DataContext.DeleteLogCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                    CommandParameter="{Binding}"
                                                    Style="{StaticResource IconButton}"
-                                                   Width="44" Height="44"
                                                    Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                                    ToolTip="{loc:Loc Logs_Delete}"
                                                    AutomationProperties.Name="{loc:Loc A11y_Logs_DeleteLog}">
