@@ -187,6 +187,9 @@ public class ThemeServiceTests
         AssertBrush("#B3BBD6", resources["TextFillColorSecondaryBrush"]);
         AssertBrush("#BD93F9", resources["SystemAccentColorPrimaryBrush"]);
         AssertBrush("#40BD93F9", resources["DataGridSelectedRowBackgroundBrush"]);
+        AssertBrush("#FF5555", 0.14, resources["ErrorBackgroundBrush"]);
+        AssertBrush("#FFB86C", 0.16, resources["WarningBackgroundBrush"]);
+        AssertBrush("#50FA7B", 0.12, resources["SuccessBackgroundBrush"]);
         AssertBrush("#282A36", resources["TextOnAccentFillColorPrimaryBrush"]);
         AssertBrush("#BD93F9", resources["PrimaryHueLightBrush"]);
         AssertBrush("#282A36", resources["BadgePrimaryForegroundBrush"]);
@@ -296,5 +299,12 @@ public class ThemeServiceTests
     {
         SolidColorBrush brush = Assert.IsType<SolidColorBrush>(actual);
         Assert.Equal(Color(expectedColor), brush.Color);
+    }
+
+    private static void AssertBrush(string expectedColor, double expectedOpacity, object? actual)
+    {
+        SolidColorBrush brush = Assert.IsType<SolidColorBrush>(actual);
+        Assert.Equal(Color(expectedColor), brush.Color);
+        Assert.Equal(expectedOpacity, brush.Opacity, precision: 3);
     }
 }
