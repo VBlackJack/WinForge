@@ -1,0 +1,8 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- WinForge-local spacing scale for moderate density. -->
+    <Thickness x:Key="HeroPadding">24</Thickness>
+    <Thickness x:Key="SectionPadding">16</Thickness>
+    <Thickness x:Key="SectionGap">0,0,0,16</Thickness>
+    <Thickness x:Key="BlockGap">0,0,0,12</Thickness>
+</ResourceDictionary>

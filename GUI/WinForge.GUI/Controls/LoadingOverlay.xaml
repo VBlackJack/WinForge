@@ -16,11 +16,11 @@
                 VerticalAlignment="Center"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 CornerRadius="{StaticResource RadiusLarge}"
-                Padding="32"
+                Padding="{StaticResource HeroPadding}"
                 MinWidth="200">
             <StackPanel HorizontalAlignment="Center">
                 <!-- Progress Indicator -->
-                <Grid x:Name="ProgressContainer" Margin="0,0,0,16">
+                <Grid x:Name="ProgressContainer" Margin="{StaticResource BlockGap}">
                     <!-- Indeterminate Progress -->
                     <ui:ProgressRing x:Name="IndeterminateProgress"
                                  IsIndeterminate="True"

@@ -72,20 +72,20 @@
                         <ui:TextBox Text="{Binding Application.AppId, UpdateSourceTrigger=PropertyChanged}"
                                     PlaceholderText="{loc:Loc AppEditor_AppId}"
                                     IsEnabled="{Binding CanEditAppId}"
-                                    Margin="0,0,0,16"
+                                    Margin="{StaticResource BlockGap}"
                                     AutomationProperties.Name="{loc:Loc AppEditor_AppId}"/>
 
                         <!-- Name -->
                         <ui:TextBox Text="{Binding Application.Name, UpdateSourceTrigger=PropertyChanged}"
                                     PlaceholderText="{loc:Loc AppEditor_Name}"
-                                    Margin="0,0,0,16"
+                                    Margin="{StaticResource BlockGap}"
                                     AutomationProperties.Name="{loc:Loc AppEditor_Name}"/>
 
                         <!-- Category -->
                         <ComboBox ItemsSource="{Binding Categories}"
                                   SelectedItem="{Binding SelectedCategory}"
                                   IsEditable="False"
-                                  Margin="0,0,0,16"
+                                  Margin="{StaticResource BlockGap}"
                                   AutomationProperties.Name="{loc:Loc Col_Category}"/>
 
                         <!-- Description -->
@@ -96,17 +96,17 @@
                                     MinHeight="80"
                                     MaxHeight="150"
                                     VerticalScrollBarVisibility="Auto"
-                                    Margin="0,0,0,16"
+                                    Margin="{StaticResource BlockGap}"
                                     AutomationProperties.Name="{loc:Loc AppEditor_Description}"/>
 
                         <!-- Homepage -->
                         <ui:TextBox Text="{Binding Application.Homepage, UpdateSourceTrigger=PropertyChanged}"
                                     PlaceholderText="{loc:Loc AppEditor_Homepage}"
-                                    Margin="0,0,0,16"
+                                    Margin="{StaticResource BlockGap}"
                                     AutomationProperties.Name="{loc:Loc AppEditor_Homepage}"/>
 
                         <!-- Priority -->
-                        <Grid Margin="0,0,0,16">
+                        <Grid Margin="{StaticResource BlockGap}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -125,7 +125,7 @@
                         <!-- Default Required -->
                         <CheckBox Content="{loc:Loc AppEditor_DefaultRequired}"
                                   IsChecked="{Binding Application.DefaultRequired}"
-                                  Margin="0,0,0,16"
+                                  Margin="{StaticResource BlockGap}"
                                   AutomationProperties.Name="{loc:Loc AppEditor_DefaultRequired}"/>
                     </StackPanel>
                 </ScrollViewer>
@@ -139,7 +139,7 @@
                         <Border CornerRadius="{StaticResource RadiusMedium}"
                                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                 Padding="16"
-                                Margin="0,0,0,16">
+                                Margin="{StaticResource BlockGap}">
                             <StackPanel>
                                 <TextBlock Text="{loc:Loc AppEditor_SourceSearchTitle}"
                                            FontSize="{StaticResource FontSizeBodyLarge}"
@@ -372,25 +372,25 @@
                         </Border>
 
                         <!-- Winget Source -->
-                        <uc:WingetSourceEditor Margin="0,0,0,16"
+                        <uc:WingetSourceEditor Margin="{StaticResource BlockGap}"
                                                 PackageId="{Binding Application.Sources.Winget, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 Version="{Binding Application.Sources.WingetConfig.Version, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                 SourceRepository="{Binding Application.Sources.WingetConfig.Source, Mode=TwoWay}"
                                                 IsSourceEnabled="{Binding WingetEnabled, Mode=TwoWay}"/>
 
                         <!-- Chocolatey Source -->
-                        <uc:ChocolateySourceEditor Margin="0,0,0,16"
+                        <uc:ChocolateySourceEditor Margin="{StaticResource BlockGap}"
                                                     PackageName="{Binding Application.Sources.Chocolatey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                     Version="{Binding Application.Sources.ChocolateyConfig.Version, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                     IsSourceEnabled="{Binding ChocolateyEnabled, Mode=TwoWay}"/>
 
                         <!-- Store Source -->
-                        <uc:StoreSourceEditor Margin="0,0,0,16"
+                        <uc:StoreSourceEditor Margin="{StaticResource BlockGap}"
                                                StoreId="{Binding Application.Sources.Store, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                IsSourceEnabled="{Binding StoreEnabled, Mode=TwoWay}"/>
 
                         <!-- Direct Download Source -->
-                        <uc:DirectDownloadSourceEditor Margin="0,0,0,16"
+                        <uc:DirectDownloadSourceEditor Margin="{StaticResource BlockGap}"
                                                         DownloadUrl="{Binding Application.Sources.DirectUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                         InstallerType="{Binding Application.Sources.DirectDownloadConfig.InstallerType, Mode=TwoWay}"
                                                         SilentArgs="{Binding Application.Sources.DirectDownloadConfig.SilentArgs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

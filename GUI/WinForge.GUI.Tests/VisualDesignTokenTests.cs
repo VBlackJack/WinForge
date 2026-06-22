@@ -82,6 +82,23 @@ public class VisualDesignTokenTests
     }
 
     [Fact]
+    public void SpacingDictionary_DefinesWinForgeLocalDensityTokens()
+    {
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
+        List<string?> mergedDictionarySources = appXaml.Descendants()
+            .Where(element => element.Name.LocalName == "ResourceDictionary")
+            .Select(element => element.Attribute("Source")?.Value)
+            .ToList();
+        XDocument spacingXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "Resources", "Spacing.xaml"));
+
+        Assert.Contains("Resources/Spacing.xaml", mergedDictionarySources);
+        AssertResourceValue(spacingXaml, "HeroPadding", "24");
+        AssertResourceValue(spacingXaml, "SectionPadding", "16");
+        AssertResourceValue(spacingXaml, "SectionGap", "0,0,0,16");
+        AssertResourceValue(spacingXaml, "BlockGap", "0,0,0,12");
+    }
+
+    [Fact]
     public void PageAutomationTitles_UsePageTitleStyleWithoutInlineTypography()
     {
         foreach (string viewFileName in PrimaryPageViews)

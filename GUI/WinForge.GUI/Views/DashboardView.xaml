@@ -27,8 +27,8 @@
             <!-- HERO SECTION -->
             <Border Grid.Row="0"
                     Style="{StaticResource CardBorderStyle}"
-                    Margin="0,0,0,24"
-                    Padding="32">
+                    Margin="{StaticResource SectionGap}"
+                    Padding="{StaticResource HeroPadding}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -68,7 +68,7 @@
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
                                        Style="{StaticResource PageSubtitleTextStyle}"
-                                       Margin="0,0,0,16"/>
+                                       Margin="{StaticResource BlockGap}"/>
                                  <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
                                         Style="{StaticResource PrimaryButton}"
                                         HorizontalAlignment="Left"
@@ -105,7 +105,7 @@
                             </StackPanel>
                             <TextBlock Text="{Binding HeroSubtitle}"
                                        Style="{StaticResource PageSubtitleTextStyle}"
-                                       Margin="0,0,0,16"/>
+                                       Margin="{StaticResource BlockGap}"/>
                             <StackPanel Orientation="Horizontal">
                                  <ui:Button Command="{Binding StartDeploymentCommand}"
                                            Style="{StaticResource HeroPrimaryButton}"
@@ -160,7 +160,7 @@
             </Border>
 
             <!-- STATS ROW -->
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,24">
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="{StaticResource SectionGap}">
                 <!-- Profiles Stat (Clickable) -->
                 <Button Command="{Binding NavigateToProfilesCommand}"
                         Style="{StaticResource StatsCardButton}"
@@ -259,7 +259,7 @@
             </StackPanel>
 
             <!-- MAIN CONTENT -->
-            <Grid Grid.Row="2" Margin="0,0,0,24">
+            <Grid Grid.Row="2" Margin="{StaticResource SectionGap}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="24"/>
@@ -309,7 +309,7 @@
                             </StackPanel>
 
                             <!-- OS -->
-                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,16">
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="{StaticResource BlockGap}">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_OS}"
                                            FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
@@ -327,7 +327,7 @@
                             </StackPanel>
 
                             <!-- Admin -->
-                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,16">
+                            <StackPanel Grid.Row="1" Grid.Column="1" Margin="{StaticResource BlockGap}">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Admin}"
                                            FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
@@ -359,7 +359,7 @@
                             </StackPanel>
 
                             <!-- Chocolatey -->
-                            <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,16">
+                            <StackPanel Grid.Row="2" Grid.Column="1" Margin="{StaticResource BlockGap}">
                                 <TextBlock Text="{loc:Loc Dashboard_Sys_Chocolatey}"
                                            FontSize="{StaticResource FontSizeCaption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
@@ -398,10 +398,10 @@
                     <!-- Updates Status Card -->
                      <Border Padding="{StaticResource CardPadding}"
                             Style="{StaticResource CardBorderStyle}"
-                             Margin="0,0,0,16"
+                             Margin="{StaticResource BlockGap}"
                             >
                         <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <StackPanel Orientation="Horizontal" Margin="{StaticResource BlockGap}">
                                 <ui:SymbolIcon Symbol="ArrowSync24"
                                                Width="24" Height="24"
                                                VerticalAlignment="Center"
@@ -446,7 +446,7 @@
                         <StackPanel>
                             <TextBlock Text="{loc:Loc Dashboard_QuickNav_Title}"
                                        FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"
-                                       Margin="0,0,0,16"/>
+                                       Margin="{StaticResource BlockGap}"/>
 
                             <!-- Prerequisites Button -->
                             <ui:Button Command="{Binding NavigateToPrerequisitesCommand}"
@@ -508,7 +508,7 @@
             <!-- HISTORY SECTION -->
              <Border Grid.Row="3"
                     Style="{StaticResource CardBorderStyle}"
-                    Margin="0,0,0,24"
+                    Margin="{StaticResource SectionGap}"
                     >
                 <Grid>
                     <Grid.RowDefinitions>
@@ -517,7 +517,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Header -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="{StaticResource BlockGap}">
                         <ui:SymbolIcon Symbol="History24"
                                        Width="24" Height="24"
                                        VerticalAlignment="Center"

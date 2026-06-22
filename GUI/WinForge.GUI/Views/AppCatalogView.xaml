@@ -448,7 +448,7 @@
                                    Width="64" Height="64"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    HorizontalAlignment="Center"
-                                   Margin="0,0,0,16"
+                                   Margin="{StaticResource BlockGap}"
                                    AutomationProperties.Name="{loc:Loc A11y_NoDatabaseIcon}"/>
                     <TextBlock Text="{Binding EmptyStateMessage}"
                                FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
@@ -465,7 +465,7 @@
                                    Width="64" Height="64"
                                    Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                    HorizontalAlignment="Center"
-                                   Margin="0,0,0,16"/>
+                                   Margin="{StaticResource BlockGap}"/>
                     <TextBlock Text="{Binding LoadErrorMessage}"
                                FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"

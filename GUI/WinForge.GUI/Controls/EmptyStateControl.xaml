@@ -26,7 +26,7 @@
                                   Symbol="{Binding IconKind, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                   HorizontalAlignment="Center"
-                                  Margin="0,0,0,16"
+                                  Margin="{StaticResource BlockGap}"
                                   AutomationProperties.Name="{Binding IconAccessibilityName, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
 
         <!-- Title -->

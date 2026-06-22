@@ -22,7 +22,7 @@
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <Grid Grid.Row="0" Margin="0,0,0,24">
+            <Grid Grid.Row="0" Margin="{StaticResource SectionGap}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -118,7 +118,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Section Header -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="{StaticResource BlockGap}">
                         <ui:SymbolIcon Symbol="Box24"
                                        FontSize="{StaticResource FontSizeTitle}"
                                        VerticalAlignment="Center"
@@ -226,7 +226,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Section Header -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="{StaticResource BlockGap}">
                         <ui:SymbolIcon Symbol="Code24"
                                        FontSize="{StaticResource FontSizeTitle}"
                                        VerticalAlignment="Center"
@@ -277,7 +277,7 @@
                         <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                 BorderThickness="0,0,0,1"
                                 Padding="0,0,0,16"
-                                Margin="0,0,0,16">
+                                Margin="{StaticResource BlockGap}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>

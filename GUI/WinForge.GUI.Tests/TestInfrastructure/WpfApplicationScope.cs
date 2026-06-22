@@ -171,7 +171,11 @@ internal sealed class WpfApplicationScope : IDisposable
             ["RadiusSmall"] = new CornerRadius(4),
             ["RadiusMedium"] = new CornerRadius(8),
             ["RadiusLarge"] = new CornerRadius(12),
-            ["RadiusXLarge"] = new CornerRadius(16)
+            ["RadiusXLarge"] = new CornerRadius(16),
+            ["HeroPadding"] = new Thickness(24),
+            ["SectionPadding"] = new Thickness(16),
+            ["SectionGap"] = new Thickness(0, 0, 0, 16),
+            ["BlockGap"] = new Thickness(0, 0, 0, 12)
         };
     }
 

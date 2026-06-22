@@ -11,6 +11,7 @@
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
                 <ResourceDictionary Source="Resources/FluentThemeBridge.xaml" />
+                <ResourceDictionary Source="Resources/Spacing.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Brush resources defined in FluentThemeBridge.xaml (merged above).

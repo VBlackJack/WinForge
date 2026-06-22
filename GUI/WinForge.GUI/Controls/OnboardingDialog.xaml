@@ -4,7 +4,7 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:WinForge.GUI.Resources"
              MinWidth="500" MaxWidth="700">
-    <Border Padding="32">
+    <Border Padding="{StaticResource HeroPadding}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -14,12 +14,12 @@
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,24">
+            <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="{StaticResource SectionGap}">
                 <Image Source="/icon_cropped.png"
                        Width="80" Height="80"
                        RenderOptions.BitmapScalingMode="HighQuality"
                        HorizontalAlignment="Center"
-                       Margin="0,0,0,16"/>
+                       Margin="{StaticResource BlockGap}"/>
                 <TextBlock Text="{loc:Loc Onboarding_Welcome}"
                            FontSize="{StaticResource FontSizeTitle}" FontWeight="SemiBold"
                            HorizontalAlignment="Center"/>
@@ -31,9 +31,9 @@
             </StackPanel>
 
             <!-- Steps/Features -->
-            <StackPanel Grid.Row="1" Margin="0,0,0,24">
+            <StackPanel Grid.Row="1" Margin="{StaticResource SectionGap}">
                 <!-- Step 1: Prerequisites -->
-                <Grid Margin="0,0,0,16">
+                <Grid Margin="{StaticResource BlockGap}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -61,7 +61,7 @@
                 </Grid>
 
                 <!-- Step 2: Browse Apps -->
-                <Grid Margin="0,0,0,16">
+                <Grid Margin="{StaticResource BlockGap}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -122,7 +122,7 @@
                     Background="{DynamicResource ControlFillColorDefaultBrush}"
                     CornerRadius="{StaticResource RadiusMedium}"
                     Padding="16"
-                    Margin="0,0,0,24">
+                    Margin="{StaticResource SectionGap}">
                 <StackPanel Orientation="Horizontal">
                     <ui:SymbolIcon Symbol="Keyboard24"
                                    Width="24" Height="24"

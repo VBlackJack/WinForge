@@ -4,7 +4,7 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:loc="clr-namespace:WinForge.GUI.Resources"
              MinWidth="350" MaxWidth="500">
-    <Border Padding="24">
+    <Border Padding="{StaticResource SectionPadding}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

@@ -20,7 +20,7 @@
         <TextBlock Grid.Row="0"
                    Text="{loc:Loc Settings_Title}"
                    Style="{StaticResource PageTitleTextStyle}"
-                   Margin="0,0,0,24"
+                   Margin="{StaticResource SectionGap}"
                    AutomationProperties.AutomationId="PageSettings"/>
 
         <!-- Settings Content with Tabs -->
@@ -40,12 +40,12 @@
                         <!-- Theme Section -->
                         <Border Style="{StaticResource SectionCardStyle}">
                             <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <StackPanel Orientation="Horizontal" Margin="{StaticResource BlockGap}">
                                     <TextBlock Text="{loc:Loc Settings_Section_Appearance}" FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
 
                                 <!-- Theme Selector -->
-                                <Grid Margin="0,0,0,16">
+                                <Grid Margin="{StaticResource BlockGap}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -72,7 +72,7 @@
                                 </Grid>
 
                                 <!-- Accent Tint Selector -->
-                                <Grid Margin="0,0,0,16">
+                                <Grid Margin="{StaticResource BlockGap}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -139,12 +139,12 @@
                         <!-- Language Section -->
                         <Border Style="{StaticResource SectionCardStyle}">
                             <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <StackPanel Orientation="Horizontal" Margin="{StaticResource BlockGap}">
                                     <TextBlock Text="{loc:Loc Settings_Section_Language}" FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
 
                                 <!-- Language Selector -->
-                                <Grid Margin="0,0,0,16">
+                                <Grid Margin="{StaticResource BlockGap}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -210,14 +210,14 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="16">
                     <Border Style="{StaticResource CardBorderStyle}">
                         <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <StackPanel Orientation="Horizontal" Margin="{StaticResource BlockGap}">
                                 <TextBlock Text="{loc:Loc Settings_Section_Performance}" FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 <ui:SymbolIcon Symbol="QuestionCircle24" Width="18" Height="18" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                           VerticalAlignment="Center" Margin="8,0,0,0" ToolTip="{loc:Loc Help_Performance}"/>
                             </StackPanel>
 
                             <!-- Parallel Installs Setting -->
-                            <Grid Margin="0,0,0,16">
+                            <Grid Margin="{StaticResource BlockGap}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -271,14 +271,14 @@
                     <Border Style="{StaticResource CardBorderStyle}">
                     <StackPanel>
                         <!-- Section Header -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <StackPanel Orientation="Horizontal" Margin="{StaticResource BlockGap}">
                             <TextBlock Text="{loc:Loc Settings_Section_Data}"
                                        FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <!-- Export/Import Settings -->
-                        <Grid Margin="0,0,0,16">
+                        <Grid Margin="{StaticResource BlockGap}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -313,7 +313,7 @@
                         </Grid>
 
                         <!-- Reset to Defaults -->
-                        <Grid Margin="0,0,0,16">
+                        <Grid Margin="{StaticResource BlockGap}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -339,7 +339,7 @@
                         </Grid>
 
                         <!-- Clear History -->
-                        <Grid Margin="0,0,0,16">
+                        <Grid Margin="{StaticResource BlockGap}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -515,7 +515,7 @@
                         <Border Style="{StaticResource SectionCardStyle}"
                                               IsEnabled="{Binding IsScheduledDeploymentsAvailable}">
                             <StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <StackPanel Orientation="Horizontal" Margin="{StaticResource BlockGap}">
                                     <TextBlock Text="{loc:Loc ScheduledDeployment_CreateNew}"
                                                FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                                VerticalAlignment="Center"/>
@@ -554,7 +554,7 @@
                                 </Grid>
 
                                 <!-- Schedule Time -->
-                                <Grid Margin="0,0,0,16">
+                                <Grid Margin="{StaticResource BlockGap}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
@@ -591,7 +591,7 @@
                         <Border Style="{StaticResource CardBorderStyle}"
                                               IsEnabled="{Binding IsScheduledDeploymentsAvailable}">
                             <StackPanel>
-                                <Grid Margin="0,0,0,16">
+                                <Grid Margin="{StaticResource BlockGap}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
@@ -701,7 +701,7 @@
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                     <TextBlock Text="{loc:Loc App_Name}"
                                                FontSize="{StaticResource FontSizeTitle}" FontWeight="SemiBold"
-                                               Margin="0,0,0,16"/>
+                                               Margin="{StaticResource BlockGap}"/>
 
                                     <Grid>
                                         <Grid.ColumnDefinitions>
