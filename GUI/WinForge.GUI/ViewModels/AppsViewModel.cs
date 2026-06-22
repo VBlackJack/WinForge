@@ -535,6 +535,14 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     {
         SelectedCount = _allApplications.Count(a => a.IsSelected);
         FavoritesCount = _allApplications.Count(a => a.IsFavorite);
+        RefreshSelectionActionState();
+    }
+
+    private void RefreshSelectionActionState()
+    {
+        OnPropertyChanged(nameof(SelectedPrimaryActionText));
+        InstallSelectedCommand.NotifyCanExecuteChanged();
+        UpdateSelectedCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>

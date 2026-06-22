@@ -683,6 +683,9 @@ Veuillez vous assurer que WinForge est extrait correctement avec tous les dossie
   <data name="Apps_InstallSelected" xml:space="preserve">
     <value>Installer la sélection</value>
   </data>
+  <data name="Apps_InstallUpdateSelected" xml:space="preserve">
+    <value>Installer et mettre à jour la sélection</value>
+  </data>
   <data name="Apps_SelectAll" xml:space="preserve">
     <value>Tout sélectionner</value>
   </data>

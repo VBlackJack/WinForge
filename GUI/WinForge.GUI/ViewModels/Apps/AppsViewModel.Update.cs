@@ -59,6 +59,7 @@ public partial class AppsViewModel
 
             // Apply filter to refresh view
             ApplyFilter();
+            RefreshSelectionActionState();
             _lastOperationType = string.Empty;
         }
         catch (Exception ex)
@@ -86,6 +87,8 @@ public partial class AppsViewModel
             {
                 UpdatesAvailableCount--;
             }
+
+            RefreshSelectionActionState();
         }
         catch (Exception ex)
         {
@@ -103,7 +106,10 @@ public partial class AppsViewModel
     /// <summary>
     /// Whether the UpdateSelected command can execute.
     /// </summary>
-    private bool CanUpdateSelected => UpdatesAvailableCount > 0 && !IsInstalling && !IsUninstalling;
+    private bool CanUpdateSelected =>
+        _allApplications.Any(app => app.Status == ApplicationStatus.UpdateAvailable) &&
+        !IsInstalling &&
+        !IsUninstalling;
 
     /// <summary>
     /// Updates all applications with available updates.
@@ -188,6 +194,7 @@ public partial class AppsViewModel
             _batchCancellationTokenSource = null;
 
             _deploymentStateService.EndDeployment();
+            RefreshSelectionActionState();
             ApplyFilter();
         }
     }
