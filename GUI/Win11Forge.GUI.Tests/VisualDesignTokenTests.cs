@@ -210,6 +210,29 @@ public class VisualDesignTokenTests
         AssertNamedStyleSetter(styles, "CompactSecondaryDropDownButton", "CornerRadius", "{StaticResource ButtonCornerRadius}");
         AssertNamedStyleSetter(styles, "QuickActionButton", "HorizontalContentAlignment", "Left");
         AssertNamedStyleSetter(styles, "IconButton", "MinWidth", "{StaticResource ButtonMinHeightTouch}");
+        AssertNamedStyleSetter(styles, "IconDropDownButton", "Appearance", "Transparent");
+        AssertNamedStyleSetter(styles, "IconDropDownButton", "MinWidth", "{StaticResource ButtonMinHeightTouch}");
+        AssertNamedStyleSetter(styles, "IconDropDownButton", "CornerRadius", "{StaticResource ButtonCornerRadius}");
+    }
+
+    [Fact]
+    public void AppsColumnVisibilityDropDown_UsesSharedIconDropDownButtonStyle()
+    {
+        XDocument appsDoc = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+
+        XElement columnVisibilityButton = appsDoc.Descendants()
+            .Single(element =>
+                element.Name.LocalName == "DropDownButton"
+                && string.Equals(
+                    element.Attribute(XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value,
+                    "ColumnVisibilityButton",
+                    StringComparison.Ordinal));
+
+        Assert.Equal("{StaticResource IconDropDownButton}", columnVisibilityButton.Attribute("Style")?.Value);
+        Assert.Null(columnVisibilityButton.Attribute("Appearance"));
+        Assert.Null(columnVisibilityButton.Attribute("MinWidth"));
+        Assert.Null(columnVisibilityButton.Attribute("MinHeight"));
+        Assert.Null(columnVisibilityButton.Attribute("Padding"));
     }
 
     [Fact]

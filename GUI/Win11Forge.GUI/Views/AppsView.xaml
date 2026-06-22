@@ -478,10 +478,7 @@
                      ignored. PlacementTarget and DataContext are auto-wired by ui:DropDownButton. -->
                 <ui:DropDownButton Grid.Column="0"
                                    x:Name="ColumnVisibilityButton"
-                                   Appearance="Transparent"
-                                   MinWidth="{StaticResource ButtonMinHeightTouch}"
-                                   MinHeight="{StaticResource ButtonMinHeightTouch}"
-                                   Padding="{StaticResource ButtonPaddingIcon}"
+                                   Style="{StaticResource IconDropDownButton}"
                                    Margin="0,0,8,0"
                                    ToolTip="{loc:Loc Apps_ColumnVisibility}"
                                    AutomationProperties.Name="{loc:Loc Apps_ColumnVisibility}">
