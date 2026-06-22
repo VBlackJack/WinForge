@@ -1667,6 +1667,107 @@ public class AppsViewModelTests
     }
 
     [Fact]
+    public async Task UpdateCurrentProfile_ShouldSaveCurrentSelectionToSelectedProfile()
+    {
+        // Arrange
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
+            ("Work", [], ["Git.Git"]));
+        MockPowerShellBridge bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Work"];
+        TestToastService toastService = new TestToastService();
+        AppsViewModel viewModel = CreateViewModel(bridge, toastService: toastService, pathService: profiles.PathService);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+
+        viewModel.SelectedProfile = "Work";
+        await WaitForConditionAsync(() => FindApp(viewModel, "Git.Git").IsSelected);
+
+        FindApp(viewModel, "Git.Git").IsSelected = false;
+        FindApp(viewModel, "Mozilla.Firefox").IsSelected = true;
+        viewModel.UpdateSelectedCount();
+
+        // Act
+        await viewModel.UpdateCurrentProfileCommand.ExecuteAsync(null);
+
+        // Assert
+        string profilePath = Path.Combine(
+            profiles.PathService.UserProfilesDirectory,
+            $"Work{Win11ForgePathNames.JsonFileExtension}");
+        using JsonDocument document = JsonDocument.Parse(await File.ReadAllTextAsync(profilePath));
+        JsonElement root = document.RootElement;
+        string[] apps = root.GetProperty("Applications").EnumerateArray()
+            .Select(element => element.GetString())
+            .OfType<string>()
+            .ToArray();
+        string[] inherits = root.GetProperty("Inherits").EnumerateArray()
+            .Select(element => element.GetString())
+            .OfType<string>()
+            .ToArray();
+
+        Assert.Equal(["Mozilla.Firefox"], apps);
+        Assert.Empty(inherits);
+        Assert.Equal("Work test profile", root.GetProperty("Description").GetString());
+        Assert.True(FindApp(viewModel, "Mozilla.Firefox").IsSelected);
+        Assert.False(FindApp(viewModel, "Git.Git").IsSelected);
+        Assert.Single(toastService.Toasts);
+        Assert.Equal(ToastLevel.Success, toastService.Toasts[0].Level);
+        Assert.Equal(FormatLoc("Profile_Update_Success", "Work", 1), toastService.Toasts[0].Message);
+    }
+
+    [Fact]
+    public async Task UpdateCurrentProfile_WithInheritedProfile_ShouldPreserveParentApplicationsAsInherited()
+    {
+        // Arrange
+        using TestProfilesDirectory profiles = new TestProfilesDirectory(
+            ("Base", [], ["Git.Git"]),
+            ("Developer", ["Base"], ["Mozilla.Firefox"]));
+        MockPowerShellBridge bridge = CreateMockBridge();
+        bridge.AvailableProfiles = ["Base", "Developer"];
+        TestToastService toastService = new TestToastService();
+        AppsViewModel viewModel = CreateViewModel(bridge, toastService: toastService, pathService: profiles.PathService);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+
+        viewModel.SelectedProfile = "Developer";
+        await WaitForConditionAsync(() =>
+            FindApp(viewModel, "Git.Git").IsSelected &&
+            FindApp(viewModel, "Mozilla.Firefox").IsSelected);
+
+        FindApp(viewModel, "Git.Git").IsSelected = false;
+        FindApp(viewModel, "Google.Chrome").IsSelected = true;
+        viewModel.UpdateSelectedCount();
+
+        // Act
+        await viewModel.UpdateCurrentProfileCommand.ExecuteAsync(null);
+
+        // Assert
+        string profilePath = Path.Combine(
+            profiles.PathService.UserProfilesDirectory,
+            $"Developer{Win11ForgePathNames.JsonFileExtension}");
+        using JsonDocument document = JsonDocument.Parse(await File.ReadAllTextAsync(profilePath));
+        JsonElement root = document.RootElement;
+        string[] apps = root.GetProperty("Applications").EnumerateArray()
+            .Select(element => element.GetString())
+            .OfType<string>()
+            .ToArray();
+        string[] inherits = root.GetProperty("Inherits").EnumerateArray()
+            .Select(element => element.GetString())
+            .OfType<string>()
+            .ToArray();
+
+        Assert.Equal(["Mozilla.Firefox", "Google.Chrome"], apps);
+        Assert.Equal(["Base"], inherits);
+        Assert.True(FindApp(viewModel, "Git.Git").IsSelected);
+        Assert.True(FindApp(viewModel, "Mozilla.Firefox").IsSelected);
+        Assert.True(FindApp(viewModel, "Google.Chrome").IsSelected);
+        Assert.Single(toastService.Toasts);
+        Assert.Equal(ToastLevel.Warning, toastService.Toasts[0].Level);
+        Assert.Equal(
+            FormatLoc("Profile_Update_InheritedWarning", "Developer", 2, 1),
+            toastService.Toasts[0].Message);
+    }
+
+    [Fact]
     public async Task ProfileTierMapping_UsesCustomInheritanceChain()
     {
         // Arrange
@@ -1954,7 +2055,8 @@ public class AppsViewModelTests
             Directory.CreateDirectory(_profilesPath);
             foreach ((string Name, string[] Inherits, string[] Applications) profile in profiles)
             {
-                var payload = new {
+                var payload = new
+                {
                     profile.Name,
                     Description = $"{profile.Name} test profile",
                     Version = "1.0.0",

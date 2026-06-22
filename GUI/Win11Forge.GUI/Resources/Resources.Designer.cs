@@ -545,6 +545,8 @@ public class Resources
     public static string Apps_SelectProfile => ResourceManager.GetString("Apps_SelectProfile", resourceCulture);
     public static string Apps_CustomProfile => ResourceManager.GetString("Apps_CustomProfile", resourceCulture);
     public static string Apps_ClearProfile => ResourceManager.GetString("Apps_ClearProfile", resourceCulture);
+    public static string Apps_UpdateProfile => ResourceManager.GetString("Apps_UpdateProfile", resourceCulture);
+    public static string Apps_UpdateProfileTooltip => ResourceManager.GetString("Apps_UpdateProfileTooltip", resourceCulture);
     public static string Apps_AppsSelected => ResourceManager.GetString("Apps_AppsSelected", resourceCulture);
     public static string Apps_ProfileHelpTooltip => ResourceManager.GetString("Apps_ProfileHelpTooltip", resourceCulture);
     public static string Apps_SelectionHelpTooltip => ResourceManager.GetString("Apps_SelectionHelpTooltip", resourceCulture);
@@ -570,6 +572,9 @@ public class Resources
     public static string Profile_Apply_Message_HasManualSelection => ResourceManager.GetString("Profile_Apply_Message_HasManualSelection", resourceCulture);
     public static string Profile_Apply_Replace => ResourceManager.GetString("Profile_Apply_Replace", resourceCulture);
     public static string Profile_Apply_Merge => ResourceManager.GetString("Profile_Apply_Merge", resourceCulture);
+    public static string Profile_Update_Success => ResourceManager.GetString("Profile_Update_Success", resourceCulture);
+    public static string Profile_Update_InheritedWarning => ResourceManager.GetString("Profile_Update_InheritedWarning", resourceCulture);
+    public static string Profile_Update_Error => ResourceManager.GetString("Profile_Update_Error", resourceCulture);
 
     // Dashboard - Hero Section (Action-First Design)
     public static string Dashboard_Hero_Checking => ResourceManager.GetString("Dashboard_Hero_Checking", resourceCulture);

@@ -2155,6 +2155,14 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <value>Clear profile</value>
     <comment>Clear profile button tooltip</comment>
   </data>
+  <data name="Apps_UpdateProfile" xml:space="preserve">
+    <value>Update profile</value>
+    <comment>Button label for saving the current selection back to the selected profile</comment>
+  </data>
+  <data name="Apps_UpdateProfileTooltip" xml:space="preserve">
+    <value>Save the current checked applications back to the selected profile.</value>
+    <comment>Tooltip for updating the selected profile with the current application selection</comment>
+  </data>
   <data name="Apps_AppsSelected" xml:space="preserve">
     <value>applications selected</value>
     <comment>Applications selected count suffix</comment>
@@ -2223,6 +2231,18 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   <data name="Profile_Apply_Merge" xml:space="preserve">
     <value>Merge selections</value>
     <comment>Merge selected profile applications into the current manual selection</comment>
+  </data>
+  <data name="Profile_Update_Success" xml:space="preserve">
+    <value>Profile '{0}' updated with {1} application(s).</value>
+    <comment>Success message after updating an existing profile. {0} = profile name, {1} = selected app count.</comment>
+  </data>
+  <data name="Profile_Update_InheritedWarning" xml:space="preserve">
+    <value>Profile '{0}' updated with {1} direct application(s). {2} inherited application(s) remain selected because they come from parent profiles.</value>
+    <comment>Warning after updating an inherited profile. {0} = profile name, {1} = direct app count, {2} = inherited app count that cannot be removed from this profile.</comment>
+  </data>
+  <data name="Profile_Update_Error" xml:space="preserve">
+    <value>Failed to update profile '{0}': {1}</value>
+    <comment>Error message when updating an existing profile fails. {0} = profile name, {1} = error details.</comment>
   </data>
   <!-- Dashboard Hero Section -->
   <data name="Dashboard_Hero_Checking" xml:space="preserve">

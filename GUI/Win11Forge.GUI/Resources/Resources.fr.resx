@@ -1369,6 +1369,12 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   <data name="Apps_ClearProfile" xml:space="preserve">
     <value>Effacer le profil</value>
   </data>
+  <data name="Apps_UpdateProfile" xml:space="preserve">
+    <value>Mettre à jour le profil</value>
+  </data>
+  <data name="Apps_UpdateProfileTooltip" xml:space="preserve">
+    <value>Sauvegarde les applications cochées dans le profil sélectionné.</value>
+  </data>
   <data name="Apps_AppsSelected" xml:space="preserve">
     <value>applications sélectionnées</value>
   </data>
@@ -1420,6 +1426,15 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <data name="Profile_Apply_Merge" xml:space="preserve">
     <value>Fusionner les sélections</value>
+  </data>
+  <data name="Profile_Update_Success" xml:space="preserve">
+    <value>Profil « {0} » mis à jour avec {1} application(s).</value>
+  </data>
+  <data name="Profile_Update_InheritedWarning" xml:space="preserve">
+    <value>Profil « {0} » mis à jour avec {1} application(s) directe(s). {2} application(s) héritée(s) restent sélectionnées car elles viennent des profils parents.</value>
+  </data>
+  <data name="Profile_Update_Error" xml:space="preserve">
+    <value>Échec de la mise à jour du profil « {0} » : {1}</value>
   </data>
   <!-- Dashboard Hero Section -->
   <data name="Dashboard_Hero_Checking" xml:space="preserve">

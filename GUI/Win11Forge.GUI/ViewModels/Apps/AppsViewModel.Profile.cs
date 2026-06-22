@@ -23,6 +23,7 @@ using Win11Forge.GUI.Configuration;
 using Win11Forge.GUI.Exceptions;
 using Win11Forge.GUI.Helpers;
 using Win11Forge.GUI.Models;
+using Win11Forge.GUI.Services;
 using Win11Forge.GUI.Views;
 
 namespace Win11Forge.GUI.ViewModels;
@@ -96,6 +97,7 @@ public partial class AppsViewModel
     partial void OnSelectedProfileChanged(string? value)
     {
         OnPropertyChanged(nameof(HasProfileApplied));
+        UpdateCurrentProfileCommand.NotifyCanExecuteChanged();
         SyncSelectedProfileSelectorItem(value);
 
         if (_isRestoringProfile)
@@ -114,6 +116,21 @@ public partial class AppsViewModel
         }
 
         SelectedProfile = value?.ProfileName;
+    }
+
+    partial void OnIsInstallingChanged(bool value)
+    {
+        UpdateCurrentProfileCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnIsUninstallingChanged(bool value)
+    {
+        UpdateCurrentProfileCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnIsUpdatingChanged(bool value)
+    {
+        UpdateCurrentProfileCommand.NotifyCanExecuteChanged();
     }
 
     private bool _isSyncingProfileSelector;
@@ -567,6 +584,76 @@ public partial class AppsViewModel
     }
 
     /// <summary>
+    /// Saves the current selection back to the active profile, preserving its metadata and inheritance.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanUpdateCurrentProfile))]
+    private async Task UpdateCurrentProfileAsync()
+    {
+        string? profileName = SelectedProfile;
+        if (string.IsNullOrEmpty(profileName))
+        {
+            return;
+        }
+
+        try
+        {
+            ProfileEditSnapshot profile = await ReadProfileEditSnapshotAsync(profileName);
+            HashSet<string> selectedAppIds = CaptureSelectedAppIds();
+            HashSet<string> inheritedAppIds = await ResolveInheritedAppIdsAsync(profile.InheritedFrom);
+            List<string> directAppIds = _allApplications
+                .Where(app => selectedAppIds.Contains(app.AppId) && !inheritedAppIds.Contains(app.AppId))
+                .Select(app => app.AppId)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            int inheritedAppsStillSelected = inheritedAppIds.Count(appId => !selectedAppIds.Contains(appId));
+
+            await WriteProfileEditSnapshotAsync(profile, directAppIds);
+            await RefreshProfileCachesAfterUpdateAsync(profile.Name);
+
+            ApplyResolvedProfileToSelection(profile.Name);
+            _lastAppliedProfile = profile.Name;
+            StoreLastAppliedProfileSelectionSnapshot();
+            ApplyFilter();
+
+            string message = inheritedAppsStillSelected > 0
+                ? FormatLocalized(
+                    "Profile_Update_InheritedWarning",
+                    "Profile '{0}' updated with {1} direct application(s). {2} inherited application(s) remain selected because they come from parent profiles.",
+                    profile.Name,
+                    directAppIds.Count,
+                    inheritedAppsStillSelected)
+                : FormatLocalized(
+                    "Profile_Update_Success",
+                    "Profile '{0}' updated with {1} application(s).",
+                    profile.Name,
+                    selectedAppIds.Count);
+
+            StatusMessage = message;
+            ErrorMessage = null;
+            _toastService?.Show(
+                message,
+                inheritedAppsStillSelected > 0 ? ToastLevel.Warning : ToastLevel.Success);
+        }
+        catch (Exception ex)
+        {
+            string message = FormatLocalized(
+                "Profile_Update_Error",
+                "Failed to update profile '{0}': {1}",
+                profileName,
+                ex.Message);
+            ErrorMessage = message;
+            _toastService?.ShowError(message);
+            _logger.LogError("Unexpected exception in UpdateCurrentProfileAsync", ex);
+        }
+    }
+
+    private bool CanUpdateCurrentProfile()
+    {
+        return HasProfileApplied && !IsInstalling && !IsUninstalling && !IsUpdating;
+    }
+
+    /// <summary>
     /// Shows the save profile dialog and saves the current selection.
     /// </summary>
     [RelayCommand]
@@ -707,6 +794,123 @@ public partial class AppsViewModel
         _profileInheritanceCache.Clear();
     }
 
+    private async Task<ProfileEditSnapshot> ReadProfileEditSnapshotAsync(string profileName)
+    {
+        string? profilePath = TryGetProfilePath(GetProfileReadDirectories(), profileName);
+        if (profilePath == null)
+        {
+            throw new FileNotFoundException($"Profile not found: {profileName}");
+        }
+
+        string jsonContent = await File.ReadAllTextAsync(profilePath);
+        using JsonDocument document = JsonDocument.Parse(jsonContent);
+        JsonElement root = document.RootElement;
+
+        List<string> inheritedFrom = [];
+        if (root.TryGetProperty("Inherits", out JsonElement inheritsElement) &&
+            inheritsElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement parentElement in inheritsElement.EnumerateArray())
+            {
+                string? parentName = parentElement.GetString();
+                if (!string.IsNullOrWhiteSpace(parentName))
+                {
+                    inheritedFrom.Add(parentName);
+                }
+            }
+        }
+
+        return new ProfileEditSnapshot(
+            JsonHelper.GetJsonString(root, "Name") ?? profileName,
+            JsonHelper.GetJsonString(root, "Description") ?? string.Empty,
+            JsonHelper.GetJsonString(root, "Version") ?? "1.0.0",
+            inheritedFrom);
+    }
+
+    private async Task<HashSet<string>> ResolveInheritedAppIdsAsync(IEnumerable<string> parentProfiles)
+    {
+        HashSet<string> inheritedAppIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        IReadOnlyList<string> profileDirectories = GetProfileReadDirectories();
+
+        foreach (string parentProfile in parentProfiles)
+        {
+            HashSet<string> parentAppIds;
+            if (!_resolvedProfileAppIdsCache.TryGetValue(parentProfile, out HashSet<string>? cachedParentAppIds))
+            {
+                parentAppIds = await ResolveProfileInheritanceAsync(profileDirectories, parentProfile);
+                _resolvedProfileAppIdsCache[parentProfile] = parentAppIds;
+            }
+            else
+            {
+                parentAppIds = cachedParentAppIds;
+            }
+
+            foreach (string appId in parentAppIds)
+            {
+                inheritedAppIds.Add(appId);
+            }
+        }
+
+        return inheritedAppIds;
+    }
+
+    private async Task WriteProfileEditSnapshotAsync(ProfileEditSnapshot profile, IReadOnlyList<string> directAppIds)
+    {
+        string profilesDir = GetProfilesWriteDirectory();
+        string profilePath = Path.Combine(
+            profilesDir,
+            $"{profile.Name}{Win11ForgePathNames.JsonFileExtension}");
+
+        Dictionary<string, object> profilePayload = new Dictionary<string, object>
+        {
+            ["Name"] = profile.Name,
+            ["Description"] = profile.Description,
+            ["Version"] = profile.Version,
+            ["Inherits"] = profile.InheritedFrom.ToArray(),
+            ["Applications"] = directAppIds.ToArray()
+        };
+
+        JsonSerializerOptions jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true
+        };
+
+        string jsonContent = JsonSerializer.Serialize(profilePayload, jsonOptions);
+        await File.WriteAllTextAsync(profilePath, jsonContent);
+    }
+
+    private async Task RefreshProfileCachesAfterUpdateAsync(string profileName)
+    {
+        IReadOnlyList<string> profileDirectories = GetProfileReadDirectories();
+        List<string> rawAppIds = await ReadProfileAppIdsFromJsonAsync(profileDirectories, profileName);
+        HashSet<string> resolvedAppIds = await ResolveProfileInheritanceAsync(profileDirectories, profileName);
+
+        _rawProfileAppIdsCache[profileName] = rawAppIds;
+        _resolvedProfileAppIdsCache[profileName] = resolvedAppIds;
+    }
+
+    private void ApplyResolvedProfileToSelection(string profileName)
+    {
+        ClearProfileTiers();
+        BuildProfileTierMapping(profileName);
+
+        HashSet<string> resolvedAppIds = _resolvedProfileAppIdsCache.TryGetValue(
+            profileName,
+            out HashSet<string>? cachedAppIds)
+                ? cachedAppIds
+                : [];
+
+        foreach (ApplicationModel app in _allApplications)
+        {
+            app.IsSelected = resolvedAppIds.Contains(app.AppId);
+            app.ProfileTier = app.IsSelected && _profileAppTiers.TryGetValue(app.AppId, out string? tier)
+                ? tier
+                : string.Empty;
+        }
+
+        UpdateSelectedCount();
+    }
+
     private static string? TryGetProfilePath(IReadOnlyList<string> profileDirectories, string profileName)
     {
         foreach (string profilesDir in profileDirectories)
@@ -732,4 +936,10 @@ public partial class AppsViewModel
 
         return null;
     }
+
+    private sealed record ProfileEditSnapshot(
+        string Name,
+        string Description,
+        string Version,
+        IReadOnlyList<string> InheritedFrom);
 }

@@ -241,6 +241,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Profile Icon and Label with Help -->
@@ -327,8 +328,23 @@
                     <ui:SymbolIcon Symbol="Dismiss24"/>
                 </ui:Button>
 
-                <!-- Save Profile Button (inline with combobox) -->
+                <!-- Update Current Profile Button (inline with combobox) -->
                 <ui:Button Grid.Column="5"
+                           Command="{Binding UpdateCurrentProfileCommand}"
+                           Style="{StaticResource SecondaryButton}"
+                           VerticalAlignment="Center"
+                           ToolTip="{loc:Loc Apps_UpdateProfileTooltip}"
+                           AutomationProperties.Name="{loc:Loc Apps_UpdateProfile}"
+                           Margin="8,0,0,0"
+                           Visibility="{Binding HasProfileApplied, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="ArrowSync24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{loc:Loc Apps_UpdateProfile}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </ui:Button>
+
+                <!-- Save Profile Button (inline with combobox) -->
+                <ui:Button Grid.Column="6"
                            Command="{Binding ShowSaveProfileDialogCommand}"
                            Style="{StaticResource SecondaryButton}"
                            VerticalAlignment="Center"
