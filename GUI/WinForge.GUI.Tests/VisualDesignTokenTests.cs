@@ -299,6 +299,29 @@ public class VisualDesignTokenTests
     }
 
     [Fact]
+    public void DeploymentResultTitle_UsesSemanticForegroundForEveryState()
+    {
+        string deploymentXaml = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Views", "DeploymentView.xaml"));
+
+        Assert.Contains(
+            "<Setter Property=\"Foreground\" Value=\"{DynamicResource SuccessTextBrush}\"/>",
+            deploymentXaml,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "<Setter Property=\"Foreground\" Value=\"{DynamicResource WarningTextBrush}\"/>",
+            deploymentXaml,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "<Setter Property=\"Foreground\" Value=\"{DynamicResource ErrorTextBrush}\"/>",
+            deploymentXaml,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "<Setter Property=\"Foreground\" Value=\"{DynamicResource TextFillColorPrimaryBrush}\"/>",
+            deploymentXaml,
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DashboardQuickNavigation_UsesWpfUiButtonsToAvoidNativeHoverChrome()
     {
         string dashboardPath = FindRepoFile("GUI", "WinForge.GUI", "Views", "DashboardView.xaml");

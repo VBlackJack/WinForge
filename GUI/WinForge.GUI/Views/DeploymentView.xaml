@@ -261,15 +261,19 @@
                                 <Setter Property="FontSize" Value="{StaticResource FontSizeSubtitle}"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                                 <Setter Property="Text" Value="{loc:Loc Deployment_Result_Success}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource SuccessTextBrush}"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding DeploymentResult}" Value="Partial">
                                         <Setter Property="Text" Value="{loc:Loc Deployment_Result_Partial}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource WarningTextBrush}"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding DeploymentResult}" Value="Failed">
                                         <Setter Property="Text" Value="{loc:Loc Deployment_Result_Failed}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource ErrorTextBrush}"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding DeploymentResult}" Value="Cancelled">
                                         <Setter Property="Text" Value="{loc:Loc Deployment_Result_Cancelled}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
