@@ -31,7 +31,7 @@
 
         <!-- Registry Detection Panel -->
         <Border x:Name="RegistryPanel"
-                CornerRadius="8"
+                CornerRadius="{StaticResource RadiusMedium}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 Padding="16"
                 Margin="0,0,0,16"
@@ -68,7 +68,7 @@
 
         <!-- File Detection Panel -->
         <Border x:Name="FilePanel"
-                CornerRadius="8"
+                CornerRadius="{StaticResource RadiusMedium}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 Padding="16"
                 Margin="0,0,0,16"
@@ -114,7 +114,7 @@
 
         <!-- Command Detection Panel -->
         <Border x:Name="CommandPanel"
-                CornerRadius="8"
+                CornerRadius="{StaticResource RadiusMedium}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 Padding="16"
                 Margin="0,0,0,16"
@@ -144,7 +144,7 @@
 
         <!-- Windows Feature Panel -->
         <Border x:Name="WindowsFeaturePanel"
-                CornerRadius="8"
+                CornerRadius="{StaticResource RadiusMedium}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 Padding="16"
                 Margin="0,0,0,16"
@@ -169,7 +169,7 @@
 
         <!-- Store App Panel -->
         <Border x:Name="StoreAppPanel"
-                CornerRadius="8"
+                CornerRadius="{StaticResource RadiusMedium}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 Padding="16"
                 Margin="0,0,0,16"
@@ -223,7 +223,7 @@
             <Border Grid.Column="1"
                     Margin="16,0,0,0"
                     Padding="12,8"
-                    CornerRadius="4"
+                    CornerRadius="{StaticResource RadiusSmall}"
                     Visibility="{Binding TestResult, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullableToVisibilityConverter}}">
                 <Border.Style>
                     <Style TargetType="Border">

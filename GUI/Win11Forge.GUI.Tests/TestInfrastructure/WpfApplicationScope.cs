@@ -167,7 +167,11 @@ internal sealed class WpfApplicationScope : IDisposable
             ["FontSizeTitle"] = 24.0,
             ["FontSizeHeader"] = 28.0,
             ["FontSizeDisplay"] = 32.0,
-            ["FontSizeHero"] = 48.0
+            ["FontSizeHero"] = 48.0,
+            ["RadiusSmall"] = new CornerRadius(4),
+            ["RadiusMedium"] = new CornerRadius(8),
+            ["RadiusLarge"] = new CornerRadius(12),
+            ["RadiusXLarge"] = new CornerRadius(16)
         };
     }
 

@@ -24,6 +24,12 @@
             <SolidColorBrush x:Key="LightThemeCardBackground" Color="#FFFFFF"/>
             <SolidColorBrush x:Key="LightThemeHoverBackground" Color="#0A000000"/>
 
+            <!-- Canonical corner-radius scale. No view should set a numeric CornerRadius inline. -->
+            <CornerRadius x:Key="RadiusSmall">4</CornerRadius>
+            <CornerRadius x:Key="RadiusMedium">8</CornerRadius>
+            <CornerRadius x:Key="RadiusLarge">12</CornerRadius>
+            <CornerRadius x:Key="RadiusXLarge">16</CornerRadius>
+
             <!-- Focus Visual Style (WCAG compliant high-visibility focus indicator) -->
             <Style x:Key="HighVisibilityFocusVisual">
                 <Setter Property="Control.Template">
@@ -31,7 +37,7 @@
                         <ControlTemplate>
                             <Border BorderBrush="{DynamicResource FocusIndicatorBrush}"
                                     BorderThickness="2"
-                                    CornerRadius="4"
+                                    CornerRadius="{StaticResource RadiusSmall}"
                                     Margin="-2"/>
                         </ControlTemplate>
                     </Setter.Value>
@@ -579,7 +585,7 @@
 
             <!-- Shared source badge taxonomy -->
             <Style x:Key="SourceBadgeStyle" TargetType="Border">
-                <Setter Property="CornerRadius" Value="4"/>
+                <Setter Property="CornerRadius" Value="{StaticResource RadiusSmall}"/>
                 <Setter Property="Padding" Value="6,2"/>
                 <Setter Property="Margin" Value="0,0,4,0"/>
                 <Setter Property="BorderThickness" Value="1"/>
@@ -865,7 +871,7 @@
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="4"
+                                    CornerRadius="{StaticResource RadiusSmall}"
                                     SnapsToDevicePixels="True">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -937,7 +943,7 @@
                                         <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                                 BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                                 BorderThickness="1"
-                                                CornerRadius="4"/>
+                                                CornerRadius="{StaticResource RadiusSmall}"/>
                                         <ScrollViewer Margin="1"
                                                       SnapsToDevicePixels="True"
                                                       KeyboardNavigation.DirectionalNavigation="Contained">

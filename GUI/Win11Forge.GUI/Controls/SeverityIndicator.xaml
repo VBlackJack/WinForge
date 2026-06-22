@@ -22,7 +22,7 @@
               AutomationProperties.Name="{loc:Loc Col_Status}"
               AutomationProperties.LiveSetting="Polite">
     <Border x:Name="IndicatorBorder"
-            CornerRadius="4"
+            CornerRadius="{StaticResource RadiusSmall}"
             Padding="{Binding Padding, ElementName=Root}"
             BorderThickness="1">
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">

@@ -40,7 +40,7 @@
                     </Grid.ColumnDefinitions>
                     <Border Grid.Column="0"
                             Background="{DynamicResource PrimaryHueMidBrush}"
-                            CornerRadius="20"
+                            CornerRadius="{StaticResource RadiusXLarge}"
                             Width="40" Height="40"
                             Margin="0,0,16,0">
                         <TextBlock Text="1"
@@ -68,7 +68,7 @@
                     </Grid.ColumnDefinitions>
                     <Border Grid.Column="0"
                             Background="{DynamicResource PrimaryHueMidBrush}"
-                            CornerRadius="20"
+                            CornerRadius="{StaticResource RadiusXLarge}"
                             Width="40" Height="40"
                             Margin="0,0,16,0">
                         <TextBlock Text="2"
@@ -96,7 +96,7 @@
                     </Grid.ColumnDefinitions>
                     <Border Grid.Column="0"
                             Background="{DynamicResource PrimaryHueMidBrush}"
-                            CornerRadius="20"
+                            CornerRadius="{StaticResource RadiusXLarge}"
                             Width="40" Height="40"
                             Margin="0,0,16,0">
                         <TextBlock Text="3"
@@ -120,7 +120,7 @@
             <!-- Keyboard Shortcuts Tip -->
             <Border Grid.Row="2"
                     Background="{DynamicResource ControlFillColorDefaultBrush}"
-                    CornerRadius="8"
+                    CornerRadius="{StaticResource RadiusMedium}"
                     Padding="16"
                     Margin="0,0,0,24">
                 <StackPanel Orientation="Horizontal">

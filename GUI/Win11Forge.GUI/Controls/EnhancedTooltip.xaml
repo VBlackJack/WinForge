@@ -22,7 +22,7 @@
     <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}"
             BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
             BorderThickness="1"
-            CornerRadius="6"
+            CornerRadius="{StaticResource RadiusSmall}"
             Padding="12">
         <Grid>
             <Grid.RowDefinitions>
