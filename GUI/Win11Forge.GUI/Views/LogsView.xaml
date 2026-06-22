@@ -145,7 +145,7 @@
 
         <!-- Log Files List -->
         <Border Grid.Row="2" Padding="0"
-                CornerRadius="8"
+                CornerRadius="{StaticResource RadiusMedium}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
             <Grid>
                 <Grid.RowDefinitions>
@@ -154,6 +154,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- Log Files Header -->
+                <!-- intentional top-only radius; shape-specific exception to the scalar radius scale -->
                 <Border Grid.Row="0" Background="{DynamicResource SubtleFillColorSecondaryBrush}" Padding="16,12"
                         CornerRadius="8,8,0,0">
                     <Grid>

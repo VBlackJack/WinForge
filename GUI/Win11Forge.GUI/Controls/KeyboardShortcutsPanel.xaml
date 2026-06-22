@@ -42,7 +42,7 @@
                                     </Grid.ColumnDefinitions>
                                     <Border Grid.Column="0"
                                             Background="{DynamicResource ControlFillColorDefaultBrush}"
-                                            CornerRadius="4"
+                                            CornerRadius="{StaticResource RadiusSmall}"
                                             Padding="8,4"
                                             HorizontalAlignment="Left">
                                         <TextBlock Text="{Binding Key}"
@@ -75,7 +75,7 @@
                                     </Grid.ColumnDefinitions>
                                     <Border Grid.Column="0"
                                             Background="{DynamicResource ControlFillColorDefaultBrush}"
-                                            CornerRadius="4"
+                                            CornerRadius="{StaticResource RadiusSmall}"
                                             Padding="8,4"
                                             HorizontalAlignment="Left">
                                         <TextBlock Text="{Binding Key}"
@@ -108,7 +108,7 @@
                                     </Grid.ColumnDefinitions>
                                     <Border Grid.Column="0"
                                             Background="{DynamicResource ControlFillColorDefaultBrush}"
-                                            CornerRadius="4"
+                                            CornerRadius="{StaticResource RadiusSmall}"
                                             Padding="8,4"
                                             HorizontalAlignment="Left">
                                         <TextBlock Text="{Binding Key}"
@@ -141,7 +141,7 @@
                                     </Grid.ColumnDefinitions>
                                     <Border Grid.Column="0"
                                             Background="{DynamicResource ControlFillColorDefaultBrush}"
-                                            CornerRadius="4"
+                                            CornerRadius="{StaticResource RadiusSmall}"
                                             Padding="8,4"
                                             HorizontalAlignment="Left">
                                         <TextBlock Text="{Binding Key}"
@@ -160,7 +160,7 @@
 
                     <!-- Hint for DataGrid -->
                     <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
-                            CornerRadius="4"
+                            CornerRadius="{StaticResource RadiusSmall}"
                             Padding="12"
                             Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal">

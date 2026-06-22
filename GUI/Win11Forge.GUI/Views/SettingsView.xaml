@@ -169,7 +169,7 @@
 
                                 <!-- Restart Warning -->
                                 <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
-                                        CornerRadius="4" Padding="12"
+                                        CornerRadius="{StaticResource RadiusSmall}" Padding="12"
                                         Visibility="{Binding RestartRequired, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -401,7 +401,7 @@
                                                FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                                VerticalAlignment="Center"/>
                                     <Border Background="{DynamicResource ErrorBorderBrush}"
-                                            CornerRadius="12"
+                                            CornerRadius="{StaticResource RadiusLarge}"
                                             Padding="8,2"
                                             Margin="12,0,0,0"
                                             Visibility="{Binding HasErrors, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -776,7 +776,7 @@
 
                         <!-- Status Message -->
                         <Border Padding="12" Margin="0,16,0,0"
-                                              CornerRadius="8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                              CornerRadius="{StaticResource RadiusMedium}" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                               Visibility="{Binding StatusMessage, Converter={StaticResource NullableToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="CheckmarkCircle24"

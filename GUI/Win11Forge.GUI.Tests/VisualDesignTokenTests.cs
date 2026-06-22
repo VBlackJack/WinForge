@@ -66,6 +66,22 @@ public class VisualDesignTokenTests
     }
 
     [Fact]
+    public void AppXaml_DefinesCornerRadiusTokens()
+    {
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        List<XElement> styles = appXaml.Descendants()
+            .Where(element => element.Name.LocalName == "Style")
+            .ToList();
+
+        AssertResourceValue(appXaml, "RadiusSmall", "4");
+        AssertResourceValue(appXaml, "RadiusMedium", "8");
+        AssertResourceValue(appXaml, "RadiusLarge", "12");
+        AssertResourceValue(appXaml, "RadiusXLarge", "16");
+
+        AssertNamedStyleSetter(styles, "SourceBadgeStyle", "CornerRadius", "{StaticResource RadiusSmall}");
+    }
+
+    [Fact]
     public void PageAutomationTitles_UsePageTitleStyleWithoutInlineTypography()
     {
         foreach (string viewFileName in PrimaryPageViews)

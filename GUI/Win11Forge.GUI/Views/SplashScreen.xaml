@@ -14,7 +14,7 @@
         ShowInTaskbar="False">
 
     <Border Background="{DynamicResource ApplicationBackgroundBrush}"
-            CornerRadius="16"
+            CornerRadius="{StaticResource RadiusXLarge}"
             BorderBrush="{DynamicResource SystemAccentColorPrimaryBrush}"
             BorderThickness="2">
         <Border.Effect>

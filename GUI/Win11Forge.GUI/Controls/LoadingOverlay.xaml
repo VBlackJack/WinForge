@@ -15,7 +15,7 @@
         <Border HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                CornerRadius="12"
+                CornerRadius="{StaticResource RadiusLarge}"
                 Padding="32"
                 MinWidth="200">
             <StackPanel HorizontalAlignment="Center">

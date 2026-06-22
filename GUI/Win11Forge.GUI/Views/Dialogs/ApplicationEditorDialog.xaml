@@ -136,7 +136,7 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
                     <StackPanel>
                         <!-- Source Discovery -->
-                        <Border CornerRadius="8"
+                        <Border CornerRadius="{StaticResource RadiusMedium}"
                                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                 Padding="16"
                                 Margin="0,0,0,16">

@@ -32,7 +32,7 @@
                PopupAnimation="Fade">
             <Border Width="{Binding ActualWidth, ElementName=SearchTextBox}"
                     MaxHeight="250"
-                    CornerRadius="8"
+                    CornerRadius="{StaticResource RadiusMedium}"
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                     BorderThickness="1">

@@ -34,7 +34,7 @@
         <Border Grid.Row="1"
                 Padding="24"
                 Margin="0,0,0,16"
-                CornerRadius="8"
+                CornerRadius="{StaticResource RadiusMedium}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 Visibility="{Binding IsDeploying, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid>
@@ -76,7 +76,7 @@
                     <!-- Counter Badge -->
                     <Border Grid.Column="1"
                             Background="{DynamicResource PrimaryHueLightBrush}"
-                            CornerRadius="16"
+                            CornerRadius="{StaticResource RadiusXLarge}"
                             Padding="16,8">
                         <TextBlock Foreground="{DynamicResource PrimaryHueLightForegroundBrush}"
                                    FontWeight="Bold"
@@ -169,7 +169,7 @@
         <Border Grid.Row="1"
                 Padding="48"
                 Margin="0,0,0,16"
-                CornerRadius="8"
+                CornerRadius="{StaticResource RadiusMedium}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 Visibility="{Binding IsDeploying, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel HorizontalAlignment="Center">
@@ -193,7 +193,7 @@
         <Border Grid.Row="2"
                 Margin="0,0,0,16"
                 Padding="{StaticResource CardPadding}"
-                CornerRadius="8"
+                CornerRadius="{StaticResource RadiusMedium}"
                 Visibility="{Binding IsDeploymentComplete, Converter={StaticResource BooleanToVisibilityConverter}}"
                 AutomationProperties.LiveSetting="Polite">
             <Border.Style>
@@ -293,7 +293,7 @@
         <!-- Applications List (status only) - visible during deployment and after completion -->
         <Border Grid.Row="2"
                 Padding="0"
-                CornerRadius="8"
+                CornerRadius="{StaticResource RadiusMedium}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
             <Border.Style>
                 <Style TargetType="Border">
@@ -414,7 +414,7 @@
         <!-- Dialog Content -->
         <Border MinWidth="360" MaxWidth="900" MaxHeight="500"
                 Padding="24"
-                CornerRadius="8"
+                CornerRadius="{StaticResource RadiusMedium}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
@@ -437,7 +437,7 @@
                     <Border Background="{DynamicResource ErrorBackgroundBrush}"
                             BorderBrush="{DynamicResource ErrorBorderBrush}"
                             BorderThickness="1"
-                            CornerRadius="4"
+                            CornerRadius="{StaticResource RadiusSmall}"
                             Padding="12,8"
                             Margin="0,12,0,0"
                             Visibility="{Binding LogViewerApplication.ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}">
@@ -460,7 +460,7 @@
                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                         BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
                         BorderThickness="1"
-                        CornerRadius="4">
+                        CornerRadius="{StaticResource RadiusSmall}">
                     <ScrollViewer VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Auto">
                         <TextBox Text="{Binding LogViewerApplication.LogOutput, Mode=OneWay}"
