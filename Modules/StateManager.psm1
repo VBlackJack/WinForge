@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - State Manager v3.7.2
+    WinForge - State Manager v3.7.2
 
 .DESCRIPTION
-    Centralized state management for Win11Forge deployments:
+    Centralized state management for WinForge deployments:
     - Rollback state tracking and persistence
     - Deployment state tracking and persistence
     - State validation and security
@@ -241,21 +241,21 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
 
 # Import DirectoryConstants for path management
 $script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
-if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-WinForgeDirectory -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:DirectoryConstantsPath) {
         Import-Module -Name $script:DirectoryConstantsPath -Force
     }
 }
 
 # === DATA DIRECTORY ===
-$script:Win11ForgeDataDir = Get-Win11ForgeDirectory -DirectoryType 'Data'
-if (-not (Test-Path $script:Win11ForgeDataDir)) {
-    New-Item -Path $script:Win11ForgeDataDir -ItemType Directory -Force | Out-Null
+$script:WinForgeDataDir = Get-WinForgeDirectory -DirectoryType 'Data'
+if (-not (Test-Path $script:WinForgeDataDir)) {
+    New-Item -Path $script:WinForgeDataDir -ItemType Directory -Force | Out-Null
 }
 
 # === STATE FILE PATHS ===
-$script:RollbackStateFile = Join-Path $script:Win11ForgeDataDir 'RollbackState.json'
-$script:DeploymentStateFile = Join-Path $script:Win11ForgeDataDir 'DeploymentState.json'
+$script:RollbackStateFile = Join-Path $script:WinForgeDataDir 'RollbackState.json'
+$script:DeploymentStateFile = Join-Path $script:WinForgeDataDir 'DeploymentState.json'
 
 # === STATE OBJECTS ===
 $script:RollbackState = @{

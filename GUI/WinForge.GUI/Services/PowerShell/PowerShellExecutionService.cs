@@ -18,9 +18,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Services.PowerShell;
+namespace WinForge.GUI.Services.PowerShell;
 
 /// <summary>
 /// Service for executing PowerShell scripts and commands.

@@ -15,11 +15,11 @@
  */
 
 using System.Text;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Services.Coordinators.Internal;
+using WinForge.GUI.Models;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Services.Coordinators.Internal;
 
-namespace Win11Forge.GUI.Services.Coordinators;
+namespace WinForge.GUI.Services.Coordinators;
 
 /// <summary>
 /// Coordinates application installation status scans and update detection.

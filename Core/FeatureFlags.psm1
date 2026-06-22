@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Feature Flags v3.7.2
+    WinForge - Feature Flags v3.7.2
 
 .DESCRIPTION
     Manages feature flags for conditional feature enablement.

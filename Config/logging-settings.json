@@ -1,6 +1,6 @@
-﻿{
+{
   "_meta": {
-    "description": "Logging system configuration for Win11Forge",
+    "description": "Logging system configuration for WinForge",
     "version": "3.6.8",
     "author": "Julien Bombled",
     "lastUpdated": "2026-02-04"
@@ -12,7 +12,7 @@
   "jsonLogging": {
     "enabled": true,
     "retentionDays": 30,
-    "directory": "%LOCALAPPDATA%\\Win11Forge\\Logs\\json",
+    "directory": "%LOCALAPPDATA%\\WinForge\\Logs\\json",
     "bufferSize": 10,
     "prettyPrint": false
   },

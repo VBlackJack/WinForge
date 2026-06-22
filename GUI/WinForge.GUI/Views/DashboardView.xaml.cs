@@ -16,7 +16,7 @@
 
 using System.Windows.Controls;
 
-namespace Win11Forge.GUI.Views;
+namespace WinForge.GUI.Views;
 
 /// <summary>
 /// Dashboard view displaying system information and version.

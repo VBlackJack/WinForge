@@ -17,7 +17,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Win11Forge.GUI.Views;
+namespace WinForge.GUI.Views;
 
 /// <summary>
 /// Interaction logic for SaveProfileDialog.xaml.

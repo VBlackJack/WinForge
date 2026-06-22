@@ -1,4 +1,4 @@
-﻿{
+{
   "$schema": "https://json-schema.org/draft-07/schema#",
   "DatabaseVersion": "3.7.4",
   "LastUpdated": "2026-06-07",
@@ -4590,7 +4590,7 @@
     "PowerShell7": {
       "Name": "PowerShell 7",
       "Category": "System",
-      "Description": "Cross-platform PowerShell - required for Win11Forge",
+      "Description": "Cross-platform PowerShell - required for WinForge",
       "Sources": {
         "Winget": "Microsoft.PowerShell",
         "Chocolatey": "powershell-core",

@@ -15,22 +15,22 @@
  */
 
 using System.IO;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class CriticalPathLoggingTests
 {
     [Fact]
     public async Task PackageVerification_InvalidWingetId_WritesThroughFileLoggerFactory()
     {
-        string tempDirectory = Path.Combine(Path.GetTempPath(), "Win11Forge.CriticalPathLoggingTests", Guid.NewGuid().ToString("N"));
+        string tempDirectory = Path.Combine(Path.GetTempPath(), "WinForge.CriticalPathLoggingTests", Guid.NewGuid().ToString("N"));
         string maliciousPackageId = "evil\" & calc";
-        string? originalValue = Environment.GetEnvironmentVariable("WIN11FORGE_FILE_LOG");
+        string? originalValue = Environment.GetEnvironmentVariable("WINFORGE_FILE_LOG");
 
         try
         {
-            Environment.SetEnvironmentVariable("WIN11FORGE_FILE_LOG", null);
+            Environment.SetEnvironmentVariable("WINFORGE_FILE_LOG", null);
             Directory.CreateDirectory(tempDirectory);
             FileLogWriter writer = new FileLogWriter(tempDirectory);
             LoggerFactory loggerFactory = new LoggerFactory(writer);
@@ -38,7 +38,7 @@ public class CriticalPathLoggingTests
 
             await service.VerifyWingetPackageAsync(maliciousPackageId);
 
-            string logPath = Path.Combine(tempDirectory, $"Win11Forge_{DateTime.Now:yyyy-MM-dd}.log");
+            string logPath = Path.Combine(tempDirectory, $"WinForge_{DateTime.Now:yyyy-MM-dd}.log");
             Assert.True(File.Exists(logPath));
 
             string content = File.ReadAllText(logPath);
@@ -48,7 +48,7 @@ public class CriticalPathLoggingTests
         }
         finally
         {
-            Environment.SetEnvironmentVariable("WIN11FORGE_FILE_LOG", originalValue);
+            Environment.SetEnvironmentVariable("WINFORGE_FILE_LOG", originalValue);
             TryDeleteDirectory(tempDirectory);
         }
     }

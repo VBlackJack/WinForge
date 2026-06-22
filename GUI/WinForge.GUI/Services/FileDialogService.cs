@@ -16,7 +16,7 @@
 
 using Microsoft.Win32;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Native Microsoft.Win32 file dialog service.

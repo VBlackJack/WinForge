@@ -17,7 +17,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 /// <summary>
 /// Result of the save profile dialog.

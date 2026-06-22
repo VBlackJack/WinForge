@@ -18,11 +18,11 @@
 
 using System.IO;
 using System.Text.Json;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Implementation of profile management operations.
@@ -146,7 +146,7 @@ public class ProfileBridge : IProfileBridge
         if (profilePath == null)
         {
             throw new FileNotFoundException(
-                Win11Forge.GUI.Resources.Resources.Error_ProfileNotFound,
+                WinForge.GUI.Resources.Resources.Error_ProfileNotFound,
                 profileName);
         }
 
@@ -184,7 +184,7 @@ public class ProfileBridge : IProfileBridge
         string profilesDirectory = _pathService.UserProfilesDirectory;
         string profilePath = Path.Combine(
             profilesDirectory,
-            $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
+            $"{profileName}{WinForgePathNames.JsonFileExtension}");
 
         // Defense-in-depth: verify the resolved path stays within profiles directory
         return ValidatePathWithinDirectory(profilePath, profilesDirectory);
@@ -196,7 +196,7 @@ public class ProfileBridge : IProfileBridge
         {
             string profilePath = Path.Combine(
                 profilesDirectory,
-                $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
+                $"{profileName}{WinForgePathNames.JsonFileExtension}");
             profilePath = ValidatePathWithinDirectory(profilePath, profilesDirectory);
 
             if (File.Exists(profilePath))
@@ -251,7 +251,7 @@ public class ProfileBridge : IProfileBridge
         if (string.IsNullOrWhiteSpace(profileName))
         {
             throw new ArgumentException(
-                Win11Forge.GUI.Resources.Resources.Validation_ProfileNameRequired,
+                WinForge.GUI.Resources.Resources.Validation_ProfileNameRequired,
                 nameof(profileName));
         }
 
@@ -261,7 +261,7 @@ public class ProfileBridge : IProfileBridge
             profileName.Contains('\\'))
         {
             throw new ArgumentException(
-                Win11Forge.GUI.Resources.Resources.Validation_ProfileNameInvalidChars,
+                WinForge.GUI.Resources.Resources.Validation_ProfileNameInvalidChars,
                 nameof(profileName));
         }
 
@@ -271,7 +271,7 @@ public class ProfileBridge : IProfileBridge
         {
             throw new ArgumentException(
                 string.Format(
-                    Win11Forge.GUI.Resources.Resources.Validation_ProfileNameTooLong,
+                    WinForge.GUI.Resources.Resources.Validation_ProfileNameTooLong,
                     maxLength),
                 nameof(profileName));
         }
@@ -281,7 +281,7 @@ public class ProfileBridge : IProfileBridge
         if (profileName.Any(c => invalidChars.Contains(c)))
         {
             throw new ArgumentException(
-                Win11Forge.GUI.Resources.Resources.Validation_ProfileNameInvalidChars,
+                WinForge.GUI.Resources.Resources.Validation_ProfileNameInvalidChars,
                 nameof(profileName));
         }
     }

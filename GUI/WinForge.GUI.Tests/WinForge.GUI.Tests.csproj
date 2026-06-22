@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Win11Forge.GUI\Win11Forge.GUI.csproj" />
+    <ProjectReference Include="..\WinForge.GUI\WinForge.GUI.csproj" />
     <ProjectReference Include="$(ThemeForgeProjectPath)"
                       Condition="'$(ThemeForgeProjectPath)' != ''"
                       SetConfiguration="Configuration=$(Configuration)" />

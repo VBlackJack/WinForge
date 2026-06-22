@@ -15,12 +15,12 @@
  */
 
 using System.IO;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.Implementations;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.Implementations;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Integration tests for the PowerShell services.
@@ -136,13 +136,13 @@ public class VersionServiceIntegrationTests
     }
 
     /// <summary>
-    /// Verifies that GetWin11ForgeVersionAsync returns a valid version string.
+    /// Verifies that GetWinForgeVersionAsync returns a valid version string.
     /// </summary>
     [Fact]
-    public async Task GetWin11ForgeVersionAsync_ShouldReturnVersion()
+    public async Task GetWinForgeVersionAsync_ShouldReturnVersion()
     {
         // Act
-        string version = await _versionService.GetWin11ForgeVersionAsync();
+        string version = await _versionService.GetWinForgeVersionAsync();
 
         // Assert
         Assert.False(string.IsNullOrEmpty(version),

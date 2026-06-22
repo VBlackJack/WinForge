@@ -16,12 +16,12 @@
 
 #nullable enable
 
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 using DataAnnotationsValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
 using DataAnnotationsValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 using DataAnnotationsValidator = System.ComponentModel.DataAnnotations.Validator;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Interface for profile validation service.

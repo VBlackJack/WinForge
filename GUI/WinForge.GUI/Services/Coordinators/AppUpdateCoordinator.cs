@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Services.Coordinators.Internal;
-using Win11Forge.GUI.Services.Resume;
+using WinForge.GUI.Models;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Services.Coordinators.Internal;
+using WinForge.GUI.Services.Resume;
 
-namespace Win11Forge.GUI.Services.Coordinators;
+namespace WinForge.GUI.Services.Coordinators;
 
 /// <summary>
 /// Coordinates update discovery and update application workflows outside the ViewModel.

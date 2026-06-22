@@ -104,7 +104,7 @@
     .\Tools\System-Audit.ps1 -MonitorLogFile "C:\Logs\deployment.log" -GenerateReport
 
 .EXAMPLE
-    # Monitor Win11Forge deployment
+    # Monitor WinForge deployment
     .\Tools\System-Audit.ps1 -MonitorLogPath ".\Logs" -LogCompletionMarkers "Deployment completed|Summary"
 
 .EXAMPLE
@@ -783,7 +783,7 @@ function New-HtmlReport {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Win11Forge - System Audit Report</title>
+    <title>WinForge - System Audit Report</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background: #f5f5f5; }
         h1 { color: #667eea; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
@@ -802,7 +802,7 @@ function New-HtmlReport {
     </style>
 </head>
 <body>
-    <h1>🔍 Win11Forge - System Audit Report</h1>
+    <h1>🔍 WinForge - System Audit Report</h1>
     <p>Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")</p>
     <p>Audit Period: $($script:AuditData.StartTime.ToString("HH:mm:ss")) - $($script:AuditData.EndTime.ToString("HH:mm:ss")) ($([math]::Round($summary.Duration, 2)) minutes)</p>
 

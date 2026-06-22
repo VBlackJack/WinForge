@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Services.Coordinators.Internal;
+namespace WinForge.GUI.Services.Coordinators.Internal;
 
 /// <summary>
 /// Runs bounded parallel application operations and reports generic completion progress.

@@ -21,7 +21,7 @@
     ModuleVersion = '1.0.0622.1'
     GUID = '9f5e4876-1718-42ac-8f5f-884fa833bf3d'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
     Description = 'DPAPI-based secure storage for sensitive configuration'
     PowerShellVersion = '5.1'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'Core', 'Security', 'DPAPI', 'Encryption')
+            Tags = @('WinForge', 'Core', 'Security', 'DPAPI', 'Encryption')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

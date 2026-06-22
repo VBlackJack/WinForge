@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Win11Forge.GUI.Models;
+namespace WinForge.GUI.Models;
 
 /// <summary>
 /// Display item for the Applications profile selector.

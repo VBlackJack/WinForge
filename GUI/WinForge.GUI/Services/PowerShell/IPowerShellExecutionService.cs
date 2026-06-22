@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Win11Forge.GUI.Services.PowerShell;
+namespace WinForge.GUI.Services.PowerShell;
 
 /// <summary>
 /// Service for executing PowerShell scripts and commands.

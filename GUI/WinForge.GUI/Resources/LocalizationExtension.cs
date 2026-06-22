@@ -16,7 +16,7 @@
 
 using System.Windows.Data;
 
-namespace Win11Forge.GUI.Resources;
+namespace WinForge.GUI.Resources;
 
 /// <summary>
 /// Provides XAML binding to localized resources.

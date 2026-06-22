@@ -1,12 +1,12 @@
-<UserControl x:Class="Win11Forge.GUI.Views.DashboardView"
+<UserControl x:Class="WinForge.GUI.Views.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
-             xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
-             xmlns:models="clr-namespace:Win11Forge.GUI.Models"
+             xmlns:loc="clr-namespace:WinForge.GUI.Resources"
+             xmlns:viewModels="clr-namespace:WinForge.GUI.ViewModels"
+             xmlns:models="clr-namespace:WinForge.GUI.Models"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=viewModels:DashboardViewModel}"
              d:DesignHeight="800" d:DesignWidth="1000">
@@ -147,7 +147,7 @@
                             Padding="16,12"
                             VerticalAlignment="Top">
                         <StackPanel>
-                            <TextBlock Text="Win11Forge"
+                            <TextBlock Text="WinForge"
                                        FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             <TextBlock FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold">
@@ -621,7 +621,7 @@
                        HorizontalAlignment="Center"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                        FontSize="{StaticResource FontSizeCaption}">
-                <Run Text="Win11Forge v"/>
+                <Run Text="WinForge v"/>
                 <Run Text="{Binding AppVersion, Mode=OneWay}"/>
             </TextBlock>
         </Grid>

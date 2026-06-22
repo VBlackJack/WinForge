@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Test double for IToastService that records all toast invocations without rendering anything.

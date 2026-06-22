@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Null-object implementation of IPowerShellBridge for XAML design-time support.
@@ -30,7 +30,7 @@ internal sealed class DesignTimePowerShellBridge : IPowerShellBridge
     #region IVersionService
 
     /// <inheritdoc/>
-    public Task<string> GetWin11ForgeVersionAsync() => Task.FromResult("3.6.0 (Design)");
+    public Task<string> GetWinForgeVersionAsync() => Task.FromResult("3.6.0 (Design)");
 
     #endregion
 

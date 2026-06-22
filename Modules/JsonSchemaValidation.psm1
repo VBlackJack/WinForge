@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - JSON Schema Validation Module v3.7.2
+    WinForge - JSON Schema Validation Module v3.7.2
 
 .DESCRIPTION
     Module for validating JSON files against JSON Schema definitions:
@@ -575,7 +575,7 @@ function Test-AllProfiles {
 function Invoke-JsonSchemaValidation {
     <#
     .SYNOPSIS
-        Validates all Win11Forge JSON configuration files.
+        Validates all WinForge JSON configuration files.
 
     .DESCRIPTION
         Performs comprehensive validation of all JSON configuration files

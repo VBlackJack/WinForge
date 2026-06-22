@@ -18,7 +18,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Win11Forge.GUI.Models;
+namespace WinForge.GUI.Models;
 
 /// <summary>
 /// Represents the detection configuration for an application from applications.json.

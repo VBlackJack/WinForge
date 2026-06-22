@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - Core Module
+    WinForge - Core Module
 
 .DESCRIPTION
-    Provides core functionality for the Win11Forge framework:
+    Provides core functionality for the WinForge framework:
     - Logging and status messages
     - Error handling
     - Common utilities

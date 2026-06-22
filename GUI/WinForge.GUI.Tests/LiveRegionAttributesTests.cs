@@ -17,7 +17,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Guards the hidden live region pattern used for screen-reader announcements.
@@ -70,7 +70,7 @@ public class LiveRegionAttributesTests
 
     private static string ExtractScreenReaderLiveRegionElement()
     {
-        string content = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml"));
+        string content = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "MainWindow.xaml"));
         Match match = Regex.Match(
             content,
             @"<TextBlock\s+x:Name=""ScreenReaderLiveRegion""[\s\S]*?/>",

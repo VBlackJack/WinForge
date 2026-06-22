@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# Win11Forge Architecture
+# WinForge Architecture
 
-Win11Forge combines a PowerShell automation framework with a WPF desktop GUI.
+WinForge combines a PowerShell automation framework with a WPF desktop GUI.
 The repository keeps the installation engine, application catalogue, profiles,
 GUI, tests, and maintenance tooling together so a release can be built and
 validated from one checkout.
@@ -28,9 +28,9 @@ validated from one checkout.
 - `Apps/Database/applications.json`: canonical application catalogue consumed by both PowerShell and the GUI.
 - `Profiles/`: built-in deployment profile definitions.
 - `Config/`: version, feature flags, API settings, timeouts, localization, and source configuration.
-- `GUI/Win11Forge.GUI/`: WPF .NET 10 application.
-- `GUI/Win11Forge.GUI.Tests/`: unit and static-analysis tests for GUI behavior, accessibility, localization, and services.
-- `GUI/Win11Forge.GUI.UITests/`: opt-in desktop smoke tests.
+- `GUI/WinForge.GUI/`: WPF .NET 10 application.
+- `GUI/WinForge.GUI.Tests/`: unit and static-analysis tests for GUI behavior, accessibility, localization, and services.
+- `GUI/WinForge.GUI.UITests/`: opt-in desktop smoke tests.
 - `Tools/`: validation and maintenance scripts.
 
 ## GUI Architecture
@@ -64,7 +64,7 @@ When a profile inherits from a parent, inherited applications remain owned by th
 
 ## Theming
 
-`Resources/FluentThemeBridge.xaml` provides design-time fallback brushes. At runtime, `ThemeService` applies the selected ThemeForge palette and bridges semantic Win11Forge brushes from the active palette. This keeps status colors, row backgrounds, text, borders, icons, and selection states aligned with the current theme and accent.
+`Resources/FluentThemeBridge.xaml` provides design-time fallback brushes. At runtime, `ThemeService` applies the selected ThemeForge palette and bridges semantic WinForge brushes from the active palette. This keeps status colors, row backgrounds, text, borders, icons, and selection states aligned with the current theme and accent.
 
 ## Public API
 
@@ -75,9 +75,9 @@ The PowerShell REST API is configured through `Config/api-settings.json` and imp
 Common validation commands:
 
 ```powershell
-dotnet build GUI/Win11Forge.GUI/Win11Forge.GUI.csproj -c Release
-dotnet test GUI/Win11Forge.GUI.Tests/Win11Forge.GUI.Tests.csproj
-dotnet test GUI/Win11Forge.GUI.UITests/Win11Forge.GUI.UITests.csproj --no-restore
+dotnet build GUI/WinForge.GUI/WinForge.GUI.csproj -c Release
+dotnet test GUI/WinForge.GUI.Tests/WinForge.GUI.Tests.csproj
+dotnet test GUI/WinForge.GUI.UITests/WinForge.GUI.UITests.csproj --no-restore
 ```
 
 Additional PowerShell and catalogue validation tools are documented in [`../Tools/README.md`](../Tools/README.md) and [`../Tests/README.md`](../Tests/README.md).

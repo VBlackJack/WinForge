@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Win11Forge.GUI.Helpers;
+namespace WinForge.GUI.Helpers;
 
 /// <summary>
 /// Extension methods for safe Task handling.

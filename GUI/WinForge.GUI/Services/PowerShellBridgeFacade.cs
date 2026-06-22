@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Facade implementation of IPowerShellBridge that delegates to specialized services.
@@ -71,7 +71,7 @@ public class PowerShellBridgeFacade : IPowerShellBridge, IDisposable
     #region IVersionService
 
     /// <inheritdoc/>
-    public Task<string> GetWin11ForgeVersionAsync() => _versionService.GetWin11ForgeVersionAsync();
+    public Task<string> GetWinForgeVersionAsync() => _versionService.GetWinForgeVersionAsync();
 
     #endregion
 

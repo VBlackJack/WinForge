@@ -19,7 +19,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Wpf.Ui.Controls;
 
-namespace Win11Forge.GUI.Controls;
+namespace WinForge.GUI.Controls;
 
 /// <summary>
 /// Unified empty state control for consistent empty state displays across the application.

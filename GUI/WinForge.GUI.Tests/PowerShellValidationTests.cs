@@ -17,9 +17,9 @@
  */
 
 using System.IO;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class PowerShellValidationTests
 {
@@ -143,7 +143,7 @@ public class PowerShellValidationTests
     [Fact]
     public void ValidatePathWithinDirectory_WithPathInsideBaseDirectory_ReturnsFullPath()
     {
-        string baseDir = Path.Combine(Path.GetTempPath(), "Win11ForgeValidationTests", "Data");
+        string baseDir = Path.Combine(Path.GetTempPath(), "WinForgeValidationTests", "Data");
         string candidate = Path.Combine(baseDir, "sub", "f.txt");
         string expectedPath = Path.GetFullPath(candidate);
 
@@ -155,7 +155,7 @@ public class PowerShellValidationTests
     [Fact]
     public void ValidatePathWithinDirectory_WithParentTraversal_ThrowsArgumentException()
     {
-        string baseDir = Path.Combine(Path.GetTempPath(), "Win11ForgeValidationTests", "Data");
+        string baseDir = Path.Combine(Path.GetTempPath(), "WinForgeValidationTests", "Data");
         string candidate = Path.Combine(baseDir, "..", "evil.txt");
 
         Assert.Throws<ArgumentException>(() => PowerShellValidation.ValidatePathWithinDirectory(candidate, baseDir));
@@ -176,7 +176,7 @@ public class PowerShellValidationTests
     [Fact]
     public void ValidatePathWithinDirectory_WithDifferentCasing_ReturnsFullPath()
     {
-        string baseDir = Path.Combine(Path.GetTempPath(), "Win11ForgeValidationTests", "CaseTest");
+        string baseDir = Path.Combine(Path.GetTempPath(), "WinForgeValidationTests", "CaseTest");
         string candidate = Path.Combine(baseDir.ToUpperInvariant(), "Sub", "file.txt");
         string expectedPath = Path.GetFullPath(candidate);
 

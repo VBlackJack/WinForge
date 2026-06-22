@@ -3,7 +3,7 @@
     Pester tests for ApplicationDatabase module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge ApplicationDatabase v2.5.0
+    Comprehensive unit tests for WinForge ApplicationDatabase v2.5.0
     Tests all database operations, caching, and validation
 
 .NOTES
@@ -527,7 +527,7 @@ Describe 'ApplicationDatabase Performance' {
 Describe 'ApplicationDatabase Extended Coverage' {
     BeforeAll {
         $script:OriginalModuleDatabasePath = InModuleScope ApplicationDatabase { $Script:DatabasePath }
-        $script:TempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("Win11Forge-AppDbTests-" + [Guid]::NewGuid().Guid)
+        $script:TempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("WinForge-AppDbTests-" + [Guid]::NewGuid().Guid)
         $script:TempBackupsRoot = Join-Path $script:TempRoot 'BackupsRoot'
         $script:TempDatabasePath = Join-Path $script:TempRoot 'applications.json'
 
@@ -587,7 +587,7 @@ Describe 'ApplicationDatabase Extended Coverage' {
     Context 'Backup and Restore' {
         It 'Should create and list database backups' {
             $backupsRoot = $script:TempBackupsRoot
-            Mock Get-Win11ForgeDirectory { $backupsRoot } -ModuleName ApplicationDatabase
+            Mock Get-WinForgeDirectory { $backupsRoot } -ModuleName ApplicationDatabase
 
             $backupPath = New-DatabaseBackup -MaxBackups 10
             $backupPath | Should -Not -BeNullOrEmpty
@@ -601,7 +601,7 @@ Describe 'ApplicationDatabase Extended Coverage' {
 
         It 'Should restore database from backup and rotate old backups' {
             $backupsRoot = $script:TempBackupsRoot
-            Mock Get-Win11ForgeDirectory { $backupsRoot } -ModuleName ApplicationDatabase
+            Mock Get-WinForgeDirectory { $backupsRoot } -ModuleName ApplicationDatabase
 
             $backupDir = Join-Path $backupsRoot 'Database'
             New-Item -Path $backupDir -ItemType Directory -Force | Out-Null
@@ -657,7 +657,7 @@ Describe 'ApplicationDatabase Extended Coverage' {
 
         It 'Should add and then remove an application' {
             $backupsRoot = $script:TempBackupsRoot
-            Mock Get-Win11ForgeDirectory { $backupsRoot } -ModuleName ApplicationDatabase
+            Mock Get-WinForgeDirectory { $backupsRoot } -ModuleName ApplicationDatabase
 
             $newApp = [PSCustomObject]@{
                 AppId                   = 'NewTool'

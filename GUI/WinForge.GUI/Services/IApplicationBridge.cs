@@ -16,9 +16,9 @@
 
 #nullable enable
 
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Interface for application management operations.

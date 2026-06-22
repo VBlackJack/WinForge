@@ -21,11 +21,11 @@ using System.ComponentModel;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 /// <summary>
 /// ViewModel for the Application Editor dialog.

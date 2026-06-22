@@ -15,13 +15,13 @@
  */
 
 using Microsoft.Extensions.DependencyInjection;
-using Win11Forge.GUI.Services.Coordinators;
-using Win11Forge.GUI.Services.Implementations;
-using Win11Forge.GUI.Services.PowerShell;
-using Win11Forge.GUI.Services.Resume;
-using Win11Forge.GUI.ViewModels;
+using WinForge.GUI.Services.Coordinators;
+using WinForge.GUI.Services.Implementations;
+using WinForge.GUI.Services.PowerShell;
+using WinForge.GUI.Services.Resume;
+using WinForge.GUI.ViewModels;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Extension methods for configuring dependency injection.
@@ -29,9 +29,9 @@ namespace Win11Forge.GUI.Services;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds Win11Forge services to the service collection.
+    /// Adds WinForge services to the service collection.
     /// </summary>
-    public static IServiceCollection AddWin11ForgeServices(this IServiceCollection services)
+    public static IServiceCollection AddWinForgeServices(this IServiceCollection services)
     {
         // Register PowerShell support services (ISP compliant, specialized services)
         services.AddSingleton<IRepositoryPathService, RepositoryPathService>();

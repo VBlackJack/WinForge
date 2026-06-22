@@ -3,7 +3,7 @@
     Pester tests for StartMenuPinning module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge StartMenuPinning v2.5.0
+    Comprehensive unit tests for WinForge StartMenuPinning v2.5.0
     Tests Start Menu pinning using start2.bin method
 
 .NOTES
@@ -180,7 +180,7 @@ Describe 'StartMenuPinning Module' {
         It 'Should return an empty array when the backup directory is empty' {
             InModuleScope StartMenuPinning {
                 $originalBackupDirectory = $script:BackupDirectory
-                $tempBackupDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "Win11ForgeStartMenuPinning_$([guid]::NewGuid())"
+                $tempBackupDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "WinForgeStartMenuPinning_$([guid]::NewGuid())"
                 New-Item -Path $tempBackupDirectory -ItemType Directory -Force | Out-Null
 
                 try {
@@ -199,7 +199,7 @@ Describe 'StartMenuPinning Module' {
         It 'Should return an array when the backup directory has one file' {
             InModuleScope StartMenuPinning {
                 $originalBackupDirectory = $script:BackupDirectory
-                $tempBackupDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "Win11ForgeStartMenuPinning_$([guid]::NewGuid())"
+                $tempBackupDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "WinForgeStartMenuPinning_$([guid]::NewGuid())"
                 New-Item -Path $tempBackupDirectory -ItemType Directory -Force | Out-Null
                 New-Item -Path (Join-Path $tempBackupDirectory 'Single.bin') -ItemType File -Force | Out-Null
 

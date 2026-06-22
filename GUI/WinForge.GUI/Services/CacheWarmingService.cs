@@ -15,9 +15,9 @@
  */
 
 using System.Diagnostics;
-using Win11Forge.GUI.Configuration;
+using WinForge.GUI.Configuration;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Background service that pre-warms the application detection cache on startup

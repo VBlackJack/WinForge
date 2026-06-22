@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-namespace Win11Forge.GUI.Configuration;
+namespace WinForge.GUI.Configuration;
 
 /// <summary>
 /// Centralized file and directory names used by path resolution services.
 /// </summary>
-internal static class Win11ForgePathNames
+internal static class WinForgePathNames
 {
-    public const string ProductDirectoryName = "Win11Forge";
+    public const string ProductDirectoryName = "WinForge";
+    public const string LegacyProductDirectoryName = "Win11Forge";
     public const string AppsDirectoryName = "Apps";
     public const string DatabaseDirectoryName = "Database";
     public const string ApplicationsDatabaseFileName = "applications.json";
@@ -40,7 +41,7 @@ internal static class Win11ForgePathNames
     public const string DefaultProfilesDirectoryName = "Defaults";
     public const string ProfileMigrationSentinelFileName = ".migrated";
     public const string LegacyProfileConflictSuffix = ".legacy";
-    public const string StartupLogFileName = "Win11Forge_startup.log";
+    public const string StartupLogFileName = "WinForge_startup.log";
     public const string WriteProbeFilePrefix = ".write-test-";
     public const int ProfileMigrationVersion = 1;
 }

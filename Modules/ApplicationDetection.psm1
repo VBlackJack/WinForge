@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Application Detection v3.7.2
+    WinForge - Application Detection v3.7.2
 
 .DESCRIPTION
     Application detection and installation verification functions:

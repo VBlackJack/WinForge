@@ -16,12 +16,12 @@
 
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
-using Win11Forge.GUI.Messages;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Tests.TestInfrastructure;
-using Win11Forge.GUI.ViewModels;
+using WinForge.GUI.Messages;
+using WinForge.GUI.Services;
+using WinForge.GUI.Tests.TestInfrastructure;
+using WinForge.GUI.ViewModels;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class MainWindowLogsNavigationTests
 {
@@ -31,15 +31,15 @@ public class MainWindowLogsNavigationTests
         Assert.Equal(6, (int)ViewIndex.Logs);
 
         string navigateMessage = File.ReadAllText(RepositoryPathHelper.FindFile(
-            "GUI", "Win11Forge.GUI", "Messages", "NavigateMessage.cs"));
+            "GUI", "WinForge.GUI", "Messages", "NavigateMessage.cs"));
         string mainWindowXaml = File.ReadAllText(RepositoryPathHelper.FindFile(
-            "GUI", "Win11Forge.GUI", "MainWindow.xaml"));
+            "GUI", "WinForge.GUI", "MainWindow.xaml"));
         string mainWindowCode = File.ReadAllText(RepositoryPathHelper.FindFile(
-            "GUI", "Win11Forge.GUI", "MainWindow.xaml.cs"));
+            "GUI", "WinForge.GUI", "MainWindow.xaml.cs"));
         string mainWindowViewModelSource = File.ReadAllText(RepositoryPathHelper.FindFile(
-            "GUI", "Win11Forge.GUI", "ViewModels", "MainWindowViewModel.cs"));
+            "GUI", "WinForge.GUI", "ViewModels", "MainWindowViewModel.cs"));
         string serviceRegistrations = File.ReadAllText(RepositoryPathHelper.FindFile(
-            "GUI", "Win11Forge.GUI", "Services", "ServiceCollectionExtensions.cs"));
+            "GUI", "WinForge.GUI", "Services", "ServiceCollectionExtensions.cs"));
 
         Assert.Contains("public const int Logs = 6;", navigateMessage, StringComparison.Ordinal);
         Assert.Contains("AutomationProperties.AutomationId=\"NavLogs\"", mainWindowXaml, StringComparison.Ordinal);
@@ -51,7 +51,7 @@ public class MainWindowLogsNavigationTests
         Assert.Contains("public LogsViewModel LogsViewModel { get; }", mainWindowViewModelSource, StringComparison.Ordinal);
         Assert.Contains("services.AddTransient<LogsViewModel>();", serviceRegistrations, StringComparison.Ordinal);
 
-        using ServiceProvider provider = new ServiceCollection().AddWin11ForgeServices().BuildServiceProvider();
+        using ServiceProvider provider = new ServiceCollection().AddWinForgeServices().BuildServiceProvider();
         MainWindowViewModel mainWindowViewModel = provider.GetRequiredService<MainWindowViewModel>();
         LogsViewModel logsViewModel = provider.GetRequiredService<LogsViewModel>();
 

@@ -16,10 +16,10 @@
 
 using System.IO;
 using System.Text.Json;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Service for managing deployment history.

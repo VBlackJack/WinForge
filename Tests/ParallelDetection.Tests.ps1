@@ -3,7 +3,7 @@
     Pester tests for ParallelDetection module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge ParallelDetection v3.5.0
+    Comprehensive unit tests for WinForge ParallelDetection v3.5.0
     Tests parallel application detection methods
 
 .NOTES

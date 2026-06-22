@@ -15,9 +15,9 @@
  */
 
 using System.ComponentModel.DataAnnotations;
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for InstallResult model validation.

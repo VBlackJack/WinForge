@@ -15,9 +15,9 @@
  */
 
 using System.Text.Json;
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 public sealed class ScheduledDeploymentService : IScheduledDeploymentService
 {

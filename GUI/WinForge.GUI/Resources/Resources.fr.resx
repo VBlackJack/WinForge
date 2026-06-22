@@ -60,11 +60,11 @@
   </resheader>
   <!-- Application -->
   <data name="App_Title" xml:space="preserve">
-    <value>Win11Forge v{0}</value>
+    <value>WinForge v{0}</value>
   </data>
   <!-- Main Window -->
   <data name="MainWindow_Welcome" xml:space="preserve">
-    <value>Bienvenue sur Win11Forge</value>
+    <value>Bienvenue sur WinForge</value>
   </data>
   <!-- Dashboard -->
   <data name="Dashboard_Title" xml:space="preserve">
@@ -204,11 +204,11 @@
     <value>Erreur d'initialisation</value>
   </data>
   <data name="Init_ErrorMessage" xml:space="preserve">
-    <value>Échec de l'initialisation de Win11Forge :
+    <value>Échec de l'initialisation de WinForge :
 
 {0}
 
-Veuillez vous assurer que Win11Forge est extrait correctement avec tous les dossiers (Config/, Modules/, Profiles/).</value>
+Veuillez vous assurer que WinForge est extrait correctement avec tous les dossiers (Config/, Modules/, Profiles/).</value>
   </data>
   <!-- Navigation -->
   <data name="Nav_Dashboard" xml:space="preserve">
@@ -842,7 +842,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Prérequis Système</value>
   </data>
   <data name="Prerequisites_PageDescription" xml:space="preserve">
-    <value>Win11Forge nécessite les composants suivants pour fonctionner correctement.</value>
+    <value>WinForge nécessite les composants suivants pour fonctionner correctement.</value>
   </data>
   <data name="Prerequisites_CategoryPackageManagers" xml:space="preserve">
     <value>Gestionnaires de paquets</value>
@@ -887,7 +887,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>github.com/VBlackJack/WinForge</value>
   </data>
   <data name="App_Name" xml:space="preserve">
-    <value>Win11Forge</value>
+    <value>WinForge</value>
     <comment>Application name (brand name, not translated)</comment>
   </data>
   <!-- Splash Screen -->
@@ -1091,7 +1091,7 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
   </data>
   <!-- Onboarding -->
   <data name="Onboarding_Welcome" xml:space="preserve">
-    <value>Bienvenue sur Win11Forge</value>
+    <value>Bienvenue sur WinForge</value>
   </data>
   <data name="Onboarding_Subtitle" xml:space="preserve">
     <value>Votre boîte à outils de déploiement Windows 11</value>
@@ -1280,10 +1280,10 @@ Veuillez vous assurer que Win11Forge est extrait correctement avec tous les doss
     <value>Importer un profil</value>
   </data>
   <data name="Export_FileFilter" xml:space="preserve">
-    <value>Profil Win11Forge (*.w11fp)|*.w11fp|Fichiers JSON (*.json)|*.json</value>
+    <value>Profil WinForge (*.w11fp)|*.w11fp|Fichiers JSON (*.json)|*.json</value>
   </data>
   <data name="Import_FileFilter" xml:space="preserve">
-    <value>Profil Win11Forge (*.w11fp;*.json)|*.w11fp;*.json</value>
+    <value>Profil WinForge (*.w11fp;*.json)|*.w11fp;*.json</value>
   </data>
   <data name="Export_Success" xml:space="preserve">
     <value>Profil exporté avec succès</value>
@@ -2767,7 +2767,7 @@ Cette action est irréversible.</value>
     <value>Consultez le dossier des journaux pour plus de détails</value>
   </data>
   <data name="Recovery_Generic_Restart" xml:space="preserve">
-    <value>Redémarrez Win11Forge et réessayez</value>
+    <value>Redémarrez WinForge et réessayez</value>
   </data>
   <data name="Recovery_Generic_Retry" xml:space="preserve">
     <value>Réessayez l'opération</value>
@@ -2782,7 +2782,7 @@ Cette action est irréversible.</value>
     <value>Essayez d'installer à nouveau l'application</value>
   </data>
   <data name="Recovery_RunAsAdmin" xml:space="preserve">
-    <value>Exécutez Win11Forge en tant qu'administrateur</value>
+    <value>Exécutez WinForge en tant qu'administrateur</value>
   </data>
   <data name="Recovery_TryAgainLater" xml:space="preserve">
     <value>Le serveur est peut-être temporairement indisponible : réessayez plus tard</value>

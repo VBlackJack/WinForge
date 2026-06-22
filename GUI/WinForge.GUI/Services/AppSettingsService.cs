@@ -17,10 +17,10 @@
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Service for persisting application settings (theme, language) to JSON.

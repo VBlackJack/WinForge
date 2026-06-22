@@ -18,15 +18,15 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Win11Forge.GUI.Exceptions;
-using Win11Forge.GUI.Messages;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.Coordinators;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Exceptions;
+using WinForge.GUI.Messages;
+using WinForge.GUI.Models;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.Coordinators;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 /// <summary>
 /// Status filter options for the application list.

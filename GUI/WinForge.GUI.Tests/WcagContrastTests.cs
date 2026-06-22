@@ -17,11 +17,11 @@
 using System.IO;
 using System.Windows.Media;
 using System.Xml.Linq;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Tests.TestInfrastructure;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Services;
+using WinForge.GUI.Tests.TestInfrastructure;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Guards WCAG AA contrast for theme tokens that back body-sized UI text.
@@ -80,7 +80,7 @@ public class WcagContrastTests
     public void HighContrast_AppCatalogHeaderTextOnMappedSurface_MeetsAA()
     {
         Dictionary<string, string> colors = ParseHighContrastBrushColors();
-        string appSource = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml.cs"));
+        string appSource = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "App.xaml.cs"));
 
         Assert.Contains(
             "SwapIfExists(app, \"SolidBackgroundFillColorSecondaryBrush\", \"HighContrastSurfaceBrush\")",
@@ -104,7 +104,7 @@ public class WcagContrastTests
 
     private static Dictionary<string, string> ParseHighContrastBrushColors()
     {
-        XDocument doc = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "HighContrastTheme.xaml"));
+        XDocument doc = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "Resources", "HighContrastTheme.xaml"));
         XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
         Dictionary<string, string> colors = new Dictionary<string, string>(StringComparer.Ordinal);
 

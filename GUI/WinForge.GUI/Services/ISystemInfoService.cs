@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Service for system information retrieval.

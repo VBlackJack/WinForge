@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-namespace Win11Forge.GUI.Services.PowerShell;
+namespace WinForge.GUI.Services.PowerShell;
 
 /// <summary>
-/// Service for resolving and managing the Win11Forge repository root path.
+/// Service for resolving and managing the WinForge repository root path.
 /// </summary>
 public interface IRepositoryPathService
 {

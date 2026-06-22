@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-using Win11Forge.GUI.ViewModels;
+using WinForge.GUI.ViewModels;
 
-namespace Win11Forge.GUI.Messages;
+namespace WinForge.GUI.Messages;
 
 /// <summary>
 /// Navigation view indices.
@@ -40,7 +40,7 @@ public class NavigateMessage
     /// <summary>
     /// Alias for ViewIndex enum for backward compatibility.
     /// </summary>
-    [Obsolete("Use Win11Forge.GUI.Messages.ViewIndex enum directly")]
+    [Obsolete("Use WinForge.GUI.Messages.ViewIndex enum directly")]
     public static class ViewIndex
     {
         public const int Dashboard = 0;

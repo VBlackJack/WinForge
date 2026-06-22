@@ -17,7 +17,7 @@
 using System.Collections;
 using System.Text.Json;
 
-namespace Win11Forge.GUI.Helpers;
+namespace WinForge.GUI.Helpers;
 
 /// <summary>
 /// Provides helper methods for JSON and Hashtable value extraction.

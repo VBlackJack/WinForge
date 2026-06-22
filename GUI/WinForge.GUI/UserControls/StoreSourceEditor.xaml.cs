@@ -22,7 +22,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Wpf.Ui.Controls;
 
-namespace Win11Forge.GUI.UserControls;
+namespace WinForge.GUI.UserControls;
 
 /// <summary>
 /// UserControl for editing Microsoft Store installation source configuration.

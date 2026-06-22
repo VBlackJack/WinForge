@@ -1,8 +1,8 @@
-# Win11Forge - Application Database
+# WinForge - Application Database
 
 ## 📋 Vue d'ensemble
 
-La **base de données centralisée d'applications** est le cœur du système Win11Forge. Elle contient toutes les informations sur les applications disponibles, leurs sources d'installation, et leurs métadonnées.
+La **base de données centralisée d'applications** est le cœur du système WinForge. Elle contient toutes les informations sur les applications disponibles, leurs sources d'installation, et leurs métadonnées.
 
 **Version** : 2.5.0
 **Dernière mise à jour** : 2025-10-06
@@ -397,11 +397,11 @@ Validation Summary:
 ```powershell
 # Créer une tâche planifiée
 $action = New-ScheduledTaskAction -Execute "PowerShell.exe" `
-    -Argument "-File C:\Win11Forge\Tools\Validate-AppDatabase.ps1 -ValidateWinget -ValidateChocolatey -GenerateReport"
+    -Argument "-File C:\WinForge\Tools\Validate-AppDatabase.ps1 -ValidateWinget -ValidateChocolatey -GenerateReport"
 
 $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday -At 9am
 
-Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "Win11Forge-AppDB-Validation"
+Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "WinForge-AppDB-Validation"
 ```
 
 ---

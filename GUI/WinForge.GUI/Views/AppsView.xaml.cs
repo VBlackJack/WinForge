@@ -17,10 +17,10 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.ViewModels;
+using WinForge.GUI.Models;
+using WinForge.GUI.ViewModels;
 
-namespace Win11Forge.GUI.Views;
+namespace WinForge.GUI.Views;
 
 public partial class AppsView : UserControl
 {

@@ -21,7 +21,7 @@
     ModuleVersion = '1.0.0622.1'
     GUID = 'd739b262-3132-4189-8eba-ae6900236393'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
     Description = 'Application pinning to Windows Start menu and taskbar'
     PowerShellVersion = '5.1'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'StartMenu', 'Pinning', 'Taskbar')
+            Tags = @('WinForge', 'StartMenu', 'Pinning', 'Taskbar')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

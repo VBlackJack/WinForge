@@ -424,7 +424,7 @@
     "cloud": "Cloud instance detected: {Provider}"
   },
   "gui": {
-    "title": "Win11Forge",
+    "title": "WinForge",
     "menu": {
       "main_title": "Main Menu",
       "deploy_profile": "Deploy Profile",
@@ -611,7 +611,7 @@
       "view_info": "View Framework Information",
       "view_logs": "View Logs Directory",
       "check_updates": "Check for Updates",
-      "about": "About Win11Forge",
+      "about": "About WinForge",
       "option_prompt": "Option"
     },
     "info": {
@@ -638,11 +638,11 @@
       "install_prompt": "Download and install this update now? (Y/N)",
       "install_cancelled": "Update installation cancelled.",
       "install_failed": "Update installation failed.",
-      "restart_hint": "Restart Win11Forge to apply the update.",
+      "restart_hint": "Restart WinForge to apply the update.",
       "no_response": "No response from update service"
     },
     "about": {
-      "title": "About Win11Forge",
+      "title": "About WinForge",
       "subtitle": "Windows 11 Deployment Framework with Centralized Database",
       "features_title": "Features:",
       "feature_apps": "{Count} pre-configured applications",
@@ -862,7 +862,7 @@
     }
   },
   "test": {
-    "title": "=== Win11Forge Profile Validation Test ===",
+    "title": "=== WinForge Profile Validation Test ===",
     "mode_info": "Testing all profiles in TestMode + Parallel mode",
     "testing_profile": "Testing Profile: {Name}",
     "errors_detected": "ERRORS DETECTED:",
@@ -870,7 +870,7 @@
     "failed": "Profile test failed: {Name}"
   },
   "log": {
-    "header": "Win11Forge Framework v{Version} - Deployment Log",
+    "header": "WinForge Framework v{Version} - Deployment Log",
     "started": "Started: {DateTime}",
     "computer": "Computer: {Name}",
     "user": "User: {Name}",
@@ -1120,7 +1120,7 @@
     "initializing": "Initializing...",
     "loading_modules": "Loading modules...",
     "modules_loaded": "All modules initialized successfully",
-    "gui_closed": "Win11Forge GUI closed.",
+    "gui_closed": "WinForge GUI closed.",
     "verifying": "Verifying installation...",
     "ps_version": "PowerShell Version: {Version}",
     "ps7_available": "PowerShell 7+ detected - Parallel mode available",
@@ -1130,7 +1130,7 @@
     "path_label": "Path: {Path}",
     "expected_path": "Expected: {Path}",
     "init_modules": "Initializing framework modules...",
-    "module_loaded": "Win11ForgeGUI module loaded",
+    "module_loaded": "WinForgeGUI module loaded",
     "module_loaded_specific": "Module {Name} loaded",
     "module_missing": "Module not found: {Path}",
     "load_failed": "Failed to load required modules: {Error}",
@@ -1163,7 +1163,7 @@
     }
   },
   "build": {
-    "banner_title": "Win11Forge v{Version} - Release Builder",
+    "banner_title": "WinForge v{Version} - Release Builder",
     "configuration": "Configuration: {Config}",
     "output_path": "Output: {Path}",
     "step_running_tests": "Running tests...",
@@ -1172,12 +1172,12 @@
     "tests_passed": "Tests passed!",
     "step_cleaning": "Cleaning previous builds...",
     "removed_path": "Removed: {Path}",
-    "step_publishing": "Publishing Win11Forge.GUI (self-contained, single-file)...",
+    "step_publishing": "Publishing WinForge.GUI (self-contained, single-file)...",
     "build_failed": "ERROR: Build failed!",
     "build_success": "Build successful!",
     "step_creating_dist": "Creating distribution folder...",
     "copied_gui": "Copied: GUI/ ({Count} files, {Size} MB)",
-    "exe_not_found": "ERROR: Win11Forge.GUI.exe not found at {Path}",
+    "exe_not_found": "ERROR: WinForge.GUI.exe not found at {Path}",
     "step_copying_infra": "Copying PowerShell infrastructure...",
     "copied_folder": "Copied: {Folder}/ ({Count} files)",
     "folder_not_found": "WARNING: {Folder} not found, skipping...",
@@ -1199,7 +1199,7 @@
     "test_hint": "To test the release:"
   },
   "setup": {
-    "banner_title": "Win11Forge Framework Setup v{Version}",
+    "banner_title": "WinForge Framework Setup v{Version}",
     "banner_subtitle": "Automated Installation & Configuration",
     "checking_prereq": "Checking prerequisites...",
     "admin_confirmed": "Administrator privileges confirmed",
@@ -1237,7 +1237,7 @@
     "next_steps": "Next steps:",
     "step_review": "1. Review configuration in Profiles/*.json",
     "step_test": "2. Run: .\\Deploy-Win11Environment.ps1 -ProfileName 'Base' -TestMode",
-    "step_deploy": "3. For full deployment: .\\Deploy-Win11Forge.bat",
+    "step_deploy": "3. For GUI deployment: .\\WinForge.cmd",
     "documentation": "Documentation:",
     "doc_readme": "README.md            - Complete documentation",
     "doc_structure": "PROJET_STRUCTURE.md  - Framework architecture",
@@ -1252,7 +1252,7 @@
   },
   "cleanup": {
     "title": "=== Cleanup ===",
-    "banner_title": "Win11Forge Framework Cleanup & Maintenance v{Version}",
+    "banner_title": "WinForge Framework Cleanup & Maintenance v{Version}",
     "framework_path": "Framework path: {Path}",
     "cleaning_logs": "Cleaning log files older than {Days} days...",
     "found_old_logs": "Found {Count} old log files ({Size})",
@@ -1263,7 +1263,7 @@
     "no_old_logs": "No old log files found",
     "logs_dir_not_found": "Logs directory not found",
     "cleaning_temp": "Cleaning temporary files...",
-    "found_temp_items": "Found {Count} Win11Forge temp items in {Path}",
+    "found_temp_items": "Found {Count} WinForge temp items in {Path}",
     "choco_cache_info": "Chocolatey cache: {Count} files ({Size})",
     "clear_choco_prompt": "Clear Chocolatey cache? (Y/N)",
     "choco_cleared": "Chocolatey cache cleared",
@@ -1279,7 +1279,7 @@
     "reset_complete": "Configuration reset complete",
     "reset_cancelled": "Configuration reset cancelled",
     "uninstall_title": "UNINSTALL FRAMEWORK",
-    "uninstall_warning": "WARNING: This will completely remove Win11Forge!",
+    "uninstall_warning": "WARNING: This will completely remove WinForge!",
     "uninstall_will": "This will:",
     "uninstall_delete_files": "Delete all framework files and directories",
     "uninstall_delete_logs": "Remove all logs and temporary files",
@@ -1297,7 +1297,7 @@
     "removing_framework": "Removing framework directory...",
     "uninstall_success": "Framework successfully uninstalled!",
     "space_freed": "Freed {Size} of disk space",
-    "thank_you": "Thank you for using Win11Forge!",
+    "thank_you": "Thank you for using WinForge!",
     "uninstall_failed": "Failed to uninstall: {Error}",
     "manual_delete_hint": "You may need to manually delete: {Path}",
     "uninstall_cancelled_mismatch": "Uninstallation cancelled (confirmation mismatch)",
@@ -1384,7 +1384,7 @@
       "unknown": "Unknown error"
     },
     "report": {
-      "title": "WIN11FORGE ROLLBACK REPORT",
+      "title": "WINFORGE ROLLBACK REPORT",
       "generated": "Generated: {Timestamp}",
       "computer": "Computer: {Name}",
       "user": "User: {Name}",
@@ -1698,7 +1698,7 @@
       "CheckInternet": "Check your internet connection and try again",
       "CheckFirewall": "Ensure firewall or antivirus is not blocking the connection",
       "TryAgainLater": "The server may be temporarily unavailable - try again later",
-      "RunAsAdmin": "Run Win11Forge as Administrator",
+      "RunAsAdmin": "Run WinForge as Administrator",
       "CheckPermissions": "Check that you have permission to access the required files or folders",
       "CheckPath": "Verify the file or folder path exists",
       "ReinstallApp": "Try reinstalling the application",
@@ -1708,7 +1708,7 @@
       "CheckPowerShell": "Check your PowerShell execution policy (Set-ExecutionPolicy RemoteSigned)",
       "UpdatePowerShell": "Update PowerShell to the latest version",
       "Generic_Retry": "Try the operation again",
-      "Generic_Restart": "Restart Win11Forge and try again",
+      "Generic_Restart": "Restart WinForge and try again",
       "Generic_CheckLogs": "Check the logs folder for more details"
     },
     "dialog": {
@@ -1787,7 +1787,7 @@
       "AppsSelected": "apps selected"
     },
     "onboarding": {
-      "Welcome": "Welcome to Win11Forge",
+      "Welcome": "Welcome to WinForge",
       "Subtitle": "Your Windows 11 deployment assistant",
       "Step1_Title": "Check Prerequisites",
       "Step1_Desc": "Verify your system meets requirements and install necessary package managers",

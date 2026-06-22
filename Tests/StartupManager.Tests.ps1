@@ -3,7 +3,7 @@
     Pester tests for StartupManager module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge StartupManager v2.5.0
+    Comprehensive unit tests for WinForge StartupManager v2.5.0
     Tests startup application detection and management
 
 .NOTES

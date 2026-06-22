@@ -16,7 +16,7 @@
 
 using System.Text.RegularExpressions;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Helper class for form validation with localized error messages.

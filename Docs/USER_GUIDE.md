@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-# Win11Forge User Guide
+# WinForge User Guide
 
 Current framework display version: `2026062201`.
 
 ## Quick Start
 1. Extract the release archive.
-2. Run `Win11Forge.cmd` or start the GUI executable.
+2. Run `WinForge.cmd` or start the GUI executable.
 3. Select a profile or adjust the application selection manually.
 4. Start deployment and monitor progress.
 

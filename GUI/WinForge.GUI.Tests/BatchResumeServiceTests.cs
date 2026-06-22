@@ -16,10 +16,12 @@
 
 using System.IO;
 using System.Text.Json;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.Resume;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.Resume;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public sealed class BatchResumeServiceTests : IDisposable
 {
@@ -28,7 +30,7 @@ public sealed class BatchResumeServiceTests : IDisposable
 
     public BatchResumeServiceTests()
     {
-        _tempDir = Path.Combine(Path.GetTempPath(), "Win11Forge.Tests.BatchResume", Guid.NewGuid().ToString("N"));
+        _tempDir = Path.Combine(Path.GetTempPath(), "WinForge.Tests.BatchResume", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempDir);
     }
 
@@ -53,6 +55,23 @@ public sealed class BatchResumeServiceTests : IDisposable
     }
 
     private static IReadOnlyList<string> Plan(params string[] ids) => ids;
+
+    [Fact]
+    public void ResolveProductDataDirectory_WhenLegacyDirectoryExists_ShouldMigrateIt()
+    {
+        string legacyRoot = Path.Combine(_tempDir, WinForgePathNames.LegacyProductDirectoryName);
+        string markerPath = Path.Combine(legacyRoot, "batch-marker.txt");
+        Directory.CreateDirectory(legacyRoot);
+        File.WriteAllText(markerPath, "legacy");
+        ILoggingService logger = new LoggerFactory().CreateLogger<BatchResumeService>();
+
+        string resolved = BatchResumeService.ResolveProductDataDirectory(_tempDir, logger);
+
+        string productRoot = Path.Combine(_tempDir, WinForgePathNames.ProductDirectoryName);
+        Assert.Equal(productRoot, resolved);
+        Assert.True(File.Exists(Path.Combine(productRoot, "batch-marker.txt")));
+        Assert.False(Directory.Exists(legacyRoot));
+    }
 
     [Fact]
     public async Task BeginBatchAsync_ShouldCreateFileWithCurrentSchemaAndInProgressState()

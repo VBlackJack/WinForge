@@ -15,9 +15,9 @@
  */
 
 using System.Text.Json;
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class DetectionConfigurationSerializationTests
 {

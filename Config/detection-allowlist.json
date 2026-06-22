@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "$schema": "Win11Forge-DetectionAllowlist-v1.0",
+    "$schema": "WinForge-DetectionAllowlist-v1.0",
     "description": "Allowlist of executable base names permitted for the Command detection method. Catalog entries using Detection.Command may only launch executables listed here. This is a security control shared by the GUI detection probe and the PowerShell detection modules: it prevents arbitrary command execution when an untrusted applications catalog is imported.",
     "version": "1.0.0",
     "author": "Julien Bombled",

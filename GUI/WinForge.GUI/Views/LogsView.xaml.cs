@@ -17,7 +17,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace Win11Forge.GUI.Views;
+namespace WinForge.GUI.Views;
 
 /// <summary>
 /// Interaction logic for LogsView.xaml

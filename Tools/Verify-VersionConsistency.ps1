@@ -100,8 +100,6 @@ if ($versionData.ReleaseDate -ne $versionInfo.ReleaseDate) {
 # Note: PS1/PSM1 files read version dynamically from Config/version.json at runtime
 # We only verify static files (batch launchers) that have hardcoded version references
 $files = @(
-    @{ Path = Join-Path $repoRoot 'Deploy-Win11Forge.bat'; Pattern = "Win11Forge Framework v%FRAMEWORK_VERSION%" },
-    @{ Path = Join-Path $repoRoot 'Start-Win11ForgeGUI-Admin.bat'; Pattern = "GUI Launcher v%FRAMEWORK_VERSION%" },
     @{ Path = Join-Path $repoRoot 'Config\version.json'; Pattern = '"Version"\s*:\s*"%version%"' }
 )
 
@@ -117,7 +115,7 @@ foreach ($f in $files) {
     }
 }
 
-$guiProjectPath = Join-Path $repoRoot 'GUI\Win11Forge.GUI\Win11Forge.GUI.csproj'
+$guiProjectPath = Join-Path $repoRoot 'GUI\WinForge.GUI\WinForge.GUI.csproj'
 if (-not (Test-Path $guiProjectPath)) {
     Write-Host "[MISMATCH] GUI project not found: $guiProjectPath" -ForegroundColor Red
     $fail = $true
@@ -168,10 +166,10 @@ foreach ($manifest in Get-ChildItem -Path $manifestRoots -Filter *.psd1 -ErrorAc
         $fail = $true
     }
 
-    if ($content -match "ReleaseNotes = 'Win11Forge v([^']+)'") {
+    if ($content -match "ReleaseNotes = 'WinForge v([^']+)'") {
         $releaseNotesVersion = $Matches[1]
         if ($releaseNotesVersion -ne $versionInfo.DisplayVersion) {
-            Write-Host "[MISMATCH] $($manifest.FullName) ReleaseNotes should use Win11Forge v$($versionInfo.DisplayVersion), found Win11Forge v$releaseNotesVersion" -ForegroundColor Red
+            Write-Host "[MISMATCH] $($manifest.FullName) ReleaseNotes should use WinForge v$($versionInfo.DisplayVersion), found WinForge v$releaseNotesVersion" -ForegroundColor Red
             $fail = $true
         }
     }

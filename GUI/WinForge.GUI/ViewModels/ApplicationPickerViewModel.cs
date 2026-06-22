@@ -17,9 +17,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 /// <summary>
 /// ViewModel for the Application Picker dialog.

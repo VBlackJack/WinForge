@@ -16,7 +16,7 @@
 
 #nullable enable
 
-namespace Win11Forge.GUI.Models;
+namespace WinForge.GUI.Models;
 
 /// <summary>
 /// Identifies the kind of batch operation captured in a checkpoint.
@@ -71,7 +71,7 @@ public sealed record BatchCompletedItem(
 
 /// <summary>
 /// Per-batch checkpoint persisted under
-/// <c>%LocalAppData%\Win11Forge\state\batch-{BatchId}.json</c>.
+/// <c>%LocalAppData%\WinForge\state\batch-{BatchId}.json</c>.
 /// </summary>
 /// <remarks>
 /// <para>

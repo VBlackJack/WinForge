@@ -17,10 +17,10 @@
 using System.IO;
 using System.Windows;
 using System.Xml.Linq;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for accessibility hardening resources and theme interactions.
@@ -95,7 +95,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void ReducedMotionPropagation_AppXamlDoesNotDefineGlobalMotionStoryboards()
     {
-        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
         string[] forbiddenElements = new[]
         {
             "BeginStoryboard",
@@ -115,7 +115,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void FocusVisualStyleApplied_AppResourcesDefineImplicitKeyboardFocusStyles()
     {
-        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
         List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
@@ -151,7 +151,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void ThemeAwareFlyoutStyles_AppResourcesCoverNativeMenusAndComboBoxes()
     {
-        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
         List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
@@ -200,7 +200,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void ThemeAwareDataGridStyles_AppResourcesPreventSystemSelectionBrushBleed()
     {
-        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
         List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
@@ -322,7 +322,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppsDataGridRowStyle_BasesOnEnhancedRowStyleForSelectionContrast()
     {
-        XDocument appsXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        XDocument appsXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "Views", "AppsView.xaml"));
         XElement rowStyle = appsXaml.Descendants()
             .Single(element => element.Name.LocalName == "DataGrid.RowStyle")
             .Elements()
@@ -337,7 +337,7 @@ public class AccessibilityHardeningTests
     [MemberData(nameof(RequiredA11yLocKeyCases))]
     public void RequiredA11yLocKeys_ArePresentInXaml(string relativePath, string[] requiredKeys)
     {
-        string xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", relativePath));
+        string xaml = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", relativePath));
 
         foreach (string key in requiredKeys)
         {
@@ -348,7 +348,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void HighContrastMode_TextOnAccentBrushes_AreRemapped()
     {
-        string src = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml.cs"));
+        string src = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "App.xaml.cs"));
 
         Assert.Contains("SwapIfExists(app, \"TextOnAccentFillColorPrimaryBrush\"", src, StringComparison.Ordinal);
         Assert.Contains("SwapIfExists(app, \"TextOnAccentFillColorSecondaryBrush\"", src, StringComparison.Ordinal);
@@ -358,9 +358,9 @@ public class AccessibilityHardeningTests
     [Fact]
     public void DeadResourceCleanup_RemovesBulkDeleteKeysAndLogsFallbacks()
     {
-        string enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
-        string frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
-        string logsViewModel = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "ViewModels", "LogsViewModel.cs"));
+        string enResx = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "Resources.resx"));
+        string frResx = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "Resources.fr.resx"));
+        string logsViewModel = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "ViewModels", "LogsViewModel.cs"));
 
         Assert.DoesNotContain("AppCatalog_DeleteMultipleConfirm", enResx, StringComparison.Ordinal);
         Assert.DoesNotContain("AppCatalog_DeleteMultipleTitle", enResx, StringComparison.Ordinal);
@@ -373,9 +373,9 @@ public class AccessibilityHardeningTests
     [Fact]
     public void DeadResourceCleanup_RemovesDeadDialogKeys()
     {
-        string enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
-        string frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
-        string designer = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.Designer.cs"));
+        string enResx = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "Resources.resx"));
+        string frResx = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "Resources.fr.resx"));
+        string designer = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "Resources.Designer.cs"));
 
         string[] removedKeys =
         [
@@ -398,8 +398,8 @@ public class AccessibilityHardeningTests
     [Fact]
     public void DeadResourceCleanup_RemovesUnusedKeys2026May()
     {
-        string enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
-        string frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
+        string enResx = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "Resources.resx"));
+        string frResx = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "Resources.fr.resx"));
 
         string[] removedKeys =
         [
@@ -429,8 +429,8 @@ public class AccessibilityHardeningTests
     [Fact]
     public void Resume_LocalizationKeys_ArePresentInEnAndFrResx()
     {
-        string enResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.resx"));
-        string frResx = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "Resources.fr.resx"));
+        string enResx = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "Resources.resx"));
+        string frResx = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "Resources.fr.resx"));
 
         string[] requiredKeys =
         [
@@ -453,7 +453,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void HighContrastTheme_ImplicitlyStylesWpfUiButton()
     {
-        XDocument xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Resources", "HighContrastTheme.xaml"));
+        XDocument xaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "Resources", "HighContrastTheme.xaml"));
         XElement? implicitUiButtonStyle = xaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .FirstOrDefault(element =>
@@ -473,7 +473,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppsView_HeaderUsesIconTitleSubtitlePattern()
     {
-        string xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        string xaml = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Views", "AppsView.xaml"));
 
         Assert.Contains("Symbol=\"Apps24\"", xaml, StringComparison.Ordinal);
         Assert.Contains("{loc:Loc Apps_Title}", xaml, StringComparison.Ordinal);
@@ -484,7 +484,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppsView_DoesNotForceHorizontalScrollOnFilterCards()
     {
-        string xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        string xaml = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Views", "AppsView.xaml"));
         string profileSelector = ExtractXamlSection(xaml, "<!-- Profile Selector Card -->", "<!-- Filter Bar Card -->");
         string filterBar = ExtractXamlSection(xaml, "<!-- Filter Bar Card -->", "<!-- Selection Action Bar -->");
 
@@ -496,7 +496,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppCatalog_HidesUnavailableActionGroups()
     {
-        XDocument xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml"));
+        XDocument xaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "Views", "AppCatalogView.xaml"));
 
         AssertButtonVisibilityBinding(xaml, "UndoCommand", "CanUndo");
         AssertButtonVisibilityBinding(xaml, "RedoCommand", "CanRedo");
@@ -523,7 +523,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppsView_ProfileCardDoesNotDuplicateInstallSelected()
     {
-        string xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        string xaml = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Views", "AppsView.xaml"));
         string profileSelector = ExtractXamlSection(xaml, "<!-- Profile Selector Card -->", "<!-- Filter Bar Card -->");
         string selectionActionBar = ExtractXamlSection(xaml, "<!-- Selection Action Bar -->", "<!-- Applications DataGrid -->");
 
@@ -535,7 +535,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppXaml_DefinesReinforcedTabItemStyleAsImplicit()
     {
-        XDocument xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        XDocument xaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
         List<XElement> styles = xaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
@@ -584,7 +584,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void AppXaml_TabItemUsesThemeAwareTemplate()
     {
-        XDocument xaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        XDocument xaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
         List<XElement> styles = xaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
@@ -643,7 +643,7 @@ public class AccessibilityHardeningTests
     [Fact]
     public void MainWindow_NavSplitsWorkflowAndConfigClusters()
     {
-        string xaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml"));
+        string xaml = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "MainWindow.xaml"));
         int sepIdx = xaml.IndexOf("<ui:NavigationViewItemSeparator", StringComparison.Ordinal);
         int appCatalogIdx = xaml.IndexOf("Tag=\"5\"", sepIdx, StringComparison.Ordinal);
         int settingsIdx = xaml.IndexOf("Tag=\"4\"", sepIdx, StringComparison.Ordinal);

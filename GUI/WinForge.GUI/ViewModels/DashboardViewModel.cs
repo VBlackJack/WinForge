@@ -20,13 +20,13 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Win11Forge.GUI.Exceptions;
-using Win11Forge.GUI.Helpers;
-using Win11Forge.GUI.Messages;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Exceptions;
+using WinForge.GUI.Helpers;
+using WinForge.GUI.Messages;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 /// <summary>
 /// ViewModel for the Dashboard view.
@@ -123,7 +123,7 @@ public partial class DashboardViewModel : ViewModelBase
     #region System Info Properties
 
     /// <summary>
-    /// Win11Forge version.
+    /// WinForge version.
     /// </summary>
     [ObservableProperty]
     private string _appVersion = string.Empty;
@@ -344,7 +344,7 @@ public partial class DashboardViewModel : ViewModelBase
             CheckingPhaseText = Resources.Resources.Dashboard_Phase_LoadingInfo;
             OnPropertyChanged(nameof(HeroTitle));
 
-            AppVersion = await _powerShellBridge.GetWin11ForgeVersionAsync();
+            AppVersion = await _powerShellBridge.GetWinForgeVersionAsync();
             await LoadSystemInfoAsync();
 
             // Load stats

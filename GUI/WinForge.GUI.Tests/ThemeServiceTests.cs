@@ -16,11 +16,11 @@
 
 using System.Windows;
 using System.Windows.Media;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Tests.TestInfrastructure;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Services;
+using WinForge.GUI.Tests.TestInfrastructure;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for the ThemeForge-backed theme service catalogue and revision contract.

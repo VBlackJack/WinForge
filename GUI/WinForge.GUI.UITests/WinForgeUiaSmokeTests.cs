@@ -18,13 +18,13 @@ using System.IO;
 using System.Windows.Automation;
 using Xunit.Abstractions;
 
-namespace Win11Forge.GUI.UITests;
+namespace WinForge.GUI.UITests;
 
-public sealed class Win11ForgeUiaSmokeTests
+public sealed class WinForgeUiaSmokeTests
 {
     private readonly ITestOutputHelper _output;
 
-    public Win11ForgeUiaSmokeTests(ITestOutputHelper output)
+    public WinForgeUiaSmokeTests(ITestOutputHelper output)
     {
         _output = output;
     }
@@ -32,7 +32,7 @@ public sealed class Win11ForgeUiaSmokeTests
     [UiaFact]
     public void CanNavigateCoreScreensAndCaptureScreenshots()
     {
-        using Win11ForgeAppSession app = Win11ForgeAppSession.Launch();
+        using WinForgeAppSession app = WinForgeAppSession.Launch();
         app.WaitForElementByAutomationId("PageDashboard", TimeSpan.FromSeconds(10));
 
         string[] screenshots = new[]
@@ -56,7 +56,7 @@ public sealed class Win11ForgeUiaSmokeTests
     [UiaFact]
     public void SettingsThemePicker_IsDiscoverable()
     {
-        using Win11ForgeAppSession app = Win11ForgeAppSession.Launch();
+        using WinForgeAppSession app = WinForgeAppSession.Launch();
         app.WaitForElementByAutomationId("PageDashboard", TimeSpan.FromSeconds(10));
 
         app.NavigateByAutomationId("NavSettings");
@@ -71,7 +71,7 @@ public sealed class Win11ForgeUiaSmokeTests
     [UiaFact]
     public void AppCatalog_UndoRedoButtons_HaveNonEmptyBounds()
     {
-        using Win11ForgeAppSession app = Win11ForgeAppSession.Launch();
+        using WinForgeAppSession app = WinForgeAppSession.Launch();
         app.WaitForElementByAutomationId("PageDashboard", TimeSpan.FromSeconds(10));
 
         app.NavigateByAutomationId("NavAppCatalog");
@@ -87,7 +87,7 @@ public sealed class Win11ForgeUiaSmokeTests
     }
 
     private static string CaptureAfterNavigation(
-        Win11ForgeAppSession app,
+        WinForgeAppSession app,
         string automationId,
         string expectedPageAutomationId,
         string screenshotName)

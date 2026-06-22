@@ -16,9 +16,9 @@
 
 using System.Windows;
 using System.Windows.Media;
-using Win11Forge.GUI.Helpers;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Resources;
+using WinForge.GUI.Helpers;
+using WinForge.GUI.Models;
+using WinForge.GUI.Resources;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using ThemeForgeAccentTint = ThemeForge.Theme.AccentTint;
@@ -27,10 +27,10 @@ using ThemeForgeIThemeService = ThemeForge.Theme.IThemeService;
 using ThemeForgeNames = ThemeForge.Theme.ThemeNames;
 using ThemeForgeThemeService = ThemeForge.Theme.ThemeService;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
-/// Win11Forge compatibility wrapper around the ThemeForge theme engine.
+/// WinForge compatibility wrapper around the ThemeForge theme engine.
 /// </summary>
 public sealed class ThemeService : IThemeService
 {

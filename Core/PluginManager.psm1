@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - Plugin Manager v3.7.2
+    WinForge - Plugin Manager v3.7.2
 
 .DESCRIPTION
-    Provides plugin system functionality for Win11Forge:
+    Provides plugin system functionality for WinForge:
     - Plugin discovery and loading
     - Hook system (pre-install, post-install, etc.)
     - Custom installation method registration

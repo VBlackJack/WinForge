@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Methods v3.7.2
+    WinForge - Installation Methods v3.7.2
 
 .DESCRIPTION
     Individual installation method implementations:
@@ -1529,7 +1529,7 @@ function Install-ViaDirectDownload {
 
         Write-Status -Message (t 'install.method.direct_downloading' -Parameters @{ Url = $Url }) -Level 'Info'
 
-        $tempDir = Join-Path -Path (Get-ShellFolder -FolderType 'Temp') -ChildPath "Win11Forge_$([guid]::NewGuid().ToString('N'))"
+        $tempDir = Join-Path -Path (Get-ShellFolder -FolderType 'Temp') -ChildPath "WinForge_$([guid]::NewGuid().ToString('N'))"
         New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
         Write-Verbose (t 'install.method.debug.direct_path_verbose' -Parameters @{ Path = $tempDir })
 

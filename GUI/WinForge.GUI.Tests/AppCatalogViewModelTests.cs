@@ -16,13 +16,13 @@
 
 using System.Globalization;
 using System.Windows;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.ViewModels;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using WinForge.GUI.Models;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Services;
+using WinForge.GUI.ViewModels;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for AppCatalogViewModel - App Catalog management functionality.
@@ -409,7 +409,7 @@ public class AppCatalogViewModelTests
     {
         // Arrange
         AppCatalogViewModel viewModel = CreateViewModel();
-        AndZeroToVisibilityConverter converter = new Win11Forge.GUI.Resources.AndZeroToVisibilityConverter();
+        AndZeroToVisibilityConverter converter = new WinForge.GUI.Resources.AndZeroToVisibilityConverter();
 
         // Act
         object result = converter.Convert(
@@ -433,7 +433,7 @@ public class AppCatalogViewModelTests
         MockApplicationDatabaseService dbService = new MockApplicationDatabaseService();
         dbService.SetLoadException(new InvalidOperationException("catalog unavailable"));
         AppCatalogViewModel viewModel = CreateViewModel(dbService: dbService);
-        AndZeroToVisibilityConverter converter = new Win11Forge.GUI.Resources.AndZeroToVisibilityConverter();
+        AndZeroToVisibilityConverter converter = new WinForge.GUI.Resources.AndZeroToVisibilityConverter();
 
         // Act
         await viewModel.LoadApplicationsCommand.ExecuteAsync(null);
@@ -709,7 +709,7 @@ public class AppCatalogViewModelTests
 
         // Assert
         FileDialogOptions options = Assert.Single(fileDialogService.OpenOptions);
-        Assert.Equal(Win11Forge.GUI.Resources.Resources.AppCatalog_Import, options.Title);
+        Assert.Equal(WinForge.GUI.Resources.Resources.AppCatalog_Import, options.Title);
         Assert.Equal("JSON files (*.json)|*.json|All files (*.*)|*.*", options.Filter);
         Assert.Equal(".json", options.DefaultExtension);
     }

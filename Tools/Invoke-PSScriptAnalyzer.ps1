@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    PSScriptAnalyzer validation for Win11Forge
+    PSScriptAnalyzer validation for WinForge
 
 .DESCRIPTION
     Analyzes all PowerShell scripts and modules for code quality issues
@@ -78,7 +78,7 @@ if (Test-Path $versionFile) {
 
 # === PREREQUISITES CHECK ===
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  Win11Forge v$frameworkVersion - PSScriptAnalyzer" -ForegroundColor Cyan
+Write-Host "  WinForge v$frameworkVersion - PSScriptAnalyzer" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 
@@ -126,7 +126,7 @@ $filesToAnalyze = @(
     (Join-Path $RootPath 'Modules\StartMenuLayout.psm1'),
     (Join-Path $RootPath 'Modules\StartMenuPinning.psm1'),
     (Join-Path $RootPath 'Modules\StartupManager.psm1'),
-    (Join-Path $RootPath 'Modules\Win11ForgeGUI.psm1')
+    (Join-Path $RootPath 'Modules\WinForgeGUI.psm1')
 )
 
 # Filter existing files
@@ -309,7 +309,7 @@ if ($Report) {
 <html>
 <head>
     <meta charset="utf-8">
-    <title>PSScriptAnalyzer Report - Win11Forge v$frameworkVersion</title>
+    <title>PSScriptAnalyzer Report - WinForge v$frameworkVersion</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f5f5f5; }
         h1 { color: #0078d4; }
@@ -328,7 +328,7 @@ if ($Report) {
 </head>
 <body>
     <h1>PSScriptAnalyzer Report</h1>
-    <p><strong>Win11Forge Framework v$frameworkVersion</strong></p>
+    <p><strong>WinForge Framework v$frameworkVersion</strong></p>
     <p>Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')</p>
 
     <div class="summary">

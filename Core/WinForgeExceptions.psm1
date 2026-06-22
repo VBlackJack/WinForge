@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-    Win11Forge - Custom Exception Classes v3.7.2
+    WinForge - Custom Exception Classes v3.7.2
 
 .DESCRIPTION
     Defines custom exception classes for semantic error handling
-    across the Win11Forge framework. Enables precise error
+    across the WinForge framework. Enables precise error
     categorization and handling.
 
 .NOTES
@@ -32,24 +32,24 @@ Set-StrictMode -Version Latest
 
 # === BASE EXCEPTION CLASS ===
 
-class Win11ForgeException : System.Exception {
+class WinForgeException : System.Exception {
     [string]$Category
     [datetime]$Timestamp
     [hashtable]$Context
 
-    Win11ForgeException() : base() {
+    WinForgeException() : base() {
         $this.Category = 'General'
         $this.Timestamp = Get-Date
         $this.Context = @{}
     }
 
-    Win11ForgeException([string]$message) : base($message) {
+    WinForgeException([string]$message) : base($message) {
         $this.Category = 'General'
         $this.Timestamp = Get-Date
         $this.Context = @{}
     }
 
-    Win11ForgeException([string]$message, [System.Exception]$innerException) : base($message, $innerException) {
+    WinForgeException([string]$message, [System.Exception]$innerException) : base($message, $innerException) {
         $this.Category = 'General'
         $this.Timestamp = Get-Date
         $this.Context = @{}
@@ -62,7 +62,7 @@ class Win11ForgeException : System.Exception {
 
 # === INSTALLATION EXCEPTIONS ===
 
-class InstallationException : Win11ForgeException {
+class InstallationException : WinForgeException {
     [string]$AppName
     [string]$AppId
     [string]$Method
@@ -150,7 +150,7 @@ class StoreException : InstallationException {
 
 # === DETECTION EXCEPTIONS ===
 
-class DetectionException : Win11ForgeException {
+class DetectionException : WinForgeException {
     [string]$AppName
     [string]$DetectionMethod
     [string]$DetectionPath
@@ -181,7 +181,7 @@ class PathTraversalException : DetectionException {
 
 # === CONFIGURATION EXCEPTIONS ===
 
-class ConfigurationException : Win11ForgeException {
+class ConfigurationException : WinForgeException {
     [string]$ConfigFile
     [string]$ConfigKey
 
@@ -223,7 +223,7 @@ class ProfileException : ConfigurationException {
 
 # === NETWORK EXCEPTIONS ===
 
-class NetworkException : Win11ForgeException {
+class NetworkException : WinForgeException {
     [string]$Url
     [int]$StatusCode
 
@@ -269,7 +269,7 @@ class UrlValidationException : NetworkException {
 
 # === SECURITY EXCEPTIONS ===
 
-class SecurityException : Win11ForgeException {
+class SecurityException : WinForgeException {
     [string]$SecurityContext
     [string]$AttemptedAction
 
@@ -317,7 +317,7 @@ class AuthenticationException : SecurityException {
 
 # === ROLLBACK EXCEPTIONS ===
 
-class RollbackException : Win11ForgeException {
+class RollbackException : WinForgeException {
     [string]$SessionId
     [string[]]$FailedApps
 
@@ -342,7 +342,7 @@ class RollbackException : Win11ForgeException {
 
 # === API EXCEPTIONS ===
 
-class ApiException : Win11ForgeException {
+class ApiException : WinForgeException {
     [string]$Endpoint
     [string]$HttpMethod
     [int]$StatusCode
@@ -379,7 +379,7 @@ class RateLimitException : ApiException {
 
 # === PLUGIN EXCEPTIONS ===
 
-class PluginException : Win11ForgeException {
+class PluginException : WinForgeException {
     [string]$PluginName
     [string]$PluginVersion
     [string]$HookName
@@ -517,15 +517,15 @@ function New-ApiException {
     return [ApiException]::new($Message)
 }
 
-function Test-Win11ForgeException {
+function Test-WinForgeException {
     <#
     .SYNOPSIS
-        Tests if an exception is a Win11Forge exception.
+        Tests if an exception is a WinForge exception.
 
     .DESCRIPTION
-        Checks whether the given exception derives from the Win11ForgeException base class.
+        Checks whether the given exception derives from the WinForgeException base class.
         Use this to determine if an exception belongs to the framework's custom exception
-        hierarchy before attempting to access Win11Forge-specific properties like Category.
+        hierarchy before attempting to access WinForge-specific properties like Category.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
@@ -534,17 +534,17 @@ function Test-Win11ForgeException {
         [System.Exception]$Exception
     )
 
-    return $Exception -is [Win11ForgeException]
+    return $Exception -is [WinForgeException]
 }
 
 function Get-ExceptionCategory {
     <#
     .SYNOPSIS
-        Gets the category of a Win11Forge exception.
+        Gets the category of a WinForge exception.
 
     .DESCRIPTION
         Extracts the category string (e.g., Installation, Security, API) from a
-        Win11ForgeException instance. Returns 'Unknown' if the exception is not part
+        WinForgeException instance. Returns 'Unknown' if the exception is not part
         of the framework's custom exception hierarchy.
     #>
     [CmdletBinding()]
@@ -554,7 +554,7 @@ function Get-ExceptionCategory {
         [System.Exception]$Exception
     )
 
-    if ($Exception -is [Win11ForgeException]) {
+    if ($Exception -is [WinForgeException]) {
         return $Exception.Category
     }
     return 'Unknown'
@@ -562,10 +562,10 @@ function Get-ExceptionCategory {
 
 # === STANDARDIZED ERROR CREATION ===
 
-function New-Win11ForgeError {
+function New-WinForgeError {
     <#
     .SYNOPSIS
-        Creates a standardized Win11Forge error with logging integration.
+        Creates a standardized WinForge error with logging integration.
     .DESCRIPTION
         Central function for creating and logging errors across the framework.
         Automatically logs to structured logging if available and returns
@@ -583,9 +583,9 @@ function New-Win11ForgeError {
     .PARAMETER DoNotThrow
         If specified, returns the error object instead of throwing.
     .EXAMPLE
-        New-Win11ForgeError -Message "Failed to install" -Category "Installation" -Context @{ AppName = "Firefox" }
+        New-WinForgeError -Message "Failed to install" -Category "Installation" -Context @{ AppName = "Firefox" }
     .EXAMPLE
-        $err = New-Win11ForgeError -Message "Network timeout" -Category "Network" -ErrorCode "NET001" -DoNotThrow
+        $err = New-WinForgeError -Message "Network timeout" -Category "Network" -ErrorCode "NET001" -DoNotThrow
     #>
     [CmdletBinding()]
     param(
@@ -680,9 +680,9 @@ function New-Win11ForgeError {
         }
         default {
             if ($InnerException) {
-                [Win11ForgeException]::new($Message, $InnerException)
+                [WinForgeException]::new($Message, $InnerException)
             } else {
-                [Win11ForgeException]::new($Message)
+                [WinForgeException]::new($Message)
             }
         }
     }
@@ -711,13 +711,13 @@ function New-Win11ForgeError {
     }
 }
 
-function Format-Win11ForgeError {
+function Format-WinForgeError {
     <#
     .SYNOPSIS
-        Formats a Win11Forge exception for display or logging.
+        Formats a WinForge exception for display or logging.
 
     .DESCRIPTION
-        Converts a Win11Forge exception into a human-readable string representation
+        Converts a WinForge exception into a human-readable string representation
         that includes category, message, timestamp, context data, and optionally
         the stack trace and inner exception details.
 
@@ -738,7 +738,7 @@ function Format-Win11ForgeError {
 
     $output = New-Object System.Text.StringBuilder
 
-    if ($Exception -is [Win11ForgeException]) {
+    if ($Exception -is [WinForgeException]) {
         [void]$output.AppendLine("[$($Exception.Category)] $($Exception.Message)")
         [void]$output.AppendLine("Timestamp: $($Exception.Timestamp.ToString('o'))")
 
@@ -768,7 +768,7 @@ function Format-Win11ForgeError {
 
 # === TIMEOUT EXCEPTION ===
 
-class TimeoutException : Win11ForgeException {
+class TimeoutException : WinForgeException {
     [string]$Operation
     [int]$TimeoutSeconds
     [int]$ElapsedSeconds
@@ -786,7 +786,7 @@ class TimeoutException : Win11ForgeException {
     }
 }
 
-class ValidationException : Win11ForgeException {
+class ValidationException : WinForgeException {
     [string]$ParameterName
     [string]$ProvidedValue
     [string]$ExpectedFormat
@@ -870,8 +870,8 @@ Export-ModuleMember -Function @(
     'New-ApiException',
     'New-TimeoutException',
     'New-ValidationException',
-    'New-Win11ForgeError',
-    'Format-Win11ForgeError',
-    'Test-Win11ForgeException',
+    'New-WinForgeError',
+    'Format-WinForgeError',
+    'Test-WinForgeException',
     'Get-ExceptionCategory'
 )

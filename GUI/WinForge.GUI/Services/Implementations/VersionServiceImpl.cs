@@ -18,10 +18,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Services.Implementations;
+namespace WinForge.GUI.Services.Implementations;
 
 /// <summary>
 /// Implementation of IVersionService for retrieving version information.
@@ -62,7 +62,7 @@ public partial class VersionServiceImpl : IVersionService
     }
 
     /// <inheritdoc/>
-    public async Task<string> GetWin11ForgeVersionAsync()
+    public async Task<string> GetWinForgeVersionAsync()
     {
         string versionFilePath = _pathService.GetPath("Config", "version.json");
 

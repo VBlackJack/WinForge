@@ -17,9 +17,9 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Represents an exported profile with metadata.

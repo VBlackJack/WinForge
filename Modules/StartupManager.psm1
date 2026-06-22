@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Startup Manager v3.7.2
+    WinForge - Startup Manager v3.7.2
 
 .DESCRIPTION
     Module for managing Windows startup applications:

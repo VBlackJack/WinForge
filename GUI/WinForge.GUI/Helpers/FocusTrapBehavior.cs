@@ -18,7 +18,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace Win11Forge.GUI.Helpers;
+namespace WinForge.GUI.Helpers;
 
 /// <summary>
 /// Attached behavior that traps keyboard focus within a container element.

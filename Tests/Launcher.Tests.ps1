@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Pester tests for Win11Forge launchers
+    Pester tests for WinForge launchers
 
 .DESCRIPTION
     Static validation for launcher scripts that should not start the GUI during tests.
@@ -27,11 +27,11 @@
 #
 
 BeforeAll {
-    $script:LauncherPath = Join-Path $PSScriptRoot '..\Start-Win11ForgeGUI.ps1'
+    $script:LauncherPath = Join-Path $PSScriptRoot '..\Start-WinForgeGUI.ps1'
     $script:LauncherContent = Get-Content -Path $script:LauncherPath -Raw -Encoding UTF8
 }
 
-Describe 'Start-Win11ForgeGUI launcher selection' {
+Describe 'Start-WinForgeGUI launcher selection' {
     It 'Should prefer source Release before source Debug' {
         $releaseIndex = $script:LauncherContent.IndexOf("New-WpfGuiCandidate -Name 'source Release'")
         $debugIndex = $script:LauncherContent.IndexOf("New-WpfGuiCandidate -Name 'source Debug'")

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Updates Win11Forge calendar release version metadata.
+    Updates WinForge calendar release version metadata.
 
 .DESCRIPTION
     Config/version.json stores the user-facing calendar version as YYYYMMDDxx.
@@ -139,7 +139,7 @@ function New-CalendarVersion {
         }
     }
 
-    $csprojPath = Join-Path $RootPath 'GUI\Win11Forge.GUI\Win11Forge.GUI.csproj'
+    $csprojPath = Join-Path $RootPath 'GUI\WinForge.GUI\WinForge.GUI.csproj'
     if (Test-Path $csprojPath) {
         $csprojContent = Get-Content -Path $csprojPath -Raw -Encoding UTF8
         $infoMatch = [regex]::Match($csprojContent, '<InformationalVersion>(?<version>[^<]+)</InformationalVersion>')
@@ -152,7 +152,7 @@ function New-CalendarVersion {
     if (Test-Path $distRoot) {
         Get-ChildItem -Path $distRoot -Name -ErrorAction SilentlyContinue |
             ForEach-Object {
-                if ($_ -match '^Win11Forge_v(?<version>\d{10}|\d{4}\.\d{6})(?:\.zip)?$') {
+                if ($_ -match '^WinForge_v(?<version>\d{10}|\d{4}\.\d{6})(?:\.zip)?$') {
                     $candidate = $Matches.version
                     $maxSequence = [Math]::Max($maxSequence, (Get-ExistingSequence -Candidate $candidate -DisplayPrefix $displayPrefix -DottedPrefix $dottedPrefix))
                 }
@@ -216,7 +216,7 @@ function Update-GuiProjectVersion {
 
 $resolvedRoot = (Resolve-Path -Path $RootPath).Path
 $versionPath = Join-Path $resolvedRoot 'Config\version.json'
-$guiProjectPath = Join-Path $resolvedRoot 'GUI\Win11Forge.GUI\Win11Forge.GUI.csproj'
+$guiProjectPath = Join-Path $resolvedRoot 'GUI\WinForge.GUI\WinForge.GUI.csproj'
 
 if (-not (Test-Path $versionPath)) {
     throw "Version file not found: $versionPath"
@@ -236,7 +236,7 @@ $displayNameProperty = $versionJson.PSObject.Properties['DisplayName']
 $displayName = if ($displayNameProperty -and -not [string]::IsNullOrWhiteSpace([string]$displayNameProperty.Value)) {
     [string]$displayNameProperty.Value
 } else {
-    'Win11Forge Framework'
+    'WinForge Framework'
 }
 
 $updatedVersionJson = [ordered]@{
@@ -253,7 +253,7 @@ if ($PassThru) {
     return $versionInfo
 }
 
-Write-Host "Updated Win11Forge version:" -ForegroundColor Green
+Write-Host "Updated WinForge version:" -ForegroundColor Green
 Write-Host "  Display:       $($versionInfo.DisplayVersion)"
 Write-Host "  Assembly:      $($versionInfo.AssemblyVersion)"
 Write-Host "  Release date:  $($versionInfo.ReleaseDate)"

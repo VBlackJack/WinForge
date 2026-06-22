@@ -17,12 +17,12 @@
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class DetectionProbeTests
 {
@@ -66,7 +66,7 @@ public class DetectionProbeTests
     {
         using TestWorkspace workspace = new TestWorkspace();
         WriteRegistryPolicy(workspace);
-        string subKey = $@"Software\Win11Forge\Tests\DetectionProbe\{Guid.NewGuid():N}";
+        string subKey = $@"Software\WinForge\Tests\DetectionProbe\{Guid.NewGuid():N}";
         using RegistryKey key = Registry.CurrentUser.CreateSubKey(subKey);
         key.SetValue("ProductName", "Windows Test", RegistryValueKind.String);
 
@@ -97,7 +97,7 @@ public class DetectionProbeTests
     {
         using TestWorkspace workspace = new TestWorkspace();
         WriteRegistryPolicy(workspace);
-        string subKey = $@"Software\Win11Forge\Tests\DetectionProbe\{Guid.NewGuid():N}";
+        string subKey = $@"Software\WinForge\Tests\DetectionProbe\{Guid.NewGuid():N}";
         using RegistryKey key = Registry.CurrentUser.CreateSubKey(subKey);
         key.SetValue("ProductName", "Windows Test", RegistryValueKind.String);
 
@@ -206,11 +206,11 @@ public class DetectionProbeTests
     }
 
     [Fact]
-    public void AddWin11ForgeServices_ShouldRegisterDetectionProbeSingleton()
+    public void AddWinForgeServices_ShouldRegisterDetectionProbeSingleton()
     {
         ServiceCollection services = new ServiceCollection();
 
-        using ServiceProvider provider = services.AddWin11ForgeServices().BuildServiceProvider();
+        using ServiceProvider provider = services.AddWinForgeServices().BuildServiceProvider();
         IDetectionProbe first = provider.GetRequiredService<IDetectionProbe>();
         IDetectionProbe second = provider.GetRequiredService<IDetectionProbe>();
 
@@ -224,10 +224,10 @@ public class DetectionProbeTests
         using TestWorkspace workspace = new TestWorkspace();
         string databaseDirectory = Path.Combine(
             workspace.RepositoryRoot,
-            Win11ForgePathNames.AppsDirectoryName,
-            Win11ForgePathNames.DatabaseDirectoryName);
+            WinForgePathNames.AppsDirectoryName,
+            WinForgePathNames.DatabaseDirectoryName);
         Directory.CreateDirectory(databaseDirectory);
-        string databasePath = Path.Combine(databaseDirectory, Win11ForgePathNames.ApplicationsDatabaseFileName);
+        string databasePath = Path.Combine(databaseDirectory, WinForgePathNames.ApplicationsDatabaseFileName);
         File.WriteAllText(databasePath, """
             {
               "Applications": {
@@ -330,10 +330,10 @@ public class DetectionProbeTests
     private static void WriteDetectionAllowlist(TestWorkspace workspace, params string[] executables)
     {
         string configDirectory = Path.Combine(
-            workspace.RepositoryRoot, Win11ForgePathNames.ConfigDirectoryName);
+            workspace.RepositoryRoot, WinForgePathNames.ConfigDirectoryName);
         Directory.CreateDirectory(configDirectory);
         string allowlistPath = Path.Combine(
-            configDirectory, Win11ForgePathNames.DetectionAllowlistFileName);
+            configDirectory, WinForgePathNames.DetectionAllowlistFileName);
 
         string[] quoted = new string[executables.Length];
         for (int index = 0; index < executables.Length; index++)
@@ -356,10 +356,10 @@ public class DetectionProbeTests
     private static void WriteRegistryPolicy(TestWorkspace workspace)
     {
         string configDirectory = Path.Combine(
-            workspace.RepositoryRoot, Win11ForgePathNames.ConfigDirectoryName);
+            workspace.RepositoryRoot, WinForgePathNames.ConfigDirectoryName);
         Directory.CreateDirectory(configDirectory);
         string policyPath = Path.Combine(
-            configDirectory, Win11ForgePathNames.DetectionRegistryPolicyFileName);
+            configDirectory, WinForgePathNames.DetectionRegistryPolicyFileName);
 
         // Raw literal: \\\\ written verbatim -> JSON \\\\ -> parsed "\\" -> regex one backslash.
         File.WriteAllText(policyPath, """

@@ -17,9 +17,9 @@
 #nullable enable
 
 using System.IO;
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Implementation of application management operations.
@@ -76,7 +76,7 @@ public class ApplicationBridge : IApplicationBridge
         if (string.IsNullOrWhiteSpace(appId))
         {
             throw new ArgumentException(
-                Win11Forge.GUI.Resources.Resources.Validation_Required,
+                WinForge.GUI.Resources.Resources.Validation_Required,
                 nameof(appId));
         }
 
@@ -168,7 +168,7 @@ public class ApplicationBridge : IApplicationBridge
         if (string.IsNullOrWhiteSpace(app.AppId))
         {
             throw new ArgumentException(
-                Win11Forge.GUI.Resources.Resources.Validation_Required,
+                WinForge.GUI.Resources.Resources.Validation_Required,
                 nameof(app.AppId));
         }
     }

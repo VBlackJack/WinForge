@@ -16,7 +16,7 @@
 
 using System.Windows.Controls;
 
-namespace Win11Forge.GUI.Views;
+namespace WinForge.GUI.Views;
 
 /// <summary>
 /// Prerequisites view displaying all system prerequisites status.

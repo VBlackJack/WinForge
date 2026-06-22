@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Services.Coordinators;
+namespace WinForge.GUI.Services.Coordinators;
 
 /// <summary>
 /// Coordinates bounded parallel installation of applications.

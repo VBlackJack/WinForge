@@ -1,15 +1,15 @@
 <#
 .SYNOPSIS
-    Win11Forge GUI v3.7.2
+    WinForge GUI v3.7.2
 
 .DESCRIPTION
-    PowerShell graphical interface for Win11Forge deployment framework
+    PowerShell graphical interface for WinForge deployment framework
     Provides interactive menus for profile selection, application browsing, and custom profile creation
 
 .NOTES
     Author: Julien Bombled
     v3.7.2
-    Requires: PowerShell 5.1+, Win11Forge framework
+    Requires: PowerShell 5.1+, WinForge framework
 #>
 
 #
@@ -324,7 +324,7 @@ function Show-Header {
     #>
     [CmdletBinding()]
     param(
-        [string]$Title = "Win11Forge v$script:FrameworkVersion"
+        [string]$Title = "WinForge v$script:FrameworkVersion"
     )
 
     Clear-Host
@@ -437,7 +437,7 @@ function Show-MainMenu {
     param()
 
     while ($true) {
-        Show-Header -Title "Win11Forge v$script:FrameworkVersion - $(Get-LocalizedString -Key 'gui.menu.main_title' -DefaultValue 'Main Menu')"
+        Show-Header -Title "WinForge v$script:FrameworkVersion - $(Get-LocalizedString -Key 'gui.menu.main_title' -DefaultValue 'Main Menu')"
 
         Write-Host "  1. $(Get-LocalizedString -Key 'gui.menu.deploy_profile')" -ForegroundColor White
         Write-Host "  2. $(Get-LocalizedString -Key 'gui.menu.browse_apps' -Parameters @{ Count = $script:AppDatabase.Count })" -ForegroundColor White
@@ -1351,7 +1351,7 @@ function Show-SettingsMenu {
 function Show-FrameworkInfo {
     <#
     .SYNOPSIS
-        Displays Win11Forge framework version and environment information.
+        Displays WinForge framework version and environment information.
     .DESCRIPTION
         Shows the current framework version, PowerShell version, repository path, and
         database loading status for diagnostic and informational purposes.
@@ -1419,7 +1419,7 @@ function Show-LogsDirectory {
 function Test-Updates {
     <#
     .SYNOPSIS
-        Checks for available Win11Forge framework updates and can install them.
+        Checks for available WinForge framework updates and can install them.
     .DESCRIPTION
         Displays the current framework version, checks the latest release via UpdateManager,
         and optionally downloads and installs the update with backup/restore protection.
@@ -1541,7 +1541,7 @@ function Test-Updates {
     Write-Host ""
     if ($installSuccess) {
         Write-Host (Get-LocalizedString -Key 'update.install_success') -ForegroundColor Green
-        Write-Host (Get-LocalizedString -Key 'gui.updates.restart_hint' -DefaultValue 'Restart Win11Forge to apply the update.') -ForegroundColor Yellow
+        Write-Host (Get-LocalizedString -Key 'gui.updates.restart_hint' -DefaultValue 'Restart WinForge to apply the update.') -ForegroundColor Yellow
     }
     else {
         Write-Host (Get-LocalizedString -Key 'gui.updates.install_failed' -DefaultValue 'Update installation failed.') -ForegroundColor Red
@@ -1564,7 +1564,7 @@ function Show-About {
 
     Show-Header -Title (Get-LocalizedString -Key 'gui.about.title')
 
-    Write-Host "Win11Forge v$script:FrameworkVersion" -ForegroundColor Cyan
+    Write-Host "WinForge v$script:FrameworkVersion" -ForegroundColor Cyan
     Write-Host (Get-LocalizedString -Key 'gui.about.subtitle') -ForegroundColor White
     Write-Host ""
     Write-Host (Get-LocalizedString -Key 'gui.about.features_title') -ForegroundColor Yellow
@@ -1764,7 +1764,7 @@ function Show-AddApplicationMenu {
         # Update applications-data.js for ProfileCreator.html
         $jsPath = Join-Path $script:RepositoryRoot 'Tools\applications-data.js'
         $appsJson = $db.Applications | ConvertTo-Json -Depth 10 -Compress
-        "const WIN11FORGE_APPS = $appsJson;" | Set-Content -Path $jsPath -Encoding UTF8
+        "const WINFORGE_APPS = $appsJson;" | Set-Content -Path $jsPath -Encoding UTF8
 
         Write-Host ""
         Write-Host (Get-LocalizedString -Key 'gui.add_app.success' -Parameters @{ Name = $appName }) -ForegroundColor Green

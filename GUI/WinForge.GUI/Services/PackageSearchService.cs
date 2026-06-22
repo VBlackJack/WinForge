@@ -18,9 +18,9 @@
 
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Win11Forge.GUI.Configuration;
+using WinForge.GUI.Configuration;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Service implementation for package discovery across Winget, Chocolatey and Microsoft Store.

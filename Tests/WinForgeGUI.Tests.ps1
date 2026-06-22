@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Pester tests for Win11ForgeGUI module
+    Pester tests for WinForgeGUI module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge GUI v2.5.0
+    Comprehensive unit tests for WinForge GUI v2.5.0
     Tests GUI initialization and exported functions
 
 .NOTES
@@ -30,7 +30,7 @@
 
 BeforeAll {
     $script:ModuleRoot = Join-Path $PSScriptRoot '..\Modules'
-    $script:GUIPath = Join-Path $script:ModuleRoot 'Win11ForgeGUI.psm1'
+    $script:GUIPath = Join-Path $script:ModuleRoot 'WinForgeGUI.psm1'
     $script:CorePath = Join-Path $PSScriptRoot '..\Core\Core.psm1'
 
     # Import Core first
@@ -41,7 +41,7 @@ BeforeAll {
     Import-Module $script:GUIPath -Force -ErrorAction Stop
 }
 
-Describe 'Win11ForgeGUI Module' {
+Describe 'WinForgeGUI Module' {
     Context 'Module Loading' {
         It 'Should load without errors' {
             { Import-Module $script:GUIPath -Force } | Should -Not -Throw
@@ -125,7 +125,7 @@ Describe 'Win11ForgeGUI Module' {
     }
 }
 
-Describe 'Win11ForgeGUI Integration Tests' {
+Describe 'WinForgeGUI Integration Tests' {
     Context 'Module Dependencies' {
         It 'Should load all required modules via Initialize-GUIModules' {
             $result = Initialize-GUIModules

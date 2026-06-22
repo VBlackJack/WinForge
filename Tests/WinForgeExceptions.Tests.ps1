@@ -1,5 +1,5 @@
 #
-# Tests for Win11ForgeExceptions module
+# Tests for WinForgeExceptions module
 #
 # Copyright 2026 Julien Bombled
 #
@@ -17,15 +17,15 @@
 #
 
 BeforeAll {
-    $modulePath = Join-Path $PSScriptRoot '..\Core\Win11ForgeExceptions.psm1'
+    $modulePath = Join-Path $PSScriptRoot '..\Core\WinForgeExceptions.psm1'
     Import-Module $modulePath -Force
 }
 
 AfterAll {
-    Remove-Module Win11ForgeExceptions -ErrorAction SilentlyContinue
+    Remove-Module WinForgeExceptions -ErrorAction SilentlyContinue
 }
 
-Describe 'Win11ForgeExceptions Module' {
+Describe 'WinForgeExceptions Module' {
     Context 'New-InstallationException' {
         It 'Should create an exception with message and app name' {
             $exception = New-InstallationException -Message 'Installation failed' -AppName 'TestApp'
@@ -158,67 +158,67 @@ Describe 'Win11ForgeExceptions Module' {
         }
     }
 
-    Context 'New-Win11ForgeError' {
+    Context 'New-WinForgeError' {
         It 'Should create an error with DoNotThrow' {
-            $error = New-Win11ForgeError -Message 'General error' -DoNotThrow
+            $error = New-WinForgeError -Message 'General error' -DoNotThrow
             $error | Should -Not -BeNullOrEmpty
         }
 
         It 'Should throw by default' {
-            { New-Win11ForgeError -Message 'Error' } | Should -Throw
+            { New-WinForgeError -Message 'Error' } | Should -Throw
         }
 
         It 'Should support different categories' {
-            $error = New-Win11ForgeError -Message 'Test' -Category 'General' -DoNotThrow
+            $error = New-WinForgeError -Message 'Test' -Category 'General' -DoNotThrow
             $error.Category | Should -Be 'General'
         }
 
         It 'Should support ErrorCode' {
-            $error = New-Win11ForgeError -Message 'Test' -ErrorCode 'ERR001' -DoNotThrow
+            $error = New-WinForgeError -Message 'Test' -ErrorCode 'ERR001' -DoNotThrow
             $error.Context['ErrorCode'] | Should -Be 'ERR001'
         }
     }
 
-    Context 'Format-Win11ForgeError' {
-        It 'Should format a Win11Forge exception' {
+    Context 'Format-WinForgeError' {
+        It 'Should format a WinForge exception' {
             $exception = New-InstallationException -Message 'Test error' -AppName 'TestApp'
-            $formatted = Format-Win11ForgeError -Exception $exception
+            $formatted = Format-WinForgeError -Exception $exception
             $formatted | Should -Not -BeNullOrEmpty
             $formatted | Should -Match 'Installation'
         }
 
         It 'Should format a standard exception' {
             $exception = [System.Exception]::new('Standard error')
-            $formatted = Format-Win11ForgeError -Exception $exception
+            $formatted = Format-WinForgeError -Exception $exception
             $formatted | Should -Not -BeNullOrEmpty
             $formatted | Should -Match 'Standard error'
         }
 
         It 'Should include stack trace section when requested' {
             $exception = New-InstallationException -Message 'Test' -AppName 'App'
-            $formatted = Format-Win11ForgeError -Exception $exception -IncludeStackTrace
-            # Format-Win11ForgeError only includes Stack Trace section if StackTrace property is populated
+            $formatted = Format-WinForgeError -Exception $exception -IncludeStackTrace
+            # Format-WinForgeError only includes Stack Trace section if StackTrace property is populated
             # The formatted output should include the exception info regardless
             $formatted | Should -Match 'Installation'
         }
     }
 
-    Context 'Test-Win11ForgeException' {
-        It 'Should return true for Win11Forge exceptions' {
+    Context 'Test-WinForgeException' {
+        It 'Should return true for WinForge exceptions' {
             $exception = New-InstallationException -Message 'Test' -AppName 'App'
-            $result = Test-Win11ForgeException -Exception $exception
+            $result = Test-WinForgeException -Exception $exception
             $result | Should -Be $true
         }
 
         It 'Should return false for standard exceptions' {
             $exception = [System.Exception]::new('Standard')
-            $result = Test-Win11ForgeException -Exception $exception
+            $result = Test-WinForgeException -Exception $exception
             $result | Should -Be $false
         }
     }
 
     Context 'Get-ExceptionCategory' {
-        It 'Should return category for Win11Forge exceptions' {
+        It 'Should return category for WinForge exceptions' {
             $exception = New-SecurityException -Message 'Test'
             $result = Get-ExceptionCategory -Exception $exception
             $result | Should -Be 'Security'
@@ -240,13 +240,13 @@ Describe 'Win11ForgeExceptions Module' {
                 'New-ApiException',
                 'New-TimeoutException',
                 'New-ValidationException',
-                'New-Win11ForgeError',
-                'Format-Win11ForgeError',
-                'Test-Win11ForgeException',
+                'New-WinForgeError',
+                'Format-WinForgeError',
+                'Test-WinForgeException',
                 'Get-ExceptionCategory'
             )
 
-            $module = Get-Module Win11ForgeExceptions
+            $module = Get-Module WinForgeExceptions
             foreach ($func in $expectedFunctions) {
                 $module.ExportedFunctions.Keys | Should -Contain $func
             }

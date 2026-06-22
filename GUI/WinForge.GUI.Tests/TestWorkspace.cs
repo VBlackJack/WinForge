@@ -15,9 +15,9 @@
  */
 
 using System.IO;
-using Win11Forge.GUI.Configuration;
+using WinForge.GUI.Configuration;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 internal sealed class TestWorkspace : IDisposable
 {
@@ -28,12 +28,12 @@ internal sealed class TestWorkspace : IDisposable
     {
         RootPath = Path.Combine(
             Path.GetTempPath(),
-            "Win11Forge.Tests",
+            "WinForge.Tests",
             Guid.NewGuid().ToString("N"));
         RepositoryRoot = Path.Combine(RootPath, "repo");
         UserDataBasePath = Path.Combine(RootPath, "user-data-base");
-        UserDataRoot = Path.Combine(UserDataBasePath, Win11ForgePathNames.ProductDirectoryName);
-        UserProfilesDirectory = Path.Combine(UserDataRoot, Win11ForgePathNames.ProfilesDirectoryName);
+        UserDataRoot = Path.Combine(UserDataBasePath, WinForgePathNames.ProductDirectoryName);
+        UserProfilesDirectory = Path.Combine(UserDataRoot, WinForgePathNames.ProfilesDirectoryName);
 
         Directory.CreateDirectory(RepositoryRoot);
         Directory.CreateDirectory(UserDataBasePath);

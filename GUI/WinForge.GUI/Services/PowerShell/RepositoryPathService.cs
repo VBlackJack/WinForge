@@ -16,12 +16,12 @@
 
 using System.Diagnostics;
 using System.IO;
-using Win11Forge.GUI.Configuration;
+using WinForge.GUI.Configuration;
 
-namespace Win11Forge.GUI.Services.PowerShell;
+namespace WinForge.GUI.Services.PowerShell;
 
 /// <summary>
-/// Service for resolving and managing the Win11Forge repository root path.
+/// Service for resolving and managing the WinForge repository root path.
 /// </summary>
 public class RepositoryPathService : IRepositoryPathService
 {
@@ -48,10 +48,10 @@ public class RepositoryPathService : IRepositoryPathService
         _userDataRoot = userDataResolution.Path;
         _isUserDataFallbackActive = userDataResolution.IsFallback;
 
-        if (_isUserDataFallbackActive)
+        if (_isUserDataFallbackActive || !string.IsNullOrWhiteSpace(userDataResolution.Reason))
         {
             Trace.WriteLine(
-                $"Win11Forge user data fallback active. Using '{_userDataRoot}'. Reason: {userDataResolution.Reason}");
+                $"WinForge user data resolution notice. Using '{_userDataRoot}'. Reason: {userDataResolution.Reason}");
         }
     }
 
@@ -62,16 +62,16 @@ public class RepositoryPathService : IRepositoryPathService
     public string UserDataRoot => _userDataRoot;
 
     /// <inheritdoc/>
-    public string LogsDirectory => GetUserDataPath(Win11ForgePathNames.LogsDirectoryName);
+    public string LogsDirectory => GetUserDataPath(WinForgePathNames.LogsDirectoryName);
 
     /// <inheritdoc/>
-    public string SettingsFilePath => GetUserDataPath(Win11ForgePathNames.SettingsFileName);
+    public string SettingsFilePath => GetUserDataPath(WinForgePathNames.SettingsFileName);
 
     /// <inheritdoc/>
-    public string DeploymentHistoryFilePath => GetUserDataPath(Win11ForgePathNames.DeploymentHistoryFileName);
+    public string DeploymentHistoryFilePath => GetUserDataPath(WinForgePathNames.DeploymentHistoryFileName);
 
     /// <inheritdoc/>
-    public string UserProfilesDirectory => GetUserDataPath(Win11ForgePathNames.ProfilesDirectoryName);
+    public string UserProfilesDirectory => GetUserDataPath(WinForgePathNames.ProfilesDirectoryName);
 
     /// <inheritdoc/>
     public string DefaultProfilesDirectory
@@ -79,8 +79,8 @@ public class RepositoryPathService : IRepositoryPathService
         get
         {
             string defaultsPath = GetPath(
-                Win11ForgePathNames.ProfilesDirectoryName,
-                Win11ForgePathNames.DefaultProfilesDirectoryName);
+                WinForgePathNames.ProfilesDirectoryName,
+                WinForgePathNames.DefaultProfilesDirectoryName);
 
             return Directory.Exists(defaultsPath)
                 ? defaultsPath
@@ -89,7 +89,7 @@ public class RepositoryPathService : IRepositoryPathService
     }
 
     /// <inheritdoc/>
-    public string LegacyInstallProfilesDirectory => GetPath(Win11ForgePathNames.ProfilesDirectoryName);
+    public string LegacyInstallProfilesDirectory => GetPath(WinForgePathNames.ProfilesDirectoryName);
 
     /// <inheritdoc/>
     public bool IsUserDataFallbackActive => _isUserDataFallbackActive;
@@ -221,7 +221,7 @@ public class RepositoryPathService : IRepositoryPathService
         }
 
         throw new DirectoryNotFoundException(
-            $"Could not locate Win11Forge repository root. Searched from: {string.Join(", ", candidatePaths)}");
+            $"Could not locate WinForge repository root. Searched from: {string.Join(", ", candidatePaths)}");
     }
 
     /// <summary>
@@ -236,18 +236,18 @@ public class RepositoryPathService : IRepositoryPathService
             // Check for Config/version.json
             string versionFile = Path.Combine(
                 currentDir.FullName,
-                Win11ForgePathNames.ConfigDirectoryName,
-                Win11ForgePathNames.VersionFileName);
+                WinForgePathNames.ConfigDirectoryName,
+                WinForgePathNames.VersionFileName);
             if (File.Exists(versionFile))
             {
                 return currentDir.FullName;
             }
 
             // Check for Modules/InstallationEngine.psm1
-            string modulesDir = Path.Combine(currentDir.FullName, Win11ForgePathNames.ModulesDirectoryName);
+            string modulesDir = Path.Combine(currentDir.FullName, WinForgePathNames.ModulesDirectoryName);
             if (Directory.Exists(modulesDir))
             {
-                string coreModule = Path.Combine(modulesDir, Win11ForgePathNames.InstallationEngineModuleFileName);
+                string coreModule = Path.Combine(modulesDir, WinForgePathNames.InstallationEngineModuleFileName);
                 if (File.Exists(coreModule))
                 {
                     return currentDir.FullName;
@@ -300,7 +300,7 @@ public class RepositoryPathService : IRepositoryPathService
             string userDataPath;
             try
             {
-                userDataPath = Path.Combine(candidate, Win11ForgePathNames.ProductDirectoryName);
+                userDataPath = ResolveProductDataPath(candidate, errors);
             }
             catch (Exception ex)
             {
@@ -320,7 +320,32 @@ public class RepositoryPathService : IRepositoryPathService
         }
 
         throw new InvalidOperationException(
-            $"Could not resolve a writable Win11Forge user data directory. {string.Join("; ", errors)}");
+            $"Could not resolve a writable WinForge user data directory. {string.Join("; ", errors)}");
+    }
+
+    private static string ResolveProductDataPath(string candidate, List<string> diagnostics)
+    {
+        string productPath = Path.Combine(candidate, WinForgePathNames.ProductDirectoryName);
+        string legacyPath = Path.Combine(candidate, WinForgePathNames.LegacyProductDirectoryName);
+
+        if (Directory.Exists(productPath) || !Directory.Exists(legacyPath))
+        {
+            return productPath;
+        }
+
+        try
+        {
+            Directory.Move(legacyPath, productPath);
+            diagnostics.Add($"Migrated user data directory from '{legacyPath}' to '{productPath}'.");
+            return productPath;
+        }
+        catch (Exception ex)
+        {
+            diagnostics.Add(
+                $"Failed to migrate user data directory from '{legacyPath}' to '{productPath}': {ex.Message}. " +
+                "Using legacy directory for this session.");
+            return legacyPath;
+        }
     }
 
     private static bool TryEnsureWritableDirectory(string directoryPath, out string? error)
@@ -331,7 +356,7 @@ public class RepositoryPathService : IRepositoryPathService
 
             string probePath = Path.Combine(
                 directoryPath,
-                $"{Win11ForgePathNames.WriteProbeFilePrefix}{Guid.NewGuid():N}");
+                $"{WinForgePathNames.WriteProbeFilePrefix}{Guid.NewGuid():N}");
 
             using (File.Create(probePath, 1, FileOptions.DeleteOnClose))
             {

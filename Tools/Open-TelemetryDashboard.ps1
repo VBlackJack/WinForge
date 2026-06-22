@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Opens the Win11Forge Telemetry Dashboard
+    Opens the WinForge Telemetry Dashboard
 
 .DESCRIPTION
     Exports current telemetry data and opens the dashboard in the default browser.
@@ -39,7 +39,7 @@ $repoRoot = Split-Path $scriptDir -Parent
 $dashboardPath = Join-Path $repoRoot 'Assets\Dashboard\index.html'
 $telemetryModulePath = Join-Path $repoRoot 'Modules\TelemetryCollector.psm1'
 
-Write-Host "Win11Forge Telemetry Dashboard" -ForegroundColor Cyan
+Write-Host "WinForge Telemetry Dashboard" -ForegroundColor Cyan
 Write-Host "===============================" -ForegroundColor Cyan
 Write-Host ""
 

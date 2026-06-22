@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - System Configuration v3.7.2 (Zero Hardcoding)
+    WinForge - System Configuration v3.7.2 (Zero Hardcoding)
 
 .DESCRIPTION
     Applies system configuration from profile JSON:

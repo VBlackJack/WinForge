@@ -19,11 +19,11 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.ViewModels;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using WinForge.GUI.Services;
+using WinForge.GUI.ViewModels;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Views;
+namespace WinForge.GUI.Views;
 
 /// <summary>
 /// Code-behind for AppCatalogView.xaml.

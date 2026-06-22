@@ -3,7 +3,7 @@
     Pester tests for InstallationMethods module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge InstallationMethods v3.5.0
+    Comprehensive unit tests for WinForge InstallationMethods v3.5.0
     Tests installation methods: Winget, Chocolatey, Store, DirectDownload
 
 .NOTES
@@ -492,8 +492,8 @@ Describe 'InstallationMethods Mock-Based Tests' {
             # Mock Test-ValidDownloadUrl to accept the URL
             Mock Test-ValidDownloadUrl { return $true } -ModuleName InstallationMethods
             # Mock temp directory creation
-            Mock New-Item { return [PSCustomObject]@{ FullName = 'C:\Temp\Win11Forge_test' } } -ModuleName InstallationMethods -ParameterFilter { $ItemType -eq 'Directory' }
-            Mock Test-Path { return $false } -ModuleName InstallationMethods -ParameterFilter { $Path -and $Path -like '*Win11Forge_*' }
+            Mock New-Item { return [PSCustomObject]@{ FullName = 'C:\Temp\WinForge_test' } } -ModuleName InstallationMethods -ParameterFilter { $ItemType -eq 'Directory' }
+            Mock Test-Path { return $false } -ModuleName InstallationMethods -ParameterFilter { $Path -and $Path -like '*WinForge_*' }
             Mock Remove-Item { } -ModuleName InstallationMethods
         }
 
@@ -517,8 +517,8 @@ Describe 'InstallationMethods Mock-Based Tests' {
             # Download mocked to fail so the call returns right after the gate decision,
             # without performing a real install.
             Mock Invoke-FileDownloadWithProgress { return $false } -ModuleName InstallationMethods
-            Mock New-Item { return [PSCustomObject]@{ FullName = 'C:\Temp\Win11Forge_test' } } -ModuleName InstallationMethods -ParameterFilter { $ItemType -eq 'Directory' }
-            Mock Test-Path { return $false } -ModuleName InstallationMethods -ParameterFilter { $Path -and $Path -like '*Win11Forge_*' }
+            Mock New-Item { return [PSCustomObject]@{ FullName = 'C:\Temp\WinForge_test' } } -ModuleName InstallationMethods -ParameterFilter { $ItemType -eq 'Directory' }
+            Mock Test-Path { return $false } -ModuleName InstallationMethods -ParameterFilter { $Path -and $Path -like '*WinForge_*' }
             Mock Remove-Item { } -ModuleName InstallationMethods
         }
 
@@ -625,32 +625,32 @@ Describe 'InstallationMethods Mock-Based Tests' {
             Mock Write-Status { } -ModuleName InstallationMethods
             Mock Get-LocalizedString { return $Key } -ModuleName InstallationMethods
 
-            $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) "Win11Forge-ZipInstall-$([System.Guid]::NewGuid())"
+            $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) "WinForge-ZipInstall-$([System.Guid]::NewGuid())"
             $sourceRoot = Join-Path $testRoot 'source\PortableRoot'
             $archivePath = Join-Path $testRoot 'portable.zip'
             $workPath = Join-Path $testRoot 'work'
             $destinationRoot = Join-Path $testRoot 'dest'
-            $oldDestination = $env:WIN11FORGE_ZIP_TEST_DEST
+            $oldDestination = $env:WINFORGE_ZIP_TEST_DEST
 
             try {
                 New-Item -Path $sourceRoot -ItemType Directory -Force | Out-Null
                 Set-Content -Path (Join-Path $sourceRoot 'App.exe') -Value 'test' -Encoding UTF8
                 Compress-Archive -Path $sourceRoot -DestinationPath $archivePath
 
-                $env:WIN11FORGE_ZIP_TEST_DEST = $destinationRoot
+                $env:WINFORGE_ZIP_TEST_DEST = $destinationRoot
                 $result = Install-ZipPackage `
                     -InstallerPath $archivePath `
                     -TempDir $workPath `
-                    -DetectionPath '%WIN11FORGE_ZIP_TEST_DEST%\PortableRoot\App.exe'
+                    -DetectionPath '%WINFORGE_ZIP_TEST_DEST%\PortableRoot\App.exe'
 
                 $result | Should -BeTrue
                 Test-Path -Path (Join-Path $destinationRoot 'PortableRoot\App.exe') | Should -BeTrue
                 Test-Path -Path (Join-Path $destinationRoot 'PortableRoot\PortableRoot\App.exe') | Should -BeFalse
             } finally {
                 if ($null -eq $oldDestination) {
-                    Remove-Item -Path Env:\WIN11FORGE_ZIP_TEST_DEST -ErrorAction SilentlyContinue
+                    Remove-Item -Path Env:\WINFORGE_ZIP_TEST_DEST -ErrorAction SilentlyContinue
                 } else {
-                    $env:WIN11FORGE_ZIP_TEST_DEST = $oldDestination
+                    $env:WINFORGE_ZIP_TEST_DEST = $oldDestination
                 }
 
                 Remove-Item -Path $testRoot -Recurse -Force -ErrorAction SilentlyContinue

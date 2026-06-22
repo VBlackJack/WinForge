@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for ProfileValidationService - cross-model profile validation rules.

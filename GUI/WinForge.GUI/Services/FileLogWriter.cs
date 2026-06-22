@@ -19,7 +19,7 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 public interface IFileLogWriter
 {
@@ -30,13 +30,18 @@ public interface IFileLogWriter
 
 public sealed class FileLogWriter : IFileLogWriter, IDisposable
 {
+    private const string FileLogEnvironmentVariable = "WINFORGE_FILE_LOG";
+    private const string LegacyFileLogEnvironmentVariable = "WIN11FORGE_FILE_LOG";
+
     private readonly object _lock = new object();
     private readonly string _logsDirectory;
 
     public FileLogWriter(string logsDirectory)
     {
         _logsDirectory = logsDirectory;
-        string? fileLogSetting = Environment.GetEnvironmentVariable("WIN11FORGE_FILE_LOG");
+        string? fileLogSetting =
+            Environment.GetEnvironmentVariable(FileLogEnvironmentVariable) ??
+            Environment.GetEnvironmentVariable(LegacyFileLogEnvironmentVariable);
         IsEnabled = !string.Equals(fileLogSetting, "0", StringComparison.OrdinalIgnoreCase)
             && !string.Equals(fileLogSetting, "false", StringComparison.OrdinalIgnoreCase);
     }
@@ -55,7 +60,7 @@ public sealed class FileLogWriter : IFileLogWriter, IDisposable
             lock (_lock)
             {
                 Directory.CreateDirectory(_logsDirectory);
-                string filePath = Path.Combine(_logsDirectory, $"Win11Forge_{DateTime.Now:yyyy-MM-dd}.log");
+                string filePath = Path.Combine(_logsDirectory, $"WinForge_{DateTime.Now:yyyy-MM-dd}.log");
                 File.AppendAllText(filePath, line + Environment.NewLine);
             }
         }

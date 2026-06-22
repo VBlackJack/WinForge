@@ -17,9 +17,9 @@
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using Win11Forge.GUI.Helpers;
+using WinForge.GUI.Helpers;
 
-namespace Win11Forge.GUI.Views;
+namespace WinForge.GUI.Views;
 
 /// <summary>
 /// Splash screen displayed during application startup.

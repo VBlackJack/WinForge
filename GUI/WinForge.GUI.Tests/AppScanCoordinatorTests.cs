@@ -15,11 +15,11 @@
  */
 
 using Moq;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.Coordinators;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.Coordinators;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class AppScanCoordinatorTests
 {

@@ -18,7 +18,7 @@ using System.Windows;
 using System.Windows.Media.Animation;
 using Microsoft.Win32;
 
-namespace Win11Forge.GUI.Helpers;
+namespace WinForge.GUI.Helpers;
 
 /// <summary>
 /// Helper class for animation management with reduced motion support.

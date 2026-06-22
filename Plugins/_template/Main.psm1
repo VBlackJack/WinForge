@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge Plugin Template - Main Module
+    WinForge Plugin Template - Main Module
 
 .DESCRIPTION
-    Template entry point for Win11Forge plugins.
+    Template entry point for WinForge plugins.
     Rename this directory and customize for your plugin.
 
 .NOTES

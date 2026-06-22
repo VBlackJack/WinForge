@@ -82,7 +82,7 @@ Describe 'DownloadValidation - Get-ExpectedChecksum' {
 Describe 'DownloadValidation - Assert-FileChecksum' {
     BeforeAll {
         $script:ChecksumFile = Join-Path $TestDrive 'payload.bin'
-        Set-Content -Path $script:ChecksumFile -Value 'Win11Forge checksum fixture' -NoNewline -Encoding UTF8
+        Set-Content -Path $script:ChecksumFile -Value 'WinForge checksum fixture' -NoNewline -Encoding UTF8
         $script:RealHash = (Get-FileHash -Path $script:ChecksumFile -Algorithm SHA256).Hash
     }
 
@@ -110,7 +110,7 @@ Describe 'DownloadValidation - Assert-FileChecksum' {
 Describe 'DownloadValidation - Test-DirectDownloadChecksumGate' {
     BeforeAll {
         $script:GateChecksumFile = Join-Path $TestDrive 'gate-payload.bin'
-        Set-Content -Path $script:GateChecksumFile -Value 'Win11Forge checksum gate fixture' -NoNewline -Encoding UTF8
+        Set-Content -Path $script:GateChecksumFile -Value 'WinForge checksum gate fixture' -NoNewline -Encoding UTF8
         $script:GateRealHash = (Get-FileHash -Path $script:GateChecksumFile -Algorithm SHA256).Hash
     }
 

@@ -22,12 +22,12 @@ using System.Windows.Input;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
 using Wpf.Ui.Controls;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.UserControls;
+namespace WinForge.GUI.UserControls;
 
 /// <summary>
 /// UserControl for editing application detection configuration.

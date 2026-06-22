@@ -15,11 +15,11 @@
  */
 
 using System.Collections.Concurrent;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.Coordinators;
-using Win11Forge.GUI.Services.Coordinators.Internal;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.Coordinators;
+using WinForge.GUI.Services.Coordinators.Internal;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class AppOperationRunnerTests
 {

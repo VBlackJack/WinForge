@@ -17,7 +17,7 @@
 using System.IO;
 using System.Xml.Linq;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Guards implicit focus-visual coverage for concrete WPF control types.
@@ -85,7 +85,7 @@ public class FocusVisualCoverageTests
 
     private static XDocument LoadAppXaml()
     {
-        return XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        return XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
     }
 
     private static string FindRepoFile(params string[] relativeParts)

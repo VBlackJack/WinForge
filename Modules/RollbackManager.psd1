@@ -30,13 +30,13 @@
     Author = 'Julien Bombled'
 
     # Company or vendor of this module
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
 
     # Copyright statement for this module
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description = 'Enhanced rollback management for Win11Forge. Provides automatic rollback on failure, confirmation prompts, and detailed rollback reporting.'
+    Description = 'Enhanced rollback management for WinForge. Provides automatic rollback on failure, confirmation prompts, and detailed rollback reporting.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -69,7 +69,7 @@
     PrivateData = @{
         PSData = @{
             # Tags applied to this module
-            Tags = @('Win11Forge', 'Rollback', 'Recovery', 'Safety')
+            Tags = @('WinForge', 'Rollback', 'Recovery', 'Safety')
 
             # A URL to the license for this module
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'

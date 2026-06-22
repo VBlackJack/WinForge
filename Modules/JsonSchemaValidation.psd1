@@ -21,7 +21,7 @@
     ModuleVersion = '1.0.0622.1'
     GUID = 'fe451f11-2ef6-4eea-b7a2-1c2a64a4ce83'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
     Description = 'JSON Schema validation for configuration files'
     PowerShellVersion = '5.1'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'JSON', 'Schema', 'Validation')
+            Tags = @('WinForge', 'JSON', 'Schema', 'Validation')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

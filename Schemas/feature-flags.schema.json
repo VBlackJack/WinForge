@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "$id": "https://win11forge.local/schemas/feature-flags.schema.json",
-  "title": "Win11Forge Feature Flags",
-  "description": "Schema for Win11Forge runtime feature flags configuration (Config/feature-flags.json)",
+  "$id": "https://winforge.local/schemas/feature-flags.schema.json",
+  "title": "WinForge Feature Flags",
+  "description": "Schema for WinForge runtime feature flags configuration (Config/feature-flags.json)",
   "type": "object",
   "required": ["features"],
   "additionalProperties": false,

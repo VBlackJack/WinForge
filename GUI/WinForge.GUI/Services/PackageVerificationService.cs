@@ -19,9 +19,9 @@
 using System.Diagnostics;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using Win11Forge.GUI.Configuration;
+using WinForge.GUI.Configuration;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Regex pattern for validating package identifiers to prevent command injection.
@@ -49,7 +49,7 @@ public partial class PackageVerificationService : IPackageVerificationService
     private static readonly string AppVersion =
         typeof(PackageVerificationService).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
 
-    private static readonly string UserAgentValue = $"Win11Forge/{AppVersion}";
+    private static readonly string UserAgentValue = $"WinForge/{AppVersion}";
 
     private const string StoreDetailUrlFormat = "https://apps.microsoft.com/detail/{0}";
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Service for showing native open/save file dialogs behind a testable abstraction.

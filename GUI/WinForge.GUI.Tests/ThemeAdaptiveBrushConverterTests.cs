@@ -17,12 +17,12 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
-using Win11Forge.GUI;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Tests.TestInfrastructure;
+using WinForge.GUI;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Tests.TestInfrastructure;
 using Wpf.Ui.Appearance;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for theme-aware brush conversion.

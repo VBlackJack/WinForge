@@ -17,13 +17,13 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Helpers;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.PowerShell;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Helpers;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.PowerShell;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Services.Implementations;
+namespace WinForge.GUI.Services.Implementations;
 
 /// <summary>
 /// Implementation of IProfileManagementService for deployment profile operations.
@@ -56,7 +56,7 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         return await Task.Run(() =>
         {
             List<string> profiles = GetProfileReadDirectories()
-                .SelectMany(directory => Directory.GetFiles(directory, $"*{Win11ForgePathNames.JsonFileExtension}"))
+                .SelectMany(directory => Directory.GetFiles(directory, $"*{WinForgePathNames.JsonFileExtension}"))
                 .Select(f => Path.GetFileNameWithoutExtension(f))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(name => name)
@@ -173,7 +173,7 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         string profilesDir = _pathService.UserProfilesDirectory;
         string profilePath = Path.Combine(
             profilesDir,
-            $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
+            $"{profileName}{WinForgePathNames.JsonFileExtension}");
 
         // Defense-in-depth: verify the resolved path stays within profiles directory
         profilePath = PowerShellValidation.ValidatePathWithinDirectory(profilePath, profilesDir);
@@ -185,7 +185,7 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         }
 
         // Get current version for the profile
-        string version = await _versionService.GetWin11ForgeVersionAsync();
+        string version = await _versionService.GetWinForgeVersionAsync();
         if (version == "Unknown" || version == "Error")
         {
             version = "2.6.0";
@@ -375,7 +375,7 @@ public class ProfileManagementServiceImpl : IProfileManagementService
         {
             string profilePath = Path.Combine(
                 profilesDir,
-                $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
+                $"{profileName}{WinForgePathNames.JsonFileExtension}");
 
             profilePath = PowerShellValidation.ValidatePathWithinDirectory(profilePath, profilesDir);
             if (File.Exists(profilePath))

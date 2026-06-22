@@ -16,7 +16,7 @@
 
 using System.IO;
 
-namespace Win11Forge.GUI.Tests.TestInfrastructure;
+namespace WinForge.GUI.Tests.TestInfrastructure;
 
 internal static class RepositoryPathHelper
 {

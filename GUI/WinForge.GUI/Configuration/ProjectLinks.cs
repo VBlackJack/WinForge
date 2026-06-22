@@ -16,10 +16,10 @@
 
 #nullable enable
 
-namespace Win11Forge.GUI.Configuration;
+namespace WinForge.GUI.Configuration;
 
 /// <summary>
-/// Single source of truth for clickable Win11Forge external links.
+/// Single source of truth for clickable WinForge external links.
 /// Display text without scheme (e.g., About dialog) lives in resx;
 /// README markdown links remain canonical user-facing prose.
 /// Anything launched via Process.Start reads from here.

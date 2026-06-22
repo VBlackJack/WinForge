@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "$id": "https://win11forge.local/schemas/api-deploy-request.schema.json",
-  "title": "Win11Forge Deploy Request",
+  "$id": "https://winforge.local/schemas/api-deploy-request.schema.json",
+  "title": "WinForge Deploy Request",
   "description": "Schema for POST /api/deploy request body",
   "type": "object",
   "required": ["profile"],

@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Runs an opt-in Winsight smoke test against the Win11Forge WPF GUI.
+    Runs an opt-in Winsight smoke test against the WinForge WPF GUI.
 
 .DESCRIPTION
-    Builds Winsight and Win11Forge if needed, launches Win11Forge.GUI.dll through
+    Builds Winsight and WinForge if needed, launches WinForge.GUI.dll through
     dotnet, drives it through the Winsight MCP stdio server, and captures PNG
     screenshots for the dashboard, settings, and app catalog surfaces.
 
@@ -11,7 +11,7 @@
     Path to the Winsight repository. Defaults to WINSIGHT_ROOT, then ..\winsight.
 
 .PARAMETER Configuration
-    Build configuration for Winsight and Win11Forge.
+    Build configuration for Winsight and WinForge.
 
 .PARAMETER ArtifactDirectory
     Directory where screenshots are written.
@@ -126,7 +126,7 @@ function Start-McpServer {
         protocolVersion = '2024-11-05'
         capabilities = [ordered]@{}
         clientInfo = [ordered]@{
-            name = 'win11forge-winsight-smoke'
+            name = 'winforge-winsight-smoke'
             version = '0.1'
         }
     })
@@ -319,7 +319,7 @@ function Wait-WinsightWindow {
     while ([DateTimeOffset]::Now -lt $deadline) {
         $windows = @(Invoke-WinsightTool -Name 'list_windows')
         $window = $windows | Where-Object {
-            $_.processId -eq $ProcessId -or $_.title -like '*Win11Forge*'
+            $_.processId -eq $ProcessId -or $_.title -like '*WinForge*'
         } | Select-Object -First 1
 
         if ($null -ne $window) {
@@ -329,7 +329,7 @@ function Wait-WinsightWindow {
         Start-Sleep -Milliseconds 250
     }
 
-    throw "Timed out waiting for the Win11Forge window."
+    throw "Timed out waiting for the WinForge window."
 }
 
 function Wait-WinsightElement {
@@ -424,8 +424,8 @@ New-Item -Path $ArtifactDirectory -ItemType Directory -Force | Out-Null
 
 $winsightMcpProject = Join-Path $winsightRepo 'src\Winsight.Mcp\Winsight.Mcp.csproj'
 $winsightMcpAssembly = Join-Path $winsightRepo "src\Winsight.Mcp\bin\$Configuration\net10.0-windows\winsight-mcp.dll"
-$guiProject = Join-Path $repoRoot 'GUI\Win11Forge.GUI\Win11Forge.GUI.csproj'
-$guiAssembly = Join-Path $repoRoot "GUI\Win11Forge.GUI\bin\$Configuration\net10.0-windows\Win11Forge.GUI.dll"
+$guiProject = Join-Path $repoRoot 'GUI\WinForge.GUI\WinForge.GUI.csproj'
+$guiAssembly = Join-Path $repoRoot "GUI\WinForge.GUI\bin\$Configuration\net10.0-windows\WinForge.GUI.dll"
 
 if (-not $SkipBuild) {
     Invoke-CheckedCommand -FilePath 'dotnet' -ArgumentList @('build', $winsightMcpProject, '-c', $Configuration) -WorkingDirectory $winsightRepo
@@ -437,7 +437,7 @@ if (-not (Test-Path -LiteralPath $winsightMcpAssembly)) {
 }
 
 if (-not (Test-Path -LiteralPath $guiAssembly)) {
-    throw "Win11Forge GUI assembly not found: $guiAssembly"
+    throw "WinForge GUI assembly not found: $guiAssembly"
 }
 
 $appProcess = $null
@@ -451,7 +451,7 @@ try {
 
     $window = Wait-WinsightWindow -ProcessId $appProcess.Id
     $processId = [int]$window.processId
-    Write-Host "Win11Forge window found: pid=$processId title='$($window.title)'" -ForegroundColor Green
+    Write-Host "WinForge window found: pid=$processId title='$($window.title)'" -ForegroundColor Green
 
     $null = Wait-WinsightElement -ProcessId $processId -AutomationId 'NavDashboard'
     Click-WinsightElement -ProcessId $processId -AutomationId 'NavDashboard'

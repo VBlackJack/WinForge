@@ -16,11 +16,11 @@
 
 using System.Windows;
 using System.Windows.Controls;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Services;
 using Wpf.Ui.Controls;
-using Res = Win11Forge.GUI.Resources.Resources;
+using Res = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Controls;
+namespace WinForge.GUI.Controls;
 
 /// <summary>
 /// Keyboard shortcut entry for display.

@@ -30,13 +30,13 @@
     Author = 'Julien Bombled'
 
     # Company or vendor of this module
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
 
     # Copyright statement for this module
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description = 'Local telemetry collection for Win11Forge. Tracks deployment statistics, application installations, and generates reports for the dashboard.'
+    Description = 'Local telemetry collection for WinForge. Tracks deployment statistics, application installations, and generates reports for the dashboard.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -68,7 +68,7 @@
     PrivateData = @{
         PSData = @{
             # Tags applied to this module
-            Tags = @('Win11Forge', 'Telemetry', 'Statistics', 'Reporting')
+            Tags = @('WinForge', 'Telemetry', 'Statistics', 'Reporting')
 
             # A URL to the license for this module
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'

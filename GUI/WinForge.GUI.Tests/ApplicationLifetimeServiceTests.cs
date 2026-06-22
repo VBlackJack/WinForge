@@ -17,9 +17,9 @@
 using System.Diagnostics;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for application lifetime service registration and contract shape.
@@ -61,13 +61,13 @@ public class ApplicationLifetimeServiceTests
     /// Verifies application lifetime services are registered as singleton services.
     /// </summary>
     [Fact]
-    public void AddWin11ForgeServices_ShouldRegisterApplicationLifetimeSingleton()
+    public void AddWinForgeServices_ShouldRegisterApplicationLifetimeSingleton()
     {
         // Arrange
         ServiceCollection services = new ServiceCollection();
 
         // Act
-        using ServiceProvider provider = services.AddWin11ForgeServices().BuildServiceProvider();
+        using ServiceProvider provider = services.AddWinForgeServices().BuildServiceProvider();
         IApplicationLifetimeService first = provider.GetRequiredService<IApplicationLifetimeService>();
         IApplicationLifetimeService second = provider.GetRequiredService<IApplicationLifetimeService>();
 
@@ -80,13 +80,13 @@ public class ApplicationLifetimeServiceTests
     /// Verifies the process launcher is also registered as a singleton dependency.
     /// </summary>
     [Fact]
-    public void AddWin11ForgeServices_ShouldRegisterProcessLauncherSingleton()
+    public void AddWinForgeServices_ShouldRegisterProcessLauncherSingleton()
     {
         // Arrange
         ServiceCollection services = new ServiceCollection();
 
         // Act
-        using ServiceProvider provider = services.AddWin11ForgeServices().BuildServiceProvider();
+        using ServiceProvider provider = services.AddWinForgeServices().BuildServiceProvider();
         IProcessLauncher first = provider.GetRequiredService<IProcessLauncher>();
         IProcessLauncher second = provider.GetRequiredService<IProcessLauncher>();
 

@@ -2,7 +2,7 @@
   "deployments": {},
   "_meta": {
     "$schema": "../Schemas/scheduled-deployments.schema.json",
-    "description": "Scheduled deployments configuration for Win11Forge",
+    "description": "Scheduled deployments configuration for WinForge",
     "version": "3.6.8",
     "author": "Julien Bombled",
     "lastUpdated": "2026-02-03"

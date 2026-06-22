@@ -17,9 +17,9 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Helpers;
+namespace WinForge.GUI.Helpers;
 
 /// <summary>
 /// Calculates and persists safe main-window placement.

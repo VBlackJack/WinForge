@@ -22,16 +22,16 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Win11Forge.GUI.Controls;
-using Win11Forge.GUI.Helpers;
-using Win11Forge.GUI.Messages;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.ViewModels;
-using Win11Forge.GUI.Views;
+using WinForge.GUI.Controls;
+using WinForge.GUI.Helpers;
+using WinForge.GUI.Messages;
+using WinForge.GUI.Services;
+using WinForge.GUI.ViewModels;
+using WinForge.GUI.Views;
 using Wpf.Ui.Controls;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI;
+namespace WinForge.GUI;
 
 /// <summary>
 /// Main application window with Fluent Design navigation.

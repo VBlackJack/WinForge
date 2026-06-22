@@ -15,9 +15,9 @@
  */
 
 using System.Reflection;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests verifying the ISP-compliant focused interfaces are properly designed.
@@ -40,7 +40,7 @@ public class FocusedInterfacesTests
 
         // Assert
         Assert.Single(methods);
-        Assert.Equal("GetWin11ForgeVersionAsync", methods[0].Name);
+        Assert.Equal("GetWinForgeVersionAsync", methods[0].Name);
     }
 
     /// <summary>

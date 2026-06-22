@@ -18,10 +18,10 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
-using Win11Forge.GUI.Helpers;
-using Win11Forge.GUI.Tests.TestInfrastructure;
+using WinForge.GUI.Helpers;
+using WinForge.GUI.Tests.TestInfrastructure;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for reduced-motion-aware animation helper behavior.

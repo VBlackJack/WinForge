@@ -18,9 +18,9 @@ using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Xml.Linq;
-using Win11Forge.GUI.Resources;
+using WinForge.GUI.Resources;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for visual design tokens shared across primary surfaces.
@@ -41,7 +41,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void AppXaml_DefinesPageTypographyTokens()
     {
-        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
         List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
@@ -68,7 +68,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void AppXaml_DefinesCornerRadiusTokens()
     {
-        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
         List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
@@ -86,7 +86,7 @@ public class VisualDesignTokenTests
     {
         foreach (string viewFileName in PrimaryPageViews)
         {
-            XDocument viewXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", viewFileName));
+            XDocument viewXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "Views", viewFileName));
             List<XElement> pageTitleTextBlocks = viewXaml.Descendants()
                 .Where(element =>
                     element.Name.LocalName == "TextBlock"
@@ -109,7 +109,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void SourceBadges_UseSharedStylesInAppsAndCatalog()
     {
-        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
         HashSet<string?> styleKeys = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .Select(element => element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value)
@@ -121,8 +121,8 @@ public class VisualDesignTokenTests
             Assert.Contains(expectedStyle, styleKeys);
         }
 
-        string appsXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
-        string catalogXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml"));
+        string appsXaml = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Views", "AppsView.xaml"));
+        string catalogXaml = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Views", "AppCatalogView.xaml"));
 
         foreach (string? expectedStyle in SourceBadgeStyles().Where(style => style != "SourceBadgeStyle" && style != "SourceBadgeTextStyle"))
         {
@@ -137,7 +137,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void DataGridStyles_UseSubtleHorizontalGridlines()
     {
-        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
         List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
@@ -174,7 +174,7 @@ public class VisualDesignTokenTests
     [InlineData("Views/SettingsView.xaml")]
     public void CardBorders_UseCardPaddingToken_AcrossAuditedViews(string relativePath)
     {
-        string viewPath = FindRepoFile("GUI", "Win11Forge.GUI", relativePath);
+        string viewPath = FindRepoFile("GUI", "WinForge.GUI", relativePath);
         string viewXaml = File.ReadAllText(viewPath);
         XDocument viewDoc = XDocument.Load(viewPath);
 
@@ -196,7 +196,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void ButtonTaxonomy_DefinesStandardAndCompactVariants()
     {
-        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"));
+        XDocument appXaml = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"));
         List<XElement> styles = appXaml.Descendants()
             .Where(element => element.Name.LocalName == "Style")
             .ToList();
@@ -224,7 +224,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void AppsColumnVisibilityDropDown_UsesSharedIconDropDownButtonStyle()
     {
-        XDocument appsDoc = XDocument.Load(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        XDocument appsDoc = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "Views", "AppsView.xaml"));
 
         XElement columnVisibilityButton = appsDoc.Descendants()
             .Single(element =>
@@ -244,7 +244,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void AppsUpdateFilter_UsesUpdateSelectedActionInsteadOfInstallSelected()
     {
-        string appsXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+        string appsXaml = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Views", "AppsView.xaml"));
 
         Assert.Contains("Command=\"{Binding UpdateSelectedCommand}\"", appsXaml, StringComparison.Ordinal);
         Assert.Contains("Text=\"{loc:Loc Btn_UpdateSelected}\"", appsXaml, StringComparison.Ordinal);
@@ -254,7 +254,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void DeploymentCompletedSurface_StacksResultBannerAboveApplicationList()
     {
-        string deploymentPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "DeploymentView.xaml");
+        string deploymentPath = FindRepoFile("GUI", "WinForge.GUI", "Views", "DeploymentView.xaml");
         string deploymentXaml = File.ReadAllText(deploymentPath);
         XDocument deploymentDoc = XDocument.Load(deploymentPath);
 
@@ -284,7 +284,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void DashboardQuickNavigation_UsesWpfUiButtonsToAvoidNativeHoverChrome()
     {
-        string dashboardPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "DashboardView.xaml");
+        string dashboardPath = FindRepoFile("GUI", "WinForge.GUI", "Views", "DashboardView.xaml");
         XDocument dashboardDoc = XDocument.Load(dashboardPath);
 
         List<XElement> quickActionButtons = dashboardDoc.Descendants()
@@ -302,7 +302,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void AppCatalogToolbar_UsesCompactActionStyles()
     {
-        string catalogPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml");
+        string catalogPath = FindRepoFile("GUI", "WinForge.GUI", "Views", "AppCatalogView.xaml");
         string catalogXaml = File.ReadAllText(catalogPath);
         XDocument catalogDoc = XDocument.Load(catalogPath);
 
@@ -364,7 +364,7 @@ public class VisualDesignTokenTests
     public void WpfUiButtons_UseNamedStylesInsteadOfInlineAppearance()
     {
         List<string> xamlFiles = Directory.EnumerateFiles(
-            Path.GetDirectoryName(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"))!,
+            Path.GetDirectoryName(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"))!,
             "*.xaml",
             SearchOption.AllDirectories)
             .Where(path => !path.EndsWith("App.xaml", StringComparison.OrdinalIgnoreCase))
@@ -382,7 +382,7 @@ public class VisualDesignTokenTests
                         "http://schemas.lepo.co/wpfui/2022/xaml",
                         StringComparison.Ordinal)
                     && element.Attribute("Appearance") is not null)
-                .Select(element => Path.GetRelativePath(Path.GetDirectoryName(FindRepoFile("GUI", "Win11Forge.GUI", "App.xaml"))!, path))
+                .Select(element => Path.GetRelativePath(Path.GetDirectoryName(FindRepoFile("GUI", "WinForge.GUI", "App.xaml"))!, path))
                 .Distinct(StringComparer.Ordinal)
                 .ToList();
 
@@ -395,9 +395,9 @@ public class VisualDesignTokenTests
     [Fact]
     public void MainWindow_TitleBarUsesAppNameAndRuntimeTitleUpdate()
     {
-        string mainWindowPath = FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml");
+        string mainWindowPath = FindRepoFile("GUI", "WinForge.GUI", "MainWindow.xaml");
         string mainWindowXaml = File.ReadAllText(mainWindowPath);
-        string mainWindowCode = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "MainWindow.xaml.cs"));
+        string mainWindowCode = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "MainWindow.xaml.cs"));
 
         Assert.Contains("Title=\"{loc:Loc App_Name}\"", mainWindowXaml, StringComparison.Ordinal);
         Assert.DoesNotContain("Title=\"{loc:Loc App_Title}\"", mainWindowXaml, StringComparison.Ordinal);
@@ -407,7 +407,7 @@ public class VisualDesignTokenTests
     [Fact]
     public void SettingsView_SectionHeadersDoNotRepeatTabIcons()
     {
-        string settingsPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "SettingsView.xaml");
+        string settingsPath = FindRepoFile("GUI", "WinForge.GUI", "Views", "SettingsView.xaml");
         string settingsXaml = File.ReadAllText(settingsPath);
         XDocument settingsDoc = XDocument.Load(settingsPath);
         HashSet<string> removedSectionIcons = new HashSet<string>(StringComparer.Ordinal)

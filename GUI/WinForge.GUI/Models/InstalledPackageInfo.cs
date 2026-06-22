@@ -16,7 +16,7 @@
 
 #nullable enable
 
-namespace Win11Forge.GUI.Models;
+namespace WinForge.GUI.Models;
 
 /// <summary>
 /// Represents information about an installed package from various detection sources.

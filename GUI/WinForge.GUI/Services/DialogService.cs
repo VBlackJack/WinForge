@@ -17,9 +17,9 @@
 using System.Windows;
 using System.Windows.Controls;
 using Wpf.Ui.Controls;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Dialog type enumeration for error categorization.

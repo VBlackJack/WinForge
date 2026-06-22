@@ -17,9 +17,9 @@
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// High-performance application detection service using direct Windows Registry access.

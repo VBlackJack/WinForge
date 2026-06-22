@@ -17,11 +17,11 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
-using Win11Forge.GUI.Helpers;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Helpers;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Services.Implementations;
+namespace WinForge.GUI.Services.Implementations;
 
 /// <summary>
 /// Launches installed applications through known Windows shell locations.

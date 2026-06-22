@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Application Database v3.7.2
+    WinForge - Application Database v3.7.2
 
 .DESCRIPTION
     Module for interacting with the centralized application database:
@@ -51,7 +51,7 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
 
 # Import DirectoryConstants for path management
 $script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
-if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-WinForgeDirectory -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:DirectoryConstantsPath) {
         Import-Module -Name $script:DirectoryConstantsPath -Force
     }
@@ -96,7 +96,7 @@ function Enable-DatabaseFileWatcher {
         Register-ObjectEvent -InputObject $Script:FileWatcher -EventName Changed -Action {
             $Script:DatabaseCache = $null
             Write-Verbose (t 'database.filewatcher.cache_invalidated')
-        } -SourceIdentifier 'Win11Forge.DatabaseWatcher' | Out-Null
+        } -SourceIdentifier 'WinForge.DatabaseWatcher' | Out-Null
 
         $Script:FileWatcherEnabled = $true
         Write-Verbose (t 'database.filewatcher.enabled' @{ Path = $Script:DatabasePath })
@@ -122,7 +122,7 @@ function Disable-DatabaseFileWatcher {
     }
 
     try {
-        Unregister-Event -SourceIdentifier 'Win11Forge.DatabaseWatcher' -ErrorAction SilentlyContinue
+        Unregister-Event -SourceIdentifier 'WinForge.DatabaseWatcher' -ErrorAction SilentlyContinue
         if ($Script:FileWatcher) {
             $Script:FileWatcher.EnableRaisingEvents = $false
             $Script:FileWatcher.Dispose()
@@ -1117,7 +1117,7 @@ function New-DatabaseBackup {
 
     try {
         # Get backup directory
-        $backupDir = Join-Path (Get-Win11ForgeDirectory -DirectoryType 'Backups') 'Database'
+        $backupDir = Join-Path (Get-WinForgeDirectory -DirectoryType 'Backups') 'Database'
         if (-not (Test-Path $backupDir)) {
             New-Item -Path $backupDir -ItemType Directory -Force | Out-Null
         }
@@ -1168,7 +1168,7 @@ function Get-DatabaseBackups {
     [OutputType([PSCustomObject[]])]
     param()
 
-    $backupDir = Join-Path (Get-Win11ForgeDirectory -DirectoryType 'Backups') 'Database'
+    $backupDir = Join-Path (Get-WinForgeDirectory -DirectoryType 'Backups') 'Database'
 
     if (-not (Test-Path $backupDir)) {
         return @()
@@ -1288,7 +1288,7 @@ function Invoke-BackupRotation {
         [int]$MaxBackups = 10
     )
 
-    $backupDir = Join-Path (Get-Win11ForgeDirectory -DirectoryType 'Backups') 'Database'
+    $backupDir = Join-Path (Get-WinForgeDirectory -DirectoryType 'Backups') 'Database'
 
     if (-not (Test-Path $backupDir)) {
         return 0
@@ -1710,7 +1710,7 @@ function Export-ApplicationsToFile {
 
         $export = [PSCustomObject]@{
             ExportDate = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-            ExportedFrom = 'Win11Forge'
+            ExportedFrom = 'WinForge'
             ApplicationCount = ($exportApps.PSObject.Properties | Measure-Object).Count
             Applications = $exportApps
         }

@@ -16,7 +16,7 @@
 
 using System.Windows.Controls;
 
-namespace Win11Forge.GUI.Views;
+namespace WinForge.GUI.Views;
 
 /// <summary>
 /// Code-behind for the Settings view.

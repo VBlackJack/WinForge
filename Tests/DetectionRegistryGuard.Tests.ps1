@@ -62,7 +62,7 @@ Describe 'DetectionRegistryGuard - Test-RegistryPathAllowed' {
             InModuleScope DetectionRegistryGuard {
                 $originalPath = $script:RegistryPolicyPath
                 try {
-                    $script:RegistryPolicyPath = Join-Path ([System.IO.Path]::GetTempPath()) 'win11forge-no-such-registry-policy.json'
+                    $script:RegistryPolicyPath = Join-Path ([System.IO.Path]::GetTempPath()) 'winforge-no-such-registry-policy.json'
                     $script:RegistryPolicyLoaded = $false
                     # A normally-allowed path must be denied: empty allowedPatterns -> deny-all.
                     Test-RegistryPathAllowed -Path 'HKLM:\SOFTWARE\Vendor\App' | Should -BeFalse

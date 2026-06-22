@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Win11Forge - Profile Creator v2.1.3</title>
+    <title>WinForge - Profile Creator v2.1.3</title>
     <style>
         * {
             margin: 0;
@@ -370,7 +370,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🛠️ Win11Forge Profile Creator</h1>
+            <h1>🛠️ WinForge Profile Creator</h1>
             <p>Créez votre profil JSON personnalisé en quelques clics</p>
             <div style="margin-top: 20px;">
                 <input type="file" id="loadProfileInput" accept=".json" style="display: none;" onchange="loadProfile(event)">
@@ -680,14 +680,14 @@
         // Load database from applications-data.js
         function loadDatabase() {
             try {
-                // Check if WIN11FORGE_APPS is available
-                if (typeof WIN11FORGE_APPS !== 'undefined') {
-                    appDatabase = WIN11FORGE_APPS;
+                // Check if WINFORGE_APPS is available
+                if (typeof WINFORGE_APPS !== 'undefined') {
+                    appDatabase = WINFORGE_APPS;
                     databaseLoaded = true;
                     console.log(`✅ Database loaded: ${Object.keys(appDatabase).length} applications`);
                     populateApplications();
                 } else {
-                    throw new Error('WIN11FORGE_APPS not found');
+                    throw new Error('WINFORGE_APPS not found');
                 }
             } catch (error) {
                 console.error('❌ Error loading database:', error);
@@ -914,7 +914,7 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            alert('✅ Profil téléchargé !\n\nPlacez le fichier dans le dossier Profiles/ de Win11Forge et lancez :\n.\Deploy-Win11Environment.ps1 -ProfileName "' + profile.Name + '"');
+            alert('✅ Profil téléchargé !\n\nPlacez le fichier dans le dossier Profiles/ de WinForge et lancez :\n.\Deploy-Win11Environment.ps1 -ProfileName "' + profile.Name + '"');
         }
 
         function addCustomApp() {

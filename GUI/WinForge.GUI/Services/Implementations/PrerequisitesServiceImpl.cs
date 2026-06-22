@@ -19,13 +19,13 @@
 using System.Security.Principal;
 using System.Text.Json;
 using Microsoft.Win32;
-using Win11Forge.GUI.Helpers;
-using Win11Forge.GUI.Localization;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.PowerShell;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using WinForge.GUI.Helpers;
+using WinForge.GUI.Localization;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.PowerShell;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Services.Implementations;
+namespace WinForge.GUI.Services.Implementations;
 
 /// <summary>
 /// Implementation of IPrerequisitesService for managing system prerequisites.
@@ -328,9 +328,9 @@ try {{
     }
 
     /// <inheritdoc/>
-    public Task<string> GetWin11ForgeVersionAsync()
+    public Task<string> GetWinForgeVersionAsync()
     {
-        return _versionService.GetWin11ForgeVersionAsync();
+        return _versionService.GetWinForgeVersionAsync();
     }
 
     /// <inheritdoc/>

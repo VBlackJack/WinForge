@@ -16,12 +16,12 @@
 
 using System.Text.Json;
 using Moq;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.Implementations;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.Implementations;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class ApplicationManagementServicePackageIdValidationTests
 {
@@ -65,7 +65,7 @@ public class ApplicationManagementServicePackageIdValidationTests
         InstallResult result = await ExecuteOperationAsync(operation, service, app);
 
         Assert.False(result.Success);
-        Assert.Equal(Win11Forge.GUI.Resources.Resources.AppManagement_InvalidPackageId, result.Message);
+        Assert.Equal(WinForge.GUI.Resources.Resources.AppManagement_InvalidPackageId, result.Message);
         Assert.Contains(
             $"Rejected invalid {sourceLabel} package id (failed safe-charset validation)",
             result.Logs,
@@ -84,7 +84,7 @@ public class ApplicationManagementServicePackageIdValidationTests
         UpdateCheckResult result = await service.CheckApplicationUpdateAsync(app);
 
         Assert.False(result.HasUpdate);
-        Assert.Equal(Win11Forge.GUI.Resources.Resources.AppManagement_CannotDetermineVersion, result.ErrorMessage);
+        Assert.Equal(WinForge.GUI.Resources.Resources.AppManagement_CannotDetermineVersion, result.ErrorMessage);
         Assert.Equal(string.Empty, result.CurrentVersion);
         Assert.Equal(string.Empty, result.AvailableVersion);
     }

@@ -1,7 +1,7 @@
 # GUI VM Visual Checklist
 
 ## Scope
-Manual visual/accessibility validation for the current Win11Forge GUI after the May 2026 backlog closure:
+Manual visual/accessibility validation for the current WinForge GUI after the May 2026 backlog closure:
 - theme persistence and consistency
 - light/dark/high-contrast readability
 - reduced-motion behavior

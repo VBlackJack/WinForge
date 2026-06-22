@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Profile Manager v3.7.2
+    WinForge - Profile Manager v3.7.2
 
 .DESCRIPTION
     Manages deployment profiles with JSON inheritance:

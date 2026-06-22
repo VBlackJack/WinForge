@@ -18,7 +18,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Wpf.Ui.Controls;
 
-namespace Win11Forge.GUI.Controls;
+namespace WinForge.GUI.Controls;
 
 /// <summary>
 /// Onboarding dialog shown on first run.

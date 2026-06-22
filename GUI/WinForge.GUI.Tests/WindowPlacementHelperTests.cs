@@ -15,10 +15,10 @@
  */
 
 using System.Windows;
-using Win11Forge.GUI.Helpers;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Helpers;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public sealed class WindowPlacementHelperTests
 {

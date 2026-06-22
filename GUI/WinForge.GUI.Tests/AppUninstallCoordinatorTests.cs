@@ -15,12 +15,12 @@
  */
 
 using Moq;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.Coordinators;
-using Win11Forge.GUI.Services.Resume;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.Coordinators;
+using WinForge.GUI.Services.Resume;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class AppUninstallCoordinatorTests
 {

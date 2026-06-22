@@ -22,14 +22,14 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Automation;
 
-namespace Win11Forge.GUI.UITests;
+namespace WinForge.GUI.UITests;
 
-internal sealed class Win11ForgeAppSession : IDisposable
+internal sealed class WinForgeAppSession : IDisposable
 {
     private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(20);
     private readonly Process _process;
 
-    private Win11ForgeAppSession(Process process, AutomationElement mainWindow, string artifactDirectory)
+    private WinForgeAppSession(Process process, AutomationElement mainWindow, string artifactDirectory)
     {
         _process = process;
         MainWindow = mainWindow;
@@ -40,7 +40,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
 
     public string ArtifactDirectory { get; }
 
-    public static Win11ForgeAppSession Launch()
+    public static WinForgeAppSession Launch()
     {
         string appAssemblyPath = ResolveAppAssemblyPath();
         string artifactDirectory = ResolveArtifactDirectory();
@@ -54,7 +54,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
             UseShellExecute = false
         }) ?? throw new InvalidOperationException($"Failed to launch {appAssemblyPath}.");
 
-        Win11ForgeAppSession session = new Win11ForgeAppSession(
+        WinForgeAppSession session = new WinForgeAppSession(
             process,
             WaitForMainWindow(process, DefaultTimeout),
             artifactDirectory);
@@ -237,7 +237,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
                 process.Refresh();
                 if (process.HasExited)
                 {
-                    throw new InvalidOperationException($"Win11Forge exited with code {process.ExitCode}.");
+                    throw new InvalidOperationException($"WinForge exited with code {process.ExitCode}.");
                 }
 
                 if (process.MainWindowHandle != IntPtr.Zero)
@@ -255,7 +255,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
                 return null;
             },
             timeout,
-            "Timed out waiting for the Win11Forge main window.");
+            "Timed out waiting for the WinForge main window.");
     }
 
     private static T WaitUntil<T>(Func<T?> query, TimeSpan timeout, string failureMessage)
@@ -290,7 +290,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
     private static string ResolveAppAssemblyPath()
     {
         string baseDirectory = AppContext.BaseDirectory;
-        string localCopy = Path.Combine(baseDirectory, "Win11Forge.GUI.dll");
+        string localCopy = Path.Combine(baseDirectory, "WinForge.GUI.dll");
         if (File.Exists(localCopy))
         {
             return localCopy;
@@ -301,11 +301,11 @@ internal sealed class Win11ForgeAppSession : IDisposable
         {
             string candidate = Path.Combine(
                 directory.FullName,
-                "Win11Forge.GUI",
+                "WinForge.GUI",
                 "bin",
                 "Release",
                 "net10.0-windows",
-                "Win11Forge.GUI.dll");
+                "WinForge.GUI.dll");
             if (File.Exists(candidate))
             {
                 return candidate;
@@ -314,12 +314,14 @@ internal sealed class Win11ForgeAppSession : IDisposable
             directory = directory.Parent;
         }
 
-        throw new FileNotFoundException("Could not locate Win11Forge.GUI.dll. Build the GUI project first.");
+        throw new FileNotFoundException("Could not locate WinForge.GUI.dll. Build the GUI project first.");
     }
 
     private static string ResolveArtifactDirectory()
     {
-        string? configuredDirectory = Environment.GetEnvironmentVariable("WIN11FORGE_UIA_ARTIFACTS");
+        string? configuredDirectory =
+            Environment.GetEnvironmentVariable("WINFORGE_UIA_ARTIFACTS") ??
+            Environment.GetEnvironmentVariable("WIN11FORGE_UIA_ARTIFACTS");
         if (!string.IsNullOrWhiteSpace(configuredDirectory))
         {
             return Path.GetFullPath(configuredDirectory);
@@ -327,7 +329,7 @@ internal sealed class Win11ForgeAppSession : IDisposable
 
         return Path.Combine(
             Path.GetTempPath(),
-            "Win11Forge",
+            "WinForge",
             "UIA",
             DateTime.Now.ToString("yyyyMMdd-HHmmss"));
     }

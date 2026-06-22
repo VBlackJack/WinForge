@@ -16,7 +16,7 @@
 
 using System.IO;
 
-namespace Win11Forge.GUI.Services.PowerShell;
+namespace WinForge.GUI.Services.PowerShell;
 
 /// <summary>
 /// Provides validation and sanitization utilities for PowerShell-related operations.

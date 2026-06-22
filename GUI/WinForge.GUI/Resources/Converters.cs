@@ -18,14 +18,14 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.ViewModels;
+using WinForge.GUI.Models;
+using WinForge.GUI.ViewModels;
 using Wpf.Ui;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
-using IWinThemeService = Win11Forge.GUI.Services.IThemeService;
+using IWinThemeService = WinForge.GUI.Services.IThemeService;
 
-namespace Win11Forge.GUI.Resources;
+namespace WinForge.GUI.Resources;
 
 /// <summary>
 /// Converts boolean to Visibility (true = Visible, false = Collapsed).

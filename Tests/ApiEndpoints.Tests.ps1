@@ -3,7 +3,7 @@
     Pester tests for ApiEndpoints module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge ApiEndpoints v3.5.0
+    Comprehensive unit tests for WinForge ApiEndpoints v3.5.0
     Tests REST API handlers, validation, and security features
 
 .NOTES
@@ -96,7 +96,7 @@ Describe 'ApiEndpoints Module' {
 
         It 'Should include framework name' {
             $result = Get-VersionHandler -Context @{}
-            $result.framework | Should -Be 'Win11Forge'
+            $result.framework | Should -Be 'WinForge'
         }
 
         It 'Should include version string' {

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-namespace Win11Forge.GUI.Localization;
+namespace WinForge.GUI.Localization;
 
 /// <summary>
-/// Single source of truth for the locales Win11Forge ships with.
+/// Single source of truth for the locales WinForge ships with.
 /// </summary>
 internal static class SupportedLocales
 {

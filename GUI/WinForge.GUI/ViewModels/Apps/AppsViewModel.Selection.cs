@@ -15,9 +15,9 @@
  */
 
 using CommunityToolkit.Mvvm.Input;
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 public partial class AppsViewModel
 {

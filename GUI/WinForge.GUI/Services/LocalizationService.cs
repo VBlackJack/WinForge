@@ -17,7 +17,7 @@
 using System.Globalization;
 using System.Windows;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Service for localization including RTL language support.

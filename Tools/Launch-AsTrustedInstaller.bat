@@ -1,6 +1,6 @@
 @echo off
 :: ============================================================================
-:: Win11Forge - Launch as TrustedInstaller
+:: WinForge - Launch as TrustedInstaller
 :: Author: Julien Bombled
 :: Version: 1.0.0
 ::
@@ -10,7 +10,7 @@
 :: ============================================================================
 
 setlocal EnableExtensions DisableDelayedExpansion
-title Win11Forge - TrustedInstaller Launcher
+title WinForge - TrustedInstaller Launcher
 
 :: Check for admin privileges
 net session >nul 2>&1
@@ -26,7 +26,7 @@ if %errorlevel% neq 0 (
 :MENU
 cls
 echo ========================================================================
-echo  Win11Forge - TrustedInstaller Launcher
+echo  WinForge - TrustedInstaller Launcher
 echo ========================================================================
 echo.
 echo  Select tool to launch with TrustedInstaller privileges:
@@ -38,7 +38,7 @@ echo  4. Task Manager (TrustedInstaller)
 echo  5. Computer Management (TrustedInstaller)
 echo  6. Windows Explorer (TrustedInstaller)
 echo  7. Custom executable path
-echo  8. Win11Forge GUI (TrustedInstaller)
+echo  8. WinForge GUI (TrustedInstaller)
 echo.
 echo  0. Exit
 echo.
@@ -54,7 +54,7 @@ if "%choice%"=="4" goto TASKMGR
 if "%choice%"=="5" goto COMPMGMT
 if "%choice%"=="6" goto EXPLORER
 if "%choice%"=="7" goto CUSTOM
-if "%choice%"=="8" goto WIN11FORGE
+if "%choice%"=="8" goto WINFORGE
 if "%choice%"=="0" goto EXIT
 
 echo Invalid choice. Please try again.
@@ -91,9 +91,9 @@ set "PROGRAM=explorer.exe"
 set "ARGS="
 goto LAUNCH
 
-:WIN11FORGE
+:WINFORGE
 set "PROGRAM=powershell.exe"
-set "GUI_SCRIPT=%~dp0..\Start-Win11ForgeGUI.ps1"
+set "GUI_SCRIPT=%~dp0..\Start-WinForgeGUI.ps1"
 set "ARGS=-NoProfile -ExecutionPolicy Bypass -File "%GUI_SCRIPT%""
 goto LAUNCH
 

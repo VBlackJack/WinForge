@@ -2,7 +2,7 @@
 
 ## 📋 Vue d'ensemble
 
-ProfileCreator.html est un outil standalone (utilisable en `file://`) pour créer des profils JSON personnalisés pour Win11Forge.
+ProfileCreator.html est un outil standalone (utilisable en `file://`) pour créer des profils JSON personnalisés pour WinForge.
 
 ## ✨ Fonctionnalités
 
@@ -61,7 +61,7 @@ Double-clic sur ProfileCreator.html
 
 ### Méthode 2 : Navigateur
 ```
-file:///C:/Users/User/Desktop/Win11Forge/Tools/ProfileCreator.html
+file:///C:/Users/User/Desktop/WinForge/Tools/ProfileCreator.html
 ```
 
 ## 📝 Exemple : Ajouter une Application Personnalisée
@@ -150,7 +150,7 @@ Catégorie       : Utilities
 ## 📥 Déploiement du Profil Créé
 
 1. **Télécharger le JSON** depuis l'étape 6
-2. **Placer le fichier** dans `Win11Forge/Profiles/`
+2. **Placer le fichier** dans `WinForge/Profiles/`
 3. **Lancer le déploiement** :
    ```powershell
    .\Deploy-Win11Environment.ps1 -ProfileName "MonProfil"
@@ -198,4 +198,4 @@ Gaming + Discord, Steam, Battle.net
 
 **Version** : 2.1.3
 **Date** : 2025-10-06
-**Auteur** : Win11Forge Team
+**Auteur** : WinForge Team

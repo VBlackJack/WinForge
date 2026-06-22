@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Install Pester v5+ for Win11Forge tests
+    Install Pester v5+ for WinForge tests
 
 .DESCRIPTION
-    Installs or updates Pester to v5+ required for Win11Forge v2.5.0 tests
+    Installs or updates Pester to v5+ required for WinForge v2.5.0 tests
 
 .NOTES
     Author: Julien Bombled
@@ -33,7 +33,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  Pester Installation for Win11Forge v2.5.0" -ForegroundColor Cyan
+Write-Host "  Pester Installation for WinForge v2.5.0" -ForegroundColor Cyan
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Cyan
 Write-Host ""
 

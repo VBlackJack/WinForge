@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Orchestrator v3.7.2
+    WinForge - Installation Orchestrator v3.7.2
 
 .DESCRIPTION
     High-level orchestration logic for application installation.
@@ -1272,7 +1272,7 @@ function Install-ApplicationsParallel {
                         return $result
                     }
                     # Parallel runspace - intentional direct env usage
-                    $tempDir = Join-Path $env:TEMP "Win11Forge_$([guid]::NewGuid().ToString('N'))"
+                    $tempDir = Join-Path $env:TEMP "WinForge_$([guid]::NewGuid().ToString('N'))"
                     New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
                     $tempFile = Join-Path $tempDir $filename
 
@@ -1286,7 +1286,7 @@ function Install-ApplicationsParallel {
                     try {
                         $ProgressPreference = 'SilentlyContinue'
                         $headers = @{
-                            'User-Agent' = "Win11Forge/$fwVersion (Windows NT; PowerShell)"
+                            'User-Agent' = "WinForge/$fwVersion (Windows NT; PowerShell)"
                         }
                         Invoke-WebRequest -Uri $sources.DirectUrl -OutFile $tempFile -Headers $headers -UseBasicParsing -TimeoutSec $using:directDownloadTimeoutSeconds -ErrorAction Stop
                         if ((Test-Path -Path $tempFile) -and (Get-Item -Path $tempFile).Length -gt 0) { $downloadSuccess = $true }

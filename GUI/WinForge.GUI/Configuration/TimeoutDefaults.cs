@@ -16,7 +16,7 @@
 
 #nullable enable
 
-namespace Win11Forge.GUI.Configuration;
+namespace WinForge.GUI.Configuration;
 
 /// <summary>
 /// Centralized timeout defaults for GUI services.

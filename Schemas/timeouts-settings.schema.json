@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "$id": "https://win11forge.local/schemas/timeouts-settings.schema.json",
-  "title": "Win11Forge Timeout Settings",
-  "description": "Schema for Win11Forge operation timeout configuration (Config/timeouts-settings.json)",
+  "$id": "https://winforge.local/schemas/timeouts-settings.schema.json",
+  "title": "WinForge Timeout Settings",
+  "description": "Schema for WinForge operation timeout configuration (Config/timeouts-settings.json)",
   "type": "object",
   "required": ["installation", "parallel", "download", "detection", "api", "plugin"],
   "additionalProperties": false,

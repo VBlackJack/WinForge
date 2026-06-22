@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Win11Forge - Startup Manager</title>
+    <title>WinForge - Startup Manager</title>
     <style>
         * {
             margin: 0;
@@ -282,7 +282,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>🚀 Win11Forge - Startup Manager</h1>
+            <h1>🚀 WinForge - Startup Manager</h1>
             <p>Gérez facilement les applications qui se lancent au démarrage de Windows</p>
             <div style="margin-top: 20px;">
                 <input type="file" id="loadBlacklistInput" accept=".json" style="display: none;" onchange="loadBlacklist(event)">
@@ -343,7 +343,7 @@
         </div>
 
         <footer>
-            <p>Win11Forge v2.4.0 - Startup Manager Tool</p>
+            <p>WinForge v2.4.0 - Startup Manager Tool</p>
             <p>Configuration: <code>Config/startup-blacklist.json</code></p>
         </footer>
     </div>
@@ -367,9 +367,9 @@
         // Load data from applications-data.js
         function loadData() {
             try {
-                // Check if WIN11FORGE_APPS is available
-                if (typeof WIN11FORGE_APPS !== 'undefined') {
-                    appDatabase = WIN11FORGE_APPS;
+                // Check if WINFORGE_APPS is available
+                if (typeof WINFORGE_APPS !== 'undefined') {
+                    appDatabase = WINFORGE_APPS;
                     console.log(`✅ Database loaded: ${Object.keys(appDatabase).length} applications`);
 
                     // Convert applications object to array
@@ -385,7 +385,7 @@
                     updateStats();
                     showMessage(applications.length + ' applications chargées avec succès', 'success');
                 } else {
-                    throw new Error('WIN11FORGE_APPS not found');
+                    throw new Error('WINFORGE_APPS not found');
                 }
             } catch (error) {
                 showMessage('Erreur lors du chargement: ' + error.message, 'error');

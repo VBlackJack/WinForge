@@ -25,13 +25,13 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Helpers;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Helpers;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.PowerShell;
 using Wpf.Ui.Controls;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 /// <summary>
 /// ViewModel for the dedicated Logs view.
@@ -91,7 +91,7 @@ public partial class LogsViewModel : ObservableObject
         _dialogService = dialogService ?? new DialogService();
         IRepositoryPathService resolvedPathService = pathService ?? new RepositoryPathService();
         _logsPath = resolvedPathService.LogsDirectory;
-        _jsonLogsPath = Path.Combine(_logsPath, Win11ForgePathNames.JsonLogsDirectoryName);
+        _jsonLogsPath = Path.Combine(_logsPath, WinForgePathNames.JsonLogsDirectoryName);
         _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<LogsViewModel>();
 
         RefreshAsync().SafeFireAndForget();
@@ -280,7 +280,7 @@ public partial class LogsViewModel : ObservableObject
             string? filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
                 string.Empty,
                 Resources.Resources.Logs_Export_Filter,
-                DefaultFileName: $"Win11Forge_Logs_{DateTime.Now:yyyyMMdd_HHmmss}",
+                DefaultFileName: $"WinForge_Logs_{DateTime.Now:yyyyMMdd_HHmmss}",
                 DefaultExtension: ".zip"));
 
             if (filePath != null)

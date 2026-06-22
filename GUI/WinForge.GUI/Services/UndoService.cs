@@ -17,7 +17,7 @@
 using System.Collections.Concurrent;
 using System.Resources;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Represents an undoable action with its inverse operation.

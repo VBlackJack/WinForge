@@ -60,11 +60,11 @@
   </resheader>
   <!-- Application -->
   <data name="App_Title" xml:space="preserve">
-    <value>Win11Forge v{0}</value>
+    <value>WinForge v{0}</value>
     <comment>Main application window title (0=version number)</comment>
   </data>
   <data name="App_Name" xml:space="preserve">
-    <value>Win11Forge</value>
+    <value>WinForge</value>
     <comment>Application name (brand name, not translated)</comment>
   </data>
   <!-- Splash Screen -->
@@ -94,7 +94,7 @@
   </data>
   <!-- Main Window -->
   <data name="MainWindow_Welcome" xml:space="preserve">
-    <value>Welcome to Win11Forge</value>
+    <value>Welcome to WinForge</value>
     <comment>Welcome message displayed on main window</comment>
   </data>
   <!-- Dashboard -->
@@ -240,11 +240,11 @@
     <comment>Title for initialization failure dialog</comment>
   </data>
   <data name="Init_ErrorMessage" xml:space="preserve">
-    <value>Failed to initialize Win11Forge:
+    <value>Failed to initialize WinForge:
 
 {0}
 
-Please ensure Win11Forge is extracted correctly with all folders (Config/, Modules/, Profiles/).</value>
+Please ensure WinForge is extracted correctly with all folders (Config/, Modules/, Profiles/).</value>
     <comment>Message for initialization failure (0=error details)</comment>
   </data>
   <!-- Navigation -->
@@ -1142,7 +1142,7 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <comment>Prerequisites page title</comment>
   </data>
   <data name="Prerequisites_PageDescription" xml:space="preserve">
-    <value>Win11Forge requires the following components to be installed for full functionality.</value>
+    <value>WinForge requires the following components to be installed for full functionality.</value>
     <comment>Prerequisites page description</comment>
   </data>
   <data name="Prerequisites_CategoryPackageManagers" xml:space="preserve">
@@ -1440,7 +1440,7 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
   </data>
   <!-- Onboarding -->
   <data name="Onboarding_Welcome" xml:space="preserve">
-    <value>Welcome to Win11Forge</value>
+    <value>Welcome to WinForge</value>
     <comment>Onboarding welcome title</comment>
   </data>
   <data name="Onboarding_Subtitle" xml:space="preserve">
@@ -1692,11 +1692,11 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <comment>Import profile button</comment>
   </data>
   <data name="Export_FileFilter" xml:space="preserve">
-    <value>Win11Forge Profile (*.w11fp)|*.w11fp|JSON Files (*.json)|*.json</value>
+    <value>WinForge Profile (*.w11fp)|*.w11fp|JSON Files (*.json)|*.json</value>
     <comment>File filter for profile export dialog</comment>
   </data>
   <data name="Import_FileFilter" xml:space="preserve">
-    <value>Win11Forge Profile (*.w11fp;*.json)|*.w11fp;*.json</value>
+    <value>WinForge Profile (*.w11fp;*.json)|*.w11fp;*.json</value>
     <comment>File filter for profile import dialog</comment>
   </data>
   <data name="Export_Success" xml:space="preserve">
@@ -1790,7 +1790,7 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <comment>Recovery suggestion for server issues</comment>
   </data>
   <data name="Recovery_RunAsAdmin" xml:space="preserve">
-    <value>Run Win11Forge as Administrator</value>
+    <value>Run WinForge as Administrator</value>
     <comment>Recovery suggestion for permission errors</comment>
   </data>
   <data name="Recovery_CheckPermissions" xml:space="preserve">
@@ -1830,7 +1830,7 @@ Please ensure Win11Forge is extracted correctly with all folders (Config/, Modul
     <comment>Generic recovery suggestion to retry</comment>
   </data>
   <data name="Recovery_Generic_Restart" xml:space="preserve">
-    <value>Restart Win11Forge and try again</value>
+    <value>Restart WinForge and try again</value>
     <comment>Generic recovery suggestion to restart</comment>
   </data>
   <data name="Recovery_Generic_CheckLogs" xml:space="preserve">

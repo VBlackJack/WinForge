@@ -15,11 +15,11 @@
  */
 
 using System.Collections.ObjectModel;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.ViewModels;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
+using WinForge.GUI.ViewModels;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for DeploymentViewModel - deployment monitoring and control.

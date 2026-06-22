@@ -15,11 +15,11 @@
  */
 
 using System.IO;
-using Win11Forge.GUI.Tests.TestInfrastructure;
-using Win11Forge.GUI.ViewModels;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using WinForge.GUI.Tests.TestInfrastructure;
+using WinForge.GUI.ViewModels;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for LogsViewModel - log file management and filtering.
@@ -144,7 +144,7 @@ public class LogsViewModelTests
         Assert.Single(fileDialogService.SaveOptions);
         Assert.Equal(Loc.Logs_Export_Filter, fileDialogService.SaveOptions[0].Filter);
         Assert.Equal(".zip", fileDialogService.SaveOptions[0].DefaultExtension);
-        Assert.StartsWith("Win11Forge_Logs_", fileDialogService.SaveOptions[0].DefaultFileName);
+        Assert.StartsWith("WinForge_Logs_", fileDialogService.SaveOptions[0].DefaultFileName);
     }
 
     [Fact]
@@ -201,7 +201,7 @@ public class LogsViewModelTests
     {
         string sourcePath = RepositoryPathHelper.FindFile(
             "GUI",
-            "Win11Forge.GUI",
+            "WinForge.GUI",
             "ViewModels",
             "LogsViewModel.cs");
         string source = File.ReadAllText(sourcePath);

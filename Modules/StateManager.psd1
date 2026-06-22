@@ -21,7 +21,7 @@
     ModuleVersion = '1.0.0622.1'
     GUID = '7b634acc-e0bf-4318-96e9-74a2ef93608d'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
     Description = 'Deployment state persistence and recovery'
     PowerShellVersion = '5.1'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'State', 'Persistence', 'Recovery')
+            Tags = @('WinForge', 'State', 'Persistence', 'Recovery')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

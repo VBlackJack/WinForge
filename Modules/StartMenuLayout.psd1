@@ -21,7 +21,7 @@
     ModuleVersion = '1.0.0622.1'
     GUID = '30cb2343-58eb-4ecf-b6dc-4a242d63b6de'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
     Description = 'Windows Start menu layout management'
     PowerShellVersion = '5.1'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'StartMenu', 'Layout', 'Windows11')
+            Tags = @('WinForge', 'StartMenu', 'Layout', 'Windows11')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

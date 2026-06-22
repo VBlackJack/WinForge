@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Win11Forge - User Profile Manager v3.7.2
+    WinForge - User Profile Manager v3.7.2
 
 .DESCRIPTION
-    Manages persistent user profiles for Win11Forge:
+    Manages persistent user profiles for WinForge:
     - Save custom application selections as profiles
     - Load and manage user-created profiles
     - Import/export profiles for sharing
@@ -55,13 +55,13 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
 
 # Import DirectoryConstants for path management
 $script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
-if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-WinForgeDirectory -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:DirectoryConstantsPath) {
         Import-Module -Name $script:DirectoryConstantsPath -Force
     }
 }
 
-$script:UserProfilesDir = Get-Win11ForgeDirectory -DirectoryType 'Profiles'
+$script:UserProfilesDir = Get-WinForgeDirectory -DirectoryType 'Profiles'
 
 # === CONFIGURATION ===
 $script:ProfileSchema = @{
@@ -177,7 +177,7 @@ function Save-UserProfile {
     }
 
     $profile = [ordered]@{
-        '$schema' = 'Win11Forge-UserProfile-v1.0'
+        '$schema' = 'WinForge-UserProfile-v1.0'
         Name = $Name
         Description = $Description
         Author = $Author
@@ -400,7 +400,7 @@ function Export-UserProfile {
     }
 
     $exportData = [ordered]@{
-        '$schema' = 'Win11Forge-UserProfile-v1.0'
+        '$schema' = 'WinForge-UserProfile-v1.0'
         Name = $profile.Name
         Description = $profile.Description
         Applications = $profile.Applications
@@ -487,7 +487,7 @@ function Import-UserProfile {
 
         # Create new profile with import data
         $profile = [ordered]@{
-            '$schema' = 'Win11Forge-UserProfile-v1.0'
+            '$schema' = 'WinForge-UserProfile-v1.0'
             Name = $profileName
             Description = if ($importData.Description) { $importData.Description } else { '' }
             Author = if ($importData.Author) { $importData.Author } else { 'Imported' }

@@ -16,13 +16,13 @@
 
 using System.IO;
 using Moq;
-using Win11Forge.GUI.Localization;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.Implementations;
-using Win11Forge.GUI.Services.PowerShell;
-using Win11Forge.GUI.Tests.TestInfrastructure;
+using WinForge.GUI.Localization;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.Implementations;
+using WinForge.GUI.Services.PowerShell;
+using WinForge.GUI.Tests.TestInfrastructure;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class PrerequisitesLocalizationTests
 {
@@ -46,7 +46,7 @@ public class PrerequisitesLocalizationTests
     [Fact]
     public void SupportedLocales_HaveMatchingResxFiles()
     {
-        string resourcesDirectory = RepositoryPathHelper.FindDirectory("GUI", "Win11Forge.GUI", "Resources");
+        string resourcesDirectory = RepositoryPathHelper.FindDirectory("GUI", "WinForge.GUI", "Resources");
         List<string> expectedFiles = SupportedLocales.Codes
             .Select(code => code == SupportedLocales.Default
                 ? "Resources.resx"

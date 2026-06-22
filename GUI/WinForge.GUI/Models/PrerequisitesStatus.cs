@@ -19,7 +19,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace Win11Forge.GUI.Models;
+namespace WinForge.GUI.Models;
 
 /// <summary>
 /// Represents the status of a single prerequisite.

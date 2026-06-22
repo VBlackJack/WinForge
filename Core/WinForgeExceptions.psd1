@@ -1,5 +1,5 @@
 #
-# Module manifest for Win11ForgeExceptions
+# Module manifest for WinForgeExceptions
 #
 # Copyright 2026 Julien Bombled
 #
@@ -17,13 +17,13 @@
 #
 
 @{
-    RootModule = 'Win11ForgeExceptions.psm1'
+    RootModule = 'WinForgeExceptions.psm1'
     ModuleVersion = '1.0.0622.1'
     GUID = '2fd61c27-0cec-40f3-822e-89d81a3aaa0a'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
-    Description = 'Custom exception types for Win11Forge error handling'
+    Description = 'Custom exception types for WinForge error handling'
     PowerShellVersion = '5.1'
     RequiredModules = @()
     FunctionsToExport = '*'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'Core', 'Exceptions', 'ErrorHandling')
+            Tags = @('WinForge', 'Core', 'Exceptions', 'ErrorHandling')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

@@ -17,7 +17,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Log levels for the application logging system.
@@ -78,7 +78,7 @@ public class LoggingService : ILoggingService
     public LoggingService(IFileLogWriter? fileWriter = null, string? categoryName = null)
     {
         _fileWriter = fileWriter;
-        _categoryName = categoryName ?? "Win11Forge";
+        _categoryName = categoryName ?? "WinForge";
     }
 
     public LoggingService(string categoryName)

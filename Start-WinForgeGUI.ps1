@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-    Win11Forge GUI Launcher
+    WinForge GUI Launcher
 
 .DESCRIPTION
-    Launches the Win11Forge graphical user interface.
-    Prefers the WPF GUI (Win11Forge.GUI.exe) if available,
+    Launches the WinForge graphical user interface.
+    Prefers the WPF GUI (WinForge.GUI.exe) if available,
     otherwise falls back to the PowerShell-based GUI.
 
 .PARAMETER CLI
@@ -17,9 +17,9 @@
     Skip module verification (legacy mode only).
 
 .EXAMPLE
-    .\Start-Win11ForgeGUI.ps1
-    .\Start-Win11ForgeGUI.ps1 -Legacy
-    .\Start-Win11ForgeGUI.ps1 -CLI
+    .\Start-WinForgeGUI.ps1
+    .\Start-WinForgeGUI.ps1 -Legacy
+    .\Start-WinForgeGUI.ps1 -CLI
 
 .NOTES
     Author: Julien Bombled
@@ -114,10 +114,10 @@ function New-WpfGuiCandidate {
 
 function Resolve-WpfGuiExecutable {
     $wpfGuiCandidates = @(
-        New-WpfGuiCandidate -Name 'packaged root' -RelativePath 'Win11Forge.GUI.exe' -Priority 0
-        New-WpfGuiCandidate -Name 'source Release' -RelativePath 'GUI\Win11Forge.GUI\bin\Release\net10.0-windows\Win11Forge.GUI.exe' -Priority 10
-        New-WpfGuiCandidate -Name 'source publish' -RelativePath 'GUI\Win11Forge.GUI\bin\publish\Win11Forge.GUI.exe' -Priority 20
-        New-WpfGuiCandidate -Name 'source Debug' -RelativePath 'GUI\Win11Forge.GUI\bin\Debug\net10.0-windows\Win11Forge.GUI.exe' -Priority 30
+        New-WpfGuiCandidate -Name 'packaged root' -RelativePath 'WinForge.GUI.exe' -Priority 0
+        New-WpfGuiCandidate -Name 'source Release' -RelativePath 'GUI\WinForge.GUI\bin\Release\net10.0-windows\WinForge.GUI.exe' -Priority 10
+        New-WpfGuiCandidate -Name 'source publish' -RelativePath 'GUI\WinForge.GUI\bin\publish\WinForge.GUI.exe' -Priority 20
+        New-WpfGuiCandidate -Name 'source Debug' -RelativePath 'GUI\WinForge.GUI\bin\Debug\net10.0-windows\WinForge.GUI.exe' -Priority 30
     )
 
     $existingCandidates = @(
@@ -144,7 +144,7 @@ function Resolve-WpfGuiExecutable {
 }
 
 function Get-NewestGuiSourceWriteTimeUtc {
-    $guiSourceRoot = Join-Path $script:ScriptRoot 'GUI\Win11Forge.GUI'
+    $guiSourceRoot = Join-Path $script:ScriptRoot 'GUI\WinForge.GUI'
     if (-not (Test-Path -LiteralPath $guiSourceRoot)) {
         return $null
     }
@@ -167,7 +167,7 @@ function Get-NewestGuiSourceWriteTimeUtc {
 
 $wpfGuiCandidate = Resolve-WpfGuiExecutable
 $wpfGuiExe = if ($wpfGuiCandidate) { $wpfGuiCandidate.Path } else { $null }
-$script:GUIModule = Join-Path $script:ScriptRoot 'Modules\Win11ForgeGUI.psm1'
+$script:GUIModule = Join-Path $script:ScriptRoot 'Modules\WinForgeGUI.psm1'
 
 # ============================================================================
 # VERSION DISPLAY
@@ -178,10 +178,10 @@ Write-Host "============================================" -ForegroundColor Cyan
 try {
     $FrameworkVersion = Get-FrameworkVersion
 } catch {
-    Write-Host "$(Get-Text -Key 'launcher.error.version_not_found' -Default 'ERROR: Unable to load Win11Forge version'): $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "$(Get-Text -Key 'launcher.error.version_not_found' -Default 'ERROR: Unable to load WinForge version'): $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
-Write-Host "  Win11Forge v$FrameworkVersion" -ForegroundColor Cyan
+Write-Host "  WinForge v$FrameworkVersion" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -190,7 +190,7 @@ Write-Host ""
 # ============================================================================
 
 if ($CLI) {
-    $cliScript = Join-Path $script:ScriptRoot 'Win11Forge.ps1'
+    $cliScript = Join-Path $script:ScriptRoot 'WinForge.ps1'
     if (Test-Path $cliScript) {
         Write-Host (Get-Text -Key 'launcher.launching_cli' -Default 'Launching CLI mode...') -ForegroundColor Yellow
         & $cliScript @args
@@ -288,11 +288,11 @@ if (-not (Test-Path $script:GUIModule)) {
 }
 
 # Force unload cached modules
-Get-Module -Name Core,EnvironmentDetection,Prerequisites,ProfileManager,ApplicationDatabase,InstallationEngine,SystemConfig,Win11ForgeGUI | Remove-Module -Force -ErrorAction SilentlyContinue
+Get-Module -Name Core,EnvironmentDetection,Prerequisites,ProfileManager,ApplicationDatabase,InstallationEngine,SystemConfig,WinForgeGUI | Remove-Module -Force -ErrorAction SilentlyContinue
 
 try {
     Import-Module $script:GUIModule -Force
-    Write-Host "  [OK] $(Get-Text -Key 'launcher.module_loaded' -Default 'Win11ForgeGUI module loaded')" -ForegroundColor Green
+    Write-Host "  [OK] $(Get-Text -Key 'launcher.module_loaded' -Default 'WinForgeGUI module loaded')" -ForegroundColor Green
 }
 catch {
     Write-Host ""
@@ -378,7 +378,7 @@ catch {
 }
 
 Write-Host ""
-Write-Host (Get-Text -Key 'launcher.gui_closed' -Default 'Win11Forge GUI closed.') -ForegroundColor Gray
+Write-Host (Get-Text -Key 'launcher.gui_closed' -Default 'WinForge GUI closed.') -ForegroundColor Gray
 Write-Host ""
 
 exit 0

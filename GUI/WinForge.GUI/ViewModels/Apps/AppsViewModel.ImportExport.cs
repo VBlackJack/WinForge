@@ -18,10 +18,10 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.Input;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 public partial class AppsViewModel
 {
@@ -47,7 +47,7 @@ public partial class AppsViewModel
         string? filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
             string.Empty,
             FileDialogFilters.JsonOnly,
-            DefaultFileName: "win11forge-selection",
+            DefaultFileName: "winforge-selection",
             DefaultExtension: FileDialogFilters.JsonDefaultExtension));
 
         if (filePath != null)
@@ -117,7 +117,7 @@ public partial class AppsViewModel
         string? filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
             string.Empty,
             FileDialogFilters.JsonOnly,
-            DefaultFileName: "win11forge-favorites",
+            DefaultFileName: "winforge-favorites",
             DefaultExtension: FileDialogFilters.JsonDefaultExtension));
 
         if (filePath != null)

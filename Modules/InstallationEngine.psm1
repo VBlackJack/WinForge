@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Installation Engine v3.7.2 (Modular Architecture)
+    WinForge - Installation Engine v3.7.2 (Modular Architecture)
 
 .DESCRIPTION
     Core installation engine orchestration with multi-source support and parallel execution.
@@ -109,7 +109,7 @@ if (-not (Get-Command -Name Test-FeatureEnabled -ErrorAction SilentlyContinue)) 
     }
 }
 
-if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-WinForgeDirectory -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:DirectoryConstantsPath) {
         Import-Module -Name $script:DirectoryConstantsPath -Force
     }

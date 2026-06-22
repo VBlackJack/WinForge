@@ -18,7 +18,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Win11Forge.GUI.Models;
+namespace WinForge.GUI.Models;
 
 /// <summary>
 /// Result of an application installation attempt.

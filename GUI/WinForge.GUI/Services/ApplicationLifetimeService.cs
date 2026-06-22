@@ -16,7 +16,7 @@
 
 using System.Windows;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// WPF implementation of application lifetime operations.

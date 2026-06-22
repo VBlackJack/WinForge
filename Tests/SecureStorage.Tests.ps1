@@ -3,7 +3,7 @@
     Pester tests for SecureStorage module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge SecureStorage v3.7.2
+    Comprehensive unit tests for WinForge SecureStorage v3.7.2
     Tests DPAPI encryption, API key management, and secure data storage
 
 .NOTES
@@ -35,8 +35,8 @@ BeforeAll {
     Import-Module $script:ModulePath -Force -ErrorAction Stop
 
     # Test data cleanup paths
-    $script:TestSecureStoragePath = Join-Path $env:LOCALAPPDATA 'Win11Forge\secure-storage.dat'
-    $script:TestApiKeysPath = Join-Path $env:LOCALAPPDATA 'Win11Forge\api-keys.secure'
+    $script:TestSecureStoragePath = Join-Path $env:LOCALAPPDATA 'WinForge\secure-storage.dat'
+    $script:TestApiKeysPath = Join-Path $env:LOCALAPPDATA 'WinForge\api-keys.secure'
 
     # Backup existing files if they exist
     $script:BackupSecureStorage = $null

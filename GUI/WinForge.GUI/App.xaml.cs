@@ -20,16 +20,16 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 using Microsoft.Extensions.DependencyInjection;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Helpers;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.PowerShell;
-using Win11Forge.GUI.Services.Resume;
-using Win11Forge.GUI.Views;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Helpers;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.PowerShell;
+using WinForge.GUI.Services.Resume;
+using WinForge.GUI.Views;
 using Wpf.Ui.Appearance;
 
-namespace Win11Forge.GUI;
+namespace WinForge.GUI;
 
 /// <summary>
 /// Application entry point.
@@ -95,7 +95,7 @@ public partial class App : Application
     private static IServiceProvider ConfigureServices()
     {
         ServiceCollection services = new ServiceCollection();
-        services.AddWin11ForgeServices();
+        services.AddWinForgeServices();
         return services.BuildServiceProvider();
     }
 
@@ -136,19 +136,19 @@ public partial class App : Application
             Log("Showing splash screen...");
             splash = new Views.SplashScreen();
             splash.Show();
-            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_Initializing);
+            splash.UpdateStatus(WinForge.GUI.Resources.Resources.Splash_Initializing);
 
             // Step 1: Configure dependency injection
             Log("Configuring services...");
-            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_ConfiguringServices);
+            splash.UpdateStatus(WinForge.GUI.Resources.Resources.Splash_ConfiguringServices);
             Services = ConfigureServices();
             LogUserDataFallbackIfActive();
-            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingSettings);
+            splash.UpdateStatus(WinForge.GUI.Resources.Resources.Splash_LoadingSettings);
             await Task.Run(RunProfileMigration);
 
             // Step 2: Load settings FIRST (before any UI)
             Log("Loading settings...");
-            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingSettings);
+            splash.UpdateStatus(WinForge.GUI.Resources.Resources.Splash_LoadingSettings);
             IAppSettingsService settingsService = Services.GetRequiredService<IAppSettingsService>();
             AppSettings settings = await settingsService.LoadSettingsAsync();
 
@@ -166,7 +166,7 @@ public partial class App : Application
 
             // Step 3: Apply language/culture BEFORE UI initialization
             Log($"Applying language: {settings.LanguageCode}");
-            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_ApplyingLanguage);
+            splash.UpdateStatus(WinForge.GUI.Resources.Resources.Splash_ApplyingLanguage);
             if (!string.IsNullOrEmpty(settings.LanguageCode))
             {
                 try
@@ -176,7 +176,7 @@ public partial class App : Application
                     Thread.CurrentThread.CurrentCulture = culture;
                     CultureInfo.CurrentUICulture = culture;
                     CultureInfo.CurrentCulture = culture;
-                    Win11Forge.GUI.Resources.Resources.Culture = culture;
+                    WinForge.GUI.Resources.Resources.Culture = culture;
                 }
                 catch (CultureNotFoundException ex)
                 {
@@ -186,7 +186,7 @@ public partial class App : Application
 
             // Step 4: Apply theme through the centralized theme service
             Log($"Applying theme: {settings.ThemeName}");
-            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_ApplyingTheme);
+            splash.UpdateStatus(WinForge.GUI.Resources.Resources.Splash_ApplyingTheme);
             try
             {
                 IThemeService themeService = Services.GetRequiredService<IThemeService>();
@@ -219,7 +219,7 @@ public partial class App : Application
 
             // Step 7: NOW create and show MainWindow (after culture is set)
             Log("Creating MainWindow...");
-            splash.UpdateStatus(Win11Forge.GUI.Resources.Resources.Splash_LoadingInterface);
+            splash.UpdateStatus(WinForge.GUI.Resources.Resources.Splash_LoadingInterface);
             MainWindow mainWindow = new MainWindow();
 
             // Keep the persisted in-app theme stable across navigation and restarts.
@@ -302,8 +302,8 @@ public partial class App : Application
         }
 
         string versionPath = pathService.GetPath(
-            Win11ForgePathNames.ConfigDirectoryName,
-            Win11ForgePathNames.VersionFileName);
+            WinForgePathNames.ConfigDirectoryName,
+            WinForgePathNames.VersionFileName);
         if (!File.Exists(versionPath))
         {
             return string.Empty;
@@ -337,7 +337,7 @@ public partial class App : Application
         catch (Exception ex)
         {
             // Intentional Debug.WriteLine: fallback when the startup file log write fails.
-            System.Diagnostics.Debug.WriteLine($"[Win11Forge] {message} (file log failed: {ex.Message})");
+            System.Diagnostics.Debug.WriteLine($"[WinForge] {message} (file log failed: {ex.Message})");
         }
     }
 
@@ -358,14 +358,14 @@ public partial class App : Application
         catch (Exception logEx)
         {
             // Intentional Debug.WriteLine: fallback when the startup error-log write fails.
-            System.Diagnostics.Debug.WriteLine($"[Win11Forge ERROR] {context}: {ex?.Message} (file log failed: {logEx.Message})");
+            System.Diagnostics.Debug.WriteLine($"[WinForge ERROR] {context}: {ex?.Message} (file log failed: {logEx.Message})");
         }
     }
 
     private static string GetStartupLogPath()
     {
         IRepositoryPathService pathService = GetLoggingPathService();
-        return Path.Combine(pathService.LogsDirectory, Win11ForgePathNames.StartupLogFileName);
+        return Path.Combine(pathService.LogsDirectory, WinForgePathNames.StartupLogFileName);
     }
 
     private static IRepositoryPathService GetLoggingPathService()
@@ -527,17 +527,17 @@ public partial class App : Application
                 // Canonical button taxonomy -> High Contrast variants.
                 // Each canonical Style is replaced with the matching HighContrast<Name>Style
                 // so explicitly-styled buttons repaint correctly when HC mode is enabled.
-                SwapIfExists(app, "HeroPrimaryButton",      "HighContrastHeroPrimaryButtonStyle");
-                SwapIfExists(app, "PrimaryButton",          "HighContrastPrimaryButtonStyle");
-                SwapIfExists(app, "SecondaryButton",        "HighContrastSecondaryButtonStyle");
-                SwapIfExists(app, "OutlinedButton",         "HighContrastOutlinedButtonStyle");
-                SwapIfExists(app, "WarningPrimaryButton",   "HighContrastWarningPrimaryButtonStyle");
-                SwapIfExists(app, "DestructiveButton",      "HighContrastOutlinedButtonStyle");
+                SwapIfExists(app, "HeroPrimaryButton", "HighContrastHeroPrimaryButtonStyle");
+                SwapIfExists(app, "PrimaryButton", "HighContrastPrimaryButtonStyle");
+                SwapIfExists(app, "SecondaryButton", "HighContrastSecondaryButtonStyle");
+                SwapIfExists(app, "OutlinedButton", "HighContrastOutlinedButtonStyle");
+                SwapIfExists(app, "WarningPrimaryButton", "HighContrastWarningPrimaryButtonStyle");
+                SwapIfExists(app, "DestructiveButton", "HighContrastOutlinedButtonStyle");
                 SwapIfExists(app, "DestructiveSolidButton", "HighContrastDestructiveSolidButtonStyle");
-                SwapIfExists(app, "IconButton",             "HighContrastIconButtonStyle");
-                SwapIfExists(app, "StatsCardButton",        "HighContrastStatsCardButtonStyle");
-                SwapIfExists(app, "QuickActionButton",      "HighContrastQuickActionButtonStyle");
-                SwapIfExists(app, "FavoriteIconButton",     "HighContrastFavoriteIconButtonStyle");
+                SwapIfExists(app, "IconButton", "HighContrastIconButtonStyle");
+                SwapIfExists(app, "StatsCardButton", "HighContrastStatsCardButtonStyle");
+                SwapIfExists(app, "QuickActionButton", "HighContrastQuickActionButtonStyle");
+                SwapIfExists(app, "FavoriteIconButton", "HighContrastFavoriteIconButtonStyle");
             }
             catch (Exception ex)
             {

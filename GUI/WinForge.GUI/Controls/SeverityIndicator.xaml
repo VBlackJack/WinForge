@@ -13,11 +13,11 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<UserControl x:Class="Win11Forge.GUI.Controls.SeverityIndicator"
+<UserControl x:Class="WinForge.GUI.Controls.SeverityIndicator"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-              xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+              xmlns:loc="clr-namespace:WinForge.GUI.Resources"
               x:Name="Root"
               AutomationProperties.Name="{loc:Loc Col_Status}"
               AutomationProperties.LiveSetting="Polite">

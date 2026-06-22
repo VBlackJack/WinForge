@@ -3,7 +3,7 @@
     Pester tests for TimeoutSettings module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge TimeoutSettings v3.5.2
+    Comprehensive unit tests for WinForge TimeoutSettings v3.5.2
     Tests timeout configuration loading, caching, and helper functions
 
 .NOTES

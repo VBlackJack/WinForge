@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Win11Forge.GUI\Win11Forge.GUI.csproj" />
+    <ProjectReference Include="..\WinForge.GUI\WinForge.GUI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -16,11 +16,11 @@
 
 using System.IO;
 using System.Text.Json;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class ProfileMigrationServiceTests
 {
@@ -56,7 +56,7 @@ public class ProfileMigrationServiceTests
 
         string userProfilePath = Path.Combine(
             workspace.UserProfilesDirectory,
-            $"Base{Win11ForgePathNames.JsonFileExtension}");
+            $"Base{WinForgePathNames.JsonFileExtension}");
         File.WriteAllText(userProfilePath, "user modified");
 
         ProfileMigrationResult secondResult = service.EnsureProfilesMigrated();
@@ -73,7 +73,7 @@ public class ProfileMigrationServiceTests
         WriteProfile(defaultsDirectory, "Base", "default base");
         WriteProfile(defaultsDirectory, "Office", "default office");
 
-        string legacyDirectory = Path.Combine(workspace.RepositoryRoot, Win11ForgePathNames.ProfilesDirectoryName);
+        string legacyDirectory = Path.Combine(workspace.RepositoryRoot, WinForgePathNames.ProfilesDirectoryName);
         WriteProfile(legacyDirectory, "Base", "user modified base");
         WriteProfile(legacyDirectory, "Office", "default office");
         WriteProfile(legacyDirectory, "Custom", "custom profile");
@@ -86,16 +86,16 @@ public class ProfileMigrationServiceTests
         Assert.True(result.SourceLegacy);
         Assert.Equal(
             "default base",
-            File.ReadAllText(Path.Combine(workspace.UserProfilesDirectory, $"Base{Win11ForgePathNames.JsonFileExtension}")));
+            File.ReadAllText(Path.Combine(workspace.UserProfilesDirectory, $"Base{WinForgePathNames.JsonFileExtension}")));
         Assert.Equal(
             "user modified base",
-            File.ReadAllText(Path.Combine(workspace.UserProfilesDirectory, $"Base{Win11ForgePathNames.LegacyProfileConflictSuffix}{Win11ForgePathNames.JsonFileExtension}")));
+            File.ReadAllText(Path.Combine(workspace.UserProfilesDirectory, $"Base{WinForgePathNames.LegacyProfileConflictSuffix}{WinForgePathNames.JsonFileExtension}")));
         Assert.Equal(
             "custom profile",
-            File.ReadAllText(Path.Combine(workspace.UserProfilesDirectory, $"Custom{Win11ForgePathNames.JsonFileExtension}")));
+            File.ReadAllText(Path.Combine(workspace.UserProfilesDirectory, $"Custom{WinForgePathNames.JsonFileExtension}")));
         Assert.False(File.Exists(Path.Combine(
             workspace.UserProfilesDirectory,
-            $"Office{Win11ForgePathNames.LegacyProfileConflictSuffix}{Win11ForgePathNames.JsonFileExtension}")));
+            $"Office{WinForgePathNames.LegacyProfileConflictSuffix}{WinForgePathNames.JsonFileExtension}")));
         AssertSentinel(result.SentinelPath, sourceDefaults: true, sourceLegacy: true);
     }
 
@@ -109,8 +109,8 @@ public class ProfileMigrationServiceTests
     {
         string defaultsDirectory = Path.Combine(
             workspace.RepositoryRoot,
-            Win11ForgePathNames.ProfilesDirectoryName,
-            Win11ForgePathNames.DefaultProfilesDirectoryName);
+            WinForgePathNames.ProfilesDirectoryName,
+            WinForgePathNames.DefaultProfilesDirectoryName);
         Directory.CreateDirectory(defaultsDirectory);
         return defaultsDirectory;
     }
@@ -118,7 +118,7 @@ public class ProfileMigrationServiceTests
     private static string WriteProfile(string directory, string name, string content)
     {
         Directory.CreateDirectory(directory);
-        string path = Path.Combine(directory, $"{name}{Win11ForgePathNames.JsonFileExtension}");
+        string path = Path.Combine(directory, $"{name}{WinForgePathNames.JsonFileExtension}");
         File.WriteAllText(path, content);
         return path;
     }
@@ -129,7 +129,7 @@ public class ProfileMigrationServiceTests
         using JsonDocument document = JsonDocument.Parse(File.ReadAllText(sentinelPath));
         JsonElement root = document.RootElement;
 
-        Assert.Equal(Win11ForgePathNames.ProfileMigrationVersion, root.GetProperty("version").GetInt32());
+        Assert.Equal(WinForgePathNames.ProfileMigrationVersion, root.GetProperty("version").GetInt32());
         Assert.True(root.TryGetProperty("migratedAt", out JsonElement migratedAt));
         Assert.False(string.IsNullOrWhiteSpace(migratedAt.GetString()));
         Assert.Equal(sourceDefaults, root.GetProperty("sourceDefaults").GetBoolean());

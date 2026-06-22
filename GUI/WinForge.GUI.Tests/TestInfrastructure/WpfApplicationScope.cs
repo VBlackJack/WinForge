@@ -19,7 +19,7 @@ using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Threading;
 
-namespace Win11Forge.GUI.Tests.TestInfrastructure;
+namespace WinForge.GUI.Tests.TestInfrastructure;
 
 /// <summary>
 /// Test-only WPF application scope for behavioral tests that need <see cref="Application.Current"/>.
@@ -105,7 +105,7 @@ internal sealed class WpfApplicationScope : IDisposable
     public void AddHighContrastDictionaryMarker()
     {
         AddMergedDictionaryMarker(
-            "pack://application:,,,/Win11Forge.GUI;component/Resources/HighContrastTheme.xaml");
+            "pack://application:,,,/WinForge.GUI;component/Resources/HighContrastTheme.xaml");
     }
 
     /// <summary>

@@ -17,9 +17,9 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Win11Forge.GUI.ViewModels;
+using WinForge.GUI.ViewModels;
 
-namespace Win11Forge.GUI.Views;
+namespace WinForge.GUI.Views;
 
 /// <summary>
 /// Monitoring view for tracking deployment progress.

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.ViewModels;
+using WinForge.GUI.Models;
+using WinForge.GUI.ViewModels;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for ApplicationPickerViewModel - application selection dialog.

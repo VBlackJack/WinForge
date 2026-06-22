@@ -1,4 +1,4 @@
-name: Win11Forge CI
+name: WinForge CI
 
 on:
   push:
@@ -47,12 +47,12 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore dependencies
-        run: dotnet restore GUI/Win11Forge.slnx --locked-mode
+        run: dotnet restore GUI/WinForge.slnx --locked-mode
 
       - name: Scan for vulnerable dependencies
         shell: pwsh
         run: |
-          $output = dotnet list GUI/Win11Forge.slnx package --vulnerable --include-transitive 2>&1 | Out-String
+          $output = dotnet list GUI/WinForge.slnx package --vulnerable --include-transitive 2>&1 | Out-String
           Write-Host $output
           if ($output -match 'has the following vulnerable packages') {
             Write-Host "::error::Vulnerable NuGet packages detected"
@@ -61,7 +61,7 @@ jobs:
           Write-Host "No vulnerable packages found"
 
       - name: Build for CodeQL Analysis
-        run: dotnet build GUI/Win11Forge.slnx --configuration Release --no-restore
+        run: dotnet build GUI/WinForge.slnx --configuration Release --no-restore
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
@@ -127,7 +127,7 @@ jobs:
       - name: Lint French diacritics
         shell: pwsh
         run: |
-          .\Tools\lint-fr-diacritics.ps1 -Path 'GUI\Win11Forge.GUI\Resources\Resources.fr.resx'
+          .\Tools\lint-fr-diacritics.ps1 -Path 'GUI\WinForge.GUI\Resources\Resources.fr.resx'
 
   # ===========================================
   # PowerShell Pester Tests with Code Coverage
@@ -241,15 +241,15 @@ jobs:
         run: .\Tools\Test-PackagesLockRidNeutrality.ps1 -Path GUI
 
       - name: Restore dependencies
-        run: dotnet restore GUI/Win11Forge.slnx --locked-mode
+        run: dotnet restore GUI/WinForge.slnx --locked-mode
 
       - name: Build GUI (Release)
-        run: dotnet build GUI/Win11Forge.slnx --configuration Release --no-restore
+        run: dotnet build GUI/WinForge.slnx --configuration Release --no-restore
 
       - name: Run GUI Tests with Code Coverage
         timeout-minutes: 20
         run: |
-          dotnet test GUI/Win11Forge.GUI.Tests/Win11Forge.GUI.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=TestResults-GUI.trx" --collect:"XPlat Code Coverage" --results-directory GUI/Win11Forge.GUI.Tests/TestResults --blame-hang --blame-hang-timeout 120s --blame-hang-dump-type mini
+          dotnet test GUI/WinForge.GUI.Tests/WinForge.GUI.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=TestResults-GUI.trx" --collect:"XPlat Code Coverage" --results-directory GUI/WinForge.GUI.Tests/TestResults --blame-hang --blame-hang-timeout 120s --blame-hang-dump-type mini
 
       - name: Install ReportGenerator
         run: dotnet tool install --global dotnet-reportgenerator-globaltool
@@ -257,7 +257,7 @@ jobs:
       - name: Generate Coverage Report
         shell: pwsh
         run: |
-          $coverageFile = Get-ChildItem -Path 'GUI/Win11Forge.GUI.Tests/TestResults' -Filter 'coverage.cobertura.xml' -Recurse | Select-Object -First 1
+          $coverageFile = Get-ChildItem -Path 'GUI/WinForge.GUI.Tests/TestResults' -Filter 'coverage.cobertura.xml' -Recurse | Select-Object -First 1
           if ($coverageFile) {
             reportgenerator -reports:$($coverageFile.FullName) -targetdir:coverage-report-gui -reporttypes:"Html;JsonSummary;Cobertura"
 
@@ -301,7 +301,7 @@ jobs:
         if: always()
         with:
           name: gui-test-results
-          path: GUI/Win11Forge.GUI.Tests/TestResults/TestResults-GUI.trx
+          path: GUI/WinForge.GUI.Tests/TestResults/TestResults-GUI.trx
 
       - name: Upload GUI Coverage Report
         uses: actions/upload-artifact@v4
@@ -474,6 +474,6 @@ jobs:
       - name: Upload Release Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Win11Forge_v${{ steps.version.outputs.VERSION }}
-          path: Dist/Win11Forge_v${{ steps.version.outputs.VERSION }}.zip
+          name: WinForge_v${{ steps.version.outputs.VERSION }}
+          path: Dist/WinForge_v${{ steps.version.outputs.VERSION }}.zip
           retention-days: 30

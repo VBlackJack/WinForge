@@ -15,9 +15,9 @@
  */
 
 using System.Globalization;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for confirmation dialog pluralization resources.

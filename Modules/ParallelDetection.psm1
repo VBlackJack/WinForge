@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Parallel Detection v3.7.2
+    WinForge - Parallel Detection v3.7.2
 
 .DESCRIPTION
     Lightweight detection module optimized for parallel job execution.

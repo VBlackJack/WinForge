@@ -16,10 +16,10 @@
 
 using System.IO;
 using System.Text.Json;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for legacy settings theme migration.

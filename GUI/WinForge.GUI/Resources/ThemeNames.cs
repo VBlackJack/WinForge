@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Win11Forge.GUI.Resources;
+namespace WinForge.GUI.Resources;
 
 /// <summary>
 /// Canonical theme name constants.
@@ -39,7 +39,7 @@ public static class ThemeNames
     public const string Sconce = ThemeForge.Theme.ThemeNames.Sconce;
 
     /// <summary>
-    /// Legacy Win11Forge theme names kept only for settings migration.
+    /// Legacy WinForge theme names kept only for settings migration.
     /// </summary>
     public const string Light = "Light";
     public const string DraculaPro = "DraculaPro";

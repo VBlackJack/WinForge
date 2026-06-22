@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Scheduled Deployment Manager v3.7.2
+    WinForge - Scheduled Deployment Manager v3.7.2
 
 .DESCRIPTION
     Module for managing scheduled deployments:
@@ -53,8 +53,10 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
 }
 
 # === CONSTANTS ===
-$script:TaskNamePrefix = 'Win11Forge_Deployment_'
-$script:TaskFolder = '\Win11Forge\'
+$script:TaskNamePrefix = 'WinForge_Deployment_'
+$script:LegacyTaskNamePrefix = 'Win11Forge_Deployment_'
+$script:TaskFolder = '\WinForge\'
+$script:LegacyTaskFolder = '\Win11Forge\'
 $script:ScheduledDeploymentsPath = Join-Path $script:RepositoryRoot 'Config\scheduled-deployments.json'
 
 # === SCHEDULED DEPLOYMENT CLASS ===
@@ -121,6 +123,61 @@ function Test-AdministratorPrivileges {
     return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
+function Test-ScheduledDeploymentTaskName {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$TaskName
+    )
+
+    return $TaskName -like "$script:TaskNamePrefix*" -or $TaskName -like "$script:LegacyTaskNamePrefix*"
+}
+
+function Get-ScheduledDeploymentIdFromTaskName {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$TaskName
+    )
+
+    if ($TaskName -like "$script:TaskNamePrefix*") {
+        return $TaskName.Substring($script:TaskNamePrefix.Length)
+    }
+
+    if ($TaskName -like "$script:LegacyTaskNamePrefix*") {
+        return $TaskName.Substring($script:LegacyTaskNamePrefix.Length)
+    }
+
+    return $null
+}
+
+function Resolve-ScheduledDeploymentTask {
+    [CmdletBinding()]
+    [OutputType([pscustomobject])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Id
+    )
+
+    $candidates = @(
+        [pscustomobject]@{ TaskName = "$script:TaskNamePrefix$Id"; TaskPath = $script:TaskFolder },
+        [pscustomobject]@{ TaskName = "$script:LegacyTaskNamePrefix$Id"; TaskPath = $script:TaskFolder },
+        [pscustomobject]@{ TaskName = "$script:TaskNamePrefix$Id"; TaskPath = $script:LegacyTaskFolder },
+        [pscustomobject]@{ TaskName = "$script:LegacyTaskNamePrefix$Id"; TaskPath = $script:LegacyTaskFolder }
+    )
+
+    foreach ($candidate in $candidates) {
+        $task = Get-ScheduledTask -TaskName $candidate.TaskName -TaskPath $candidate.TaskPath -ErrorAction SilentlyContinue
+        if ($task) {
+            return $candidate
+        }
+    }
+
+    return $candidates[0]
+}
+
 # === TASK SCHEDULER INTEGRATION ===
 
 function New-ScheduledDeployment {
@@ -129,7 +186,7 @@ function New-ScheduledDeployment {
         Creates a new scheduled deployment.
 
     .DESCRIPTION
-        Schedules a Win11Forge deployment to run at a specified time using
+        Schedules a WinForge deployment to run at a specified time using
         Windows Task Scheduler.
 
     .PARAMETER ProfileName
@@ -277,7 +334,7 @@ function New-ScheduledDeployment {
             $taskDescription = if ($Description) {
                 $Description
             } else {
-                "Win11Forge scheduled deployment: Profile '$ProfileName', Created by $($deployment.CreatedBy) on $($deployment.CreatedAt.ToString('yyyy-MM-dd HH:mm'))"
+                "WinForge scheduled deployment: Profile '$ProfileName', Created by $($deployment.CreatedBy) on $($deployment.CreatedAt.ToString('yyyy-MM-dd HH:mm'))"
             }
 
             # Register the task
@@ -356,15 +413,21 @@ function Get-ScheduledDeployment {
     $results = @()
 
     try {
-        # Get all Win11Forge tasks
-        $tasks = Get-ScheduledTask -TaskPath $script:TaskFolder -ErrorAction SilentlyContinue |
-            Where-Object { $_.TaskName -like "$script:TaskNamePrefix*" }
+        # Get all WinForge tasks, including legacy Win11Forge tasks so existing schedules remain manageable.
+        $tasks = foreach ($taskFolder in @($script:TaskFolder, $script:LegacyTaskFolder)) {
+            Get-ScheduledTask -TaskPath $taskFolder -ErrorAction SilentlyContinue |
+                Where-Object { Test-ScheduledDeploymentTaskName -TaskName $_.TaskName } |
+                Select-Object *, @{ Name = 'ResolvedTaskPath'; Expression = { $taskFolder } }
+        }
 
         foreach ($task in $tasks) {
-            $taskInfo = Get-ScheduledTaskInfo -TaskName $task.TaskName -TaskPath $script:TaskFolder -ErrorAction SilentlyContinue
+            $taskInfo = Get-ScheduledTaskInfo -TaskName $task.TaskName -TaskPath $task.ResolvedTaskPath -ErrorAction SilentlyContinue
 
             # Parse deployment ID from task name
-            $deploymentId = $task.TaskName -replace "^$script:TaskNamePrefix", ''
+            $deploymentId = Get-ScheduledDeploymentIdFromTaskName -TaskName $task.TaskName
+            if (-not $deploymentId) {
+                continue
+            }
 
             # Load saved deployment info
             $savedInfo = Get-SavedDeploymentInfo -Id $deploymentId
@@ -467,11 +530,11 @@ function Remove-ScheduledDeployment {
             throw [System.UnauthorizedAccessException]::new($msg)
         }
 
-        $taskName = "$script:TaskNamePrefix$Id"
+        $task = Resolve-ScheduledDeploymentTask -Id $Id
 
-        if ($Force -or $PSCmdlet.ShouldProcess($taskName, 'Remove scheduled deployment')) {
+        if ($Force -or $PSCmdlet.ShouldProcess($task.TaskName, 'Remove scheduled deployment')) {
             try {
-                Unregister-ScheduledTask -TaskName $taskName -TaskPath $script:TaskFolder -Confirm:$false -ErrorAction Stop
+                Unregister-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -Confirm:$false -ErrorAction Stop
 
                 # Remove saved info
                 Remove-SavedDeploymentInfo -Id $Id
@@ -514,10 +577,10 @@ function Enable-ScheduledDeployment {
             throw [System.UnauthorizedAccessException]::new($msg)
         }
 
-        $taskName = "$script:TaskNamePrefix$Id"
+        $task = Resolve-ScheduledDeploymentTask -Id $Id
 
         try {
-            Enable-ScheduledTask -TaskName $taskName -TaskPath $script:TaskFolder -ErrorAction Stop
+            Enable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -ErrorAction Stop
 
             $msg = Get-LocalizedString -Key 'scheduledDeployment.enabled' -DefaultValue 'Scheduled deployment enabled: {Id}' -Parameters @{ Id = $Id }
             Write-Status -Message $msg -Level 'Success'
@@ -557,10 +620,10 @@ function Disable-ScheduledDeployment {
             throw [System.UnauthorizedAccessException]::new($msg)
         }
 
-        $taskName = "$script:TaskNamePrefix$Id"
+        $task = Resolve-ScheduledDeploymentTask -Id $Id
 
         try {
-            Disable-ScheduledTask -TaskName $taskName -TaskPath $script:TaskFolder -ErrorAction Stop
+            Disable-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -ErrorAction Stop
 
             $msg = Get-LocalizedString -Key 'scheduledDeployment.disabled' -DefaultValue 'Scheduled deployment disabled: {Id}' -Parameters @{ Id = $Id }
             Write-Status -Message $msg -Level 'Success'
@@ -600,10 +663,10 @@ function Start-ScheduledDeployment {
             throw [System.UnauthorizedAccessException]::new($msg)
         }
 
-        $taskName = "$script:TaskNamePrefix$Id"
+        $task = Resolve-ScheduledDeploymentTask -Id $Id
 
         try {
-            Start-ScheduledTask -TaskName $taskName -TaskPath $script:TaskFolder -ErrorAction Stop
+            Start-ScheduledTask -TaskName $task.TaskName -TaskPath $task.TaskPath -ErrorAction Stop
 
             $msg = Get-LocalizedString -Key 'scheduledDeployment.started' -DefaultValue 'Scheduled deployment started: {Id}' -Parameters @{ Id = $Id }
             Write-Status -Message $msg -Level 'Success'
@@ -800,10 +863,10 @@ function Get-ScheduledDeploymentSummary {
 function Initialize-ScheduledDeploymentTaskFolder {
     <#
     .SYNOPSIS
-        Initializes the Win11Forge task folder in Task Scheduler.
+        Initializes the WinForge task folder in Task Scheduler.
 
     .DESCRIPTION
-        Creates the \Win11Forge\ folder in Task Scheduler if it doesn't exist.
+        Creates the \WinForge\ folder in Task Scheduler if it doesn't exist.
     #>
     [CmdletBinding()]
     param()
@@ -818,11 +881,11 @@ function Initialize-ScheduledDeploymentTaskFolder {
         $rootFolder = $scheduleService.GetFolder('\')
 
         try {
-            $null = $rootFolder.GetFolder('Win11Forge')
+            $null = $rootFolder.GetFolder('WinForge')
         }
         catch {
-            $null = $rootFolder.CreateFolder('Win11Forge')
-            Write-Status -Message 'Created Win11Forge task folder' -Level 'Verbose'
+            $null = $rootFolder.CreateFolder('WinForge')
+            Write-Status -Message 'Created WinForge task folder' -Level 'Verbose'
         }
     }
     catch {

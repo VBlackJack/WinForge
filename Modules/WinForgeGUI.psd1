@@ -1,5 +1,5 @@
 #
-# Module manifest for Win11ForgeGUI
+# Module manifest for WinForgeGUI
 #
 # Copyright 2026 Julien Bombled
 #
@@ -17,11 +17,11 @@
 #
 
 @{
-    RootModule = 'Win11ForgeGUI.psm1'
+    RootModule = 'WinForgeGUI.psm1'
     ModuleVersion = '1.0.0622.1'
     GUID = '711bc72b-1310-4c07-8cb1-53c24ebaeccb'
     Author = 'Julien Bombled'
-    CompanyName = 'Win11Forge'
+    CompanyName = 'WinForge'
     Copyright = '(c) 2026 Julien Bombled. All rights reserved.'
     Description = 'GUI launcher and integration utilities'
     PowerShellVersion = '5.1'
@@ -32,10 +32,10 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            Tags = @('Win11Forge', 'GUI', 'WPF', 'Integration')
+            Tags = @('WinForge', 'GUI', 'WPF', 'Integration')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'Win11Forge v2026062201'
+            ReleaseNotes = 'WinForge v2026062201'
         }
     }
 }

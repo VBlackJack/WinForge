@@ -17,9 +17,9 @@
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Win11Forge.GUI.Tests.TestInfrastructure;
+using WinForge.GUI.Tests.TestInfrastructure;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Automated tests to enforce the "Zero Hardcoding" policy.
@@ -80,8 +80,8 @@ public class LocalizationAuditTests
         "+",          // Plus sign
         "v",          // Version prefix (e.g., "v3.2.3")
         " / ~",       // Time separator (elapsed / ~estimated)
-        "Win11Forge", // Brand name (not localized)
-        "Win11Forge v", // Brand name with version prefix
+        "WinForge", // Brand name (not localized)
+        "WinForge v", // Brand name with version prefix
         "\"",         // Quote character
         " \"",        // Space + quote (formatting)
         "&quot;",     // HTML entity quote
@@ -152,13 +152,13 @@ public class LocalizationAuditTests
     /// Gets the Views directory path by walking up from the test assembly location.
     /// </summary>
     private static string GetViewsDirectory()
-        => RepositoryPathHelper.FindDirectory("GUI", "Win11Forge.GUI", "Views");
+        => RepositoryPathHelper.FindDirectory("GUI", "WinForge.GUI", "Views");
 
     /// <summary>
     /// Gets the Resources directory path by walking up from the test assembly location.
     /// </summary>
     private static string GetResourcesDirectory()
-        => RepositoryPathHelper.FindDirectory("GUI", "Win11Forge.GUI", "Resources");
+        => RepositoryPathHelper.FindDirectory("GUI", "WinForge.GUI", "Resources");
 
     /// <summary>
     /// Scans all XAML files in the Views directory for hardcoded strings.

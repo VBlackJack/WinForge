@@ -3,7 +3,7 @@
     Pester tests for InstallationEngine module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge InstallationEngine v2.5.0
+    Comprehensive unit tests for WinForge InstallationEngine v2.5.0
     Coverage target: 50% minimum
 
 .NOTES

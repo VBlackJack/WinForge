@@ -17,9 +17,9 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
-using Win11Forge.GUI.Helpers;
+using WinForge.GUI.Helpers;
 
-namespace Win11Forge.GUI.Controls;
+namespace WinForge.GUI.Controls;
 
 /// <summary>
 /// A loading overlay control that blocks user interaction while showing progress.

@@ -20,7 +20,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 
-namespace Win11Forge.GUI.Controls;
+namespace WinForge.GUI.Controls;
 
 /// <summary>
 /// Represents a single breadcrumb item.

@@ -17,9 +17,9 @@
 #nullable enable
 
 using System.Security.Principal;
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Service for managing system prerequisites.
@@ -90,9 +90,9 @@ public class PrerequisitesService : IPrerequisitesService
     }
 
     /// <inheritdoc/>
-    public Task<string> GetWin11ForgeVersionAsync()
+    public Task<string> GetWinForgeVersionAsync()
     {
-        return _powerShellBridge.GetWin11ForgeVersionAsync();
+        return _powerShellBridge.GetWinForgeVersionAsync();
     }
 
     /// <inheritdoc/>

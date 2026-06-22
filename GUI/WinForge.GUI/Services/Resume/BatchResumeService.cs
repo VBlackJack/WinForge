@@ -18,16 +18,17 @@
 
 using System.IO;
 using System.Text.Json;
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Services.Resume;
+namespace WinForge.GUI.Services.Resume;
 
 /// <summary>
 /// File-backed implementation of <see cref="IBatchResumeService"/>.
 /// </summary>
 /// <remarks>
 /// Persistence pattern is intentionally aligned with <see cref="AppSettingsService"/>:
-/// root under <c>%LocalAppData%\Win11Forge\state\</c>, automatic fallback to the
+/// root under <c>%LocalAppData%\WinForge\state\</c>, automatic fallback to the
 /// system temp directory when LocalAppData is inaccessible, and shared
 /// <see cref="JsonSerializerOptions"/> with camelCase naming.
 ///
@@ -63,7 +64,7 @@ public sealed class BatchResumeService : IBatchResumeService
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
     /// <summary>
-    /// Production constructor used by DI. Resolves <c>%LocalAppData%\Win11Forge\state</c>
+    /// Production constructor used by DI. Resolves <c>%LocalAppData%\WinForge\state</c>
     /// with the same fallback chain as <see cref="AppSettingsService"/>.
     /// </summary>
     public BatchResumeService(ILoggerFactory? loggerFactory = null)
@@ -379,32 +380,57 @@ public sealed class BatchResumeService : IBatchResumeService
             localAppData = Path.GetTempPath();
         }
 
-        string win11ForgePath = Path.Combine(localAppData, "Win11Forge");
+        string winForgePath = ResolveProductDataDirectory(localAppData, logger);
         try
         {
-            if (!Directory.Exists(win11ForgePath))
+            if (!Directory.Exists(winForgePath))
             {
-                Directory.CreateDirectory(win11ForgePath);
+                Directory.CreateDirectory(winForgePath);
             }
         }
         catch (Exception ex)
         {
-            logger.LogWarning($"[BatchResumeService] Failed to create Win11Forge dir in AppData: {ex.Message}");
-            win11ForgePath = Path.Combine(Path.GetTempPath(), "Win11Forge");
+            logger.LogWarning($"[BatchResumeService] Failed to create WinForge dir in AppData: {ex.Message}");
+            winForgePath = ResolveProductDataDirectory(Path.GetTempPath(), logger);
             try
             {
-                if (!Directory.Exists(win11ForgePath))
+                if (!Directory.Exists(winForgePath))
                 {
-                    Directory.CreateDirectory(win11ForgePath);
+                    Directory.CreateDirectory(winForgePath);
                 }
             }
             catch (Exception innerEx)
             {
-                logger.LogWarning($"[BatchResumeService] Failed to create fallback Win11Forge dir: {innerEx.Message}");
-                win11ForgePath = Path.GetTempPath();
+                logger.LogWarning($"[BatchResumeService] Failed to create fallback WinForge dir: {innerEx.Message}");
+                winForgePath = Path.GetTempPath();
             }
         }
 
-        return Path.Combine(win11ForgePath, "state");
+        return Path.Combine(winForgePath, "state");
+    }
+
+    internal static string ResolveProductDataDirectory(string basePath, ILoggingService logger)
+    {
+        string productPath = Path.Combine(basePath, WinForgePathNames.ProductDirectoryName);
+        string legacyPath = Path.Combine(basePath, WinForgePathNames.LegacyProductDirectoryName);
+
+        if (Directory.Exists(productPath) || !Directory.Exists(legacyPath))
+        {
+            return productPath;
+        }
+
+        try
+        {
+            Directory.Move(legacyPath, productPath);
+            logger.LogInfo($"[BatchResumeService] Migrated user data directory from '{legacyPath}' to '{productPath}'.");
+            return productPath;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(
+                $"[BatchResumeService] Failed to migrate user data directory from '{legacyPath}' to '{productPath}': {ex.Message}. " +
+                "Using legacy directory for this session.");
+            return legacyPath;
+        }
     }
 }

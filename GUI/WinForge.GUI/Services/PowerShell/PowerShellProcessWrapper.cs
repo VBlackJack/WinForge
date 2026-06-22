@@ -16,9 +16,9 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Services.PowerShell;
+namespace WinForge.GUI.Services.PowerShell;
 
 /// <summary>
 /// Wrapper that mimics PowerShell SDK API but uses external process execution.

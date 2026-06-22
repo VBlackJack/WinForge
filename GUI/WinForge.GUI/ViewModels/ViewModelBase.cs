@@ -16,7 +16,7 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 /// <summary>
 /// Base class for all ViewModels.

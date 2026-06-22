@@ -16,13 +16,13 @@
 
 using System.IO;
 using CommunityToolkit.Mvvm.Messaging;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.Coordinators;
-using Win11Forge.GUI.ViewModels;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.Coordinators;
+using WinForge.GUI.ViewModels;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for confirmation dialog action labels.
@@ -158,7 +158,7 @@ public class ConfirmDialogTests
     public void ConfirmDialogCallSites_DoNotUseGenericYesNoButtons()
     {
         List<string> failures = new List<string>();
-        string viewModelsPath = Path.Combine(FindRepositoryRoot(), "GUI", "Win11Forge.GUI", "ViewModels");
+        string viewModelsPath = Path.Combine(FindRepositoryRoot(), "GUI", "WinForge.GUI", "ViewModels");
         foreach (string file in Directory.EnumerateFiles(viewModelsPath, "*.cs", SearchOption.AllDirectories))
         {
             string text = File.ReadAllText(file);
@@ -227,8 +227,8 @@ public class ConfirmDialogTests
         DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory != null)
         {
-            if (File.Exists(Path.Combine(directory.FullName, "GUI", "Win11Forge.slnx")) &&
-                Directory.Exists(Path.Combine(directory.FullName, "GUI", "Win11Forge.GUI")))
+            if (File.Exists(Path.Combine(directory.FullName, "GUI", "WinForge.slnx")) &&
+                Directory.Exists(Path.Combine(directory.FullName, "GUI", "WinForge.GUI")))
             {
                 return directory.FullName;
             }
@@ -236,6 +236,6 @@ public class ConfirmDialogTests
             directory = directory.Parent;
         }
 
-        throw new InvalidOperationException("Could not find Win11Forge repository root.");
+        throw new InvalidOperationException("Could not find WinForge repository root.");
     }
 }

@@ -19,7 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using DataAnnotations = System.ComponentModel.DataAnnotations;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Service for validating models using DataAnnotations.

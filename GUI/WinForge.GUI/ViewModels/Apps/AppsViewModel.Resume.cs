@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.Coordinators;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.Coordinators;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 public partial class AppsViewModel
 {

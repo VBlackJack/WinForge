@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Search for application sources across all package managers
 
@@ -323,7 +323,7 @@ function Search-DirectDownload {
 # ============================================================================
 
 Write-ColorOutput "`n═══════════════════════════════════════════════════════════════════" -Color Magenta
-Write-ColorOutput "  🔎 Win11Forge - Application Source Search" -Color Magenta
+Write-ColorOutput "  🔎 WinForge - Application Source Search" -Color Magenta
 Write-ColorOutput "═══════════════════════════════════════════════════════════════════" -Color Magenta
 
 Write-ColorOutput "`nSearching for: " -Color White -NoNewline

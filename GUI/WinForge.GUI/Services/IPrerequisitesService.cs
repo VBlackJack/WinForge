@@ -16,9 +16,9 @@
 
 #nullable enable
 
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Interface for prerequisites management operations.
@@ -61,10 +61,10 @@ public interface IPrerequisitesService
     Task<SystemInfoModel> GetSystemInfoAsync();
 
     /// <summary>
-    /// Gets the Win11Forge version.
+    /// Gets the WinForge version.
     /// </summary>
     /// <returns>Version string</returns>
-    Task<string> GetWin11ForgeVersionAsync();
+    Task<string> GetWinForgeVersionAsync();
 
     /// <summary>
     /// Checks if PowerShell 7+ is available on the system.

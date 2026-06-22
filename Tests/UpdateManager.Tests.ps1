@@ -3,7 +3,7 @@
     Pester tests for UpdateManager module
 
 .DESCRIPTION
-    Unit tests for Win11Forge UpdateManager v3.1.4
+    Unit tests for WinForge UpdateManager v3.1.4
     Tests version comparison, update checking, and backup functions
 
 .NOTES

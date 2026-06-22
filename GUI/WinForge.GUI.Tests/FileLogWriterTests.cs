@@ -16,9 +16,9 @@
 
 using System.IO;
 using System.Text.RegularExpressions;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class FileLogWriterTests
 {
@@ -53,10 +53,10 @@ public class FileLogWriterTests
     public void Disabled_ViaEnvVar_WritesNothing()
     {
         string tempDirectory = CreateTempDirectory();
-        string? originalValue = Environment.GetEnvironmentVariable("WIN11FORGE_FILE_LOG");
+        string? originalValue = Environment.GetEnvironmentVariable("WINFORGE_FILE_LOG");
         try
         {
-            Environment.SetEnvironmentVariable("WIN11FORGE_FILE_LOG", "0");
+            Environment.SetEnvironmentVariable("WINFORGE_FILE_LOG", "0");
             FileLogWriter writer = new FileLogWriter(tempDirectory);
 
             writer.Write("this should not be written");
@@ -65,7 +65,7 @@ public class FileLogWriterTests
         }
         finally
         {
-            Environment.SetEnvironmentVariable("WIN11FORGE_FILE_LOG", originalValue);
+            Environment.SetEnvironmentVariable("WINFORGE_FILE_LOG", originalValue);
             TryDeleteDirectory(tempDirectory);
         }
     }
@@ -137,14 +137,14 @@ public class FileLogWriterTests
 
     private static string CreateTempDirectory()
     {
-        string tempDirectory = Path.Combine(Path.GetTempPath(), "Win11Forge.FileLogWriterTests", Guid.NewGuid().ToString("N"));
+        string tempDirectory = Path.Combine(Path.GetTempPath(), "WinForge.FileLogWriterTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDirectory);
         return tempDirectory;
     }
 
     private static string GetTodayLogFilePath(string tempDirectory)
     {
-        return Path.Combine(tempDirectory, $"Win11Forge_{DateTime.Now:yyyy-MM-dd}.log");
+        return Path.Combine(tempDirectory, $"WinForge_{DateTime.Now:yyyy-MM-dd}.log");
     }
 
     private static void TryDeleteDirectory(string path)

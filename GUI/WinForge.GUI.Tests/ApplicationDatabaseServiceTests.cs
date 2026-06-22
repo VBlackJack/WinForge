@@ -18,13 +18,13 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using Moq;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
 using DataValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
 using DataValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 using DataValidator = System.ComponentModel.DataAnnotations.Validator;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for ApplicationDatabaseService serialization/parsing behaviors.
@@ -500,7 +500,7 @@ public class ApplicationDatabaseServiceTests
     {
         string root = Path.Combine(
             Path.GetTempPath(),
-            "Win11Forge.Gui.Tests",
+            "WinForge.Gui.Tests",
             Guid.NewGuid().ToString("N"));
 
         Directory.CreateDirectory(Path.Combine(root, "Apps", "Database"));

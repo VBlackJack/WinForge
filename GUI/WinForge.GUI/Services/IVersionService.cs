@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Service for version information retrieval.
@@ -23,8 +23,8 @@ namespace Win11Forge.GUI.Services;
 public interface IVersionService
 {
     /// <summary>
-    /// Gets the Win11Forge version from Config/version.json.
+    /// Gets the WinForge version from Config/version.json.
     /// </summary>
     /// <returns>Version string (e.g., "2.6.0")</returns>
-    Task<string> GetWin11ForgeVersionAsync();
+    Task<string> GetWinForgeVersionAsync();
 }

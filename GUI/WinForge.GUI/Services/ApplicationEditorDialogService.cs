@@ -15,11 +15,11 @@
  */
 
 using System.Windows;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Views.Dialogs;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using WinForge.GUI.Models;
+using WinForge.GUI.Views.Dialogs;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// WPF implementation of <see cref="IApplicationEditorDialogService"/>.

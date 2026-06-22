@@ -15,10 +15,10 @@
  */
 
 using System.Windows;
-using Win11Forge.GUI.Controls;
-using Win11Forge.GUI.Tests.TestInfrastructure;
+using WinForge.GUI.Controls;
+using WinForge.GUI.Tests.TestInfrastructure;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for LoadingOverlay reduced-motion integration paths.

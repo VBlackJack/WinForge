@@ -3,7 +3,7 @@
     Pester tests for RollbackManager module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge RollbackManager v3.7.2
+    Comprehensive unit tests for WinForge RollbackManager v3.7.2
     Tests auto-rollback, failure tracking, reporting, handler registration,
     rollback execution, and edge cases
 
@@ -652,7 +652,7 @@ Describe 'RollbackManager Module' {
 
     Context 'Export-RollbackReport' {
         BeforeAll {
-            $script:TestReportDir = Join-Path $env:TEMP "Win11Forge_RollbackTest_$(New-Guid)"
+            $script:TestReportDir = Join-Path $env:TEMP "WinForge_RollbackTest_$(New-Guid)"
         }
 
         BeforeEach {
@@ -730,7 +730,7 @@ Describe 'RollbackManager Module' {
             $reportPath = Join-Path $script:TestReportDir 'header.txt'
             Export-RollbackReport -Path $reportPath -Format 'Text'
             $content = Get-Content -Path $reportPath -Raw
-            $content | Should -Match 'WIN11FORGE ROLLBACK REPORT'
+            $content | Should -Match 'WINFORGE ROLLBACK REPORT'
         }
 
         It 'Should include session info in Text report' {

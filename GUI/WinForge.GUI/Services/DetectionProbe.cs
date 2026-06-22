@@ -23,11 +23,11 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Shared detection engine for probing ad-hoc and catalog detection configurations.
@@ -132,8 +132,8 @@ public sealed class DetectionProbe : IDetectionProbe
         }
 
         string allowlistPath = repositoryPathService.GetPath(
-            Win11ForgePathNames.ConfigDirectoryName,
-            Win11ForgePathNames.DetectionAllowlistFileName);
+            WinForgePathNames.ConfigDirectoryName,
+            WinForgePathNames.DetectionAllowlistFileName);
 
         if (!File.Exists(allowlistPath))
         {
@@ -189,8 +189,8 @@ public sealed class DetectionProbe : IDetectionProbe
         }
 
         string policyPath = repositoryPathService.GetPath(
-            Win11ForgePathNames.ConfigDirectoryName,
-            Win11ForgePathNames.DetectionRegistryPolicyFileName);
+            WinForgePathNames.ConfigDirectoryName,
+            WinForgePathNames.DetectionRegistryPolicyFileName);
 
         if (!File.Exists(policyPath))
         {

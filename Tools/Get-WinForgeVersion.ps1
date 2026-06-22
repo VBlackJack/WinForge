@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Get Win11Forge framework version from central configuration
+    Get WinForge framework version from central configuration
 
 .DESCRIPTION
     Loads version information from Config/version.json
@@ -10,8 +10,8 @@
     PSCustomObject with Version, DisplayName, and ReleaseDate
 
 .EXAMPLE
-    $version = & .\Tools\Get-Win11ForgeVersion.ps1
-    Write-Host "Win11Forge v$($version.Version)"
+    $version = & .\Tools\Get-WinForgeVersion.ps1
+    Write-Host "WinForge v$($version.Version)"
 
 .NOTES
     Author: Julien Bombled

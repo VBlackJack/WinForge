@@ -19,11 +19,11 @@
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.DependencyInjection;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.ViewModels;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using WinForge.GUI.Models;
+using WinForge.GUI.ViewModels;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Views.Dialogs;
+namespace WinForge.GUI.Views.Dialogs;
 
 /// <summary>
 /// Dialog for adding or editing application definitions.

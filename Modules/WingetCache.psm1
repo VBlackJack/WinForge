@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Winget Cache v3.7.2
+    WinForge - Winget Cache v3.7.2
 
 .DESCRIPTION
     Provides intelligent caching for Winget operations to reduce
@@ -56,7 +56,7 @@ if (-not (Get-Command -Name Get-LocalizedString -ErrorAction SilentlyContinue)) 
 
 # Import DirectoryConstants for path management
 $script:DirectoryConstantsPath = Join-Path $script:RepositoryRoot 'Core\DirectoryConstants.psm1'
-if (-not (Get-Command -Name Get-Win11ForgeDirectory -ErrorAction SilentlyContinue)) {
+if (-not (Get-Command -Name Get-WinForgeDirectory -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:DirectoryConstantsPath) {
         Import-Module -Name $script:DirectoryConstantsPath -Force
     }
@@ -68,7 +68,7 @@ $script:CacheConfig = @{
     SearchTTLMinutes = 60
     ChocoListTTLMinutes = 60
     MaxEntries = 500
-    CacheDirectory = Get-Win11ForgeDirectory -DirectoryType 'Cache'
+    CacheDirectory = Get-WinForgeDirectory -DirectoryType 'Cache'
     CacheFileName = 'WingetCache.json'
 }
 

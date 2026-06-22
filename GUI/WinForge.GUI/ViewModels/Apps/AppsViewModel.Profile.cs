@@ -19,14 +19,14 @@ using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Exceptions;
-using Win11Forge.GUI.Helpers;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Views;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Exceptions;
+using WinForge.GUI.Helpers;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
+using WinForge.GUI.Views;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 public partial class AppsViewModel
 {
@@ -705,7 +705,7 @@ public partial class AppsViewModel
 
             string profilePath = Path.Combine(
                 profilesDir,
-                $"{saveResult.ProfileName}{Win11ForgePathNames.JsonFileExtension}");
+                $"{saveResult.ProfileName}{WinForgePathNames.JsonFileExtension}");
 
             // Build profile JSON
             Dictionary<string, object> profile = new Dictionary<string, object>
@@ -859,7 +859,7 @@ public partial class AppsViewModel
         string profilesDir = GetProfilesWriteDirectory();
         string profilePath = Path.Combine(
             profilesDir,
-            $"{profile.Name}{Win11ForgePathNames.JsonFileExtension}");
+            $"{profile.Name}{WinForgePathNames.JsonFileExtension}");
 
         Dictionary<string, object> profilePayload = new Dictionary<string, object>
         {
@@ -915,7 +915,7 @@ public partial class AppsViewModel
     {
         foreach (string profilesDir in profileDirectories)
         {
-            string profilePath = Path.Combine(profilesDir, $"{profileName}{Win11ForgePathNames.JsonFileExtension}");
+            string profilePath = Path.Combine(profilesDir, $"{profileName}{WinForgePathNames.JsonFileExtension}");
             string fullPath = Path.GetFullPath(profilePath);
             string fullProfilesDir = Path.GetFullPath(profilesDir);
             if (!fullProfilesDir.EndsWith(Path.DirectorySeparatorChar.ToString()))

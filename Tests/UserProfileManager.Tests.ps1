@@ -3,7 +3,7 @@
     Pester tests for UserProfileManager module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge UserProfileManager v3.7.2
+    Comprehensive unit tests for WinForge UserProfileManager v3.7.2
     Tests profile saving, loading, import/export, copy, merge, removal,
     statistics, and edge cases with full mock isolation
 
@@ -269,7 +269,7 @@ Describe 'UserProfileManager - Isolated Tests' {
         It 'Should set schema version in saved profile' {
             Save-UserProfile -Name 'SchemaTest' -Applications @('App1') -Overwrite
             $profile = Get-UserProfile -Name 'SchemaTest'
-            $profile.'$schema' | Should -Be 'Win11Forge-UserProfile-v1.0'
+            $profile.'$schema' | Should -Be 'WinForge-UserProfile-v1.0'
         }
 
         It 'Should throw when overwriting an existing profile without -Overwrite' {
@@ -505,7 +505,7 @@ Describe 'UserProfileManager - Isolated Tests' {
             $outputPath = Join-Path $TestDrive 'Exports\SchemaCheck.json'
             Export-UserProfile -Name 'ExportSource' -OutputPath $outputPath
             $data = Get-Content $outputPath -Raw | ConvertFrom-Json
-            $data.'$schema' | Should -Be 'Win11Forge-UserProfile-v1.0'
+            $data.'$schema' | Should -Be 'WinForge-UserProfile-v1.0'
         }
 
         It 'Should include Name and Applications in exported data' {
@@ -548,7 +548,7 @@ Describe 'UserProfileManager - Isolated Tests' {
                 New-Item -Path $importDir -ItemType Directory -Force | Out-Null
             }
             $importData = [ordered]@{
-                '$schema' = 'Win11Forge-UserProfile-v1.0'
+                '$schema' = 'WinForge-UserProfile-v1.0'
                 Name = 'ImportedProfile'
                 Description = 'Imported from external source'
                 Author = 'ExternalAuthor'

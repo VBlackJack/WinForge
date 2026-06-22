@@ -20,14 +20,14 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.Messaging;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.Coordinators;
-using Win11Forge.GUI.Services.PowerShell;
-using Win11Forge.GUI.ViewModels;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.Coordinators;
+using WinForge.GUI.Services.PowerShell;
+using WinForge.GUI.ViewModels;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for AppsViewModel - filtering, scanning, and installation logic.
@@ -442,7 +442,7 @@ public class AppsViewModelTests
         Assert.Single(fileDialogService.SaveOptions);
         Assert.Equal("JSON files (*.json)|*.json", fileDialogService.SaveOptions[0].Filter);
         Assert.Equal(".json", fileDialogService.SaveOptions[0].DefaultExtension);
-        Assert.Equal("win11forge-selection", fileDialogService.SaveOptions[0].DefaultFileName);
+        Assert.Equal("winforge-selection", fileDialogService.SaveOptions[0].DefaultFileName);
         Assert.True(File.Exists(filePath), $"Expected selection export file at {filePath}.");
 
         List<string>? exportedIds = JsonSerializer.Deserialize<List<string>>(await File.ReadAllTextAsync(filePath));
@@ -498,7 +498,7 @@ public class AppsViewModelTests
         // Assert
         Assert.Null(viewModel.ErrorMessage);
         Assert.Single(fileDialogService.SaveOptions);
-        Assert.Equal("win11forge-favorites", fileDialogService.SaveOptions[0].DefaultFileName);
+        Assert.Equal("winforge-favorites", fileDialogService.SaveOptions[0].DefaultFileName);
         Assert.True(File.Exists(filePath), $"Expected favorites export file at {filePath}.");
 
         List<string>? exportedIds = JsonSerializer.Deserialize<List<string>>(await File.ReadAllTextAsync(filePath));
@@ -1734,7 +1734,7 @@ public class AppsViewModelTests
         // Assert
         string profilePath = Path.Combine(
             profiles.PathService.UserProfilesDirectory,
-            $"Work{Win11ForgePathNames.JsonFileExtension}");
+            $"Work{WinForgePathNames.JsonFileExtension}");
         using JsonDocument document = JsonDocument.Parse(await File.ReadAllTextAsync(profilePath));
         JsonElement root = document.RootElement;
         string[] apps = root.GetProperty("Applications").EnumerateArray()
@@ -1785,7 +1785,7 @@ public class AppsViewModelTests
         // Assert
         string profilePath = Path.Combine(
             profiles.PathService.UserProfilesDirectory,
-            $"Developer{Win11ForgePathNames.JsonFileExtension}");
+            $"Developer{WinForgePathNames.JsonFileExtension}");
         using JsonDocument document = JsonDocument.Parse(await File.ReadAllTextAsync(profilePath));
         JsonElement root = document.RootElement;
         string[] apps = root.GetProperty("Applications").EnumerateArray()
@@ -2036,7 +2036,7 @@ public class AppsViewModelTests
         {
             DirectoryPath = Path.Combine(
                 Path.GetTempPath(),
-                "Win11Forge.Tests",
+                "WinForge.Tests",
                 Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(DirectoryPath);
         }
@@ -2087,7 +2087,7 @@ public class AppsViewModelTests
         {
             _rootPath = Path.Combine(
                 Path.GetTempPath(),
-                "Win11Forge.Tests",
+                "WinForge.Tests",
                 Guid.NewGuid().ToString("N"));
             PathService = new RepositoryPathService(
                 _rootPath,
@@ -2107,7 +2107,7 @@ public class AppsViewModelTests
                 };
                 string json = JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(
-                    Path.Combine(_profilesPath, $"{profile.Name}{Win11ForgePathNames.JsonFileExtension}"),
+                    Path.Combine(_profilesPath, $"{profile.Name}{WinForgePathNames.JsonFileExtension}"),
                     json);
             }
         }
@@ -2202,7 +2202,7 @@ internal class MockPowerShellBridge : IPowerShellBridge
         ];
     }
 
-    public string RepositoryRoot { get; set; } = @"C:\Test\Win11Forge";
+    public string RepositoryRoot { get; set; } = @"C:\Test\WinForge";
 
     public List<string> AvailableProfiles { get; set; } = ["Base", "Developer", "Gaming"];
 
@@ -2210,7 +2210,7 @@ internal class MockPowerShellBridge : IPowerShellBridge
 
     public IReadOnlyList<ApplicationModel> Applications => _mockApplications;
 
-    public Task<string> GetWin11ForgeVersionAsync() => Task.FromResult("3.0.0");
+    public Task<string> GetWinForgeVersionAsync() => Task.FromResult("3.0.0");
 
     public Task<List<string>> GetAvailableProfilesAsync() =>
         Task.FromResult(new List<string>(AvailableProfiles));

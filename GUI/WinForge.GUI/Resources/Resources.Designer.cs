@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Win11Forge.GUI.Resources;
+namespace WinForge.GUI.Resources;
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
 [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -28,7 +28,7 @@ public class Resources
         {
             if (object.ReferenceEquals(resourceMan, null))
             {
-                global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Win11Forge.GUI.Resources.Resources", typeof(Resources).Assembly);
+                global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WinForge.GUI.Resources.Resources", typeof(Resources).Assembly);
                 resourceMan = temp;
             }
             return resourceMan;

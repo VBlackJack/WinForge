@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge Profile Validation Test
+    WinForge Profile Validation Test
 
 .DESCRIPTION
     Tests all deployment profiles in TestMode with Parallel mode enabled.
@@ -27,7 +27,7 @@
 # limitations under the License.
 #
 
-Write-Host '=== Win11Forge Profile Validation Test ===' -ForegroundColor Cyan
+Write-Host '=== WinForge Profile Validation Test ===' -ForegroundColor Cyan
 Write-Host "Testing all profiles in TestMode + Parallel mode`n" -ForegroundColor Yellow
 
 $profiles = @('Base', 'Office', 'Gaming', 'Personnel')

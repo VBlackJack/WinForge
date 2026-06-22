@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-namespace Win11Forge.GUI.UITests;
+namespace WinForge.GUI.UITests;
 
 /// <summary>
 /// Opt-in UI Automation test attribute. UIA tests open a real desktop window.
 /// </summary>
 public sealed class UiaFactAttribute : FactAttribute
 {
-    private const string RunUiaVariable = "WIN11FORGE_RUN_UIA";
+    private const string RunUiaVariable = "WINFORGE_RUN_UIA";
+    private const string LegacyRunUiaVariable = "WIN11FORGE_RUN_UIA";
 
     public UiaFactAttribute()
     {
-        if (!string.Equals(Environment.GetEnvironmentVariable(RunUiaVariable), "1", StringComparison.Ordinal))
+        string? runUia =
+            Environment.GetEnvironmentVariable(RunUiaVariable) ??
+            Environment.GetEnvironmentVariable(LegacyRunUiaVariable);
+        if (!string.Equals(runUia, "1", StringComparison.Ordinal))
         {
             Skip = $"Set {RunUiaVariable}=1 to run desktop UI Automation tests.";
         }

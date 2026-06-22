@@ -15,12 +15,12 @@
  */
 
 using System.IO;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.ViewModels;
+using WinForge.GUI.Models;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Services;
+using WinForge.GUI.ViewModels;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for SettingsViewModel - theme, language, and history management.
@@ -255,9 +255,9 @@ public class SettingsViewModelTests
         MockDeploymentHistoryService historyService = new MockDeploymentHistoryService();
         MockPowerShellBridge powerShellBridge = new MockPowerShellBridge();
         SettingsViewModel viewModel = new SettingsViewModel(settingsService, historyService, powerShellBridge);
-        string expected = Win11Forge.GUI.Resources.Resources.ResourceManager.GetString(
+        string expected = WinForge.GUI.Resources.Resources.ResourceManager.GetString(
             "Settings_SaveFailed",
-            Win11Forge.GUI.Resources.Resources.Culture) ?? "Failed to save settings";
+            WinForge.GUI.Resources.Resources.Culture) ?? "Failed to save settings";
 
         // Act
         viewModel.SelectedTheme = viewModel.AvailableThemes.First(theme => theme.Name == ThemeNames.Folio);
@@ -457,7 +457,7 @@ public class SettingsViewModelTests
             Assert.Single(fileDialogService.SaveOptions);
             Assert.Equal("JSON files (*.json)|*.json|All files (*.*)|*.*", fileDialogService.SaveOptions[0].Filter);
             Assert.Equal(".json", fileDialogService.SaveOptions[0].DefaultExtension);
-            Assert.StartsWith("Win11Forge_Settings_", fileDialogService.SaveOptions[0].DefaultFileName);
+            Assert.StartsWith("WinForge_Settings_", fileDialogService.SaveOptions[0].DefaultFileName);
             Assert.True(File.Exists(filePath));
             Assert.Contains("\"LanguageCode\": \"fr\"", await File.ReadAllTextAsync(filePath));
             Assert.Equal(Resources.Resources.Settings_ExportSuccess, viewModel.StatusMessage);

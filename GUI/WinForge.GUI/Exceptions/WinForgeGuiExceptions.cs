@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-namespace Win11Forge.GUI.Exceptions;
+namespace WinForge.GUI.Exceptions;
 
 /// <summary>
-/// Base exception for all Win11Forge GUI exceptions.
+/// Base exception for all WinForge GUI exceptions.
 /// </summary>
-public class Win11ForgeGuiException : Exception
+public class WinForgeGuiException : Exception
 {
-    public Win11ForgeGuiException() { }
-    public Win11ForgeGuiException(string message) : base(message) { }
-    public Win11ForgeGuiException(string message, Exception innerException) : base(message, innerException) { }
+    public WinForgeGuiException() { }
+    public WinForgeGuiException(string message) : base(message) { }
+    public WinForgeGuiException(string message, Exception innerException) : base(message, innerException) { }
 }
 
 /// <summary>
 /// Exception thrown when PowerShell bridge operations fail.
 /// </summary>
-public class PowerShellBridgeException : Win11ForgeGuiException
+public class PowerShellBridgeException : WinForgeGuiException
 {
     /// <summary>
     /// The PowerShell command that failed.
@@ -70,7 +70,7 @@ public class PowerShellBridgeException : Win11ForgeGuiException
 /// <summary>
 /// Exception thrown when profile operations fail.
 /// </summary>
-public class ProfileException : Win11ForgeGuiException
+public class ProfileException : WinForgeGuiException
 {
     /// <summary>
     /// The profile name involved in the error.
@@ -99,7 +99,7 @@ public class ProfileException : Win11ForgeGuiException
 /// <summary>
 /// Exception thrown when application database operations fail.
 /// </summary>
-public class ApplicationDatabaseException : Win11ForgeGuiException
+public class ApplicationDatabaseException : WinForgeGuiException
 {
     /// <summary>
     /// The application ID involved in the error, if applicable.
@@ -140,7 +140,7 @@ public class ApplicationDatabaseException : Win11ForgeGuiException
 /// <summary>
 /// Exception thrown when deployment operations fail.
 /// </summary>
-public class DeploymentException : Win11ForgeGuiException
+public class DeploymentException : WinForgeGuiException
 {
     /// <summary>
     /// The profile being deployed, if applicable.
@@ -181,7 +181,7 @@ public class DeploymentException : Win11ForgeGuiException
 /// <summary>
 /// Exception thrown when detection operations fail.
 /// </summary>
-public class DetectionException : Win11ForgeGuiException
+public class DetectionException : WinForgeGuiException
 {
     /// <summary>
     /// The application being detected.
@@ -217,7 +217,7 @@ public class DetectionException : Win11ForgeGuiException
 /// <summary>
 /// Exception thrown when configuration operations fail.
 /// </summary>
-public class ConfigurationException : Win11ForgeGuiException
+public class ConfigurationException : WinForgeGuiException
 {
     /// <summary>
     /// The configuration file or setting involved.
@@ -246,7 +246,7 @@ public class ConfigurationException : Win11ForgeGuiException
 /// <summary>
 /// Exception thrown when validation operations fail.
 /// </summary>
-public class ValidationException : Win11ForgeGuiException
+public class ValidationException : WinForgeGuiException
 {
     /// <summary>
     /// The validation errors.

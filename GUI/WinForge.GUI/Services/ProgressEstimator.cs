@@ -16,7 +16,7 @@
 
 using System.Diagnostics;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Estimates remaining time for batch operations based on elapsed time and progress.

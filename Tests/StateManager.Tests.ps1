@@ -3,7 +3,7 @@
     Pester tests for StateManager module
 
 .DESCRIPTION
-    Comprehensive unit tests for Win11Forge StateManager v3.5.0
+    Comprehensive unit tests for WinForge StateManager v3.5.0
     Tests state persistence, validation, and recovery
 
 .NOTES
@@ -45,7 +45,7 @@ BeforeAll {
 
 AfterAll {
     # Cleanup any test state files
-    $testStateDir = Join-Path $env:LOCALAPPDATA 'Win11Forge'
+    $testStateDir = Join-Path $env:LOCALAPPDATA 'WinForge'
     if (Test-Path $testStateDir) {
         Get-ChildItem -Path $testStateDir -Filter '*Test*.json' -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
     }

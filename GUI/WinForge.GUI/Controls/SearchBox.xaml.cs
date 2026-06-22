@@ -20,7 +20,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Wpf.Ui.Controls;
 
-namespace Win11Forge.GUI.Controls;
+namespace WinForge.GUI.Controls;
 
 /// <summary>
 /// Represents a search suggestion item.

@@ -19,11 +19,11 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Win11Forge.GUI.Helpers;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Helpers;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Services.Implementations;
+namespace WinForge.GUI.Services.Implementations;
 
 /// <summary>
 /// Implementation of IApplicationManagementService for application lifecycle operations.

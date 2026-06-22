@@ -26,45 +26,45 @@ AfterAll {
 }
 
 Describe 'DirectoryConstants Module' {
-    Context 'Get-Win11ForgeDirectory' {
+    Context 'Get-WinForgeDirectory' {
         It 'Should return Data directory path' {
-            $result = Get-Win11ForgeDirectory -DirectoryType 'Data'
+            $result = Get-WinForgeDirectory -DirectoryType 'Data'
             $result | Should -BeOfType [string]
-            $result | Should -BeLike "*\Win11Forge"
+            $result | Should -BeLike "*\WinForge"
             $result | Should -BeLike "$env:LOCALAPPDATA*"
         }
 
         It 'Should return Logs directory path' {
-            $result = Get-Win11ForgeDirectory -DirectoryType 'Logs'
+            $result = Get-WinForgeDirectory -DirectoryType 'Logs'
             $result | Should -BeOfType [string]
-            $result | Should -BeLike "*\Win11Forge\Logs"
+            $result | Should -BeLike "*\WinForge\Logs"
         }
 
         It 'Should return Cache directory path' {
-            $result = Get-Win11ForgeDirectory -DirectoryType 'Cache'
+            $result = Get-WinForgeDirectory -DirectoryType 'Cache'
             $result | Should -BeOfType [string]
-            $result | Should -BeLike "*\Win11Forge\Cache"
+            $result | Should -BeLike "*\WinForge\Cache"
         }
 
         It 'Should return Backups directory path' {
-            $result = Get-Win11ForgeDirectory -DirectoryType 'Backups'
+            $result = Get-WinForgeDirectory -DirectoryType 'Backups'
             $result | Should -BeOfType [string]
-            $result | Should -BeLike "*\Win11Forge\Backups"
+            $result | Should -BeLike "*\WinForge\Backups"
         }
 
         It 'Should return Plugins directory path' {
-            $result = Get-Win11ForgeDirectory -DirectoryType 'Plugins'
+            $result = Get-WinForgeDirectory -DirectoryType 'Plugins'
             $result | Should -BeOfType [string]
             $result | Should -BeLike "*\Plugins"
         }
 
         It 'Should create directory if it does not exist' {
-            $result = Get-Win11ForgeDirectory -DirectoryType 'Data'
+            $result = Get-WinForgeDirectory -DirectoryType 'Data'
             Test-Path $result | Should -Be $true
         }
 
         It 'Should throw for invalid DirectoryType' {
-            { Get-Win11ForgeDirectory -DirectoryType 'InvalidType' } | Should -Throw
+            { Get-WinForgeDirectory -DirectoryType 'InvalidType' } | Should -Throw
         }
     }
 
@@ -123,13 +123,13 @@ Describe 'DirectoryConstants Module' {
         It 'Should return RollbackState path' {
             $result = Get-StatePath -PathKey 'RollbackState'
             $result | Should -BeOfType [string]
-            $result | Should -BeLike "*\Win11Forge\RollbackState.json"
+            $result | Should -BeLike "*\WinForge\RollbackState.json"
         }
 
         It 'Should return DeploymentState path' {
             $result = Get-StatePath -PathKey 'DeploymentState'
             $result | Should -BeOfType [string]
-            $result | Should -BeLike "*\Win11Forge\DeploymentState.json"
+            $result | Should -BeLike "*\WinForge\DeploymentState.json"
         }
 
         It 'Should throw for unknown state key' {
@@ -234,7 +234,7 @@ Describe 'DirectoryConstants Module' {
     Context 'Module Integration' {
         It 'Should have all expected functions exported' {
             $expectedFunctions = @(
-                'Get-Win11ForgeDirectory',
+                'Get-WinForgeDirectory',
                 'Get-RegistryPath',
                 'Get-AllRegistryPaths',
                 'Get-ConfigPath',

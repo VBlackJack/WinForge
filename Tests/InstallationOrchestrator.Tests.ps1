@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - InstallationOrchestrator Module Tests v3.5.0
+    WinForge - InstallationOrchestrator Module Tests v3.5.0
 
 .DESCRIPTION
     Pester tests for the InstallationOrchestrator module.
@@ -34,7 +34,7 @@ BeforeAll {
     Import-Module $EnginePath -Force -ErrorAction Stop
 
     # Test data directory
-    $script:TestStateDir = Join-Path $env:TEMP "Win11ForgeTest_$([Guid]::NewGuid().ToString('N'))"
+    $script:TestStateDir = Join-Path $env:TEMP "WinForgeTest_$([Guid]::NewGuid().ToString('N'))"
     if (-not (Test-Path $script:TestStateDir)) {
         New-Item -Path $script:TestStateDir -ItemType Directory -Force | Out-Null
     }

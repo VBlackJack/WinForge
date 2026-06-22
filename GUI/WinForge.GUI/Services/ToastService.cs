@@ -17,7 +17,7 @@
 using System.Windows;
 using Wpf.Ui.Controls;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Toast notification severity levels.

@@ -16,10 +16,10 @@
 
 using System.IO;
 using System.Text.Json;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Migrates packaged and legacy install profiles into writable user data.
@@ -74,7 +74,7 @@ public sealed class ProfileMigrationService : IProfileMigrationService
         string userProfilesDirectory = _pathService.UserProfilesDirectory;
         string sentinelPath = Path.Combine(
             userProfilesDirectory,
-            Win11ForgePathNames.ProfileMigrationSentinelFileName);
+            WinForgePathNames.ProfileMigrationSentinelFileName);
 
         if (File.Exists(sentinelPath))
         {
@@ -146,7 +146,7 @@ public sealed class ProfileMigrationService : IProfileMigrationService
         bool migrated = false;
         foreach (string legacyFile in Directory.GetFiles(
             legacyProfilesDirectory,
-            $"*{Win11ForgePathNames.JsonFileExtension}",
+            $"*{WinForgePathNames.JsonFileExtension}",
             SearchOption.TopDirectoryOnly))
         {
             if (legacyAndDefaultsAreSameDirectory)
@@ -184,7 +184,7 @@ public sealed class ProfileMigrationService : IProfileMigrationService
 
         return Directory.GetFiles(
                 defaultProfilesDirectory,
-                $"*{Win11ForgePathNames.JsonFileExtension}",
+                $"*{WinForgePathNames.JsonFileExtension}",
                 SearchOption.TopDirectoryOnly)
             .ToDictionary(path => Path.GetFileName(path)!, path => path, StringComparer.OrdinalIgnoreCase);
     }
@@ -208,11 +208,11 @@ public sealed class ProfileMigrationService : IProfileMigrationService
         for (int index = 1; index < 1000; index++)
         {
             string suffix = index == 1
-                ? Win11ForgePathNames.LegacyProfileConflictSuffix
-                : $"{Win11ForgePathNames.LegacyProfileConflictSuffix}-{index}";
+                ? WinForgePathNames.LegacyProfileConflictSuffix
+                : $"{WinForgePathNames.LegacyProfileConflictSuffix}-{index}";
             string candidate = Path.Combine(
                 userProfilesDirectory,
-                $"{baseName}{suffix}{Win11ForgePathNames.JsonFileExtension}");
+                $"{baseName}{suffix}{WinForgePathNames.JsonFileExtension}");
 
             if (!File.Exists(candidate))
             {
@@ -243,7 +243,7 @@ public sealed class ProfileMigrationService : IProfileMigrationService
     private static void WriteSentinel(string sentinelPath, bool sourceLegacy, bool sourceDefaults)
     {
         ProfileMigrationSentinel payload = new ProfileMigrationSentinel(
-            Win11ForgePathNames.ProfileMigrationVersion,
+            WinForgePathNames.ProfileMigrationVersion,
             DateTimeOffset.UtcNow,
             sourceLegacy,
             sourceDefaults);

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "$id": "https://win11forge.local/schemas/plugins-settings.schema.json",
-  "title": "Win11Forge Plugin Settings",
-  "description": "Schema for the Win11Forge plugin system configuration",
+  "$id": "https://winforge.local/schemas/plugins-settings.schema.json",
+  "title": "WinForge Plugin Settings",
+  "description": "Schema for the WinForge plugin system configuration",
   "type": "object",
   "required": ["enabled", "allowedHooks"],
   "additionalProperties": true,

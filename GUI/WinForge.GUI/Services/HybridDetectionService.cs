@@ -17,11 +17,11 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Management.Automation;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.PowerShell;
 using PS = System.Management.Automation.PowerShell;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Hybrid application detection service that combines multiple detection methods

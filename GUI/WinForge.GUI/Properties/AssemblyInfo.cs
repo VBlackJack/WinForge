@@ -16,4 +16,4 @@
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Win11Forge.GUI.Tests")]
+[assembly: InternalsVisibleTo("WinForge.GUI.Tests")]

@@ -17,7 +17,7 @@
 using System.IO;
 using System.Text.Json;
 
-namespace Win11Forge.GUI.Services.PowerShell;
+namespace WinForge.GUI.Services.PowerShell;
 
 /// <summary>
 /// Service for caching and accessing the applications database.

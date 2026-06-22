@@ -22,14 +22,14 @@ using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Localization;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Resources;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Localization;
+using WinForge.GUI.Models;
+using WinForge.GUI.Resources;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 /// <summary>
 /// ViewModel for the Settings view.
@@ -105,7 +105,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private string? _statusMessage;
 
     /// <summary>
-    /// Win11Forge version string.
+    /// WinForge version string.
     /// </summary>
     [ObservableProperty]
     private string _appVersion = string.Empty;
@@ -422,7 +422,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         }
 
         // Load version and scheduled deployments in parallel
-        Task<string> versionTask = _powerShellBridge.GetWin11ForgeVersionAsync();
+        Task<string> versionTask = _powerShellBridge.GetWinForgeVersionAsync();
         Task deploymentsTask = LoadScheduledDeploymentsAsync();
 
         await Task.WhenAll(versionTask, deploymentsTask);
@@ -742,7 +742,7 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
             string? filePath = await _fileDialogService.ShowSaveAsync(new FileDialogOptions(
                 string.Empty,
                 FileDialogFilters.Json,
-                DefaultFileName: $"Win11Forge_Settings_{DateTime.Now:yyyyMMdd}",
+                DefaultFileName: $"WinForge_Settings_{DateTime.Now:yyyyMMdd}",
                 DefaultExtension: FileDialogFilters.JsonDefaultExtension));
 
             if (filePath != null)

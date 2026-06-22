@@ -16,7 +16,7 @@
 
 using Xunit;
 
-namespace Win11Forge.GUI.Tests.TestInfrastructure;
+namespace WinForge.GUI.Tests.TestInfrastructure;
 
 /// <summary>
 /// Serializes tests that manipulate WPF application singleton state.

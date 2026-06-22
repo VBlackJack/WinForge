@@ -17,10 +17,10 @@
 using System.Diagnostics;
 using System.Security.Principal;
 using Microsoft.Win32;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Services.Implementations;
+namespace WinForge.GUI.Services.Implementations;
 
 /// <summary>
 /// Implementation of ISystemInfoService for retrieving system information.

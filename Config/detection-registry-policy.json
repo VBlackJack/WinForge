@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "$schema": "Win11Forge-DetectionRegistryPolicy-v1.0",
+    "$schema": "WinForge-DetectionRegistryPolicy-v1.0",
     "description": "Registry-path validation policy for application detection. Shared single source read by the GUI detection probe (C#) and the PowerShell DetectionRegistryGuard. A path is allowed only if it matches an allowedPattern and no blockedPattern.",
     "version": "1.0.0",
     "author": "Julien Bombled",

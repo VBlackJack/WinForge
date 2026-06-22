@@ -242,7 +242,7 @@ if ($GenerateReport) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Win11Forge - Application Database Report</title>
+    <title>WinForge - Application Database Report</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background: #f5f5f5; }
         h1 { color: #667eea; border-bottom: 3px solid #667eea; padding-bottom: 10px; }
@@ -262,7 +262,7 @@ if ($GenerateReport) {
     </style>
 </head>
 <body>
-    <h1>🛠️ Win11Forge - Application Database Report</h1>
+    <h1>🛠️ WinForge - Application Database Report</h1>
     <p>Generated: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")</p>
 
     <div class="stats">

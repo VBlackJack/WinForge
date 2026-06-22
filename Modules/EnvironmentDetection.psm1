@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Environment Detection Module v3.7.2
+    WinForge - Environment Detection Module v3.7.2
 
 .DESCRIPTION
     Detects execution environment (Windows Sandbox, VMware, Hyper-V, Physical)

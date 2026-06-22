@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Win11Forge - Run All Checks (PowerShell version)
+  WinForge - Run All Checks (PowerShell version)
 
 .DESCRIPTION
   Runs, in order:
@@ -44,7 +44,7 @@ function Write-Banner {
 }
 
 $root = $PSScriptRoot
-Write-Banner 'Win11Forge - Run All Checks'
+Write-Banner 'WinForge - Run All Checks'
 
 $script:fail = $false
 

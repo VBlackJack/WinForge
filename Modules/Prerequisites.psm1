@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Prerequisites installation module v3.7.2
+    WinForge - Prerequisites installation module v3.7.2
 
 .DESCRIPTION
     Handles installation of system prerequisites with environment refresh:
@@ -42,7 +42,7 @@ Set-StrictMode -Version Latest
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
-$script:ExceptionsModulePath = Join-Path $script:RepositoryRoot 'Core\Win11ForgeExceptions.psm1'
+$script:ExceptionsModulePath = Join-Path $script:RepositoryRoot 'Core\WinForgeExceptions.psm1'
 
 if (-not (Get-Command -Name New-InstallationException -ErrorAction SilentlyContinue)) {
     if (Test-Path -Path $script:ExceptionsModulePath) {
@@ -54,7 +54,7 @@ if (-not (Get-Command -Name New-InstallationException -ErrorAction SilentlyConti
 $script:ModuleLoaderPath = Join-Path $script:RepositoryRoot 'Core\ModuleLoader.psm1'
 if (Test-Path -Path $script:ModuleLoaderPath) {
     Import-Module -Name $script:ModuleLoaderPath -Force
-    $null = Initialize-Win11ForgeModule
+    $null = Initialize-WinForgeModule
 } else {
     # Fallback: direct import if ModuleLoader not available
     $script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'

@@ -3,7 +3,7 @@
     Pester tests for PluginManager module
 
 .DESCRIPTION
-    Unit tests for Win11Forge PluginManager v3.1.4
+    Unit tests for WinForge PluginManager v3.1.4
     Tests plugin loading, hooks, and custom methods
 
 .NOTES

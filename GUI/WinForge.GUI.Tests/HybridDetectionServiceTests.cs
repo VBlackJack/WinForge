@@ -15,10 +15,10 @@
  */
 
 using System.Reflection;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public sealed class HybridDetectionServiceTests
 {

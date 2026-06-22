@@ -16,10 +16,10 @@
 
 using System.Diagnostics;
 using System.IO;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Services.PowerShell;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Services.PowerShell;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 public class RepositoryPathServiceTests
 {
@@ -29,21 +29,37 @@ public class RepositoryPathServiceTests
         using TestWorkspace workspace = new TestWorkspace();
         string defaultProfiles = Path.Combine(
             workspace.RepositoryRoot,
-            Win11ForgePathNames.ProfilesDirectoryName,
-            Win11ForgePathNames.DefaultProfilesDirectoryName);
+            WinForgePathNames.ProfilesDirectoryName,
+            WinForgePathNames.DefaultProfilesDirectoryName);
         Directory.CreateDirectory(defaultProfiles);
 
         RepositoryPathService service = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
 
         Assert.Equal(workspace.RepositoryRoot, service.RepositoryRoot);
-        Assert.Equal(Path.Combine(workspace.UserDataBasePath, Win11ForgePathNames.ProductDirectoryName), service.UserDataRoot);
-        Assert.Equal(Path.Combine(service.UserDataRoot, Win11ForgePathNames.LogsDirectoryName), service.LogsDirectory);
-        Assert.Equal(Path.Combine(service.UserDataRoot, Win11ForgePathNames.SettingsFileName), service.SettingsFilePath);
-        Assert.Equal(Path.Combine(service.UserDataRoot, Win11ForgePathNames.DeploymentHistoryFileName), service.DeploymentHistoryFilePath);
-        Assert.Equal(Path.Combine(service.UserDataRoot, Win11ForgePathNames.ProfilesDirectoryName), service.UserProfilesDirectory);
+        Assert.Equal(Path.Combine(workspace.UserDataBasePath, WinForgePathNames.ProductDirectoryName), service.UserDataRoot);
+        Assert.Equal(Path.Combine(service.UserDataRoot, WinForgePathNames.LogsDirectoryName), service.LogsDirectory);
+        Assert.Equal(Path.Combine(service.UserDataRoot, WinForgePathNames.SettingsFileName), service.SettingsFilePath);
+        Assert.Equal(Path.Combine(service.UserDataRoot, WinForgePathNames.DeploymentHistoryFileName), service.DeploymentHistoryFilePath);
+        Assert.Equal(Path.Combine(service.UserDataRoot, WinForgePathNames.ProfilesDirectoryName), service.UserProfilesDirectory);
         Assert.Equal(defaultProfiles, service.DefaultProfilesDirectory);
-        Assert.Equal(Path.Combine(workspace.RepositoryRoot, Win11ForgePathNames.ProfilesDirectoryName), service.LegacyInstallProfilesDirectory);
+        Assert.Equal(Path.Combine(workspace.RepositoryRoot, WinForgePathNames.ProfilesDirectoryName), service.LegacyInstallProfilesDirectory);
         Assert.False(service.IsUserDataFallbackActive);
+    }
+
+    [Fact]
+    public void Constructor_WhenLegacyUserDataExists_ShouldMigrateToProductDirectory()
+    {
+        using TestWorkspace workspace = new TestWorkspace();
+        string legacyRoot = Path.Combine(workspace.UserDataBasePath, WinForgePathNames.LegacyProductDirectoryName);
+        string markerPath = Path.Combine(legacyRoot, "settings.json");
+        Directory.CreateDirectory(legacyRoot);
+        File.WriteAllText(markerPath, "{}");
+
+        RepositoryPathService service = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
+
+        Assert.Equal(workspace.UserDataRoot, service.UserDataRoot);
+        Assert.True(File.Exists(Path.Combine(workspace.UserDataRoot, "settings.json")));
+        Assert.False(Directory.Exists(legacyRoot));
     }
 
     [Fact]
@@ -61,9 +77,9 @@ public class RepositoryPathServiceTests
             RepositoryPathService service = new RepositoryPathService(workspace.RepositoryRoot, [blockedBasePath, fallbackBasePath]);
 
             Assert.True(service.IsUserDataFallbackActive);
-            Assert.Equal(Path.Combine(fallbackBasePath, Win11ForgePathNames.ProductDirectoryName), service.UserDataRoot);
+            Assert.Equal(Path.Combine(fallbackBasePath, WinForgePathNames.ProductDirectoryName), service.UserDataRoot);
             Assert.Contains(
-                "user data fallback active",
+                "user data resolution notice",
                 listener.Output,
                 StringComparison.OrdinalIgnoreCase);
         }
@@ -79,7 +95,7 @@ public class RepositoryPathServiceTests
         using TestWorkspace workspace = new TestWorkspace();
         string legacyProfilesDirectory = Path.Combine(
             workspace.RepositoryRoot,
-            Win11ForgePathNames.ProfilesDirectoryName);
+            WinForgePathNames.ProfilesDirectoryName);
         Directory.CreateDirectory(legacyProfilesDirectory);
 
         RepositoryPathService service = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
@@ -95,14 +111,14 @@ public class RepositoryPathServiceTests
         using TestWorkspace workspace = new TestWorkspace();
         string defaultsDirectory = Path.Combine(
             workspace.RepositoryRoot,
-            Win11ForgePathNames.ProfilesDirectoryName,
-            Win11ForgePathNames.DefaultProfilesDirectoryName);
+            WinForgePathNames.ProfilesDirectoryName,
+            WinForgePathNames.DefaultProfilesDirectoryName);
         Directory.CreateDirectory(defaultsDirectory);
 
         RepositoryPathService service = new RepositoryPathService(workspace.RepositoryRoot, [workspace.UserDataBasePath]);
 
         Assert.Equal(defaultsDirectory, service.DefaultProfilesDirectory);
-        Assert.EndsWith(Win11ForgePathNames.DefaultProfilesDirectoryName, service.DefaultProfilesDirectory);
+        Assert.EndsWith(WinForgePathNames.DefaultProfilesDirectoryName, service.DefaultProfilesDirectory);
         Assert.NotEqual(service.LegacyInstallProfilesDirectory, service.DefaultProfilesDirectory);
     }
 

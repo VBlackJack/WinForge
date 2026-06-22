@@ -18,12 +18,12 @@
 
 using System.IO;
 using System.Text.Json;
-using Win11Forge.GUI.Configuration;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services.PowerShell;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using WinForge.GUI.Configuration;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services.PowerShell;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Service that performs application detection using the methods defined in applications.json.
@@ -51,9 +51,9 @@ public class JsonApplicationDetectionService
         _probe = detectionProbe ?? new DetectionProbe(loggerFactory);
 
         _databasePath = pathService.GetPath(
-            Win11ForgePathNames.AppsDirectoryName,
-            Win11ForgePathNames.DatabaseDirectoryName,
-            Win11ForgePathNames.ApplicationsDatabaseFileName);
+            WinForgePathNames.AppsDirectoryName,
+            WinForgePathNames.DatabaseDirectoryName,
+            WinForgePathNames.ApplicationsDatabaseFileName);
     }
 
     /// <summary>

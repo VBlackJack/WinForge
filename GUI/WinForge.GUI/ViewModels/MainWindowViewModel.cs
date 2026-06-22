@@ -20,14 +20,14 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Win11Forge.GUI.Controls;
-using Win11Forge.GUI.Messages;
-using Win11Forge.GUI.Models;
-using Win11Forge.GUI.Services;
-using Win11Forge.GUI.Services.Resume;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using WinForge.GUI.Controls;
+using WinForge.GUI.Messages;
+using WinForge.GUI.Models;
+using WinForge.GUI.Services;
+using WinForge.GUI.Services.Resume;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.ViewModels;
+namespace WinForge.GUI.ViewModels;
 
 /// <summary>
 /// ViewModel for MainWindow shell state and commands.
@@ -148,13 +148,13 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
     public bool CanRedo => _undoService.CanRedo;
 
     /// <summary>
-    /// Updates the shell title with the current Win11Forge version.
+    /// Updates the shell title with the current WinForge version.
     /// </summary>
     public async Task UpdateWindowTitleAsync()
     {
         try
         {
-            string version = await _powerShellBridge.GetWin11ForgeVersionAsync();
+            string version = await _powerShellBridge.GetWinForgeVersionAsync();
             WindowTitle = string.Format(Loc.App_Title, version);
         }
         catch (Exception ex)

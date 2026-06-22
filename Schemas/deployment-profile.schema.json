@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "$id": "https://win11forge.local/schemas/deployment-profile.schema.json",
-  "title": "Win11Forge Deployment Profile",
-  "description": "Schema for Win11Forge deployment profile configuration files",
+  "$id": "https://winforge.local/schemas/deployment-profile.schema.json",
+  "title": "WinForge Deployment Profile",
+  "description": "Schema for WinForge deployment profile configuration files",
   "type": "object",
   "required": ["Name", "Version", "Applications"],
   "additionalProperties": false,

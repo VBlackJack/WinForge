@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Win11Forge - Start Menu Layout Manager v3.7.2
+    WinForge - Start Menu Layout Manager v3.7.2
 
 .DESCRIPTION
     Module for managing Windows 11 Start Menu layout using LayoutModification.json:

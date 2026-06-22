@@ -23,9 +23,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using Wpf.Ui.Controls;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.UserControls;
+namespace WinForge.GUI.UserControls;
 
 /// <summary>
 /// UserControl for editing direct download installation source configuration.

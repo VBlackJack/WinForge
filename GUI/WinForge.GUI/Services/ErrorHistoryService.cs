@@ -16,7 +16,7 @@
 
 using System.Collections.ObjectModel;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Represents an error entry in the history.

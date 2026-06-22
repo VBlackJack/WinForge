@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-namespace Win11Forge.GUI.Services.Coordinators;
+namespace WinForge.GUI.Services.Coordinators;
 
 /// <summary>
 /// Result of scanning installed applications for available updates.

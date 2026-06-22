@@ -15,10 +15,10 @@
  */
 
 using System.Windows;
-using Win11Forge.GUI.Tests.TestInfrastructure;
-using SplashScreenView = Win11Forge.GUI.Views.SplashScreen;
+using WinForge.GUI.Tests.TestInfrastructure;
+using SplashScreenView = WinForge.GUI.Views.SplashScreen;
 
-namespace Win11Forge.GUI.Tests;
+namespace WinForge.GUI.Tests;
 
 /// <summary>
 /// Tests for the splash screen reduced-motion animation contract.

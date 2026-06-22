@@ -6,14 +6,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <RootNamespace>Win11Forge.GUI</RootNamespace>
-    <AssemblyName>Win11Forge.GUI</AssemblyName>
+    <RootNamespace>WinForge.GUI</RootNamespace>
+    <AssemblyName>WinForge.GUI</AssemblyName>
     <AssemblyVersion>1.0.0622.1</AssemblyVersion>
     <FileVersion>1.0.0622.1</FileVersion>
     <Version>1.0.0622.1</Version>
     <InformationalVersion>2026062201</InformationalVersion>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Win11Forge.ico</ApplicationIcon>
+    <ApplicationIcon>WinForge.ico</ApplicationIcon>
     <RequiresThemeForgeProject>true</RequiresThemeForgeProject>
   </PropertyGroup>
 
@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Win11Forge.ico" />
+    <Resource Include="WinForge.ico" />
     <Resource Include="icon_cropped.png" />
   </ItemGroup>
 

@@ -16,16 +16,16 @@
 
 #nullable enable
 
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 
-namespace Win11Forge.GUI.Services.Resume;
+namespace WinForge.GUI.Services.Resume;
 
 /// <summary>
 /// Persists per-batch checkpoints so an interrupted Install / Update / Uninstall
 /// operation can be resumed after a process kill, BSOD, or forced reboot.
 /// </summary>
 /// <remarks>
-/// Each checkpoint lives at <c>%LocalAppData%\Win11Forge\state\batch-{BatchId}.json</c>.
+/// Each checkpoint lives at <c>%LocalAppData%\WinForge\state\batch-{BatchId}.json</c>.
 /// Files in <see cref="BatchState.InProgress"/> at startup signal an interrupted batch.
 /// Files older than the configured TTL are silently removed at startup.
 /// </remarks>

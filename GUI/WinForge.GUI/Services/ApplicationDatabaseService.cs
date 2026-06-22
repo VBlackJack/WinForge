@@ -19,13 +19,13 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Win11Forge.GUI.Models;
+using WinForge.GUI.Models;
 using DataValidationContext = System.ComponentModel.DataAnnotations.ValidationContext;
 using DataValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 using DataValidator = System.ComponentModel.DataAnnotations.Validator;
-using Loc = Win11Forge.GUI.Resources.Resources;
+using Loc = WinForge.GUI.Resources.Resources;
 
-namespace Win11Forge.GUI.Services;
+namespace WinForge.GUI.Services;
 
 /// <summary>
 /// Service implementation for managing the application database.

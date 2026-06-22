@@ -72,10 +72,10 @@ Get-ChildItem -Path "$RootPath\Core","$RootPath\Modules" -Filter *.psd1 | ForEac
         }
     }
 
-    if ($content -match "ReleaseNotes = 'Win11Forge v([^']+)'") {
+    if ($content -match "ReleaseNotes = 'WinForge v([^']+)'") {
         $oldReleaseVersion = $Matches[1]
         if ($oldReleaseVersion -ne $targetDisplayVersion) {
-            $newContent = $newContent -replace "ReleaseNotes = 'Win11Forge v[^']+'", "ReleaseNotes = 'Win11Forge v$targetDisplayVersion'"
+            $newContent = $newContent -replace "ReleaseNotes = 'WinForge v[^']+'", "ReleaseNotes = 'WinForge v$targetDisplayVersion'"
             $changes += "ReleaseNotes $oldReleaseVersion -> $targetDisplayVersion"
         }
     }
