@@ -245,6 +245,26 @@ public class AppsViewModelTests
         Assert.Empty(viewModel.SearchText);
     }
 
+    [Fact]
+    public async Task Scan_WithHasUpdatesFilter_ShouldScanUnderlyingApplications()
+    {
+        // Arrange
+        TestAppScanCoordinator scanCoordinator = new TestAppScanCoordinator();
+        AppsViewModel viewModel = CreateViewModel(scanCoordinator: scanCoordinator);
+        await viewModel.InitializeAsync();
+        int totalCount = GetFilteredCount(viewModel.FilteredApplications);
+
+        viewModel.SelectedStatusFilter = StatusFilterOption.HasUpdates;
+        Assert.Empty(GetFilteredApps(viewModel.FilteredApplications));
+
+        // Act
+        await viewModel.ScanCommand.ExecuteAsync(null);
+
+        // Assert
+        IReadOnlyCollection<ApplicationModel> call = Assert.Single(scanCoordinator.Calls);
+        Assert.Equal(totalCount, call.Count);
+    }
+
     /// <summary>
     /// Verifies that categories are extracted dynamically from applications.
     /// </summary>
@@ -1954,7 +1974,8 @@ public class AppsViewModelTests
             Directory.CreateDirectory(_profilesPath);
             foreach ((string Name, string[] Inherits, string[] Applications) profile in profiles)
             {
-                var payload = new {
+                var payload = new
+                {
                     profile.Name,
                     Description = $"{profile.Name} test profile",
                     Version = "1.0.0",
