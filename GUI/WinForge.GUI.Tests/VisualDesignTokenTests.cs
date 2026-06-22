@@ -359,6 +359,22 @@ public class VisualDesignTokenTests
     }
 
     [Fact]
+    public void CSharpThemeFallbacks_AreCentralizedInThemeFallbackBrushes()
+    {
+        string convertersSource = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "Converters.cs"));
+        string severitySource = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Controls", "SeverityIndicator.xaml.cs"));
+        string fallbackSource = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Resources", "ThemeFallbackBrushes.cs"));
+
+        Assert.Contains("internal static class ThemeFallbackBrushes", fallbackSource, StringComparison.Ordinal);
+        Assert.Contains("ThemeFallbackBrushes.", convertersSource, StringComparison.Ordinal);
+        Assert.Contains("ThemeFallbackBrushes.", severitySource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Color.FromRgb", convertersSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Color.FromArgb", convertersSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Color.FromRgb", severitySource, StringComparison.Ordinal);
+        Assert.DoesNotContain("Color.FromArgb", severitySource, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DashboardQuickNavigation_UsesWpfUiButtonsToAvoidNativeHoverChrome()
     {
         string dashboardPath = FindRepoFile("GUI", "WinForge.GUI", "Views", "DashboardView.xaml");
