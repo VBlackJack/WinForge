@@ -242,6 +242,46 @@ public class VisualDesignTokenTests
     }
 
     [Fact]
+    public void AppsUpdateFilter_UsesUpdateSelectedActionInsteadOfInstallSelected()
+    {
+        string appsXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppsView.xaml"));
+
+        Assert.Contains("Command=\"{Binding UpdateSelectedCommand}\"", appsXaml, StringComparison.Ordinal);
+        Assert.Contains("Text=\"{loc:Loc Btn_UpdateSelected}\"", appsXaml, StringComparison.Ordinal);
+        Assert.Contains("Value=\"{x:Static viewModels:StatusFilterOption.HasUpdates}\"", appsXaml, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void DeploymentCompletedSurface_StacksResultBannerAboveApplicationList()
+    {
+        string deploymentPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "DeploymentView.xaml");
+        string deploymentXaml = File.ReadAllText(deploymentPath);
+        XDocument deploymentDoc = XDocument.Load(deploymentPath);
+
+        Assert.DoesNotContain("0,80,0,0", deploymentXaml, StringComparison.Ordinal);
+
+        XElement resultBanner = deploymentDoc.Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Border"
+                && string.Equals(
+                    element.Attribute("AutomationProperties.LiveSetting")?.Value,
+                    "Polite",
+                    StringComparison.Ordinal));
+        XElement applicationList = deploymentDoc.Descendants()
+            .Single(element =>
+                element.Name.LocalName == "Border"
+                && element.Descendants().Any(child =>
+                    child.Name.LocalName == "DataGrid"
+                    && string.Equals(
+                        child.Attribute("AutomationProperties.Name")?.Value,
+                        "{loc:Loc A11y_Deployment_AppList}",
+                        StringComparison.Ordinal)));
+
+        Assert.Equal("0", resultBanner.Attribute("Grid.Row")?.Value);
+        Assert.Equal("1", applicationList.Attribute("Grid.Row")?.Value);
+    }
+
+    [Fact]
     public void DashboardQuickNavigation_UsesWpfUiButtonsToAvoidNativeHoverChrome()
     {
         string dashboardPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "DashboardView.xaml");
