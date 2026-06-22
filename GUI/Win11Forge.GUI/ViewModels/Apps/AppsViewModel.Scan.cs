@@ -38,9 +38,12 @@ public partial class AppsViewModel
             _externalCompletionCallback?.Invoke(0);
             return;
         }
-        bool hasActiveFilter = HasSearchFilter || HasCategoryFilter || HasStatusFilter;
-        List<ApplicationModel> appsToScan = hasActiveFilter
-            ? FilteredApplications.Cast<ApplicationModel>().ToList()
+        bool hasActiveScanFilter =
+            HasSearchFilter ||
+            HasCategoryFilter ||
+            (HasStatusFilter && SelectedStatusFilter != StatusFilterOption.HasUpdates);
+        List<ApplicationModel> appsToScan = hasActiveScanFilter
+            ? _allApplications.Where(IsInScanScope).ToList()
             : _allApplications;
         if (appsToScan.Count == 0)
         {
@@ -51,7 +54,7 @@ public partial class AppsViewModel
         Action<int>? completionCallback = _externalCompletionCallback;
         _lastOperationType = "scan";
         IsScanning = true;
-        ResetScanState(appsToScan, resetGlobalCounters: !hasActiveFilter);
+        ResetScanState(appsToScan, resetGlobalCounters: !hasActiveScanFilter);
         _scanCancellationTokenSource = new CancellationTokenSource();
         try
         {
@@ -68,7 +71,7 @@ public partial class AppsViewModel
             _scanCancellationTokenSource = null;
             await InvokeOnUiAsync(() =>
             {
-                if (hasActiveFilter)
+                if (hasActiveScanFilter)
                 {
                     RecountAfterFilteredScan();
                 }
@@ -78,11 +81,49 @@ public partial class AppsViewModel
                     UpdatesAvailableCount = scanResult.UpdatesAvailableCount;
                 }
 
+                ApplyFilter();
                 CommandManager.InvalidateRequerySuggested();
                 completionCallback?.Invoke(UpdatesAvailableCount);
             });
         }
     }
+
+    private bool IsInScanScope(ApplicationModel app)
+    {
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            bool matchesSearch =
+                app.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                app.AppId.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                app.Description.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
+            if (!matchesSearch)
+            {
+                return false;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(SelectedCategory) &&
+            SelectedCategory != Resources.Resources.Apps_CategoryAll &&
+            !app.Category.Equals(SelectedCategory, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return SelectedStatusFilter switch
+        {
+            StatusFilterOption.Installed =>
+                app.Status == ApplicationStatus.Installed ||
+                app.Status == ApplicationStatus.AlreadyInstalled,
+            StatusFilterOption.NotInstalled =>
+                app.Status != ApplicationStatus.Installed &&
+                app.Status != ApplicationStatus.AlreadyInstalled,
+            StatusFilterOption.Selected => app.IsSelected,
+            StatusFilterOption.Favorites => app.IsFavorite,
+            StatusFilterOption.HasUpdates => true,
+            _ => true
+        };
+    }
+
     [RelayCommand]
     private async Task ScanAppAsync(ApplicationModel? app)
     {
@@ -174,10 +215,10 @@ public partial class AppsViewModel
     {
         InstalledCount = _allApplications.Count(a =>
             a.Status == ApplicationStatus.Installed ||
-            a.Status == ApplicationStatus.AlreadyInstalled);
+            a.Status == ApplicationStatus.AlreadyInstalled ||
+            a.Status == ApplicationStatus.UpdateAvailable);
         UpdatesAvailableCount = _allApplications.Count(a =>
-            !string.IsNullOrEmpty(a.AvailableVersion) &&
-            a.AvailableVersion != a.CurrentVersion);
+            a.Status == ApplicationStatus.UpdateAvailable);
     }
 
     private static async Task InvokeOnUiAsync(Action action)
