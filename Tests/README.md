@@ -77,7 +77,7 @@ git diff --check
 Opt-in desktop smoke through WinSight:
 
 ```powershell
-pwsh -NoProfile -File Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot G:\_Projects\winsight
+pwsh -NoProfile -File Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot <path-to-winsight>
 ```
 
 ## Structure

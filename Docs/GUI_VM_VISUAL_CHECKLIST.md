@@ -63,11 +63,13 @@ Expected:
 3. Confirm scan/update actions remain accessible.
 4. Start an install batch and check progress row controls (pause/resume/cancel).
 5. Start a selected update batch and confirm Pause/Resume are hidden while Update runs.
+6. Select a profile, change app checkboxes, and confirm `Update profile` remains visible and aligned in the profile card.
 
 Expected:
 - Filter area remains usable at small width.
 - Touch-size icon buttons are still properly aligned.
 - Pause/Resume are visible only for pause-aware batches.
+- Profile update and save actions remain distinct and readable.
 
 ### Logs
 1. Check filter row at narrow width.
@@ -115,14 +117,15 @@ Expected:
 3. Open App Picker dialog and verify category/search layout at narrow width.
 4. Open Logs and Apps pages and confirm no functional regression in filtering.
 5. Apply a profile, manually change the selection, then switch profiles and confirm Replace/Merge/Cancel appears.
-6. Save an unchanged App Catalog entry and confirm no visible metadata reset.
+6. Apply a profile, change the selected applications, click `Update profile`, reselect the same profile, and confirm the saved selection is restored.
+7. Save an unchanged App Catalog entry and confirm no visible metadata reset.
 
 ## WinSight Smoke
 
 For an opt-in agent-side smoke pass with screenshots, run from the repository root:
 
 ```powershell
-pwsh -NoProfile -File Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot G:\_Projects\winsight
+pwsh -NoProfile -File Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot <path-to-winsight>
 ```
 
 Expected screenshots:

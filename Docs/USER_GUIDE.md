@@ -31,6 +31,28 @@ Current framework display version: `2026062101`.
 - `Personnel`: Developer-oriented stack.
 - `Enterprise`: Security-oriented configuration.
 
+Profiles can inherit from other profiles. For example, `Gaming` builds on
+`Office`, and `Office` builds on `Base`.
+
+### Edit an Existing Profile
+
+1. Open `Applications`.
+2. Select the profile in the `Profile` selector.
+3. Check or uncheck applications in the grid.
+4. Click `Update profile`.
+
+The profile file is updated with the current checked applications. If the
+profile inherits from another profile, inherited applications remain selected
+because they are owned by the parent profile. Edit the parent profile to remove
+those inherited applications, or save a new profile without that parent.
+
+### Create a New Profile
+
+1. Select the applications you want.
+2. Click `Save Profile`.
+3. Choose a new profile name and optional parent profile.
+4. Save.
+
 ## Typical Workflow
 1. Validate prerequisites.
 2. Review selected apps.

@@ -1,131 +1,70 @@
-# Win11Forge v2026062101
+# WinForge / Win11Forge v2026062101
 
-**Configurez votre PC Windows 11 en quelques clics**
+**Configurez un PC Windows 10/11 avec des profils d'applications reproductibles.**
 
 [![Version](https://img.shields.io/badge/version-2026062101-blue.svg)](CHANGELOG.md)
 [![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4.svg)](https://www.microsoft.com/windows)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
----
-
-## C'est quoi Win11Forge ?
-
-Win11Forge installe automatiquement toutes vos applications preferees sur un nouveau PC Windows. Plus besoin de telecharger et installer chaque logiciel un par un !
-
-**Exemple :** En 1 clic, installez Chrome, Firefox, 7-Zip, VLC, Discord, Steam, Office... et 175+ autres applications.
-
----
+Win11Forge automatise l'installation et la mise a jour d'applications Windows a partir de profils JSON. L'interface WPF permet de choisir un profil, ajuster la selection, scanner les installations existantes, lancer des installations par lot et maintenir le catalogue d'applications.
 
 ## Demarrage rapide
 
-### 1. Telecharger
+1. Telechargez la derniere archive depuis les [releases](https://github.com/VBlackJack/WinForge/releases/latest).
+2. Decompressez l'archive dans un dossier local.
+3. Lancez `Win11Forge.cmd` ou `Win11Forge.GUI.exe`.
+4. Choisissez un profil, ajustez les applications si besoin, puis lancez l'installation.
 
-Telechargez la derniere version : [Win11Forge_v2026062101.zip](https://github.com/VBlackJack/WinForge/releases/latest)
+## Profils inclus
 
-### 2. Extraire et lancer
+| Profil | Usage | Contenu |
+| --- | --- | --- |
+| `Base` | socle general | navigateurs, multimedia, utilitaires systeme, diagnostic et securite |
+| `Office` | productivite | `Base` + suite bureautique, PDF, collaboration |
+| `Gaming` | jeu | `Office` + plateformes de jeu et communication |
+| `Personnel` | poste avance | `Gaming` + outils de dev, cloud, VPN et productivite personnelle |
+| `Enterprise` | poste professionnel | `Base` + outils IT, securite, collaboration et configuration durcie |
 
-1. Dezippez le fichier
-2. Double-cliquez sur `Win11Forge.cmd` ou lancez `Win11Forge.GUI.exe`
-3. Choisissez un profil et laissez faire !
+Les profils peuvent heriter les uns des autres. Une application heritee d'un profil parent doit etre retiree dans ce parent, pas dans l'enfant.
 
----
+## Fonctionnalites
 
-## Les profils disponibles
+- Interface WPF moderne, themes clairs/sombres, francais et anglais.
+- Catalogue de 195 applications avec sources Winget, Chocolatey, Microsoft Store ou telechargement direct selon les entrees.
+- Detection des applications deja installees et des mises a jour disponibles.
+- Installation, mise a jour et desinstallation par lot avec progression, logs et annulation cooperative.
+- Edition du catalogue d'applications depuis l'interface.
+- Creation de nouveaux profils et mise a jour directe d'un profil existant depuis la selection de la grille Applications.
+- Deploiements planifies depuis les parametres.
+- API REST locale PowerShell pour l'automatisation avancee.
 
-| Profil | Pour qui ? | Applications incluses |
-|--------|------------|----------------------|
-| **Base** | Tout le monde | Navigateurs, 7-Zip, VLC, lecteur PDF, utilitaires systeme |
-| **Office** | Travail / Etudes | Base + Microsoft Office, Zoom, Adobe Reader |
-| **Gaming** | Joueurs | Office + Steam, Discord, Epic Games, Battle.net |
-| **Personnel** | Developpeurs | Gaming + VS Code, Git, Docker, outils cloud |
-| **Enterprise** | Entreprises | Configuration securisee, outils professionnels |
+## Modifier un profil
 
----
+1. Ouvrez la page **Applications**.
+2. Selectionnez un profil dans la carte **Profil**.
+3. Cochez ou decochez les applications dans la grille.
+4. Cliquez sur **Mettre a jour le profil** pour sauvegarder la selection dans ce profil.
 
-## Fonctionnalites principales
-
-### Interface moderne
-- Theme sombre ou clair au choix
-- Disponible en francais et anglais
-- Suivi en temps reel de l'installation
-- Accessibilite WCAG 2.1 (lecteurs d'ecran, navigation clavier)
-
-### Installation intelligente
-- Detecte les applications deja installees (pas de doublons)
-- Installe jusqu'a 10 applications en parallele (configurable)
-- Logs d'installation en temps reel
-- Pause et reprise pour les lots d'installation et de desinstallation
-- Rollback automatique en cas d'echec
-
-### Gestionnaire d'applications
-- Parcourez les 175+ applications disponibles
-- Recherchez par nom ou categorie
-- Scannez pour detecter les applications installees
-- Installez ou mettez a jour individuellement
-
-### Editeur de profils
-- Creez vos propres profils personnalises
-- Combinez plusieurs profils (heritage)
-
-### Deploiements planifies
-- Programmez des installations automatiques
-- Support des triggers: unique, quotidien, hebdomadaire, au demarrage
-
-### API REST (avance)
-- Controlez Win11Forge via API REST locale
-- Authentification par cle API
-- Documentation complete disponible
-
----
-
-## Captures d'ecran
-
-**Dashboard** - Vue d'ensemble de votre systeme
-
-**Deploiement** - Suivi en temps reel des installations
-
-**Applications** - Parcourez et installez individuellement
-
-**Parametres** - Theme sombre/clair, langue
-
----
+Le bouton **Sauvegarder le profil** sert a creer un nouveau profil ou a enregistrer une selection sous un autre nom.
 
 ## Configuration requise
 
-- Windows 10 (21H2+) ou Windows 11
-- Connexion internet
-- Droits administrateur
+- Windows 10 21H2 ou plus recent, ou Windows 11.
+- Connexion internet pour les sources de paquets.
+- Droits administrateur pour les operations systeme et certaines installations.
+- PowerShell est utilise par les modules d'installation fournis avec le projet.
 
-*Note : L'application inclut tout ce dont elle a besoin, aucune installation supplementaire requise.*
+## Documentation
 
----
-
-## FAQ
-
-**Q: Est-ce que ca prend longtemps ?**
-R: Environ 15-30 minutes selon le profil et votre connexion internet.
-
-**Q: Je peux choisir quelles applications installer ?**
-R: Oui ! Decochez celles que vous ne voulez pas avant de lancer.
-
-**Q: Ca marche sur Windows 10 ?**
-R: Oui, Windows 10 version 21H2 ou plus recent.
-
-**Q: Comment ajouter mes propres applications ?**
-R: Utilisez l'editeur de profils pour creer un profil personnalise.
-
-**Q: Comment utiliser l'API REST ?**
-R: Consultez la [documentation API](Docs/API_DOCUMENTATION.md) pour les details.
-
----
-
-## Besoin d'aide ?
-
-- [Guide utilisateur complet](Docs/USER_GUIDE.md)
+- [Guide utilisateur](Docs/USER_GUIDE.md)
 - [Index documentation](Docs/README.md)
+- [Architecture publique](Docs/ARCHITECTURE.md)
 - [Documentation API](Docs/API_DOCUMENTATION.md)
-- [Signaler un probleme](https://github.com/VBlackJack/WinForge/issues)
+- [Guide de contribution](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
 
----
+## Support
 
-**Auteur :** Julien Bombled | **Licence :** Apache 2.0
+Signalez les problemes ou demandes d'evolution via les [issues GitHub](https://github.com/VBlackJack/WinForge/issues).
+
+**Licence :** Apache 2.0

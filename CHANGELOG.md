@@ -4,6 +4,16 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+### Profile editing and public documentation cleanup — June 2026
+
+#### Added
+- **Existing profiles can now be updated from the Applications grid.** After applying a profile, users can check or uncheck apps and save that selection back to the active profile. Inherited applications remain owned by their parent profile and are restored with a warning when a child profile is updated.
+- **Added a public architecture overview.** `Docs/ARCHITECTURE.md` now summarizes the current runtime layout, GUI architecture, profile model, theming pipeline, API surface, and validation commands.
+
+#### Changed
+- **Updated user-facing documentation.** `README.md`, `Docs/USER_GUIDE.md`, `Docs/README.md`, and `Docs/GUI_VM_VISUAL_CHECKLIST.md` now document profile editing and avoid local machine paths.
+- **Removed internal historical docs from the public documentation set.** Old closed-work archives and detailed internal ADR/audit notes were removed in favor of the concise public architecture page.
+
 ### Application catalog utilities refresh — June 2026
 
 #### Added
@@ -66,8 +76,8 @@ After visual inspection of the `v2026051001` release built from the unified
 flat-text state, the lack of visual hierarchy on every action button proved
 unworkable in practice — hero CTAs, dialog confirm buttons, and toolbar
 actions all rendered as identical plain text labels. Reversed §2.6 of
-`Docs/architecture/UI-FLAT-CONSOLIDATION-2026-05.md`. See §7 of that ADR for
-the full rationale.
+the historical design notes for the full rationale. Those internal notes are
+no longer part of the public documentation set.
 
 #### Changed
 - **Restored 70 `Appearance` attributes** across 20 view files to their
@@ -96,8 +106,7 @@ the full rationale.
 ### UI flat-text consolidation + WPF-UI 4.3 disabled-state fix — May 2026
 
 Visual unification pass and several orthogonal Apps-view defect fixes uncovered
-along the way. Full design notes in
-`Docs/architecture/UI-FLAT-CONSOLIDATION-2026-05.md`.
+along the way.
 
 #### Changed
 - **App-wide flat button presentation.** Every `Appearance="Primary|Secondary|`
@@ -164,7 +173,7 @@ along the way. Full design notes in
 
 ### Dead code + i18n audit pass — May 2026
 
-Two-axis cleanup pass closing 18 findings from `Docs/audit/Win11Forge-DeadCode-i18n-Audit-2026-05.md` across 7 self-contained commits. No behavior change at runtime; build, 566 GUI tests, Pester suite, PSScriptAnalyzer, FR diacritics lint, and version-consistency check all green.
+Two-axis cleanup pass closing 18 dead-code and localization findings across 7 self-contained commits. No behavior change at runtime; build, 566 GUI tests, Pester suite, PSScriptAnalyzer, FR diacritics lint, and version-consistency check all green.
 
 #### Removed
 - **PowerShell manifest cleanup (DC-013)** — `Core/Core.psd1` no longer declares `Test-AdminRights` or `Get-FrameworkVersion` in `FunctionsToExport` (these functions never existed in `Core.psm1`).
@@ -199,11 +208,11 @@ Closed the remaining non-audit and technical debt backlog through PR #82-#91. Th
 
 The architectural refactor of the GUI ViewModels (audit findings I1, I3, I4) is complete. All four batch operation coordinators (`AppScanCoordinator`, `AppInstallationCoordinator`, `AppUpdateCoordinator`, `AppUninstallCoordinator`) are extracted under `Services/Coordinators/`, sharing the internal `AppOperationRunner` helper for parallelism, cancellation, and progress reporting. The `AppsViewModel` god class (3 002 lines, 31 RelayCommands) is now a 531-line orchestrator with twelve cluster-scoped partial classes. WPF lifetime coupling, file dialog handling, and code-behind business logic have been moved behind dedicated services (`IApplicationLifetimeService`, `IFileDialogService`, `IApplicationEditorDialogService`, `IPauseGate`).
 
-See `Docs/architecture/REFACTOR-MVVM.md` for the full architectural decision record and the closure status table in §12.
+See `Docs/ARCHITECTURE.md` for the current public architecture overview.
 
 ### UX audit closures - May 2026
 
-Completed the P0/P1 remediation sweep from `Docs/audit/Win11Forge-UX-Audit-2026-05.md`, then closed the remaining P2/P3 UX backlog through PR #81. The May 2026 UX audit is now fully closed.
+Completed the P0/P1 remediation sweep from the May 2026 UX review, then closed the remaining P2/P3 UX backlog through PR #81.
 
 #### Accessibility
 - **Closed A11Y-001** (PR #67/#68): High Contrast resources are preserved when switching Dracula themes.
@@ -251,7 +260,7 @@ Completed the P0/P1 remediation sweep from `Docs/audit/Win11Forge-UX-Audit-2026-
 - **Visual hierarchy (DC-006)** — AppsView profile and filter cards no longer force internal horizontal scrolling through `MinWidth="920"`; both surfaces now reflow in a two-row responsive layout. Closes DC-006 (PR #79).
 - **Visual hierarchy (DC-007)** — Settings and shared WPF `TabItem` surfaces use `ReinforcedTabItemStyle` with a stronger selected underline and selected-state tint. Closes the DC-007 implementation scope; stronger post-smoke tab treatment is tracked separately as DC-014. Closes DC-007 (PR #79).
 - **Information architecture (DC-008)** — Main navigation now separates workflow and configuration clusters with `NavigationViewItemSeparator`, moving App Catalog next to Settings while keeping Settings `Tag="4"` and App Catalog `Tag="5"` stable. Closes DC-008 (PR #79).
-- **Accessibility (A11Y-007)** — Sweep `AutomationProperties.Name` on AppsView toolbar buttons (LogViewer Copy/Close, Summary Close, Save Profile, Reset Columns) and ApplicationEditorDialog source actions (Search + Apply Selection × 3 sources). Screen readers now announce explicit names instead of relying on inferred Content text. Closes A11Y-007 from `Docs/audit/Win11Forge-UX-Audit-2026-05.md` (PR #78).
+- **Accessibility (A11Y-007)** — Sweep `AutomationProperties.Name` on AppsView toolbar buttons (LogViewer Copy/Close, Summary Close, Save Profile, Reset Columns) and ApplicationEditorDialog source actions (Search + Apply Selection × 3 sources). Screen readers now announce explicit names instead of relying on inferred Content text. Closes A11Y-007 from the May 2026 UX review (PR #78).
 - **Accessibility (A11Y-008)** — High-contrast mode now remaps `TextOnAccentFillColor*` brushes (Primary/Secondary/Disabled) to high-contrast foreground variants in `App.ApplyHighContrastMode`, and selectively applies `HighContrastButtonStyle` to `ui:Button` only (WPF-UI). Resolves the 1.07:1 white-on-cyan hover regression on accent-painted buttons in HC mode. Plain WPF `Button` controls remain untouched to preserve custom-styled buttons. Closes A11Y-008 (PR #78).
 - **Accessibility (A11Y-009)** — Settings toggle switches (Reduce Motion, High Contrast) now expose their descriptive subtitle via `AutomationProperties.HelpText`, in addition to the existing `Name`. Closes A11Y-009 (PR #78).
 - **Accessibility (A11Y-010)** — Explicit `AutomationProperties.Name` added to templated/dialog buttons that previously relied on inferred announcement: Prerequisites Check (StackPanel-wrapped Button with ProgressRing), ConfirmDialog Cancel/Confirm, ErrorDialog Help/Retry/OK. Closes A11Y-010 (PR #78).
@@ -899,7 +908,7 @@ Cette version apporte des améliorations majeures de compatibilité PowerShell 5
 
 - **Documentation complète** : `README.md`
 - **System-Audit docs** : `Tools/System-Audit-README.md` (30+ pages)
-- **Structure projet** : `Docs/Archive/v2.x/` (archived)
+- **Structure projet** : historical v2.x docs retired from the public documentation set
 - **Quick Start** : `Apps/QUICK_START.md`
 
 ---
@@ -1147,8 +1156,8 @@ git pull
 ### 📚 Pour Plus d'Informations
 
 - Guide complet : [README.md](README.md)
-- Structure projet : `Docs/Archive/v2.x/` (archived)
-- Guide GUI : `Docs/Archive/v2.x/` (archived)
+- Structure projet : historical v2.x docs retired from the public documentation set
+- Guide GUI : historical v2.x docs retired from the public documentation set
 - Base de données : [Apps/README.md](Apps/README.md)
 
 ---
@@ -1406,8 +1415,8 @@ Cette version majeure introduit une refonte complète de l'architecture avec une
 ### 📚 Pour Plus d'Informations
 
 - Guide complet : [README.md](README.md)
-- Structure projet : `Docs/Archive/v2.x/` (archived)
-- Guide GUI : `Docs/Archive/v2.x/` (archived)
+- Structure projet : historical v2.x docs retired from the public documentation set
+- Guide GUI : historical v2.x docs retired from the public documentation set
 - Base de données : [Apps/README.md](Apps/README.md)
 
 ---

@@ -148,7 +148,7 @@ Ce dossier contient les scripts utilitaires et outils pour configurer, valider e
 **Smoke GUI opt-in via WinSight MCP**
 
 ```powershell
-.\Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot G:\_Projects\winsight
+.\Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot <path-to-winsight>
 ```
 
 **Vérifications** :

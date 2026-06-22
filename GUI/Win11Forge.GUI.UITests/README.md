@@ -9,7 +9,7 @@ Run manually from the repository root:
 
 ```powershell
 $env:WIN11FORGE_RUN_UIA = '1'
-$env:WIN11FORGE_UIA_ARTIFACTS = 'G:\_Projects\Win11Forge\TestResults\ui-screenshots'
+$env:WIN11FORGE_UIA_ARTIFACTS = '<repo-root>\TestResults\ui-screenshots'
 dotnet test GUI\Win11Forge.GUI.UITests\Win11Forge.GUI.UITests.csproj --configuration Release
 ```
 
@@ -23,7 +23,7 @@ It runs as a sibling repository and is not required for normal CI.
 From the Win11Forge repository root:
 
 ```powershell
-.\Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot G:\_Projects\winsight
+.\Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot <path-to-winsight>
 ```
 
 The script builds the WinSight MCP server and Win11Forge GUI, launches `Win11Forge.GUI.dll` through `dotnet`, drives the app via MCP tools (`list_windows`, `inspect_ui_tree`, `click_element`, `capture_screenshot`), and writes screenshots to `TestResults\winsight`.
@@ -31,7 +31,7 @@ The script builds the WinSight MCP server and Win11Forge GUI, launches `Win11For
 You can also set `WINSIGHT_ROOT` and omit the parameter:
 
 ```powershell
-$env:WINSIGHT_ROOT = 'G:\_Projects\winsight'
+$env:WINSIGHT_ROOT = '<path-to-winsight>'
 .\Tools\Invoke-WinsightSmoke.ps1
 ```
 

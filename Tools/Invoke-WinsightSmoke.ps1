@@ -20,7 +20,7 @@
     Reuse existing build outputs.
 
 .EXAMPLE
-    .\Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot G:\_Projects\winsight
+    .\Tools\Invoke-WinsightSmoke.ps1 -WinsightRoot <path-to-winsight>
 #>
 
 #
