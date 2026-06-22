@@ -335,6 +335,30 @@ public class VisualDesignTokenTests
     }
 
     [Fact]
+    public void FluentThemeBridge_SemanticFallbacksUseThemeForgeDarkPalette()
+    {
+        XDocument bridge = XDocument.Load(FindRepoFile("GUI", "WinForge.GUI", "Resources", "FluentThemeBridge.xaml"));
+
+        AssertBridgeBrush(bridge, "StatusInstalledBrush", "#50FA7B");
+        AssertBridgeBrush(bridge, "StatusInstallingBrush", "#8BE9FD");
+        AssertBridgeBrush(bridge, "StatusFailedBrush", "#FF5555");
+        AssertBridgeBrush(bridge, "StatusSkippedBrush", "#FFB86C");
+        AssertBridgeBrush(bridge, "StatusPendingBrush", "#B3BBD6", "0.65");
+        AssertBridgeBrush(bridge, "StatusAlreadyInstalledBrush", "#50FA7B", "0.75");
+        AssertBridgeBrush(bridge, "RowInstalledBackground", "#50FA7B", "0.12");
+        AssertBridgeBrush(bridge, "RowFailedBackground", "#FF5555", "0.12");
+        AssertBridgeBrush(bridge, "RowUpdateAvailableBackground", "#FFB86C", "0.16");
+        AssertBridgeBrush(bridge, "SuccessBackgroundBrush", "#50FA7B", "0.12");
+        AssertBridgeBrush(bridge, "WarningBackgroundBrush", "#FFB86C", "0.16");
+        AssertBridgeBrush(bridge, "ErrorBackgroundBrush", "#FF5555", "0.14");
+        AssertBridgeBrush(bridge, "PrimaryHueMidBrush", "#BD93F9");
+        AssertBridgeBrush(bridge, "SecondaryHueMidBrush", "#8BE9FD");
+        AssertBridgeBrush(bridge, "ThemeAdaptiveAccentBrush", "#BD93F9");
+        AssertBridgeBrush(bridge, "BadgePrimaryForegroundBrush", "#282A36");
+        AssertBridgeBrush(bridge, "FocusIndicatorBrush", "#BD93F9");
+    }
+
+    [Fact]
     public void DashboardQuickNavigation_UsesWpfUiButtonsToAvoidNativeHoverChrome()
     {
         string dashboardPath = FindRepoFile("GUI", "WinForge.GUI", "Views", "DashboardView.xaml");
@@ -561,6 +585,24 @@ public class VisualDesignTokenTests
 
         Assert.NotNull(resource);
         Assert.Equal(expectedValue, resource.Value);
+    }
+
+    private static void AssertBridgeBrush(
+        XDocument bridge,
+        string key,
+        string expectedColor,
+        string? expectedOpacity = null)
+    {
+        XElement brush = bridge.Descendants()
+            .Single(element =>
+                element.Name.LocalName == "SolidColorBrush"
+                && string.Equals(
+                    element.Attribute(XName.Get("Key", "http://schemas.microsoft.com/winfx/2006/xaml"))?.Value,
+                    key,
+                    StringComparison.Ordinal));
+
+        Assert.Equal(expectedColor, brush.Attribute("Color")?.Value);
+        Assert.Equal(expectedOpacity, brush.Attribute("Opacity")?.Value);
     }
 
     private static string FindRepoFile(params string[] relativeParts)

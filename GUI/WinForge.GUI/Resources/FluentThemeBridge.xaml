@@ -4,117 +4,117 @@
     <!-- App-specific status color brushes -->
     <!-- These are custom application colors, not framework-dependent -->
 
-    <!-- Status Colors (WCAG AA compliant for dark theme) -->
-    <SolidColorBrush x:Key="StatusPendingBrush" Color="#9E9E9E"/>
-    <SolidColorBrush x:Key="StatusInstallingBrush" Color="#2196F3"/>
-    <SolidColorBrush x:Key="StatusInstalledBrush" Color="#4CAF50"/>
-    <SolidColorBrush x:Key="StatusFailedBrush" Color="#F44336"/>
-    <SolidColorBrush x:Key="StatusSkippedBrush" Color="#F57C00"/>
-    <SolidColorBrush x:Key="StatusAlreadyInstalledBrush" Color="#8BC34A"/>
-    <SolidColorBrush x:Key="StatusUninstallingBrush" Color="#9C27B0"/>
-    <SolidColorBrush x:Key="StatusUninstalledBrush" Color="#7986CB"/>
-    <SolidColorBrush x:Key="StatusSuccessBrush" Color="#4CAF50"/>
+    <!-- Status Colors (ThemeForge dark fallback) -->
+    <SolidColorBrush x:Key="StatusPendingBrush" Color="#B3BBD6" Opacity="0.65"/>
+    <SolidColorBrush x:Key="StatusInstallingBrush" Color="#8BE9FD"/>
+    <SolidColorBrush x:Key="StatusInstalledBrush" Color="#50FA7B"/>
+    <SolidColorBrush x:Key="StatusFailedBrush" Color="#FF5555"/>
+    <SolidColorBrush x:Key="StatusSkippedBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="StatusAlreadyInstalledBrush" Color="#50FA7B" Opacity="0.75"/>
+    <SolidColorBrush x:Key="StatusUninstallingBrush" Color="#BD93F9"/>
+    <SolidColorBrush x:Key="StatusUninstalledBrush" Color="#B3BBD6" Opacity="0.65"/>
+    <SolidColorBrush x:Key="StatusSuccessBrush" Color="#50FA7B"/>
 
     <!-- Row Background Colors (semi-transparent for overlay on theme background) -->
-    <SolidColorBrush x:Key="RowInstalledBackground" Color="#1E4CAF50"/>
-    <SolidColorBrush x:Key="RowFailedBackground" Color="#1EF44336"/>
-    <SolidColorBrush x:Key="RowInstallingBackground" Color="#1E2196F3"/>
-    <SolidColorBrush x:Key="RowUninstalledBackground" Color="#1E7986CB"/>
-    <SolidColorBrush x:Key="RowUpdateAvailableBackground" Color="#28F57C00"/>
+    <SolidColorBrush x:Key="RowInstalledBackground" Color="#50FA7B" Opacity="0.12"/>
+    <SolidColorBrush x:Key="RowFailedBackground" Color="#FF5555" Opacity="0.12"/>
+    <SolidColorBrush x:Key="RowInstallingBackground" Color="#8BE9FD" Opacity="0.12"/>
+    <SolidColorBrush x:Key="RowUninstalledBackground" Color="#B3BBD6" Opacity="0.12"/>
+    <SolidColorBrush x:Key="RowUpdateAvailableBackground" Color="#FFB86C" Opacity="0.16"/>
 
     <!-- Primary/Secondary Hue Brushes (main accent colors, swapped by theme) -->
-    <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#60CDFF"/>
-    <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="#8BC34A"/>
+    <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#BD93F9"/>
+    <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="#8BE9FD"/>
     <SolidColorBrush x:Key="DataGridSelectedRowBackgroundBrush" Color="#40BD93F9"/>
 
     <!-- Accent Colors -->
-    <SolidColorBrush x:Key="FavoriteActiveBrush" Color="#FFD700"/>
-    <SolidColorBrush x:Key="FavoriteInactiveBrush" Color="#9E9E9E"/>
-    <SolidColorBrush x:Key="FavoriteTextBrush" Color="#FF8F00"/>
-    <SolidColorBrush x:Key="RequiredBrush" Color="#FFC107"/>
-    <SolidColorBrush x:Key="OptionalBrush" Color="#9E9E9E"/>
-    <SolidColorBrush x:Key="AccentGreenTextBrush" Color="#81C784"/>
-    <SolidColorBrush x:Key="AccentOrangeTextBrush" Color="#FFB74D"/>
-    <SolidColorBrush x:Key="ManualInstallBadgeBrush" Color="#FF8A00"/>
+    <SolidColorBrush x:Key="FavoriteActiveBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="FavoriteInactiveBrush" Color="#B3BBD6" Opacity="0.65"/>
+    <SolidColorBrush x:Key="FavoriteTextBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="RequiredBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="OptionalBrush" Color="#B3BBD6" Opacity="0.65"/>
+    <SolidColorBrush x:Key="AccentGreenTextBrush" Color="#50FA7B"/>
+    <SolidColorBrush x:Key="AccentOrangeTextBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="ManualInstallBadgeBrush" Color="#FFB86C"/>
 
     <!-- Secondary/Muted Icon Colors -->
-    <SolidColorBrush x:Key="IconSecondaryBrush" Color="#9E9E9E"/>
-    <SolidColorBrush x:Key="IconHintBrush" Color="#757575"/>
-    <SolidColorBrush x:Key="IconDisabledBrush" Color="#616161"/>
-    <SolidColorBrush x:Key="SubtleDataGridLineBrush" Color="#338A90A8"/>
+    <SolidColorBrush x:Key="IconSecondaryBrush" Color="#B3BBD6"/>
+    <SolidColorBrush x:Key="IconHintBrush" Color="#B3BBD6" Opacity="0.65"/>
+    <SolidColorBrush x:Key="IconDisabledBrush" Color="#B3BBD6" Opacity="0.65"/>
+    <SolidColorBrush x:Key="SubtleDataGridLineBrush" Color="#44475A" Opacity="0.35"/>
 
     <!-- Error Display Colors -->
-    <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="#33F44336"/>
-    <SolidColorBrush x:Key="ErrorBorderBrush" Color="#EF5350"/>
-    <SolidColorBrush x:Key="ErrorTextBrush" Color="#EF5350"/>
-    <SolidColorBrush x:Key="ErrorIconBrush" Color="#EF5350"/>
+    <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="#FF5555" Opacity="0.14"/>
+    <SolidColorBrush x:Key="ErrorBorderBrush" Color="#FF5555"/>
+    <SolidColorBrush x:Key="ErrorTextBrush" Color="#FF5555"/>
+    <SolidColorBrush x:Key="ErrorIconBrush" Color="#FF5555"/>
 
     <!-- Validation Colors -->
-    <SolidColorBrush x:Key="ValidationErrorBorderBrush" Color="#F44336"/>
-    <SolidColorBrush x:Key="ValidationSuccessBorderBrush" Color="#4CAF50"/>
+    <SolidColorBrush x:Key="ValidationErrorBorderBrush" Color="#FF5555"/>
+    <SolidColorBrush x:Key="ValidationSuccessBorderBrush" Color="#50FA7B"/>
 
     <!-- Warning Display Colors -->
-    <SolidColorBrush x:Key="WarningBackgroundBrush" Color="#33F57C00"/>
-    <SolidColorBrush x:Key="WarningBorderBrush" Color="#F57C00"/>
-    <SolidColorBrush x:Key="WarningTextBrush" Color="#FFB74D"/>
-    <SolidColorBrush x:Key="WarningIconBrush" Color="#FFB74D"/>
+    <SolidColorBrush x:Key="WarningBackgroundBrush" Color="#FFB86C" Opacity="0.16"/>
+    <SolidColorBrush x:Key="WarningBorderBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="WarningTextBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="WarningIconBrush" Color="#FFB86C"/>
 
     <!-- Success Display Colors -->
-    <SolidColorBrush x:Key="SuccessBackgroundBrush" Color="#334CAF50"/>
-    <SolidColorBrush x:Key="SuccessBorderBrush" Color="#4CAF50"/>
-    <SolidColorBrush x:Key="SuccessTextBrush" Color="#81C784"/>
-    <SolidColorBrush x:Key="SuccessIconBrush" Color="#81C784"/>
+    <SolidColorBrush x:Key="SuccessBackgroundBrush" Color="#50FA7B" Opacity="0.12"/>
+    <SolidColorBrush x:Key="SuccessBorderBrush" Color="#50FA7B"/>
+    <SolidColorBrush x:Key="SuccessTextBrush" Color="#50FA7B"/>
+    <SolidColorBrush x:Key="SuccessIconBrush" Color="#50FA7B"/>
 
     <!-- Skeleton Loader Colors -->
-    <SolidColorBrush x:Key="SkeletonBaseBrush" Color="#1AFFFFFF"/>
-    <SolidColorBrush x:Key="SkeletonHighlightBrush" Color="#33FFFFFF"/>
+    <SolidColorBrush x:Key="SkeletonBaseBrush" Color="#282A36"/>
+    <SolidColorBrush x:Key="SkeletonHighlightBrush" Color="#44475A"/>
 
     <!-- Badge Foreground Brushes (for text on colored badge backgrounds) -->
-    <!-- Swapped dynamically by App.ApplyThemeResources for light/dark adaptation -->
-    <SolidColorBrush x:Key="BadgePrimaryForegroundBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="BadgeSecondaryForegroundBrush" Color="#FFFFFF"/>
+    <!-- Overwritten by ThemeService at runtime for light/dark adaptation -->
+    <SolidColorBrush x:Key="BadgePrimaryForegroundBrush" Color="#282A36"/>
+    <SolidColorBrush x:Key="BadgeSecondaryForegroundBrush" Color="#282A36"/>
 
-    <!-- Light Theme Error/Warning/Success variants (darker for white backgrounds) -->
-    <SolidColorBrush x:Key="ErrorTextLightBrush" Color="#B71C1C"/>
-    <SolidColorBrush x:Key="ErrorIconLightBrush" Color="#C62828"/>
-    <SolidColorBrush x:Key="ErrorBorderLightBrush" Color="#C62828"/>
-    <SolidColorBrush x:Key="ErrorBackgroundLightBrush" Color="#1AF44336"/>
-    <SolidColorBrush x:Key="WarningTextLightBrush" Color="#BF360A"/>
-    <SolidColorBrush x:Key="WarningIconLightBrush" Color="#F57C00"/>
-    <SolidColorBrush x:Key="WarningBorderLightBrush" Color="#EF6C00"/>
-    <SolidColorBrush x:Key="WarningBackgroundLightBrush" Color="#1AF57C00"/>
-    <SolidColorBrush x:Key="SuccessTextLightBrush" Color="#1B5E20"/>
-    <SolidColorBrush x:Key="SuccessIconLightBrush" Color="#2E7D32"/>
-    <SolidColorBrush x:Key="SuccessBorderLightBrush" Color="#2E7D32"/>
-    <SolidColorBrush x:Key="SuccessBackgroundLightBrush" Color="#1A4CAF50"/>
+    <!-- Legacy light-theme semantic aliases (ThemeForge dark fallback values) -->
+    <SolidColorBrush x:Key="ErrorTextLightBrush" Color="#FF5555"/>
+    <SolidColorBrush x:Key="ErrorIconLightBrush" Color="#FF5555"/>
+    <SolidColorBrush x:Key="ErrorBorderLightBrush" Color="#FF5555"/>
+    <SolidColorBrush x:Key="ErrorBackgroundLightBrush" Color="#FF5555" Opacity="0.14"/>
+    <SolidColorBrush x:Key="WarningTextLightBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="WarningIconLightBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="WarningBorderLightBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="WarningBackgroundLightBrush" Color="#FFB86C" Opacity="0.16"/>
+    <SolidColorBrush x:Key="SuccessTextLightBrush" Color="#50FA7B"/>
+    <SolidColorBrush x:Key="SuccessIconLightBrush" Color="#50FA7B"/>
+    <SolidColorBrush x:Key="SuccessBorderLightBrush" Color="#50FA7B"/>
+    <SolidColorBrush x:Key="SuccessBackgroundLightBrush" Color="#50FA7B" Opacity="0.12"/>
 
-    <!-- Light Theme Accent Text variants (darker for white backgrounds) -->
-    <SolidColorBrush x:Key="AccentGreenTextLightBrush" Color="#2E7D32"/>
-    <SolidColorBrush x:Key="AccentOrangeTextLightBrush" Color="#BF360A"/>
+    <!-- Legacy light-theme accent text aliases (ThemeForge dark fallback values) -->
+    <SolidColorBrush x:Key="AccentGreenTextLightBrush" Color="#50FA7B"/>
+    <SolidColorBrush x:Key="AccentOrangeTextLightBrush" Color="#FFB86C"/>
 
-    <!-- Light Theme Primary/Secondary Hue (muted for white backgrounds) -->
-    <SolidColorBrush x:Key="PrimaryHueMidLightBrush" Color="#0078D4"/>
-    <SolidColorBrush x:Key="SecondaryHueMidLightBrush" Color="#2E7D32"/>
+    <!-- Legacy light-theme hue aliases (ThemeForge dark fallback values) -->
+    <SolidColorBrush x:Key="PrimaryHueMidLightBrush" Color="#BD93F9"/>
+    <SolidColorBrush x:Key="SecondaryHueMidLightBrush" Color="#8BE9FD"/>
 
-    <!-- Light Theme Accent variants (toned down for white backgrounds) -->
-    <SolidColorBrush x:Key="FavoriteActiveLightBrush" Color="#D4A017"/>
-    <SolidColorBrush x:Key="FavoriteTextLightBrush" Color="#BF6C00"/>
-    <SolidColorBrush x:Key="RequiredLightBrush" Color="#E6A100"/>
-    <SolidColorBrush x:Key="ManualInstallBadgeLightBrush" Color="#CC6D00"/>
-    <SolidColorBrush x:Key="SubtleDataGridLineLightBrush" Color="#E5E7EB"/>
+    <!-- Legacy light-theme accent aliases (ThemeForge dark fallback values) -->
+    <SolidColorBrush x:Key="FavoriteActiveLightBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="FavoriteTextLightBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="RequiredLightBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="ManualInstallBadgeLightBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="SubtleDataGridLineLightBrush" Color="#44475A" Opacity="0.35"/>
 
-    <!-- Status Colors optimized for light theme -->
-    <SolidColorBrush x:Key="StatusInstalledLightBrush" Color="#2E7D32"/>
-    <SolidColorBrush x:Key="StatusFailedLightBrush" Color="#C62828"/>
-    <SolidColorBrush x:Key="StatusInstallingLightBrush" Color="#1565C0"/>
-    <SolidColorBrush x:Key="StatusSkippedLightBrush" Color="#BF360A"/>
-    <SolidColorBrush x:Key="StatusPendingLightBrush" Color="#616161"/>
+    <!-- Legacy light-theme status aliases (ThemeForge dark fallback values) -->
+    <SolidColorBrush x:Key="StatusInstalledLightBrush" Color="#50FA7B"/>
+    <SolidColorBrush x:Key="StatusFailedLightBrush" Color="#FF5555"/>
+    <SolidColorBrush x:Key="StatusInstallingLightBrush" Color="#8BE9FD"/>
+    <SolidColorBrush x:Key="StatusSkippedLightBrush" Color="#FFB86C"/>
+    <SolidColorBrush x:Key="StatusPendingLightBrush" Color="#B3BBD6" Opacity="0.65"/>
 
     <!-- Source Badge Colors (for package manager badges) -->
-    <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="#4060CDFF"/>
-    <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="SecondaryHueLightBrush" Color="#40A3D9A0"/>
-    <SolidColorBrush x:Key="SecondaryHueLightForegroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="#BD93F9"/>
+    <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="#282A36"/>
+    <SolidColorBrush x:Key="SecondaryHueLightBrush" Color="#8BE9FD"/>
+    <SolidColorBrush x:Key="SecondaryHueLightForegroundBrush" Color="#282A36"/>
     <SolidColorBrush x:Key="SourceWingetBadgeBackgroundBrush" Color="#263B82F6"/>
     <SolidColorBrush x:Key="SourceWingetBadgeBorderBrush" Color="#3B82F6"/>
     <SolidColorBrush x:Key="SourceWingetBadgeForegroundBrush" Color="#93C5FD"/>
@@ -142,13 +142,13 @@
     <SolidColorBrush x:Key="SourceDirectBadgeBorderLightBrush" Color="#FB923C"/>
     <SolidColorBrush x:Key="SourceDirectBadgeForegroundLightBrush" Color="#C2410C"/>
 
-    <!-- Dialog Overlay Backdrop (semi-transparent, swapped by App.ApplyThemeResources) -->
+    <!-- Dialog Overlay Backdrop (semi-transparent, overwritten by ThemeService at runtime) -->
     <SolidColorBrush x:Key="DialogOverlayBackgroundBrush" Color="#80000000"/>
 
-    <!-- Theme-Adaptive Accent Brush (updated dynamically by App.xaml.cs) -->
-    <SolidColorBrush x:Key="ThemeAdaptiveAccentBrush" Color="#60CDFF"/>
+    <!-- Theme-Adaptive Accent Brush (overwritten by ThemeService at runtime) -->
+    <SolidColorBrush x:Key="ThemeAdaptiveAccentBrush" Color="#BD93F9"/>
 
     <!-- Focus indicator fallback for WPF-UI Light and non-Dracula resources -->
-    <SolidColorBrush x:Key="FocusIndicatorBrush" Color="#005FB8"/>
+    <SolidColorBrush x:Key="FocusIndicatorBrush" Color="#BD93F9"/>
 
 </ResourceDictionary>
