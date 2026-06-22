@@ -81,13 +81,12 @@
                                Command="{Binding AddCommand}"
                                ToolTip="{loc:Loc AppCatalog_AddTooltip}"
                                AutomationProperties.Name="{loc:Loc AppCatalog_Add}"
-                               Margin="0,0,8,0"
-                               MinWidth="100">
+                               Margin="0,0,8,0">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Add24"
-                                           Width="18" Height="18"
+                                           Width="16" Height="16"
                                            VerticalAlignment="Center"
-                                           Margin="0,0,8,0"/>
+                                           Margin="{StaticResource ButtonIconMarginCompact}"/>
                             <TextBlock Text="{loc:Loc AppCatalog_Add}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
@@ -97,13 +96,12 @@
                                Command="{Binding ImportCommand}"
                                ToolTip="{loc:Loc AppCatalog_ImportTooltip}"
                                AutomationProperties.Name="{loc:Loc AppCatalog_Import}"
-                               Margin="0,0,4,0"
-                               MinWidth="80">
+                               Margin="0,0,4,0">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="ArrowImport24"
                                            Width="16" Height="16"
                                            VerticalAlignment="Center"
-                                           Margin="0,0,6,0"/>
+                                           Margin="{StaticResource ButtonIconMarginCompact}"/>
                             <TextBlock Text="{loc:Loc AppCatalog_Import}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
@@ -115,7 +113,7 @@
                                 <ui:SymbolIcon Symbol="ArrowExportLtr24"
                                                Width="16" Height="16"
                                                VerticalAlignment="Center"
-                                               Margin="0,0,6,0"/>
+                                               Margin="{StaticResource ButtonIconMarginCompact}"/>
                                 <TextBlock Text="{loc:Loc AppCatalog_Export}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </ui:DropDownButton.Content>
@@ -135,13 +133,12 @@
                                ToolTip="{loc:Loc AppCatalog_VerifySources}"
                                AutomationProperties.Name="{loc:Loc AppCatalog_VerifySources}"
                                Margin="0,0,8,0"
-                               MinWidth="80"
                                Visibility="{Binding IsVerifying, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="CheckmarkStarburst24"
                                            Width="16" Height="16"
                                            VerticalAlignment="Center"
-                                           Margin="0,0,6,0"/>
+                                           Margin="{StaticResource ButtonIconMarginCompact}"/>
                             <TextBlock Text="{loc:Loc AppCatalog_Verify}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
@@ -150,12 +147,11 @@
                                ToolTip="{loc:Loc Btn_Cancel}"
                                AutomationProperties.Name="{loc:Loc Btn_Cancel}"
                                Margin="0,0,8,0"
-                               MinWidth="80"
                                Visibility="{Binding IsVerifying, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
                             <ui:ProgressRing IsIndeterminate="True"
                                              Width="16" Height="16"
-                                             Margin="0,0,6,0"/>
+                                             Margin="{StaticResource ButtonIconMarginCompact}"/>
                             <TextBlock Text="{loc:Loc Btn_Cancel}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
