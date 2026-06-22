@@ -705,6 +705,28 @@ public class AppsViewModelTests
     }
 
     [Fact]
+    public async Task UpdateSelectedCommand_CanExecuteTracksUpdateCountAndBatchState()
+    {
+        // Arrange
+        AppsViewModel viewModel = CreateViewModel();
+        await viewModel.InitializeAsync();
+
+        // Assert
+        Assert.False(viewModel.UpdateSelectedCommand.CanExecute(null));
+
+        // Act / Assert
+        viewModel.UpdatesAvailableCount = 1;
+        Assert.True(viewModel.UpdateSelectedCommand.CanExecute(null));
+
+        viewModel.IsInstalling = true;
+        Assert.False(viewModel.UpdateSelectedCommand.CanExecute(null));
+
+        viewModel.IsInstalling = false;
+        viewModel.IsUninstalling = true;
+        Assert.False(viewModel.UpdateSelectedCommand.CanExecute(null));
+    }
+
+    [Fact]
     public async Task UpdateApp_ShouldDelegateSingleAppAndDecrementUpdateCount()
     {
         // Arrange

@@ -120,6 +120,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// Number of applications with updates available.
     /// </summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(UpdateSelectedCommand))]
     private int _updatesAvailableCount;
 
     /// <summary>
@@ -134,6 +135,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// </summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(InstallSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(UpdateSelectedCommand))]
     [NotifyCanExecuteChangedFor(nameof(UninstallSelectedCommand))]
     private int _selectedCount;
 
@@ -142,6 +144,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// </summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(InstallSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(UpdateSelectedCommand))]
     [NotifyCanExecuteChangedFor(nameof(PauseCommand))]
     [NotifyCanExecuteChangedFor(nameof(ResumeCommand))]
     [NotifyPropertyChangedFor(nameof(CanShowBatchPauseResume))]
@@ -171,7 +174,9 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// Whether a batch uninstallation is in progress.
     /// </summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(InstallSelectedCommand))]
     [NotifyCanExecuteChangedFor(nameof(UninstallSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(UpdateSelectedCommand))]
     [NotifyCanExecuteChangedFor(nameof(PauseCommand))]
     [NotifyCanExecuteChangedFor(nameof(ResumeCommand))]
     [NotifyPropertyChangedFor(nameof(CanShowBatchPauseResume))]
@@ -183,6 +188,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     /// Whether a batch update is in progress.
     /// </summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(UpdateSelectedCommand))]
     [NotifyCanExecuteChangedFor(nameof(PauseCommand))]
     [NotifyCanExecuteChangedFor(nameof(ResumeCommand))]
     [NotifyPropertyChangedFor(nameof(CanShowBatchPauseResume))]

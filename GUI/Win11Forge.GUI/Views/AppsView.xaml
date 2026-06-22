@@ -732,11 +732,42 @@
                         </StackPanel>
                     </ui:Button>
                     <ui:Button Command="{Binding InstallSelectedCommand}"
-                               Style="{StaticResource PrimaryButton}"
                                AutomationProperties.Name="{loc:Loc Apps_InstallSelected}">
+                        <ui:Button.Style>
+                            <Style TargetType="ui:Button" BasedOn="{StaticResource PrimaryButton}">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedStatusFilter}" Value="{x:Static viewModels:StatusFilterOption.HasUpdates}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:Button.Style>
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBlock Text="{loc:Loc Apps_InstallSelected}" VerticalAlignment="Center"/>
+                            <TextBlock VerticalAlignment="Center" Margin="8,0,0,0">
+                                <Run Text="("/>
+                                <Run Text="{Binding SelectedCount, Mode=OneWay}"/>
+                                <Run Text=")"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </ui:Button>
+                    <ui:Button Command="{Binding UpdateSelectedCommand}"
+                               AutomationProperties.Name="{loc:Loc Btn_UpdateSelected}">
+                        <ui:Button.Style>
+                            <Style TargetType="ui:Button" BasedOn="{StaticResource PrimaryButton}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedStatusFilter}" Value="{x:Static viewModels:StatusFilterOption.HasUpdates}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ArrowSync24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Btn_UpdateSelected}" VerticalAlignment="Center"/>
                             <TextBlock VerticalAlignment="Center" Margin="8,0,0,0">
                                 <Run Text="("/>
                                 <Run Text="{Binding SelectedCount, Mode=OneWay}"/>

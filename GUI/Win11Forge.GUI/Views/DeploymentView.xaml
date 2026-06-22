@@ -189,8 +189,14 @@
             </StackPanel>
         </Border>
 
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
         <!-- Deployment Result Banner -->
-        <Border Grid.Row="2"
+        <Border Grid.Row="0"
                 Margin="0,0,0,16"
                 Padding="{StaticResource CardPadding}"
                 CornerRadius="{StaticResource RadiusMedium}"
@@ -252,7 +258,7 @@
                     <TextBlock>
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="FontSize" Value="20"/>
+                                <Setter Property="FontSize" Value="{StaticResource FontSizeSubtitle}"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                                 <Setter Property="Text" Value="{loc:Loc Deployment_Result_Success}"/>
                                 <Style.Triggers>
@@ -291,7 +297,7 @@
         </Border>
 
         <!-- Applications List (status only) - visible during deployment and after completion -->
-        <Border Grid.Row="2"
+        <Border Grid.Row="1"
                 Padding="0"
                 CornerRadius="{StaticResource RadiusMedium}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
@@ -305,7 +311,6 @@
                         </DataTrigger>
                         <DataTrigger Binding="{Binding IsDeploymentComplete}" Value="True">
                             <Setter Property="Visibility" Value="Visible"/>
-                            <Setter Property="Margin" Value="0,80,0,0"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
@@ -391,7 +396,9 @@
         </Border>
 
         <!-- Error Message -->
-        <TextBlock Grid.Row="2"
+        <TextBlock Grid.Row="0"
+                   Grid.RowSpan="2"
+                   Panel.ZIndex="1"
                    Text="{Binding ErrorMessage}"
                    Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                    FontSize="{StaticResource FontSizeBody}"
@@ -399,6 +406,7 @@
                    HorizontalAlignment="Center"
                    VerticalAlignment="Top"
                    Margin="0,16,0,0"/>
+        </Grid>
     </Grid>
 
     <!-- Log Viewer Dialog Overlay -->
