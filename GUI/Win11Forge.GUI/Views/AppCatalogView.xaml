@@ -164,7 +164,6 @@
                                Command="{Binding RefreshCommand}"
                                ToolTip="{loc:Loc AppCatalog_Refresh}"
                                AutomationProperties.Name="{loc:Loc AppCatalog_Refresh}"
-                               Width="44" Height="44"
                                Icon="{ui:SymbolIcon ArrowSync24}"/>
                 </StackPanel>
                 </ScrollViewer>

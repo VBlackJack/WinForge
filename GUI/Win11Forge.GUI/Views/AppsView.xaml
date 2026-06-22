@@ -1027,16 +1027,16 @@
                                                 Visibility="{Binding DataContext.ShowFavoritesColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                    <Button Style="{StaticResource AnimatedFavoriteButton}"
-                                            Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip="{loc:Loc Menu_ToggleFavorite}"
-                                            AutomationProperties.Name="{Binding Name}"
-                                            AutomationProperties.HelpText="{loc:Loc Menu_ToggleFavorite}">
+                                    <ui:Button Style="{StaticResource FavoriteIconButton}"
+                                               Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                               CommandParameter="{Binding}"
+                                               ToolTip="{loc:Loc Menu_ToggleFavorite}"
+                                               AutomationProperties.Name="{Binding Name}"
+                                               AutomationProperties.HelpText="{loc:Loc Menu_ToggleFavorite}">
                                         <ui:SymbolIcon Symbol="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteIconConverter}}"
                                                        Foreground="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteColorConverter}}"
                                                        Width="20" Height="20"/>
-                                    </Button>
+                                    </ui:Button>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -1217,17 +1217,16 @@
                             </DataGridTemplateColumn.Header>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate DataType="{x:Type models:ApplicationModel}">
-                                    <Button Style="{StaticResource HoverScaleIconButton}"
-                                            Width="44" Height="44"
-                                            HorizontalAlignment="Center"
-                                            ToolTip="{loc:Loc Btn_ViewLogs}"
-                                            Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}"
-                                            AutomationProperties.Name="{Binding Name}"
-                                            AutomationProperties.HelpText="{loc:Loc Btn_ViewLogs}">
+                                    <ui:Button Style="{StaticResource IconButton}"
+                                               HorizontalAlignment="Center"
+                                               ToolTip="{loc:Loc Btn_ViewLogs}"
+                                               Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                               CommandParameter="{Binding}"
+                                               Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}"
+                                               AutomationProperties.Name="{Binding Name}"
+                                               AutomationProperties.HelpText="{loc:Loc Btn_ViewLogs}">
                                         <ui:SymbolIcon Symbol="Document24" Width="20" Height="20"/>
-                                    </Button>
+                                    </ui:Button>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
