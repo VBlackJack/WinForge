@@ -207,6 +207,7 @@ public class VisualDesignTokenTests
         AssertNamedStyleSetter(styles, "CompactSecondaryButton", "Padding", "{StaticResource ButtonPaddingCompact}");
         AssertNamedStyleSetter(styles, "CompactTransparentButton", "Appearance", "Transparent");
         AssertNamedStyleSetter(styles, "CompactSecondaryDropDownButton", "Appearance", "Secondary");
+        AssertNamedStyleSetter(styles, "CompactSecondaryDropDownButton", "CornerRadius", "{StaticResource ButtonCornerRadius}");
         AssertNamedStyleSetter(styles, "QuickActionButton", "HorizontalContentAlignment", "Left");
         AssertNamedStyleSetter(styles, "IconButton", "MinWidth", "{StaticResource ButtonMinHeightTouch}");
     }
@@ -232,12 +233,62 @@ public class VisualDesignTokenTests
     [Fact]
     public void AppCatalogToolbar_UsesCompactActionStyles()
     {
-        string catalogXaml = File.ReadAllText(FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml"));
+        string catalogPath = FindRepoFile("GUI", "Win11Forge.GUI", "Views", "AppCatalogView.xaml");
+        string catalogXaml = File.ReadAllText(catalogPath);
+        XDocument catalogDoc = XDocument.Load(catalogPath);
 
         Assert.Contains("Style=\"{StaticResource CompactPrimaryButton}\"", catalogXaml, StringComparison.Ordinal);
         Assert.Contains("Style=\"{StaticResource CompactSecondaryButton}\"", catalogXaml, StringComparison.Ordinal);
         Assert.Contains("Style=\"{StaticResource CompactSecondaryDropDownButton}\"", catalogXaml, StringComparison.Ordinal);
         Assert.DoesNotContain("<ui:DropDownButton ToolTip=\"{loc:Loc AppCatalog_ExportTooltip}\"", catalogXaml, StringComparison.Ordinal);
+
+        XElement addButton = FindElementByCommand(
+            catalogDoc,
+            "{Binding AddCommand}",
+            "{StaticResource CompactPrimaryButton}");
+        XElement importButton = FindElementByCommand(
+            catalogDoc,
+            "{Binding ImportCommand}",
+            "{StaticResource CompactSecondaryButton}");
+        XElement verifyButton = FindElementByCommand(
+            catalogDoc,
+            "{Binding VerifyAllSourcesCommand}",
+            "{StaticResource CompactSecondaryButton}");
+        XElement cancelButton = FindElementByCommand(
+            catalogDoc,
+            "{Binding CancelVerificationCommand}",
+            "{StaticResource CompactSecondaryButton}");
+        XElement exportButton = catalogDoc.Descendants()
+            .Single(element =>
+                element.Name.LocalName == "DropDownButton"
+                && string.Equals(
+                    element.Attribute("Style")?.Value,
+                    "{StaticResource CompactSecondaryDropDownButton}",
+                    StringComparison.Ordinal));
+
+        foreach (XElement button in new[] { addButton, importButton, verifyButton, cancelButton })
+        {
+            Assert.Null(button.Attribute("MinWidth"));
+        }
+
+        foreach (XElement icon in new[]
+                 {
+                     addButton.Descendants().Single(element => element.Name.LocalName == "SymbolIcon"),
+                     importButton.Descendants().Single(element => element.Name.LocalName == "SymbolIcon"),
+                     exportButton.Descendants().Single(element => element.Name.LocalName == "SymbolIcon"),
+                     verifyButton.Descendants().Single(element => element.Name.LocalName == "SymbolIcon")
+                 })
+        {
+            Assert.Equal("16", icon.Attribute("Width")?.Value);
+            Assert.Equal("16", icon.Attribute("Height")?.Value);
+            Assert.Equal("{StaticResource ButtonIconMarginCompact}", icon.Attribute("Margin")?.Value);
+        }
+
+        XElement cancelSpinner = cancelButton.Descendants()
+            .Single(element => element.Name.LocalName == "ProgressRing");
+        Assert.Equal("16", cancelSpinner.Attribute("Width")?.Value);
+        Assert.Equal("16", cancelSpinner.Attribute("Height")?.Value);
+        Assert.Equal("{StaticResource ButtonIconMarginCompact}", cancelSpinner.Attribute("Margin")?.Value);
     }
 
     [Fact]
@@ -329,6 +380,14 @@ public class VisualDesignTokenTests
     {
         return string.Equals(attribute.Name.LocalName, "AutomationId", StringComparison.Ordinal)
             || string.Equals(attribute.Name.LocalName, "AutomationProperties.AutomationId", StringComparison.Ordinal);
+    }
+
+    private static XElement FindElementByCommand(XDocument document, string command, string style)
+    {
+        return document.Descendants()
+            .Single(element =>
+                string.Equals(element.Attribute("Command")?.Value, command, StringComparison.Ordinal)
+                && string.Equals(element.Attribute("Style")?.Value, style, StringComparison.Ordinal));
     }
 
     private static void AssertImplicitStyleSetter(
