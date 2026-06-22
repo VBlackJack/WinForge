@@ -1,0 +1,257 @@
+<UserControl x:Class="Win11Forge.GUI.UserControls.DetectionEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="500">
+
+    <StackPanel>
+        <!-- Description -->
+        <TextBlock Text="{loc:Loc AppEditor_DetectionDescription}"
+                   FontSize="{StaticResource FontSizeCaption}"
+                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,16"/>
+
+        <!-- Detection Method -->
+        <ComboBox x:Name="MethodComboBox"
+                  SelectedValue="{Binding Method, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                  SelectedValuePath="Tag"
+                  Margin="0,0,0,16"
+                  AutomationProperties.Name="{loc:Loc AppEditor_DetectionMethod}">
+            <ComboBoxItem Content="{loc:Loc Detection_Method_Registry}" Tag="Registry"/>
+            <ComboBoxItem Content="{loc:Loc Detection_Method_File}" Tag="File"/>
+            <ComboBoxItem Content="{loc:Loc Detection_Method_Command}" Tag="Command"/>
+            <ComboBoxItem Content="{loc:Loc Detection_Method_WindowsFeature}" Tag="WindowsFeature"/>
+            <ComboBoxItem Content="{loc:Loc Detection_Method_StoreApp}" Tag="StoreApp"/>
+        </ComboBox>
+
+        <!-- Registry Detection Panel -->
+        <Border x:Name="RegistryPanel"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Padding="16"
+                Margin="0,0,0,16"
+                Visibility="Collapsed">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <ui:SymbolIcon Symbol="Key24"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                    <TextBlock Text="{loc:Loc Detection_Registry_Title}"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Registry Path -->
+                <ui:TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc Detection_Registry_Path}"
+                         Margin="0,0,0,12"
+                         AutomationProperties.Name="{loc:Loc Detection_Registry_Path}"/>
+
+                <!-- Registry Value Name -->
+                <ui:TextBox Text="{Binding VersionKey, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc AppEditor_VersionKey}"
+                         Margin="0,0,0,12"
+                         AutomationProperties.Name="{loc:Loc AppEditor_VersionKey}"/>
+
+                <!-- Minimum Version -->
+                <ui:TextBox Text="{Binding MinVersion, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc AppEditor_MinVersion}"
+                         AutomationProperties.Name="{loc:Loc AppEditor_MinVersion}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- File Detection Panel -->
+        <Border x:Name="FilePanel"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Padding="16"
+                Margin="0,0,0,16"
+                Visibility="Collapsed">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <ui:SymbolIcon Symbol="Document24"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                    <TextBlock Text="{loc:Loc Detection_File_Title}"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- File Path with Browse Button -->
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ui:TextBox Grid.Column="0"
+                             Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="{loc:Loc Detection_File_Path}"
+                             AutomationProperties.Name="{loc:Loc Detection_File_Path}"/>
+
+                    <ui:Button Grid.Column="1"
+                            Style="{StaticResource SecondaryButton}"
+                            Content="{loc:Loc Detection_Browse}"
+                            Command="{Binding BrowseCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Stretch"
+                            AutomationProperties.Name="{loc:Loc Detection_Browse}"/>
+                </Grid>
+
+                <!-- Minimum Version -->
+                <ui:TextBox Text="{Binding MinVersion, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc AppEditor_MinVersion}"
+                         AutomationProperties.Name="{loc:Loc AppEditor_MinVersion}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Command Detection Panel -->
+        <Border x:Name="CommandPanel"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Padding="16"
+                Margin="0,0,0,16"
+                Visibility="Collapsed">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <ui:SymbolIcon Symbol="Apps24"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                    <TextBlock Text="{loc:Loc Detection_Command_Title}"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Command -->
+                <ui:TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc Detection_Command_Path}"
+                         AutomationProperties.Name="{loc:Loc Detection_Command_Path}"/>
+
+                <TextBlock Text="{loc:Loc Detection_Command_Hint}"
+                           FontSize="{StaticResource FontSizeCaption}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Windows Feature Panel -->
+        <Border x:Name="WindowsFeaturePanel"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Padding="16"
+                Margin="0,0,0,16"
+                Visibility="Collapsed">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <ui:SymbolIcon Symbol="Settings24"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                    <TextBlock Text="{loc:Loc Detection_WindowsFeature_Title}"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Feature Name -->
+                <ui:TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc Detection_WindowsFeature_Name}"
+                         AutomationProperties.Name="{loc:Loc Detection_WindowsFeature_Name}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Store App Panel -->
+        <Border x:Name="StoreAppPanel"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Padding="16"
+                Margin="0,0,0,16"
+                Visibility="Collapsed">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <ui:SymbolIcon Symbol="StoreMicrosoft24"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                    <TextBlock Text="{loc:Loc Detection_StoreApp_Title}"
+                               FontSize="{StaticResource FontSizeBody}" FontWeight="Medium"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Package Family Name -->
+                <ui:TextBox Text="{Binding Path, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc Detection_StoreApp_PackageName}"
+                         AutomationProperties.Name="{loc:Loc Detection_StoreApp_PackageName}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Test Detection Button and Result -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ui:Button Grid.Column="0"
+                    Style="{StaticResource SecondaryButton}"
+                    Command="{Binding TestCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    ToolTip="{loc:Loc Detection_TestTooltip}"
+                    MinWidth="140"
+                    AutomationProperties.Name="{loc:Loc Detection_TestButton}">
+                <StackPanel Orientation="Horizontal">
+                    <ui:SymbolIcon Symbol="Play24"
+                                   Width="18" Height="18"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"
+                                   Visibility="{Binding IsTesting, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                    <ProgressBar IsIndeterminate="True"
+                                 Width="18" Height="18"
+                                 Margin="0,0,8,0"
+                                 Visibility="{Binding IsTesting, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <TextBlock Text="{loc:Loc Detection_TestButton}" VerticalAlignment="Center"/>
+                </StackPanel>
+            </ui:Button>
+
+            <!-- Test Result -->
+            <Border Grid.Column="1"
+                    Margin="16,0,0,0"
+                    Padding="12,8"
+                    CornerRadius="{StaticResource RadiusSmall}"
+                    Visibility="{Binding TestResult, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullableToVisibilityConverter}}">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding TestSuccess, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource SuccessBackgroundBrush}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding TestSuccess, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="False">
+                                <Setter Property="Background" Value="{DynamicResource ErrorBackgroundBrush}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <StackPanel Orientation="Horizontal">
+                    <ui:SymbolIcon x:Name="TestResultIcon"
+                                   Width="20" Height="20"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                    <StackPanel>
+                        <TextBlock Text="{Binding TestResult, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                   FontWeight="Medium"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding DetectedVersion, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   Visibility="{Binding DetectedVersion, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullableToVisibilityConverter}}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </StackPanel>
+</UserControl>

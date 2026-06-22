@@ -1,0 +1,1324 @@
+<UserControl x:Class="Win11Forge.GUI.Views.AppsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
+             xmlns:models="clr-namespace:Win11Forge.GUI.Models"
+             xmlns:controls="clr-namespace:Win11Forge.GUI.Controls"
+             xmlns:helpers="clr-namespace:Win11Forge.GUI.Helpers"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewModels:AppsViewModel}"
+             d:DesignHeight="700" d:DesignWidth="1000">
+
+    <UserControl.Resources>
+        <!-- Typographic separator used between counter blocks in the Apps header.
+             Centralised so the visual is not hardcoded inline as a Run.Text literal,
+             which would trip LocalizationAuditTests.AllXamlFiles_ShouldNotContainHardcodedStrings. -->
+        <sys:String x:Key="AppsCounterSeparator" xml:space="preserve">  ·  </sys:String>
+    </UserControl.Resources>
+
+    <!-- Dialog overlay -->
+    <Grid>
+        <!-- Dialog Overlay Layer -->
+        <Grid x:Name="DialogOverlay"
+              Panel.ZIndex="100"
+              Visibility="{Binding IsDialogOpen, Converter={StaticResource BooleanToVisibilityConverter}}"
+              Focusable="True"
+              KeyDown="DialogOverlay_KeyDown"
+              helpers:FocusTrapBehavior.IsEnabled="True">
+            <!-- Semi-transparent backdrop -->
+            <Border Background="{DynamicResource DialogOverlayBackgroundBrush}"
+                    MouseLeftButtonDown="DialogHost_DialogClosing"/>
+            <!-- Dialog Content -->
+            <Border HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    CornerRadius="{StaticResource RadiusMedium}"
+                    Padding="0">
+                <Grid>
+                    <!-- Log Viewer Dialog -->
+                    <Border MinWidth="360" MaxWidth="900" MaxHeight="500" Padding="24"
+                            Visibility="{Binding IsLogViewerOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Dialog Header -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                                <ui:SymbolIcon Symbol="Document24"
+                                               Width="24" Height="24"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
+                                <TextBlock FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
+                                           VerticalAlignment="Center">
+                                    <Run Text="{loc:Loc LogViewer_Title}"/>
+                                    <Run Text=" - "/>
+                                    <Run Text="{Binding LogViewerApplication.Name, FallbackValue=''}"/>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <!-- Log Content -->
+                            <Border Grid.Row="1"
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource RadiusSmall}">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Auto">
+                                    <TextBox Text="{Binding LogViewerApplication.LogOutput, Mode=OneWay}"
+                                             IsReadOnly="True"
+                                             TextWrapping="NoWrap"
+                                             FontFamily="Consolas"
+                                             FontSize="{StaticResource FontSizeCaption}"
+                                             BorderThickness="0"
+                                             Padding="12"
+                                             Background="Transparent"
+                                             VerticalScrollBarVisibility="Disabled"
+                                             HorizontalScrollBarVisibility="Disabled"/>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- No logs message -->
+                            <TextBlock Grid.Row="1"
+                                       Text="{loc:Loc LogViewer_NoLogs}"
+                                       FontSize="{StaticResource FontSizeCaption}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Visibility="{Binding LogViewerApplication.LogOutput, Converter={StaticResource InverseNullableToVisibilityConverter}}"/>
+
+                            <!-- Dialog Actions -->
+                            <StackPanel Grid.Row="2"
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Right"
+                                        Margin="0,16,0,0">
+                                <ui:Button Content="{loc:Loc LogViewer_Copy}"
+                                           Style="{StaticResource SecondaryButton}"
+                                           Click="CopyLogsToClipboard_Click"
+                                           AutomationProperties.Name="{loc:Loc LogViewer_Copy}"
+                                           Margin="0,0,12,0"/>
+                                <ui:Button Content="{loc:Loc LogViewer_Close}"
+                                           Style="{StaticResource PrimaryButton}"
+                                           AutomationProperties.Name="{loc:Loc LogViewer_Close}"
+                                           Command="{Binding CloseLogViewerCommand}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Summary Dialog -->
+                    <Border MinWidth="360" MaxWidth="500" Padding="24"
+                            Visibility="{Binding IsSummaryDialogOpen, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Dialog Header -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                                <ui:SymbolIcon Symbol="{Binding LastDeploymentResult, Converter={StaticResource StatusToIconConverter}}"
+                                               Foreground="{Binding LastDeploymentResult, Converter={StaticResource StatusToColorConverter}}"
+                                               Width="28" Height="28"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
+                                <TextBlock FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
+                                           Text="{loc:Loc Summary_Title}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Summary Content -->
+                            <StackPanel Grid.Row="1" Margin="0,0,0,24">
+                                <!-- Result Message -->
+                                <TextBlock Text="{Binding LastDeploymentResult, Converter={StaticResource DeploymentResultToStringConverter}}"
+                                           FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"
+                                           Margin="0,0,0,16"/>
+
+                                <!-- Stats Grid -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Success Count -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                               Text="{loc:Loc Summary_Successful}"
+                                               FontSize="{StaticResource FontSizeBody}"
+                                               Margin="0,0,16,8"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1"
+                                               Text="{Binding SuccessCount}"
+                                               FontSize="{StaticResource FontSizeBody}"
+                                               Foreground="{DynamicResource AccentGreenTextBrush}"
+                                               FontWeight="Bold"
+                                               Margin="0,0,0,8"/>
+
+                                    <!-- Failed Count -->
+                                    <TextBlock Grid.Row="1" Grid.Column="0"
+                                               Text="{loc:Loc Summary_FailedCount}"
+                                               FontSize="{StaticResource FontSizeBody}"
+                                               Margin="0,0,16,8"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1"
+                                               Text="{Binding FailedCount}"
+                                               FontSize="{StaticResource FontSizeBody}"
+                                               Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                               FontWeight="Bold"
+                                               Margin="0,0,0,8"/>
+
+                                    <!-- Skipped Count -->
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+                                               Text="{loc:Loc Summary_SkippedCount}"
+                                               FontSize="{StaticResource FontSizeBody}"
+                                               Margin="0,0,16,0"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1"
+                                               Text="{Binding SkippedCount}"
+                                               FontSize="{StaticResource FontSizeBody}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               FontWeight="Bold"/>
+                                </Grid>
+                            </StackPanel>
+
+                            <!-- Dialog Actions -->
+                            <ui:Button Grid.Row="2"
+                                       Content="{loc:Loc Summary_Close}"
+                                       Style="{StaticResource PrimaryButton}"
+                                       AutomationProperties.Name="{loc:Loc Summary_Close}"
+                                       Command="{Binding CloseSummaryDialogCommand}"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+    <Grid Style="{StaticResource PageRootGridStyle}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+            <ui:SymbolIcon Symbol="Apps24"
+                           Width="32" Height="32"
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0"/>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="{loc:Loc Apps_Title}"
+                           Style="{StaticResource PageTitleTextStyle}"
+                           AutomationProperties.AutomationId="PageApplications"/>
+                <TextBlock Text="{loc:Loc Apps_Subtitle}"
+                           Style="{StaticResource PageSubtitleTextStyle}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Profile Selector Card -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Padding="{StaticResource CardPadding}"
+                Margin="{StaticResource MarginNormalBottom}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Profile Icon and Label with Help -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:SymbolIcon Symbol="Folder24"
+                                   Width="24" Height="24"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                   Margin="0,0,12,0"/>
+                    <TextBlock Text="{loc:Loc Apps_ProfileLabel}"
+                               FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"
+                               VerticalAlignment="Center"/>
+                    <ui:SymbolIcon Symbol="QuestionCircle24"
+                                   Width="18" Height="18"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Margin="6,0,0,0"
+                                   ToolTip="{loc:Loc Apps_ProfileHelpTooltip}"
+                                   Cursor="Help"/>
+                </StackPanel>
+
+                <!-- Profile ComboBox (visible when profiles exist) -->
+                <ComboBox Grid.Column="1"
+                          ItemsSource="{Binding ProfileSelectorItems}"
+                          DisplayMemberPath="DisplayName"
+                          SelectedItem="{Binding SelectedProfileSelectorItem}"
+                          MinWidth="180"
+                          MaxWidth="360"
+                          Margin="16,0,0,0"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Left"
+                          ToolTip="{loc:Loc Apps_ProfileHelpTooltip}"
+                          Visibility="{Binding HasProfiles, Converter={StaticResource BooleanToVisibilityConverter}}"
+                          AutomationProperties.Name="{loc:Loc Help_SelectProfile}"
+                          AutomationProperties.HelpText="{loc:Loc Help_SelectProfile}"/>
+
+                <!-- No Profiles Message (visible when no profiles exist) -->
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Margin="16,0,0,0"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding HasProfiles, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <ui:SymbolIcon Symbol="Info24"
+                                   Width="18" Height="18"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0"/>
+                    <TextBlock Text="{loc:Loc Apps_NoProfilesAvailable}"
+                               FontSize="{StaticResource FontSizeCaption}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"
+                               ToolTip="{loc:Loc Apps_NoProfilesHint}"/>
+                </StackPanel>
+
+                <!-- Profile Info Badge -->
+                <Border Grid.Column="2"
+                        Background="{DynamicResource PrimaryHueMidBrush}"
+                        CornerRadius="{StaticResource RadiusSmall}"
+                        Padding="12,6"
+                        Margin="16,0,0,0"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left"
+                        Visibility="{Binding HasProfileApplied, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="CheckmarkCircle24" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0"
+                                       Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
+                        <TextBlock FontSize="{StaticResource FontSizeCaption}" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource BadgePrimaryForegroundBrush}">
+                            <Run Text="{Binding SelectedCount}"/>
+                            <Run Text="{loc:Loc Apps_AppsSelected}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- Clear Profile Button (inline with combobox) -->
+                <ui:Button Grid.Column="4"
+                           Command="{Binding ClearProfileCommand}"
+                           Style="{StaticResource IconButton}"
+                           VerticalAlignment="Center"
+                           ToolTip="{loc:Loc Apps_ClearProfile}"
+                           Margin="8,0,0,0"
+                           AutomationProperties.Name="{loc:Loc Apps_ClearProfile}"
+                           Visibility="{Binding HasProfileApplied, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ui:SymbolIcon Symbol="Dismiss24"/>
+                </ui:Button>
+
+                <!-- Update Current Profile Button (inline with combobox) -->
+                <ui:Button Grid.Column="5"
+                           Command="{Binding UpdateCurrentProfileCommand}"
+                           Style="{StaticResource SecondaryButton}"
+                           VerticalAlignment="Center"
+                           ToolTip="{loc:Loc Apps_UpdateProfileTooltip}"
+                           AutomationProperties.Name="{loc:Loc Apps_UpdateProfile}"
+                           Margin="8,0,0,0"
+                           Visibility="{Binding HasProfileApplied, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="ArrowSync24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{loc:Loc Apps_UpdateProfile}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </ui:Button>
+
+                <!-- Save Profile Button (inline with combobox) -->
+                <ui:Button Grid.Column="6"
+                           Command="{Binding ShowSaveProfileDialogCommand}"
+                           Style="{StaticResource SecondaryButton}"
+                           VerticalAlignment="Center"
+                           ToolTip="{loc:Loc Apps_SaveProfile}"
+                           AutomationProperties.Name="{loc:Loc Apps_SaveProfile}"
+                           Margin="8,0,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Save24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="{loc:Loc Apps_SaveProfile}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </ui:Button>
+            </Grid>
+        </Border>
+
+        <!-- Filter Bar Card -->
+        <Border Grid.Row="2"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Padding="{StaticResource CardPadding}"
+                Margin="{StaticResource MarginNormalBottom}">
+            <Grid>
+                <!-- Filters Section (search + filters + actions on a single dense row) -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MinWidth="180"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Search Box with Auto-complete -->
+                    <controls:SearchBox Grid.Column="0"
+                                         Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         SuggestionsSource="{Binding ApplicationNames}"
+                                         MinWidth="240"
+                                         HorizontalAlignment="Stretch"
+                                         Margin="0,0,16,0"/>
+
+                    <!-- Category ComboBox -->
+                    <ComboBox Grid.Column="1"
+                              ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding SelectedCategory}"
+                              MinWidth="140"
+                              MaxWidth="200"
+                              Margin="0"
+                              AutomationProperties.Name="{loc:Loc A11y_AppPicker_Category}"
+                              AutomationProperties.HelpText="{loc:Loc A11y_AppPicker_Category}"/>
+
+                    <!-- Status Filter ComboBox -->
+                    <ComboBox Grid.Column="2"
+                              ItemsSource="{Binding StatusFilters}"
+                              SelectedItem="{Binding SelectedStatusFilter}"
+                              MinWidth="120"
+                              MaxWidth="180"
+                              Margin="8,0,0,0"
+                              AutomationProperties.Name="{loc:Loc Col_Status}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource StatusFilterToStringConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <!-- Clear Filters Button -->
+                    <ui:Button Grid.Column="3"
+                               Command="{Binding ClearFiltersCommand}"
+                               Style="{StaticResource IconButton}"
+                               ToolTip="{loc:Loc Apps_ClearFilters}"
+                               Margin="8,0,0,0"
+                               AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}">
+                        <ui:SymbolIcon Symbol="Filter24"/>
+                    </ui:Button>
+
+                    <!-- Scan/Cancel Button (moved from row 1 to compact layout) -->
+                    <ui:Button Grid.Column="4"
+                               Command="{Binding ScanCommand}"
+                               Style="{StaticResource PrimaryButton}"
+                               Content="{loc:Loc Btn_Scan}"
+                               ToolTip="{loc:Loc Help_Tooltip_Scan}"
+                               Margin="16,0,0,0"
+                               Visibility="{Binding IsScanning, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="{loc:Loc Btn_Scan}"/>
+                    <ui:Button Grid.Column="4"
+                               Command="{Binding CancelScanCommand}"
+                               Style="{StaticResource SecondaryButton}"
+                               Content="{loc:Loc Btn_Cancel}"
+                               Margin="16,0,0,0"
+                               Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="{loc:Loc Btn_Cancel}"/>
+
+                    <!-- Scan Updates Button (moved from row 1).
+                         Always visible - disabled state via Opacity trigger on ui:Button (App.xaml). -->
+                    <ui:Button Grid.Column="5"
+                               Command="{Binding ScanUpdatesCommand}"
+                               Style="{StaticResource SecondaryButton}"
+                               Margin="8,0,0,0"
+                               Visibility="{Binding IsScanningUpdates, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="{loc:Loc Btn_ScanUpdates}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ArrowSync24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Btn_ScanUpdates}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+                    <StackPanel Grid.Column="5"
+                                Orientation="Horizontal"
+                                Margin="8,0,0,0"
+                                Visibility="{Binding IsScanningUpdates, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ui:ProgressRing IsIndeterminate="True"
+                                         Width="20"
+                                         Height="20"
+                                         Margin="0,0,8,0"/>
+                        <TextBlock Text="{loc:Loc Common_Loading}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
+            </Grid>
+        </Border>
+
+        <!-- Unified Context Bar: column toggle + selection helpers + live counters + batch actions -->
+        <Border Grid.Row="3"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Padding="{StaticResource MarginMedium}"
+                Margin="{StaticResource MarginSmallBottom}"
+                Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Column Visibility Toggle (Table icon) - DropDownButton with ContextMenu Flyout
+                     mirrors AppCatalogView Export button pattern (lines 110-129).
+                     WPF-UI 4.3 DropDownButton.Flyout is typed ContextMenu; ui:Flyout is silently
+                     ignored. PlacementTarget and DataContext are auto-wired by ui:DropDownButton. -->
+                <ui:DropDownButton Grid.Column="0"
+                                   x:Name="ColumnVisibilityButton"
+                                   Style="{StaticResource IconDropDownButton}"
+                                   Margin="0,0,8,0"
+                                   ToolTip="{loc:Loc Apps_ColumnVisibility}"
+                                   AutomationProperties.Name="{loc:Loc Apps_ColumnVisibility}">
+                    <ui:DropDownButton.Content>
+                        <ui:SymbolIcon Symbol="Table24"
+                                       FontSize="{StaticResource FontSizeSubtitle}"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    </ui:DropDownButton.Content>
+                    <ui:DropDownButton.Flyout>
+                        <ContextMenu>
+                            <MenuItem Header="{loc:Loc Col_Favorites}"
+                                      IsCheckable="True"
+                                      IsChecked="{Binding ShowFavoritesColumn, Mode=TwoWay}"
+                                      StaysOpenOnClick="True"/>
+                            <MenuItem Header="{loc:Loc Col_Version}"
+                                      IsCheckable="True"
+                                      IsChecked="{Binding ShowVersionColumn, Mode=TwoWay}"
+                                      StaysOpenOnClick="True"/>
+                            <MenuItem Header="{loc:Loc Col_Status}"
+                                      IsCheckable="True"
+                                      IsChecked="{Binding ShowStatusColumn, Mode=TwoWay}"
+                                      StaysOpenOnClick="True"/>
+                            <MenuItem Header="{loc:Loc Col_Category}"
+                                      IsCheckable="True"
+                                      IsChecked="{Binding ShowCategoryColumn, Mode=TwoWay}"
+                                      StaysOpenOnClick="True"/>
+                            <MenuItem Header="{loc:Loc Apps_Col_Sources}"
+                                      IsCheckable="True"
+                                      IsChecked="{Binding ShowSourcesColumn, Mode=TwoWay}"
+                                      StaysOpenOnClick="True"/>
+                            <MenuItem Header="{loc:Loc Col_Logs}"
+                                      IsCheckable="True"
+                                      IsChecked="{Binding ShowLogsColumn, Mode=TwoWay}"
+                                      StaysOpenOnClick="True"/>
+                            <Separator/>
+                            <MenuItem Header="{loc:Loc Apps_ResetColumns}"
+                                      Command="{Binding ResetColumnsToDefaultsCommand}"/>
+                        </ContextMenu>
+                    </ui:DropDownButton.Flyout>
+                </ui:DropDownButton>
+
+                <!-- Group separator -->
+                <Border Grid.Column="1"
+                        Width="1"
+                        VerticalAlignment="Stretch"
+                        Margin="4,4,12,4"
+                        Background="{DynamicResource DividerStrokeColorDefaultBrush}"/>
+
+                <!-- Selection helpers (subtle, transparent appearance) -->
+                <ui:Button Grid.Column="2"
+                           Content="{loc:Loc Apps_SelectAll}"
+                           Command="{Binding SelectAllCommand}"
+                           Style="{StaticResource CompactSecondaryButton}"
+                           Margin="0,0,4,0"
+                           AutomationProperties.Name="{loc:Loc Apps_SelectAll}"/>
+                <ui:Button Grid.Column="3"
+                           Content="{loc:Loc Apps_SelectNone}"
+                           Command="{Binding SelectNoneCommand}"
+                           Style="{StaticResource CompactSecondaryButton}"
+                           Margin="0,0,4,0"
+                           AutomationProperties.Name="{loc:Loc Apps_SelectNone}"/>
+                <ui:Button Grid.Column="4"
+                           Content="{loc:Loc Apps_SelectNotInstalled}"
+                           Command="{Binding SelectNotInstalledCommand}"
+                           Style="{StaticResource CompactSecondaryButton}"
+                           Margin="0,0,4,0"
+                           AutomationProperties.Name="{loc:Loc Apps_SelectNotInstalled}"/>
+                <ui:Button Grid.Column="5"
+                           Content="{loc:Loc Apps_SelectFavorites}"
+                           Command="{Binding SelectFavoritesCommand}"
+                           AutomationProperties.Name="{loc:Loc Apps_SelectFavorites}">
+                    <ui:Button.Style>
+                        <Style TargetType="ui:Button" BasedOn="{StaticResource CompactSecondaryButton}">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsInstalling}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsUninstalling}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ui:Button.Style>
+                </ui:Button>
+
+                <!-- Help icon (after selection helpers, contextual) -->
+                <ui:SymbolIcon Grid.Column="6"
+                               Symbol="QuestionCircle24"
+                               Width="16" Height="16"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Margin="8,0,12,0"
+                               ToolTip="{loc:Loc Apps_SelectionHelpTooltip}"
+                               Cursor="Help"/>
+
+                <!-- Centered live counters (replaces empty spacer) -->
+                <StackPanel Grid.Column="7"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <!-- Active filter badges -->
+                    <Border Style="{StaticResource HoverBadgeStyle}"
+                            Background="{DynamicResource PrimaryHueMidBrush}"
+                            CornerRadius="{StaticResource RadiusLarge}"
+                            Padding="8,4"
+                            Margin="0,0,8,0"
+                            Cursor="Hand"
+                            Visibility="{Binding HasSearchFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Search24" Width="14" Height="14" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
+                            <TextBlock Text="{Binding SearchText}"
+                                       FontSize="{StaticResource FontSizeCaption}"
+                                       MaxWidth="80"
+                                       TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center"
+                                       Margin="4,0,0,0"
+                                       Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource HoverBadgeStyle}"
+                            Background="{DynamicResource SecondaryHueMidBrush}"
+                            CornerRadius="{StaticResource RadiusLarge}"
+                            Padding="8,4"
+                            Margin="0,0,8,0"
+                            Cursor="Hand"
+                            Visibility="{Binding HasCategoryFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Folder24" Width="14" Height="14" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
+                            <TextBlock Text="{Binding SelectedCategory}"
+                                       FontSize="{StaticResource FontSizeCaption}"
+                                       VerticalAlignment="Center"
+                                       Margin="4,0,0,0"
+                                       Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource HoverBadgeStyle}"
+                            Background="{DynamicResource ControlFillColorDefaultBrush}"
+                            CornerRadius="{StaticResource RadiusLarge}"
+                            Padding="8,4"
+                            Margin="0,0,8,0"
+                            Cursor="Hand"
+                            Visibility="{Binding HasStatusFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Filter24" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding SelectedStatusFilter, Converter={StaticResource StatusFilterToStringConverter}}"
+                                       FontSize="{StaticResource FontSizeCaption}"
+                                       VerticalAlignment="Center"
+                                       Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <!-- Counters (subtle, italic-feel via secondary color) -->
+                    <TextBlock FontSize="{StaticResource FontSizeCaption}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Visibility="{Binding IsScanning, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <Run Text="{Binding FilteredCount, Mode=OneWay}"/>
+                        <Run Text="/"/>
+                        <Run Text="{Binding TotalApplicationsCount, Mode=OneWay}"/>
+                        <Run Text="{StaticResource AppsCounterSeparator}"/>
+                        <Run Text="{Binding InstalledCount, Mode=OneWay}" Foreground="{DynamicResource AccentGreenTextBrush}"/>
+                        <Run Text=" "/><Run Text="{loc:Loc Apps_Installed}"/>
+                        <Run Text="{StaticResource AppsCounterSeparator}"/>
+                        <Run Text="{Binding SelectedCount, Mode=OneWay}" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                        <Run Text=" "/><Run Text="{loc:Loc Apps_Selected}"/>
+                        <Run Text="{StaticResource AppsCounterSeparator}"/>
+                        <Run Text="{Binding FavoritesCount, Mode=OneWay}" Foreground="{DynamicResource FavoriteTextBrush}"/>
+                        <Run Text=" "/><Run Text="{loc:Loc Apps_Favorites}"/>
+                    </TextBlock>
+                    <!-- Scan progress -->
+                    <StackPanel Orientation="Horizontal"
+                                Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <ui:ProgressRing IsIndeterminate="True"
+                                         Width="16"
+                                         Height="16"
+                                         Margin="0,0,8,0"/>
+                        <TextBlock FontSize="{StaticResource FontSizeCaption}"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                            <Run Text="{Binding ScannedCount, Mode=OneWay}"/>
+                            <Run Text="/"/>
+                            <Run Text="{Binding ScanTotalCount, Mode=OneWay}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Group separator -->
+                <Border Grid.Column="8"
+                        Width="1"
+                        VerticalAlignment="Stretch"
+                        Margin="12,4,12,4"
+                        Background="{DynamicResource DividerStrokeColorDefaultBrush}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsInstalling}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsUninstalling}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                </Border>
+
+                <!-- Selection Action Bar -->
+                <!-- Batch actions group (Uninstall + Install).
+                     Always visible - buttons go to disabled visual via ui:Button IsEnabled=False
+                     Opacity trigger (App.xaml). User explicitly preferred greyed-out vs hidden. -->
+                <StackPanel Grid.Column="9" Orientation="Horizontal">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsInstalling}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsUninstalling}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <ui:Button Command="{Binding UninstallSelectedCommand}"
+                               Style="{StaticResource SecondaryButton}"
+                               Margin="0,0,8,0"
+                               AutomationProperties.Name="{loc:Loc Apps_UninstallSelected}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Delete24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Apps_UninstallSelected}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+                    <ui:Button Command="{Binding InstallSelectedCommand}"
+                               AutomationProperties.Name="{loc:Loc Apps_InstallSelected}">
+                        <ui:Button.Style>
+                            <Style TargetType="ui:Button" BasedOn="{StaticResource PrimaryButton}">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedStatusFilter}" Value="{x:Static viewModels:StatusFilterOption.HasUpdates}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Apps_InstallSelected}" VerticalAlignment="Center"/>
+                            <TextBlock VerticalAlignment="Center" Margin="8,0,0,0">
+                                <Run Text="("/>
+                                <Run Text="{Binding SelectedCount, Mode=OneWay}"/>
+                                <Run Text=")"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </ui:Button>
+                    <ui:Button Command="{Binding UpdateSelectedCommand}"
+                               AutomationProperties.Name="{loc:Loc Btn_UpdateSelected}">
+                        <ui:Button.Style>
+                            <Style TargetType="ui:Button" BasedOn="{StaticResource PrimaryButton}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedStatusFilter}" Value="{x:Static viewModels:StatusFilterOption.HasUpdates}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:Button.Style>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ArrowSync24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Btn_UpdateSelected}" VerticalAlignment="Center"/>
+                            <TextBlock VerticalAlignment="Center" Margin="8,0,0,0">
+                                <Run Text="("/>
+                                <Run Text="{Binding SelectedCount, Mode=OneWay}"/>
+                                <Run Text=")"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </ui:Button>
+                </StackPanel>
+
+                <!-- Batch Progress Panel (visible during batch ops, replaces action group) -->
+                <StackPanel Grid.Column="9" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsInstalling}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsUninstalling}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <!-- Operation Type Icon and Label -->
+                    <ui:SymbolIcon Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0">
+                        <ui:SymbolIcon.Style>
+                            <Style TargetType="ui:SymbolIcon">
+                                <Setter Property="Symbol" Value="ArrowDownload24"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsUninstalling}" Value="True">
+                                        <Setter Property="Symbol" Value="Delete24"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:SymbolIcon.Style>
+                    </ui:SymbolIcon>
+                    <TextBlock VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="Medium">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontSize" Value="12"/>
+                                <Setter Property="Text" Value="{loc:Loc Progress_Installing}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsUninstalling}" Value="True">
+                                        <Setter Property="Text" Value="{loc:Loc Status_Uninstalling}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <!-- Progress Text -->
+                    <TextBlock VerticalAlignment="Center" Margin="0,0,8,0">
+                        <Run Text="{Binding BatchProgressCurrent, Mode=OneWay}"/>
+                        <Run Text="/"/>
+                        <Run Text="{Binding BatchProgressTotal, Mode=OneWay}"/>
+                    </TextBlock>
+                    <!-- Current App Name -->
+                    <TextBlock Text="{Binding CurrentBatchAppName}"
+                               FontSize="{StaticResource FontSizeCaption}"
+                               Foreground="{DynamicResource PrimaryHueMidBrush}"
+                               FontWeight="Medium"
+                               VerticalAlignment="Center"
+                               MaxWidth="200"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip="{Binding CurrentBatchAppName}"
+                               Margin="0,0,12,0"
+                               Visibility="{Binding CurrentBatchAppName, Converter={StaticResource NullableToVisibilityConverter}}"/>
+                    <!-- Progress Bar -->
+                    <ProgressBar Value="{Binding BatchProgressPercent}"
+                                 Width="150"
+                                 Height="8"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,8,0"/>
+                    <!-- Estimated Time Remaining -->
+                    <TextBlock Text="{Binding EstimatedTimeRemaining}"
+                               FontSize="{StaticResource FontSizeCaption}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,0"
+                               Visibility="{Binding EstimatedTimeRemaining, Converter={StaticResource NullableToVisibilityConverter}}"/>
+                    <!-- Pause Button -->
+                    <ui:Button Command="{Binding PauseCommand}"
+                               Style="{StaticResource IconButton}"
+                               ToolTip="{loc:Loc Btn_Pause}"
+                               Visibility="{Binding ShowPauseButton, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_Pause}">
+                        <ui:SymbolIcon Symbol="Pause24"/>
+                    </ui:Button>
+                    <!-- Resume Button -->
+                    <ui:Button Command="{Binding ResumeCommand}"
+                               Style="{StaticResource IconButton}"
+                               ToolTip="{loc:Loc Btn_Resume}"
+                               Visibility="{Binding ShowResumeButton, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_Resume}">
+                        <ui:SymbolIcon Symbol="Play24"/>
+                    </ui:Button>
+                    <!-- Cancel Button -->
+                    <ui:Button Command="{Binding CancelBatchCommand}"
+                               Style="{StaticResource IconButton}"
+                               ToolTip="{loc:Loc Btn_Cancel}"
+                               Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_Cancel}">
+                        <ui:SymbolIcon Symbol="Dismiss24"/>
+                    </ui:Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Applications DataGrid -->
+        <Border Grid.Row="4"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Padding="0">
+            <Grid>
+                <!-- Loading Indicator -->
+                <StackPanel Orientation="Vertical"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ui:ProgressRing IsIndeterminate="True"
+                                     Width="48"
+                                     Height="48"/>
+                    <TextBlock Text="{loc:Loc Common_Loading}"
+                               FontSize="{StaticResource FontSizeBody}"
+                               HorizontalAlignment="Center"
+                               Margin="0,16,0,0"/>
+                </StackPanel>
+
+                <!-- Empty Filter Results State -->
+                <StackPanel Orientation="Vertical"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding IsEmptyFilterResults, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ui:SymbolIcon Symbol="Filter24"
+                                   Width="64" Height="64"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,16"/>
+                    <TextBlock Text="{loc:Loc Apps_EmptyFilterResults}"
+                               FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,8"/>
+                    <TextBlock Text="{loc:Loc Apps_EmptyFilterResultsHint}"
+                               FontSize="{StaticResource FontSizeCaption}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,16"/>
+                    <ui:Button Content="{loc:Loc Apps_ClearFilters}"
+                               Command="{Binding ClearFiltersCommand}"
+                               Style="{StaticResource PrimaryButton}"
+                               HorizontalAlignment="Center"
+                               AutomationProperties.Name="{loc:Loc A11y_Logs_ClearFilters}"/>
+                </StackPanel>
+
+                <!-- DataGrid with UI Virtualization for performance -->
+                <DataGrid x:Name="ApplicationsDataGrid"
+                          ItemsSource="{Binding FilteredApplications, ValidatesOnDataErrors=False, ValidatesOnNotifyDataErrors=False}"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          CanUserReorderColumns="True"
+                          CanUserSortColumns="True"
+                          IsReadOnly="True"
+                          SelectionMode="Single"
+                          SelectionUnit="FullRow"
+                          HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal"
+                          BorderThickness="0"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling"
+                          VirtualizingPanel.ScrollUnit="Item"
+                          EnableRowVirtualization="True"
+                          EnableColumnVirtualization="False"
+                          ScrollViewer.IsDeferredScrollingEnabled="False"
+                          RowValidationErrorTemplate="{x:Null}"
+                          RowHeaderWidth="0"
+                          Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                          PreviewKeyDown="ApplicationsDataGrid_PreviewKeyDown"
+                          AutomationProperties.Name="{loc:Loc A11y_AppPicker_AppList}">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow" BasedOn="{StaticResource EnhancedDataGridRowStyle}">
+                            <Setter Property="Background" Value="{Binding Status, Converter={StaticResource StatusToRowBackgroundConverter}}"/>
+                            <Setter Property="MinHeight" Value="56"/>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <MenuItem x:Name="MenuLaunch"
+                                      Header="{loc:Loc Menu_Launch}"
+                                      Command="{Binding LaunchAppCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Icon>
+                                    <ui:SymbolIcon Symbol="Play24"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="MenuOpenHomepage"
+                                      Header="{loc:Loc Menu_OpenHomepage}"
+                                      Command="{Binding OpenWebsiteCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Icon>
+                                    <ui:SymbolIcon Symbol="Globe24"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem x:Name="MenuInstall"
+                                      Header="{loc:Loc Menu_Install}"
+                                      Command="{Binding InstallAppCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Icon>
+                                    <ui:SymbolIcon Symbol="ArrowDownload24"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="MenuUninstall"
+                                      Header="{loc:Loc Menu_Uninstall}"
+                                      Command="{Binding UninstallAppCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Icon>
+                                    <ui:SymbolIcon Symbol="Delete24"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="MenuUpdate"
+                                      Header="{loc:Loc Menu_Update}"
+                                      Command="{Binding UpdateAppCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Icon>
+                                    <ui:SymbolIcon Symbol="ArrowSync24"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem x:Name="MenuScan"
+                                      Header="{loc:Loc Menu_Scan}"
+                                      Command="{Binding ScanAppCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Icon>
+                                    <ui:SymbolIcon Symbol="Search24"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem x:Name="MenuScanSelected"
+                                      Header="{loc:Loc Menu_ScanSelected}"
+                                      Command="{Binding ScanSelectedCommand}">
+                                <MenuItem.Icon>
+                                    <ui:SymbolIcon Symbol="Search24"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem Header="{loc:Loc Menu_ToggleSelection}"
+                                      Command="{Binding ToggleSelectionCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Icon>
+                                    <ui:SymbolIcon Symbol="CheckboxChecked24"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="{loc:Loc Menu_ToggleFavorite}"
+                                      Command="{Binding ToggleFavoriteCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Icon>
+                                    <ui:SymbolIcon Symbol="Star24"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem x:Name="MenuViewLogs"
+                                      Header="{loc:Loc Menu_ViewLogs}"
+                                      Command="{Binding ViewLogsCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Icon>
+                                    <ui:SymbolIcon Symbol="Document24"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator/>
+                            <MenuItem Header="{loc:Loc Menu_CopyAppId}"
+                                      Command="{Binding CopyAppIdCommand}"
+                                      CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                <MenuItem.Icon>
+                                    <ui:SymbolIcon Symbol="Copy24"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                    <DataGrid.Columns>
+                        <!-- Selection Checkbox Column -->
+                        <DataGridTemplateColumn Width="Auto" MinWidth="50" SortMemberPath="IsSelected">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                    <CheckBox IsChecked="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}"
+                                              Style="{StaticResource AnimatedSelectionCheckBox}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Checked="SelectionCheckBox_Changed"
+                                              Unchecked="SelectionCheckBox_Changed"
+                                              AutomationProperties.Name="{Binding Name}"
+                                              AutomationProperties.HelpText="{loc:Loc Menu_ToggleSelection}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Favorites Column -->
+                        <DataGridTemplateColumn Width="Auto" MinWidth="40" SortMemberPath="IsFavorite"
+                                                Visibility="{Binding DataContext.ShowFavoritesColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                    <ui:Button Style="{StaticResource FavoriteIconButton}"
+                                               Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                               CommandParameter="{Binding}"
+                                               ToolTip="{loc:Loc Menu_ToggleFavorite}"
+                                               AutomationProperties.Name="{Binding Name}"
+                                               AutomationProperties.HelpText="{loc:Loc Menu_ToggleFavorite}">
+                                        <ui:SymbolIcon Symbol="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteIconConverter}}"
+                                                       Foreground="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteColorConverter}}"
+                                                       Width="20" Height="20"/>
+                                    </ui:Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Application Name Column -->
+                        <DataGridTemplateColumn Width="*" MinWidth="180" SortMemberPath="Name">
+                            <DataGridTemplateColumn.Header>
+                                <TextBlock Text="{loc:Loc Col_Application}"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                    <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="{StaticResource FontSizeBody}"
+                                                       FontWeight="Medium"/>
+                                            <!-- Profile Tier Badge -->
+                                            <Border Background="{DynamicResource SecondaryHueMidBrush}"
+                                                    CornerRadius="{StaticResource RadiusSmall}"
+                                                    Padding="6,2"
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Visibility="{Binding ProfileTier, Converter={StaticResource NullableToVisibilityConverter}}">
+                                                <TextBlock Text="{Binding ProfileTier}"
+                                                           FontSize="{StaticResource FontSizeMicro}"
+                                                           FontWeight="Bold"
+                                                           Foreground="{DynamicResource BadgeSecondaryForegroundBrush}"/>
+                                            </Border>
+                                            <!-- Manual Install Badge -->
+                                            <Border Background="{DynamicResource ManualInstallBadgeBrush}"
+                                                    CornerRadius="{StaticResource RadiusSmall}"
+                                                    Padding="6,2"
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    ToolTip="{loc:Loc Apps_ManualInstallTooltip}"
+                                                    Visibility="{Binding ManualInstallOnly, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <TextBlock Text="{loc:Loc Apps_ManualInstall}"
+                                                           FontSize="{StaticResource FontSizeMicro}"
+                                                           FontWeight="Bold"
+                                                           Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Description}"
+                                                   FontSize="{StaticResource FontSizeCaption}"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxWidth="350"/>
+                                        <!-- Install Notes -->
+                                        <TextBlock Text="{Binding InstallNotes}"
+                                                   FontSize="{StaticResource FontSizeCaption}"
+                                                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                                   TextWrapping="Wrap"
+                                                   MaxWidth="350"
+                                                   Margin="0,2,0,0"
+                                                   Visibility="{Binding InstallNotes, Converter={StaticResource NullableToVisibilityConverter}}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Version Column (combined current + available) -->
+                        <DataGridTemplateColumn Width="Auto" MinWidth="120" SortMemberPath="CurrentVersion"
+                                                Visibility="{Binding DataContext.ShowVersionColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <DataGridTemplateColumn.Header>
+                                <TextBlock Text="{loc:Loc Col_Version}"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                    <StackPanel Orientation="Horizontal"
+                                                Visibility="{Binding CurrentVersion, Converter={StaticResource NullableToVisibilityConverter}}">
+                                        <!-- Current Version -->
+                                        <TextBlock Text="{Binding CurrentVersion}"
+                                                   FontSize="{StaticResource FontSizeCaption}"
+                                                   FontFamily="Consolas"
+                                                   VerticalAlignment="Center"/>
+                                        <!-- Arrow and New Version (only if update available) -->
+                                        <StackPanel Orientation="Horizontal"
+                                                    Visibility="{Binding AvailableVersion, Converter={StaticResource NullableToVisibilityConverter}}">
+                                            <ui:SymbolIcon Symbol="ChevronRight24"
+                                                           Width="16"
+                                                           Height="16"
+                                                           Foreground="{DynamicResource AccentGreenTextBrush}"
+                                                           VerticalAlignment="Center"
+                                                           Margin="6,0,6,0"/>
+                                            <TextBlock Text="{Binding AvailableVersion}"
+                                                       FontSize="{StaticResource FontSizeCaption}"
+                                                       FontFamily="Consolas"
+                                                       Foreground="{DynamicResource AccentGreenTextBrush}"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Status Column -->
+                        <DataGridTemplateColumn Width="Auto" MinWidth="100" SortMemberPath="Status"
+                                                Visibility="{Binding DataContext.ShowStatusColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <DataGridTemplateColumn.Header>
+                                <TextBlock Text="{loc:Loc Col_Status}"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
+                                                       Width="18"
+                                                       Height="18"
+                                                       Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"
+                                                       VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding StatusMessage}"
+                                                   FontSize="{StaticResource FontSizeCaption}"
+                                                   VerticalAlignment="Center"
+                                                   Margin="6,0,0,0"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding StatusMessage}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Category Column -->
+                        <DataGridTemplateColumn Width="Auto" MinWidth="100" SortMemberPath="Category"
+                                                Visibility="{Binding DataContext.ShowCategoryColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <DataGridTemplateColumn.Header>
+                                <TextBlock Text="{loc:Loc Col_Category}"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                    <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                            CornerRadius="{StaticResource RadiusLarge}"
+                                            Padding="10,4"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Category}"
+                                                   FontSize="{StaticResource FontSizeCaption}"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Sources Column -->
+                        <DataGridTemplateColumn Width="Auto" MinWidth="100" SortMemberPath="Sources"
+                                                Visibility="{Binding DataContext.ShowSourcesColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <DataGridTemplateColumn.Header>
+                                <TextBlock Text="{loc:Loc Apps_Col_Sources}"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border Style="{StaticResource SourceWingetBadgeStyle}"
+                                                Visibility="{Binding Sources, Converter={StaticResource SourceStringToVisibilityConverter}, ConverterParameter=Winget}">
+                                            <TextBlock Text="{loc:Loc Source_Winget}" Style="{StaticResource SourceBadgeTextStyle}"/>
+                                        </Border>
+                                        <Border Style="{StaticResource SourceChocolateyBadgeStyle}"
+                                                Visibility="{Binding Sources, Converter={StaticResource SourceStringToVisibilityConverter}, ConverterParameter=Chocolatey}">
+                                            <TextBlock Text="{loc:Loc Source_Chocolatey}" Style="{StaticResource SourceBadgeTextStyle}"/>
+                                        </Border>
+                                        <Border Style="{StaticResource SourceStoreBadgeStyle}"
+                                                Visibility="{Binding Sources, Converter={StaticResource SourceStringToVisibilityConverter}, ConverterParameter=Store}">
+                                            <TextBlock Text="{loc:Loc Source_Store}" Style="{StaticResource SourceBadgeTextStyle}"/>
+                                        </Border>
+                                        <Border Style="{StaticResource SourceDirectBadgeStyle}"
+                                                Visibility="{Binding Sources, Converter={StaticResource SourceStringToVisibilityConverter}, ConverterParameter=Direct}">
+                                            <TextBlock Text="{loc:Loc Source_Direct}" Style="{StaticResource SourceBadgeTextStyle}"/>
+                                        </Border>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Logs Column -->
+                        <DataGridTemplateColumn Width="60" MinWidth="60" SortMemberPath="LogOutput"
+                                                Visibility="{Binding DataContext.ShowLogsColumn, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <DataGridTemplateColumn.Header>
+                                <TextBlock Text="{loc:Loc Col_Logs}" HorizontalAlignment="Center"/>
+                            </DataGridTemplateColumn.Header>
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                    <ui:Button Style="{StaticResource IconButton}"
+                                               HorizontalAlignment="Center"
+                                               ToolTip="{loc:Loc Btn_ViewLogs}"
+                                               Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                               CommandParameter="{Binding}"
+                                               Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}"
+                                               AutomationProperties.Name="{Binding Name}"
+                                               AutomationProperties.HelpText="{loc:Loc Btn_ViewLogs}">
+                                        <ui:SymbolIcon Symbol="Document24" Width="20" Height="20"/>
+                                    </ui:Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+
+        <!-- Error Message with Recovery Options -->
+        <Border Grid.Row="4"
+                Background="{DynamicResource ErrorBackgroundBrush}"
+                BorderBrush="{DynamicResource ErrorBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Padding="{StaticResource CardPadding}"
+                Margin="24"
+                Visibility="{Binding ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MaxWidth="500">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
+                    <ui:SymbolIcon Symbol="ErrorCircle24"
+                                   Width="24" Height="24"
+                                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"/>
+                    <TextBlock Text="{Binding ErrorMessage}"
+                               Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                               FontSize="{StaticResource FontSizeBody}"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <ui:Button Content="{loc:Loc Common_TryAgain}"
+                               Command="{Binding RetryLastOperationCommand}"
+                               Style="{StaticResource PrimaryButton}"
+                               Margin="0,0,8,0"
+                               MinWidth="100"
+                               AutomationProperties.Name="{loc:Loc Common_TryAgain}"/>
+                    <ui:Button Content="{loc:Loc Common_Dismiss}"
+                               Command="{Binding DismissErrorCommand}"
+                               Style="{StaticResource SecondaryButton}"
+                               MinWidth="100"
+                               AutomationProperties.Name="{loc:Loc Common_Dismiss}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+    </Grid>
+</UserControl>

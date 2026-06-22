@@ -1,0 +1,158 @@
+<UserControl x:Class="Win11Forge.GUI.Controls.OnboardingDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             MinWidth="500" MaxWidth="700">
+    <Border Padding="32">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,24">
+                <Image Source="/icon_cropped.png"
+                       Width="80" Height="80"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,16"/>
+                <TextBlock Text="{loc:Loc Onboarding_Welcome}"
+                           FontSize="{StaticResource FontSizeTitle}" FontWeight="SemiBold"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="{loc:Loc Onboarding_Subtitle}"
+                           FontSize="{StaticResource FontSizeBody}"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Margin="0,8,0,0"/>
+            </StackPanel>
+
+            <!-- Steps/Features -->
+            <StackPanel Grid.Row="1" Margin="0,0,0,24">
+                <!-- Step 1: Prerequisites -->
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0"
+                            Background="{DynamicResource PrimaryHueMidBrush}"
+                            CornerRadius="{StaticResource RadiusXLarge}"
+                            Width="40" Height="40"
+                            Margin="0,0,16,0">
+                        <TextBlock Text="1"
+                                   Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
+                                   FontWeight="Bold"
+                                   FontSize="{StaticResource FontSizeLarge}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{loc:Loc Onboarding_Step1_Title}"
+                                   FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"/>
+                        <TextBlock Text="{loc:Loc Onboarding_Step1_Desc}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Step 2: Browse Apps -->
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0"
+                            Background="{DynamicResource PrimaryHueMidBrush}"
+                            CornerRadius="{StaticResource RadiusXLarge}"
+                            Width="40" Height="40"
+                            Margin="0,0,16,0">
+                        <TextBlock Text="2"
+                                   Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
+                                   FontWeight="Bold"
+                                   FontSize="{StaticResource FontSizeLarge}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{loc:Loc Onboarding_Step2_Title}"
+                                   FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"/>
+                        <TextBlock Text="{loc:Loc Onboarding_Step2_Desc}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Step 3: Deploy -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0"
+                            Background="{DynamicResource PrimaryHueMidBrush}"
+                            CornerRadius="{StaticResource RadiusXLarge}"
+                            Width="40" Height="40"
+                            Margin="0,0,16,0">
+                        <TextBlock Text="3"
+                                   Foreground="{DynamicResource BadgePrimaryForegroundBrush}"
+                                   FontWeight="Bold"
+                                   FontSize="{StaticResource FontSizeLarge}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{loc:Loc Onboarding_Step3_Title}"
+                                   FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"/>
+                        <TextBlock Text="{loc:Loc Onboarding_Step3_Desc}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <!-- Keyboard Shortcuts Tip -->
+            <Border Grid.Row="2"
+                    Background="{DynamicResource ControlFillColorDefaultBrush}"
+                    CornerRadius="{StaticResource RadiusMedium}"
+                    Padding="16"
+                    Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal">
+                    <ui:SymbolIcon Symbol="Keyboard24"
+                                   Width="24" Height="24"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock FontSize="{StaticResource FontSizeCaption}"
+                               VerticalAlignment="Center">
+                        <Run Text="{loc:Loc Onboarding_Tip}"/>
+                        <Run Text=" "/>
+                        <Run Text="F1" FontFamily="Consolas" FontWeight="Bold"/>
+                        <Run Text=" "/>
+                        <Run Text="{loc:Loc Onboarding_Tip_Shortcuts}"/>
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+            <!-- Actions -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center">
+                <CheckBox x:Name="DontShowAgainCheckbox"
+                          Content="{loc:Loc Onboarding_DontShowAgain}"
+                          Margin="0,0,24,0"
+                          VerticalAlignment="Center"
+                          AutomationProperties.Name="{loc:Loc A11y_Onboarding_DontShow}"/>
+                <ui:Button Content="{loc:Loc Onboarding_GetStarted}"
+                           Style="{DynamicResource PrimaryButton}"
+                           Click="GetStartedButton_Click"
+                           Padding="24,8"
+                           AutomationProperties.Name="{loc:Loc A11y_Onboarding_GetStarted}"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,0 +1,514 @@
+<UserControl x:Class="Win11Forge.GUI.Views.DeploymentView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
+             xmlns:models="clr-namespace:Win11Forge.GUI.Models"
+             xmlns:helpers="clr-namespace:Win11Forge.GUI.Helpers"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewModels:DeploymentViewModel}"
+             d:DesignHeight="700" d:DesignWidth="1000">
+
+    <Grid>
+    <!-- Main Content -->
+    <Grid Style="{StaticResource PageRootGridStyle}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,24">
+            <TextBlock Text="{loc:Loc Monitoring_Title}"
+                       Style="{StaticResource PageTitleTextStyle}"
+                       AutomationProperties.AutomationId="PageDeployment"/>
+            <TextBlock Text="{loc:Loc Monitoring_Subtitle}"
+                       Style="{StaticResource PageSubtitleTextStyle}"/>
+        </StackPanel>
+
+        <!-- Deployment Progress Card -->
+        <Border Grid.Row="1"
+                Padding="24"
+                Margin="0,0,0,16"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Visibility="{Binding IsDeploying, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Status Header -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="{Binding IsPaused, Converter={StaticResource BoolToPauseIconConverter}}"
+                                       Width="28" Height="28"
+                                       Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,12,0"/>
+                        <StackPanel>
+                            <TextBlock Text="{Binding DeploymentStatusMessage}"
+                                       FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="400"/>
+                            <TextBlock Text="{Binding CurrentAppName}"
+                                       FontSize="{StaticResource FontSizeCaption}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="400"
+                                       ToolTip="{Binding CurrentAppName}"
+                                       Visibility="{Binding CurrentAppName, Converter={StaticResource NullableToVisibilityConverter}}"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Counter Badge -->
+                    <Border Grid.Column="1"
+                            Background="{DynamicResource PrimaryHueLightBrush}"
+                            CornerRadius="{StaticResource RadiusXLarge}"
+                            Padding="16,8">
+                        <TextBlock Foreground="{DynamicResource PrimaryHueLightForegroundBrush}"
+                                   FontWeight="Bold"
+                                   FontSize="{StaticResource FontSizeBodyLarge}">
+                            <Run Text="{Binding CompletedCount, Mode=OneWay}"/>
+                            <Run Text="/"/>
+                            <Run Text="{Binding TotalToInstall, Mode=OneWay}"/>
+                        </TextBlock>
+                    </Border>
+                </Grid>
+
+                <!-- Progress Bar -->
+                <ProgressBar Grid.Row="1"
+                             Value="{Binding ProgressPercentage, Mode=OneWay}"
+                             Minimum="0"
+                             Maximum="100"
+                             Height="8"
+                             Margin="0,20,0,8"/>
+
+                <!-- Time Info -->
+                <StackPanel Grid.Row="2"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,16">
+                    <ui:SymbolIcon Symbol="Clock24"
+                                   Width="16" Height="16"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Margin="0,0,6,0"/>
+                    <TextBlock FontSize="{StaticResource FontSizeCaption}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center">
+                        <Run Text="{Binding ElapsedTime, Mode=OneWay}"/>
+                        <Run Text=" / ~"/>
+                        <Run Text="{Binding EstimatedTimeRemaining, Mode=OneWay}"/>
+                    </TextBlock>
+                    <TextBlock Text=" - "
+                               FontSize="{StaticResource FontSizeCaption}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Margin="8,0"/>
+                    <TextBlock FontSize="{StaticResource FontSizeCaption}"
+                               FontWeight="Bold">
+                        <Run Text="{Binding ProgressPercentage, Mode=OneWay, StringFormat={}{0:F0}}"/>
+                        <Run Text="%"/>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Control Buttons -->
+                <StackPanel Grid.Row="3"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center">
+                    <!-- Pause Button -->
+                    <ui:Button Style="{StaticResource SecondaryButton}"
+                               Command="{Binding PauseDeploymentCommand}"
+                               Visibility="{Binding CanPauseDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               Margin="0,0,12,0"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_Pause}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Pause24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Btn_Pause}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+
+                    <!-- Resume Button -->
+                    <ui:Button Style="{StaticResource PrimaryButton}"
+                               Command="{Binding ResumeDeploymentCommand}"
+                               Visibility="{Binding CanResumeDeployment, Converter={StaticResource BooleanToVisibilityConverter}}"
+                               Margin="0,0,12,0"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_Resume}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Play24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Btn_Resume}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+
+                    <!-- Cancel Button -->
+                    <ui:Button Style="{StaticResource SecondaryButton}"
+                               Command="{Binding CancelDeploymentCommand}"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_Cancel}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Dismiss24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Btn_Cancel}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Empty State (no deployment in progress) -->
+        <Border Grid.Row="1"
+                Padding="48"
+                Margin="0,0,0,16"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Visibility="{Binding IsDeploying, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center">
+                <ui:SymbolIcon Symbol="DesktopPulse24"
+                               Width="64" Height="64"
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               AutomationProperties.Name="{loc:Loc A11y_NoDeploymentIcon}"/>
+                <TextBlock Text="{loc:Loc Monitoring_NoDeployment}"
+                           FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Margin="0,16,0,8"/>
+                <TextBlock Text="{loc:Loc Monitoring_NoDeploymentHint}"
+                           FontSize="{StaticResource FontSizeCaption}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+        <!-- Deployment Result Banner -->
+        <Border Grid.Row="0"
+                Margin="0,0,0,16"
+                Padding="{StaticResource CardPadding}"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Visibility="{Binding IsDeploymentComplete, Converter={StaticResource BooleanToVisibilityConverter}}"
+                AutomationProperties.LiveSetting="Polite">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="{DynamicResource SuccessBackgroundBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding DeploymentResult}" Value="Success">
+                            <Setter Property="Background" Value="{DynamicResource SuccessBackgroundBrush}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding DeploymentResult}" Value="Partial">
+                            <Setter Property="Background" Value="{DynamicResource WarningBackgroundBrush}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding DeploymentResult}" Value="Failed">
+                            <Setter Property="Background" Value="{DynamicResource ErrorBackgroundBrush}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding DeploymentResult}" Value="Cancelled">
+                            <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <!-- Result Icon -->
+                <ui:SymbolIcon Grid.Column="0"
+                               Width="32" Height="32"
+                               VerticalAlignment="Center"
+                               Margin="0,0,16,0">
+                    <ui:SymbolIcon.Style>
+                        <Style TargetType="ui:SymbolIcon">
+                            <Setter Property="Symbol" Value="CheckmarkCircle24"/>
+                            <Setter Property="Foreground" Value="{DynamicResource SuccessIconBrush}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DeploymentResult}" Value="Partial">
+                                    <Setter Property="Symbol" Value="ErrorCircle24"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource WarningIconBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding DeploymentResult}" Value="Failed">
+                                    <Setter Property="Symbol" Value="DismissCircle24"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource ErrorIconBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding DeploymentResult}" Value="Cancelled">
+                                    <Setter Property="Symbol" Value="Dismiss24"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ui:SymbolIcon.Style>
+                </ui:SymbolIcon>
+                <!-- Result Text -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontSize" Value="{StaticResource FontSizeSubtitle}"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Text" Value="{loc:Loc Deployment_Result_Success}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding DeploymentResult}" Value="Partial">
+                                        <Setter Property="Text" Value="{loc:Loc Deployment_Result_Partial}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding DeploymentResult}" Value="Failed">
+                                        <Setter Property="Text" Value="{loc:Loc Deployment_Result_Failed}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding DeploymentResult}" Value="Cancelled">
+                                        <Setter Property="Text" Value="{loc:Loc Deployment_Result_Cancelled}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock FontSize="{StaticResource FontSizeCaption}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Margin="0,4,0,0">
+                        <Run Text="{Binding SuccessCount, Mode=OneWay}"/>
+                        <Run Text="{loc:Loc Deployment_Summary_Installed}"/>
+                        <Run Text="{Binding FailureCount, Mode=OneWay}"/>
+                        <Run Text="{loc:Loc Deployment_Summary_Failed}"/>
+                        <Run Text="{Binding SkippedCount, Mode=OneWay}"/>
+                        <Run Text="{loc:Loc Deployment_Summary_Skipped}"/>
+                    </TextBlock>
+                </StackPanel>
+                <!-- Elapsed Time -->
+                <TextBlock Grid.Column="2"
+                           FontSize="{StaticResource FontSizeCaption}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           VerticalAlignment="Center">
+                    <Run Text="{Binding ElapsedTime, Mode=OneWay}"/>
+                </TextBlock>
+            </Grid>
+        </Border>
+
+        <!-- Applications List (status only) - visible during deployment and after completion -->
+        <Border Grid.Row="1"
+                Padding="0"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Setter Property="Margin" Value="0"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsDeploying}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsDeploymentComplete}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <DataGrid ItemsSource="{Binding DeploymentApplications}"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      CanUserReorderColumns="False"
+                      IsReadOnly="True"
+                      SelectionMode="Single"
+                      SelectionUnit="FullRow"
+                      HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal"
+                      BorderThickness="0"
+                      VirtualizingPanel.IsVirtualizing="True"
+                      VirtualizingPanel.VirtualizationMode="Recycling"
+                      VirtualizingPanel.ScrollUnit="Pixel"
+                      EnableRowVirtualization="True"
+                      RowStyle="{StaticResource EnhancedDataGridRowStyle}"
+                      CellStyle="{StaticResource EnhancedDataGridCellStyle}"
+                      AutomationProperties.Name="{loc:Loc A11y_Deployment_AppList}">
+                <DataGrid.Columns>
+                    <!-- Status Icon -->
+                    <DataGridTemplateColumn Width="50">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                <ui:SymbolIcon Symbol="{Binding Status, Converter={StaticResource StatusToIconConverter}}"
+                                               Width="20" Height="20"
+                                               HorizontalAlignment="Center"
+                                               Foreground="{Binding Status, Converter={StaticResource StatusToColorConverter}}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Application Name -->
+                    <DataGridTemplateColumn Width="*" MinWidth="250">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock Text="{loc:Loc Col_Application}"/>
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                <TextBlock Text="{Binding Name}"
+                                           FontSize="{StaticResource FontSizeBody}"
+                                           VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Status Message -->
+                    <DataGridTemplateColumn Width="200">
+                        <DataGridTemplateColumn.Header>
+                            <TextBlock Text="{loc:Loc Col_Status}"/>
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                <TextBlock Text="{Binding StatusMessage}"
+                                           FontSize="{StaticResource FontSizeCaption}"
+                                           TextTrimming="CharacterEllipsis"
+                                           ToolTip="{Binding StatusMessage}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Logs Button -->
+                    <DataGridTemplateColumn Width="50">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate DataType="{x:Type models:ApplicationModel}">
+                                <!-- WCAG 2.5.5: 44x44px minimum touch target -->
+                                <ui:Button Style="{StaticResource IconButton}"
+                                           ToolTip="{loc:Loc Btn_ViewLogs}"
+                                           AutomationProperties.Name="{loc:Loc Btn_ViewLogs}"
+                                           Command="{Binding DataContext.ViewLogsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                           CommandParameter="{Binding}"
+                                           Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
+                                    <ui:SymbolIcon Symbol="Document24" Width="20" Height="20"/>
+                                </ui:Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Error Message -->
+        <TextBlock Grid.Row="0"
+                   Grid.RowSpan="2"
+                   Panel.ZIndex="1"
+                   Text="{Binding ErrorMessage}"
+                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                   FontSize="{StaticResource FontSizeBody}"
+                   Visibility="{Binding ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Top"
+                   Margin="0,16,0,0"/>
+        </Grid>
+    </Grid>
+
+    <!-- Log Viewer Dialog Overlay -->
+    <Grid Visibility="{Binding IsLogViewerOpen, Converter={StaticResource BooleanToVisibilityConverter}}"
+          Focusable="True"
+          KeyDown="LogViewerOverlay_KeyDown"
+          helpers:FocusTrapBehavior.IsEnabled="True">
+        <!-- Backdrop -->
+        <Border Background="{DynamicResource DialogOverlayBackgroundBrush}"
+                MouseDown="DialogHost_DialogClosing"/>
+
+        <!-- Dialog Content -->
+        <Border MinWidth="360" MaxWidth="900" MaxHeight="500"
+                Padding="24"
+                CornerRadius="{StaticResource RadiusMedium}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Dialog Header -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                    <TextBlock Text="{loc:Loc LogViewer_Title}"
+                               FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding LogViewerApplication.Name}"
+                               FontSize="{StaticResource FontSizeBody}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Margin="0,4,0,0"/>
+                    <!-- Error message if present -->
+                    <Border Background="{DynamicResource ErrorBackgroundBrush}"
+                            BorderBrush="{DynamicResource ErrorBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource RadiusSmall}"
+                            Padding="12,8"
+                            Margin="0,12,0,0"
+                            Visibility="{Binding LogViewerApplication.ErrorMessage, Converter={StaticResource NullableToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ErrorCircle24"
+                                           Foreground="{DynamicResource ErrorIconBrush}"
+                                           Width="20" Height="20"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding LogViewerApplication.ErrorMessage}"
+                                       Foreground="{DynamicResource ErrorTextBrush}"
+                                       TextWrapping="Wrap"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Log Content -->
+                <Border Grid.Row="1"
+                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusSmall}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+                        <TextBox Text="{Binding LogViewerApplication.LogOutput, Mode=OneWay}"
+                                 IsReadOnly="True"
+                                 TextWrapping="NoWrap"
+                                 FontFamily="Consolas"
+                                 FontSize="{StaticResource FontSizeCaption}"
+                                 BorderThickness="0"
+                                 Padding="12"
+                                 Background="Transparent"
+                                 VerticalScrollBarVisibility="Disabled"
+                                 HorizontalScrollBarVisibility="Disabled"/>
+                    </ScrollViewer>
+                </Border>
+
+                <!-- No logs message -->
+                <TextBlock Grid.Row="1"
+                           Text="{loc:Loc LogViewer_NoLogs}"
+                           FontSize="{StaticResource FontSizeCaption}"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding LogViewerApplication.LogOutput, Converter={StaticResource InverseNullableToVisibilityConverter}}"/>
+
+                <!-- Dialog Actions -->
+                <StackPanel Grid.Row="2"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            Margin="0,16,0,0">
+                    <ui:Button Content="{loc:Loc LogViewer_Copy}"
+                               Style="{StaticResource SecondaryButton}"
+                               Click="CopyLogsToClipboard_Click"
+                               Margin="0,0,12,0"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_CopyLogs}"/>
+                    <ui:Button Content="{loc:Loc LogViewer_Close}"
+                               Style="{StaticResource PrimaryButton}"
+                               Command="{Binding CloseLogViewerCommand}"
+                               AutomationProperties.Name="{loc:Loc A11y_Deployment_CloseLogs}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+    </Grid>
+</UserControl>

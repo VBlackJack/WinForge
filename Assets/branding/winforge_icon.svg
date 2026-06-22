@@ -1,0 +1,94 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#343746"/>
+      <stop offset="1" stop-color="#21222C"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.46" r="0.5">
+      <stop offset="0" stop-color="#BD93F9" stop-opacity="0.45"/>
+      <stop offset="0.6" stop-color="#BD93F9" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#BD93F9" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="anvil" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#D6BBFB"/>
+      <stop offset="0.5" stop-color="#BD93F9"/>
+      <stop offset="1" stop-color="#FF79C6"/>
+    </linearGradient>
+    <linearGradient id="head" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F8F8F2"/>
+      <stop offset="0.55" stop-color="#C7CBE0"/>
+      <stop offset="1" stop-color="#6272A4"/>
+    </linearGradient>
+    <linearGradient id="handle" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFB86C"/>
+      <stop offset="1" stop-color="#E8924A"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8BE9FD"/>
+      <stop offset="1" stop-color="#FF79C6"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="22" flood-color="#15161E" flood-opacity="0.55"/>
+    </filter>
+    <filter id="soft2" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#15161E" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="url(#bg)"/>
+  <rect x="64" y="64" width="896" height="448" rx="200" fill="#FFFFFF" opacity="0.035"/>
+  <circle cx="512" cy="500" r="330" fill="url(#glow)"/>
+
+  <!-- Anvil (thicker top block) -->
+  <g filter="url(#soft)">
+    <path fill="url(#anvil)" d="
+      M 232 462
+      L 360 408
+      L 716 408
+      Q 730 408 730 422
+      L 730 500
+      Q 730 516 714 516
+      L 600 516
+      L 600 614
+      L 700 704
+      L 700 726
+      Q 700 742 684 742
+      L 372 742
+      Q 356 742 356 726
+      L 356 704
+      L 452 614
+      L 452 516
+      L 360 516
+      Z"/>
+    <path fill="#FFFFFF" opacity="0.20" d="M 360 408 L 716 408 Q 730 408 730 422 L 730 438 L 360 438 Z"/>
+    <path fill="#21222C" opacity="0.16" d="M 356 720 L 700 720 L 700 726 Q 700 742 684 742 L 372 742 Q 356 742 356 726 Z"/>
+  </g>
+
+  <!-- Forge hammer striking the anvil top -->
+  <g transform="translate(548 366) rotate(-34)" filter="url(#soft2)">
+    <!-- handle -->
+    <rect x="32" y="-19" width="306" height="38" rx="19" fill="url(#handle)"/>
+    <rect x="32" y="-19" width="306" height="12" rx="6" fill="#FFFFFF" opacity="0.22"/>
+    <!-- ferrule where handle enters head -->
+    <rect x="30" y="-46" width="26" height="92" rx="10" fill="#6272A4"/>
+    <!-- head: bar elongated perpendicular to the handle -->
+    <rect x="-46" y="-92" width="92" height="184" rx="22" fill="url(#head)"/>
+    <!-- long-side highlight -->
+    <rect x="-46" y="-92" width="24" height="184" rx="12" fill="#FFFFFF" opacity="0.20"/>
+    <!-- peen-end sheen -->
+    <rect x="-46" y="-92" width="92" height="22" rx="11" fill="#FFFFFF" opacity="0.22"/>
+    <!-- striking-face shade -->
+    <rect x="-46" y="70" width="92" height="22" rx="11" fill="#21222C" opacity="0.18"/>
+  </g>
+
+  <!-- Sparks -->
+  <g transform="translate(404 280)">
+    <path fill="url(#spark)" d="M0 -70 C 9 -20 20 -9 70 0 C 20 9 9 20 0 70 C -9 20 -20 9 -70 0 C -20 -9 -9 -20 0 -70 Z"/>
+  </g>
+  <g transform="translate(318 354)">
+    <path fill="#8BE9FD" opacity="0.9" d="M0 -32 C 4 -9 9 -4 32 0 C 9 4 4 9 0 32 C -4 9 -9 4 -32 0 C -9 -4 -4 -9 0 -32 Z"/>
+  </g>
+  <g transform="translate(452 196)">
+    <path fill="#FF79C6" opacity="0.85" d="M0 -26 C 3 -7 7 -3 26 0 C 7 3 3 7 0 26 C -3 7 -7 3 -26 0 C -7 -3 -3 -7 0 -26 Z"/>
+  </g>
+</svg>

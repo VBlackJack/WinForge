@@ -1,0 +1,101 @@
+<UserControl x:Class="Win11Forge.GUI.Controls.SearchBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Search TextBox -->
+        <ui:TextBox x:Name="SearchTextBox"
+                  Grid.Row="0"
+                  PlaceholderText="{loc:Loc Apps_SearchHint}"
+                  Icon="Search24"
+                  ClearButtonEnabled="True"
+                  TextChanged="SearchTextBox_TextChanged"
+                  KeyDown="SearchTextBox_KeyDown"
+                  GotFocus="SearchTextBox_GotFocus"
+                  LostFocus="SearchTextBox_LostFocus"
+                 AutomationProperties.Name="{loc:Loc A11y_AppPicker_Search}"
+                 AutomationProperties.HelpText="{loc:Loc A11y_Search_SuggestionsHelp}"/>
+
+        <!-- Suggestions Popup -->
+        <Popup x:Name="SuggestionsPopup"
+               Grid.Row="1"
+               PlacementTarget="{Binding ElementName=SearchTextBox}"
+               Placement="Bottom"
+               StaysOpen="False"
+               AllowsTransparency="True"
+               PopupAnimation="Fade">
+            <Border Width="{Binding ActualWidth, ElementName=SearchTextBox}"
+                    MaxHeight="250"
+                    CornerRadius="{StaticResource RadiusMedium}"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Recent Searches Header -->
+                    <Border Grid.Row="0"
+                            Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                            Padding="12,8"
+                            Visibility="{Binding HasRecentSearches, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Clock24" Width="16" Height="16" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Search_RecentSearches}"
+                                       FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Suggestions List -->
+                    <ListBox x:Name="SuggestionsList"
+                             Grid.Row="1"
+                             MaxHeight="200"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             PreviewMouseLeftButtonUp="SuggestionsList_PreviewMouseLeftButtonUp"
+                             SelectionChanged="SuggestionsList_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:SymbolIcon Grid.Column="0"
+                                                              Symbol="{Binding Icon}"
+                                                              Width="18" Height="18"
+                                                              Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                              VerticalAlignment="Center"
+                                                              Margin="0,0,12,0"/>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Text}"
+                                                   FontSize="{StaticResource FontSizeCaption}"/>
+                                        <TextBlock Text="{Binding Category}"
+                                                   FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                   Visibility="{Binding Category, Converter={StaticResource NullableToVisibilityConverter}}"/>
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding Shortcut}"
+                                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                               VerticalAlignment="Center"
+                                               Visibility="{Binding Shortcut, Converter={StaticResource NullableToVisibilityConverter}}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

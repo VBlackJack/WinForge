@@ -1,0 +1,76 @@
+<UserControl x:Class="Win11Forge.GUI.UserControls.StoreSourceEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             mc:Ignorable="d"
+             d:DesignHeight="140" d:DesignWidth="500">
+
+    <Border CornerRadius="{StaticResource RadiusMedium}" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" Padding="16">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header with enable toggle -->
+            <Grid Grid.Row="0" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <ui:SymbolIcon Symbol="StoreMicrosoft24"
+                                   Width="24" Height="24"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"/>
+                    <TextBlock Text="{loc:Loc Source_Store}"
+                               FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <ui:ToggleSwitch Grid.Column="2"
+                                 x:Name="EnableToggle"
+                                 IsChecked="{Binding IsSourceEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                 ToolTip="{loc:Loc SourceEditor_EnableDisable}"
+                                 AutomationProperties.Name="{loc:Loc SourceEditor_EnableDisable}"/>
+            </Grid>
+
+            <!-- Store App ID -->
+            <Grid Grid.Row="1" Margin="0,0,0,12" IsEnabled="{Binding IsChecked, ElementName=EnableToggle}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <ui:TextBox Grid.Column="0"
+                         Text="{Binding StoreId, RelativeSource={RelativeSource AncestorType=UserControl}, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="{loc:Loc AppEditor_StoreAppId}"
+                         MaxLength="12"
+                         CharacterCasing="Upper"
+                         AutomationProperties.Name="{loc:Loc AppEditor_StoreAppId}"/>
+
+                <!-- Validation indicator -->
+                <ui:SymbolIcon Grid.Column="1"
+                               x:Name="ValidationIcon"
+                               Width="24" Height="24"
+                               VerticalAlignment="Center"
+                               Margin="8,0,0,0"
+                               Visibility="{Binding StoreId, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullableToVisibilityConverter}}"/>
+            </Grid>
+
+            <!-- Format hint -->
+            <TextBlock Grid.Row="2"
+                       Text="{loc:Loc SourceEditor_StoreIdHint}"
+                       FontSize="{StaticResource FontSizeCaption}"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       IsEnabled="{Binding IsChecked, ElementName=EnableToggle}"
+                       Margin="0,0,0,0"/>
+        </Grid>
+    </Border>
+</UserControl>

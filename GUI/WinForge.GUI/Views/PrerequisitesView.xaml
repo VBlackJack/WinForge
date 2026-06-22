@@ -1,0 +1,422 @@
+<UserControl x:Class="Win11Forge.GUI.Views.PrerequisitesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:loc="clr-namespace:Win11Forge.GUI.Resources"
+             xmlns:viewModels="clr-namespace:Win11Forge.GUI.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewModels:PrerequisitesViewModel}"
+             d:DesignHeight="800" d:DesignWidth="1000">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Style="{StaticResource PageRootGridStyle}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{loc:Loc Prerequisites_PageTitle}"
+                               Style="{StaticResource PageTitleTextStyle}"
+                               AutomationProperties.AutomationId="PagePrerequisites"/>
+                    <TextBlock Text="{loc:Loc Prerequisites_PageDescription}"
+                               Style="{StaticResource PageSubtitleTextStyle}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <ui:Button Command="{Binding CheckPrerequisitesCommand}"
+                            Style="{StaticResource SecondaryButton}"
+                            Margin="0,0,8,0"
+                            AutomationProperties.Name="{loc:Loc Prerequisites_Check}"
+                            IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:ProgressRing IsIndeterminate="True"
+                                             Width="16" Height="16"
+                                             Margin="0,0,8,0"
+                                             Visibility="{Binding IsChecking, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="{StaticResource FontSizeLarge}" VerticalAlignment="Center" Margin="0,0,4,0"
+                                           Visibility="{Binding IsChecking, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                            <TextBlock Text="{loc:Loc Prerequisites_Check}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Status Summary Card -->
+            <Border Grid.Row="1"
+                    Style="{StaticResource SectionCardStyle}"
+                    Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="{Binding Status.AllInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                       FontSize="{StaticResource FontSizeDisplay}"
+                                       Foreground="{Binding Status.AllInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,16,0"/>
+                        <StackPanel>
+                            <TextBlock FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold">
+                                <Run Text="{Binding Status.InstalledCount, Mode=OneWay}"/>
+                                <Run Text="/"/>
+                                <Run Text="{Binding Status.TotalCount, Mode=OneWay}"/>
+                                <Run Text=" "/>
+                                <Run Text="{loc:Loc Prerequisites_ComponentsInstalled}"/>
+                            </TextBlock>
+                            <TextBlock FontSize="{StaticResource FontSizeCaption}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Visibility="{Binding Status.AllInstalled, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                <Run Text="{Binding Status.TotalMissingCount, Mode=OneWay}"/>
+                                <Run Text=" "/>
+                                <Run Text="{loc:Loc Prerequisites_Missing}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <ui:Button Grid.Column="1"
+                               Style="{StaticResource PrimaryButton}"
+                               Command="{Binding InstallPrerequisitesCommand}"
+                               IsEnabled="{Binding IsInstalling, Converter={StaticResource InverseBoolConverter}}"
+                               ToolTip="{loc:Loc Prerequisites_ReinstallTooltip}">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:ProgressRing IsIndeterminate="True"
+                                             Width="16" Height="16"
+                                             Margin="0,0,8,0"
+                                             Visibility="{Binding IsInstalling, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="{StaticResource FontSizeLarge}" VerticalAlignment="Center" Margin="0,0,4,0"
+                                           Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                            <TextBlock Text="{loc:Loc Prerequisites_InstallAll}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:Button>
+                </Grid>
+            </Border>
+
+            <!-- Package Managers Section -->
+            <Border Grid.Row="2"
+                    Style="{StaticResource SectionCardStyle}"
+                    Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Section Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                        <ui:SymbolIcon Symbol="Box24"
+                                       FontSize="{StaticResource FontSizeTitle}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
+                        <TextBlock Text="{loc:Loc Prerequisites_CategoryPackageManagers}"
+                                   FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource SystemAccentColorPrimaryBrush}"
+                                CornerRadius="{StaticResource RadiusSmall}"
+                                Padding="8,2"
+                                Margin="12,0,0,0"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{loc:Loc Prerequisites_Required}"
+                                       FontSize="{StaticResource FontSizeCaption}"
+                                       Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Package Managers List -->
+                    <UniformGrid Grid.Row="1" Columns="3">
+                        <!-- PowerShell 7 -->
+                        <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="0,0,1,0"
+                                Padding="0,0,16,0"
+                                Margin="0,0,16,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Grid.Column="0"
+                                               Symbol="{Binding Status.PowerShell7Installed, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                               FontSize="{StaticResource FontSizeTitle}"
+                                               Foreground="{Binding Status.PowerShell7Installed, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{loc:Loc Prerequisites_PowerShell7}"
+                                               FontSize="{StaticResource FontSizeBody}"
+                                               FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding Status.PowerShellVersion}"
+                                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Winget -->
+                        <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="0,0,1,0"
+                                Padding="0,0,16,0"
+                                Margin="0,0,16,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Grid.Column="0"
+                                               Symbol="{Binding Status.WingetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                               FontSize="{StaticResource FontSizeTitle}"
+                                               Foreground="{Binding Status.WingetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{loc:Loc Prerequisites_Winget}"
+                                               FontSize="{StaticResource FontSizeBody}"
+                                               FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding Status.WingetVersion}"
+                                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Chocolatey -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:SymbolIcon Grid.Column="0"
+                                           Symbol="{Binding Status.ChocolateyInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                           FontSize="{StaticResource FontSizeTitle}"
+                                           Foreground="{Binding Status.ChocolateyInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="{loc:Loc Prerequisites_Chocolatey}"
+                                           FontSize="{StaticResource FontSizeBody}"
+                                           FontWeight="Medium"/>
+                                <TextBlock Text="{Binding Status.ChocolateyVersion}"
+                                           FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                    </UniformGrid>
+                </Grid>
+            </Border>
+
+            <!-- Runtime Environments Section -->
+            <Border Grid.Row="3"
+                    Style="{StaticResource SectionCardStyle}"
+                    Visibility="{Binding Status, Converter={StaticResource NullableToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Section Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+                        <ui:SymbolIcon Symbol="Code24"
+                                       FontSize="{StaticResource FontSizeTitle}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
+                        <TextBlock Text="{loc:Loc Prerequisites_CategoryRuntimes}"
+                                   FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                        <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                CornerRadius="{StaticResource RadiusSmall}"
+                                Padding="8,2"
+                                Margin="12,0,0,0"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{loc:Loc Prerequisites_Optional}"
+                                       FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Runtimes List -->
+                    <UniformGrid Grid.Row="1" Columns="2" Rows="2">
+                        <!-- .NET Core -->
+                        <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="0,0,1,1"
+                                Padding="0,0,16,16"
+                                Margin="0,0,16,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Grid.Column="0"
+                                               Symbol="{Binding Status.DotNetInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                               FontSize="{StaticResource FontSizeTitle}"
+                                               Foreground="{Binding Status.DotNetInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{loc:Loc Prerequisites_DotNet}"
+                                               FontSize="{StaticResource FontSizeBody}"
+                                               FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding Status.DotNetVersion}"
+                                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- .NET Framework -->
+                        <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="0,0,0,1"
+                                Padding="0,0,0,16"
+                                Margin="0,0,0,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Grid.Column="0"
+                                               Symbol="{Binding Status.DotNetFrameworkInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                               FontSize="{StaticResource FontSizeTitle}"
+                                               Foreground="{Binding Status.DotNetFrameworkInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{loc:Loc Prerequisites_DotNetFramework}"
+                                               FontSize="{StaticResource FontSizeBody}"
+                                               FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding Status.DotNetFrameworkVersion}"
+                                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Visual C++ Redistributable -->
+                        <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="0,0,1,0"
+                                Padding="0,0,16,0"
+                                Margin="0,0,16,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Grid.Column="0"
+                                               Symbol="{Binding Status.VCRedistInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                               FontSize="{StaticResource FontSizeTitle}"
+                                               Foreground="{Binding Status.VCRedistInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,12,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{loc:Loc Prerequisites_VCRedist}"
+                                               FontSize="{StaticResource FontSizeBody}"
+                                               FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding Status.VCRedistVersion}"
+                                               FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Java Runtime -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:SymbolIcon Grid.Column="0"
+                                           Symbol="{Binding Status.JavaInstalled, Converter={StaticResource BoolToInstalledIconConverter}}"
+                                           FontSize="{StaticResource FontSizeTitle}"
+                                           Foreground="{Binding Status.JavaInstalled, Converter={StaticResource BoolToInstalledColorConverter}}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="{loc:Loc Prerequisites_Java}"
+                                           FontSize="{StaticResource FontSizeBody}"
+                                           FontWeight="Medium"/>
+                                <TextBlock Text="{Binding Status.JavaVersion}"
+                                           FontSize="{StaticResource FontSizeCaption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </Grid>
+                    </UniformGrid>
+                </Grid>
+            </Border>
+
+            <!-- Installation Log Panel -->
+            <Border Grid.Row="4"
+                    Style="{StaticResource SectionCardStyle}"
+                    Visibility="{Binding LogOutput, Converter={StaticResource NullableToVisibilityConverter}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Log Header -->
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="WindowConsole20"
+                                           FontSize="{StaticResource FontSizeTitle}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,8,0"/>
+                            <TextBlock Text="{loc:Loc Prerequisites_LogTitle}"
+                                       FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <ui:ProgressRing IsIndeterminate="True"
+                                             Width="16" Height="16"
+                                             Margin="12,0,0,0"
+                                             Visibility="{Binding IsInstalling, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        </StackPanel>
+
+                        <ui:Button Grid.Column="1"
+                                Command="{Binding ClearLogCommand}"
+                                Style="{StaticResource SecondaryButton}"
+                                Visibility="{Binding IsInstalling, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Delete24" FontSize="{StaticResource FontSizeLarge}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <TextBlock Text="{loc:Loc Prerequisites_ClearLog}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ui:Button>
+                    </Grid>
+
+                    <!-- Log Content -->
+                    <Border Grid.Row="1"
+                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource RadiusSmall}"
+                            MaxHeight="300">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      x:Name="LogScroller">
+                            <TextBox Text="{Binding LogOutput, Mode=OneWay}"
+                                     IsReadOnly="True"
+                                     TextWrapping="NoWrap"
+                                     FontFamily="Consolas"
+                                     FontSize="{StaticResource FontSizeMicro}"
+                                     BorderThickness="0"
+                                     Padding="12"
+                                     Background="Transparent"
+                                     VerticalScrollBarVisibility="Disabled"
+                                     HorizontalScrollBarVisibility="Disabled"
+                                     TextChanged="Log_TextChanged"/>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</UserControl>
