@@ -632,6 +632,7 @@
             <Style x:Key="PrimaryButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Appearance" Value="Primary"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightStandard}"/>
                 <Setter Property="Background" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>
@@ -645,6 +646,7 @@
             <Style x:Key="SecondaryButton" TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                 <Setter Property="FocusVisualStyle" Value="{StaticResource HighVisibilityFocusVisual}"/>
                 <Setter Property="Appearance" Value="Secondary"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeightStandard}"/>
                 <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ThemeAdaptiveAccentBrush}"/>

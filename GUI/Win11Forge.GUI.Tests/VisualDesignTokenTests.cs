@@ -202,7 +202,9 @@ public class VisualDesignTokenTests
             .ToList();
 
         AssertNamedStyleSetter(styles, "PrimaryButton", "MinHeight", "{StaticResource ButtonMinHeightStandard}");
+        AssertNamedStyleSetter(styles, "PrimaryButton", "VerticalAlignment", "Center");
         AssertNamedStyleSetter(styles, "SecondaryButton", "MinHeight", "{StaticResource ButtonMinHeightStandard}");
+        AssertNamedStyleSetter(styles, "SecondaryButton", "VerticalAlignment", "Center");
         AssertNamedStyleSetter(styles, "DestructiveSolidButton", "MinHeight", "{StaticResource ButtonMinHeightStandard}");
         AssertNamedStyleSetter(styles, "CompactPrimaryButton", "VerticalAlignment", "Center");
         AssertNamedStyleSetter(styles, "CompactSecondaryButton", "VerticalAlignment", "Center");
