@@ -1091,6 +1091,19 @@
                                                            FontWeight="Bold"
                                                            Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
                                             </Border>
+                                            <!-- Prerequisite Badge -->
+                                            <Border Background="{DynamicResource RequiredBrush}"
+                                                    CornerRadius="{StaticResource RadiusSmall}"
+                                                    Padding="6,2"
+                                                    Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    ToolTip="{loc:Loc Apps_PrerequisiteTooltip}"
+                                                    Visibility="{Binding IsPrerequisite, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <TextBlock Text="{loc:Loc Apps_Prerequisite}"
+                                                           FontSize="{StaticResource FontSizeMicro}"
+                                                           FontWeight="Bold"
+                                                           Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
+                                            </Border>
                                         </StackPanel>
                                         <TextBlock Text="{Binding Description}"
                                                    FontSize="{StaticResource FontSizeCaption}"

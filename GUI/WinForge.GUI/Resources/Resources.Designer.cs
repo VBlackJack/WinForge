@@ -256,6 +256,8 @@ public class Resources
     public static string Apps_StatusSelected => ResourceManager.GetString("Apps_StatusSelected", resourceCulture);
     public static string Apps_ManualInstall => ResourceManager.GetString("Apps_ManualInstall", resourceCulture);
     public static string Apps_ManualInstallTooltip => ResourceManager.GetString("Apps_ManualInstallTooltip", resourceCulture);
+    public static string Apps_Prerequisite => ResourceManager.GetString("Apps_Prerequisite", resourceCulture);
+    public static string Apps_PrerequisiteTooltip => ResourceManager.GetString("Apps_PrerequisiteTooltip", resourceCulture);
     public static string Apps_OpenWebsite => ResourceManager.GetString("Apps_OpenWebsite", resourceCulture);
     public static string Status_ManualRequired => ResourceManager.GetString("Status_ManualRequired", resourceCulture);
 
@@ -445,6 +447,10 @@ public class Resources
     public static string Confirm_Uninstall_Title_Multiple => ResourceManager.GetString("Confirm_Uninstall_Title_Multiple", resourceCulture);
     public static string Confirm_Uninstall_Message_Single => ResourceManager.GetString("Confirm_Uninstall_Message_Single", resourceCulture);
     public static string Confirm_Uninstall_Message_Multiple => ResourceManager.GetString("Confirm_Uninstall_Message_Multiple", resourceCulture);
+    public static string Confirm_Uninstall_Prerequisite_Title_Single => ResourceManager.GetString("Confirm_Uninstall_Prerequisite_Title_Single", resourceCulture);
+    public static string Confirm_Uninstall_Prerequisite_Title_Multiple => ResourceManager.GetString("Confirm_Uninstall_Prerequisite_Title_Multiple", resourceCulture);
+    public static string Confirm_Uninstall_Prerequisite_Message_Single => ResourceManager.GetString("Confirm_Uninstall_Prerequisite_Message_Single", resourceCulture);
+    public static string Confirm_Uninstall_Prerequisite_Message_Multiple => ResourceManager.GetString("Confirm_Uninstall_Prerequisite_Message_Multiple", resourceCulture);
     public static string Confirm_Uninstall_Btn => ResourceManager.GetString("Confirm_Uninstall_Btn", resourceCulture);
     public static string Confirm_Delete_Btn => ResourceManager.GetString("Confirm_Delete_Btn", resourceCulture);
     public static string Confirm_Reset_Btn => ResourceManager.GetString("Confirm_Reset_Btn", resourceCulture);

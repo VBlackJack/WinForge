@@ -972,6 +972,14 @@ Please ensure WinForge is extracted correctly with all folders (Config/, Modules
     <value>This application requires manual installation from the official website</value>
     <comment>Tooltip for manual install badge</comment>
   </data>
+  <data name="Apps_Prerequisite" xml:space="preserve">
+    <value>Prerequisite</value>
+    <comment>Badge for apps that are system prerequisites</comment>
+  </data>
+  <data name="Apps_PrerequisiteTooltip" xml:space="preserve">
+    <value>This application is a WinForge prerequisite</value>
+    <comment>Tooltip for prerequisite badge</comment>
+  </data>
   <data name="Apps_OpenWebsite" xml:space="preserve">
     <value>Open Website</value>
     <comment>Button to open official website</comment>
@@ -1661,6 +1669,22 @@ Please ensure WinForge is extracted correctly with all folders (Config/, Modules
   <data name="Confirm_Uninstall_Message_Multiple" xml:space="preserve">
     <value>Are you sure you want to uninstall {0} applications? This action cannot be undone.</value>
     <comment>Uninstall multiple applications confirmation message (0=count)</comment>
+  </data>
+  <data name="Confirm_Uninstall_Prerequisite_Title_Single" xml:space="preserve">
+    <value>Uninstall required prerequisite</value>
+    <comment>Uninstall required prerequisite confirmation title</comment>
+  </data>
+  <data name="Confirm_Uninstall_Prerequisite_Title_Multiple" xml:space="preserve">
+    <value>Uninstall {0} required prerequisites</value>
+    <comment>Uninstall required prerequisites confirmation title (0=count)</comment>
+  </data>
+  <data name="Confirm_Uninstall_Prerequisite_Message_Single" xml:space="preserve">
+    <value>Uninstalling {0} may break WinForge or deployments that depend on this prerequisite. This action cannot be undone.</value>
+    <comment>Uninstall required prerequisite confirmation message (0=app name)</comment>
+  </data>
+  <data name="Confirm_Uninstall_Prerequisite_Message_Multiple" xml:space="preserve">
+    <value>Uninstalling {0} required prerequisites may break WinForge or deployments that depend on them: {1}. This action cannot be undone.</value>
+    <comment>Uninstall required prerequisites confirmation message (0=count, 1=app names)</comment>
   </data>
   <data name="Confirm_Uninstall_Btn" xml:space="preserve">
     <value>Uninstall</value>

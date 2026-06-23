@@ -29,6 +29,52 @@ public class ApplicationManagementServiceUpdateRoutingTests
     private const string ChocolateyAppId = "Chocolatey";
 
     [Fact]
+    public async Task GetAllApplicationsAsync_WithPrerequisiteTag_ShouldMarkPrerequisiteSeparatelyFromDefaultRequired()
+    {
+        using JsonDocument prerequisiteDocument = CreateApplicationDocument("""
+        {
+          "Name": "PowerShell 7",
+          "Category": "System",
+          "DefaultRequired": true,
+          "Tags": [ "system", "runtime", "prerequisite" ],
+          "Sources": {
+            "Winget": "Microsoft.PowerShell"
+          }
+        }
+        """);
+        using JsonDocument requiredAppDocument = CreateApplicationDocument("""
+        {
+          "Name": "Google Chrome",
+          "Category": "Browser",
+          "DefaultRequired": true,
+          "Tags": [ "browser" ],
+          "Sources": {
+            "Winget": "Google.Chrome"
+          }
+        }
+        """);
+
+        TestableApplicationManagementService service = CreateService(
+            new Dictionary<string, JsonElement>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["PowerShell7"] = prerequisiteDocument.RootElement,
+                ["GoogleChrome"] = requiredAppDocument.RootElement
+            });
+
+        List<ApplicationModel> applications = await service.GetAllApplicationsAsync();
+
+        ApplicationModel powerShell = Assert.Single(applications, app => app.AppId == "PowerShell7");
+        Assert.True(powerShell.IsRequired);
+        Assert.True(powerShell.IsPrerequisite);
+        Assert.True(powerShell.IsRequiredPrerequisite);
+
+        ApplicationModel chrome = Assert.Single(applications, app => app.AppId == "GoogleChrome");
+        Assert.True(chrome.IsRequired);
+        Assert.False(chrome.IsPrerequisite);
+        Assert.False(chrome.IsRequiredPrerequisite);
+    }
+
+    [Fact]
     public async Task UpdateApplicationAsync_WithPreferredChocolateySource_RoutesThroughChocoWithoutWinget()
     {
         using JsonDocument document = CreateApplicationDocument("""
@@ -105,19 +151,36 @@ public class ApplicationManagementServiceUpdateRoutingTests
 
     private static TestableApplicationManagementService CreateService(string appId, JsonElement appData)
     {
+        TestableApplicationManagementService service = CreateService(
+            new Dictionary<string, JsonElement>(StringComparer.OrdinalIgnoreCase)
+            {
+                [appId] = appData
+            });
+
+        return service;
+    }
+
+    private static TestableApplicationManagementService CreateService(IReadOnlyDictionary<string, JsonElement> applicationsCache)
+    {
         Mock<IRepositoryPathService> pathService = new Mock<IRepositoryPathService>(MockBehavior.Strict);
         Mock<IPowerShellExecutionService> executionService = new Mock<IPowerShellExecutionService>(MockBehavior.Strict);
         Mock<IApplicationCacheService> cacheService = new Mock<IApplicationCacheService>(MockBehavior.Strict);
         Mock<IApplicationDetectionService> detectionService = new Mock<IApplicationDetectionService>(MockBehavior.Strict);
         Mock<IApplicationLauncher> launcher = new Mock<IApplicationLauncher>(MockBehavior.Strict);
 
-        JsonElement cachedAppData = appData;
         cacheService
             .Setup(service => service.EnsureApplicationsCacheAsync())
             .Returns(Task.CompletedTask);
         cacheService
-            .Setup(service => service.TryGetApplicationData(appId, out cachedAppData))
-            .Returns(true);
+            .SetupGet(service => service.ApplicationsCache)
+            .Returns(applicationsCache);
+        foreach (KeyValuePair<string, JsonElement> entry in applicationsCache)
+        {
+            JsonElement cachedAppData = entry.Value;
+            cacheService
+                .Setup(service => service.TryGetApplicationData(entry.Key, out cachedAppData))
+                .Returns(true);
+        }
 
         return new TestableApplicationManagementService(
             pathService.Object,
