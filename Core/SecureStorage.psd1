@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'SecureStorage.psm1'
-    ModuleVersion = '1.0.0622.1'
+    ModuleVersion = '1.0.0623.1'
     GUID = '9f5e4876-1718-42ac-8f5f-884fa833bf3d'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'Core', 'Security', 'DPAPI', 'Encryption')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026062201'
+            ReleaseNotes = 'WinForge v2026062301'
         }
     }
 }

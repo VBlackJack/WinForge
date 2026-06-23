@@ -8,10 +8,10 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>WinForge.GUI</RootNamespace>
     <AssemblyName>WinForge.GUI</AssemblyName>
-    <AssemblyVersion>1.0.0622.1</AssemblyVersion>
-    <FileVersion>1.0.0622.1</FileVersion>
-    <Version>1.0.0622.1</Version>
-    <InformationalVersion>2026062201</InformationalVersion>
+    <AssemblyVersion>1.0.0623.1</AssemblyVersion>
+    <FileVersion>1.0.0623.1</FileVersion>
+    <Version>1.0.0623.1</Version>
+    <InformationalVersion>2026062301</InformationalVersion>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>WinForge.ico</ApplicationIcon>
     <RequiresThemeForgeProject>true</RequiresThemeForgeProject>

@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'RestApiServer.psm1'
-    ModuleVersion = '1.0.0622.1'
+    ModuleVersion = '1.0.0623.1'
     GUID = '07efc0fc-7b11-41d2-8920-d265e20a4e98'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'Core', 'REST', 'API', 'Server')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026062201'
+            ReleaseNotes = 'WinForge v2026062301'
         }
     }
 }

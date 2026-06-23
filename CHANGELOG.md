@@ -4,6 +4,8 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+## [2026062301] - 2026-06-23
+
 ### Changed
 - The Applications update scan button now uses clearer "Scan for Updates" wording.
 - Required prerequisite apps now remain manageable in the Applications grid with an explicit prerequisite badge and uninstall warning.

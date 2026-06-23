@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'ProfileManager.psm1'
-    ModuleVersion = '1.0.0622.1'
+    ModuleVersion = '1.0.0623.1'
     GUID = 'cfd8f357-383b-41d7-9aca-9770360e26b3'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'Profiles', 'Inheritance')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026062201'
+            ReleaseNotes = 'WinForge v2026062301'
         }
     }
 }

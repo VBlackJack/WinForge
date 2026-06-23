@@ -18,7 +18,7 @@
 
 @{
     RootModule = 'JsonSchemaValidation.psm1'
-    ModuleVersion = '1.0.0622.1'
+    ModuleVersion = '1.0.0623.1'
     GUID = 'fe451f11-2ef6-4eea-b7a2-1c2a64a4ce83'
     Author = 'Julien Bombled'
     CompanyName = 'WinForge'
@@ -35,7 +35,7 @@
             Tags = @('WinForge', 'JSON', 'Schema', 'Validation')
             LicenseUri = 'https://www.apache.org/licenses/LICENSE-2.0'
             ProjectUri = 'https://github.com/VBlackJack/WinForge'
-            ReleaseNotes = 'WinForge v2026062201'
+            ReleaseNotes = 'WinForge v2026062301'
         }
     }
 }
