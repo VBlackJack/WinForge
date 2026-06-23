@@ -302,9 +302,35 @@ Describe 'Test-IsNewerVersion' {
             $result | Should -BeFalse
         }
 
+        It 'Should treat equivalent trailing-zero versions as not newer' {
+            $result = Test-IsNewerVersion -Current '2.7.3' -Available '2.7.3.0'
+            $result | Should -BeFalse
+        }
+
         It 'Should handle prerelease comparison' {
             $result = Test-IsNewerVersion -Current '1.0.0-beta' -Available '1.0.0'
             $result | Should -BeTrue
+        }
+    }
+
+    Context 'Batch cache reconciliation' {
+        It 'Get-ApplicationUpdateStatus should suppress trailing-zero false positives from winget' {
+            Mock -CommandName Get-WingetUpdatesBatch -ModuleName UpdateManager -MockWith {
+                return @{
+                    'Chocolatey.Chocolatey' = [PSCustomObject]@{
+                        Name             = 'Chocolatey'
+                        PackageId        = 'Chocolatey.Chocolatey'
+                        CurrentVersion   = '2.7.3'
+                        AvailableVersion = '2.7.3.0'
+                    }
+                }
+            }
+
+            $result = Get-ApplicationUpdateStatus -WingetId 'Chocolatey.Chocolatey' -CurrentVersion '2.7.3' -Force
+
+            $result.HasUpdate | Should -BeFalse
+            $result.CurrentVersion | Should -Be '2.7.3'
+            $result.AvailableVersion | Should -Be '2.7.3.0'
         }
     }
 }
