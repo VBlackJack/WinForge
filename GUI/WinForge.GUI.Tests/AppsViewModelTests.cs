@@ -125,7 +125,8 @@ public class AppsViewModelTests
         IDialogService? dialogService = null,
         IFileDialogService? fileDialogService = null,
         IToastService? toastService = null,
-        IRepositoryPathService? pathService = null)
+        IRepositoryPathService? pathService = null,
+        IUpdateScanStateService? updateScanStateService = null)
     {
         AppsViewModel viewModel = new AppsViewModel(
             bridge ?? CreateMockBridge(),
@@ -139,7 +140,8 @@ public class AppsViewModelTests
             dialogService ?? new TestDialogService(),
             fileDialogService,
             toastService,
-            pathService);
+            pathService,
+            updateScanStateService);
 
         WeakReferenceMessenger.Default.UnregisterAll(viewModel);
         return viewModel;
@@ -810,6 +812,38 @@ public class AppsViewModelTests
         Assert.Same(app, Assert.Single(call));
         Assert.True(Assert.Single(updateCoordinator.ScanForceRefreshValues));
         Assert.False(viewModel.IsScanningUpdates);
+    }
+
+    [Fact]
+    public async Task UpdateScanStateService_ShouldRefreshMatchingApplicationStatuses()
+    {
+        // Arrange
+        UpdateScanStateService updateScanStateService = new UpdateScanStateService();
+        AppsViewModel viewModel = CreateViewModel(updateScanStateService: updateScanStateService);
+        await viewModel.InitializeAsync();
+        ApplicationModel app = FindApp(viewModel, "Git.Git");
+        app.Status = ApplicationStatus.Installed;
+        app.CurrentVersion = "1.0.0";
+        app.AvailableVersion = string.Empty;
+
+        ApplicationModel scannedApp = new ApplicationModel
+        {
+            AppId = app.AppId,
+            Status = ApplicationStatus.UpdateAvailable,
+            CurrentVersion = "1.0.0",
+            AvailableVersion = "2.0.0",
+            StatusMessage = Resources.Resources.Status_UpdateAvailable
+        };
+
+        // Act
+        updateScanStateService.PublishUpdateScanCompleted([scannedApp], updatesAvailableCount: 1);
+
+        // Assert
+        Assert.Equal(ApplicationStatus.UpdateAvailable, app.Status);
+        Assert.Equal("1.0.0", app.CurrentVersion);
+        Assert.Equal("2.0.0", app.AvailableVersion);
+        Assert.Equal(Resources.Resources.Status_UpdateAvailable, app.StatusMessage);
+        Assert.Equal(1, viewModel.UpdatesAvailableCount);
     }
 
     [Fact]
@@ -2318,6 +2352,8 @@ internal class MockPowerShellBridge : IPowerShellBridge
 
     public int GetAllApplicationsCallCount { get; private set; }
 
+    public int InvalidateUpdateCacheCallCount { get; private set; }
+
     public IReadOnlyList<ApplicationModel> Applications => _mockApplications;
 
     public Task<string> GetWinForgeVersionAsync() => Task.FromResult("3.0.0");
@@ -2385,7 +2421,11 @@ internal class MockPowerShellBridge : IPowerShellBridge
     public Task<UpdateCheckResult> CheckApplicationUpdateAsync(ApplicationModel app, bool forceRefresh) =>
         CheckApplicationUpdateAsync(app);
 
-    public Task InvalidateUpdateCacheAsync() => Task.CompletedTask;
+    public Task InvalidateUpdateCacheAsync()
+    {
+        InvalidateUpdateCacheCallCount++;
+        return Task.CompletedTask;
+    }
 
     public Task<InstallResult> UpdateApplicationAsync(
         ApplicationModel app,

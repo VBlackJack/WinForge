@@ -58,6 +58,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private readonly IPauseGate _pauseGate;
     private readonly IDialogService _dialogService;
     private readonly IRepositoryPathService _pathService;
+    private readonly IUpdateScanStateService? _updateScanStateService;
     private readonly IToastService? _toastService;
     private readonly ILoggingService _logger;
     private readonly ProgressEstimator _progressEstimator = new();
@@ -336,6 +337,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         IFileDialogService? fileDialogService = null,
         IToastService? toastService = null,
         IRepositoryPathService? pathService = null,
+        IUpdateScanStateService? updateScanStateService = null,
         ILoggerFactory? loggerFactory = null)
     {
         _powerShellBridge = powerShellBridge;
@@ -350,6 +352,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         _fileDialogService = fileDialogService ?? new FileDialogService();
         _toastService = toastService;
         _pathService = pathService ?? new RepositoryPathService();
+        _updateScanStateService = updateScanStateService;
         _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<AppsViewModel>();
 
         // Subscribe to pause/resume/cancel requests from the monitoring view
@@ -415,6 +418,11 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
                 _externalCompletionCallback = null;
             }
         });
+
+        if (_updateScanStateService is not null)
+        {
+            _updateScanStateService.UpdateScanCompleted += OnUpdateScanCompleted;
+        }
     }
 
     private void OnPauseRequested(object? sender, EventArgs e)
@@ -560,6 +568,36 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             a.Status == ApplicationStatus.UpdateAvailable);
     }
 
+    private void ApplyExternalUpdateScanResult(IReadOnlyCollection<ApplicationModel> scannedApplications)
+    {
+        Dictionary<string, ApplicationModel> applicationsById = _allApplications
+            .Where(app => !string.IsNullOrWhiteSpace(app.AppId))
+            .ToDictionary(app => app.AppId, StringComparer.OrdinalIgnoreCase);
+
+        foreach (ApplicationModel scannedApplication in scannedApplications)
+        {
+            if (!applicationsById.TryGetValue(scannedApplication.AppId, out ApplicationModel? targetApplication))
+            {
+                continue;
+            }
+
+            targetApplication.Status = scannedApplication.Status;
+            targetApplication.CurrentVersion = scannedApplication.CurrentVersion;
+            targetApplication.AvailableVersion = scannedApplication.AvailableVersion;
+            targetApplication.StatusMessage = scannedApplication.StatusMessage;
+            targetApplication.ErrorMessage = scannedApplication.ErrorMessage;
+        }
+
+        UpdateCounters();
+        ApplyFilter();
+        RefreshSelectionActionState();
+    }
+
+    private void OnUpdateScanCompleted(object? sender, UpdateScanCompletedEventArgs e)
+    {
+        ApplyExternalUpdateScanResult(e.Applications);
+    }
+
     /// <summary>
     /// Releases all resources used by the AppsViewModel.
     /// </summary>
@@ -582,6 +620,11 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
             // Unregister from WeakReferenceMessenger
             WeakReferenceMessenger.Default.Unregister<ApplyFilterMessage>(this);
             WeakReferenceMessenger.Default.Unregister<TriggerScanMessage>(this);
+
+            if (_updateScanStateService is not null)
+            {
+                _updateScanStateService.UpdateScanCompleted -= OnUpdateScanCompleted;
+            }
 
             // Unsubscribe from events
             _deploymentStateService.PauseRequested -= OnPauseRequested;

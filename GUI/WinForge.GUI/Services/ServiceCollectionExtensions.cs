@@ -91,6 +91,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IApplicationLifetimeService, ApplicationLifetimeService>();
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
         services.AddSingleton<IPauseGate, PauseGate>();
+        services.AddSingleton<IUpdateScanStateService, UpdateScanStateService>();
         services.AddSingleton<IBatchResumeService, BatchResumeService>();
         services.AddSingleton<IAppScanCoordinator, AppScanCoordinator>();
         services.AddSingleton<IAppInstallationCoordinator, AppInstallationCoordinator>();

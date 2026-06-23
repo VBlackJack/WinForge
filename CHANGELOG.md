@@ -13,6 +13,7 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Persisted logs and operation result messages now resolve WinForge-owned localized strings in English and file logs are written as explicit UTF-8 without BOM.
 
 ### Fixed
+- Dashboard update scans now run directly through the update coordinator, so the Scan for Updates button cannot get stuck waiting on a disposed Applications view handler.
 - Chocolatey now self-updates through `choco upgrade chocolatey` instead of trying the WinGet bootstrap package during update operations.
 - Applications selection now routes checked `Update Available` apps through the update workflow, installs only not-installed apps, and skips apps that are already current.
 - Refresh Updates now forces a fresh update scan and update caches are invalidated after install, update, or uninstall operations.
