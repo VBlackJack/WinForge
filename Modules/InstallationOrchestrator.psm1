@@ -116,6 +116,11 @@ $script:WingetNetworkErrorExitCodes = @(-1978335212)
 $script:ChocolateyRebootExitCodes = @(1641, 3010)
 $script:DirectDownloadTimeoutSeconds = 600
 
+# Parallel installation defaults
+$script:ParallelInstallMaxRetries = 3
+$script:ParallelLogRetentionDays = 7
+$script:ParallelLogSubPath = 'Logs\Parallel'
+
 if (Test-Path -Path $script:TimeoutSettingsPath) {
     Import-Module -Name $script:TimeoutSettingsPath -Force -ErrorAction SilentlyContinue
 }
@@ -878,8 +883,8 @@ function Install-ApplicationsParallel {
     Write-Host ""
 
     # Create parallel logs directory
-    $parallelLogsDir = Join-Path $repoRoot 'Logs\Parallel'
-    $maxRetries = 3
+    $parallelLogsDir = Join-Path $repoRoot $script:ParallelLogSubPath
+    $maxRetries = $script:ParallelInstallMaxRetries
     $retryCount = 0
 
     while ($retryCount -lt $maxRetries) {
@@ -898,9 +903,9 @@ function Install-ApplicationsParallel {
         }
     }
 
-    # Cleanup old logs (retention: 7 days)
+    # Cleanup old logs (retention configured via $script:ParallelLogRetentionDays)
     try {
-        $cutoffDate = (Get-Date).AddDays(-7)
+        $cutoffDate = (Get-Date).AddDays(-$script:ParallelLogRetentionDays)
         Get-ChildItem -Path $parallelLogsDir -Filter "parallel_*.log" -ErrorAction SilentlyContinue |
             Where-Object { $_.LastWriteTime -lt $cutoffDate } |
             Remove-Item -Force -ErrorAction SilentlyContinue

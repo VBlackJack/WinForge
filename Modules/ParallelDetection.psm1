@@ -56,6 +56,21 @@ if (-not (Get-Command -Name Test-RegistryPathAllowed -ErrorAction SilentlyContin
     }
 }
 
+# Special-case detections: applications that require bespoke detection logic
+# instead of (or before) the generic Detection config / winget fallback.
+# Keyed by the application's Name property.
+$script:SpecialCaseDetections = @{
+    PowerToysAppName    = 'Microsoft PowerToys'
+    PowerToysExePaths   = @(
+        "${env:ProgramFiles}\PowerToys\PowerToys.exe",
+        "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe",
+        "${env:ProgramFiles(x86)}\PowerToys\PowerToys.exe"
+    )
+    PowerToysProcessName = 'PowerToys'
+    QuickAssistAppName   = 'Microsoft Quick Assist'
+    QuickAssistPackage   = 'MicrosoftCorporationII.QuickAssist'
+}
+
 # === DETECTION FUNCTIONS ===
 
 function Test-AppInstalledParallel {
@@ -87,22 +102,17 @@ function Test-AppInstalledParallel {
     # === SPECIAL CASES ===
 
     # PowerToys detection
-    if ($appName -eq 'Microsoft PowerToys') {
-        $paths = @(
-            "${env:ProgramFiles}\PowerToys\PowerToys.exe",
-            "${env:LOCALAPPDATA}\PowerToys\PowerToys.exe",
-            "${env:ProgramFiles(x86)}\PowerToys\PowerToys.exe"
-        )
-        foreach ($p in $paths) {
+    if ($appName -eq $script:SpecialCaseDetections.PowerToysAppName) {
+        foreach ($p in $script:SpecialCaseDetections.PowerToysExePaths) {
             if (Test-Path $p -ErrorAction SilentlyContinue) { return $true }
         }
-        if (Get-Process -Name "PowerToys" -ErrorAction SilentlyContinue) { return $true }
+        if (Get-Process -Name $script:SpecialCaseDetections.PowerToysProcessName -ErrorAction SilentlyContinue) { return $true }
     }
 
     # Quick Assist detection
-    if ($appName -eq 'Microsoft Quick Assist') {
+    if ($appName -eq $script:SpecialCaseDetections.QuickAssistAppName) {
         try {
-            $pkg = Get-AppxPackage -Name "MicrosoftCorporationII.QuickAssist" -ErrorAction SilentlyContinue
+            $pkg = Get-AppxPackage -Name $script:SpecialCaseDetections.QuickAssistPackage -ErrorAction SilentlyContinue
             if ($pkg) { return $true }
         } catch {
             Write-Verbose "Quick Assist detection failed: $($_.Exception.Message)"
