@@ -788,6 +788,31 @@ public class AppsViewModelTests
     }
 
     [Fact]
+    public async Task ScanUpdates_WhenInstalledCountIsStale_ShouldStillScanInstalledApplications()
+    {
+        // Arrange
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator
+        {
+            ScanResult = new AppUpdateScanResult(0, 0, WasCancelled: false)
+        };
+        AppsViewModel viewModel = CreateViewModel(updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        ApplicationModel app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        app.Status = ApplicationStatus.Installed;
+        viewModel.InstalledCount = 0;
+        viewModel.UpdateSelectedCount();
+
+        // Act
+        await viewModel.ScanUpdatesCommand.ExecuteAsync(null);
+
+        // Assert
+        IReadOnlyCollection<ApplicationModel> call = Assert.Single(updateCoordinator.ScanCalls);
+        Assert.Same(app, Assert.Single(call));
+        Assert.True(Assert.Single(updateCoordinator.ScanForceRefreshValues));
+        Assert.False(viewModel.IsScanningUpdates);
+    }
+
+    [Fact]
     public async Task UpdateSelectedCommand_CanExecuteTracksUpdateStatusAndBatchState()
     {
         // Arrange
