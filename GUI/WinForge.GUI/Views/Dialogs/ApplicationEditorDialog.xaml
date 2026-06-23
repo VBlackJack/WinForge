@@ -69,6 +69,9 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
                     <StackPanel>
                         <!-- App ID -->
+                        <TextBlock Text="{loc:Loc AppEditor_AppId}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   Margin="0,0,0,8"/>
                         <ui:TextBox Text="{Binding Application.AppId, UpdateSourceTrigger=PropertyChanged}"
                                     PlaceholderText="{loc:Loc AppEditor_AppId}"
                                     IsEnabled="{Binding CanEditAppId}"
@@ -76,12 +79,18 @@
                                     AutomationProperties.Name="{loc:Loc AppEditor_AppId}"/>
 
                         <!-- Name -->
+                        <TextBlock Text="{loc:Loc AppEditor_Name}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   Margin="0,0,0,8"/>
                         <ui:TextBox Text="{Binding Application.Name, UpdateSourceTrigger=PropertyChanged}"
                                     PlaceholderText="{loc:Loc AppEditor_Name}"
                                     Margin="{StaticResource BlockGap}"
                                     AutomationProperties.Name="{loc:Loc AppEditor_Name}"/>
 
                         <!-- Category -->
+                        <TextBlock Text="{loc:Loc Col_Category}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   Margin="0,0,0,8"/>
                         <ComboBox ItemsSource="{Binding Categories}"
                                   SelectedItem="{Binding SelectedCategory}"
                                   IsEditable="False"
@@ -89,6 +98,9 @@
                                   AutomationProperties.Name="{loc:Loc Col_Category}"/>
 
                         <!-- Description -->
+                        <TextBlock Text="{loc:Loc AppEditor_Description}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   Margin="0,0,0,8"/>
                         <ui:TextBox Text="{Binding Application.Description, UpdateSourceTrigger=PropertyChanged}"
                                     PlaceholderText="{loc:Loc AppEditor_Description}"
                                     AcceptsReturn="True"
@@ -100,6 +112,9 @@
                                     AutomationProperties.Name="{loc:Loc AppEditor_Description}"/>
 
                         <!-- Homepage -->
+                        <TextBlock Text="{loc:Loc AppEditor_Homepage}"
+                                   FontSize="{StaticResource FontSizeCaption}"
+                                   Margin="0,0,0,8"/>
                         <ui:TextBox Text="{Binding Application.Homepage, UpdateSourceTrigger=PropertyChanged}"
                                     PlaceholderText="{loc:Loc AppEditor_Homepage}"
                                     Margin="{StaticResource BlockGap}"

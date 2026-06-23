@@ -55,7 +55,7 @@
                                 <ui:SymbolIcon Symbol="Document24"
                                                Width="24" Height="24"
                                                VerticalAlignment="Center"
-                                               Margin="0,0,12,0"/>
+                                               Margin="{StaticResource InlineGapMedium}"/>
                                 <TextBlock FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                            VerticalAlignment="Center">
                                     <Run Text="{loc:Loc LogViewer_Title}"/>
@@ -103,7 +103,7 @@
                                            Style="{StaticResource SecondaryButton}"
                                            Click="CopyLogsToClipboard_Click"
                                            AutomationProperties.Name="{loc:Loc LogViewer_Copy}"
-                                           Margin="0,0,12,0"/>
+                                           Margin="{StaticResource InlineGapMedium}"/>
                                 <ui:Button Content="{loc:Loc LogViewer_Close}"
                                            Style="{StaticResource PrimaryButton}"
                                            AutomationProperties.Name="{loc:Loc LogViewer_Close}"
@@ -128,7 +128,7 @@
                                                Foreground="{Binding LastDeploymentResult, Converter={StaticResource StatusToColorConverter}}"
                                                Width="28" Height="28"
                                                VerticalAlignment="Center"
-                                               Margin="0,0,12,0"/>
+                                               Margin="{StaticResource InlineGapMedium}"/>
                                 <TextBlock FontSize="{StaticResource FontSizeSubtitle}" FontWeight="SemiBold"
                                            Text="{loc:Loc Summary_Title}"
                                            VerticalAlignment="Center"/>
@@ -250,7 +250,7 @@
                                    Width="24" Height="24"
                                    VerticalAlignment="Center"
                                    Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                   Margin="0,0,12,0"/>
+                                   Margin="{StaticResource InlineGapMedium}"/>
                     <TextBlock Text="{loc:Loc Apps_ProfileLabel}"
                                FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="Medium"
                                VerticalAlignment="Center"/>
@@ -288,7 +288,7 @@
                                    Width="18" Height="18"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    VerticalAlignment="Center"
-                                   Margin="0,0,8,0"/>
+                                   Margin="{StaticResource InlineGapSmall}"/>
                     <TextBlock Text="{loc:Loc Apps_NoProfilesAvailable}"
                                FontSize="{StaticResource FontSizeCaption}"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
@@ -306,7 +306,7 @@
                         HorizontalAlignment="Left"
                         Visibility="{Binding HasProfileApplied, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="CheckmarkCircle24" Width="16" Height="16" VerticalAlignment="Center" Margin="0,0,8,0"
+                        <ui:SymbolIcon Symbol="CheckmarkCircle24" Width="16" Height="16" VerticalAlignment="Center" Margin="{StaticResource InlineGapSmall}"
                                        Foreground="{DynamicResource BadgePrimaryForegroundBrush}"/>
                         <TextBlock FontSize="{StaticResource FontSizeCaption}" VerticalAlignment="Center"
                                    Foreground="{DynamicResource BadgePrimaryForegroundBrush}">
@@ -446,7 +446,7 @@
                                Visibility="{Binding IsScanningUpdates, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                                AutomationProperties.Name="{loc:Loc Btn_ScanUpdates}">
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="ArrowSync24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="ArrowSync24" Width="18" Height="18" VerticalAlignment="Center" Margin="{StaticResource InlineGapSmall}"/>
                             <TextBlock Text="{loc:Loc Btn_ScanUpdates}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
@@ -457,7 +457,7 @@
                         <ui:ProgressRing IsIndeterminate="True"
                                          Width="20"
                                          Height="20"
-                                         Margin="0,0,8,0"/>
+                                         Margin="{StaticResource InlineGapSmall}"/>
                         <TextBlock Text="{loc:Loc Common_Loading}"
                                    FontSize="{StaticResource FontSizeCaption}"
                                    VerticalAlignment="Center"/>
@@ -495,7 +495,7 @@
                 <ui:DropDownButton Grid.Column="0"
                                    x:Name="ColumnVisibilityButton"
                                    Style="{StaticResource IconDropDownButton}"
-                                   Margin="0,0,8,0"
+                                   Margin="{StaticResource InlineGapSmall}"
                                    ToolTip="{loc:Loc Apps_ColumnVisibility}"
                                    AutomationProperties.Name="{loc:Loc Apps_ColumnVisibility}">
                     <ui:DropDownButton.Content>
@@ -601,7 +601,7 @@
                             Background="{DynamicResource PrimaryHueMidBrush}"
                             CornerRadius="{StaticResource RadiusLarge}"
                             Padding="8,4"
-                            Margin="0,0,8,0"
+                            Margin="{StaticResource InlineGapSmall}"
                             Cursor="Hand"
                             Visibility="{Binding HasSearchFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
@@ -620,7 +620,7 @@
                             Background="{DynamicResource SecondaryHueMidBrush}"
                             CornerRadius="{StaticResource RadiusLarge}"
                             Padding="8,4"
-                            Margin="0,0,8,0"
+                            Margin="{StaticResource InlineGapSmall}"
                             Cursor="Hand"
                             Visibility="{Binding HasCategoryFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
@@ -637,7 +637,7 @@
                             Background="{DynamicResource ControlFillColorDefaultBrush}"
                             CornerRadius="{StaticResource RadiusLarge}"
                             Padding="8,4"
-                            Margin="0,0,8,0"
+                            Margin="{StaticResource InlineGapSmall}"
                             Cursor="Hand"
                             Visibility="{Binding HasStatusFilter, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Orientation="Horizontal">
@@ -672,7 +672,7 @@
                         <ui:ProgressRing IsIndeterminate="True"
                                          Width="16"
                                          Height="16"
-                                         Margin="0,0,8,0"/>
+                                         Margin="{StaticResource InlineGapSmall}"/>
                         <TextBlock FontSize="{StaticResource FontSizeCaption}"
                                    VerticalAlignment="Center"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}">
@@ -724,10 +724,10 @@
                     </StackPanel.Style>
                     <ui:Button Command="{Binding UninstallSelectedCommand}"
                                Style="{StaticResource SecondaryButton}"
-                               Margin="0,0,8,0"
+                               Margin="{StaticResource InlineGapSmall}"
                                AutomationProperties.Name="{loc:Loc Apps_UninstallSelected}">
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Delete24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="Delete24" Width="18" Height="18" VerticalAlignment="Center" Margin="{StaticResource InlineGapSmall}"/>
                             <TextBlock Text="{loc:Loc Apps_UninstallSelected}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </ui:Button>
@@ -735,7 +735,7 @@
                                Style="{StaticResource PrimaryButton}"
                                AutomationProperties.Name="{Binding SelectedPrimaryActionText}">
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="ArrowDownload24" Width="18" Height="18" VerticalAlignment="Center" Margin="{StaticResource InlineGapSmall}"/>
                             <TextBlock Text="{Binding SelectedPrimaryActionText}" VerticalAlignment="Center"/>
                             <TextBlock VerticalAlignment="Center" Margin="8,0,0,0">
                                 <Run Text="("/>
@@ -776,7 +776,7 @@
                             </Style>
                         </ui:SymbolIcon.Style>
                     </ui:SymbolIcon>
-                    <TextBlock VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="Medium">
+                    <TextBlock VerticalAlignment="Center" Margin="{StaticResource InlineGapSmall}" FontWeight="Medium">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Setter Property="FontSize" Value="12"/>
@@ -790,7 +790,7 @@
                         </TextBlock.Style>
                     </TextBlock>
                     <!-- Progress Text -->
-                    <TextBlock VerticalAlignment="Center" Margin="0,0,8,0">
+                    <TextBlock VerticalAlignment="Center" Margin="{StaticResource InlineGapSmall}">
                         <Run Text="{Binding BatchProgressCurrent, Mode=OneWay}"/>
                         <Run Text="/"/>
                         <Run Text="{Binding BatchProgressTotal, Mode=OneWay}"/>
@@ -804,20 +804,20 @@
                                MaxWidth="200"
                                TextTrimming="CharacterEllipsis"
                                ToolTip="{Binding CurrentBatchAppName}"
-                               Margin="0,0,12,0"
+                               Margin="{StaticResource InlineGapMedium}"
                                Visibility="{Binding CurrentBatchAppName, Converter={StaticResource NullableToVisibilityConverter}}"/>
                     <!-- Progress Bar -->
                     <ProgressBar Value="{Binding BatchProgressPercent}"
                                  Width="150"
                                  Height="8"
                                  VerticalAlignment="Center"
-                                 Margin="0,0,8,0"/>
+                                 Margin="{StaticResource InlineGapSmall}"/>
                     <!-- Estimated Time Remaining -->
                     <TextBlock Text="{Binding EstimatedTimeRemaining}"
                                FontSize="{StaticResource FontSizeCaption}"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                VerticalAlignment="Center"
-                               Margin="0,0,12,0"
+                               Margin="{StaticResource InlineGapMedium}"
                                Visibility="{Binding EstimatedTimeRemaining, Converter={StaticResource NullableToVisibilityConverter}}"/>
                     <!-- Pause Button -->
                     <ui:Button Command="{Binding PauseCommand}"
@@ -1279,7 +1279,7 @@
                                    Width="24" Height="24"
                                    Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                    VerticalAlignment="Center"
-                                   Margin="0,0,12,0"/>
+                                   Margin="{StaticResource InlineGapMedium}"/>
                     <TextBlock Text="{Binding ErrorMessage}"
                                Foreground="{DynamicResource SystemFillColorCriticalBrush}"
                                FontSize="{StaticResource FontSizeBody}"
@@ -1290,7 +1290,7 @@
                     <ui:Button Content="{loc:Loc Common_TryAgain}"
                                Command="{Binding RetryLastOperationCommand}"
                                Style="{StaticResource PrimaryButton}"
-                               Margin="0,0,8,0"
+                               Margin="{StaticResource InlineGapSmall}"
                                MinWidth="100"
                                AutomationProperties.Name="{loc:Loc Common_TryAgain}"/>
                     <ui:Button Content="{loc:Loc Common_Dismiss}"

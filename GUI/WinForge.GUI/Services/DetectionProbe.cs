@@ -68,11 +68,6 @@ public sealed class DetectionProbe : IDetectionProbe
     private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(500);
 
     /// <summary>
-    /// Name of the JSON array property holding the Command detection allowlist.
-    /// </summary>
-    private const string AllowedExecutablesPropertyName = "allowedExecutables";
-
-    /// <summary>
     /// Names of the JSON array properties holding the registry-path validation policy.
     /// </summary>
     private const string AllowedRegistryPatternsPropertyName = "allowedPatterns";
@@ -109,64 +104,8 @@ public sealed class DetectionProbe : IDetectionProbe
         IRepositoryPathService? repositoryPathService = null)
     {
         _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<DetectionProbe>();
-        _allowedDetectionExecutables = LoadAllowedDetectionExecutables(repositoryPathService);
+        _allowedDetectionExecutables = DetectionExecutableAllowlist.Load(repositoryPathService, _logger);
         (_allowedRegistryPatterns, _blockedRegistryPatterns) = LoadRegistryPolicy(repositoryPathService);
-    }
-
-    /// <summary>
-    /// Loads the Command detection allowlist from the shared configuration file.
-    /// This is a security control: it is loaded once and cached for the probe's
-    /// lifetime. It fails closed - a missing, unreadable, or malformed file
-    /// produces an empty allowlist, disabling Command detection entirely rather
-    /// than permitting arbitrary executables.
-    /// </summary>
-    private HashSet<string> LoadAllowedDetectionExecutables(IRepositoryPathService? repositoryPathService)
-    {
-        HashSet<string> allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        if (repositoryPathService is null)
-        {
-            _logger.LogWarning(
-                "Detection allowlist unavailable (no repository path service); Command detection is disabled.");
-            return allowed;
-        }
-
-        string allowlistPath = repositoryPathService.GetPath(
-            WinForgePathNames.ConfigDirectoryName,
-            WinForgePathNames.DetectionAllowlistFileName);
-
-        if (!File.Exists(allowlistPath))
-        {
-            _logger.LogError(
-                $"Detection allowlist file not found at '{allowlistPath}'; Command detection is disabled.");
-            return allowed;
-        }
-
-        try
-        {
-            string json = File.ReadAllText(allowlistPath);
-            using JsonDocument document = JsonDocument.Parse(json);
-
-            if (document.RootElement.TryGetProperty(AllowedExecutablesPropertyName, out JsonElement executables) &&
-                executables.ValueKind == JsonValueKind.Array)
-            {
-                foreach (JsonElement entry in executables.EnumerateArray())
-                {
-                    string? value = entry.GetString();
-                    if (!string.IsNullOrWhiteSpace(value))
-                    {
-                        allowed.Add(value);
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Failed to load detection allowlist; Command detection is disabled.", ex);
-            return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        }
-
-        return allowed;
     }
 
     /// <summary>

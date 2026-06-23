@@ -33,6 +33,11 @@ public partial class ApplicationEditorDialog : Window
     private readonly ApplicationEditorViewModel _viewModel;
 
     /// <summary>
+    /// Default deployment priority assigned to a freshly created application.
+    /// </summary>
+    private const int DefaultApplicationPriority = 50;
+
+    /// <summary>
     /// Gets whether the dialog was saved successfully.
     /// </summary>
     public bool SavedSuccessfully => _viewModel.DialogResult;
@@ -137,7 +142,7 @@ public partial class ApplicationEditorDialog : Window
         ApplicationEditorDialog dialog = new ApplicationEditorDialog { Owner = owner };
         EditableApplicationModel newApp = initialApplication?.Clone() ?? new EditableApplicationModel
         {
-            DefaultPriority = 50,
+            DefaultPriority = DefaultApplicationPriority,
             Sources = new ApplicationSourcesModel(),
             Detection = new ApplicationDetectionModel()
         };
@@ -174,6 +179,9 @@ public partial class ApplicationEditorDialog : Window
 /// </summary>
 public class InputDialog : Window
 {
+    private const double DialogWidth = 400;
+    private const double DialogHeight = 180;
+
     private readonly System.Windows.Controls.TextBox _textBox;
 
     /// <summary>
@@ -187,8 +195,8 @@ public class InputDialog : Window
     public InputDialog(string title, string prompt, string defaultValue)
     {
         Title = title;
-        Width = 400;
-        Height = 180;
+        Width = DialogWidth;
+        Height = DialogHeight;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
         ShowInTaskbar = false;
         ResizeMode = ResizeMode.NoResize;

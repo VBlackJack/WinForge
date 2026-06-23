@@ -51,6 +51,13 @@ public class ApplicationManagementServiceImpl : IApplicationManagementService
     private readonly ILoggingService _logger;
 
     /// <summary>
+    /// Command-detection executable allowlist, loaded once on first use. Shared with
+    /// the detection probe so the post-update verification path cannot launch an
+    /// executable that catalog-driven detection would otherwise reject (fail-closed).
+    /// </summary>
+    private HashSet<string>? _allowedDetectionExecutables;
+
+    /// <summary>
     /// Initializes a new instance of the ApplicationManagementServiceImpl.
     /// </summary>
     public ApplicationManagementServiceImpl(
@@ -551,7 +558,7 @@ try {{
         // Handle dry run mode
         if (isDryRun)
         {
-            progressCallback?.Invoke($"{Resources.Resources.Common_DryRun} Simulating installation of {app.Name}...");
+            progressCallback?.Invoke($"{Resources.Resources.Common_DryRun} {LogFormat(nameof(Resources.Resources.AppManagement_SimulatingInstall), app.Name)}");
             await Task.Delay(500);
             return InstallResult.DryRun(app.Name);
         }
@@ -568,7 +575,7 @@ try {{
 
             try
             {
-                progressCallback?.Invoke($"Preparing to install {app.Name}...");
+                progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_PreparingInstall), app.Name));
 
                 string forceUpdateSwitch = forceUpdate ? " -ForceUpdate" : "";
                 string validatedAppId = PowerShellValidation.ValidateAppId(app.AppId);
@@ -602,7 +609,7 @@ try {{
 }}
 ";
 
-                progressCallback?.Invoke($"Installing {app.Name}...");
+                progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.Common_InstallingItem), app.Name));
 
                 string psPath = _executionService.GetPowerShellPath();
                 string repoRoot = _pathService.GetSafeRepositoryRoot();
@@ -673,7 +680,7 @@ try {{
                         {
                             rawErrorOutputOmitted = true;
                             logBuilder.AppendLine("[STDERR] Raw process error output omitted from main log");
-                            progressCallback?.Invoke($"{app.Name}: [Error] Process error output received");
+                            progressCallback?.Invoke($"{app.Name}: {GetLogResource(nameof(Resources.Resources.AppManagement_ProcessErrorReceived))}");
                         }
                     }
                 };
@@ -727,12 +734,12 @@ try {{
 
                         if (success)
                         {
-                            progressCallback?.Invoke($"Completed: {app.Name}");
+                            progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_Completed), app.Name));
                             return InstallResult.Successful(message, logBuilder.ToString(), method, alreadyInstalled);
                         }
                         else
                         {
-                            progressCallback?.Invoke($"Failed: {app.Name} - {message}");
+                            progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_FailedReason), app.Name, message));
                             return InstallResult.Failed(message, logBuilder.ToString());
                         }
                     }
@@ -758,8 +765,8 @@ try {{
             catch (Exception ex)
             {
                 logBuilder.AppendLine($"Exception: {ex.Message}");
-                logBuilder.AppendLine(ex.StackTrace);
-                progressCallback?.Invoke($"Error: {ex.Message}");
+                _logger.LogError("Application management operation failed.", ex);
+                progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.Common_ErrorWithMessage), ex.Message));
                 return InstallResult.Failed(ex.Message, logBuilder.ToString());
             }
         });
@@ -778,7 +785,7 @@ try {{
 
             try
             {
-                progressCallback?.Invoke($"Preparing to uninstall {app.Name}...");
+                progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_PreparingUninstall), app.Name));
                 logBuilder.AppendLine($"Uninstalling: {app.Name}");
 
                 string? wingetId = null;
@@ -809,7 +816,7 @@ try {{
                 // Try Winget first
                 if (!string.IsNullOrEmpty(wingetId))
                 {
-                    progressCallback?.Invoke($"Uninstalling via Winget: {wingetId}");
+                    progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_UninstallingViaWinget), wingetId));
                     logBuilder.AppendLine($"Uninstalling via Winget: {wingetId}");
 
                     (bool Success, int ExitCode, string Output) wingetResult = await ExecuteUninstallCommandAsync(
@@ -819,7 +826,7 @@ try {{
 
                     if (wingetResult.Success)
                     {
-                        progressCallback?.Invoke($"Uninstalled: {app.Name}");
+                        progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_Uninstalled), app.Name));
                         logBuilder.AppendLine("Winget uninstallation succeeded");
                         return InstallResult.Successful(
                             $"Successfully uninstalled {app.Name}",
@@ -834,7 +841,7 @@ try {{
                 // Try Chocolatey as fallback
                 if (!string.IsNullOrEmpty(chocoPackage))
                 {
-                    progressCallback?.Invoke($"Uninstalling via Chocolatey: {chocoPackage}");
+                    progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_UninstallingViaChocolatey), chocoPackage));
                     logBuilder.AppendLine($"Uninstalling via Chocolatey: {chocoPackage}");
 
                     (bool Success, int ExitCode, string Output) chocoResult = await ExecuteUninstallCommandAsync(
@@ -844,7 +851,7 @@ try {{
 
                     if (chocoResult.Success)
                     {
-                        progressCallback?.Invoke($"Uninstalled: {app.Name}");
+                        progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_Uninstalled), app.Name));
                         logBuilder.AppendLine("Chocolatey uninstallation succeeded");
                         return InstallResult.Successful(
                             $"Successfully uninstalled {app.Name}",
@@ -862,15 +869,15 @@ try {{
                         : "No uninstall sources available for this application")
                     : "All uninstallation methods failed";
 
-                progressCallback?.Invoke($"Failed: {app.Name}");
+                progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_Failed), app.Name));
                 logBuilder.AppendLine($"Uninstallation failed: {errorMsg}");
                 return InstallResult.Failed(errorMsg, logBuilder.ToString());
             }
             catch (Exception ex)
             {
                 logBuilder.AppendLine($"Exception: {ex.Message}");
-                logBuilder.AppendLine(ex.StackTrace);
-                progressCallback?.Invoke($"Error: {ex.Message}");
+                _logger.LogError("Application management operation failed.", ex);
+                progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.Common_ErrorWithMessage), ex.Message));
                 return InstallResult.Failed(ex.Message, logBuilder.ToString());
             }
         });
@@ -996,7 +1003,7 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
 
             try
             {
-                progressCallback?.Invoke($"Preparing to update {app.Name}...");
+                progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_PreparingUpdate), app.Name));
                 logBuilder.AppendLine($"Updating: {app.Name}");
 
                 string? wingetId = null;
@@ -1072,15 +1079,15 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
                         : "No update sources available for this application")
                     : "All update methods failed";
 
-                progressCallback?.Invoke($"Failed: {app.Name}");
+                progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_Failed), app.Name));
                 logBuilder.AppendLine($"Update failed: {errorMsg}");
                 return InstallResult.Failed(errorMsg, logBuilder.ToString());
             }
             catch (Exception ex)
             {
                 logBuilder.AppendLine($"Exception: {ex.Message}");
-                logBuilder.AppendLine(ex.StackTrace);
-                progressCallback?.Invoke($"Error: {ex.Message}");
+                _logger.LogError("Application management operation failed.", ex);
+                progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.Common_ErrorWithMessage), ex.Message));
                 return InstallResult.Failed(ex.Message, logBuilder.ToString());
             }
         });
@@ -1100,7 +1107,7 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
             return null;
         }
 
-        progressCallback?.Invoke($"Updating via Winget: {wingetId}");
+        progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_UpdatingViaWinget), wingetId));
         logBuilder.AppendLine($"Updating via Winget: {wingetId}");
 
         (bool Success, int ExitCode, string Output) wingetResult = await ExecuteUpdateCommandAsync(
@@ -1110,7 +1117,7 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
 
         if (wingetResult.Success)
         {
-            progressCallback?.Invoke($"Updated: {app.Name}");
+            progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_Updated), app.Name));
             logBuilder.AppendLine("Winget update succeeded");
             return InstallResult.Successful(
                 $"Successfully updated {app.Name}",
@@ -1120,7 +1127,7 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
 
         if (wingetResult.ExitCode == -1978335189)
         {
-            progressCallback?.Invoke($"Already up to date: {app.Name}");
+            progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_AlreadyUpToDate), app.Name));
             logBuilder.AppendLine("Application is already up to date");
             return InstallResult.Successful(
                 $"{app.Name} is already up to date",
@@ -1146,7 +1153,7 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
             return null;
         }
 
-        progressCallback?.Invoke($"Updating via Chocolatey: {chocoPackage}");
+        progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_UpdatingViaChocolatey), chocoPackage));
         logBuilder.AppendLine($"Updating via Chocolatey: {chocoPackage}");
 
         (bool Success, int ExitCode, string Output) chocoResult = await ExecuteUpdateCommandAsync(
@@ -1160,13 +1167,13 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
                 appData.HasValue &&
                 !await VerifyCommandDetectionAsync(appData.Value, logBuilder))
             {
-                progressCallback?.Invoke($"Failed: {app.Name}");
+                progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_Failed), app.Name));
                 return InstallResult.Failed(
                     "Chocolatey update completed but post-update verification failed",
                     logBuilder.ToString());
             }
 
-            progressCallback?.Invoke($"Updated: {app.Name}");
+            progressCallback?.Invoke(LogFormat(nameof(Resources.Resources.AppManagement_Updated), app.Name));
             logBuilder.AppendLine("Chocolatey update succeeded");
             return InstallResult.Successful(
                 $"Successfully updated {app.Name}",
@@ -1286,6 +1293,15 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
     private static string GetLogResource(string resourceName)
         => Resources.Resources.ResourceManager.GetString(resourceName, LogCulture) ?? resourceName;
 
+    /// <summary>
+    /// Formats a deployment progress/result string using the English log resolver.
+    /// Deployment results and persisted logs are intentionally English-only (enforced by
+    /// LocalizationAuditTests) so they stay parseable regardless of UI culture; the literal
+    /// text lives in resources to avoid hardcoding rather than to localize this surface.
+    /// </summary>
+    private static string LogFormat(string resourceName, params object?[] args)
+        => string.Format(LogCulture, GetLogResource(resourceName), args);
+
     protected static void AppendVendorOutputSummary(StringBuilder logBuilder, string output, string error)
     {
         int outputLength = string.IsNullOrEmpty(output) ? 0 : output.Length;
@@ -1304,57 +1320,40 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
     /// <summary>
     /// Gets the installed version of a package using winget list.
     /// </summary>
-    private async Task<string> GetInstalledVersionAsync(string wingetId)
-    {
-        try
-        {
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = "winget",
-                Arguments = $"list --id \"{wingetId}\" --exact --disable-interactivity",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8,
-                CreateNoWindow = true
-            };
-
-            using Process process = new Process { StartInfo = startInfo };
-            process.Start();
-
-            string output = await process.StandardOutput.ReadToEndAsync();
-            using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.DefaultQueryTimeoutMs);
-            try
-            {
-                await process.WaitForExitAsync(timeoutCts.Token);
-            }
-            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
-            {
-                try { process.Kill(entireProcessTree: true); } catch { }
-                return string.Empty;
-            }
-
-            string cleanOutput = CleanWingetOutput(output);
-            return VersionServiceImpl.ParseVersionFromWingetList(cleanOutput);
-        }
-        catch
-        {
-            return string.Empty;
-        }
-    }
+    private Task<string> GetInstalledVersionAsync(string wingetId)
+        => QueryWingetVersionAsync(
+            wingetId,
+            $"list --id \"{wingetId}\" --exact --disable-interactivity",
+            VersionServiceImpl.ParseVersionFromWingetList,
+            "installed version");
 
     /// <summary>
     /// Gets the available version from repository using winget show.
     /// </summary>
-    private async Task<string> GetRepositoryVersionAsync(string wingetId)
+    private Task<string> GetRepositoryVersionAsync(string wingetId)
+        => QueryWingetVersionAsync(
+            wingetId,
+            $"show --id \"{wingetId}\" --exact --disable-interactivity",
+            VersionServiceImpl.ParseVersionFromWingetShow,
+            "repository version");
+
+    /// <summary>
+    /// Runs a winget version query, cleans and parses the output, and returns an empty
+    /// string on failure or timeout. Shared by the installed- and repository-version
+    /// probes so the process plumbing exists in exactly one place.
+    /// </summary>
+    private async Task<string> QueryWingetVersionAsync(
+        string wingetId,
+        string arguments,
+        Func<string, string> parseVersion,
+        string operationLabel)
     {
         try
         {
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = "winget",
-                Arguments = $"show --id \"{wingetId}\" --exact --disable-interactivity",
+                Arguments = arguments,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -1378,11 +1377,11 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
                 return string.Empty;
             }
 
-            string cleanOutput = CleanWingetOutput(output);
-            return VersionServiceImpl.ParseVersionFromWingetShow(cleanOutput);
+            return parseVersion(CleanWingetOutput(output));
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogWarning($"Failed to query {operationLabel} for '{wingetId}': {ex.Message}");
             return string.Empty;
         }
     }
@@ -1418,9 +1417,22 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
     /// <summary>
     /// Executes an update command and returns the result.
     /// </summary>
-    protected virtual async Task<(bool Success, int ExitCode, string Output)> ExecuteUpdateCommandAsync(
+    protected virtual Task<(bool Success, int ExitCode, string Output)> ExecuteUpdateCommandAsync(
         string command,
         string arguments,
+        StringBuilder logBuilder)
+        => RunVendorCommandAsync(command, arguments, "Update command", logBuilder);
+
+    /// <summary>
+    /// Runs a vendor package-manager command (winget/chocolatey) with the configured
+    /// installation timeout, summarizes its output, and returns the exit status. Shared
+    /// by the update and uninstall paths so the process plumbing exists in one place.
+    /// The <paramref name="operationLabel"/> only customizes the timeout log wording.
+    /// </summary>
+    private async Task<(bool Success, int ExitCode, string Output)> RunVendorCommandAsync(
+        string command,
+        string arguments,
+        string operationLabel,
         StringBuilder logBuilder)
     {
         try
@@ -1443,16 +1455,16 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
             Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
             Task<string> errorTask = process.StandardError.ReadToEndAsync();
 
-            using CancellationTokenSource updateTimeoutCts = new CancellationTokenSource(_executionService.InstallationTimeoutMs);
+            using CancellationTokenSource timeoutCts = new CancellationTokenSource(_executionService.InstallationTimeoutMs);
             try
             {
-                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(updateTimeoutCts.Token));
+                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(timeoutCts.Token));
             }
-            catch (OperationCanceledException) when (updateTimeoutCts.IsCancellationRequested)
+            catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
             {
                 try { process.Kill(entireProcessTree: true); } catch { }
-                logBuilder.AppendLine($"[ERROR] Update command timed out after {_executionService.InstallationTimeoutMs / 60000} minutes");
-                return (false, -1, "Update command timed out");
+                logBuilder.AppendLine($"[ERROR] {operationLabel} timed out after {_executionService.InstallationTimeoutMs / 60000} minutes");
+                return (false, -1, $"{operationLabel} timed out");
             }
 
             string output = await outputTask;
@@ -1482,6 +1494,19 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
             if (commandParts.Length == 0)
             {
                 logBuilder.AppendLine("Command detection failed: command line is empty");
+                return (false, -1, string.Empty);
+            }
+
+            // Security: only allowlisted executables may be launched for Command detection.
+            // Mirrors DetectionProbe.DetectCommandAsync and closes the arbitrary command
+            // execution path that an imported catalog could otherwise reach on the
+            // post-update verification path.
+            _allowedDetectionExecutables ??= DetectionExecutableAllowlist.Load(_pathService, _logger);
+            string executableName = Path.GetFileName(commandParts[0]);
+            if (!_allowedDetectionExecutables.Contains(executableName))
+            {
+                logBuilder.AppendLine(
+                    $"Command detection blocked: '{commandParts[0]}' is not in the detection allowlist");
                 return (false, -1, string.Empty);
             }
 
@@ -1534,56 +1559,11 @@ if (Get-Command -Name 'Clear-WingetUpdatesCache' -ErrorAction SilentlyContinue) 
     /// <summary>
     /// Executes an uninstall command and returns the result.
     /// </summary>
-    protected virtual async Task<(bool Success, int ExitCode, string Output)> ExecuteUninstallCommandAsync(
+    protected virtual Task<(bool Success, int ExitCode, string Output)> ExecuteUninstallCommandAsync(
         string command,
         string arguments,
         StringBuilder logBuilder)
-    {
-        try
-        {
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = command,
-                Arguments = arguments,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8,
-                CreateNoWindow = true
-            };
-
-            using Process process = new Process { StartInfo = startInfo };
-            process.Start();
-
-            Task<string> outputTask = process.StandardOutput.ReadToEndAsync();
-            Task<string> errorTask = process.StandardError.ReadToEndAsync();
-
-            using CancellationTokenSource uninstallTimeoutCts = new CancellationTokenSource(_executionService.InstallationTimeoutMs);
-            try
-            {
-                await Task.WhenAll(outputTask, errorTask, process.WaitForExitAsync(uninstallTimeoutCts.Token));
-            }
-            catch (OperationCanceledException) when (uninstallTimeoutCts.IsCancellationRequested)
-            {
-                try { process.Kill(entireProcessTree: true); } catch { }
-                logBuilder.AppendLine($"[ERROR] Uninstall command timed out after {_executionService.InstallationTimeoutMs / 60000} minutes");
-                return (false, -1, "Uninstall command timed out");
-            }
-
-            string output = await outputTask;
-            string error = await errorTask;
-
-            AppendVendorOutputSummary(logBuilder, output, error);
-
-            return (process.ExitCode == 0, process.ExitCode, output);
-        }
-        catch (Exception ex)
-        {
-            logBuilder.AppendLine($"Command execution failed: {ex.Message}");
-            return (false, -1, ex.Message);
-        }
-    }
+        => RunVendorCommandAsync(command, arguments, "Uninstall command", logBuilder);
 
     /// <summary>
     /// Extracts readable messages from PowerShell output.

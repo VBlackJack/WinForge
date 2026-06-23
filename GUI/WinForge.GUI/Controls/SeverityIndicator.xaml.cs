@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
+using System.Globalization;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
 using WinForge.GUI.Resources;
 using Wpf.Ui.Controls;
+using Loc = WinForge.GUI.Resources.Resources;
 
 namespace WinForge.GUI.Controls;
 
@@ -142,7 +144,18 @@ public partial class SeverityIndicator : UserControl
         IndicatorBorder.Background = background;
         IndicatorBorder.BorderBrush = border;
 
-        // Set AutomationProperties for accessibility
-        AutomationProperties.SetName(this, $"{Severity} indicator");
+        // Set AutomationProperties for accessibility (localized; screen readers must
+        // not hear an English severity word in non-English UI cultures).
+        string severityName = Severity switch
+        {
+            SeverityLevel.Success => Loc.Severity_Success,
+            SeverityLevel.Warning => Loc.Severity_Warning,
+            SeverityLevel.Error => Loc.Severity_Error,
+            SeverityLevel.Critical => Loc.Severity_Critical,
+            _ => Loc.Severity_Info
+        };
+        AutomationProperties.SetName(
+            this,
+            string.Format(CultureInfo.CurrentCulture, Loc.Severity_IndicatorNameFormat, severityName));
     }
 }

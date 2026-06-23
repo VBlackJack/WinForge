@@ -4129,4 +4129,103 @@ This action cannot be undone.</value>
     <value>Decide later</value>
     <comment>Close button on the resume prompt; leaves the state file untouched so it is re-offered on the next startup until the TTL expires.</comment>
   </data>
+  <!-- Common (parameterized) -->
+  <data name="Common_InstallingItem" xml:space="preserve">
+    <value>Installing {0}...</value>
+    <comment>Progress message while installing an item (0=item name)</comment>
+  </data>
+  <data name="Common_ErrorWithMessage" xml:space="preserve">
+    <value>Error: {0}</value>
+    <comment>Progress message for a generic error (0=error message)</comment>
+  </data>
+  <data name="Common_ExceptionWithMessage" xml:space="preserve">
+    <value>Exception: {0}</value>
+    <comment>Progress message for an unhandled exception (0=exception message)</comment>
+  </data>
+  <!-- Application management progress -->
+  <data name="AppManagement_SimulatingInstall" xml:space="preserve">
+    <value>Simulating installation of {0}...</value>
+    <comment>Dry-run progress message (0=application name)</comment>
+  </data>
+  <data name="AppManagement_PreparingInstall" xml:space="preserve">
+    <value>Preparing to install {0}...</value>
+    <comment>Install progress message (0=application name)</comment>
+  </data>
+  <data name="AppManagement_ProcessErrorReceived" xml:space="preserve">
+    <value>Process error output received</value>
+    <comment>Progress message when the install process emitted error output</comment>
+  </data>
+  <data name="AppManagement_Completed" xml:space="preserve">
+    <value>Completed: {0}</value>
+    <comment>Install progress message on success (0=application name)</comment>
+  </data>
+  <data name="AppManagement_FailedReason" xml:space="preserve">
+    <value>Failed: {0} - {1}</value>
+    <comment>Progress message on failure with a reason (0=application name, 1=reason)</comment>
+  </data>
+  <data name="AppManagement_Failed" xml:space="preserve">
+    <value>Failed: {0}</value>
+    <comment>Progress message on failure (0=application name)</comment>
+  </data>
+  <data name="AppManagement_PreparingUninstall" xml:space="preserve">
+    <value>Preparing to uninstall {0}...</value>
+    <comment>Uninstall progress message (0=application name)</comment>
+  </data>
+  <data name="AppManagement_UninstallingViaWinget" xml:space="preserve">
+    <value>Uninstalling via Winget: {0}</value>
+    <comment>Uninstall progress message (0=package id)</comment>
+  </data>
+  <data name="AppManagement_UninstallingViaChocolatey" xml:space="preserve">
+    <value>Uninstalling via Chocolatey: {0}</value>
+    <comment>Uninstall progress message (0=package id)</comment>
+  </data>
+  <data name="AppManagement_Uninstalled" xml:space="preserve">
+    <value>Uninstalled: {0}</value>
+    <comment>Uninstall progress message on success (0=application name)</comment>
+  </data>
+  <data name="AppManagement_PreparingUpdate" xml:space="preserve">
+    <value>Preparing to update {0}...</value>
+    <comment>Update progress message (0=application name)</comment>
+  </data>
+  <data name="AppManagement_UpdatingViaWinget" xml:space="preserve">
+    <value>Updating via Winget: {0}</value>
+    <comment>Update progress message (0=package id)</comment>
+  </data>
+  <data name="AppManagement_UpdatingViaChocolatey" xml:space="preserve">
+    <value>Updating via Chocolatey: {0}</value>
+    <comment>Update progress message (0=package id)</comment>
+  </data>
+  <data name="AppManagement_Updated" xml:space="preserve">
+    <value>Updated: {0}</value>
+    <comment>Update progress message on success (0=application name)</comment>
+  </data>
+  <data name="AppManagement_AlreadyUpToDate" xml:space="preserve">
+    <value>Already up to date: {0}</value>
+    <comment>Update progress message when no update is needed (0=application name)</comment>
+  </data>
+  <!-- Severity indicator (accessibility) -->
+  <data name="Severity_IndicatorNameFormat" xml:space="preserve">
+    <value>{0} indicator</value>
+    <comment>Accessible name for the severity indicator control (0=severity level)</comment>
+  </data>
+  <data name="Severity_Info" xml:space="preserve">
+    <value>Info</value>
+    <comment>Severity level: informational</comment>
+  </data>
+  <data name="Severity_Success" xml:space="preserve">
+    <value>Success</value>
+    <comment>Severity level: success</comment>
+  </data>
+  <data name="Severity_Warning" xml:space="preserve">
+    <value>Warning</value>
+    <comment>Severity level: warning</comment>
+  </data>
+  <data name="Severity_Error" xml:space="preserve">
+    <value>Error</value>
+    <comment>Severity level: error</comment>
+  </data>
+  <data name="Severity_Critical" xml:space="preserve">
+    <value>Critical</value>
+    <comment>Severity level: critical</comment>
+  </data>
 </root>

@@ -1169,6 +1169,7 @@
             <converters:ResxKeyConverter x:Key="ResxKeyConverter"/>
             <converters:NullableToBooleanConverter x:Key="NullableToBooleanConverter"/>
             <converters:BoolToAddEditIconConverter x:Key="BoolToAddEditIconConverter"/>
+            <converters:LogEntryKindToColorConverter x:Key="LogEntryKindToColorConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -54,6 +54,7 @@ Profiles/*-Backup*.json
 
 # IDE
 .vscode/
+.vs/
 .idea/
 *.code-workspace
 

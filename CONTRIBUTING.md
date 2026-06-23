@@ -23,7 +23,7 @@ Thank you for your interest in contributing to WinForge! This document provides 
 ### Prerequisites
 
 - **PowerShell 5.1+** (Windows built-in) or **PowerShell 7+** (recommended for parallel features)
-- **.NET 8 SDK** (for GUI development)
+- **.NET 10 SDK** (for GUI development)
 - **Git** for version control
 - **VS Code** with PowerShell extension (recommended IDE)
 

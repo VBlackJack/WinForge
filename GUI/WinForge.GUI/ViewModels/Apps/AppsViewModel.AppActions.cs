@@ -116,7 +116,7 @@ public partial class AppsViewModel
 
         try
         {
-            System.Windows.Clipboard.SetText(app.AppId);
+            _clipboardService.SetText(app.AppId);
         }
         catch (Exception ex)
         {

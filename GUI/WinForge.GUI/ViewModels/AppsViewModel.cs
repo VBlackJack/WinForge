@@ -60,6 +60,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
     private readonly IRepositoryPathService _pathService;
     private readonly IUpdateScanStateService? _updateScanStateService;
     private readonly IToastService? _toastService;
+    private readonly IClipboardService _clipboardService;
     private readonly ILoggingService _logger;
     private readonly ProgressEstimator _progressEstimator = new();
     private List<ApplicationModel> _allApplications = [];
@@ -338,6 +339,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         IToastService? toastService = null,
         IRepositoryPathService? pathService = null,
         IUpdateScanStateService? updateScanStateService = null,
+        IClipboardService? clipboardService = null,
         ILoggerFactory? loggerFactory = null)
     {
         _powerShellBridge = powerShellBridge;
@@ -353,6 +355,7 @@ public partial class AppsViewModel : ViewModelBase, IDisposable
         _toastService = toastService;
         _pathService = pathService ?? new RepositoryPathService();
         _updateScanStateService = updateScanStateService;
+        _clipboardService = clipboardService ?? new ClipboardService();
         _logger = (loggerFactory ?? new LoggerFactory()).CreateLogger<AppsViewModel>();
 
         // Subscribe to pause/resume/cancel requests from the monitoring view

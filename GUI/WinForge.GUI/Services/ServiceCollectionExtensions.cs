@@ -46,6 +46,8 @@ public static class ServiceCollectionExtensions
 
         // Register detection service (used by application management)
         services.AddSingleton<IDetectionProbe, DetectionProbe>();
+        services.AddSingleton<RegistryDetectionService>();
+        services.AddSingleton<JsonApplicationDetectionService>();
         services.AddSingleton<IApplicationDetectionService, HybridDetectionService>();
         services.AddSingleton<CacheWarmingService>();
 
@@ -90,6 +92,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IApplicationEditorDialogService, ApplicationEditorDialogService>();
         services.AddSingleton<IApplicationLifetimeService, ApplicationLifetimeService>();
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
+        services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<IPauseGate, PauseGate>();
         services.AddSingleton<IUpdateScanStateService, UpdateScanStateService>();
         services.AddSingleton<IBatchResumeService, BatchResumeService>();
