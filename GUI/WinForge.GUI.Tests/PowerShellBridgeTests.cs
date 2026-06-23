@@ -212,7 +212,9 @@ public class ApplicationManagementServiceIntegrationTests
         RepositoryPathService pathService = new RepositoryPathService();
         PowerShellExecutionService executionService = new PowerShellExecutionService(pathService);
         ApplicationCacheService cacheService = new ApplicationCacheService(pathService);
-        HybridDetectionService detectionService = new HybridDetectionService(loggerFactory, pathService);
+        RegistryDetectionService registryService = new RegistryDetectionService(loggerFactory);
+        JsonApplicationDetectionService jsonDetectionService = new JsonApplicationDetectionService(pathService, loggerFactory);
+        HybridDetectionService detectionService = new HybridDetectionService(loggerFactory, registryService, jsonDetectionService);
         _appService = new ApplicationManagementServiceImpl(
             pathService,
             executionService,

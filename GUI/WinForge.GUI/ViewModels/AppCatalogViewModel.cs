@@ -47,6 +47,8 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
     private CancellationTokenSource? _verificationCts;
     private const int SearchDebounceMs = 300;
     private const int DuplicateAppIdMaxLength = 128;
+    private const string CopyNameSuffix = " (Copy)";
+    private const string DefaultDuplicateAppId = "App";
 
     private static string GetLocalizedString(string resourceKey, string fallback)
     {
@@ -845,7 +847,14 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
         // Reload on any database change
         System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
         {
-            await LoadApplicationsAsync();
+            try
+            {
+                await LoadApplicationsAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to reload applications after database change", ex);
+            }
         });
     }
 
@@ -855,13 +864,13 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
         EditableApplicationModel duplicate = application.Clone();
         duplicate.AppId = CreateDuplicateAppId(application.AppId);
-        duplicate.Name = $"{application.Name} (Copy)";
+        duplicate.Name = $"{application.Name}{CopyNameSuffix}";
         return duplicate;
     }
 
     private static string CreateDuplicateAppId(string appId)
     {
-        string sourceAppId = string.IsNullOrWhiteSpace(appId) ? "App" : appId.Trim();
+        string sourceAppId = string.IsNullOrWhiteSpace(appId) ? DefaultDuplicateAppId : appId.Trim();
         string suffix = $"-copy-{Guid.NewGuid():N}";
         int maxBaseLength = Math.Max(1, DuplicateAppIdMaxLength - suffix.Length);
 
@@ -872,7 +881,7 @@ public partial class AppCatalogViewModel : ObservableObject, IDisposable
 
         if (string.IsNullOrEmpty(sourceAppId) || !char.IsLetterOrDigit(sourceAppId[0]))
         {
-            sourceAppId = "App";
+            sourceAppId = DefaultDuplicateAppId;
         }
 
         return $"{sourceAppId}{suffix}";

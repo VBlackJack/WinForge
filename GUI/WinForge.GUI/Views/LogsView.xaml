@@ -199,7 +199,7 @@
                                 <DataTemplate>
                                     <ui:SymbolIcon Symbol="{Binding Icon}"
                                                    Width="20" Height="20"
-                                                   Foreground="{Binding IconColor}"
+                                                   Foreground="{Binding IconKind, Converter={StaticResource LogEntryKindToColorConverter}}"
                                                    VerticalAlignment="Center"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

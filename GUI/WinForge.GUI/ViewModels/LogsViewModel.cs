@@ -21,7 +21,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -155,11 +154,11 @@ public partial class LogsViewModel : ObservableObject
                             : isErrorLog && !isTopLevelTextLog
                                 ? SymbolRegular.ErrorCircle24
                                 : SymbolRegular.Document24;
-                        SolidColorBrush iconColor = isJsonLog
-                            ? Brushes.DodgerBlue
+                        LogEntryKind iconKind = isJsonLog
+                            ? LogEntryKind.Json
                             : isErrorLog && !isTopLevelTextLog
-                                ? Brushes.Red
-                                : Brushes.Gray;
+                                ? LogEntryKind.Error
+                                : LogEntryKind.Text;
 
                         totalSize += info.Length;
                         files.Add(new LogFileEntry
@@ -170,7 +169,7 @@ public partial class LogsViewModel : ObservableObject
                             LastModified = info.LastWriteTime,
                             LogType = logType,
                             Icon = icon,
-                            IconColor = iconColor
+                            IconKind = iconKind
                         });
                     }
                 }
@@ -496,6 +495,20 @@ public partial class LogsViewModel : ObservableObject
 }
 
 /// <summary>
+/// Classifies a log file entry for presentation purposes (icon coloring).
+/// The mapping to an actual brush is performed in the view layer.
+/// </summary>
+public enum LogEntryKind
+{
+    /// <summary>Plain text log file.</summary>
+    Text,
+    /// <summary>Structured JSON log file.</summary>
+    Json,
+    /// <summary>Error log file.</summary>
+    Error
+}
+
+/// <summary>
 /// Represents a log file entry.
 /// </summary>
 public class LogFileEntry
@@ -506,7 +519,7 @@ public class LogFileEntry
     public DateTime LastModified { get; set; }
     public string LogType { get; set; } = Resources.Resources.Logs_Filter_Text;
     public SymbolRegular Icon { get; set; } = SymbolRegular.Document24;
-    public Brush IconColor { get; set; } = Brushes.Gray;
+    public LogEntryKind IconKind { get; set; } = LogEntryKind.Text;
 
     public string SizeFormatted
     {

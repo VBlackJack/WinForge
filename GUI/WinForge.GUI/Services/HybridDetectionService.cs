@@ -79,14 +79,11 @@ public class HybridDetectionService : IApplicationDetectionService, IDisposable
 
     public HybridDetectionService(
         ILoggerFactory loggerFactory,
-        IRepositoryPathService pathService,
-        IDetectionProbe? detectionProbe = null)
+        RegistryDetectionService registryService,
+        JsonApplicationDetectionService jsonDetectionService)
     {
-        _registryService = new RegistryDetectionService(loggerFactory);
-        _jsonDetectionService = new JsonApplicationDetectionService(
-            pathService ?? throw new ArgumentNullException(nameof(pathService)),
-            loggerFactory,
-            detectionProbe);
+        _registryService = registryService ?? throw new ArgumentNullException(nameof(registryService));
+        _jsonDetectionService = jsonDetectionService ?? throw new ArgumentNullException(nameof(jsonDetectionService));
         _logger = loggerFactory?.CreateLogger<HybridDetectionService>() ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 

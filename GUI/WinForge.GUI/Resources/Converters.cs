@@ -693,3 +693,25 @@ public class NullableToBooleanConverter : IValueConverter
         throw new NotSupportedException();
     }
 }
+
+/// <summary>
+/// Converts a <see cref="LogEntryKind"/> to the icon brush used in the Logs view.
+/// JSON = DodgerBlue, Error = Red, Text/default = Gray.
+/// </summary>
+public class LogEntryKindToColorConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value switch
+        {
+            LogEntryKind.Json => Brushes.DodgerBlue,
+            LogEntryKind.Error => Brushes.Red,
+            _ => Brushes.Gray
+        };
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotSupportedException();
+    }
+}
