@@ -11,7 +11,7 @@ name: Catalog Freshness Check
 #   a full re-probe. Within the same week, a workflow_dispatch run reuses the
 #   cache (TTL = 168h) unless the operator ticks `bypass_cache` below. A bypass
 #   run only refreshes the local cache file for that job - the cache key already
-#   exists, so actions/cache@v4 will NOT overwrite the weekly cache. This means
+#   exists, so actions/cache@v5 will NOT overwrite the weekly cache. This means
 #   a mid-week manual bypass cannot corrupt the canonical weekly snapshot.
 
 on:
@@ -46,7 +46,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Compute ISO week (cache key suffix)
         id: week
@@ -57,7 +57,7 @@ jobs:
           "value=$year-W$('{0:00}' -f $week)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
       - name: Restore freshness cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: Tools/.cache/freshness-cache.json
           key: freshness-${{ hashFiles('Apps/Database/applications.json') }}-${{ steps.week.outputs.value }}
@@ -113,7 +113,7 @@ jobs:
 
       - name: Upload freshness report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: catalog-freshness-report
           path: catalog-freshness-report.json
