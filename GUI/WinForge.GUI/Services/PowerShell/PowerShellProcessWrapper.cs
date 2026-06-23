@@ -16,6 +16,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Text;
 using WinForge.GUI.Services;
 
 namespace WinForge.GUI.Services.PowerShell;
@@ -97,6 +98,8 @@ internal class PowerShellProcessWrapper : IDisposable
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
             CreateNoWindow = true
         };
 
