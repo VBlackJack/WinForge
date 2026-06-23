@@ -4,8 +4,24 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 
 ## [Unreleased]
 
+### Security
+- Command detection on the post-update verification path now enforces the shared executable allowlist, so an imported application catalog can no longer cause an arbitrary executable to be launched. The GUI detection probe and the application-management service now load the same fail-closed allowlist from a single source.
+
 ### Changed
 - Updated GitHub Actions workflow dependencies to maintained Node 24-ready major versions and aligned the GUI coverage threshold with the current tested baseline.
+- Deployment progress and result strings are now sourced from resources instead of hardcoded literals, while still resolving in English so persisted logs stay parseable across UI cultures.
+- The severity indicator's accessible name is now localized instead of using a hardcoded English string.
+- Deduplicated the winget/chocolatey process-execution and version-probe plumbing in the application-management service.
+- Decoupled view models from WPF presentation types: log entry colouring now uses a converter, and clipboard access goes through an injectable service.
+- Registry and JSON application-detection services are now resolved through the dependency-injection container.
+- Added persistent localized labels to the application editor inputs and inline spacing tokens for more consistent layout.
+- Extracted parallel-install retry/retention/log-path values and special-case detection identifiers into named module configuration, and tidied the analyzer rule list and ignore rules.
+
+### Fixed
+- Failed winget version probes are now logged instead of silently returning an empty version.
+- Reload failures triggered by application-database changes are now logged instead of being lost.
+- Full exception stack traces are no longer written into the user-facing deployment log.
+- Corrected the documented prerequisite SDK to .NET 10 in the contribution guide.
 
 ## [2026062301] - 2026-06-23
 
