@@ -36,6 +36,14 @@ Set-StrictMode -Version Latest
 # === MODULE INITIALIZATION ===
 $script:ModuleRoot = Split-Path -Parent $PSCommandPath
 $script:RepositoryRoot = Split-Path $script:ModuleRoot -Parent
+$script:CoreModulePath = Join-Path $script:RepositoryRoot 'Core\Core.psm1'
+
+# Import Core module for native command output handling.
+if (-not (Get-Command -Name Invoke-NativeCommandUtf8 -ErrorAction SilentlyContinue)) {
+    if (Test-Path -Path $script:CoreModulePath) {
+        Import-Module -Name $script:CoreModulePath -Force
+    }
+}
 
 # Import Localization module for i18n support (optional - don't fail if not available)
 $script:LocalizationModulePath = Join-Path $script:RepositoryRoot 'Core\Localization.psm1'
@@ -553,9 +561,10 @@ function Test-ApplicationSources {
         # Test Winget
         if ($app.Sources.Winget) {
             try {
-                $wingetTest = winget search --id $app.Sources.Winget --exact 2>&1 | Out-String
+                $wingetResult = Invoke-NativeCommandUtf8 -FilePath 'winget' -ArgumentList @('search', '--id', $app.Sources.Winget, '--exact')
+                $wingetTest = $wingetResult.Output
                 # Winget returns 0 even when ID not found, must check output content
-                $result.WingetValid = ($LASTEXITCODE -eq 0 -and $wingetTest -match [regex]::Escape($app.Sources.Winget))
+                $result.WingetValid = ($wingetResult.ExitCode -eq 0 -and $wingetTest -match [regex]::Escape($app.Sources.Winget))
                 if (-not $result.WingetValid) {
                     $result.Errors += (t 'database.validate.winget_not_found' @{ WingetId = $app.Sources.Winget })
                 }
@@ -572,8 +581,9 @@ function Test-ApplicationSources {
         # Test Chocolatey
         if ($app.Sources.Chocolatey) {
             try {
-                $chocoTest = choco search $app.Sources.Chocolatey --exact --limit-output 2>&1
-                $result.ChocoValid = ($LASTEXITCODE -eq 0 -and $chocoTest)
+                $chocoResult = Invoke-NativeCommandUtf8 -FilePath 'choco' -ArgumentList @('search', $app.Sources.Chocolatey, '--exact', '--limit-output')
+                $chocoTest = $chocoResult.Output
+                $result.ChocoValid = ($chocoResult.ExitCode -eq 0 -and $chocoTest)
                 if (-not $result.ChocoValid) {
                     $result.Errors += (t 'database.validate.choco_not_found' @{ ChocoId = $app.Sources.Chocolatey })
                 }
@@ -1758,4 +1768,3 @@ Export-ModuleMember -Function @(
     'Disable-DatabaseFileWatcher',
     'Clear-DatabaseCache'
 )
-

@@ -18,6 +18,7 @@
 
 using System.Diagnostics;
 using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
 using WinForge.GUI.Configuration;
 
@@ -391,6 +392,8 @@ public partial class PackageVerificationService : IPackageVerificationService
                 Arguments = arguments,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
                 UseShellExecute = false,
                 CreateNoWindow = true
             }
@@ -416,6 +419,8 @@ public partial class PackageVerificationService : IPackageVerificationService
                 Arguments = arguments,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
                 UseShellExecute = false,
                 CreateNoWindow = true
             }

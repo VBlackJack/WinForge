@@ -9,6 +9,9 @@ Note: the framework version source of truth is `Config/version.json`. Launchers 
 - Added startup migration from `%LOCALAPPDATA%\Win11Forge` to `%LOCALAPPDATA%\WinForge`, with graceful fallback to legacy data when migration is blocked.
 - Scheduled deployments now use WinForge task names while continuing to discover and manage legacy Win11Forge scheduled tasks.
 
+### Fixed
+- Process output capture now uses UTF-8 consistently and deployment logs omit raw localized package-manager output from the main log stream.
+
 ## [2026062201] - 2026-06-22
 
 ### Added

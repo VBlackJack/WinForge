@@ -16,6 +16,7 @@
 
 using System.Diagnostics;
 using System.Security.Principal;
+using System.Text;
 using Microsoft.Win32;
 using WinForge.GUI.Models;
 using WinForge.GUI.Services.PowerShell;
@@ -176,6 +177,8 @@ public class SystemInfoServiceImpl : ISystemInfoService
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
                 CreateNoWindow = true
             };
 
