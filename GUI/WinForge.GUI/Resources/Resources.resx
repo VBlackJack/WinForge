@@ -932,6 +932,10 @@ Please ensure WinForge is extracted correctly with all folders (Config/, Modules
     <value>Install Selected</value>
     <comment>Button to install selected apps</comment>
   </data>
+  <data name="Apps_InstallUpdateSelected" xml:space="preserve">
+    <value>Install &amp; Update Selected</value>
+    <comment>Button to install and update selected apps according to their status</comment>
+  </data>
   <data name="Apps_SelectAll" xml:space="preserve">
     <value>Select All</value>
     <comment>Button to select all visible apps</comment>

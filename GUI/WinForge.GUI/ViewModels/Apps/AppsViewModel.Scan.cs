@@ -82,6 +82,7 @@ public partial class AppsViewModel
                 }
 
                 ApplyFilter();
+                RefreshSelectionActionState();
                 CommandManager.InvalidateRequerySuggested();
                 completionCallback?.Invoke(UpdatesAvailableCount);
             });
@@ -133,6 +134,7 @@ public partial class AppsViewModel
         {
             await _scanCoordinator.ScanAsync([app]);
             UpdateCounters();
+            RefreshSelectionActionState();
         }
         catch (DetectionException ex)
         {
@@ -176,6 +178,7 @@ public partial class AppsViewModel
             await InvokeOnUiAsync(() =>
             {
                 UpdateCounters();
+                RefreshSelectionActionState();
                 CommandManager.InvalidateRequerySuggested();
             });
         }

@@ -627,7 +627,7 @@ public class AppsViewModelTests
     }
 
     [Fact]
-    public async Task InstallSelected_ShouldDelegateToCoordinatorAndApplyResultCounters()
+    public async Task InstallSelected_ShouldDelegateInstallCandidatesAndApplyResultCounters()
     {
         // Arrange
         TestAppInstallationCoordinator installationCoordinator = new TestAppInstallationCoordinator
@@ -645,13 +645,95 @@ public class AppsViewModelTests
         IReadOnlyCollection<ApplicationModel> call = Assert.Single(installationCoordinator.Calls);
         AppInstallationOptions options = Assert.Single(installationCoordinator.Options);
         Assert.Equal(7, call.Count);
-        Assert.True(options.ForceUpdate);
+        Assert.False(options.ForceUpdate);
         Assert.Equal(2, viewModel.InstalledCount);
         Assert.Equal(3, viewModel.SuccessCount);
         Assert.Equal(1, viewModel.FailedCount);
         Assert.Equal(0, viewModel.SkippedCount);
         Assert.Equal(DeploymentResult.PartialSuccess, viewModel.LastDeploymentResult);
         Assert.True(viewModel.IsSummaryDialogOpen);
+    }
+
+    [Fact]
+    public async Task InstallSelected_WhenSelectionHasUpdateAvailable_ShouldUseUpdateCoordinatorNotInstall()
+    {
+        // Arrange
+        TestAppInstallationCoordinator installationCoordinator = new TestAppInstallationCoordinator();
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator
+        {
+            UpdateResult = new AppUpdateResult(0, 1, 0, 0, WasCancelled: false)
+        };
+        AppsViewModel viewModel = CreateViewModel(
+            installationCoordinator: installationCoordinator,
+            updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+        ApplicationModel app = GetFilteredApps(viewModel.FilteredApplications)[0];
+        app.Status = ApplicationStatus.UpdateAvailable;
+        app.IsSelected = true;
+        viewModel.UpdateSelectedCount();
+
+        Assert.Equal(0, viewModel.UpdatesAvailableCount);
+        Assert.Equal(Resources.Resources.Btn_UpdateSelected, viewModel.SelectedPrimaryActionText);
+        Assert.True(viewModel.InstallSelectedCommand.CanExecute(null));
+        Assert.True(viewModel.UpdateSelectedCommand.CanExecute(null));
+
+        // Act
+        await viewModel.InstallSelectedCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Empty(installationCoordinator.Calls);
+        IReadOnlyCollection<ApplicationModel> updateCall = Assert.Single(updateCoordinator.UpdateCalls);
+        Assert.Same(app, Assert.Single(updateCall));
+        Assert.Equal(1, viewModel.SuccessCount);
+        Assert.Equal(0, viewModel.FailedCount);
+        Assert.Equal(0, viewModel.SkippedCount);
+        Assert.Equal(DeploymentResult.Success, viewModel.LastDeploymentResult);
+    }
+
+    [Fact]
+    public async Task InstallSelected_WhenSelectionIsMixed_ShouldInstallUpdateAndSkipByStatus()
+    {
+        // Arrange
+        TestAppInstallationCoordinator installationCoordinator = new TestAppInstallationCoordinator
+        {
+            Result = new AppInstallationResult(0, 1, 0, 0, 0, WasCancelled: false)
+        };
+        TestAppUpdateCoordinator updateCoordinator = new TestAppUpdateCoordinator
+        {
+            UpdateResult = new AppUpdateResult(0, 1, 0, 0, WasCancelled: false)
+        };
+        AppsViewModel viewModel = CreateViewModel(
+            installationCoordinator: installationCoordinator,
+            updateCoordinator: updateCoordinator);
+        await viewModel.InitializeAsync();
+        ClearSelection(viewModel);
+        List<ApplicationModel> apps = GetFilteredApps(viewModel.FilteredApplications).Take(3).ToList();
+
+        apps[0].Status = ApplicationStatus.Pending;
+        apps[1].Status = ApplicationStatus.UpdateAvailable;
+        apps[2].Status = ApplicationStatus.Installed;
+        foreach (ApplicationModel app in apps)
+        {
+            app.IsSelected = true;
+        }
+
+        viewModel.UpdatesAvailableCount = 1;
+        viewModel.UpdateSelectedCount();
+
+        // Act
+        await viewModel.InstallSelectedCommand.ExecuteAsync(null);
+
+        // Assert
+        Assert.Equal(Resources.Resources.Apps_InstallUpdateSelected, viewModel.SelectedPrimaryActionText);
+        Assert.Equal([apps[0]], Assert.Single(installationCoordinator.Calls));
+        Assert.Equal([apps[1]], Assert.Single(updateCoordinator.UpdateCalls));
+        Assert.Equal(1, viewModel.InstalledCount);
+        Assert.Equal(0, viewModel.UpdatesAvailableCount);
+        Assert.Equal(2, viewModel.SuccessCount);
+        Assert.Equal(0, viewModel.FailedCount);
+        Assert.Equal(1, viewModel.SkippedCount);
+        Assert.Equal(DeploymentResult.Success, viewModel.LastDeploymentResult);
     }
 
     [Fact]
@@ -705,17 +787,19 @@ public class AppsViewModelTests
     }
 
     [Fact]
-    public async Task UpdateSelectedCommand_CanExecuteTracksUpdateCountAndBatchState()
+    public async Task UpdateSelectedCommand_CanExecuteTracksUpdateStatusAndBatchState()
     {
         // Arrange
         AppsViewModel viewModel = CreateViewModel();
         await viewModel.InitializeAsync();
+        ApplicationModel app = GetFilteredApps(viewModel.FilteredApplications)[0];
 
         // Assert
         Assert.False(viewModel.UpdateSelectedCommand.CanExecute(null));
 
         // Act / Assert
-        viewModel.UpdatesAvailableCount = 1;
+        app.Status = ApplicationStatus.UpdateAvailable;
+        viewModel.UpdateSelectedCount();
         Assert.True(viewModel.UpdateSelectedCommand.CanExecute(null));
 
         viewModel.IsInstalling = true;

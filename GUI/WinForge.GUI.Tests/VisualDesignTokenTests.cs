@@ -259,13 +259,19 @@ public class VisualDesignTokenTests
     }
 
     [Fact]
-    public void AppsUpdateFilter_UsesUpdateSelectedActionInsteadOfInstallSelected()
+    public void AppsSelectionActionBar_UsesStatusAwarePrimaryAction()
     {
         string appsXaml = File.ReadAllText(FindRepoFile("GUI", "WinForge.GUI", "Views", "AppsView.xaml"));
 
-        Assert.Contains("Command=\"{Binding UpdateSelectedCommand}\"", appsXaml, StringComparison.Ordinal);
-        Assert.Contains("Text=\"{loc:Loc Btn_UpdateSelected}\"", appsXaml, StringComparison.Ordinal);
-        Assert.Contains("Value=\"{x:Static viewModels:StatusFilterOption.HasUpdates}\"", appsXaml, StringComparison.Ordinal);
+        string selectionActionBar = ExtractXamlSection(
+            appsXaml,
+            "<!-- Selection Action Bar -->",
+            "<!-- Batch Progress Panel");
+
+        Assert.Contains("Command=\"{Binding InstallSelectedCommand}\"", selectionActionBar, StringComparison.Ordinal);
+        Assert.Contains("SelectedPrimaryActionText", selectionActionBar, StringComparison.Ordinal);
+        Assert.DoesNotContain("UpdateSelectedCommand", selectionActionBar, StringComparison.Ordinal);
+        Assert.DoesNotContain("StatusFilterOption.HasUpdates", selectionActionBar, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -601,6 +607,17 @@ public class VisualDesignTokenTests
 
         Assert.NotNull(resource);
         Assert.Equal(expectedValue, resource.Value);
+    }
+
+    private static string ExtractXamlSection(string xaml, string startMarker, string endMarker)
+    {
+        int start = xaml.IndexOf(startMarker, StringComparison.Ordinal);
+        Assert.True(start >= 0, $"Could not find start marker {startMarker}.");
+
+        int end = xaml.IndexOf(endMarker, start, StringComparison.Ordinal);
+        Assert.True(end > start, $"Could not find end marker {endMarker} after {startMarker}.");
+
+        return xaml[start..end];
     }
 
     private static void AssertBridgeBrush(
